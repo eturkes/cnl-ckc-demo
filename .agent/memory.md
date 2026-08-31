@@ -35,19 +35,30 @@ TS (frontend); Sigma.js+graphology, vis-network (graph).
 Single chain, `package.json` scripts:
 
 ```
-pnpm gate = pnpm kb:verify && pnpm format:check && pnpm lint && pnpm check && pnpm test && pnpm build
+pnpm gate = pnpm kb:build && pnpm kb:asset-check && pnpm format:check && pnpm lint && pnpm check && pnpm test && pnpm build
 ```
 
-Members: `kb:verify` (sha256 of the KB bag) · `format:check` (prettier) ·
-`lint` (eslint) · `check` (svelte-check) · `test` (vitest) · `build` (vite).
-Last run: `pnpm gate` → **rc=0**, all six green; vitest 1 file / 1 test passed,
-vite built 112 modules → `dist/` 25.82 kB js + 0.92 kB css.
+`kb:build` subsumes the old `kb:verify` (it proves the bag against its sidecar
+before parsing). `kb:reproduce` stays OUT of the chain — two forced builds cost
+10.5s — and is the rerunnable check behind the byte-reproducibility claim.
+Last clean-cache run (`rm -rf kb/generated && pnpm gate`): **rc=0**, 17.2s;
+svelte-check 319 files 0 errors; vitest 3 files / 38 tests; vite 112 modules.
+
+Build scripts are `tools/**/*.mjs`, JSDoc-typed under `allowJs`+`checkJs`. No TS
+runner is installed and none is needed: `svelte-check` type-checks `.mjs`,
+ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
+`disableTypeChecked` override), and the gate executes the scripts for real.
 
 ## Knowledge base
 
 - Vendored bag = `kb/cnl-ckc-kb-g952cc950a0c6.tar.gz` (1.48 MB, 1047 members)
-  + `.sha256` sidecar. BagIt 1.0; verify = `sha256sum -c manifest-sha256.txt
-  tagmanifest-sha256.txt` inside the bag (1046 checksums OK).
+  + `.sha256` sidecar. BagIt 1.0; verify = `pnpm kb:build` (in-memory, never
+  extracts). 1041 payload + 5 tag entries + the tagmanifest = 1047.
+- Archive dialect: POSIX ustar magic (`ustar\0` + `00`) that ALSO carries five
+  GNU `././@LongLink` (`L`) headers for names over 100 chars. A resolving parser
+  (Python `tarfile.getmembers`) hides those pseudo-entries — a raw reader must
+  handle `L` or it refuses the real bag. Single root dir, all members regular
+  files, mode 0644, uid/gid 0, one mtime, gzip mtime field 0.
 - Regenerate: `python3 -P tools/dist.py build <outdir>` run in
   `../cnl-ckc`, then copy the tarball + sidecar into `kb/`. That repo must be
   left clean.
@@ -64,6 +75,36 @@ vite built 112 modules → `dist/` 25.82 kB js + 0.92 kB css.
   ship whole in the UI.
 - Bag records `swipl 9.2.9` as the compiler; the 10.1.13 WASM runtime loads it
   fine (proven below).
+
+## Generated runtime payload (u1)
+
+- `pnpm kb:build` → `kb/generated/{kb.pvm,kb.qlf,kb-manifest.json}`, gitignored.
+  Input = the 337 `pl/` payload files, sorted, joined with `% file:<path>`
+  markers; the manifest records that concatenation's sha256 as the build input.
+- **Byte-reproducible.** `qsave_program` writes a ZIP whose entry timestamps and
+  whose embedded `state.qlf` source mtime both come from wall-clock reads.
+  Pinning `Date.now` for the build phase (`withPinnedClock`) makes two forced
+  builds byte-identical: `pnpm kb:reproduce` → pvm `3ae8d455d875`, qlf
+  `62bc61cc7d0e`. Without the pin only ~4 bytes differ, but deflate amplifies
+  them to ~389K differing bytes.
+- Sizes: pvm 437132 B, qlf 2168708 B. Live load, measured outside vitest: image
+  121 ms, qlf 238 ms, both schema 1 / 337 documents / SWI 10.1.13.
+- Engine split: building needs `swipl-bundle` (6243055 B, carries the library);
+  loading a saved state needs `swipl-bundle-no-data` (2616873 B). The QLF
+  fallback cannot use the small engine, so choosing it costs the 6.2 MB bundle
+  plus a 2.2 MB artifact against 2.6 MB + 0.44 MB — the fallback is insurance
+  against image-format rot, never a size win.
+- Do NOT use `generateImageBuffer`: it saves without checking the consult result
+  and without capturing stderr, so a broken payload still yields an image.
+  `tools/kb/produce.mjs` re-implements its four steps, asserts the contract
+  inside the building engine, and fails closed on any diagnostic. `qsave_program`
+  legitimately emits two `library(shlib)` warnings under WASM; that pair is the
+  only tolerated noise.
+- All 9 schema predicates are multifile and **static** (dynamic=false). Clause
+  counts: version 337, document 337, entity 1834, cardinality 1834, event 1254,
+  arg 2513, pp 1003, property 16, operator 1193. A direct `assertz` raises a
+  permission error → u4's overlay probe must call `dynamic/1` first; the overlay
+  is visible to queries and gone after a fresh image load.
 
 ## Measured (do not re-measure)
 
@@ -115,6 +156,12 @@ vite built 112 modules → `dist/` 25.82 kB js + 0.92 kB css.
 - `.scratch/validate-report.py` grades wave reports (`--units N`, `--verdict`).
   Scratch-local encoding; port it into the repo when a durable claim depends
   on it.
+- Worktree toolchain env = symlink the primary `node_modules` into the worktree.
+  `.gitignore` therefore spells `node_modules` without a trailing slash, since
+  the slash form matches directories only and leaves the symlink untracked.
+- A watcher that greps a subagent transcript for its own marker self-matches the
+  brief's copy of it. Match assistant text only:
+  `jq -r 'select(.message.role=="assistant")|.message.content[]?|select(.type=="text")|.text' "$t" | rg -q MARKER`.
 - Probe branches survive their worktrees: `wt/res-m1-1` (`36cc56f`, swipl-wasm
   load/worker/terms/trace/perf/test/errors/deploy probes) and `wt/res-m1-2`
   (`5863141`, cytoscape layout/perf/test, axe, contrast, combobox probes).

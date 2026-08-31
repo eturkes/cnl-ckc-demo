@@ -39,15 +39,18 @@ graph, no free text until M2/M3.
 Sequence is strictly serial — each unit consumes its predecessor's shipped
 contract. Parallelism lives inside a unit's teammate wave, not across units.
 
-- **u1 — export→PVM producer** · kernel · est 130K · OPEN
-  Project-local safe BagIt verifier and idempotent image producer, generated
-  manifest, forced QLF fallback, `kb:build` + `kb:asset-check` wired into the
-  gate. The final runtime payload is u1's own output.
-  Accept: sibling absent + clean cache → two runs verify every digest, reject
-  traversal/tamper, emit contract-equivalent manifests, and live-load schema v1
-  with exactly 337 documents; forced QLF passes the same live contract; a
-  sibling-path scan over build inputs and runtime assets is empty.
-- **u2 — Prolog engine worker** · kernel · est 120K · BLOCKED (u1 contract)
+- **u1 — export→PVM producer** · kernel · est 130K · DONE
+  `tools/kb/{bag,paths,produce,build,check,reproduce}.mjs` + `src/kb/manifest.ts`
+  + `tests/kb-{bag,live}.test.ts`. Gate = `kb:build && kb:asset-check && …`;
+  `kb:reproduce` backs the idempotence claim out of band. Artifacts are
+  byte-reproducible, not merely contract-equivalent: pinning the engine's
+  `Date.now` removes the only nondeterminism.
+  `main=94% 226K/240K`, `mate=37% 88K/240K` (map-m1u1). Wave 1 only — the
+  reserve was reached before the review wave, so `rev`/`rev2` never ran and u1
+  carries no adversarial review. Two teammates stopped partway: reports at
+  `.scratch/agents/map-m1u1.md` (17/25 rows) and `.scratch/agents/spike-m1u1-det.md`
+  (9/12 rows); probe scripts on branch `wt/spike-m1u1-det`.
+- **u2 — Prolog engine worker** · kernel · est 120K · OPEN (u1 contract shipped)
   Typed client + dedicated module Worker owning `swipl-wasm`, PVM load via Vite
   `?url`, plain-DTO protocol, term decode/encode, canonical display text.
   Accept: dev server and built output both boot to a 337-document engine; every
@@ -87,6 +90,12 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
 
 Watch item: u5 carries the largest estimate under a ±30K band. If its wave
 crosses ~175K, split the combobox/intake surface from the run-lifecycle surface.
+
+Sizing correction from u1: MAIN alone burned 226K implementing a 130K-estimated
+kernel unit, because discovery (tar dialect, determinism root cause) and the
+full implementation both landed in MAIN's window. Later units must push
+discovery into teammates and reach implementation with the contract already
+fixed, or split at the discovery/implementation seam.
 
 Planning actuals: `main=76% 183K/240K`, `mate=80% 191K/240K` (map-m1), five
 teammates across three waves. Size future planning waves against this.

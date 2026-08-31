@@ -1,5 +1,8 @@
-# Dependencies
-node_modules/
+# Dependencies. No trailing slash: worktrees reach the toolchain through a symlink.
+node_modules
+
+# Generated runtime payload: rebuilt from the vendored bag by `pnpm kb:build`.
+kb/generated/
 
 # Build output (Vite) + tool caches
 dist/

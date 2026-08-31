@@ -6,6 +6,7 @@
       "Read(/dist/**)",
       "Read(/coverage/**)",
       "Read(/kb/**/*.tar.gz)",
+      "Read(/kb/generated/**)",
       "Read(/pnpm-lock.yaml)",
       "Read(/.claude/settings.local.json)"
     ]
