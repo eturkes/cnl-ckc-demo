@@ -115,9 +115,9 @@ vite built 112 modules → `dist/` 25.82 kB js + 0.92 kB css.
 - `.scratch/validate-report.py` grades wave reports (`--units N`, `--verdict`).
   Scratch-local encoding; port it into the repo when a durable claim depends
   on it.
-- Probe branches survive their worktrees: `wt/res-m1-1` (`f636e2f`, swipl-wasm
+- Probe branches survive their worktrees: `wt/res-m1-1` (`36cc56f`, swipl-wasm
   load/worker/terms/trace/perf/test/errors/deploy probes) and `wt/res-m1-2`
-  (`6615e9d`, cytoscape layout/perf/test, axe, contrast, combobox probes).
+  (`5863141`, cytoscape layout/perf/test, axe, contrast, combobox probes).
 
 ## Read-exclusion set
 
