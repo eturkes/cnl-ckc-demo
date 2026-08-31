@@ -1,0 +1,78 @@
+{
+  "environment": {
+    "node": "v20.19.2",
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "sourceBytes": 4728735,
+  "runs": {
+    "pvm": [
+      {
+        "mode": "pvm",
+        "totalMs": 3142.925,
+        "sha256": "ca17666fcd42b70f73fb738ac536e796d935cecf6723a44392f278946f6b98d1",
+        "bytes": 437063
+      },
+      {
+        "mode": "pvm",
+        "totalMs": 2900.628,
+        "sha256": "d1d6d067f9604613c1cfcaa1781687ce693451abc07c8ab5475f6feaab00ff6f",
+        "bytes": 437065
+      },
+      {
+        "mode": "pvm",
+        "totalMs": 3051.6,
+        "sha256": "3ecc7c73c83dd8ad140cf2dfe22253800ef83d6a53bbfff71489f6d0ffc6bf4d",
+        "bytes": 437064
+      }
+    ],
+    "qlf": [
+      {
+        "mode": "qlf",
+        "totalMs": 1679.587,
+        "bootMs": 133.008,
+        "qcompileMs": 1467.226,
+        "sha256": "67de45740b80e1fb1caf7a76a9ab900935cab9195a9bec87167e66711f4e0883",
+        "bytes": 2168699
+      },
+      {
+        "mode": "qlf",
+        "totalMs": 2903.425,
+        "bootMs": 127.889,
+        "qcompileMs": 2709,
+        "sha256": "9f8fc6d15e306356185fbf0ab4517c1c95696cb98cc2330f98954d03daf20a88",
+        "bytes": 2168699
+      },
+      {
+        "mode": "qlf",
+        "totalMs": 1798.715,
+        "bootMs": 136.596,
+        "qcompileMs": 1576.671,
+        "sha256": "848fbde47a11bb9b58e6e7f6e1891f16d8cefcfa75fb4f856d12a5ecc6af0ad4",
+        "bytes": 2168699
+      }
+    ]
+  },
+  "summary": {
+    "pvm": {
+      "minMs": 2900.628,
+      "medianMs": 3051.6,
+      "maxMs": 3142.925,
+      "artifactBytes": [
+        437063,
+        437065,
+        437064
+      ]
+    },
+    "qlf": {
+      "minMs": 1679.587,
+      "medianMs": 1798.715,
+      "maxMs": 2903.425,
+      "artifactBytes": [
+        2168699,
+        2168699,
+        2168699
+      ]
+    }
+  }
+}

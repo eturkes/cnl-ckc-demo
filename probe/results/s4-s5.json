@@ -1,0 +1,51 @@
+{
+  "a": {
+    "sha256": "161f6f4604ea81f8fe81d55da2385434c69b6997c701b403e43c662c209b9139",
+    "bytes": 2168699,
+    "queryResult": {
+      "$tag": "bindings",
+      "success": true
+    },
+    "diagnostics": []
+  },
+  "b": {
+    "sha256": "4ef48adfc88b71860e8beefd6b6e0fc5e3c21e10b8bda4c6843c7a5fb8fd03ae",
+    "bytes": 2168699,
+    "queryResult": {
+      "$tag": "bindings",
+      "success": true
+    },
+    "diagnostics": []
+  },
+  "difference": {
+    "differingOffsetCount": 6,
+    "offsets": [
+      52,
+      53,
+      54,
+      595,
+      596,
+      597
+    ]
+  },
+  "contract": {
+    "schema": {
+      "solutionCount": 337,
+      "distinctSolutions": [
+        1
+      ]
+    },
+    "documents": 337,
+    "categoryAIds": [
+      "cdc2022-opioid-rec02",
+      "cdc2022-opioid-rec03",
+      "cdc2022-opioid-rec04",
+      "cdc2022-opioid-rec06",
+      "cdc2022-opioid-rec07",
+      "cdc2022-opioid-rec08",
+      "cdc2022-opioid-rec12"
+    ],
+    "categoryASolutionCount": 7,
+    "diagnostics": []
+  }
+}
