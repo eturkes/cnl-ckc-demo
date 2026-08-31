@@ -1,0 +1,22 @@
+{
+  "sameProcess": [
+    {
+      "sha256": "3fc9051df7a6a68e48a674159c28a8f0c915002e2b41fcb6749536883da6cda7",
+      "bytes": 437066
+    },
+    {
+      "sha256": "024a265447ec01882ffde92839c2a310a2f1a463e814ea716e9f5167ad911c09",
+      "bytes": 437065
+    }
+  ],
+  "separateProcesses": [
+    {
+      "sha256": "00525f32ea9b5448b07c09c8ad63e718910d226d36e404844c4d4710a131a742",
+      "bytes": 437064
+    },
+    {
+      "sha256": "44347756e3abe99cfc672e2de7b39321c5119644f0be342581ee41504429e69d",
+      "bytes": 437065
+    }
+  ]
+}
