@@ -1,0 +1,112 @@
+{
+  "orderSensitivity": {
+    "sorted": {
+      "sha256": "4e9443da654c718a08ab93db2c378c033e23f5aad335a44533717d45e2739ac3",
+      "bytes": 437064,
+      "documents": 337,
+      "diagnostics": []
+    },
+    "reversed": {
+      "sha256": "4fcfa6288f0c6d047a4ec58e95fc16e5948b71e96db019c941d1b497d9450470",
+      "bytes": 436653,
+      "documents": 337,
+      "diagnostics": []
+    }
+  },
+  "properties": {
+    "guideline_schema_version/1": {
+      "multifile": "true",
+      "dynamic": "false",
+      "numberOfClauses": 337
+    },
+    "guideline_document/3": {
+      "multifile": "true",
+      "dynamic": "false",
+      "numberOfClauses": 337
+    },
+    "guideline_entity/4": {
+      "multifile": "true",
+      "dynamic": "false",
+      "numberOfClauses": 1834
+    },
+    "guideline_cardinality/5": {
+      "multifile": "true",
+      "dynamic": "false",
+      "numberOfClauses": 1834
+    },
+    "guideline_event/3": {
+      "multifile": "true",
+      "dynamic": "false",
+      "numberOfClauses": 1254
+    },
+    "guideline_arg/4": {
+      "multifile": "true",
+      "dynamic": "false",
+      "numberOfClauses": 2513
+    },
+    "guideline_pp/4": {
+      "multifile": "true",
+      "dynamic": "false",
+      "numberOfClauses": 1003
+    },
+    "guideline_property/4": {
+      "multifile": "true",
+      "dynamic": "false",
+      "numberOfClauses": 16
+    },
+    "guideline_operator/3": {
+      "multifile": "true",
+      "dynamic": "false",
+      "numberOfClauses": 1193
+    }
+  },
+  "mutability": {
+    "overlay": "guideline_entity(actual,'$spike_overlay',spike_overlay,countable)",
+    "directAssert": {
+      "returned": {
+        "error": true,
+        "message": "assertz/1: No permission to modify static procedure `guideline_entity/4'\nDefined at /prolog.pl:26"
+      },
+      "consoleOutput": [
+        "assertz/1: No permission to modify static procedure `guideline_entity/4'\nDefined at /prolog.pl:26"
+      ]
+    },
+    "directVisible": {
+      "returned": {
+        "success": false
+      },
+      "consoleOutput": []
+    },
+    "directDiagnostics": [],
+    "dynamicAssert": {
+      "returned": {
+        "$tag": "bindings",
+        "success": true
+      },
+      "consoleOutput": []
+    },
+    "dynamicVisible": {
+      "returned": {
+        "$tag": "bindings",
+        "success": true
+      },
+      "consoleOutput": []
+    },
+    "dynamicProperty": {
+      "returned": {
+        "$tag": "bindings",
+        "D": "true",
+        "success": true
+      },
+      "consoleOutput": []
+    },
+    "mutableDiagnostics": [],
+    "freshVisible": {
+      "returned": {
+        "success": false
+      },
+      "consoleOutput": []
+    },
+    "freshDiagnostics": []
+  }
+}
