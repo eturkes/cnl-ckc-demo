@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+
+# Build output (Vite) + tool caches
+dist/
+coverage/
+*.tsbuildinfo
+.vite/
+
+# Agent scratch + machine-local overrides
+.scratch/
+.claude/settings.local.json
+.claude/.headroom_wrap_marker.json
+CLAUDE.local.md

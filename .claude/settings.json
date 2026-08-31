@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(/.serena/cache/**)",
+      "Read(/node_modules/**)",
+      "Read(/dist/**)",
+      "Read(/coverage/**)",
+      "Read(/kb/**/*.tar.gz)",
+      "Read(/pnpm-lock.yaml)",
+      "Read(/.claude/settings.local.json)"
+    ]
+  }
+}
