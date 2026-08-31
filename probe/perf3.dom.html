@@ -1,0 +1,32 @@
+<!DOCTYPE html><html lang="en"><head>
+    <style id="__________cytoscape_stylesheet">.__________cytoscape_container { position: relative; }</style><script type="module" src="/@vite/client"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cytoscape performance probe</title>
+    <style>
+      html, body { margin: 0; width: 100%; height: 100%; background: #f4f7f6; color: #132c2f; font: 14px system-ui; }
+      #cy { position: fixed; inset: 0 0 8rem; }
+      #result { position: fixed; inset: auto 0 0; box-sizing: border-box; height: 8rem; margin: 0; padding: 1rem; overflow: auto; background: #102b2f; color: #e7f5ef; }
+    </style>
+  </head>
+  <body data-done="true">
+    <div id="cy" class=" __________cytoscape_container" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><div style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); position: relative; z-index: 0; overflow: hidden; width: 1440px; height: 788px;"><canvas data-id="layer0-selectbox" width="1440" height="788" style="user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); outline-style: none; position: absolute; z-index: 3; width: 1440px; height: 788px;"></canvas><canvas data-id="layer1-drag" width="1440" height="788" style="user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); outline-style: none; position: absolute; z-index: 2; width: 1440px; height: 788px;"></canvas><canvas data-id="layer2-node" width="1440" height="788" style="user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); outline-style: none; position: absolute; z-index: 1; width: 1440px; height: 788px;"></canvas></div></div>
+    <pre id="result">{
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+  "viewport": "1440x900",
+  "nodes": 1264,
+  "edges": 3792,
+  "firstPaintMs": 2205.3,
+  "fcoseDraftLayoutMs": 726.3,
+  "layoutAndPaintMs": 1031.2,
+  "panZoomFrames": 120,
+  "panZoomMedianMs": 29.9,
+  "panZoomP95Ms": 45.4,
+  "panZoomMaxMs": 65,
+  "panZoomOver25Ms": 88
+}</pre>
+    <script type="module" src="/perf.js?t=1788169580833"></script>
+  
+
+</body></html>

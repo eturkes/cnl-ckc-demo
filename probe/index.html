@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cytoscape performance probe</title>
+    <style>
+      html, body { margin: 0; width: 100%; height: 100%; background: #f4f7f6; color: #132c2f; font: 14px system-ui; }
+      #cy { position: fixed; inset: 0 0 8rem; }
+      #result { position: fixed; inset: auto 0 0; box-sizing: border-box; height: 8rem; margin: 0; padding: 1rem; overflow: auto; background: #102b2f; color: #e7f5ef; }
+    </style>
+  </head>
+  <body>
+    <div id="cy"></div>
+    <pre id="result">running</pre>
+    <script type="module" src="/perf.js"></script>
+  </body>
+</html>
