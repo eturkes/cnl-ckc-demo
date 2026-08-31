@@ -14,9 +14,11 @@ const SCAN_ROOTS = ['tools', 'src', 'kb/generated', 'vite.config.ts', 'package.j
 /**
  * The export boundary: the knowledge base arrives as a vendored bag, never as a
  * path into the neighbouring source project. Assembled from parts so this
- * scanner is not itself a match for the pattern it searches for.
+ * scanner is not itself a match for the pattern it searches for. The trailing
+ * boundary keeps longer names that merely share the prefix — this project's own
+ * `cnl-ckc-demo` among them — from reading as the sibling.
  */
-const SIBLING = Buffer.from(['..', 'cnl-ckc'].join('/'), 'utf8');
+const SIBLING = new RegExp(`${['\\.\\.', 'cnl-ckc'].join('/')}(?![\\w.-])`);
 
 /** @param {string} path @returns {string[]} every file at or under `path` */
 const walk = (path) => {
@@ -63,7 +65,8 @@ if (manifest === undefined) {
 
 for (const root of SCAN_ROOTS) {
   for (const path of walk(join(ROOT, root))) {
-    if (readFileSync(path).includes(SIBLING)) fail(`sibling path in ${relative(ROOT, path)}`);
+    // latin1 keeps the byte↔char mapping 1:1, so the ASCII pattern reads the same in the binary assets.
+    if (SIBLING.test(readFileSync(path, 'latin1'))) fail(`sibling path in ${relative(ROOT, path)}`);
   }
 }
 

@@ -41,8 +41,12 @@ pnpm gate = pnpm kb:build && pnpm kb:asset-check && pnpm format:check && pnpm li
 `kb:build` subsumes the old `kb:verify` (it proves the bag against its sidecar
 before parsing). `kb:reproduce` stays OUT of the chain — two forced builds cost
 10.5s — and is the rerunnable check behind the byte-reproducibility claim.
-Last clean-cache run (`rm -rf kb/generated && pnpm gate`): **rc=0**, 17.2s;
+Last clean-cache run (`rm -rf kb/generated && pnpm gate`): **rc=0**, 13.9s;
 svelte-check 319 files 0 errors; vitest 3 files / 38 tests; vite 112 modules.
+
+`kb:asset-check`'s sibling-path scan matches `../cnl-ckc` only at a name
+boundary — this project's own `cnl-ckc-demo` shares that prefix and must not
+trip it.
 
 Build scripts are `tools/**/*.mjs`, JSDoc-typed under `allowJs`+`checkJs`. No TS
 runner is installed and none is needed: `svelte-check` type-checks `.mjs`,

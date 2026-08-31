@@ -6,7 +6,7 @@
 </script>
 
 <main>
-  <h1>cnl-ckc-ui</h1>
+  <h1>cnl-ckc-demo</h1>
   <p class="lede">
     Ask a question against a compiled clinical knowledge base. Every answer comes from real Prolog
     execution, and traces back to the guideline sentence that produced it.

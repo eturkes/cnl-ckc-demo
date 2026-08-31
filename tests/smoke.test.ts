@@ -9,7 +9,7 @@ const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url),
 
 describe('package metadata', () => {
   it('carries the project name and the LICENSE identifier', () => {
-    expect(pkg.name).toBe('cnl-ckc-ui');
+    expect(pkg.name).toBe('cnl-ckc-demo');
     expect(pkg.license).toBe('Apache-2.0 WITH LLVM-exception');
   });
 });
