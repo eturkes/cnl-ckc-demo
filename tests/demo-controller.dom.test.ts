@@ -5,12 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import App from '../src/App.svelte';
 import type { BootOutcome } from '../src/engine/client.js';
-import type {
-  EngineContract,
-  EngineError,
-  LimitKind,
-  PlSolution,
-} from '../src/engine/protocol.js';
+import type { EngineContract, EngineError, LimitKind, PlSolution } from '../src/engine/protocol.js';
 import { QUESTION_IDS, type QuestionId } from '../src/questions/catalog.js';
 import type { AnswerResult } from '../src/questions/service.js';
 import {
@@ -21,6 +16,7 @@ import {
 
 const CONTRACT: EngineContract = { schemaVersion: 1, documents: 337 };
 const ID = QUESTION_IDS[0];
+const EXISTENCE_ID = QUESTION_IDS[5];
 
 type Deferred<T> = {
   promise: Promise<T>;
@@ -124,6 +120,19 @@ const answerRegion = (): HTMLElement => {
 
 const text = (node: Node = target): string => node.textContent?.replace(/\s+/gu, ' ').trim() ?? '';
 
+const buttonNamed = (name: RegExp): HTMLButtonElement => {
+  const matches = [...target.querySelectorAll<HTMLButtonElement>('button')].filter((button) =>
+    name.test(text(button)),
+  );
+  if (matches.length !== 1)
+    throw new Error(`expected one ${String(name)} button, found ${String(matches.length)}`);
+  return matches[0] as HTMLButtonElement;
+};
+
+const radios = (): HTMLInputElement[] => [
+  ...target.querySelectorAll<HTMLInputElement>('input[type="radio"]'),
+];
+
 beforeEach(() => {
   target = document.body.appendChild(document.createElement('div'));
   render();
@@ -206,5 +215,141 @@ describe('view states and accessibility', () => {
     expect(text()).toMatch(/cancelled/iu);
     expect(text(answerRegion())).toMatch(/partial/iu);
     expect(text(answerRegion())).toMatch(/\b2\b/u);
+  });
+
+  it('V6 renders failure as no proof and existential outcomes as yes or no', () => {
+    setState({ kind: 'settled', id: EXISTENCE_ID, result: failure(EXISTENCE_ID, 'no') });
+    expect(text()).toMatch(/no proof/iu);
+    expect(text(answerRegion())).toMatch(/\bno\b/iu);
+    expect(text(answerRegion())).not.toMatch(/solutions\s*\(|\[\s*\]/u);
+
+    controller.solutionIndex = 0;
+    setState({ kind: 'settled', id: EXISTENCE_ID, result: answer(EXISTENCE_ID, 12, 'yes') });
+    expect(text(answerRegion())).toMatch(/\byes\b/iu);
+    expect(radios()).toHaveLength(0);
+    expect(text(answerRegion())).not.toMatch(/solutions\s*\(|\[\s*\]/u);
+  });
+
+  it('V7 renders many answers as one labelled native radio group with index zero checked', () => {
+    controller.solutionIndex = 0;
+    setState({ kind: 'settled', id: ID, result: answer(ID, 3, 'choice') });
+    const fields = [...target.querySelectorAll<HTMLFieldSetElement>('fieldset')];
+    const choices = radios();
+
+    expect(fields).toHaveLength(1);
+    expect(text(fields[0]?.querySelector('legend') ?? document.createTextNode(''))).toBeTruthy();
+    expect(choices).toHaveLength(3);
+    expect(new Set(choices.map((choice) => choice.name)).size).toBe(1);
+    expect(choices[0]?.name).toBeTruthy();
+    expect(choices.filter((choice) => choice.checked)).toEqual([choices[0]]);
+    for (const choice of choices) {
+      expect(choice.hasAttribute('tabindex')).toBe(false);
+      expect(choice.labels?.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('V7 renders one answer without a group and zero answers as terminal state alone', () => {
+    controller.solutionIndex = 0;
+    setState({ kind: 'settled', id: ID, result: answer(ID, 1, 'sole') });
+    expect(radios()).toHaveLength(0);
+    expect(target.querySelector('fieldset')).toBeNull();
+    expect(text(answerRegion())).toMatch(/sole-(?:serialized|display-0)/u);
+
+    controller.solutionIndex = -1;
+    setState({ kind: 'settled', id: ID, result: failure(ID) });
+    expect(radios()).toHaveLength(0);
+    expect(target.querySelector('fieldset')).toBeNull();
+    expect(text()).toMatch(/no proof/iu);
+  });
+
+  it('V8 uses native button disabled states and reserves Retry for settled errors', () => {
+    controller.select(ID);
+    flushSync();
+    const bootRun = buttonNamed(/^run\b/iu);
+    expect(bootRun.type).toBe('button');
+    expect(bootRun.disabled).toBe(true);
+    expect(bootRun.hasAttribute('aria-disabled')).toBe(false);
+
+    setState({ kind: 'idle', contract: CONTRACT });
+    expect(buttonNamed(/^run\b/iu).disabled).toBe(false);
+    expect(buttonNamed(/^cancel\b/iu).disabled).toBe(true);
+
+    setState({ kind: 'running', id: ID });
+    expect(buttonNamed(/^run\b/iu).disabled).toBe(true);
+    const cancelButton = buttonNamed(/^cancel\b/iu);
+    expect(cancelButton.type).toBe('button');
+    expect(cancelButton.disabled).toBe(false);
+    expect(cancelButton.hasAttribute('aria-disabled')).toBe(false);
+
+    setState({ kind: 'settled', id: ID, result: answer(ID) });
+    expect(buttonNamed(/^run\b/iu).disabled).toBe(false);
+    expect(buttonNamed(/^cancel\b/iu).disabled).toBe(true);
+    expect(
+      [...target.querySelectorAll('button')].some((button) => /retry/iu.test(text(button))),
+    ).toBe(false);
+
+    setState({ kind: 'settled', id: ID, result: failed() });
+    const retry = buttonNamed(/^retry\b/iu);
+    expect(retry.type).toBe('button');
+    expect(retry.disabled).toBe(false);
+    expect(retry.hasAttribute('aria-disabled')).toBe(false);
+
+    setState({ kind: 'boot-error', error: { code: 'boot', message: 'no retry' } });
+    expect(
+      [...target.querySelectorAll('button')].some((button) => /retry/iu.test(text(button))),
+    ).toBe(false);
+  });
+
+  it('V8 disables Run without a selection even after boot', () => {
+    setState({ kind: 'idle', contract: CONTRACT });
+    expect(controller.selected).toBeNull();
+    expect(buttonNamed(/^run\b/iu).disabled).toBe(true);
+    expect(buttonNamed(/^cancel\b/iu).disabled).toBe(true);
+  });
+
+  it('V9 preserves unrelated focus and moves retired Cancel focus to Run or Retry', async () => {
+    controller.select(ID);
+    setState({ kind: 'idle', contract: CONTRACT });
+    const combo = role('combobox');
+    combo.focus();
+    setState({ kind: 'running', id: ID });
+    expect(document.activeElement).toBe(combo);
+    setState({ kind: 'settled', id: ID, result: answer(ID) });
+    expect(document.activeElement).toBe(combo);
+    setState({ kind: 'running', id: ID });
+    setState({ kind: 'cancelling', id: ID });
+    setState({ kind: 'settled', id: ID, result: cancelled() });
+    expect(document.activeElement).toBe(combo);
+
+    setState({ kind: 'running', id: ID });
+    buttonNamed(/^cancel\b/iu).focus();
+    setState({ kind: 'settled', id: ID, result: answer(ID) });
+    await Promise.resolve();
+    expect(document.activeElement).toBe(buttonNamed(/^run\b/iu));
+
+    setState({ kind: 'running', id: ID });
+    buttonNamed(/^cancel\b/iu).focus();
+    setState({ kind: 'settled', id: ID, result: failed() });
+    await Promise.resolve();
+    expect(document.activeElement).toBe(buttonNamed(/^retry\b/iu));
+  });
+
+  it('V10 marks the answer region busy only for running and cancelling', () => {
+    const cases: readonly [DemoState, string][] = [
+      [{ kind: 'booting' }, 'false'],
+      [{ kind: 'idle', contract: CONTRACT }, 'false'],
+      [{ kind: 'running', id: ID }, 'true'],
+      [{ kind: 'cancelling', id: ID }, 'true'],
+      [{ kind: 'settled', id: ID, result: answer(ID) }, 'false'],
+      [{ kind: 'settled', id: ID, result: failure(ID) }, 'false'],
+      [{ kind: 'settled', id: ID, result: limited('depth') }, 'false'],
+      [{ kind: 'settled', id: ID, result: cancelled() }, 'false'],
+      [{ kind: 'settled', id: ID, result: failed() }, 'false'],
+    ];
+
+    for (const [state, busy] of cases) {
+      setState(state);
+      expect(answerRegion().getAttribute('aria-busy'), state.kind).toBe(busy);
+    }
   });
 });
