@@ -5,15 +5,73 @@
 // SEED STATE: every body throws. Replace each with a real assertion driving the
 // u2 surface. Keep the names and the predicate tags.
 
-import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 
+import { beforeAll, describe, expect, it } from 'vitest';
+
+import type { KbManifest } from '../src/kb/manifest';
+import type { PlTerm } from '../src/engine/terms';
 import { decodeTerm } from '../src/engine/terms';
+import { createEngineDispatcher } from '../src/engine/worker';
 
 const nativeCompound = (functor: string, args: unknown[]) => ({
   $t: 't',
   functor,
   [functor]: [args],
 });
+
+const BOOT_TIMEOUT = 120_000;
+const CATEGORY_A_GOAL =
+  "','(guideline_entity(actual,A,recommendation,countable),','(guideline_cardinality(actual,A,na,eq,1),','(guideline_entity(actual,B,'category-A-recommendation',countable),','(guideline_cardinality(actual,B,na,eq,1),','(guideline_event(actual,C,be),','(guideline_arg(actual,C,1,A),guideline_arg(actual,C,2,B)))))))";
+
+let dispatcher: ReturnType<typeof createEngineDispatcher>;
+let imageLoads = 0;
+let requestSequence = 0;
+
+beforeAll(async () => {
+  const image = new Uint8Array(readFileSync(new URL('../kb/generated/kb.pvm', import.meta.url)));
+  const manifest = JSON.parse(
+    readFileSync(new URL('../kb/generated/kb-manifest.json', import.meta.url), 'utf8'),
+  ) as KbManifest;
+  dispatcher = createEngineDispatcher({
+    loadImage: async () => {
+      imageLoads += 1;
+      return image;
+    },
+    manifest,
+  });
+  await dispatcher.ready;
+}, BOOT_TIMEOUT);
+
+const query = async (goal: string, bindings?: Record<string, PlTerm>) => {
+  const reply = await dispatcher.dispatch({
+    kind: 'query',
+    requestId: `red-${String(++requestSequence)}`,
+    goal,
+    ...(bindings === undefined ? {} : { bindings }),
+  });
+  expect(reply.kind).toBe('solutions');
+  if (reply.kind !== 'solutions') throw new Error(`query failed: ${reply.kind}`);
+  return reply.solutions;
+};
+
+const binding = (solution: { bindings: Record<string, PlTerm> }, name: string): PlTerm => {
+  const term = solution.bindings[name];
+  expect(term, `missing binding ${name}`).toBeDefined();
+  if (term === undefined) throw new Error(`missing binding ${name}`);
+  return term;
+};
+
+let categoryPromise: ReturnType<typeof query> | undefined;
+const categorySolutions = () => (categoryPromise ??= query(CATEGORY_A_GOAL));
+
+const roundTrip = async (term: PlTerm): Promise<PlTerm> => {
+  const solutions = await query('Output = Input', { Input: term });
+  expect(solutions).toHaveLength(1);
+  const solution = solutions[0];
+  if (solution === undefined) throw new Error('round-trip returned no solution');
+  return binding(solution, 'Output');
+};
 
 const todo = (): never => {
   throw new Error('unimplemented');
@@ -122,12 +180,91 @@ describe('P3 term decode/encode', () => {
       tail: { kind: 'atom', value: 'tail' },
     });
   });
-  it('P3.1 decodes a nested compound ref(1)', todo);
-  it('P3.1 decodes a deeply nested compound', todo);
-  it('P3.1 decodes an operator term', todo);
-  it('P3.1 decodes the empty atom and an atom containing a quote', todo);
-  it('P3.8 round-trips the real guideline_id answer shape exactly', todo);
-  it('P3.7 round-trips decode to encode to re-query as an identity', todo);
+  it('P3.1 decodes a nested compound ref(1)', () => {
+    expect(decodeTerm(nativeCompound('ref', [1]))).toEqual({
+      kind: 'compound',
+      functor: 'ref',
+      args: [{ kind: 'integer', value: 1 }],
+    });
+  });
+
+  it('P3.1 decodes a deeply nested compound', () => {
+    const native = nativeCompound('outer', [
+      nativeCompound('middle', [nativeCompound('inner', ['leaf'])]),
+    ]);
+
+    expect(decodeTerm(native)).toEqual({
+      kind: 'compound',
+      functor: 'outer',
+      args: [
+        {
+          kind: 'compound',
+          functor: 'middle',
+          args: [
+            {
+              kind: 'compound',
+              functor: 'inner',
+              args: [{ kind: 'atom', value: 'leaf' }],
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it('P3.1 decodes an operator term', () => {
+    expect(decodeTerm(nativeCompound('-', ['a', 'b']))).toEqual({
+      kind: 'compound',
+      functor: '-',
+      args: [
+        { kind: 'atom', value: 'a' },
+        { kind: 'atom', value: 'b' },
+      ],
+    });
+  });
+
+  it('P3.1 decodes the empty atom and an atom containing a quote', () => {
+    expect(decodeTerm('')).toEqual({ kind: 'atom', value: '' });
+    expect(decodeTerm("reader's atom")).toEqual({
+      kind: 'atom',
+      value: "reader's atom",
+    });
+  });
+
+  it('P3.8 round-trips the real guideline_id answer shape exactly', async () => {
+    const solutions = await categorySolutions();
+    const first = solutions[0];
+    if (first === undefined) throw new Error('category-A returned no solution');
+    const term = binding(first, 'A');
+    const expected: PlTerm = {
+      kind: 'compound',
+      functor: '$guideline_id',
+      args: [
+        { kind: 'atom', value: 'product' },
+        { kind: 'atom', value: 'cdc2022-opioid-rec02' },
+        { kind: 'integer', value: 1 },
+        {
+          kind: 'compound',
+          functor: 'ref',
+          args: [{ kind: 'integer', value: 1 }],
+        },
+        { kind: 'list', items: [] },
+      ],
+    };
+
+    expect(term).toEqual(expected);
+    expect(await roundTrip(term)).toEqual(expected);
+  });
+
+  it('P3.7 round-trips decode to encode to re-query as an identity', async () => {
+    const solutions = await categorySolutions();
+    expect(solutions).toHaveLength(7);
+
+    for (const solution of solutions) {
+      const term = binding(solution, 'A');
+      expect(await roundTrip(term)).toEqual(term);
+    }
+  });
   it('P3.10 never re-enters a native engine value into a query', todo);
   it('P3.11 fails closed with a typed decode error on an unrecognized tag', todo);
   it('P3.12 keeps production code free of JSON.stringify over engine values', todo);
