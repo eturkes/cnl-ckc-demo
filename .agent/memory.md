@@ -216,8 +216,13 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   ACE questions upstream. Both are regeneration inputs, never runtime deps.
 - No graph command or graph artifact exists upstream — M3 builds it here.
 
-## Scratch conventions (regenerable)
+## Scratch conventions
 
+- `.scratch/` is gitignored, so `contract-m1u*.md` and `agents/*.md` exist on disk
+  only. Open `.agent/polish.md` entries name six of them as their acceptance-check
+  source, so **`.scratch/` must survive until M1 review** — routine cleanup stops at
+  its edge. Everything below this bullet is regenerable; the contracts and reports
+  are not.
 - `.scratch/kb/` = the vendored bag extracted for agent reading:
   `tar xzf kb/cnl-ckc-kb-*.tar.gz -C .scratch/ && ln -sfn cnl-ckc-kb-* .scratch/kb`.
 - `.scratch/validate-report.py` grades wave reports (`--units N`, `--verdict`).
