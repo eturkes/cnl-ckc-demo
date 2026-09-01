@@ -178,4 +178,29 @@ describe('question catalog closed surface', () => {
     expect(query).toHaveBeenCalledOnce();
     expect(query).toHaveBeenCalledWith(QUESTION_CATALOG[IDS[0]].goal, BUDGET);
   });
+
+  it('t.case P1.1/P1.3 rejects case folds and punctuation variants', async () => {
+    const { query, service } = harness();
+    for (const input of [
+      'CATEGORY-A-RECOMMENDATIONS',
+      'Category-A-Recommendations',
+      'category-a-recommendations.',
+      ' category-a-recommendations',
+    ]) {
+      await expect(service.ask(input, BUDGET), input).resolves.toEqual(rejected);
+    }
+    expect(query).not.toHaveBeenCalled();
+  });
+
+  it('t.goalstr P1.3/P1.4 never compiles strings that resemble goals or catalog ids', async () => {
+    const { query, service } = harness();
+    for (const input of [
+      `goal(${bagGoal('category-a-recommendations')})`,
+      'category-a-recommendations(X).',
+      "'$guideline_query_projection'(goal(true),answers([])).",
+    ]) {
+      await expect(service.ask(input, BUDGET), input).resolves.toEqual(rejected);
+    }
+    expect(query).not.toHaveBeenCalled();
+  });
 });
