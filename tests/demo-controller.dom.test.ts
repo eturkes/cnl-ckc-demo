@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 
+import axe from 'axe-core';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -350,6 +351,57 @@ describe('view states and accessibility', () => {
     for (const [state, busy] of cases) {
       setState(state);
       expect(answerRegion().getAttribute('aria-busy'), state.kind).toBe(busy);
+    }
+  });
+
+  it('V11 has zero axe violations or non-contrast incomplete checks in every state', async () => {
+    const cases: readonly [string, DemoState][] = [
+      ['booting', { kind: 'booting' }],
+      ['boot-error', { kind: 'boot-error', error: { code: 'boot', message: 'boot failed' } }],
+      ['idle', { kind: 'idle', contract: CONTRACT }],
+      ['running', { kind: 'running', id: ID }],
+      ['cancelling', { kind: 'cancelling', id: ID }],
+      ['answer', { kind: 'settled', id: ID, result: answer(ID, 2, 'axe') }],
+      ['failure', { kind: 'settled', id: ID, result: failure(ID) }],
+      ['limit', { kind: 'settled', id: ID, result: limited('answer-cap', 1) }],
+      ['cancelled', { kind: 'settled', id: ID, result: cancelled(1) }],
+      ['error', { kind: 'settled', id: ID, result: failed('axe error') }],
+    ];
+
+    for (const [name, state] of cases) {
+      controller.solutionIndex =
+        state.kind === 'settled' && state.result.kind === 'answer' ? 0 : -1;
+      setState(state);
+      const scan = await axe.run(target);
+      expect(
+        scan.violations.map((violation) => violation.id),
+        name,
+      ).toEqual([]);
+      expect(
+        scan.incomplete.map((item) => item.id).filter((id) => id !== 'color-contrast'),
+        name,
+      ).toEqual([]);
+    }
+  });
+
+  it('V12 renders only serialized or engine display text, never decoded bindings or JSON', () => {
+    const result = answer(ID, 2, 'source-of-truth');
+    if (result.kind !== 'answer') throw new Error('answer fixture changed kind');
+    controller.solutionIndex = 0;
+    setState({ kind: 'settled', id: ID, result });
+    const visible = text(answerRegion());
+    const allowed = [
+      result.serialized,
+      ...result.solutions.flatMap((item) => Object.values(item.display)),
+    ];
+
+    expect(allowed.some((value) => visible.includes(value))).toBe(true);
+    expect(visible).not.toContain('binding-poison');
+    expect(visible).not.toMatch(/["{](?:kind|value)[":]/u);
+    for (const choice of radios()) {
+      const label = text(choice.labels?.[0] ?? document.createTextNode(''));
+      expect(allowed.some((value) => label.includes(value))).toBe(true);
+      expect(label).not.toContain('binding-poison');
     }
   });
 });
