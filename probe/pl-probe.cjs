@@ -12,9 +12,10 @@ const queryPath = path.resolve(
   '../../../kb/data/guidelines/cdc-2022-opioid/queries/pl/category-a-recommendations.pl',
 );
 const helperPath = path.resolve(__dirname, 'pl-serializer.pl');
+const runtimeHelperPath = path.resolve(__dirname, 'pl-runtime.pl');
 const quiet = { arguments: ['-q'], print() {}, printErr() {} };
 
-async function boot({ query = false } = {}) {
+async function boot({ query = false, helper = helperPath } = {}) {
   const bootStarted = performance.now();
   const module = await loadImageDefault(fs.readFileSync(imagePath))(quiet);
   const bootMs = performance.now() - bootStarted;
@@ -25,7 +26,12 @@ async function boot({ query = false } = {}) {
     );
   }
   const consultStarted = performance.now();
-  await module.prolog.load_string(fs.readFileSync(helperPath, 'utf8'), '/assets/pl-serializer.pl');
+  if (helper !== null) {
+    await module.prolog.load_string(
+      fs.readFileSync(helper, 'utf8'),
+      `/assets/${path.basename(helper)}`,
+    );
+  }
   const helperConsultMs = performance.now() - consultStarted;
   return { module, bootMs, helperConsultMs };
 }
@@ -273,6 +279,100 @@ async function runProtocol() {
   );
 }
 
+async function runDepsChild() {
+  const { module, bootMs, helperConsultMs } = await boot({ helper: runtimeHelperPath });
+  const loaded = module.prolog.query('current_predicate(cnl_wire:run_text/3).').once().success;
+  const live = module.prolog
+    .query('cnl_wire:run_text(Input,Canonical,Display).', {
+      Input: 'guideline_schema_version(Version)',
+    })
+    .once();
+  console.log(
+    JSON.stringify({
+      bootMs,
+      helperConsultMs,
+      loaded,
+      canonical: live.Canonical,
+    }),
+  );
+}
+
+async function runDeps() {
+  const { spawnSync } = require('node:child_process');
+  const samples = [];
+  for (let index = 0; index < 7; index += 1) {
+    const child = spawnSync(process.execPath, [__filename, 'deps-child'], { encoding: 'utf8' });
+    assert.equal(child.status, 0, child.stderr);
+    samples.push(JSON.parse(child.stdout.trim().split('\n').at(-1)));
+  }
+  assert.ok(samples.every((sample) => sample.loaded));
+  assert.ok(samples.every((sample) => sample.canonical === "[=('Version',1)]"));
+  const boots = samples.map((sample) => sample.bootMs);
+  const consults = samples.map((sample) => sample.helperConsultMs);
+  console.log(
+    JSON.stringify({
+      processes: samples.length,
+      helperBytes: fs.statSync(runtimeHelperPath).size,
+      bootMs: { min: Math.min(...boots), median: median(boots), max: Math.max(...boots) },
+      helperConsultMs: {
+        min: Math.min(...consults),
+        median: median(consults),
+        max: Math.max(...consults),
+      },
+      loaded: true,
+      delivery:
+        "ship src/kb/prolog/serializer.pl; import './prolog/serializer.pl?raw'; prolog.load_string at worker boot",
+      pvmRebuild: false,
+    }),
+  );
+}
+
+function rawCanonical(module, source) {
+  const result = module.prolog
+    .query('pl_serializer:parse_and_serialize(Input,Canonical,Display).', { Input: source })
+    .once();
+  if (result.error) return { prologError: result.message };
+  const observed = { canonical: result.Canonical };
+  try {
+    observed.term = decodeCanonical(result.Canonical);
+    observed.encoded = encodeCanonical(observed.term);
+    const second = module.prolog
+      .query('pl_serializer:parse_and_serialize(Input,Canonical,Display).', {
+        Input: observed.encoded,
+      })
+      .once();
+    observed.reserialized = second.Canonical;
+    observed.canonicalIdentity = second.Canonical === result.Canonical;
+  } catch (error) {
+    observed.parseError = String(error);
+  }
+  return observed;
+}
+
+async function runRisk() {
+  const { module } = await boot();
+  const jsonLibrary = module.prolog
+    .query(
+      'catch(use_module(library(http/json)),Error,true),(var(Error)->Message=loaded;with_output_to(atom(Message),write_canonical(Error))).',
+    )
+    .once().Message;
+  const cases = {
+    dict: rawCanonical(module, 'tag{k:v,n:2}'),
+    curly: rawCanonical(module, '{foo}'),
+    infinity: rawCanonical(module, '1.0Inf'),
+  };
+  const safe = Object.values(cases).filter((value) => value.canonicalIdentity).length;
+  console.log(
+    JSON.stringify({
+      parserLines: 197,
+      jsonLibrary,
+      tested: Object.keys(cases).length,
+      canonicalIdentity: safe,
+      cases,
+    }),
+  );
+}
+
 const mode = process.argv[2] ?? 'traps';
 (
   ({
@@ -282,6 +382,9 @@ const mode = process.argv[2] ?? 'traps';
     cost: runCost,
     errors: runErrors,
     protocol: runProtocol,
+    'deps-child': runDepsChild,
+    deps: runDeps,
+    risk: runRisk,
   })[mode]?.() ?? Promise.reject(new Error(`unknown mode: ${mode}`))
 ).catch((error) => {
   console.error(error?.stack || error);
