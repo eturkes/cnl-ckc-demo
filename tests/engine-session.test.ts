@@ -11,7 +11,8 @@ import { fileURLToPath } from 'node:url';
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import type { PlSolution } from '../src/engine/protocol.js';
+import { BUDGET_MAX } from '../src/engine/budget.js';
+import type { BudgetSpec, PlSolution } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
 import {
   createEncoder,
@@ -46,6 +47,16 @@ const CATEGORY_A_GOAL =
   "guideline_entity(actual,B,'category-A-recommendation',countable)," +
   'guideline_cardinality(actual,B,na,eq,1),guideline_event(actual,C,be),' +
   'guideline_arg(actual,C,1,A),guideline_arg(actual,C,2,B).';
+
+/** Roomy enough that no u2 case trips a limit; u3's own suite drives the trip points. */
+const BUDGET: BudgetSpec = BUDGET_MAX;
+
+/** Unwraps the solutions a u2 case expects, so a limit or a cancel fails loudly here. */
+const solveOk = async (goal: string): Promise<PlSolution[]> => {
+  const solved = await session.solve(goal, BUDGET);
+  if (solved.kind !== 'solutions') throw new Error(`expected solutions, got ${solved.kind}`);
+  return solved.solutions;
+};
 
 let session: EngineSession;
 let engine: Engine;
@@ -108,10 +119,8 @@ describe('P1 boot and live contract', () => {
 });
 
 describe('P5 real goals through the shipped surface', () => {
-  it('P5.2 returns the seven category-A solutions', () => {
-    const solved = session.solve(CATEGORY_A_GOAL);
-    expect(solved).not.toBe('failure');
-    const solutions = solved as PlSolution[];
+  it('P5.2 returns the seven category-A solutions', async () => {
+    const solutions = await solveOk(CATEGORY_A_GOAL);
     expect(solutions).toHaveLength(7);
     const ids = solutions.map((s) => {
       const a = s.bindings.A;
@@ -128,8 +137,8 @@ describe('P5 real goals through the shipped surface', () => {
     ]);
   });
 
-  it('P3.8 round-trips the real answer shape with five arguments', () => {
-    const solutions = session.solve(CATEGORY_A_GOAL) as PlSolution[];
+  it('P3.8 round-trips the real answer shape with five arguments', async () => {
+    const solutions = await solveOk(CATEGORY_A_GOAL);
     const first = solutions[0]?.bindings.A;
     expect(first?.kind).toBe('compound');
     if (first?.kind !== 'compound') return;
@@ -143,8 +152,8 @@ describe('P5 real goals through the shipped surface', () => {
     expect(first.args[4]).toEqual({ kind: 'list', items: [] });
   });
 
-  it('P4.1 renders display text that re-reads as the same term', () => {
-    const solutions = session.solve(CATEGORY_A_GOAL) as PlSolution[];
+  it('P4.1 renders display text that re-reads as the same term', async () => {
+    const solutions = await solveOk(CATEGORY_A_GOAL);
     const display = solutions[0]?.display.A ?? '';
     expect(display).toContain("'$guideline_id'");
     expect(display).toContain("'cdc2022-opioid-rec02'");
@@ -152,13 +161,14 @@ describe('P5 real goals through the shipped surface', () => {
     expect(reread.kind).toBe('bindings');
   });
 
-  it('P2.3 reports a failing goal as failure, not as an empty success', () => {
-    expect(session.solve('guideline_document(no_such_document,_,_).')).toBe('failure');
+  it('P2.3 reports a failing goal as failure, not as an empty success', async () => {
+    const solved = await session.solve('guideline_document(no_such_document,_,_).', BUDGET);
+    expect(solved.kind).toBe('failure');
   });
 
   it('P2.3 settles a malformed goal as a typed error', async () => {
     const response = await session.handle(
-      { id: 'q1', kind: 'query', goal: 'guideline_document(' },
+      { id: 'q1', kind: 'query', goal: 'guideline_document(', budget: BUDGET },
       new Uint8Array(0),
     );
     expect(response.kind).toBe('error');
@@ -167,7 +177,7 @@ describe('P5 real goals through the shipped surface', () => {
 
   it('P2.2 echoes the request id on every response', async () => {
     const response = await session.handle(
-      { id: 'echo-me', kind: 'query', goal: CATEGORY_A_GOAL },
+      { id: 'echo-me', kind: 'query', goal: CATEGORY_A_GOAL, budget: BUDGET },
       new Uint8Array(0),
     );
     expect(response.id).toBe('echo-me');
@@ -260,7 +270,7 @@ describe('P3 decode traps', () => {
 describe('P2 protocol shape', () => {
   it('P2.1 sends only structured-clone-safe payloads', async () => {
     const response = await session.handle(
-      { id: 'clone', kind: 'query', goal: CATEGORY_A_GOAL },
+      { id: 'clone', kind: 'query', goal: CATEGORY_A_GOAL, budget: BUDGET },
       new Uint8Array(0),
     );
     expect(structuredClone(response)).toEqual(response);

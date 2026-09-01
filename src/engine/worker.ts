@@ -17,10 +17,29 @@ const loadImageDefault = (
     : (loadImageModule as { default: unknown }).default
 ) as (image: Uint8Array) => (options?: Record<string, unknown>) => Promise<Engine>;
 
-const loadImage: ImageLoader = async (image) => loadImageDefault(image)({});
+/**
+ * Collect everything the engine writes to stderr.
+ *
+ * Both hooks are needed: `printErr` catches what Emscripten routes, `on_output`
+ * catches what the Prolog filesystem layer routes. A failing load reports success
+ * either way, so these lines are the only evidence that it failed.
+ */
+const diagnostics: string[] = [];
+const sink = {
+  print: () => undefined,
+  printErr: (line: string) => diagnostics.push(line),
+  on_output: (line: string, stream: string) => {
+    if (stream === 'stderr') diagnostics.push(line);
+  },
+};
+
+const drain = (): string[] => diagnostics.splice(0, diagnostics.length);
+
+const loadImage: ImageLoader = async (image) => loadImageDefault(image)(sink);
 
 const session = new EngineSession({
   loadImage,
+  drain,
   expected: {
     schemaVersion: manifest.contract.schemaVersion,
     documents: manifest.contract.documents,
@@ -42,6 +61,12 @@ const post = (response: EngineResponse): void => {
 
 self.addEventListener('message', (event: MessageEvent<EngineRequest>) => {
   const request = event.data;
+  // A cancel must never wait on the image: it exists to reach a query already running,
+  // and the running query is what makes this listener reachable at all.
+  if (request.kind === 'cancel') {
+    post({ id: request.id, kind: 'ack', accepted: session.requestCancel(request.target) });
+    return;
+  }
   void (async () => {
     try {
       image ??= fetchImage();

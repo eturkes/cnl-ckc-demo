@@ -7,11 +7,20 @@
 // The image loader is injected because the browser reaches it through Vite's
 // CommonJS interop and Node reaches it through `createRequire`.
 
+import {
+  assertGoalAvoidsReserved,
+  BudgetError,
+  readOutcome,
+  validateBudget,
+  wrapGoal,
+} from './budget.js';
 import type {
+  BudgetSpec,
   EngineContract,
   EngineError,
   EngineRequest,
   EngineResponse,
+  LimitKind,
   PlSolution,
 } from './protocol.js';
 import {
@@ -25,6 +34,16 @@ import {
 interface PrologQuery {
   once(): unknown;
   [Symbol.iterator](): Iterator<unknown>;
+  /**
+   * Cuts the query and discards its foreign frame.
+   *
+   * Missing from the package's `.d.ts`, which declares only `next` and `once`, but
+   * present at runtime and load-bearing: the driver abandons the iterator on a cap,
+   * a cancel or a deadline, and an abandoned query left open makes every later query
+   * on that engine fail. Optional here so a build without it degrades to a throw
+   * rather than a silent leak.
+   */
+  close?(): void;
 }
 
 interface Prolog extends PrologConstructors {
@@ -33,6 +52,8 @@ interface Prolog extends PrologConstructors {
 
 export interface Engine {
   prolog: Prolog;
+  /** Emscripten's filesystem. Absent means runtime loading is refused, not improvised. */
+  FS?: { writeFile(path: string, data: string): void };
 }
 
 export type ImageLoader = (image: Uint8Array) => Promise<Engine>;
@@ -41,6 +62,12 @@ export interface SessionOptions {
   loadImage: ImageLoader;
   /** Values the build recorded; the booted engine must agree with them. */
   expected: EngineContract;
+  /**
+   * Returns and clears every diagnostic line the engine emitted since the last call.
+   * Without one, runtime loading is refused: a failing consult reports success and
+   * leaves its clauses resident, so drained stderr is the only honest signal.
+   */
+  drain?: () => string[];
 }
 
 /** Matches `write_canonical`, so display text re-reads as the same term. */
@@ -48,6 +75,21 @@ const DISPLAY_OPTIONS = '[quoted(true),numbervars(true),ignore_ops(true)]';
 
 const SCHEMA_GOAL = 'findall(V,guideline_schema_version(V),Vs),sort(Vs,Us),length(Us,N),Us=[S].';
 const DOCUMENTS_GOAL = 'findall(D,guideline_document(D,_,_),Ds),length(Ds,N).';
+const STACK_FLAG_GOAL = 'current_prolog_flag(stack_limit,V).';
+
+const CONSULT_PATH = '/u3-runtime-load.pl';
+
+/** Diagnostics `qsave_program` emits under WASM for reasons unrelated to the payload. */
+const TOLERATED = /library\(shlib\)/;
+
+/**
+ * Hand the event loop a macrotask.
+ *
+ * A microtask yield does not admit posted messages, so it cannot deliver a cancel;
+ * only returning to the task queue does. This is what makes cooperative abort real,
+ * at a granularity of one solution step — measured at 62 ms worst case on real goals.
+ */
+const yieldToEvents = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
 const message = (cause: unknown): string =>
   cause instanceof Error ? cause.message : String(cause);
@@ -64,9 +106,19 @@ const requireInteger = (term: PlTerm | undefined, what: string): number => {
   return term.value;
 };
 
+export type SolveResult =
+  | { kind: 'solutions'; solutions: PlSolution[] }
+  | { kind: 'failure' }
+  | { kind: 'limit'; limit: LimitKind; solutions: PlSolution[] }
+  | { kind: 'cancelled'; solutions: PlSolution[] };
+
 export class EngineSession {
   #engine: Engine | undefined;
   #contract: EngineContract | undefined;
+  #active: string | undefined;
+  #cancelling = false;
+  /** A failed runtime load leaves clauses resident, so its engine is never reused. */
+  #poisoned: string | undefined;
   readonly #options: SessionOptions;
 
   constructor(options: SessionOptions) {
@@ -81,6 +133,7 @@ export class EngineSession {
   async boot(image: Uint8Array): Promise<EngineContract> {
     if (this.#engine !== undefined && this.#contract !== undefined) return this.#contract;
     const engine = await this.#options.loadImage(image);
+    this.#failClosed(engine, 'image load');
     const contract = readContract(engine);
     const { expected } = this.#options;
     if (
@@ -97,10 +150,22 @@ export class EngineSession {
     return contract;
   }
 
-  /** Run one goal to exhaustion and return every solution decoded. */
-  solve(goal: string): PlSolution[] | 'failure' {
-    const engine = this.#engine;
-    if (engine === undefined) throw new Error('engine is not booted');
+  /**
+   * Ask the running query to stop at its next solution boundary.
+   *
+   * Returns whether the target was the request actually in flight; an unknown or
+   * already-settled id is reported, not silently accepted.
+   */
+  requestCancel(target: string): boolean {
+    if (this.#active === undefined || this.#active !== target) return false;
+    this.#cancelling = true;
+    return true;
+  }
+
+  /** Run one goal under its budget and return every solution decoded. */
+  async solve(goal: string, budget: BudgetSpec, id = ''): Promise<SolveResult> {
+    const engine = this.#require();
+    assertGoalAvoidsReserved(goal);
     // An unparsable goal yields no solution instead of raising, so without this
     // guard a malformed goal is indistinguishable from an honest zero-answer run.
     const parsed = decodeOnce(engine.prolog.query('term_string(T,S).', { S: goal }).once());
@@ -109,27 +174,154 @@ export class EngineSession {
         parsed.kind === 'prolog-error' ? parsed.message : `goal does not parse: ${goal}`,
       );
     }
+
+    const restore = this.#lowerStack(engine, budget.stackBytes);
+    this.#active = id;
+    this.#cancelling = false;
+    const started = Date.now();
     const encode = createEncoder(engine.prolog);
     const solutions: PlSolution[] = [];
-    const iterator = engine.prolog.query(goal)[Symbol.iterator]();
-    for (;;) {
-      const step = iterator.next();
-      // A final solution can arrive together with `done: true`; reading `value`
-      // before `done` is what keeps the last answer.
-      if (step.value !== undefined) {
-        const result = decodeOnce(step.value);
-        if (result.kind === 'prolog-error') throw new PrologFailure(result.message);
-        if (result.kind === 'bindings') {
-          const display: Record<string, string> = {};
-          for (const [name, term] of Object.entries(result.bindings)) {
-            display[name] = this.#display(engine, encode(term));
+    const query = engine.prolog.query(wrapGoal(goal, budget));
+    const iterator = query[Symbol.iterator]();
+    let stopped: LimitKind | 'cancelled' | undefined;
+    try {
+      for (;;) {
+        const step = iterator.next();
+        // A final solution can arrive together with `done: true`; reading `value`
+        // before `done` is what keeps the last answer.
+        if (step.value !== undefined) {
+          const result = decodeOnce(step.value);
+          if (result.kind === 'prolog-error') throw new PrologFailure(result.message);
+          if (result.kind === 'bindings') {
+            const outcome = readOutcome(result.bindings);
+            if (outcome.kind === 'limit') {
+              stopped = outcome.limit;
+            } else if (outcome.kind === 'resource') {
+              throw new PrologFailure(`unclassified resource error: ${outcome.resource}`);
+            } else {
+              const display: Record<string, string> = {};
+              for (const [name, term] of Object.entries(outcome.bindings)) {
+                display[name] = this.#display(engine, encode(term));
+              }
+              solutions.push({ bindings: outcome.bindings, display });
+            }
           }
-          solutions.push({ bindings: result.bindings, display });
+        }
+        if (stopped !== undefined || step.done === true) break;
+        if (solutions.length >= budget.answerCap) {
+          stopped = 'answer-cap';
+          break;
+        }
+        // The only point where a posted cancel can land, and the only point where
+        // elapsed time is observable: `next()` itself is synchronous and uninterruptible.
+        await yieldToEvents();
+        if (this.#cancelling) {
+          stopped = 'cancelled';
+          break;
+        }
+        if (Date.now() - started > budget.wallClockMs) {
+          stopped = 'wall-clock';
+          break;
         }
       }
-      if (step.done === true) break;
+    } finally {
+      query.close?.();
+      restore();
+      this.#active = undefined;
+      this.#cancelling = false;
     }
-    return solutions.length === 0 ? 'failure' : solutions;
+
+    if (stopped === 'cancelled') return { kind: 'cancelled', solutions };
+    if (stopped !== undefined) return { kind: 'limit', limit: stopped, solutions };
+    return solutions.length === 0 ? { kind: 'failure' } : { kind: 'solutions', solutions };
+  }
+
+  /**
+   * Load Prolog text into the running engine, fail-closed on any diagnostic.
+   *
+   * The result value is worthless here: a syntax error and a failing directive both
+   * return success, throw nothing, and leave their clauses loaded. Drained stderr is
+   * the only signal, and because the load already mutated the engine, a diagnostic
+   * poisons the session rather than merely failing the request.
+   */
+  consult(source: string): void {
+    const engine = this.#require();
+    const { drain } = this.#options;
+    if (drain === undefined) throw new ConsultFailure('runtime loading needs a diagnostic sink');
+    if (engine.FS === undefined) throw new ConsultFailure('engine exposes no filesystem');
+    drain();
+    engine.FS.writeFile(CONSULT_PATH, source);
+    const result = decodeOnce(engine.prolog.query(`consult('${CONSULT_PATH}').`).once());
+    this.#failClosed(engine, 'runtime load');
+    if (result.kind === 'prolog-error') throw new ConsultFailure(result.message);
+    if (result.kind === 'failure') throw new ConsultFailure('runtime load failed');
+  }
+
+  /** Turn one request into exactly one response; never throws. */
+  async handle(request: EngineRequest, image: Uint8Array): Promise<EngineResponse> {
+    const { id } = request;
+    try {
+      switch (request.kind) {
+        case 'boot':
+          return { id, kind: 'booted', contract: await this.boot(image) };
+        case 'cancel':
+          return { id, kind: 'ack', accepted: this.requestCancel(request.target) };
+        case 'consult':
+          this.consult(request.source);
+          return { id, kind: 'consulted' };
+        case 'query': {
+          // Revalidated here because the client is not the only thing that can post.
+          const budget = validateBudget(request.budget);
+          const solved = await this.solve(request.goal, budget, id);
+          return solved.kind === 'failure' ? { id, kind: 'failure' } : { id, ...solved };
+        }
+        default: {
+          const exhaustive: never = request;
+          return exhaustive;
+        }
+      }
+    } catch (cause) {
+      return { id, kind: 'error', error: classify(cause, request.kind) };
+    }
+  }
+
+  #require(): Engine {
+    if (this.#poisoned !== undefined) throw new ConsultFailure(this.#poisoned);
+    const engine = this.#engine;
+    if (engine === undefined) throw new Error('engine is not booted');
+    return engine;
+  }
+
+  /**
+   * Narrow the stack for one query and hand back its undo.
+   *
+   * The undo runs from a `finally`, not from `setup_call_cleanup/3`, because the
+   * driver abandons the iterator on a cap, a cancel or a deadline — exactly the paths
+   * where in-Prolog cleanup never runs. The restored value is read back, so a failed
+   * restore is a thrown error rather than a quietly crippled engine.
+   */
+  #lowerStack(engine: Engine, bytes: number): () => void {
+    const previous = requireInteger(this.#queryOne(engine, STACK_FLAG_GOAL).V, 'stack limit');
+    engine.prolog.query(`set_prolog_flag(stack_limit,${bytes}).`).once();
+    return () => {
+      engine.prolog.query(`set_prolog_flag(stack_limit,${previous}).`).once();
+      const now = requireInteger(this.#queryOne(engine, STACK_FLAG_GOAL).V, 'stack limit');
+      if (now !== previous) throw new Error(`stack limit restored to ${now}, expected ${previous}`);
+    };
+  }
+
+  #queryOne(engine: Engine, goal: string): Record<string, PlTerm | undefined> {
+    const result = decodeOnce(engine.prolog.query(goal).once());
+    if (result.kind !== 'bindings') throw new PrologFailure(`no binding from ${goal}`);
+    return result.bindings;
+  }
+
+  /** Any drained diagnostic is fatal, and it poisons the engine that produced it. */
+  #failClosed(engine: Engine, phase: string): void {
+    const lines = (this.#options.drain?.() ?? []).filter((line) => !TOLERATED.test(line));
+    if (lines.length === 0) return;
+    if (engine === this.#engine) this.#poisoned = `engine discarded after ${phase} diagnostics`;
+    throw new ConsultFailure(`${phase} emitted diagnostics: ${lines.join(' / ')}`);
   }
 
   /** Ask the engine to render a term; never assemble display text in JS. */
@@ -143,21 +335,6 @@ export class EngineSession {
     }
     return text.value;
   }
-
-  /** Turn one request into exactly one response; never throws. */
-  async handle(request: EngineRequest, image: Uint8Array): Promise<EngineResponse> {
-    try {
-      if (request.kind === 'boot') {
-        return { id: request.id, kind: 'booted', contract: await this.boot(image) };
-      }
-      const solved = this.solve(request.goal);
-      return solved === 'failure'
-        ? { id: request.id, kind: 'failure' }
-        : { id: request.id, kind: 'solutions', solutions: solved };
-    } catch (cause) {
-      return { id: request.id, kind: 'error', error: classify(cause, request.kind) };
-    }
-  }
 }
 
 export class ContractMismatch extends Error {
@@ -168,8 +345,14 @@ export class PrologFailure extends Error {
   override name = 'PrologFailure';
 }
 
+export class ConsultFailure extends Error {
+  override name = 'ConsultFailure';
+}
+
 const classify = (cause: unknown, kind: EngineRequest['kind']): EngineError => {
   if (cause instanceof ContractMismatch) return fail('contract', cause);
+  if (cause instanceof BudgetError) return fail('budget', cause);
+  if (cause instanceof ConsultFailure) return fail('consult', cause);
   if (cause instanceof DecodeError) return fail('decode', cause);
   if (cause instanceof PrologFailure) return fail('prolog', cause);
   return fail(kind === 'boot' ? 'boot' : 'prolog', cause);
