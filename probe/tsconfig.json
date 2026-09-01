@@ -1,4 +1,4 @@
 {
   "extends": "../tsconfig.json",
-  "include": ["pl-types.ts"]
+  "include": ["pl-types.ts", "pl-types-strict.ts"]
 }

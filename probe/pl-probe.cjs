@@ -178,10 +178,111 @@ async function runCost() {
   );
 }
 
+function rawSerializedGoal(module, input) {
+  return module.prolog
+    .query('pl_serializer:run_and_serialize(Input,Canonical,Display).', { Input: input })
+    .once();
+}
+
+async function runErrors() {
+  const { module } = await boot();
+  const exceptionGoal =
+    "throw(error(spike_exception,context(pl_serializer:run_and_serialize/3,'boom')))";
+  const exception = rawSerializedGoal(module, exceptionGoal);
+  const failure = rawSerializedGoal(module, 'fail');
+  const malformed = rawSerializedGoal(module, 'foo(');
+  let asynchronousException;
+  try {
+    await module.prolog.forEach(
+      'pl_serializer:run_and_serialize(Input,Canonical,Display).',
+      { Input: exceptionGoal },
+      () => {},
+    );
+    asynchronousException = { resolved: true };
+  } catch (error) {
+    asynchronousException = { rejected: String(error) };
+  }
+  assert.equal(exception.error, true);
+  assert.equal(failure.success, false);
+  assert.equal(malformed.error, true);
+  assert.ok('rejected' in asynchronousException);
+  console.log(JSON.stringify({ exception, failure, malformed, asynchronousException }));
+}
+
+function batchCategory(module) {
+  const started = performance.now();
+  const result = module.prolog.query('pl_serializer:category_a_batch(Canonical,Display).').once();
+  if (result.error) throw new Error(result.message);
+  const term = decodeCanonical(result.Canonical);
+  assert.equal(term.type, 'list');
+  return { ms: performance.now() - started, count: term.items.length };
+}
+
+async function streamCategory(module) {
+  const started = performance.now();
+  let firstMs = null;
+  const solutions = [];
+  await module.prolog.forEach(
+    'pl_serializer:category_a_solution(Canonical,Display).',
+    {},
+    (answer) => {
+      firstMs ??= performance.now() - started;
+      solutions.push({
+        term: decodeCanonical(answer.Canonical),
+        canonical: answer.Canonical,
+        display: answer.Display,
+      });
+    },
+  );
+  return { ms: performance.now() - started, firstMs, solutions };
+}
+
+async function runProtocol() {
+  const { module } = await boot({ query: true });
+  batchCategory(module);
+  await streamCategory(module);
+  const batch = batchCategory(module);
+  const stream = await streamCategory(module);
+  const messages = stream.solutions.map((solution, index) => ({
+    requestId: 73,
+    type: 'solution',
+    index,
+    solution,
+  }));
+  const cloneStarted = performance.now();
+  let clone;
+  for (let iteration = 0; iteration < 5000; iteration += 1) {
+    for (const message of messages) clone = structuredClone(message);
+  }
+  const cloneMicrosPerMessage =
+    ((performance.now() - cloneStarted) * 1000) / (5000 * messages.length);
+  assert.equal(clone.requestId, 73);
+  assert.equal(messages.length, 7);
+  console.log(
+    JSON.stringify({
+      requestId: clone.requestId,
+      batchMs: batch.ms,
+      batchCount: batch.count,
+      streamFirstMs: stream.firstMs,
+      streamTotalMs: stream.ms,
+      streamCount: messages.length,
+      cloneMicrosPerMessage,
+      meanMessageBytes:
+        messages.reduce((sum, message) => sum + JSON.stringify(message).length, 0) / 7,
+    }),
+  );
+}
+
 const mode = process.argv[2] ?? 'traps';
 (
-  ({ traps: runTraps, roundtrip: runRoundTrip, display: runDisplay, cost: runCost })[mode]?.() ??
-  Promise.reject(new Error(`unknown mode: ${mode}`))
+  ({
+    traps: runTraps,
+    roundtrip: runRoundTrip,
+    display: runDisplay,
+    cost: runCost,
+    errors: runErrors,
+    protocol: runProtocol,
+  })[mode]?.() ?? Promise.reject(new Error(`unknown mode: ${mode}`))
 ).catch((error) => {
   console.error(error?.stack || error);
   process.exitCode = 1;

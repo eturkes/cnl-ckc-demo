@@ -1,8 +1,10 @@
 :- module(pl_serializer,
   [ serialize_term/3,
     parse_and_serialize/3,
+    run_and_serialize/3,
     category_a_native/1,
     category_a_solution/2,
+    category_a_batch/2,
     category_a_cost/4,
     display_probe/5
   ]).
@@ -25,6 +27,11 @@ parse_and_serialize(Input, Canonical, Display) :-
   read_term_from_atom(Input, Term, [module(user)]),
   serialize_term(Term, Canonical, Display).
 
+run_and_serialize(Input, Canonical, Display) :-
+  read_term_from_atom(Input, Goal, [module(user)]),
+  call(user:Goal),
+  serialize_term(Goal, Canonical, Display).
+
 category_a_native(Answer) :-
   user:'$guideline_query_projection'(goal(Goal), answers([answer(Answer, _)])),
   call(user:Goal).
@@ -32,6 +39,10 @@ category_a_native(Answer) :-
 category_a_solution(Canonical, Display) :-
   category_a_native(Answer),
   serialize_term(Answer, Canonical, Display).
+
+category_a_batch(Canonical, Display) :-
+  findall(Answer, category_a_native(Answer), Answers),
+  serialize_term(Answers, Canonical, Display).
 
 category_a_cost(Iterations, QueryMs, SerializeMs, Canonical) :-
   statistics(cputime, QueryStart),
