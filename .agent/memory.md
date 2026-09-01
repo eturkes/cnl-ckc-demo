@@ -110,6 +110,38 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   permission error → u4's overlay probe must call `dynamic/1` first; the overlay
   is visible to queries and gone after a fresh image load.
 
+## Engine runtime (u2)
+
+- Term boundary = JS-side decode INSIDE the worker. Native values never reach the
+  protocol boundary and never re-enter a query; re-encoding rebuilds through the
+  engine's own `Compound`/`List`/`Rational`/`String`/`Var` constructors.
+- `JSON.stringify` over an engine value is the one measured corruption path:
+  `'$guideline_id'/5` re-enters as arity 1 with `ref([1])`, and `1r3` serializes
+  as `3r1`. Production code must never do it.
+- Wrapper ABI (undocumented, read off the package): `$t:'s'` string, `'r'`
+  rational, `'v'` variable, `'l'` improper list, `'t'` compound whose args sit in
+  a ONE-ELEMENT envelope at `value[value.functor][0]`; `$tag` dicts. An
+  unrecognized tag fails closed.
+- A malformed goal yields NO solution rather than raising, so a zero-answer run
+  and a broken goal are indistinguishable without a parse guard. `solve` parses
+  the goal via `term_string/2` first.
+- Integral floats decode as `integer`: SWI's `1.0` and `1` both arrive as JS `1`.
+  The corpus has no floats.
+- Display text = `term_string/3` with `[quoted(true),numbervars(true),ignore_ops(true)]`,
+  which matched `write_canonical` on all 7 real answers at 0.0437 ms/binding.
+  `print_message` renders `Unknown message:` and is diagnostic-only.
+- Vite wiring: alias `@kb` → `kb/generated`, `base:'./'`, `worker.format:'es'`,
+  `cacheDir:'.vite'`. The literal `new Worker(new URL('./worker.ts', import.meta.url),
+  {type:'module'})` form is what makes Vite emit a separate worker bundle.
+- `cacheDir` must resolve against the project root: worktrees reach the toolchain
+  through a `node_modules` symlink, so the default `node_modules/.vite` is ONE
+  physical directory shared by every tree. `.gitignore` spells `kb/generated`
+  without a trailing slash for the same symlink reason.
+- Node has no DOM `Worker`, so `EngineSession` holds the logic with an injected
+  image loader and `worker.ts` is message plumbing only. Tests drive the session.
+- Built output: main chunk carries 0 engine bytes; worker chunk plus a hashed
+  `kb-<hash>.pvm` carry it. Gate rc=0 at 58 tests / 330 files.
+
 ## Measured (do not re-measure)
 
 - Corpus via SWI-Prolog, authoritative: **800 noun atoms, 127 verbs, 337 docs**,

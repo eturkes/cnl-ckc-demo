@@ -50,13 +50,19 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
   carries no adversarial review. Two teammates stopped partway: reports at
   `.scratch/agents/map-m1u1.md` (17/25 rows) and `.scratch/agents/spike-m1u1-det.md`
   (9/12 rows); probe scripts on branch `wt/spike-m1u1-det`.
-- **u2 — Prolog engine worker** · kernel · est 120K · OPEN (u1 contract shipped)
-  Typed client + dedicated module Worker owning `swipl-wasm`, PVM load via Vite
-  `?url`, plain-DTO protocol, term decode/encode, canonical display text.
-  Accept: dev server and built output both boot to a 337-document engine; every
-  query closes; the decoder round-trips the documented term shapes including the
-  `foo(bar,7)`→`foo([bar,7])` and `1r3`/`3r1` traps.
-- **u3 — budgets, failure modes, cancellation** · kernel · est 110K · BLOCKED (u2)
+- **u2 — Prolog engine worker** · kernel · est 120K · DONE
+  `src/engine/{protocol,terms,session,client,worker}.ts` + `tests/engine-session.test.ts`;
+  Vite alias `@kb`, `base:'./'`, `worker.format:'es'`, root `cacheDir`. Term boundary
+  ruled **JS-side decode inside the worker** (`.scratch/contract-m1u2.md` D1.1): both
+  spikes cleared 11/11 traps, but the Prolog-serialization alternative needs a
+  hand-written JS grammar that silently turned `1.0Inf` into an atom. Delivery = one
+  correlated batch; display = `term_string/3` matching `write_canonical`.
+  Gate rc=0, 58 tests, 330 files 0 errors. Built main chunk carries 0 engine bytes;
+  worker + hashed PVM emit separately.
+  `main=93% 224K/240K`, `mate=69% 167K/240K` (map-m1u2). NOT verified: the dev-server
+  and built-output browser smokes (P6.2) and the `test-m1u2` red suite — both in
+  `.agent/polish.md`. u2 carries no adversarial review; `rev`/`rev2` never ran.
+- **u3 — budgets, failure modes, cancellation** · kernel · est 110K · OPEN (u2 contract shipped)
   Stack/depth/inference/wall-clock budgets, typed error states, consult-stderr
   fatality, cooperative abort plus terminate-and-recreate.
   Accept: each limit surfaces its own typed state; hard cancel drops asserted

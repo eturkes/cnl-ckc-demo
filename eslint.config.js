@@ -6,7 +6,8 @@ import ts from 'typescript-eslint';
 import svelteConfig from './svelte.config.js';
 
 export default ts.config(
-  { ignores: ['dist/', 'kb/', '.scratch/'] },
+  // `.vite/` is the root-resolved build cache; it holds bundled dependency code.
+  { ignores: ['dist/', 'kb/', '.scratch/', '.vite/'] },
   js.configs.recommended,
   ts.configs.recommendedTypeChecked,
   svelte.configs.recommended,

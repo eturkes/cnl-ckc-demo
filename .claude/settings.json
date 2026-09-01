@@ -5,6 +5,7 @@
       "Read(/node_modules/**)",
       "Read(/dist/**)",
       "Read(/coverage/**)",
+      "Read(/.vite/**)",
       "Read(/kb/**/*.tar.gz)",
       "Read(/kb/generated/**)",
       "Read(/pnpm-lock.yaml)",

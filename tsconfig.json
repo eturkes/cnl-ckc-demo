@@ -3,6 +3,8 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": { "@kb/*": ["kb/generated/*"] },
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["vite/client", "node"],
     "resolveJsonModule": true,

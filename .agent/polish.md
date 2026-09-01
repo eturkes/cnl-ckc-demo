@@ -27,3 +27,27 @@ Off-spine improvements. Each entry carries the acceptance check that closes it.
   so a naive import would double the shipped engine. Accept: the fallback engine
   loads only when the saved state fails, and a production build that never takes
   the fallback ships no bytes of it.
+- **u2 browser smokes** — the roadmap's u2 accept clause names dev server AND
+  built output booting to 337 documents; the gate builds both but executes
+  neither. Accept: a committed script boots the dev server and the built preview
+  in a real browser and reads 337 documents from each.
+- **u2 red suite** — `test-m1u2` delivered 4 committed batches on branch
+  `wt/test-m1u2` (worktree at the pre-u2 commit, so it never ran). Accept: the
+  suite runs in the primary tree, every case is red for a contract reason or
+  green, and the cases MAIN's own suite does not already cover are merged.
+- **u2 adversarial review** — u2 shipped without `rev`/`rev2`; MAIN reached the
+  context reserve after implementation. Accept: a reviewer enumerates its check
+  set from `.scratch/contract-m1u2.md` and adjudicates every row against u2's
+  commit, shipping a red test for each accepted defect.
+- **Integral floats decode as integers** — SWI's `1.0` and `1` both arrive as JS
+  `1`, so `decodeTerm` reports `integer`. The shipped corpus has no floats.
+  Accept: a float binding decodes as `float`, proven on a goal returning `1.0`,
+  without adding a per-binding engine call to the common path.
+- **Report validator splits on escaped pipes** — `.scratch/validate-report.py`
+  `cells()` raw-splits on `|`, so a `\|` inside a finding shifts the evidence
+  column. Accept: a finding containing an escaped pipe grades identically to one
+  without, and the fix ships with the validator's port into the repo.
+- **Solution streaming** — u2 delivers one batch per query. Both spikes measured
+  streaming as cheap (0.0414 vs 0.0345 ms/query) and useful for early answers.
+  Accept: solutions render as they arrive, and a queued cancel still cannot
+  interrupt an in-flight synchronous `next()`.

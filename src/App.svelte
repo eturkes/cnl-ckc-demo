@@ -1,8 +1,19 @@
 <script lang="ts">
-  const kb = {
-    documents: 337,
-    guideline: 'CDC Clinical Practice Guideline for Prescribing Opioids for Pain (2022)',
+  import { EngineClient } from './engine/client.js';
+
+  const guideline = 'CDC Clinical Practice Guideline for Prescribing Opioids for Pain (2022)';
+
+  // u2 ships the engine spine only: boot the worker and report what the engine
+  // itself says. The question catalog, run controls and answer views arrive with
+  // u4 and u5.
+  const boot = async (): Promise<string> => {
+    const client = new EngineClient();
+    const result = await client.boot();
+    if (result.kind === 'error') throw new Error(result.error.message);
+    return `${result.contract.documents} compiled documents at schema ${result.contract.schemaVersion}`;
   };
+
+  const booting = boot();
 </script>
 
 <main>
@@ -12,8 +23,16 @@
     execution, and traces back to the guideline sentence that produced it.
   </p>
   <p class="status">
-    Knowledge base: <strong>{kb.documents}</strong> compiled documents from {kb.guideline}. Query
-    interface, proof traces and the entity graph arrive with their milestones.
+    {#await booting}
+      <span data-engine="loading">Starting the Prolog engine.</span>
+    {:then summary}
+      <span data-engine="ready">
+        Knowledge base: <strong>{summary}</strong> from {guideline}. Query interface, proof traces
+        and the entity graph arrive with their milestones.
+      </span>
+    {:catch error}
+      <span data-engine="error">The Prolog engine did not start. {error.message}</span>
+    {/await}
   </p>
 </main>
 

@@ -2,7 +2,9 @@
 node_modules
 
 # Generated runtime payload: rebuilt from the vendored bag by `pnpm kb:build`.
-kb/generated/
+# No trailing slash: worktrees reach the payload through a symlink, and the slash
+# form matches directories only, which would leave that symlink untracked-visible.
+kb/generated
 
 # Build output (Vite) + tool caches
 dist/
