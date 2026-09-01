@@ -1,0 +1,60 @@
+{
+  "mode": "inflight",
+  "result": {
+    "firstResult": {
+      "outcome": {
+        "id": "p2",
+        "ok": false,
+        "error": {
+          "code": "worker-terminated",
+          "message": "two in-flight requests cancelled"
+        }
+      },
+      "settledMs": 0.47124900000000025
+    },
+    "secondResult": {
+      "outcome": {
+        "id": "p3",
+        "ok": false,
+        "error": {
+          "code": "worker-terminated",
+          "message": "two in-flight requests cancelled"
+        }
+      },
+      "settledMs": 0.5317359999999951
+    },
+    "stop": {
+      "terminateMs": 22.303736000000015,
+      "exitCode": 1,
+      "aborted": 2
+    },
+    "during": {
+      "id": "host",
+      "ok": false,
+      "error": {
+        "code": "worker-restarting",
+        "message": "worker is booting"
+      }
+    },
+    "boot": {
+      "reused": false,
+      "contract": {
+        "schemaVersion": 1,
+        "distinctSchemaVersions": 1,
+        "documents": 337
+      },
+      "bootMs": 95.20050900000001,
+      "diagnostics": []
+    },
+    "after": {
+      "id": "p5",
+      "ok": true,
+      "result": {
+        "documents": 337,
+        "overlaySeen": false
+      }
+    },
+    "unhandled": [],
+    "hostFailures": []
+  }
+}

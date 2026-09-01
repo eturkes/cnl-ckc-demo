@@ -1,0 +1,77 @@
+{
+  "mode": "residue",
+  "result": {
+    "bootBefore": {
+      "reused": false,
+      "contract": {
+        "schemaVersion": 1,
+        "distinctSchemaVersions": 1,
+        "documents": 337
+      },
+      "bootMs": 115.97652599999998,
+      "diagnostics": []
+    },
+    "baseline": {
+      "id": "p2",
+      "ok": true,
+      "result": {
+        "documents": 337,
+        "overlaySeen": false
+      }
+    },
+    "asserted": {
+      "id": "p3",
+      "ok": true,
+      "result": {
+        "result": {
+          "kind": "bindings",
+          "bindings": {}
+        },
+        "state": {
+          "documents": 338,
+          "overlaySeen": true
+        }
+      }
+    },
+    "visible": {
+      "id": "p4",
+      "ok": true,
+      "result": {
+        "documents": 338,
+        "overlaySeen": true
+      }
+    },
+    "stop": {
+      "terminateMs": 29.414607999999987,
+      "exitCode": 1,
+      "aborted": 1
+    },
+    "cancelled": {
+      "id": "p5",
+      "ok": false,
+      "error": {
+        "code": "worker-terminated",
+        "message": "cancel after overlay assertion"
+      }
+    },
+    "bootAfter": {
+      "reused": false,
+      "contract": {
+        "schemaVersion": 1,
+        "distinctSchemaVersions": 1,
+        "documents": 337
+      },
+      "bootMs": 82.43071399999997,
+      "diagnostics": []
+    },
+    "clean": {
+      "id": "p7",
+      "ok": true,
+      "result": {
+        "documents": 337,
+        "overlaySeen": false
+      }
+    },
+    "totalRecoveryMs": 193.12609199999997
+  }
+}

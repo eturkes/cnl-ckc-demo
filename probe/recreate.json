@@ -1,0 +1,57 @@
+{
+  "mode": "recreate",
+  "result": {
+    "initial": {
+      "reused": false,
+      "contract": {
+        "schemaVersion": 1,
+        "distinctSchemaVersions": 1,
+        "documents": 337
+      },
+      "bootMs": 98.766724,
+      "diagnostics": []
+    },
+    "cycles": [
+      {
+        "cycle": 1,
+        "totalMs": 194.81643000000003,
+        "terminateMs": 28.697543999999994,
+        "bootMs": 100.26745500000004,
+        "documents": 337,
+        "schemaVersion": 1
+      },
+      {
+        "cycle": 2,
+        "totalMs": 206.764633,
+        "terminateMs": 28.406533000000024,
+        "bootMs": 93.31511799999998,
+        "documents": 337,
+        "schemaVersion": 1
+      },
+      {
+        "cycle": 3,
+        "totalMs": 181.75440000000003,
+        "terminateMs": 22.338664999999992,
+        "bootMs": 101.06018600000004,
+        "documents": 337,
+        "schemaVersion": 1
+      },
+      {
+        "cycle": 4,
+        "totalMs": 223.95672000000002,
+        "terminateMs": 23.68963000000008,
+        "bootMs": 103.63971499999991,
+        "documents": 337,
+        "schemaVersion": 1
+      },
+      {
+        "cycle": 5,
+        "totalMs": 185.95612699999992,
+        "terminateMs": 18.386599999999817,
+        "bootMs": 94.24588500000004,
+        "documents": 337,
+        "schemaVersion": 1
+      }
+    ]
+  }
+}
