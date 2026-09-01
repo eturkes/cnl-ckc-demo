@@ -1,0 +1,335 @@
+{
+  "mode": "slice",
+  "result": {
+    "boot": {
+      "reused": false,
+      "contract": {
+        "schemaVersion": 1,
+        "distinctSchemaVersions": 1,
+        "documents": 337
+      },
+      "bootMs": 118.112662,
+      "diagnostics": []
+    },
+    "runs": 10,
+    "wallMs": 1000,
+    "cap": 10,
+    "statuses": [
+      "complete",
+      "complete",
+      "complete",
+      "complete",
+      "complete",
+      "complete",
+      "complete",
+      "complete",
+      "complete",
+      "complete"
+    ],
+    "counts": [
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7
+    ],
+    "queryElapsedMs": [
+      169.894226,
+      134.59399199999996,
+      135.764591,
+      134.49744299999998,
+      136.5071680000001,
+      134.9893629999999,
+      143.24107800000002,
+      146.88093700000013,
+      135.96606900000006,
+      137.2005220000001
+    ],
+    "stepCount": 80,
+    "maxStepMs": 50.11278400000015,
+    "p95StepMs": 47.42272400000002,
+    "solutions": [
+      {
+        "term": {
+          "kind": "compound",
+          "functor": "$guideline_id",
+          "args": [
+            {
+              "kind": "atom",
+              "value": "product"
+            },
+            {
+              "kind": "atom",
+              "value": "cdc2022-opioid-rec02"
+            },
+            {
+              "kind": "integer",
+              "value": 1
+            },
+            {
+              "kind": "compound",
+              "functor": "ref",
+              "args": [
+                {
+                  "kind": "integer",
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "kind": "list",
+              "items": []
+            }
+          ]
+        },
+        "display": "'$guideline_id'(product,'cdc2022-opioid-rec02',1,ref(1),[])"
+      },
+      {
+        "term": {
+          "kind": "compound",
+          "functor": "$guideline_id",
+          "args": [
+            {
+              "kind": "atom",
+              "value": "product"
+            },
+            {
+              "kind": "atom",
+              "value": "cdc2022-opioid-rec03"
+            },
+            {
+              "kind": "integer",
+              "value": 1
+            },
+            {
+              "kind": "compound",
+              "functor": "ref",
+              "args": [
+                {
+                  "kind": "integer",
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "kind": "list",
+              "items": []
+            }
+          ]
+        },
+        "display": "'$guideline_id'(product,'cdc2022-opioid-rec03',1,ref(1),[])"
+      },
+      {
+        "term": {
+          "kind": "compound",
+          "functor": "$guideline_id",
+          "args": [
+            {
+              "kind": "atom",
+              "value": "product"
+            },
+            {
+              "kind": "atom",
+              "value": "cdc2022-opioid-rec04"
+            },
+            {
+              "kind": "integer",
+              "value": 1
+            },
+            {
+              "kind": "compound",
+              "functor": "ref",
+              "args": [
+                {
+                  "kind": "integer",
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "kind": "list",
+              "items": []
+            }
+          ]
+        },
+        "display": "'$guideline_id'(product,'cdc2022-opioid-rec04',1,ref(1),[])"
+      },
+      {
+        "term": {
+          "kind": "compound",
+          "functor": "$guideline_id",
+          "args": [
+            {
+              "kind": "atom",
+              "value": "product"
+            },
+            {
+              "kind": "atom",
+              "value": "cdc2022-opioid-rec06"
+            },
+            {
+              "kind": "integer",
+              "value": 1
+            },
+            {
+              "kind": "compound",
+              "functor": "ref",
+              "args": [
+                {
+                  "kind": "integer",
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "kind": "list",
+              "items": []
+            }
+          ]
+        },
+        "display": "'$guideline_id'(product,'cdc2022-opioid-rec06',1,ref(1),[])"
+      },
+      {
+        "term": {
+          "kind": "compound",
+          "functor": "$guideline_id",
+          "args": [
+            {
+              "kind": "atom",
+              "value": "product"
+            },
+            {
+              "kind": "atom",
+              "value": "cdc2022-opioid-rec07"
+            },
+            {
+              "kind": "integer",
+              "value": 1
+            },
+            {
+              "kind": "compound",
+              "functor": "ref",
+              "args": [
+                {
+                  "kind": "integer",
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "kind": "list",
+              "items": []
+            }
+          ]
+        },
+        "display": "'$guideline_id'(product,'cdc2022-opioid-rec07',1,ref(1),[])"
+      },
+      {
+        "term": {
+          "kind": "compound",
+          "functor": "$guideline_id",
+          "args": [
+            {
+              "kind": "atom",
+              "value": "product"
+            },
+            {
+              "kind": "atom",
+              "value": "cdc2022-opioid-rec08"
+            },
+            {
+              "kind": "integer",
+              "value": 1
+            },
+            {
+              "kind": "compound",
+              "functor": "ref",
+              "args": [
+                {
+                  "kind": "integer",
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "kind": "list",
+              "items": []
+            }
+          ]
+        },
+        "display": "'$guideline_id'(product,'cdc2022-opioid-rec08',1,ref(1),[])"
+      },
+      {
+        "term": {
+          "kind": "compound",
+          "functor": "$guideline_id",
+          "args": [
+            {
+              "kind": "atom",
+              "value": "product"
+            },
+            {
+              "kind": "atom",
+              "value": "cdc2022-opioid-rec12"
+            },
+            {
+              "kind": "integer",
+              "value": 1
+            },
+            {
+              "kind": "compound",
+              "functor": "ref",
+              "args": [
+                {
+                  "kind": "integer",
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "kind": "list",
+              "items": []
+            }
+          ]
+        },
+        "display": "'$guideline_id'(product,'cdc2022-opioid-rec12',1,ref(1),[])"
+      }
+    ],
+    "capProbe": {
+      "status": "solution-limit",
+      "count": 5,
+      "captured": [
+        {
+          "kind": "integer",
+          "value": 1
+        },
+        {
+          "kind": "integer",
+          "value": 2
+        },
+        {
+          "kind": "integer",
+          "value": 3
+        },
+        {
+          "kind": "integer",
+          "value": 4
+        },
+        {
+          "kind": "integer",
+          "value": 5
+        }
+      ]
+    },
+    "stop": {
+      "terminateMs": 3.945652999999993,
+      "exitCode": 1,
+      "aborted": 0
+    }
+  }
+}

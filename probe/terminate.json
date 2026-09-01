@@ -1,0 +1,53 @@
+{
+  "mode": "terminate",
+  "result": {
+    "boot": {
+      "reused": false,
+      "contract": {
+        "schemaVersion": 1,
+        "distinctSchemaVersions": 1,
+        "documents": 337
+      },
+      "bootMs": 118.30774500000001,
+      "diagnostics": []
+    },
+    "workerTasks": [
+      4070696
+    ],
+    "spinStarted": {
+      "event": "spin-start",
+      "at": 489.418613,
+      "receivedAt": 489.907432
+    },
+    "budgetMs": 10,
+    "hostileBlockedMs": 249.80084500000004,
+    "budgetOvershootLowerBoundMs": 239.80084500000004,
+    "mainTimerRequestedMs": 25,
+    "mainTimerDelayMs": 25.974593000000027,
+    "workerTimerRequestedMs": 25,
+    "workerTimerFiredBeforeStop": false,
+    "cpuDuringSpinMs": 366.991,
+    "taskTicksDuringSpin": {
+      "4070696": {
+        "before": 14,
+        "after": 39
+      }
+    },
+    "stop": {
+      "terminateMs": 5.722246999999925,
+      "exitCode": 1,
+      "aborted": 1
+    },
+    "spinOutcome": {
+      "id": "p2",
+      "ok": false,
+      "error": {
+        "code": "worker-terminated",
+        "message": "main watchdog expired"
+      }
+    },
+    "tasksGoneMs": 0.22080799999991996,
+    "workerTasksGone": true,
+    "cpuDuringPostStopIdleMs": 0.351
+  }
+}
