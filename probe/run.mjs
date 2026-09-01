@@ -16,6 +16,7 @@ class EngineHost {
   #worker;
   state = 'empty';
   failures = [];
+  output = [];
 
   #emit(event) {
     this.#events.push({ ...event, receivedAt: performance.now() });
@@ -35,6 +36,12 @@ class EngineHost {
   }
 
   #attach(worker) {
+    worker.stdout?.on('data', (chunk) =>
+      this.output.push({ stream: 'stdout', text: chunk.toString() }),
+    );
+    worker.stderr?.on('data', (chunk) =>
+      this.output.push({ stream: 'stderr', text: chunk.toString() }),
+    );
     worker.on('message', (message) => {
       if (message.event !== undefined) {
         this.#emit(message);
@@ -81,6 +88,8 @@ class EngineHost {
     const worker = new Worker(WORKER_URL, {
       type: 'module',
       workerData: { imagePath: IMAGE_PATH },
+      stdout: true,
+      stderr: true,
     });
     this.#worker = worker;
     this.#attach(worker);
@@ -352,7 +361,7 @@ const summarizeConsult = async () => {
   const boot = await host.spawn();
   const consult = await host.request('consult');
   await host.hardStop('consult probe complete');
-  return { boot, consult };
+  return { boot, consult, workerOutput: host.output };
 };
 
 const summarizeBenchmark = async () => {
@@ -403,6 +412,45 @@ const summarizeMemory = async () => {
   };
 };
 
+const summarizeHeap = async () => {
+  const chunkCells = Number(process.argv[3] ?? 100_000);
+  const watchdogMs = Number(process.argv[4] ?? 45_000);
+  const host = new EngineHost();
+  const boot = await host.spawn();
+  const baselineRssKiB = rssKiB();
+  let settled = false;
+  let outcome;
+  const request = host.request('heap', { chunkCells }).then((value) => {
+    settled = true;
+    outcome = value;
+    return value;
+  });
+  await host.waitForEvent('memory-start');
+  const started = performance.now();
+  let peakRssKiB = baselineRssKiB;
+  while (!settled && performance.now() - started < watchdogMs) {
+    peakRssKiB = Math.max(peakRssKiB, rssKiB());
+    await sleep(20);
+  }
+  peakRssKiB = Math.max(peakRssKiB, rssKiB());
+  let watchdogStop;
+  if (!settled) watchdogStop = await host.hardStop('heap watchdog expired');
+  await request;
+  const stop = watchdogStop ?? (await host.hardStop('heap probe complete'));
+  return {
+    boot,
+    chunkCells,
+    watchdogMs,
+    elapsedMs: performance.now() - started,
+    baselineRssKiB,
+    peakRssKiB,
+    outcome,
+    stop,
+    hostFailures: host.failures,
+    workerOutput: host.output,
+  };
+};
+
 const modes = {
   slice: summarizeSlice,
   terminate: summarizeTerminate,
@@ -412,6 +460,7 @@ const modes = {
   consult: summarizeConsult,
   benchmark: summarizeBenchmark,
   memory: summarizeMemory,
+  heap: summarizeHeap,
 };
 
 const mode = process.argv[2];

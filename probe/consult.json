@@ -1,0 +1,51 @@
+{
+  "mode": "consult",
+  "result": {
+    "boot": {
+      "reused": false,
+      "contract": {
+        "schemaVersion": 1,
+        "distinctSchemaVersions": 1,
+        "documents": 337
+      },
+      "bootMs": 107.379346,
+      "diagnostics": []
+    },
+    "consult": {
+      "id": "p2",
+      "ok": true,
+      "result": {
+        "valid": {
+          "kind": "bindings",
+          "bindings": {}
+        },
+        "validDiagnostics": [],
+        "malformed": {
+          "kind": "bindings",
+          "bindings": {}
+        },
+        "malformedDiagnostics": [
+          {
+            "source": "on_output",
+            "stream": "stderr",
+            "text": "ERROR: [Thread main] /probe-bad.pl:1:18: Syntax error: Unexpected end of clause\n"
+          }
+        ],
+        "failClosed": true,
+        "parseGuard": {
+          "ok": false,
+          "error": {
+            "code": "malformed-goal",
+            "message": "Syntax error: Unexpected end of clause\nprobe_runtime_bad(\n** here **\n . "
+          }
+        }
+      }
+    },
+    "workerOutput": [
+      {
+        "stream": "stdout",
+        "text": "Syntax error: Unexpected end of clause\nprobe_runtime_bad(\n** here **\n . \n"
+      }
+    ]
+  }
+}

@@ -377,21 +377,25 @@ const benchmark = ({ pairs, wallMs, cap }) => {
 };
 
 const memory = ({ stackLimit, cells }) => {
-  const prolog = requireEngine().prolog;
+  const live = requireEngine();
+  const prolog = live.prolog;
   const before = normalizeOnce(prolog.query('current_prolog_flag(stack_limit,L).').once());
   const configured = normalizeOnce(
     prolog
       .query(`set_prolog_flag(stack_limit,${stackLimit}),current_prolog_flag(stack_limit,L).`)
       .once(),
   );
-  drainDiagnostics();
+  live.FS.writeFile(
+    'probe-memory.pl',
+    `probe_memory_allocate :- length(L,${cells}),nb_setval('__spike_hold__',L).\n`,
+  );
+  const helper = normalizeOnce(prolog.query("consult('probe-memory.pl').").once());
+  const helperDiagnostics = drainDiagnostics();
   port.postMessage({ event: 'memory-start', cells, stackLimit, at: performance.now() });
   let allocation;
   let thrown;
   try {
-    allocation = normalizeOnce(
-      prolog.query(`length(L,${cells}),nb_setval('__spike_hold__',L).`).once(),
-    );
+    allocation = normalizeOnce(prolog.query('probe_memory_allocate.').once());
   } catch (cause) {
     thrown = {
       name: cause instanceof Error ? cause.name : typeof cause,
@@ -409,7 +413,66 @@ const memory = ({ stackLimit, cells }) => {
       message: cause instanceof Error ? cause.message : String(cause),
     };
   }
-  return { before, configured, allocation, thrown, allocationDiagnostics, recovery };
+  return {
+    before,
+    configured,
+    helper,
+    helperDiagnostics,
+    allocation,
+    thrown,
+    allocationDiagnostics,
+    recovery,
+  };
+};
+
+const heapRunaway = ({ chunkCells }) => {
+  const prolog = requireEngine().prolog;
+  const prepared = normalizeOnce(
+    prolog.query("dynamic('__spike_heap__'/1),retractall('__spike_heap__'(_)).").once(),
+  );
+  drainDiagnostics();
+  port.postMessage({ event: 'memory-start', chunkCells, at: performance.now() });
+  let exhaustion;
+  let thrown;
+  try {
+    exhaustion = normalizeOnce(
+      prolog.query(`repeat,length(L,${chunkCells}),assertz('__spike_heap__'(L)),fail.`).once(),
+    );
+  } catch (cause) {
+    thrown = {
+      name: cause instanceof Error ? cause.name : typeof cause,
+      message: cause instanceof Error ? cause.message : String(cause),
+    };
+  }
+  const exhaustionDiagnostics = drainDiagnostics();
+  let recovery;
+  try {
+    recovery = normalizeOnce(prolog.query('X=engine_recovered.').once());
+  } catch (cause) {
+    recovery = {
+      kind: 'thrown',
+      name: cause instanceof Error ? cause.name : typeof cause,
+      message: cause instanceof Error ? cause.message : String(cause),
+    };
+  }
+  let categoryRecovery;
+  try {
+    categoryRecovery = { kind: 'solutions', count: drainGoal(CATEGORY_A_GOAL, false) };
+  } catch (cause) {
+    categoryRecovery = {
+      kind: 'thrown',
+      name: cause instanceof Error ? cause.name : typeof cause,
+      message: cause instanceof Error ? cause.message : String(cause),
+    };
+  }
+  return {
+    prepared,
+    exhaustion,
+    thrown,
+    exhaustionDiagnostics,
+    recovery,
+    categoryRecovery,
+  };
 };
 
 const dispatch = async (message) => {
@@ -443,6 +506,8 @@ const dispatch = async (message) => {
       return benchmark(message);
     case 'memory':
       return memory(message);
+    case 'heap':
+      return heapRunaway(message);
     default:
       throw new Error(`unknown command: ${String(message.kind)}`);
   }

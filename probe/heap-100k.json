@@ -1,0 +1,60 @@
+{
+  "mode": "heap",
+  "result": {
+    "boot": {
+      "reused": false,
+      "contract": {
+        "schemaVersion": 1,
+        "distinctSchemaVersions": 1,
+        "documents": 337
+      },
+      "bootMs": 379.173894,
+      "diagnostics": []
+    },
+    "chunkCells": 100000,
+    "watchdogMs": 45000,
+    "elapsedMs": 19256.440651,
+    "baselineRssKiB": 125824,
+    "peakRssKiB": 2222464,
+    "outcome": {
+      "id": "p2",
+      "ok": true,
+      "result": {
+        "prepared": {
+          "kind": "bindings",
+          "bindings": {}
+        },
+        "exhaustion": {
+          "kind": "error",
+          "message": "assertz/1: Not enough resources: no_memory"
+        },
+        "exhaustionDiagnostics": [],
+        "recovery": {
+          "kind": "bindings",
+          "bindings": {
+            "X": {
+              "kind": "atom",
+              "value": "engine_recovered"
+            }
+          }
+        },
+        "categoryRecovery": {
+          "kind": "solutions",
+          "count": 7
+        }
+      }
+    },
+    "stop": {
+      "terminateMs": 49.83428999999887,
+      "exitCode": 1,
+      "aborted": 0
+    },
+    "hostFailures": [],
+    "workerOutput": [
+      {
+        "stream": "stdout",
+        "text": "assertz/1: Not enough resources: no_memory\n"
+      }
+    ]
+  }
+}
