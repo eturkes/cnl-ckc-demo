@@ -26,6 +26,10 @@ export interface CompiledCatalog {
 export declare const ROOT: string;
 export declare class CatalogError extends Error {}
 export declare function compileCatalog(root?: string): CompiledCatalog;
+export declare function compileCatalogFromFiles(
+  files: Map<string, Uint8Array>,
+  repoSource?: RepoSourceRecord[],
+): Omit<CompiledCatalog, 'bag' | 'files'>;
 export declare function emitCatalog(records: CatalogRecord[]): string;
 export declare function parseQueryFile(
   source: string,
