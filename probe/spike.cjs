@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const { execFileSync, spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 const { performance } = require('node:perf_hooks');
@@ -117,7 +118,7 @@ function show(term) {
 (async () => {
   const decoderUrl = pathToFileURL(path.resolve(process.argv[2])).href;
   const mode = process.argv[3];
-  const { createEncoder, decodeBindings, decodeOnce } = await import(decoderUrl);
+  const { createEncoder, decodeBindings, decodeOnce, decodeTerm } = await import(decoderUrl);
   const module = await engine();
 
   if (mode === 'slice' || mode === 'shape') {
@@ -429,6 +430,116 @@ function show(term) {
           'Record index may be undefined',
           'exhaustive discriminants',
         ],
+      }),
+    );
+    return;
+  }
+
+  if (mode === 'deps') {
+    const base = 'd1cf0c4';
+    const cwd = path.resolve(__dirname, '..');
+    const currentPackage = JSON.parse(fs.readFileSync(path.join(cwd, 'package.json'), 'utf8'));
+    const basePackage = JSON.parse(
+      execFileSync('git', ['show', `${base}:package.json`], { cwd, encoding: 'utf8' }),
+    );
+    const packageDiff = spawnSync(
+      'git',
+      ['diff', '--quiet', base, '--', 'package.json', 'pnpm-lock.yaml'],
+      { cwd },
+    );
+    const probeDiff = spawnSync('git', ['diff', '--quiet', base, '--', 'probe/decoder.mts'], {
+      cwd,
+    });
+    const newDependencies = Object.keys(currentPackage.dependencies ?? {}).filter(
+      (name) => !(name in (basePackage.dependencies ?? {})),
+    );
+    let consultCalls = 0;
+    const consult = module.prolog.consult;
+    module.prolog.consult = (...args) => {
+      consultCalls += 1;
+      return consult.apply(module.prolog, args);
+    };
+    assert.equal(solutions(module, categoryAGoal, decodeBindings).length, 7);
+    module.prolog.consult = consult;
+    assert.equal(packageDiff.status, 0);
+    assert.equal(probeDiff.status, 1);
+    assert.deepStrictEqual(newDependencies, []);
+    assert.equal(consultCalls, 0);
+    console.log(
+      json({
+        newDependencies,
+        packageOrLockChanged: false,
+        positiveControlProbeChanged: true,
+        postImageConsultCalls: consultCalls,
+        sourceBytes:
+          fs.statSync(path.join(cwd, 'probe/decoder.mts')).size +
+          fs.statSync(path.join(cwd, 'probe/types.mts')).size,
+        buildSurface: ['probe/decoder.mts', 'probe/types.mts', 'existing TypeScript compiler'],
+      }),
+    );
+    return;
+  }
+
+  if (mode === 'risk') {
+    const query = module.prolog.query(`${categoryAGoal}.`);
+    const first = query.next();
+    assert.equal(first.done, false);
+    const nativeBindings = first.value;
+    for (;;) if (query.next().done) break;
+    const decoded = decodeBindings(nativeBindings).A;
+    const structuredDecoded = decodeBindings(structuredClone(nativeBindings)).A;
+    assert.equal(show(structuredDecoded), show(decoded));
+
+    const jsonBindings = JSON.parse(JSON.stringify(nativeBindings));
+    let jsonDecodeError;
+    try {
+      decodeBindings(jsonBindings);
+    } catch (error) {
+      jsonDecodeError = error instanceof Error ? error.message : String(error);
+    }
+    const inspectInput = (input) => {
+      const result = module.prolog
+        .query(
+          'term_string(Input,S,[quoted(true),numbervars(true),ignore_ops(true)]),functor(Input,F,N).',
+          { Input: input },
+        )
+        .once();
+      return { rendered: prologText(result.S), functor: result.F, arity: result.N };
+    };
+    const correct = inspectInput(createEncoder(module.prolog)(decoded));
+    const jsonReentry = inspectInput(jsonBindings.A);
+
+    const trapNative = module.prolog
+      .query('Compound=foo(bar,7),Rational is 1 rdiv 3,String="hello".')
+      .once();
+    const trapJson = JSON.parse(JSON.stringify(trapNative));
+    const collisionNative = module.prolog.query("Functor=functor(x),DollarT='$t'(x).").once();
+    const collisions = {};
+    for (const name of ['Functor', 'DollarT']) {
+      try {
+        collisions[name] = { decoded: show(decodeTerm(structuredClone(collisionNative[name]))) };
+      } catch (error) {
+        collisions[name] = { error: error instanceof Error ? error.message : String(error) };
+      }
+    }
+    const declarations = fs.readFileSync(
+      path.resolve(__dirname, '../node_modules/swipl-wasm/dist/common.d.ts'),
+      'utf8',
+    );
+    assert.equal(correct.arity, 5);
+    assert.equal(jsonReentry.arity, 1);
+    assert.equal(typeof jsonDecodeError, 'string');
+    assert.equal(declarations.includes('next(): unknown'), true);
+    console.log(
+      json({
+        structuredClone: { decodedEqual: true, realAnswer: correct },
+        json: {
+          strictDecoderRejected: jsonDecodeError,
+          realAnswerReentry: jsonReentry,
+          traps: trapJson,
+        },
+        metadataFunctorCollisions: collisions,
+        declarationsExposeUnknown: true,
       }),
     );
     return;
