@@ -5,12 +5,15 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
 const fresh = mkdtempSync(join(ROOT, '.spike-m1u4-src-typecheck-'));
-const run = (command, args, options = {}) =>
+/**
+ * @param {string} command
+ * @param {readonly string[]} args
+ */
+const run = (command, args) =>
   spawnSync(command, args, {
     cwd: fresh,
     encoding: 'utf8',
     env: { ...process.env, CI: '1', NO_COLOR: '1' },
-    ...options,
   });
 
 try {

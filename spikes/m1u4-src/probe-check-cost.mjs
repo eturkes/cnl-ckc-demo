@@ -37,6 +37,8 @@ if (mutated.status === 0 || mutated.status === null) {
 }
 
 const sorted = [...samples].sort((left, right) => left - right);
+const median = sorted[Math.floor(sorted.length / 2)];
+if (median === undefined) throw new Error('no timing samples');
 process.stdout.write(
-  `SRC_CHECK_COST\truns=${samples.length}\tms=${samples.map((value) => value.toFixed(3)).join(',')}\tmedianMs=${sorted[Math.floor(sorted.length / 2)].toFixed(3)}\tmutatedRc=${mutated.status}\n`,
+  `SRC_CHECK_COST\truns=${samples.length}\tms=${samples.map((value) => value.toFixed(3)).join(',')}\tmedianMs=${median.toFixed(3)}\tmutatedRc=${mutated.status}\n`,
 );

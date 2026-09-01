@@ -52,7 +52,7 @@ it('measures exact goal drift granularity and fresh-clone independence', () => {
   });
 
   const fresh = mkdtempSync(join(ROOT, '.spike-m1u4-src-fresh-'));
-  let freshPass = false;
+  let freshPass: boolean;
   try {
     const kb = join(fresh, 'kb');
     mkdirSync(kb);
