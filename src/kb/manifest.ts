@@ -2,8 +2,8 @@
 // by both `pnpm kb:asset-check` and the application. Every number in a manifest
 // is observed during the run that wrote it; none is a copied constant.
 
-/** Runtime artifact kinds. `pvm` is the shipping payload, `qlf` the fallback. */
-export type KbAssetKind = 'pvm' | 'qlf';
+/** Runtime artifact kinds. `pvm` is the shipping payload, `qlf` the fallback, `catalog` the question set. */
+export type KbAssetKind = 'pvm' | 'qlf' | 'catalog';
 
 export interface KbAsset {
   kind: KbAssetKind;
@@ -36,6 +36,13 @@ export interface KbManifest {
     swiplWasm: string;
     /** SWI-Prolog version reported by the engine at build time. */
     prolog: string;
+  };
+  /** Exported queries the catalog derives from. Queries never enter the runtime image. */
+  catalog: {
+    queryFiles: number;
+    /** Digest of the concatenated query source, so a checker can re-derive the catalog. */
+    sha256: string;
+    entries: number;
   };
   assets: KbAsset[];
   /** Values read back out of a live engine during the build, never assumed. */

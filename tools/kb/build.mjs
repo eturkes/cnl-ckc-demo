@@ -7,13 +7,14 @@ import { mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from 
 import { basename, join } from 'node:path';
 
 import { sha256, verifyBag } from './bag.mjs';
+import { catalogJson, catalogRecords } from './catalog.mjs';
 import { buildImage, buildQlf, swiplWasmVersion, verifyImage, verifyQlf } from './produce.mjs';
 import { GENERATED_DIR, MANIFEST_PATH, ROOT, loadManifest, payloadSource } from './paths.mjs';
 
 /** @typedef {import('../../src/kb/manifest.ts').KbManifest} KbManifest */
 /** @typedef {import('./produce.mjs').LiveContract} LiveContract */
 
-const MANIFEST_VERSION = 1;
+const MANIFEST_VERSION = 2;
 
 /** Locate the single vendored bag and prove it against its committed sidecar. */
 const readVerifiedBag = () => {
@@ -42,7 +43,7 @@ const assetsIntact = (manifest) =>
     }
   });
 
-/** @param {Uint8Array} bytes @param {string} path @param {'pvm' | 'qlf'} kind */
+/** @param {Uint8Array} bytes @param {string} path @param {'pvm' | 'qlf' | 'catalog'} kind */
 const asset = (bytes, path, kind) => ({ kind, path, bytes: bytes.byteLength, sha256: sha256(bytes) });
 
 const main = async () => {
@@ -51,6 +52,8 @@ const main = async () => {
   const { source, names } = payloadSource(files);
   const inputDigest = sha256(Buffer.from(source, 'utf8'));
   const swiplWasm = swiplWasmVersion();
+  const catalog = catalogRecords(files);
+  const catalogBytes = Buffer.from(catalogJson(catalog.records), 'utf8');
 
   const cached = loadManifest();
   if (
@@ -86,6 +89,7 @@ const main = async () => {
   mkdirSync(GENERATED_DIR, { recursive: true });
   writeFileSync(join(GENERATED_DIR, 'kb.pvm'), image);
   writeFileSync(join(GENERATED_DIR, 'kb.qlf'), qlf);
+  writeFileSync(join(GENERATED_DIR, 'question-catalog.json'), catalogBytes);
 
   /** @type {KbManifest} */
   const manifest = {
@@ -99,7 +103,16 @@ const main = async () => {
     },
     input: { files: names.length, bytes: Buffer.byteLength(source, 'utf8'), sha256: inputDigest },
     toolchain: { swiplWasm, prolog: contract.prolog },
-    assets: [asset(image, 'kb.pvm', 'pvm'), asset(qlf, 'kb.qlf', 'qlf')],
+    catalog: {
+      queryFiles: catalog.names.length,
+      sha256: sha256(Buffer.from(catalog.source, 'utf8')),
+      entries: catalog.records.length,
+    },
+    assets: [
+      asset(image, 'kb.pvm', 'pvm'),
+      asset(qlf, 'kb.qlf', 'qlf'),
+      asset(catalogBytes, 'question-catalog.json', 'catalog'),
+    ],
     contract: { schemaVersion: contract.schemaVersion, documents: contract.documents },
   };
 
@@ -111,6 +124,7 @@ const main = async () => {
   process.stdout.write(
     `kb:build ok — ${names.length} files (${basename(bag)}) → ` +
       `pvm ${image.byteLength} B, qlf ${qlf.byteLength} B, ` +
+      `catalog ${catalog.records.length} entries from ${catalog.names.length} queries, ` +
       `schema ${contract.schemaVersion}, ${contract.documents} documents\n`,
   );
 };

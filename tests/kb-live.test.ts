@@ -28,7 +28,7 @@ describe('generated runtime payload', () => {
   it('records only values it observed', () => {
     expect(manifest?.contract).toEqual({ schemaVersion: SCHEMA_VERSION, documents: DOCUMENTS });
     expect(manifest?.input.files).toBe(DOCUMENTS);
-    expect(manifest?.assets.map((entry) => entry.kind).sort()).toEqual(['pvm', 'qlf']);
+    expect(manifest?.assets.map((entry) => entry.kind).sort()).toEqual(['catalog', 'pvm', 'qlf']);
     expect(manifest?.source.bagitVersion).toBe('1.0');
   });
 
