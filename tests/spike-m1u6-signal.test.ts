@@ -10,7 +10,7 @@ import { BUDGET_MAX } from '../src/engine/budget.js';
 import { EngineClient, type QueryOutcome } from '../src/engine/client.js';
 import type { BudgetSpec, EngineRequest, EngineResponse } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
-import type { QuestionId } from '../src/questions/catalog.js';
+import { QUESTION_IDS, type QuestionId } from '../src/questions/catalog.js';
 import { AnswerService, type AnswerResult } from '../src/questions/service.js';
 
 const require = createRequire(import.meta.url);
@@ -236,19 +236,17 @@ class ProbeController {
     const previous = this.#active;
     previous?.controller.abort();
     this.state = { kind: 'running', id };
-    let active: ActiveRun;
     const done = (async () => {
       await previous?.done;
       if (controller.signal.aborted) return;
       const result = await this.#service.ask(id, this.#budget, controller.signal);
-      if (this.#active === active && !controller.signal.aborted) {
+      if (this.#active?.controller === controller && !controller.signal.aborted) {
         this.state = { kind: 'settled', result };
       }
     })();
-    active = { id, controller, done };
-    this.#active = active;
+    this.#active = { id, controller, done };
     const clear = (): void => {
-      if (this.#active === active) this.#active = undefined;
+      if (this.#active?.controller === controller) this.#active = undefined;
     };
     void done.then(clear, clear);
     return done;
@@ -371,5 +369,63 @@ describe('controller and lifecycle probes', () => {
     expect(violations).toHaveLength(0);
     console.info('P6 outcomes=worker_error settlements=1,1 late_claims=0 signal_posts=0');
     client.dispose();
+  });
+
+  it('P8 keeps the service id-only while all six real catalog ids execute', async () => {
+    const { client, worker } = liveClient();
+    const service = new AnswerService(client);
+    const counts: string[] = [];
+    for (const id of QUESTION_IDS) {
+      const result = await service.ask(id, budget(), new AbortController().signal);
+      expect(result.kind).toBe('answer');
+      if (result.kind === 'answer') counts.push(`${id}:${result.solutions.length}`);
+    }
+    expect(worker.seen.filter((request) => request.kind === 'query')).toHaveLength(
+      QUESTION_IDS.length,
+    );
+
+    const requestsAtValidSettle = worker.seen.length;
+    for (const input of ['What should I do?', 'guideline_entity(X,Y,Z,W).', 'unknown-id']) {
+      expect(await service.ask(input, budget(), new AbortController().signal)).toEqual({
+        kind: 'rejected',
+        reason: 'unknown-id',
+      });
+    }
+    expect(worker.seen).toHaveLength(requestsAtValidSettle);
+    console.info(`P8 live_counts=${counts.join(',')} invalid_engine_posts=0`);
+    client.dispose();
+  }, 120_000);
+
+  it('P9 drives select, run, awaited cancel, and retry with a fresh controller', async () => {
+    const deferred = new DeferredClient();
+    const service = new AnswerService(deferred as unknown as EngineClient);
+    const controller = new ProbeController(service, budget());
+    controller.select('category-b-recommendations');
+    const first = controller.run();
+    await delay();
+    const firstSignal = deferred.calls[0]?.signal;
+    expect(firstSignal?.aborted).toBe(false);
+
+    const cancelling = controller.cancel();
+    expect(firstSignal?.aborted).toBe(true);
+    expect(controller.state).toEqual({
+      kind: 'cancelled',
+      id: 'category-b-recommendations',
+    });
+    deferred.calls[0]?.resolve({ kind: 'cancelled', solutions: [] });
+    await Promise.all([first, cancelling]);
+
+    const retried = controller.retry();
+    await delay();
+    const retrySignal = deferred.calls[1]?.signal;
+    expect(retrySignal).not.toBe(firstSignal);
+    expect(retrySignal?.aborted).toBe(false);
+    deferred.calls[1]?.resolve({ kind: 'solutions', solutions: [] });
+    await retried;
+    expect(controller.state).toMatchObject({
+      kind: 'settled',
+      result: { kind: 'answer', id: 'category-b-recommendations' },
+    });
+    console.info('P9 controllers=2 cancel_awaited=true retry=answer stale_updates=0');
   });
 });

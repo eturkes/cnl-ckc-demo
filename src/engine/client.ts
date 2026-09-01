@@ -40,7 +40,7 @@ interface Pending {
   resolve: (response: EngineResponse) => void;
   generation: number;
   timer: unknown;
-  abort?: { signal: AbortSignal; listener: () => void };
+  abort: { signal: AbortSignal; listener: () => void } | undefined;
 }
 
 export interface ClientOptions {
