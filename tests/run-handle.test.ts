@@ -184,6 +184,23 @@ class LatestRunController {
   }
 }
 
+class UnguardedRunController {
+  readonly #service: AnswerService;
+  answer: AnswerResult | null = null;
+
+  constructor(service: AnswerService) {
+    this.#service = service;
+  }
+
+  start(id: QuestionId): AnswerRun {
+    const run = this.#service.ask(id, budget());
+    void run.result.then((answer) => {
+      this.answer = answer;
+    });
+    return run;
+  }
+}
+
 const controlledClient = (): EngineClient => {
   ControlledWorker.live = [];
   return new EngineClient({ spawn: () => new ControlledWorker() as unknown as Worker });
@@ -401,6 +418,33 @@ describe.sequential('run handle', () => {
     expect(controller.answer).toMatchObject({ kind: 'failure', id: selected });
     console.info(
       `P9_METRIC selected=${selected} first=${first.requestId} cancel=true retry=${retry.requestId} final=failure`,
+    );
+  });
+
+  it('P10 demonstrates that an unguarded late cancellation overwrites the current answer', async () => {
+    const firstId = QUESTION_IDS.at(0);
+    const secondId = QUESTION_IDS.at(1);
+    if (firstId === undefined || secondId === undefined) throw new Error('catalog needs two ids');
+    const deferred = new DeferredClient();
+    const controller = new UnguardedRunController(
+      new AnswerService(deferred as unknown as EngineClient),
+    );
+
+    const first = controller.start(firstId);
+    const cancelling = first.cancel();
+    const second = controller.start(secondId);
+    deferred.queries[1]?.resolve({ kind: 'failure' });
+    await second.result;
+    await settle();
+    expect(controller.answer).toMatchObject({ kind: 'failure', id: secondId });
+
+    expect(await cancelling).toBe(true);
+    deferred.queries[0]?.resolve({ kind: 'cancelled', solutions: [] });
+    await first.result;
+    await settle();
+    expect(controller.answer).toMatchObject({ kind: 'cancelled', id: firstId });
+    console.info(
+      `P10_METRIC current=${secondId} late=${firstId}:cancelled final=${firstId}:cancelled stale_overwrite=true`,
     );
   });
 });
