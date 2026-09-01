@@ -292,3 +292,31 @@ and survives `/resume`; a new session clears it.
 - `MANIFEST_VERSION` 2 adds the `catalog` block; the bump is what stops a cached
   manifest from lacking it. `kb:reproduce` now also proves catalog byte-identity
   (`a38e74d9f518`).
+
+## Question intake (u5)
+
+- DOM component tests = a second vitest project. `tests/**/*.dom.test.ts` runs under
+  jsdom with `resolve.conditions: ['browser']`; without that condition svelte resolves
+  to `index-server.js` and `mount` throws `lifecycle_function_unavailable`. The node
+  project excludes the glob so swipl-wasm keeps its node entry.
+- jsdom is pinned to 29.1.1. jsdom 30 pulls undici 8, which assigns
+  `webidl.util.markAsUncloneable` from `node:worker_threads`; Node v20.19.2 does not
+  export it, so the vitest fork dies before any test runs.
+- axe-core 4.13.0 runs in that project. `color-contrast` always lands in `incomplete`
+  because jsdom has no canvas, so contrast is u7's own check, not axe's.
+- `svelte-check --fail-on-warnings` is the ONLY a11y linter here: `eslint-plugin-svelte`
+  3.23.0 ships 86 rules and zero `a11y-*` ones.
+- The compiler rejects a click handler on `role="listbox"`
+  (`a11y_click_events_have_key_events`) because it cannot see that an
+  aria-activedescendant widget keeps its keyboard path on the combobox. One scoped
+  `svelte-ignore` carries that; delegating the click to the listbox also replaces six
+  per-option handlers with one.
+- ESLint types a `.svelte` import as `any`, so a member access on a narrowed value
+  inside a template reads as unsafe. Derive the value in the script instead.
+- Svelte 5 `unmount()` returns a promise → `void unmount(app)` in tests.
+- `bits-ui` 2.19.0 works and its own 21-case probe is green (`wt/spike-m1u5-lib`
+  `dca4f87`), but it needs `@internationalized/date` as a required peer, ships 7
+  runtime packages, portals the popup outside the app root, and costs the dom project
+  10.06 s. The demo hand-authors its combobox instead.
+- APG's select-only example commits the active option on blur. This widget cancels
+  instead, matching a native `select`, because u6 turns a selection into a Prolog run.

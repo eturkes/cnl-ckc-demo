@@ -20,5 +20,25 @@ export default defineConfig({
   worker: { format: 'es' },
   // swipl-wasm ships large .wasm/.data assets; keep them as files, never inlined.
   build: { assetsInlineLimit: 0 },
-  test: { environment: 'node', include: ['tests/**/*.test.ts'] },
+  test: {
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'node',
+          environment: 'node',
+          include: ['tests/**/*.test.ts'],
+          exclude: ['tests/**/*.dom.test.ts'],
+        },
+      },
+      {
+        extends: true,
+        // Svelte's exports resolve to the SSR build unless `browser` is asked for,
+        // and `mount` throws there. Scoping the condition to this project keeps the
+        // node suite on swipl-wasm's node entry.
+        resolve: { conditions: ['browser'] },
+        test: { name: 'dom', environment: 'jsdom', include: ['tests/**/*.dom.test.ts'] },
+      },
+    ],
+  },
 });

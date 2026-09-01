@@ -80,13 +80,20 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
   discharged by the two wave-1 spikes as independent reference implementations
   (`.agent/contracts/m1u4.md` D9), not by a separate `orc`. NOT verified:
   `test-m1u4`'s red suite, in `.agent/polish.md`. Judgment review is M1's.
-- **u5 — accessible question intake** · kernel · est 70K → 124K · OPEN (u4 contract shipped)
-  Readonly APG combobox over the six catalog ids: a controlled leaf with a selection
-  callback and no engine wiring.
-  Accept: pointer and keyboard paths reach all six questions; arbitrary text never
-  resolves to an id; the listbox follows APG combobox semantics; axe and
-  `svelte-check --fail-on-warnings` are clean over the intake surface.
-- **u6 — run lifecycle + answer states** · kernel · est 75K → 133K · BLOCKED (u5)
+- **u5 — accessible question intake** · kernel · est 70K → 124K · DONE
+  `src/questions/QuestionCombobox.svelte` + `tests/question-combobox.dom.test.ts`;
+  vitest `dom` project (jsdom 29.1.1 + `resolve.conditions:['browser']`),
+  `svelte-check --fail-on-warnings` in `pnpm check`, intake rendered in `App.svelte`
+  against local `$state`. Select-only APG combobox hosted on a `<div role="combobox">`
+  rather than a readonly input (`.agent/contracts/m1u5.md` D1); `bits-ui` rejected on
+  surface, not correctness (D2) — its own 21-case probe is green on `wt/spike-m1u5-lib`
+  `dca4f87`, and it drags 7 runtime packages, a portalled popup and +10.06 s of gate.
+  Gate rc=0: 342 files 0 errors 0 warnings, 133 tests, 3 assets. 26 contract
+  predicates, all `pass`.
+  `harvest=56% 135K/240K`, `main=87% 209K/240K`, `mate=47% 114K/240K` (spike-m1u5-lib).
+  NOT verified: no separate `test-m1u5` red suite (D6) and no real-browser run —
+  every predicate is jsdom-observed. Judgment review is M1's.
+- **u6 — run lifecycle + answer states** · kernel · est 75K → 133K · OPEN (u5 contract shipped)
   `DemoController` wiring selection → `AnswerService`, run/cancel/retry, answer
   selection, boot/loading/empty/error/ready states. Carries the query-handle work:
   `EngineClient.query` hides its request id while `cancel` needs one, so cooperative
@@ -111,6 +118,7 @@ MILESTONE-REVIEW dispatch inputs — contract | fixed check set | evidence branc
 - u2 `.agent/contracts/m1u2.md` | — | `wt/test-m1u2` `b0fb200`, `wt/spike-m1u2-{js,pl}`
 - u3 `.agent/contracts/m1u3.md` | `.agent/contracts/m1u3-rev-checkset.md`, 47 rows | `wt/test-m1u3` `22c8b97`, `wt/spike-m1u3-{js,pl}`
 - u4 `.agent/contracts/m1u4.md` | `.agent/contracts/m1u4-rev-checkset.md`, 24 rows | `wt/test-m1u4` `0240aae`, `wt/spike-m1u4-{gen,src}`
+- u5 `.agent/contracts/m1u5.md` (26 predicates + verdict table) | — | `wt/spike-m1u5-lib` `dca4f87`; map report `.scratch/agents/map-m1u5.md` 29/29
 
 u1–u4 shipped their mechanical assurance and carry no judgment adjudication; those rows
 seed `.agent/review-m1.md`. Projection: 6 `kernel` units × ~35 rows ≈ 210 rows plus u7
@@ -121,8 +129,11 @@ to every `kernel` estimate above. u5's original 145K calibrated to 257K, over th
 which is what split it into intake and run-lifecycle. Harvest, not implementation, is the
 cost driver: u3's wave 1 (one map + two spikes, 40 rows) cost MAIN 130K before a line was
 written. u1 burned 226K on a 130K estimate because discovery and implementation both
-landed in MAIN's window. `harvest=` is recorded per unit from u5 on, so the ratio splits
-into its two terms once three units carry it.
+landed in MAIN's window. u5's first measured `harvest=` says the model is ADDITIVE, not
+multiplicative: wave 1 cost 135K on a unit whose implementation ran ~75K, against u3's
+130K on a much larger one. Size a unit as `~130K harvest floor + implementation`, and
+apply 1.77 to the implementation term alone — u5's calibrated 124K still missed by 1.69
+because the floor does not shrink with the unit.
 
 Planning actuals: `main=76% 183K/240K`, `mate=80% 191K/240K` (map-m1), five
 teammates across three waves. Size future planning waves against this.
