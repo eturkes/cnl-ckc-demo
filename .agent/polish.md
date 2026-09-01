@@ -66,10 +66,6 @@ Off-spine improvements. Each entry carries the acceptance check that closes it.
   argument; both spikes also reproduced the whole 734-byte committed file. Accept: the
   service emits the complete `'$guideline_answers'` envelope, or the contract records why
   the bag's `query_sha256` stays out of the runtime.
-- **Service query handles** — `EngineClient.query` hides its request id while `cancel`
-  needs one, so u5 cannot build cooperative cancel on `AnswerService.ask` as shipped.
-  Accept: a run started through the service is cancellable by id without exposing an
-  unbudgeted surface.
 - **Assembled-path evasion** — the answer-oracle scan matches a literal `queries/answers`;
   a path concatenated at runtime slips past. Accept: a production fixture that assembles
   the path from parts fails `kb:asset-check`.

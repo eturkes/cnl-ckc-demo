@@ -80,14 +80,22 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
   discharged by the two wave-1 spikes as independent reference implementations
   (`.agent/contracts/m1u4.md` D9), not by a separate `orc`. NOT verified:
   `test-m1u4`'s red suite, in `.agent/polish.md`. Judgment review is M1's.
-- **u5 — accessible question→answer workflow** · kernel · est 145K · OPEN (u4 contract shipped)
-  `DemoController` plus leaf components: readonly APG combobox, run/cancel/retry,
-  answer selection, boot/loading/empty/error/ready states.
+- **u5 — accessible question intake** · kernel · est 70K → 124K · OPEN (u4 contract shipped)
+  Readonly APG combobox over the six catalog ids: a controlled leaf with a selection
+  callback and no engine wiring.
   Accept: pointer and keyboard paths reach all six questions; arbitrary text never
-  executes; stale completions cannot replace the active run; statuses are
-  announced; axe and `svelte-check --fail-on-warnings` are clean; the nested-path
-  static build passes a browser smoke run.
-- **u6 — demo presentation + honest framing** · docs · est 60K · BLOCKED (u5)
+  resolves to an id; the listbox follows APG combobox semantics; axe and
+  `svelte-check --fail-on-warnings` are clean over the intake surface.
+- **u6 — run lifecycle + answer states** · kernel · est 75K → 133K · BLOCKED (u5)
+  `DemoController` wiring selection → `AnswerService`, run/cancel/retry, answer
+  selection, boot/loading/empty/error/ready states. Carries the query-handle work:
+  `EngineClient.query` hides its request id while `cancel` needs one, so cooperative
+  cancel is unbuildable on `AnswerService.ask` as shipped.
+  Accept: every typed `AnswerResult` state renders and is announced; a cancel stops a
+  live run by id without exposing an unbudgeted surface; stale completions cannot
+  replace the active run; axe and `svelte-check --fail-on-warnings` are clean; the
+  nested-path static build passes a browser smoke run.
+- **u7 — demo presentation + honest framing** · docs · est 60K, uncalibrated (no docs analog) · BLOCKED (u6)
   Self-hosted Atkinson Hyperlegible Next + Literata with licences, light role
   tokens, responsive answer composition, and limitation copy: fixed catalog,
   non-clinical prepared demo, `unreviewed` projections, CDC attribution and
@@ -105,21 +113,16 @@ MILESTONE-REVIEW dispatch inputs — contract | fixed check set | evidence branc
 - u4 `.agent/contracts/m1u4.md` | `.agent/contracts/m1u4-rev-checkset.md`, 24 rows | `wt/test-m1u4` `0240aae`, `wt/spike-m1u4-{gen,src}`
 
 u1–u4 shipped their mechanical assurance and carry no judgment adjudication; those rows
-seed `.agent/review-m1.md`. Projection: 5 `kernel` units × ~35 rows ≈ 175 rows plus u6
-spot-check, cross-cutting and `audit-m1` ⇒ size MILESTONE-REVIEW at ~3 sessions.
+seed `.agent/review-m1.md`. Projection: 6 `kernel` units × ~35 rows ≈ 210 rows plus u7
+spot-check, cross-cutting and `audit-m1` ⇒ size MILESTONE-REVIEW at ~3–4 sessions.
 
-Sizing correction from u3: wave 1 (one map + two spikes, 40 rows) cost MAIN 130K before
-a line was written; implementation fit in the rest only because MAIN never re-read the
-engine files already in context. Harvest, not implementation, is the cost driver.
-
-Watch item: u5 carries the largest estimate under a ±30K band. If its wave
-crosses ~175K, split the combobox/intake surface from the run-lifecycle surface.
-
-Sizing correction from u1: MAIN alone burned 226K implementing a 130K-estimated
-kernel unit, because discovery (tar dialect, determinism root cause) and the
-full implementation both landed in MAIN's window. Later units must push
-discovery into teammates and reach implementation with the contract already
-fixed, or split at the discovery/implementation seam.
+Calibration: `main=`/`est` ran 1.74 (u1), 1.87 (u2), 1.69 (u4) ⇒ **M1 ratio 1.77**, applied
+to every `kernel` estimate above. u5's original 145K calibrated to 257K, over the window,
+which is what split it into intake and run-lifecycle. Harvest, not implementation, is the
+cost driver: u3's wave 1 (one map + two spikes, 40 rows) cost MAIN 130K before a line was
+written. u1 burned 226K on a 130K estimate because discovery and implementation both
+landed in MAIN's window. `harvest=` is recorded per unit from u5 on, so the ratio splits
+into its two terms once three units carry it.
 
 Planning actuals: `main=76% 183K/240K`, `mate=80% 191K/240K` (map-m1), five
 teammates across three waves. Size future planning waves against this.
