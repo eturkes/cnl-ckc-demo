@@ -9,6 +9,10 @@ export const QUESTION_IDS = [
 
 export type QuestionId = (typeof QUESTION_IDS)[number];
 
+const QUESTION_ID_SET: ReadonlySet<string> = new Set(QUESTION_IDS);
+export const isQuestionId = (candidate: string): candidate is QuestionId =>
+  QUESTION_ID_SET.has(candidate);
+
 type Projection =
   | {
       readonly kind: 'bindings';
