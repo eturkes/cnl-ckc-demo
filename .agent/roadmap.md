@@ -45,11 +45,9 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
   `kb:reproduce` backs the idempotence claim out of band. Artifacts are
   byte-reproducible, not merely contract-equivalent: pinning the engine's
   `Date.now` removes the only nondeterminism.
-  `main=94% 226K/240K`, `mate=37% 88K/240K` (map-m1u1). Wave 1 only — the
-  reserve was reached before the review wave, so `rev`/`rev2` never ran and u1
-  carries no adversarial review. Two teammates stopped partway: reports at
-  `.scratch/agents/map-m1u1.md` (17/25 rows) and `.scratch/agents/spike-m1u1-det.md`
-  (9/12 rows); probe scripts on branch `wt/spike-m1u1-det`.
+  `main=94% 226K/240K`, `mate=37% 88K/240K` (map-m1u1). Wave 1 only; judgment review
+  is M1's. Two teammates stopped partway: reports at `.scratch/agents/map-m1u1.md`
+  (17/25 rows) and `.scratch/agents/spike-m1u1-det.md` (9/12 rows).
 - **u2 — Prolog engine worker** · kernel · est 120K · DONE
   `src/engine/{protocol,terms,session,client,worker}.ts` + `tests/engine-session.test.ts`;
   Vite alias `@kb`, `base:'./'`, `worker.format:'es'`, root `cacheDir`. Term boundary
@@ -61,7 +59,7 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
   worker + hashed PVM emit separately.
   `main=93% 224K/240K`, `mate=69% 167K/240K` (map-m1u2). NOT verified: the dev-server
   and built-output browser smokes (P6.2) and the `test-m1u2` red suite — both in
-  `.agent/polish.md`. u2 carries no adversarial review; `rev`/`rev2` never ran.
+  `.agent/polish.md`. Judgment review is M1's.
 - **u3 — budgets, failure modes, cancellation** · kernel · est 110K · DONE
   Stack/depth/inference/wall-clock budgets, typed error states, consult-stderr
   fatality, cooperative abort plus terminate-and-recreate.
@@ -81,8 +79,7 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
   `main=95% 228K/240K`, `mate=62% 148K/240K` (spike-m1u4-gen). The `oracle` flag was
   discharged by the two wave-1 spikes as independent reference implementations
   (`.scratch/contract-m1u4.md` D9), not by a separate `orc`. NOT verified:
-  `test-m1u4`'s red suite and `rev-m1u4`'s 24-row adjudication — both reached the
-  reserve; both in `.agent/polish.md` with their branches.
+  `test-m1u4`'s red suite, in `.agent/polish.md`. Judgment review is M1's.
 - **u5 — accessible question→answer workflow** · kernel · est 145K · OPEN (u4 contract shipped)
   `DemoController` plus leaf components: readonly APG combobox, run/cancel/retry,
   answer selection, boot/loading/empty/error/ready states.
@@ -99,6 +96,17 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
   (20 words instructions / 25 descriptions); font licences ship; token contrast
   ≥4.5:1 normal and ≥3:1 large; visual QA covers every u5 state at mobile and
   desktop widths.
+
+MILESTONE-REVIEW dispatch inputs — contract | fixed check set | evidence branches:
+
+- u1 `.scratch/contract-m1u1.md` | — | `wt/spike-m1u1-det`; partial reports `map-m1u1` 17/25, `spike-m1u1-det` 9/12
+- u2 `.scratch/contract-m1u2.md` | — | `wt/test-m1u2` `b0fb200`, `wt/spike-m1u2-{js,pl}`
+- u3 `.scratch/contract-m1u3.md` | `.scratch/agents/rev-m1u3.md`, 47 rows | `wt/test-m1u3` `22c8b97`, `wt/spike-m1u3-{js,pl}`
+- u4 `.scratch/contract-m1u4.md` | `.scratch/agents/rev-m1u4.md`, 24 rows | `wt/test-m1u4` `0240aae`, `wt/spike-m1u4-{gen,src}`
+
+u1–u4 shipped their mechanical assurance and carry no judgment adjudication; those rows
+seed `.agent/review-m1.md`. Projection: 5 `kernel` units × ~35 rows ≈ 175 rows plus u6
+spot-check, cross-cutting and `audit-m1` ⇒ size MILESTONE-REVIEW at ~3 sessions.
 
 Sizing correction from u3: wave 1 (one map + two spikes, 40 rows) cost MAIN 130K before
 a line was written; implementation fit in the rest only because MAIN never re-read the

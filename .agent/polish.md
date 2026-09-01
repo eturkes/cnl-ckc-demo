@@ -15,10 +15,6 @@ Off-spine improvements. Each entry carries the acceptance check that closes it.
   committed answer bundle. Accept: a committed script reproduces byte identity
   for all four exported queries, or records the exact canonical-form divergence
   for each of the other three.
-- **u1 adversarial review** — u1 shipped without `rev`/`rev2`; MAIN hit the
-  context reserve after wave 1. Accept: a reviewer enumerates its check set from
-  `.scratch/contract-m1u1.md` and adjudicates every row against commit range
-  `4befd92..u1`, shipping a red test for each accepted defect.
 - **Finish the u1 wave-1 reports** — `map-m1u1` (17/25 rows) and
   `spike-m1u1-det` (9/12) were stopped at the reserve. Accept: both reports pass
   `validate-report.py` with rc 0, or the open rows are re-derived and their
@@ -35,10 +31,6 @@ Off-spine improvements. Each entry carries the acceptance check that closes it.
   `wt/test-m1u2` (worktree at the pre-u2 commit, so it never ran). Accept: the
   suite runs in the primary tree, every case is red for a contract reason or
   green, and the cases MAIN's own suite does not already cover are merged.
-- **u2 adversarial review** — u2 shipped without `rev`/`rev2`; MAIN reached the
-  context reserve after implementation. Accept: a reviewer enumerates its check
-  set from `.scratch/contract-m1u2.md` and adjudicates every row against u2's
-  commit, shipping a red test for each accepted defect.
 - **Integral floats decode as integers** — SWI's `1.0` and `1` both arrive as JS
   `1`, so `decodeTerm` reports `integer`. The shipped corpus has no floats.
   Accept: a float binding decodes as `float`, proven on a goal returning `1.0`,
@@ -53,10 +45,6 @@ Off-spine improvements. Each entry carries the acceptance check that closes it.
 - **u3 heap limit is unit-tested only** — `P2.7` is covered by `readOutcome` over a
   synthesized `resource_error(memory)`, not a live trip. Accept: a committed test drives
   real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate.
-- **u3 adversarial review** — `rev-m1u3` delivered a 47-row check set at
-  `.scratch/agents/rev-m1u3.md` and branch `wt/rev-m1u3`, but MAIN hit the reserve before
-  phase 2. Accept: a reviewer adjudicates every row against u3's commits `6c2f716`,
-  shipping a red test per accepted defect.
 - **u3 red suite completion** — `test-m1u3` partially filled its 35-case skeleton,
   committed at `22c8b97` on `wt/test-m1u3`. Accept: the cases MAIN's 31 do not cover run
   in the primary tree, red for a contract reason or green.
@@ -74,9 +62,6 @@ Off-spine improvements. Each entry carries the acceptance check that closes it.
   from `.scratch/contract-m1u4.md`; MAIN reached the reserve before harvest. Accept: the
   suite runs in the primary tree, every case is red for a contract reason or green, and
   the cases MAIN's 18 do not cover are merged.
-- **u4 adversarial review** — `rev-m1u4` fixed a 24-row check set (`.scratch/agents/rev-m1u4.md`,
-  branch `wt/rev-m1u4` at `20de849`) but phase 2 never ran. Accept: a reviewer adjudicates
-  every row against `823ed4f`, shipping a red test per accepted defect.
 - **Full answer-artifact reproduction** — u4 binds the byte claim to the `result/1`
   argument; both spikes also reproduced the whole 734-byte committed file. Accept: the
   service emits the complete `'$guideline_answers'` envelope, or the contract records why
