@@ -89,34 +89,45 @@ const liveClient = (): { client: EngineClient; worker: LiveWorker } => {
 
 describe('AbortSignal cancellation spike', () => {
   it('P2 cancels a live synthetic run through the hidden correlation id', async () => {
-    const { client, worker } = liveClient();
-    const controller = new AbortController();
-    const add = vi.spyOn(controller.signal, 'addEventListener');
-    const remove = vi.spyOn(controller.signal, 'removeEventListener');
-    const running = client.query(
-      'between(1,100000000,X).',
-      budget({ answerCap: BUDGET_MAX.answerCap }),
-      controller.signal,
-    );
-    await delay(25);
-    const abortedAt = performance.now();
-    controller.abort();
-    const outcome = await running;
-    const latencyMs = performance.now() - abortedAt;
+    const samples: { latencyMs: number; partial: number }[] = [];
+    for (let trial = 0; trial < 10; trial += 1) {
+      const { client, worker } = liveClient();
+      const controller = new AbortController();
+      const add = vi.spyOn(controller.signal, 'addEventListener');
+      const remove = vi.spyOn(controller.signal, 'removeEventListener');
+      const running = client.query(
+        'between(1,100000000,X).',
+        budget({ answerCap: BUDGET_MAX.answerCap }),
+        controller.signal,
+      );
+      await delay(25);
+      const abortedAt = performance.now();
+      controller.abort();
+      const outcome = await running;
+      const latencyMs = performance.now() - abortedAt;
 
-    expect(outcome.kind).toBe('cancelled');
-    const partial = outcome.kind === 'cancelled' ? outcome.solutions.length : -1;
-    expect(partial).toBeGreaterThan(0);
-    const query = worker.seen.find((request) => request.kind === 'query');
-    const cancels = worker.seen.filter((request) => request.kind === 'cancel');
-    expect(cancels).toHaveLength(1);
-    expect(cancels[0]).toMatchObject({ target: query?.id });
-    expect(add).toHaveBeenCalledTimes(1);
-    expect(remove).toHaveBeenCalledTimes(1);
-    console.info(`P2 cancel_latency_ms=${latencyMs.toFixed(3)} partial=${partial}`);
-    add.mockRestore();
-    remove.mockRestore();
-    client.dispose();
+      expect(outcome.kind).toBe('cancelled');
+      const partial = outcome.kind === 'cancelled' ? outcome.solutions.length : -1;
+      expect(partial).toBeGreaterThan(0);
+      const query = worker.seen.find((request) => request.kind === 'query');
+      const cancels = worker.seen.filter((request) => request.kind === 'cancel');
+      expect(cancels).toHaveLength(1);
+      expect(cancels[0]).toMatchObject({ target: query?.id });
+      expect(add).toHaveBeenCalledTimes(1);
+      expect(remove).toHaveBeenCalledTimes(1);
+      samples.push({ latencyMs, partial });
+      add.mockRestore();
+      remove.mockRestore();
+      client.dispose();
+    }
+    const latencies = samples.map(({ latencyMs }) => latencyMs).sort((a, b) => a - b);
+    const medianMs = ((latencies[4] ?? 0) + (latencies[5] ?? 0)) / 2;
+    const maxMs = latencies.at(-1) ?? 0;
+    const partials = samples.map(({ partial }) => partial);
+    console.info(
+      `P2 trials=10 median_ms=${medianMs.toFixed(3)} max_ms=${maxMs.toFixed(3)} ` +
+        `partial_min=${Math.min(...partials)} partial_max=${Math.max(...partials)}`,
+    );
   }, 120_000);
 
   it('P3 removes the listener when completion wins, so a later abort is inert', async () => {
@@ -427,5 +438,35 @@ describe('controller and lifecycle probes', () => {
       result: { kind: 'answer', id: 'category-b-recommendations' },
     });
     console.info('P9 controllers=2 cancel_awaited=true retry=answer stale_updates=0');
+  });
+
+  it('P10 demonstrates shared-signal fan-out across independent live callers', async () => {
+    const { client, workers } = scriptedClient();
+    const controller = new AbortController();
+    const first = client.query('between(1,100000000,X).', budget(), controller.signal);
+    const second = client.query('repeat.', budget(), controller.signal);
+    const worker = workers[0];
+    const queries = worker?.seen.filter((request) => request.kind === 'query') ?? [];
+    expect(queries).toHaveLength(2);
+
+    controller.abort();
+    const cancels = worker?.seen.filter((request) => request.kind === 'cancel') ?? [];
+    expect(cancels).toHaveLength(2);
+    expect(new Set(cancels.map((request) => request.target))).toEqual(
+      new Set(queries.map((request) => request.id)),
+    );
+    for (const request of cancels) {
+      worker?.reply({ id: request.id, kind: 'ack', accepted: true });
+    }
+    for (const request of queries) {
+      worker?.reply({ id: request.id, kind: 'cancelled', solutions: [] });
+    }
+    const outcomes = await Promise.all([first, second]);
+    expect(outcomes).toEqual([
+      { kind: 'cancelled', solutions: [] },
+      { kind: 'cancelled', solutions: [] },
+    ]);
+    console.info('P10 shared_signals=1 independent_queries=2 cancel_targets=2 cancelled=2');
+    client.dispose();
   });
 });
