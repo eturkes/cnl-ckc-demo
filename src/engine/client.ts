@@ -24,6 +24,12 @@ export type QueryOutcome =
   | { kind: 'cancelled'; solutions: PlSolution[] }
   | { kind: 'error'; error: EngineError };
 
+export interface QueryRun {
+  readonly requestId: string;
+  readonly result: Promise<QueryOutcome>;
+  cancel(): Promise<boolean>;
+}
+
 export type BootOutcome =
   { kind: 'booted'; contract: EngineContract } | { kind: 'error'; error: EngineError };
 
@@ -40,6 +46,11 @@ interface Pending {
   resolve: (response: EngineResponse) => void;
   generation: number;
   timer: unknown;
+}
+
+interface RequestRun {
+  id: string;
+  result: Promise<EngineResponse>;
 }
 
 export interface ClientOptions {
@@ -117,15 +128,15 @@ export class EngineClient {
     return worker;
   }
 
-  #send(request: EngineRequestBody, deadlineMs?: number): Promise<EngineResponse> {
+  #send(request: EngineRequestBody, deadlineMs?: number): RequestRun {
     const id = `r${++this.#nextId}`;
     let worker: Worker;
     try {
       worker = this.#ensure();
     } catch (cause) {
-      return Promise.resolve(protocolError(id, cause));
+      return { id, result: Promise.resolve(protocolError(id, cause)) };
     }
-    return new Promise<EngineResponse>((resolve) => {
+    const result = new Promise<EngineResponse>((resolve) => {
       const timer =
         deadlineMs === undefined
           ? undefined
@@ -139,6 +150,7 @@ export class EngineClient {
         this.#settle(id, protocolError(id, cause));
       }
     });
+    return { id, result };
   }
 
   /** The engine outlived its budget inside an uninterruptible step; only termination ends it. */
@@ -149,47 +161,44 @@ export class EngineClient {
   }
 
   async boot(): Promise<BootOutcome> {
-    return asBoot(await this.#send({ kind: 'boot' }));
+    return asBoot(await this.#send({ kind: 'boot' }).result);
   }
 
-  async query(goal: string, budget: BudgetSpec): Promise<QueryOutcome> {
+  query(goal: string, budget: BudgetSpec): QueryRun {
     let spec: BudgetSpec;
     try {
       spec = validateBudget(budget);
     } catch (cause) {
+      const requestId = `r${++this.#nextId}`;
       return {
-        kind: 'error',
-        error: { code: 'budget', message: cause instanceof Error ? cause.message : String(cause) },
+        requestId,
+        result: Promise.resolve({
+          kind: 'error',
+          error: {
+            code: 'budget',
+            message: cause instanceof Error ? cause.message : String(cause),
+          },
+        }),
+        cancel: () => Promise.resolve(false),
       };
     }
-    const response = await this.#send(
+    const request = this.#send(
       { kind: 'query', goal, budget: spec },
       spec.wallClockMs + HARD_GRACE_MS,
     );
-    switch (response.kind) {
-      case 'solutions':
-        return { kind: 'solutions', solutions: response.solutions };
-      case 'failure':
-        return { kind: 'failure' };
-      case 'limit':
-        return { kind: 'limit', limit: response.limit, solutions: response.solutions };
-      case 'cancelled':
-        return { kind: 'cancelled', solutions: response.solutions };
-      case 'error':
-        return { kind: 'error', error: response.error };
-      default:
-        return {
-          kind: 'error',
-          error: { code: 'protocol', message: `query answered with ${response.kind}` },
-        };
-    }
+    let cancellation: Promise<boolean> | undefined;
+    return {
+      requestId: request.id,
+      result: request.result.then(asQuery),
+      cancel: () => (cancellation ??= this.cancel(request.id)),
+    };
   }
 
   /** Load Prolog text into the running engine. Any diagnostic discards that engine. */
   async consult(
     source: string,
   ): Promise<{ kind: 'consulted' } | { kind: 'error'; error: EngineError }> {
-    const response = await this.#send({ kind: 'consult', source });
+    const response = await this.#send({ kind: 'consult', source }).result;
     if (response.kind === 'consulted') return { kind: 'consulted' };
     return {
       kind: 'error',
@@ -207,7 +216,7 @@ export class EngineClient {
    * a finished request is reported, not treated as success.
    */
   async cancel(target: string): Promise<boolean> {
-    const response = await this.#send({ kind: 'cancel', target });
+    const response = await this.#send({ kind: 'cancel', target }).result;
     return response.kind === 'ack' && response.accepted;
   }
 
@@ -235,7 +244,7 @@ export class EngineClient {
     // worker out of the requests the respawn is about to serve.
     this.#generation += 1;
     this.#abort(reason);
-    return asBoot(await this.#send({ kind: 'boot' }));
+    return asBoot(await this.#send({ kind: 'boot' }).result);
   }
 
   /** Drop the worker and every promise it still owes. Terminal: there is no respawn. */
@@ -247,6 +256,26 @@ export class EngineClient {
     this.#abort('client disposed the worker');
   }
 }
+
+const asQuery = (response: EngineResponse): QueryOutcome => {
+  switch (response.kind) {
+    case 'solutions':
+      return { kind: 'solutions', solutions: response.solutions };
+    case 'failure':
+      return { kind: 'failure' };
+    case 'limit':
+      return { kind: 'limit', limit: response.limit, solutions: response.solutions };
+    case 'cancelled':
+      return { kind: 'cancelled', solutions: response.solutions };
+    case 'error':
+      return { kind: 'error', error: response.error };
+    default:
+      return {
+        kind: 'error',
+        error: { code: 'protocol', message: `query answered with ${response.kind}` },
+      };
+  }
+};
 
 const protocolError = (id: string, cause: unknown): EngineResponse => ({
   id,

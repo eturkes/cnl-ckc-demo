@@ -26,6 +26,13 @@ export type AnswerResult =
   | { kind: 'cancelled'; id: QuestionId; serialized: string; solutions: PlSolution[] }
   | { kind: 'error'; id: QuestionId; error: EngineError };
 
+export interface AnswerRun {
+  /** Invalid ids have no engine correlation because they never reach the client. */
+  readonly requestId: string | null;
+  readonly result: Promise<AnswerResult>;
+  cancel(): Promise<boolean>;
+}
+
 export class AnswerService {
   readonly #client: EngineClient;
 
@@ -40,41 +47,53 @@ export class AnswerService {
    * strings from the UI, and both leave through the same rejection without the
    * engine ever seeing them.
    */
-  async ask(id: unknown, budget: BudgetSpec): Promise<AnswerResult> {
-    if (!isQuestionId(id)) return { kind: 'rejected', reason: 'unknown-id' };
-    const entry = QUESTION_CATALOG[id];
-    const outcome = await this.#client.query(entry.goal, budget);
-    switch (outcome.kind) {
-      case 'solutions':
-        return {
-          kind: 'answer',
-          id,
-          serialized: serializeAnswer(entry, outcome.solutions),
-          solutions: outcome.solutions,
-        };
-      case 'failure':
-        return { kind: 'failure', id, serialized: serializeAnswer(entry, []) };
-      case 'limit':
-        return {
-          kind: 'limit',
-          id,
-          limit: outcome.limit,
-          serialized: serializeAnswer(entry, outcome.solutions),
-          solutions: outcome.solutions,
-        };
-      case 'cancelled':
-        return {
-          kind: 'cancelled',
-          id,
-          serialized: serializeAnswer(entry, outcome.solutions),
-          solutions: outcome.solutions,
-        };
-      case 'error':
-        return { kind: 'error', id, error: outcome.error };
-      default: {
-        const exhaustive: never = outcome;
-        return exhaustive;
-      }
+  ask(id: unknown, budget: BudgetSpec): AnswerRun {
+    if (!isQuestionId(id)) {
+      return {
+        requestId: null,
+        result: Promise.resolve({ kind: 'rejected', reason: 'unknown-id' }),
+        cancel: () => Promise.resolve(false),
+      };
     }
+    const entry = QUESTION_CATALOG[id];
+    const query = this.#client.query(entry.goal, budget);
+    return {
+      requestId: query.requestId,
+      cancel: () => query.cancel(),
+      result: query.result.then((outcome) => {
+        switch (outcome.kind) {
+          case 'solutions':
+            return {
+              kind: 'answer',
+              id,
+              serialized: serializeAnswer(entry, outcome.solutions),
+              solutions: outcome.solutions,
+            };
+          case 'failure':
+            return { kind: 'failure', id, serialized: serializeAnswer(entry, []) };
+          case 'limit':
+            return {
+              kind: 'limit',
+              id,
+              limit: outcome.limit,
+              serialized: serializeAnswer(entry, outcome.solutions),
+              solutions: outcome.solutions,
+            };
+          case 'cancelled':
+            return {
+              kind: 'cancelled',
+              id,
+              serialized: serializeAnswer(entry, outcome.solutions),
+              solutions: outcome.solutions,
+            };
+          case 'error':
+            return { kind: 'error', id, error: outcome.error };
+          default: {
+            const exhaustive: never = outcome;
+            return exhaustive;
+          }
+        }
+      }),
+    };
   }
 }

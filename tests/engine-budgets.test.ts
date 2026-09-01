@@ -400,7 +400,7 @@ describe('P4 client lifecycle', () => {
     const second = client.query('fail.', budget());
     await settle();
     FakeWorker.live[0]?.raise('worker exploded');
-    for (const outcome of await Promise.all([first, second])) {
+    for (const outcome of await Promise.all([first.result, second.result])) {
       expect(outcome.kind).toBe('error');
       if (outcome.kind === 'error') expect(outcome.error.code).toBe('worker');
     }
@@ -413,10 +413,10 @@ describe('P4 client lifecycle', () => {
     const first = client.query('true.', budget());
     await settle();
     const dead = FakeWorker.live[0];
-    const staleId = dead?.last.id ?? '';
+    const staleId = first.requestId;
     void client.reset('test');
     await settle();
-    expect(await first).toMatchObject({ kind: 'error' });
+    expect(await first.result).toMatchObject({ kind: 'error' });
 
     const second = client.query('true.', budget());
     await settle();
@@ -425,7 +425,7 @@ describe('P4 client lifecycle', () => {
     dead?.reply({ id: FakeWorker.live[1]?.last.id ?? '', kind: 'failure' });
     expect(violations).toHaveLength(0);
     FakeWorker.live[1]?.reply({ id: FakeWorker.live[1]?.last.id ?? '', kind: 'failure' });
-    expect(await second).toEqual({ kind: 'failure' });
+    expect(await second.result).toEqual({ kind: 'failure' });
   });
 
   it('P4.9 single-flights concurrent hard cancels into one termination', async () => {
@@ -444,7 +444,7 @@ describe('P4 client lifecycle', () => {
   it('P3.6 turns an overrun deadline into a wall-clock state and a fresh worker', async () => {
     const client = clientUnderTest();
     const outcome = client.query('repeat.', budget({ wallClockMs: 1 }));
-    expect(await outcome).toEqual({ kind: 'limit', limit: 'wall-clock', solutions: [] });
+    expect(await outcome.result).toEqual({ kind: 'limit', limit: 'wall-clock', solutions: [] });
     await settle();
     expect(FakeWorker.live[0]?.terminated).toBe(true);
   }, 10_000);
@@ -467,7 +467,7 @@ describe('P4 client lifecycle', () => {
     const worker = FakeWorker.live[0];
     expect(armed.size).toBe(1);
     worker?.reply({ id: worker.last.id, kind: 'failure' });
-    expect(await outcome).toEqual({ kind: 'failure' });
+    expect(await outcome.result).toEqual({ kind: 'failure' });
     expect(armed.size).toBe(0);
   });
 
@@ -476,7 +476,7 @@ describe('P4 client lifecycle', () => {
     void client.query('true.', budget());
     await settle();
     client.dispose();
-    const outcome = await client.query('true.', budget());
+    const outcome = await client.query('true.', budget()).result;
     expect(outcome.kind).toBe('error');
     expect(FakeWorker.live).toHaveLength(1);
     expect((await client.reset('after dispose')).kind).toBe('error');
@@ -484,7 +484,7 @@ describe('P4 client lifecycle', () => {
 
   it('P1.2 rejects a bad budget before it reaches the worker', async () => {
     const client = clientUnderTest();
-    const outcome = await client.query('true.', budget({ depth: 0 }));
+    const outcome = await client.query('true.', budget({ depth: 0 })).result;
     expect(outcome.kind).toBe('error');
     if (outcome.kind === 'error') expect(outcome.error.code).toBe('budget');
     expect(FakeWorker.live).toHaveLength(0);
