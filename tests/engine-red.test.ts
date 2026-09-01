@@ -76,12 +76,52 @@ describe('P3 term decode/encode', () => {
 
     expect(decodeTerm(value)).toEqual({ kind: 'integer', value });
   });
-  it('P3.5 decodes negative and zero integers', todo);
-  it('P3.5 decodes a float distinctly from an integer', todo);
-  it('P3.6 decodes an unbound variable to an explicit variable value', todo);
-  it('P3.6 preserves variable identity shared across two arguments', todo);
-  it('P3.1 decodes an empty list distinctly from an empty compound', todo);
-  it('P3.1 decodes an improper list with its tail intact', todo);
+  it('P3.5 decodes negative and zero integers', () => {
+    expect(decodeTerm(-7)).toEqual({ kind: 'integer', value: -7 });
+    expect(decodeTerm(0)).toEqual({ kind: 'integer', value: 0 });
+  });
+
+  it('P3.5 decodes a float distinctly from an integer', () => {
+    expect(decodeTerm(1.5)).toEqual({ kind: 'float', value: 1.5 });
+    expect(decodeTerm(1)).toEqual({ kind: 'integer', value: 1 });
+  });
+
+  it('P3.6 decodes an unbound variable to an explicit variable value', () => {
+    expect(decodeTerm({ $t: 'v', v: 4 })).toEqual({ kind: 'variable', id: 4 });
+  });
+
+  it('P3.6 preserves variable identity shared across two arguments', () => {
+    const shared = { $t: 'v', v: 12 };
+
+    expect(decodeTerm(nativeCompound('pair', [shared, shared]))).toEqual({
+      kind: 'compound',
+      functor: 'pair',
+      args: [
+        { kind: 'variable', id: 12 },
+        { kind: 'variable', id: 12 },
+      ],
+    });
+  });
+
+  it('P3.1 decodes an empty list distinctly from an empty compound', () => {
+    const list = decodeTerm([]);
+    const compound = decodeTerm(nativeCompound('empty', []));
+
+    expect(list).toEqual({ kind: 'list', items: [] });
+    expect(compound).toEqual({ kind: 'compound', functor: 'empty', args: [] });
+    expect(list).not.toEqual(compound);
+  });
+
+  it('P3.1 decodes an improper list with its tail intact', () => {
+    expect(decodeTerm({ $t: 'l', v: ['a', 2], t: 'tail' })).toEqual({
+      kind: 'improper-list',
+      items: [
+        { kind: 'atom', value: 'a' },
+        { kind: 'integer', value: 2 },
+      ],
+      tail: { kind: 'atom', value: 'tail' },
+    });
+  });
   it('P3.1 decodes a nested compound ref(1)', todo);
   it('P3.1 decodes a deeply nested compound', todo);
   it('P3.1 decodes an operator term', todo);
