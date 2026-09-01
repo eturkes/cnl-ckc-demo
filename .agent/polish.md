@@ -47,6 +47,25 @@ Off-spine improvements. Each entry carries the acceptance check that closes it.
   `cells()` raw-splits on `|`, so a `\|` inside a finding shifts the evidence
   column. Accept: a finding containing an escaped pipe grades identically to one
   without, and the fix ships with the validator's port into the repo.
+- **u3 hard-cancel recovery has no committed test** — `P4.4`/`P4.5` are proven only by
+  spike probes on branch `wt/spike-m1u3-js`. Accept: a committed test asserts 337 -> 338
+  with a `dynamic/1` overlay, then 337 and absent after `EngineClient.reset()`.
+- **u3 heap limit is unit-tested only** — `P2.7` is covered by `readOutcome` over a
+  synthesized `resource_error(memory)`, not a live trip. Accept: a committed test drives
+  real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate.
+- **u3 adversarial review** — `rev-m1u3` delivered a 47-row check set at
+  `.scratch/agents/rev-m1u3.md` and branch `wt/rev-m1u3`, but MAIN hit the reserve before
+  phase 2. Accept: a reviewer adjudicates every row against u3's commits `6c2f716`,
+  shipping a red test per accepted defect.
+- **u3 red suite completion** — `test-m1u3` partially filled its 35-case skeleton,
+  committed at `22c8b97` on `wt/test-m1u3`. Accept: the cases MAIN's 31 do not cover run
+  in the primary tree, red for a contract reason or green.
+- **Browser hard-kill proof** — every terminate/recreate number comes from Node
+  `worker_threads`; the product ships browser `Worker.terminate()`. Accept: a browser run
+  kills a hostile goal and reports the recreated engine at 337 documents.
+- **Forbidden-surface checks are unmechanized** — `P6.2`/`P6.3` hold by construction with
+  no gate step. Accept: the gate fails when a main-thread module imports `swipl-wasm` or
+  an unbudgeted query entry point is exported.
 - **Solution streaming** — u2 delivers one batch per query. Both spikes measured
   streaming as cheap (0.0414 vs 0.0345 ms/query) and useful for early answers.
   Accept: solutions render as they arrive, and a queued cancel still cannot

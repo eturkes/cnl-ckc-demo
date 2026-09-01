@@ -142,6 +142,37 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
 - Built output: main chunk carries 0 engine bytes; worker chunk plus a hashed
   `kb-<hash>.pvm` carry it. Gate rc=0 at 58 tests / 330 files.
 
+## Budgets and cancellation (u3)
+
+- Split enforcement: Prolog owns stack/depth/inference (`stack_limit` reducible
+  1073741824 -> 8388608 B, catchable `error(resource_error(stack),stack_overflow{...})`
+  in 0.681 ms; `depth_limit_exceeded`; `inference_limit_exceeded`), +0.346 ms / +0.30%.
+- No in-Prolog wall clock: build reports `threads=false`; `library(time)` raises
+  `existence_error(source_sink,library(time))`; `call_with_time_limit/2` and `alarm/4`
+  raise procedure existence errors.
+- Prolog limits do not bound a query: `repeat` under the full wrapper emitted 100000
+  answers in 452.232 ms with `D=1`, `I=true`. The JS answer cap and deadline terminate it.
+- A worker timer cannot fire inside a synchronous step: in-worker 25 ms never fired
+  across 249.80 ms of `repeat,fail`; main-thread 25 ms fired at 25.97 ms. Hard deadline
+  is main-thread only, at `wallClockMs + 500 ms`.
+- `solve` yields a MACROTASK between solutions; a microtask yield admits no posted
+  message and cannot deliver a cancel. Granularity = 62.00 ms worst real step over 80.
+- `Query.close()` is load-bearing and undeclared (`.d.ts` declares only `next`/`once`).
+  Abandoning an iterator on a cap, cancel or deadline leaves the frame open and every
+  later query returns `failure` — measured as 8 cascading failures before it was wired.
+- Wrapper reserves `BudgetDepth_`, `BudgetInference_`, `BudgetResource_`; a goal naming
+  one is rejected. Goals arrive as whole clauses, so the wrapper strips the trailing full
+  stop; leaving it in yields a syntax error that reads as zero answers.
+- Runtime `consult` fails OPEN on its result: syntax error and failing directive both
+  return `bindings success:true`, throw nothing, leave clauses loaded. Only drained
+  stderr (`printErr` + `on_output`) reveals it, and the engine is already dirty, so a
+  diagnostic poisons the session rather than the request.
+- Hard cancel: terminate 2.7-3.5 ms; terminate->respawn->boot 181.75-223.96 ms in Node
+  against a 335 ms browser boot floor; `dynamic/1` overlay takes 337 -> 338 and recreate
+  restores 337. Browser `Worker.terminate()` is UNMEASURED.
+- Heap exhaustion returns typed `assertz/1: Not enough resources: no_memory`, no throw,
+  no abort, ~2222464 KiB peak RSS; engine still answers but must be recreated.
+
 ## Measured (do not re-measure)
 
 - Corpus via SWI-Prolog, authoritative: **800 noun atoms, 127 verbs, 337 docs**,
