@@ -1,0 +1,28 @@
+[
+  {
+    "id": "category-b-recommendations",
+    "clauses": [
+      "guideline_entity(actual,A,recommendation,countable)",
+      "guideline_cardinality(actual,A,na,eq,1)",
+      "guideline_entity(actual,B,'category-B-recommendation',countable)",
+      "guideline_cardinality(actual,B,na,eq,1)",
+      "guideline_event(actual,C,be)",
+      "guideline_arg(actual,C,1,A)",
+      "guideline_arg(actual,C,2,B)"
+    ],
+    "projection": [{ "variable": "A", "descriptor": "noun(recommendation,countable)" }]
+  },
+  {
+    "id": "evidence-type-3-recommendation",
+    "clauses": [
+      "guideline_entity(actual,A,recommendation,countable)",
+      "guideline_cardinality(actual,A,na,eq,1)",
+      "guideline_entity(actual,B,'evidence-type-3-recommendation',countable)",
+      "guideline_cardinality(actual,B,na,eq,1)",
+      "guideline_event(actual,C,be)",
+      "guideline_arg(actual,C,1,A)",
+      "guideline_arg(actual,C,2,B)"
+    ],
+    "projection": [{ "variable": "A", "descriptor": "noun(recommendation,countable)" }]
+  }
+]
