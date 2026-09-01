@@ -365,9 +365,10 @@ const summarizeConsult = async () => {
 };
 
 const summarizeBenchmark = async () => {
+  const pairs = Number(process.argv[3] ?? 20);
   const host = new EngineHost();
   const boot = await host.spawn();
-  const benchmark = await host.request('benchmark', { pairs: 20, wallMs: 1_000, cap: 10 });
+  const benchmark = await host.request('benchmark', { pairs, wallMs: 1_000, cap: 10 });
   await host.hardStop('benchmark complete');
   return { boot, benchmark };
 };

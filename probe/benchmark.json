@@ -1,0 +1,46 @@
+{
+  "mode": "benchmark",
+  "result": {
+    "boot": {
+      "reused": false,
+      "contract": {
+        "schemaVersion": 1,
+        "distinctSchemaVersions": 1,
+        "documents": 337
+      },
+      "bootMs": 130.580431,
+      "diagnostics": []
+    },
+    "benchmark": {
+      "id": "p2",
+      "ok": true,
+      "result": {
+        "pairs": 50,
+        "plain": {
+          "count": 50,
+          "meanMs": 152.3310754599999,
+          "medianMs": 157.36968400000023,
+          "p95Ms": 177.58754999999974,
+          "minMs": 111.24265500000001,
+          "maxMs": 229.39219699999921
+        },
+        "driven": {
+          "count": 50,
+          "meanMs": 155.7347523999999,
+          "medianMs": 158.37849199999982,
+          "p95Ms": 196.31726600000002,
+          "minMs": 112.57984600000009,
+          "maxMs": 215.33702600000015
+        },
+        "delta": {
+          "count": 50,
+          "meanMs": 3.40367693999998,
+          "medianMs": 1.5200830000012502,
+          "p95Ms": 23.645958000000064,
+          "minMs": -47.744181999998546,
+          "maxMs": 52.015578000000005
+        }
+      }
+    }
+  }
+}

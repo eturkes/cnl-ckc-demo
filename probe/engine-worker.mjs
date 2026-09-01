@@ -353,7 +353,12 @@ const stats = (values) => {
 };
 
 const benchmark = ({ pairs, wallMs, cap }) => {
-  drainGoal(CATEGORY_A_GOAL, false, wallMs, cap);
+  const guardedPlain = () => {
+    const parsed = parseGoal(CATEGORY_A_GOAL);
+    if (!parsed.ok) throw new Error(parsed.error.message);
+    return drainGoal(CATEGORY_A_GOAL, false, wallMs, cap);
+  };
+  guardedPlain();
   drainGoal(CATEGORY_A_GOAL, true, wallMs, cap);
   const plain = [];
   const driven = [];
@@ -361,7 +366,7 @@ const benchmark = ({ pairs, wallMs, cap }) => {
     const order = index % 2 === 0 ? [false, true] : [true, false];
     for (const useDriver of order) {
       const started = performance.now();
-      const result = drainGoal(CATEGORY_A_GOAL, useDriver, wallMs, cap);
+      const result = useDriver ? drainGoal(CATEGORY_A_GOAL, true, wallMs, cap) : guardedPlain();
       const elapsed = performance.now() - started;
       if (useDriver) {
         if (result.status !== 'complete' || result.count !== 7)
@@ -373,7 +378,12 @@ const benchmark = ({ pairs, wallMs, cap }) => {
       }
     }
   }
-  return { pairs, plain: stats(plain), driven: stats(driven) };
+  return {
+    pairs,
+    plain: stats(plain),
+    driven: stats(driven),
+    delta: stats(driven.map((value, index) => value - plain[index])),
+  };
 };
 
 const memory = ({ stackLimit, cells }) => {
