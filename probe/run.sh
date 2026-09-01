@@ -19,5 +19,6 @@ pnpm exec tsc \
   --noUnusedParameters \
   --skipLibCheck \
   --outDir "$out" \
-  probe/decoder.mts
+  probe/decoder.mts \
+  probe/types.mts
 node probe/spike.cjs "$out/decoder.mjs" "$@"

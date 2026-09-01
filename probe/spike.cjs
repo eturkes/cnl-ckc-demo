@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { performance } = require('node:perf_hooks');
 const { pathToFileURL } = require('node:url');
+const { MessageChannel } = require('node:worker_threads');
 const loadImageModule = require('swipl-wasm/dist/loadImageDefault');
 
 const loadImageDefault = loadImageModule.default ?? loadImageModule;
@@ -116,7 +117,7 @@ function show(term) {
 (async () => {
   const decoderUrl = pathToFileURL(path.resolve(process.argv[2])).href;
   const mode = process.argv[3];
-  const { createEncoder, decodeBindings } = await import(decoderUrl);
+  const { createEncoder, decodeBindings, decodeOnce } = await import(decoderUrl);
   const module = await engine();
 
   if (mode === 'slice' || mode === 'shape') {
@@ -268,6 +269,166 @@ function show(term) {
         writeCanonicalMatches,
         messageMatches,
         sample: comparisons[0],
+      }),
+    );
+    return;
+  }
+
+  if (mode === 'errors') {
+    const exceptionRaw = structuredClone(
+      module.prolog.query("throw(error(domain_error(widget,bad),context(spike/0,'boom'))).").once(),
+    );
+    const failureRaw = structuredClone(module.prolog.query('fail.').once());
+    const malformedQueryRaw = structuredClone(module.prolog.query('foo(.').once());
+    let malformedTerm;
+    try {
+      new module.prolog.Term('foo(');
+      malformedTerm = { thrown: false };
+    } catch (error) {
+      malformedTerm = {
+        thrown: true,
+        name: error instanceof Error ? error.name : typeof error,
+        message: error instanceof Error ? error.message : String(error),
+        typed: { kind: 'error', error: { kind: 'decode', message: String(error) } },
+      };
+    }
+    const typed = {
+      exception: decodeOnce(exceptionRaw),
+      failure: decodeOnce(failureRaw),
+      malformedQuery: decodeOnce(malformedQueryRaw),
+      malformedTerm: malformedTerm.typed,
+    };
+    assert.equal(typed.exception.kind, 'prolog-error');
+    assert.equal(typed.failure.kind, 'failure');
+    assert.equal(typed.malformedQuery.kind, 'prolog-error');
+    assert.equal(malformedTerm.thrown, true);
+    console.log(
+      json({
+        raw: {
+          exception: exceptionRaw,
+          failure: failureRaw,
+          malformedQuery: malformedQueryRaw,
+          malformedTerm,
+        },
+        typed,
+        swallowed: [],
+      }),
+    );
+    return;
+  }
+
+  if (mode === 'protocol') {
+    const query = module.prolog.query(`${categoryAGoal}.`);
+    const queryStarted = performance.now();
+    const yieldMs = [];
+    const rows = [];
+    for (;;) {
+      const step = query.next();
+      if (step.done) break;
+      yieldMs.push(performance.now() - queryStarted);
+      rows.push(decodeBindings(step.value));
+    }
+    assert.equal(rows.length, 7);
+
+    const send = (payloads) =>
+      new Promise((resolve) => {
+        const { port1, port2 } = new MessageChannel();
+        const received = [];
+        const started = performance.now();
+        port2.on('message', (message) => {
+          received.push(message);
+          if (received.length === payloads.length) {
+            const elapsedMs = performance.now() - started;
+            port1.close();
+            port2.close();
+            resolve({ elapsedMs, received });
+          }
+        });
+        for (const payload of payloads) port1.postMessage(payload);
+      });
+
+    const rounds = 200;
+    const streamingPayloads = Array.from({ length: rounds }, (_, round) =>
+      rows.map((row, index) => ({
+        kind: 'solution',
+        requestId: `stream-${round}`,
+        index,
+        binding: row.A,
+      })),
+    ).flat();
+    const batchPayloads = Array.from({ length: rounds }, (_, round) => ({
+      kind: 'solutions',
+      requestId: `batch-${round}`,
+      solutions: rows.map((row) => row.A),
+    }));
+    const streaming = await send(streamingPayloads);
+    const batch = await send(batchPayloads);
+    assert.equal(streaming.received[0].requestId, 'stream-0');
+    assert.equal(streaming.received.at(-1).requestId, `stream-${rounds - 1}`);
+    assert.equal(batch.received[0].requestId, 'batch-0');
+    assert.equal(batch.received.at(-1).requestId, `batch-${rounds - 1}`);
+
+    const timerScheduled = performance.now();
+    const timer = new Promise((resolve) => setTimeout(() => resolve(performance.now()), 0));
+    const blockingStarted = performance.now();
+    assert.equal(rawSolutionCount(module, categoryAGoal), 7);
+    const blockingEnded = performance.now();
+    const timerFired = await timer;
+    console.log(
+      json({
+        requestCorrelation: true,
+        iterator: {
+          firstSolutionMs: yieldMs[0],
+          lastSolutionMs: yieldMs.at(-1),
+          solutions: yieldMs.length,
+        },
+        channel: {
+          rounds,
+          streamedMessages: streamingPayloads.length,
+          streamMsPerQuery: streaming.elapsedMs / rounds,
+          streamMsPerSolution: streaming.elapsedMs / streamingPayloads.length,
+          batchedMessages: batchPayloads.length,
+          batchMsPerQuery: batch.elapsedMs / rounds,
+        },
+        cancellationConstraint: {
+          synchronousQueryMs: blockingEnded - blockingStarted,
+          zeroDelayTimerFiredMsAfterSchedule: timerFired - timerScheduled,
+          timerLagAfterQueryMs: timerFired - blockingEnded,
+          conclusion:
+            'the worker cannot process a queued cancel while synchronous next() is running',
+        },
+      }),
+    );
+    return;
+  }
+
+  if (mode === 'types') {
+    const typesUrl = new URL('./types.mjs', decoderUrl).href;
+    const { replyKind, requireBinding, termKind } = await import(typesUrl);
+    const [row] = solutions(module, categoryAGoal, decodeBindings);
+    const binding = requireBinding(row, 'A');
+    const reply = {
+      kind: 'solutions',
+      requestId: 'types-1',
+      documentCount: 337,
+      solutions: [{ bindings: row, display: {} }],
+    };
+    console.log(
+      json({
+        strictCompile: true,
+        flags: [
+          'strict',
+          'noUncheckedIndexedAccess',
+          'exactOptionalPropertyTypes',
+          'verbatimModuleSyntax',
+        ],
+        termKind: termKind(binding),
+        replyKind: replyKind(reply),
+        enforcedNarrowing: [
+          'unknown native values',
+          'Record index may be undefined',
+          'exhaustive discriminants',
+        ],
       }),
     );
     return;

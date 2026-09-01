@@ -24,6 +24,11 @@ export type QueryReply =
   | { kind: 'failure'; requestId: string }
   | { kind: 'error'; requestId: string; error: { kind: 'prolog' | 'decode'; message: string } };
 
+export type OnceResult =
+  | { kind: 'bindings'; bindings: PlBindings }
+  | { kind: 'failure' }
+  | { kind: 'prolog-error'; message: string };
+
 export interface PrologConstructors {
   Compound: new (functor: string, ...args: unknown[]) => unknown;
   List: new (items: unknown[], tail?: unknown) => unknown;
@@ -100,6 +105,15 @@ export function decodeBindings(value: unknown): PlBindings {
     if (name !== '$tag' && name !== 'success') bindings[name] = decodeTerm(term);
   }
   return bindings;
+}
+
+export function decodeOnce(value: unknown): OnceResult {
+  if (!record(value)) throw new DecodeError('expected swipl-wasm query result');
+  if (value.error === true && typeof value.message === 'string') {
+    return { kind: 'prolog-error', message: value.message };
+  }
+  if (value.success === false) return { kind: 'failure' };
+  return { kind: 'bindings', bindings: decodeBindings(value) };
 }
 
 export function createEncoder(constructors: PrologConstructors): (term: PlTerm) => unknown {
