@@ -20,5 +20,22 @@ export default defineConfig({
   worker: { format: 'es' },
   // swipl-wasm ships large .wasm/.data assets; keep them as files, never inlined.
   build: { assetsInlineLimit: 0 },
-  test: { environment: 'node', include: ['tests/**/*.test.ts'] },
+  test: {
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'node',
+          environment: 'node',
+          include: ['tests/**/*.test.ts'],
+          exclude: ['tests/**/*.dom.test.ts'],
+        },
+      },
+      {
+        extends: true,
+        resolve: { conditions: ['browser'] },
+        test: { name: 'dom', environment: 'jsdom', include: ['tests/**/*.dom.test.ts'] },
+      },
+    ],
+  },
 });
