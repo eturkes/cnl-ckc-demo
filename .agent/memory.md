@@ -247,3 +247,43 @@ five start (typescript 0.26s, json 0.43s, yaml 0.59s, markdown 1.59s, svelte
 
 An ambiguous MCP tool alias (`no unique request-local match`) is session-fatal
 and survives `/resume`; a new session clears it.
+
+## Question catalog and answers (u4)
+
+- Catalog is GENERATED, not transcribed: `tools/kb/catalog.mjs` parses the bag's
+  `queries/pl/*.pl` in memory during `kb:build` and emits
+  `kb/generated/question-catalog.json`; `kb:asset-check` re-derives it and fails on any
+  mismatch. Generation median 0.631 ms, artifact ~3.3 kB. The rejected alternative —
+  repo-source goals policed by a bag-divergence gate step — measured 1036.812 ms.
+- Bag `queries/` = 4 ids × 4 files (`.ace`, `pl/`, `answers/`, `traces/`). **None of it is
+  in the PVM**: `payloadSource`'s `PAYLOAD` regex admits `data/guidelines/*/pl/*.pl` only.
+  Query goals therefore reach the engine from the catalog, never from the image.
+- Goal grammar: `'$guideline_query_projection'(goal(G),answers(As))`, `G` in canonical
+  prefix `','/2` form. `answer(Var,noun(N,countable)|wh(what))` names a projected column;
+  `answers([])` = existence question → `yes`/`no`, not an empty row set.
+- Repo-authored goals derive from an exported analog by ONE token-exact single-hit atom
+  substitution. Substring replace is unsafe: the corpus carries `'category-B-decision'`,
+  `'evidence-type-2-recommendation'` and `'evidence-type-4-recommendation'`.
+  `'category-B-recommendation'` = 24 sites / 5 ground facts; `'evidence-type-3-recommendation'`
+  = 3 sites, all ground.
+- Live solution counts, all six: category-A 7, dosage-reduction 2, evidence-type-1 1,
+  recommendation-exists 12 (renders `yes`), category-B 5, evidence-type-3 3.
+- All four exported ids reproduce their committed `result/1` argument **byte for byte**,
+  not merely value-equal. Live yield order already equals committed order, so the sort
+  changes nothing on this corpus — it is there for order-independence, not for this data.
+- Sort = SWI standard order over decoded `PlTerm`, never a byte sort of rendered text.
+  The two diverge on mixed shapes (`10` precedes `'2'` numerically, follows it lexically).
+  Lists order as their `'[|]'/2` chain; `[]` orders as an atom.
+- Overlay probe: the category-A goal is a seven-way join, so ONE asserted fact cannot
+  move it. A working overlay declares `guideline_entity/4`, `guideline_cardinality/5`,
+  `guideline_event/3` and `guideline_arg/4` dynamic and supplies a whole new proof.
+- `EngineSession.consult` needs `SessionOptions.drain`, which returns `string[]`. Without
+  it the consult is refused, and `handle` reports that as an error response a test that
+  ignores the return value will silently pass over.
+- Forbidden-reach check = byte scan over `src`, `tools`, `vite.config.ts`, `index.html`
+  in `kb:asset-check`. ESLint cannot do it: core `no-restricted-imports` visits import and
+  export declarations only, so `import()` and `fs.readFile` escape it. `tests/` is out of
+  scope on purpose — reading committed answers is what makes them oracles.
+- `MANIFEST_VERSION` 2 adds the `catalog` block; the bump is what stops a cached
+  manifest from lacking it. `kb:reproduce` now also proves catalog byte-identity
+  (`a38e74d9f518`).

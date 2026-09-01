@@ -68,16 +68,22 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
   Accept: each limit surfaces its own typed state; hard cancel drops asserted
   state and returns a 337-document engine; malformed goals and consult `ERROR`
   fail closed; no unbounded query reaches the UI.
-- **u4 — question catalog + live answer service** · kernel · `oracle` · est 135K · OPEN (u3 contract shipped)
-  Six ID-only catalog entries — the four exported projections plus repo-authored
-  category-B and evidence-type-3 goals — compiled goals, canonical sorted result
-  serializer, generic guideline-ID humanizer.
-  Accept: all six IDs execute live through u2/u3; category-A reproduces its
-  committed answer bytes and the other three are canonical value-equal to theirs;
-  an injected overlay clause changes the displayed service result; a forbidden-import
-  check fails on any production import of `queries/answers`; unsupported IDs and
-  free text reject.
-- **u5 — accessible question→answer workflow** · kernel · est 145K · BLOCKED (u4)
+- **u4 — question catalog + live answer service** · kernel · `oracle` · est 135K · DONE
+  `tools/kb/catalog.mjs` + `src/questions/{catalog,serialize,humanize,service}.ts`
+  + `tests/questions-live.test.ts`. All six goals are bag-derived: the four exported
+  ones verbatim from `goal/1` in canonical prefix form, the two authored ones under
+  one token-exact single-hit atom substitution. Live counts 7/2/1/12/5/3; category-A
+  and the other three all reproduce their committed `result/1` bytes. Sort = SWI
+  standard order over decoded terms, not a byte sort. Forbidden-reach check is a byte
+  scan in `kb:asset-check`, negative control rc=1.
+  Gate rc=0 from clean cache: 339 files 0 errors, 107 tests, 3 assets; `kb:reproduce`
+  now covers the catalog (`a38e74d9f518`).
+  `main=95% 228K/240K`, `mate=62% 148K/240K` (spike-m1u4-gen). The `oracle` flag was
+  discharged by the two wave-1 spikes as independent reference implementations
+  (`.scratch/contract-m1u4.md` D9), not by a separate `orc`. NOT verified:
+  `test-m1u4`'s red suite and `rev-m1u4`'s 24-row adjudication — both reached the
+  reserve; both in `.agent/polish.md` with their branches.
+- **u5 — accessible question→answer workflow** · kernel · est 145K · OPEN (u4 contract shipped)
   `DemoController` plus leaf components: readonly APG combobox, run/cancel/retry,
   answer selection, boot/loading/empty/error/ready states.
   Accept: pointer and keyboard paths reach all six questions; arbitrary text never

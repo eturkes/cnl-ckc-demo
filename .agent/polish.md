@@ -70,3 +70,21 @@ Off-spine improvements. Each entry carries the acceptance check that closes it.
   streaming as cheap (0.0414 vs 0.0345 ms/query) and useful for early answers.
   Accept: solutions render as they arrive, and a queued cancel still cannot
   interrupt an in-flight synchronous `next()`.
+- **u4 red suite** — `test-m1u4` authored a diff-blind suite on branch `wt/test-m1u4`
+  from `.scratch/contract-m1u4.md`; MAIN reached the reserve before harvest. Accept: the
+  suite runs in the primary tree, every case is red for a contract reason or green, and
+  the cases MAIN's 18 do not cover are merged.
+- **u4 adversarial review** — `rev-m1u4` fixed a 24-row check set (`.scratch/agents/rev-m1u4.md`,
+  branch `wt/rev-m1u4` at `20de849`) but phase 2 never ran. Accept: a reviewer adjudicates
+  every row against `823ed4f`, shipping a red test per accepted defect.
+- **Full answer-artifact reproduction** — u4 binds the byte claim to the `result/1`
+  argument; both spikes also reproduced the whole 734-byte committed file. Accept: the
+  service emits the complete `'$guideline_answers'` envelope, or the contract records why
+  the bag's `query_sha256` stays out of the runtime.
+- **Service query handles** — `EngineClient.query` hides its request id while `cancel`
+  needs one, so u5 cannot build cooperative cancel on `AnswerService.ask` as shipped.
+  Accept: a run started through the service is cancellable by id without exposing an
+  unbudgeted surface.
+- **Assembled-path evasion** — the answer-oracle scan matches a literal `queries/answers`;
+  a path concatenated at runtime slips past. Accept: a production fixture that assembles
+  the path from parts fails `kb:asset-check`.
