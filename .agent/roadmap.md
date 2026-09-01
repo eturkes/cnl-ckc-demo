@@ -62,13 +62,13 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
   `main=93% 224K/240K`, `mate=69% 167K/240K` (map-m1u2). NOT verified: the dev-server
   and built-output browser smokes (P6.2) and the `test-m1u2` red suite — both in
   `.agent/polish.md`. u2 carries no adversarial review; `rev`/`rev2` never ran.
-- **u3 — budgets, failure modes, cancellation** · kernel · est 110K · OPEN (u2 contract shipped)
+- **u3 — budgets, failure modes, cancellation** · kernel · est 110K · DONE
   Stack/depth/inference/wall-clock budgets, typed error states, consult-stderr
   fatality, cooperative abort plus terminate-and-recreate.
   Accept: each limit surfaces its own typed state; hard cancel drops asserted
   state and returns a 337-document engine; malformed goals and consult `ERROR`
   fail closed; no unbounded query reaches the UI.
-- **u4 — question catalog + live answer service** · kernel · `oracle` · est 135K · BLOCKED (u3)
+- **u4 — question catalog + live answer service** · kernel · `oracle` · est 135K · OPEN (u3 contract shipped)
   Six ID-only catalog entries — the four exported projections plus repo-authored
   category-B and evidence-type-3 goals — compiled goals, canonical sorted result
   serializer, generic guideline-ID humanizer.
@@ -93,6 +93,10 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
   (20 words instructions / 25 descriptions); font licences ship; token contrast
   ≥4.5:1 normal and ≥3:1 large; visual QA covers every u5 state at mobile and
   desktop widths.
+
+Sizing correction from u3: wave 1 (one map + two spikes, 40 rows) cost MAIN 130K before
+a line was written; implementation fit in the rest only because MAIN never re-read the
+engine files already in context. Harvest, not implementation, is the cost driver.
 
 Watch item: u5 carries the largest estimate under a ±30K band. If its wave
 crosses ~175K, split the combobox/intake surface from the run-lifecycle surface.
