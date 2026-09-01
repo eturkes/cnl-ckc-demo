@@ -51,7 +51,7 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
 - **u2 — Prolog engine worker** · kernel · est 120K · DONE
   `src/engine/{protocol,terms,session,client,worker}.ts` + `tests/engine-session.test.ts`;
   Vite alias `@kb`, `base:'./'`, `worker.format:'es'`, root `cacheDir`. Term boundary
-  ruled **JS-side decode inside the worker** (`.scratch/contract-m1u2.md` D1.1): both
+  ruled **JS-side decode inside the worker** (`.agent/contracts/m1u2.md` D1.1): both
   spikes cleared 11/11 traps, but the Prolog-serialization alternative needs a
   hand-written JS grammar that silently turned `1.0Inf` into an atom. Delivery = one
   correlated batch; display = `term_string/3` matching `write_canonical`.
@@ -78,7 +78,7 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
   now covers the catalog (`a38e74d9f518`).
   `main=95% 228K/240K`, `mate=62% 148K/240K` (spike-m1u4-gen). The `oracle` flag was
   discharged by the two wave-1 spikes as independent reference implementations
-  (`.scratch/contract-m1u4.md` D9), not by a separate `orc`. NOT verified:
+  (`.agent/contracts/m1u4.md` D9), not by a separate `orc`. NOT verified:
   `test-m1u4`'s red suite, in `.agent/polish.md`. Judgment review is M1's.
 - **u5 — accessible question→answer workflow** · kernel · est 145K · OPEN (u4 contract shipped)
   `DemoController` plus leaf components: readonly APG combobox, run/cancel/retry,
@@ -99,10 +99,10 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
 
 MILESTONE-REVIEW dispatch inputs — contract | fixed check set | evidence branches:
 
-- u1 `.scratch/contract-m1u1.md` | — | `wt/spike-m1u1-det`; partial reports `map-m1u1` 17/25, `spike-m1u1-det` 9/12
-- u2 `.scratch/contract-m1u2.md` | — | `wt/test-m1u2` `b0fb200`, `wt/spike-m1u2-{js,pl}`
-- u3 `.scratch/contract-m1u3.md` | `.scratch/agents/rev-m1u3.md`, 47 rows | `wt/test-m1u3` `22c8b97`, `wt/spike-m1u3-{js,pl}`
-- u4 `.scratch/contract-m1u4.md` | `.scratch/agents/rev-m1u4.md`, 24 rows | `wt/test-m1u4` `0240aae`, `wt/spike-m1u4-{gen,src}`
+- u1 `.agent/contracts/m1u1.md` | — | `wt/spike-m1u1-det`; partial reports `map-m1u1` 17/25, `spike-m1u1-det` 9/12
+- u2 `.agent/contracts/m1u2.md` | — | `wt/test-m1u2` `b0fb200`, `wt/spike-m1u2-{js,pl}`
+- u3 `.agent/contracts/m1u3.md` | `.agent/contracts/m1u3-rev-checkset.md`, 47 rows | `wt/test-m1u3` `22c8b97`, `wt/spike-m1u3-{js,pl}`
+- u4 `.agent/contracts/m1u4.md` | `.agent/contracts/m1u4-rev-checkset.md`, 24 rows | `wt/test-m1u4` `0240aae`, `wt/spike-m1u4-{gen,src}`
 
 u1–u4 shipped their mechanical assurance and carry no judgment adjudication; those rows
 seed `.agent/review-m1.md`. Projection: 5 `kernel` units × ~35 rows ≈ 175 rows plus u6

@@ -59,7 +59,7 @@ Off-spine improvements. Each entry carries the acceptance check that closes it.
   Accept: solutions render as they arrive, and a queued cancel still cannot
   interrupt an in-flight synchronous `next()`.
 - **u4 red suite** — `test-m1u4` authored a diff-blind suite on branch `wt/test-m1u4`
-  from `.scratch/contract-m1u4.md`; MAIN reached the reserve before harvest. Accept: the
+  from `.agent/contracts/m1u4.md`; MAIN reached the reserve before harvest. Accept: the
   suite runs in the primary tree, every case is red for a contract reason or green, and
   the cases MAIN's 18 do not cover are merged.
 - **Full answer-artifact reproduction** — u4 binds the byte claim to the `result/1`
