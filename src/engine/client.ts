@@ -40,6 +40,7 @@ interface Pending {
   resolve: (response: EngineResponse) => void;
   generation: number;
   timer: unknown;
+  abort: { signal: AbortSignal; listener: () => void } | undefined;
 }
 
 export interface ClientOptions {
@@ -76,6 +77,9 @@ export class EngineClient {
     const pending = this.#pending.get(id);
     if (pending === undefined) return;
     if (pending.timer !== undefined) this.#options.cancelSchedule(pending.timer);
+    if (pending.abort !== undefined) {
+      pending.abort.signal.removeEventListener('abort', pending.abort.listener);
+    }
     this.#pending.delete(id);
     pending.resolve(response);
   }
@@ -117,8 +121,21 @@ export class EngineClient {
     return worker;
   }
 
-  #send(request: EngineRequestBody, deadlineMs?: number): Promise<EngineResponse> {
+  // Cancellation arrives as a signal rather than as a returned run handle because
+  // the correlation id is exactly what must not escape: a caller holding `rN` could
+  // cancel a request it never issued. The signal carries the authority instead, and
+  // `cancel` stays internal.
+  #send(
+    request: EngineRequestBody,
+    deadlineMs?: number,
+    signal?: AbortSignal,
+  ): Promise<EngineResponse> {
     const id = `r${++this.#nextId}`;
+    // An aborted signal is aborted forever, so a reused one must not boot a worker
+    // just to cancel it. Retry mints a fresh controller.
+    if (signal?.aborted) {
+      return Promise.resolve({ id, kind: 'cancelled', solutions: [] });
+    }
     let worker: Worker;
     try {
       worker = this.#ensure();
@@ -132,11 +149,29 @@ export class EngineClient {
           : this.#options.schedule(() => {
               this.#onDeadline(id);
             }, deadlineMs);
-      this.#pending.set(id, { resolve, generation: this.#generation, timer });
+      let cancelSent = false;
+      const abort =
+        signal === undefined
+          ? undefined
+          : {
+              signal,
+              listener: (): void => {
+                if (cancelSent || !this.#pending.has(id)) return;
+                cancelSent = true;
+                void this.cancel(id);
+              },
+            };
+      this.#pending.set(id, { resolve, generation: this.#generation, timer, abort });
       try {
         worker.postMessage({ ...request, id });
       } catch (cause) {
         this.#settle(id, protocolError(id, cause));
+        return;
+      }
+      // Posting first preserves query→cancel FIFO if setup code aborts reentrantly.
+      if (abort !== undefined && this.#pending.has(id)) {
+        abort.signal.addEventListener('abort', abort.listener, { once: true });
+        if (abort.signal.aborted) abort.listener();
       }
     });
   }
@@ -152,7 +187,7 @@ export class EngineClient {
     return asBoot(await this.#send({ kind: 'boot' }));
   }
 
-  async query(goal: string, budget: BudgetSpec): Promise<QueryOutcome> {
+  async query(goal: string, budget: BudgetSpec, signal?: AbortSignal): Promise<QueryOutcome> {
     let spec: BudgetSpec;
     try {
       spec = validateBudget(budget);
@@ -165,6 +200,7 @@ export class EngineClient {
     const response = await this.#send(
       { kind: 'query', goal, budget: spec },
       spec.wallClockMs + HARD_GRACE_MS,
+      signal,
     );
     switch (response.kind) {
       case 'solutions':

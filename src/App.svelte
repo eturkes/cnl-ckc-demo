@@ -1,60 +1,96 @@
 <script lang="ts">
-  import { EngineClient } from './engine/client.js';
-  import { QUESTION_CATALOG, type QuestionId } from './questions/catalog.js';
+  import AnswerPanel from './demo/AnswerPanel.svelte';
+  import { DemoController, solutionsOf } from './demo/DemoController.svelte.js';
+  import { answerRows, describeState, type AnswerRow } from './demo/describe.js';
+  import RunControls from './demo/RunControls.svelte';
+  import type { QuestionId } from './questions/catalog.js';
   import QuestionCombobox from './questions/QuestionCombobox.svelte';
+
+  interface Props {
+    /** Injected by tests; the shipped app lets `App` build and own the default. */
+    controller?: DemoController;
+  }
+
+  let { controller }: Props = $props();
 
   const guideline = 'CDC Clinical Practice Guideline for Prescribing Opioids for Pain (2022)';
 
-  // u5 holds the selection here; u6 moves it into the run controller that turns a
-  // selection into a live query.
-  let selected = $state<QuestionId | null>(null);
-  // Derived in the script because ESLint types a `.svelte` import as `any`, so a
-  // member access on a narrowed value inside the template reads as unsafe.
-  const goal = $derived(selected === null ? '' : QUESTION_CATALOG[selected].goal);
+  // The controller is an ownership handoff read once at construction, not a
+  // reactive input: swapping it mid-life would strand the engine it owns.
+  // svelte-ignore state_referenced_locally
+  const injected = controller;
+  const demo = injected ?? new DemoController();
 
-  // u2 ships the engine spine only: boot the worker and report what the engine
-  // itself says. The question catalog, run controls and answer views arrive with
-  // u4 and u5.
-  const boot = async (): Promise<string> => {
-    const client = new EngineClient();
-    const result = await client.boot();
-    if (result.kind === 'error') throw new Error(result.error.message);
-    return `${result.contract.documents} compiled documents at schema ${result.contract.schemaVersion}`;
-  };
+  $effect(() => () => {
+    if (injected === undefined) demo.dispose();
+  });
 
-  const booting = boot();
+  // Everything below is derived in the script rather than the template: ESLint
+  // types a `.svelte` import as `any`, so a member access on a narrowed value
+  // inside markup reads as unsafe.
+  const state = $derived(demo.state);
+  const description = $derived(describeState(state));
+  const rows = $derived<AnswerRow[]>(
+    state.kind === 'settled' ? answerRows(state.id, solutionsOf(state.result)) : [],
+  );
+  const serialized = $derived(
+    state.kind === 'settled' && 'serialized' in state.result ? state.result.serialized : '',
+  );
+  const booted = $derived(state.kind !== 'booting' && state.kind !== 'boot-error');
+  const engine = $derived(
+    state.kind === 'booting' ? 'loading' : state.kind === 'boot-error' ? 'error' : 'ready',
+  );
+  const canRun = $derived(demo.selected !== null && booted && !description.busy);
+  const showRetry = $derived(state.kind === 'settled' && state.result.kind === 'error');
 </script>
 
-<main>
+<main data-engine={engine}>
   <h1>cnl-ckc-demo</h1>
   <p class="lede">
     Ask a question against a compiled clinical knowledge base. Every answer comes from real Prolog
     execution, and traces back to the guideline sentence that produced it.
   </p>
+
   <QuestionCombobox
-    {selected}
+    selected={demo.selected}
     onSelect={(id: QuestionId) => {
-      selected = id;
+      demo.select(id);
     }}
   />
-  <p class="picked">
-    {#if selected === null}
-      Pick one of the six built-in questions.
-    {:else}
-      Selected goal: <code>{goal}</code>. Running it arrives with the next unit.
-    {/if}
-  </p>
-  <p class="status">
-    {#await booting}
-      <span data-engine="loading">Starting the Prolog engine.</span>
-    {:then summary}
-      <span data-engine="ready">
-        Knowledge base: <strong>{summary}</strong> from {guideline}. Query interface, proof traces
-        and the entity graph arrive with their milestones.
-      </span>
-    {:catch error}
-      <span data-engine="error">The Prolog engine did not start. {error.message}</span>
-    {/await}
+
+  <RunControls
+    status={description.status}
+    error={description.error}
+    busy={description.busy}
+    {canRun}
+    {showRetry}
+    onRun={() => {
+      void demo.run();
+    }}
+    onCancel={() => {
+      void demo.cancel();
+    }}
+    onRetry={() => {
+      void demo.retry();
+    }}
+  />
+
+  <!-- Always mounted: `aria-busy` has to be readable while the run is live, and a
+       region that appears only at settle cannot announce its own replacement. -->
+  <AnswerPanel
+    {rows}
+    {serialized}
+    selectedIndex={demo.solutionIndex}
+    busy={description.busy}
+    summary={description.summary}
+    onSelect={(index: number) => {
+      demo.selectSolution(index);
+    }}
+  />
+
+  <p class="colophon">
+    Knowledge base compiled from {guideline}. Proof traces and the entity graph arrive with their
+    milestones.
   </p>
 </main>
 
@@ -80,15 +116,9 @@
     margin: 0 0 2rem;
   }
 
-  .picked {
-    margin: 1rem 0 2rem;
-    font-size: 0.9rem;
-    color: var(--ink-soft);
-    overflow-wrap: anywhere;
-  }
-
-  .status {
+  .colophon {
     border-top: 1px solid var(--rule);
+    margin-top: 2rem;
     padding-top: 1rem;
     color: var(--ink-soft);
     font-size: 0.9rem;

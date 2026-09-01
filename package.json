@@ -17,6 +17,7 @@
     "kb:build": "node tools/kb/build.mjs",
     "kb:asset-check": "node tools/kb/check.mjs",
     "kb:reproduce": "node tools/kb/reproduce.mjs",
+    "smoke": "node tools/smoke.mjs",
     "gate": "pnpm kb:build && pnpm kb:asset-check && pnpm format:check && pnpm lint && pnpm check && pnpm test && pnpm build"
   },
   "dependencies": {

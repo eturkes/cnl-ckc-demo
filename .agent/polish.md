@@ -69,3 +69,7 @@ Off-spine improvements. Each entry carries the acceptance check that closes it.
 - **Assembled-path evasion** — the answer-oracle scan matches a literal `queries/answers`;
   a path concatenated at runtime slips past. Accept: a production fixture that assembles
   the path from parts fails `kb:asset-check`.
+- **Boot-error recovery** — u6 ruled `boot-error` terminal (contract m1u6 Q7): the state
+  renders in the alert with no Retry, so a transient PVM fetch failure needs a page
+  reload. Accept: a failed boot offers a retry control that rebuilds the engine, and a
+  second failure still reports one alert rather than accumulating them.

@@ -93,16 +93,29 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
   `harvest=56% 135K/240K`, `main=87% 209K/240K`, `mate=47% 114K/240K` (spike-m1u5-lib).
   NOT verified: no separate `test-m1u5` red suite (D6) and no real-browser run —
   every predicate is jsdom-observed. Judgment review is M1's.
-- **u6 — run lifecycle + answer states** · kernel · est 75K → 133K · OPEN (u5 contract shipped)
-  `DemoController` wiring selection → `AnswerService`, run/cancel/retry, answer
-  selection, boot/loading/empty/error/ready states. Carries the query-handle work:
-  `EngineClient.query` hides its request id while `cancel` needs one, so cooperative
-  cancel is unbuildable on `AnswerService.ask` as shipped.
-  Accept: every typed `AnswerResult` state renders and is announced; a cancel stops a
-  live run by id without exposing an unbudgeted surface; stale completions cannot
-  replace the active run; axe and `svelte-check --fail-on-warnings` are clean; the
-  nested-path static build passes a browser smoke run.
-- **u7 — demo presentation + honest framing** · docs · est 60K, uncalibrated (no docs analog) · BLOCKED (u6)
+- **u6 — run lifecycle + answer states** · kernel · est 75K → 133K · DONE
+  `src/demo/{DemoController.svelte.ts,describe.ts,RunControls.svelte,AnswerPanel.svelte}`
+  + rewritten `src/App.svelte` + `tools/smoke.mjs` (`pnpm smoke`) + three suites
+  (`engine-cancel`, `demo-lifecycle`, `demo-controller.dom`). Cancellation ruled a
+  **trailing optional `AbortSignal`** over a run handle (`.agent/contracts/m1u6.md` D1):
+  both spikes worked, but alt B changed 0 existing tests and left `QueryOutcome`,
+  `AnswerResult` and the private correlation id untouched. Latency did not
+  discriminate — 1.869 vs 0.355 ms, both under the 62 ms cooperative granularity.
+  `DEMO_BUDGET` frozen with `wallClockMs` at 5000, not the probe's 2000: a tight
+  deadline is the only budget error that yields a dishonest `limit` where a proof
+  exists. The cancel ack is unreliable by design, so the query result alone owns the
+  rendered terminal state (map S3/S4).
+  Gate rc=0: 350 files 0 errors 0 warnings, 171 tests, 10 files; `pnpm smoke` rc=0 —
+  a real browser answers `dosage-reduction-content` and the rendered canonical text
+  equals the bag's committed bytes, derived at run time through `verifyBag`.
+  32 contract predicates, all `pass`; four needed an implementation fix the diff-blind
+  suite found (synchronous dispatch, engine-call chaining, existential answer copy and
+  rows, always-mounted `aria-busy` region).
+  `harvest=31% 75K/240K`, `main=56% 133K/240K`, `mate=68% 164K/240K` (test-m1u6).
+  No `diff-m1u6`: no `oracle` flag, so nothing to differentiate against. NOT verified:
+  boot-error recovery is out of scope by ruling Q7 and sits in `.agent/polish.md`.
+  Judgment review is M1's.
+- **u7 — demo presentation + honest framing** · docs · est 60K, uncalibrated (no docs analog) · OPEN (u6 shipped)
   Self-hosted Atkinson Hyperlegible Next + Literata with licences, light role
   tokens, responsive answer composition, and limitation copy: fixed catalog,
   non-clinical prepared demo, `unreviewed` projections, CDC attribution and
@@ -119,13 +132,16 @@ MILESTONE-REVIEW dispatch inputs — contract | fixed check set | evidence branc
 - u3 `.agent/contracts/m1u3.md` | `.agent/contracts/m1u3-rev-checkset.md`, 47 rows | `wt/test-m1u3` `22c8b97`, `wt/spike-m1u3-{js,pl}`
 - u4 `.agent/contracts/m1u4.md` | `.agent/contracts/m1u4-rev-checkset.md`, 24 rows | `wt/test-m1u4` `0240aae`, `wt/spike-m1u4-{gen,src}`
 - u5 `.agent/contracts/m1u5.md` (26 predicates + verdict table) | — | `wt/spike-m1u5-lib` `dca4f87`; map report `.scratch/agents/map-m1u5.md` 29/29
+- u6 `.agent/contracts/m1u6.md` (32 predicates + verdict table + D1–D10 + Q1–Q8 rulings) | — | `wt/test-m1u6` `2f87e0b` 23/23, `wt/spike-m1u6-{handle,signal}` `b896d2e`/`3066404`
 
 u1–u4 shipped their mechanical assurance and carry no judgment adjudication; those rows
 seed `.agent/review-m1.md`. Projection: 6 `kernel` units × ~35 rows ≈ 210 rows plus u7
 spot-check, cross-cutting and `audit-m1` ⇒ size MILESTONE-REVIEW at ~3–4 sessions.
 
 Calibration: `main=`/`est` ran 1.74 (u1), 1.87 (u2), 1.69 (u4) ⇒ **M1 ratio 1.77**, applied
-to every `kernel` estimate above. u5's original 145K calibrated to 257K, over the window,
+to every `kernel` estimate above. u6 is the first exact hit — raw 75K × 1.77 = 133K,
+actual 133K — and the first unit whose `harvest=` (75K) came in under the 130K floor,
+because wave 1 shipped a two-tier verdict table per teammate instead of prose. u5's original 145K calibrated to 257K, over the window,
 which is what split it into intake and run-lifecycle. Harvest, not implementation, is the
 cost driver: u3's wave 1 (one map + two spikes, 40 rows) cost MAIN 130K before a line was
 written. u1 burned 226K on a 130K estimate because discovery and implementation both

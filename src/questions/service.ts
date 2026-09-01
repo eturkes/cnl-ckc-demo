@@ -40,10 +40,10 @@ export class AnswerService {
    * strings from the UI, and both leave through the same rejection without the
    * engine ever seeing them.
    */
-  async ask(id: unknown, budget: BudgetSpec): Promise<AnswerResult> {
+  async ask(id: unknown, budget: BudgetSpec, signal?: AbortSignal): Promise<AnswerResult> {
     if (!isQuestionId(id)) return { kind: 'rejected', reason: 'unknown-id' };
     const entry = QUESTION_CATALOG[id];
-    const outcome = await this.#client.query(entry.goal, budget);
+    const outcome = await this.#client.query(entry.goal, budget, signal);
     switch (outcome.kind) {
       case 'solutions':
         return {

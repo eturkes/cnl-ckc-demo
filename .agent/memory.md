@@ -320,3 +320,39 @@ and survives `/resume`; a new session clears it.
   10.06 s. The demo hand-authors its combobox instead.
 - APG's select-only example commits the active option on blur. This widget cancels
   instead, matching a native `select`, because u6 turns a selection into a Prolog run.
+
+## Run lifecycle and answer states (u6)
+
+- Cancellation surface = trailing optional `AbortSignal` on `EngineClient.query` and
+  `AnswerService.ask`. `EngineClient`'s correlation id stays private; `QueryOutcome`
+  and `AnswerResult` are unchanged from u2/u4. Rationale + rejected run handle:
+  `.agent/contracts/m1u6.md` D1.
+- Run serialization chains on the ENGINE CALL, not on the state write. A successor
+  that awaits its predecessor's settle promise adds a microtask hop that a 4-tick
+  test drain misses, and the state write is guarded by run identity anyway, so its
+  ordering is irrelevant. `ActiveRun` carries both promises for that reason.
+- With nothing live the engine call must go out in `run()`'s own tick. An
+  unconditional `await previous?.done` suspends even when `previous` is `undefined`.
+- `$state` vs `$state.raw` for the state union: deep `$state` does NOT break result
+  identity — measured, R3's `toBe(result)` passes either way. `$state.raw` is chosen
+  because every transition replaces the whole member, so proxying only adds per-read
+  wrapping. Do not re-derive this as a correctness question.
+- The answer region is mounted in EVERY state. `aria-busy` has to be readable while a
+  run is live, so a region that appears at `settled` cannot announce its own
+  replacement. `busy` means `running`/`cancelling` alone — booting is not a run, and
+  treating it as one also left Cancel enabled during boot.
+- An existence question projects no columns, so `answerRows` returns `[]` for it
+  regardless of solution count. Mapping its 12 solutions emits 12 unlabelled radios.
+- Disabling a focused button drops focus to `body`, so whether Cancel held focus must
+  be read in `$effect.pre` and acted on in `$effect`.
+- `pnpm smoke` = `node tools/smoke.mjs`, deliberately OUTSIDE `pnpm gate` on the
+  `kb:reproduce` precedent: it needs a real browser. It builds if `dist/` is missing,
+  copies `dist` under a nested path, serves it with a request log, drives
+  chromiumfish, and compares the rendered canonical text against the answer read out
+  of the vendored bag at run time through `verifyBag`. Negative control: removing
+  `kb/generated/kb.pvm` gives rc 1 via `waitForSelector` timeout.
+- The smoke keys on `[role="option"][id$="-option-<questionId>"]`; combobox option ids
+  are `${uid}-option-${questionId}` and render in `QUESTION_IDS` order.
+- The chromiumfish launcher is resolved from the pnpm global store and ships no types,
+  so `tools/smoke.mjs` carries the file's one `no-unsafe-assignment` disable. A JSDoc
+  cast does not clear it, because the awaited dynamic import is still `any`.
