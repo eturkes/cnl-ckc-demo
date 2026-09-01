@@ -13,7 +13,7 @@ import { BUDGET_MAX } from '../src/engine/budget.js';
 import { EngineClient, type QueryOutcome, type QueryRun } from '../src/engine/client.js';
 import type { BudgetSpec, EngineRequest, EngineResponse } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
-import { QUESTION_IDS, type QuestionId } from '../src/questions/catalog.js';
+import { QUESTION_CATALOG, QUESTION_IDS, type QuestionId } from '../src/questions/catalog.js';
 import { AnswerService, type AnswerResult, type AnswerRun } from '../src/questions/service.js';
 
 const require = createRequire(import.meta.url);
@@ -107,30 +107,45 @@ class ControlledWorker {
 
 interface DeferredQuery {
   goal: string;
+  budget: BudgetSpec;
   run: QueryRun;
   resolve: (outcome: QueryOutcome) => void;
+  readonly cancelCalls: number;
 }
 
 class DeferredClient {
   readonly queries: DeferredQuery[] = [];
 
-  query(goal: string): QueryRun {
+  query(goal: string, spec: BudgetSpec): QueryRun {
     let resolve!: (outcome: QueryOutcome) => void;
+    let cancelCalls = 0;
     const result = new Promise<QueryOutcome>((settleResult) => {
       resolve = settleResult;
     });
     const run: QueryRun = {
       requestId: `deferred-${this.queries.length + 1}`,
       result,
-      cancel: () => Promise.resolve(false),
+      cancel: () => {
+        cancelCalls += 1;
+        return Promise.resolve(true);
+      },
     };
-    this.queries.push({ goal, run, resolve });
+    this.queries.push({
+      goal,
+      budget: spec,
+      run,
+      resolve,
+      get cancelCalls() {
+        return cancelCalls;
+      },
+    });
     return run;
   }
 }
 
 class LatestRunController {
   readonly #service: AnswerService;
+  #selected: QuestionId | null = null;
   #active: AnswerRun | null = null;
   answer: AnswerResult | null = null;
 
@@ -138,14 +153,34 @@ class LatestRunController {
     this.#service = service;
   }
 
-  start(id: QuestionId): AnswerRun {
-    const run = this.#service.ask(id, budget());
+  select(id: QuestionId): void {
+    this.#selected = id;
+    this.answer = null;
+  }
+
+  run(): AnswerRun {
+    if (this.#selected === null) throw new Error('select a question first');
+    const run = this.#service.ask(this.#selected, budget());
     this.#active = run;
+    this.answer = null;
     void run.result.then((answer) => {
       if (this.#active !== run) return;
       this.answer = answer;
     });
     return run;
+  }
+
+  start(id: QuestionId): AnswerRun {
+    this.select(id);
+    return this.run();
+  }
+
+  cancel(): Promise<boolean> {
+    return this.#active?.cancel() ?? Promise.resolve(false);
+  }
+
+  retry(): AnswerRun {
+    return this.run();
   }
 }
 
@@ -301,5 +336,71 @@ describe.sequential('run handle', () => {
       `P6_METRIC result=error:worker cancel=false reboot=booted result_settles=${resultSettles} cancel_settles=${cancelSettles}`,
     );
     probe.dispose();
+  });
+
+  it('P8 keeps all six service runs id-only and leaves rejected text outside the client', async () => {
+    const deferred = new DeferredClient();
+    const service = new AnswerService(deferred as unknown as EngineClient);
+    const runs = QUESTION_IDS.map((id) => service.ask(id, budget()));
+    const rejected = [
+      service.ask('not-a-question', budget()),
+      service.ask('guideline_entity(actual,A,recommendation,countable).', budget()),
+    ];
+
+    expect(deferred.queries).toHaveLength(QUESTION_IDS.length);
+    expect(deferred.queries.map((query) => query.goal)).toEqual(
+      QUESTION_IDS.map((id) => QUESTION_CATALOG[id].goal),
+    );
+    for (const run of runs) {
+      expect(Object.keys(run).sort()).toEqual(['cancel', 'requestId', 'result']);
+      expect('goal' in run).toBe(false);
+      expect('consult' in run).toBe(false);
+    }
+    expect(await Promise.all(runs.map((run) => run.cancel()))).toEqual(
+      QUESTION_IDS.map(() => true),
+    );
+    expect(deferred.queries.every((query) => query.cancelCalls === 1)).toBe(true);
+    for (const query of deferred.queries) query.resolve({ kind: 'failure' });
+    expect((await Promise.all(runs.map((run) => run.result))).map((answer) => answer.kind)).toEqual(
+      QUESTION_IDS.map(() => 'failure'),
+    );
+
+    for (const run of rejected) {
+      expect(run.requestId).toBeNull();
+      expect(await run.cancel()).toBe(false);
+      expect(await run.result).toEqual({ kind: 'rejected', reason: 'unknown-id' });
+    }
+    expect(deferred.queries).toHaveLength(QUESTION_IDS.length);
+    console.info(
+      `P8_METRIC catalog=${QUESTION_IDS.length} engine_queries=${deferred.queries.length} rejected=${rejected.length} raw_goal_exposed=false consult_exposed=false`,
+    );
+  });
+
+  it('P9 drives select, run, cancel and retry without reaching EngineClient', async () => {
+    const selected = QUESTION_IDS.at(0);
+    if (selected === undefined) throw new Error('catalog is empty');
+    const deferred = new DeferredClient();
+    const controller = new LatestRunController(
+      new AnswerService(deferred as unknown as EngineClient),
+    );
+
+    controller.select(selected);
+    const first = controller.run();
+    const cancelling = controller.cancel();
+    deferred.queries[0]?.resolve({ kind: 'cancelled', solutions: [] });
+    expect(await cancelling).toBe(true);
+    expect((await first.result).kind).toBe('cancelled');
+    await settle();
+
+    const retry = controller.retry();
+    expect(retry.requestId).not.toBe(first.requestId);
+    expect(controller.answer).toBeNull();
+    deferred.queries[1]?.resolve({ kind: 'failure' });
+    expect((await retry.result).kind).toBe('failure');
+    await settle();
+    expect(controller.answer).toMatchObject({ kind: 'failure', id: selected });
+    console.info(
+      `P9_METRIC selected=${selected} first=${first.requestId} cancel=true retry=${retry.requestId} final=failure`,
+    );
   });
 });
