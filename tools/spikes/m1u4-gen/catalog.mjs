@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -322,7 +324,9 @@ const parseRepoRecord = (value, index) => {
   };
 };
 
-const readVerifiedArchive = (root) => {
+export { parseTerms as parsePrologTerms, renderTerm as renderPrologTerm };
+
+export const readVerifiedArchive = (root) => {
   const kb = join(root, 'kb');
   const archives = readdirSync(kb).filter((name) => name.endsWith('.tar.gz'));
   if (archives.length !== 1) refuse(`expected exactly one bag in kb/, got ${archives.length}`);
@@ -359,6 +363,7 @@ export const compileCatalog = (root = ROOT) => {
   if (records.length !== 6) refuse(`catalog must hold 6 records, got ${records.length}`);
   return {
     bag: archive.bag,
+    files: archive.files,
     records,
     repoSource,
     querySha256: Object.fromEntries(
