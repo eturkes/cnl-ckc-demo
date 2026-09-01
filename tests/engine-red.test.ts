@@ -5,19 +5,77 @@
 // SEED STATE: every body throws. Replace each with a real assertion driving the
 // u2 surface. Keep the names and the predicate tags.
 
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+
+import { decodeTerm } from '../src/engine/terms';
+
+const nativeCompound = (functor: string, args: unknown[]) => ({
+  $t: 't',
+  functor,
+  [functor]: [args],
+});
 
 const todo = (): never => {
   throw new Error('unimplemented');
 };
 
 describe('P3 term decode/encode', () => {
-  it('P3.2 decodes foo(bar,7) distinctly from foo([bar,7])', todo);
-  it('P3.2 preserves compound arity against the argument-vector ambiguity', todo);
-  it('P3.3 decodes 1r3 as a rational without flipping to 3r1', todo);
-  it('P3.3 decodes 3r1 as the integer 3', todo);
-  it('P3.4 distinguishes an atom from a Prolog string carrying identical text', todo);
-  it('P3.5 decodes an integer above 2^53 without precision loss', todo);
+  it('P3.2 decodes foo(bar,7) distinctly from foo([bar,7])', () => {
+    const argumentVector = decodeTerm(nativeCompound('foo', ['bar', 7]));
+    const singleListArgument = decodeTerm(nativeCompound('foo', [['bar', 7]]));
+
+    expect(argumentVector).not.toEqual(singleListArgument);
+  });
+
+  it('P3.2 preserves compound arity against the argument-vector ambiguity', () => {
+    expect(decodeTerm(nativeCompound('foo', ['bar', 7]))).toEqual({
+      kind: 'compound',
+      functor: 'foo',
+      args: [
+        { kind: 'atom', value: 'bar' },
+        { kind: 'integer', value: 7 },
+      ],
+    });
+    expect(decodeTerm(nativeCompound('foo', [['bar', 7]]))).toEqual({
+      kind: 'compound',
+      functor: 'foo',
+      args: [
+        {
+          kind: 'list',
+          items: [
+            { kind: 'atom', value: 'bar' },
+            { kind: 'integer', value: 7 },
+          ],
+        },
+      ],
+    });
+  });
+
+  it('P3.3 decodes 1r3 as a rational without flipping to 3r1', () => {
+    expect(decodeTerm({ $t: 'r', n: 1, d: 3 })).toEqual({
+      kind: 'rational',
+      numerator: 1,
+      denominator: 3,
+    });
+  });
+
+  it('P3.3 decodes 3r1 as the integer 3', () => {
+    expect(decodeTerm(3)).toEqual({ kind: 'integer', value: 3 });
+  });
+
+  it('P3.4 distinguishes an atom from a Prolog string carrying identical text', () => {
+    expect(decodeTerm('same text')).toEqual({ kind: 'atom', value: 'same text' });
+    expect(decodeTerm({ $t: 's', v: 'same text' })).toEqual({
+      kind: 'string',
+      value: 'same text',
+    });
+  });
+
+  it('P3.5 decodes an integer above 2^53 without precision loss', () => {
+    const value = 9_007_199_254_740_993n;
+
+    expect(decodeTerm(value)).toEqual({ kind: 'integer', value });
+  });
   it('P3.5 decodes negative and zero integers', todo);
   it('P3.5 decodes a float distinctly from an integer', todo);
   it('P3.6 decodes an unbound variable to an explicit variable value', todo);
