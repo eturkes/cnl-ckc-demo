@@ -1,0 +1,136 @@
+A001	roadmap:u1	u1 ships tools/kb/{bag,paths,produce,build,check,reproduce}.mjs + src/kb/manifest.ts + tests/kb-{bag,live}.test.ts
+A002	roadmap:u1	gate chain = kb:build && kb:asset-check && ... ; kb:reproduce stays OUT of the chain
+A003	roadmap:u1	partial reports .scratch/agents/map-m1u1.md 17/25 rows and spike-m1u1-det.md 9/12 rows
+A004	roadmap:u2	u2 ships src/engine/{protocol,terms,session,client,worker}.ts + tests/engine-session.test.ts
+A005	roadmap:u2	Vite alias @kb, base './', worker.format 'es', root cacheDir
+A006	roadmap:u2	term boundary ruled JS-side decode in worker (.agent/contracts/m1u2.md D1.1); both spikes cleared 11/11 traps
+A007	roadmap:u2	u2 gate rc=0, 58 tests, 330 files 0 errors
+A008	roadmap:u2	built main chunk carries 0 engine bytes; worker + hashed PVM emit separately
+A009	roadmap:u2	NOT verified: P6.2 browser smokes + test-m1u2 red suite, both in .agent/polish.md
+A010	roadmap:u3	accept: hard cancel drops asserted state and returns a 337-document engine
+A011	roadmap:u4	u4 ships tools/kb/catalog.mjs + src/questions/{catalog,serialize,humanize,service}.ts + tests/questions-live.test.ts
+A012	roadmap:u4	live solution counts 7/2/1/12/5/3
+A013	roadmap:u4	four exported goals verbatim from goal/1 canonical prefix; two authored via one token-exact single-hit atom substitution
+A014	roadmap:u4	category-A and the other three all reproduce their committed result/1 bytes
+A015	roadmap:u4	forbidden-reach check is a byte scan in kb:asset-check, negative control rc=1
+A016	roadmap:u4	u4 gate rc=0 from clean cache: 339 files 0 errors, 107 tests, 3 assets
+A017	roadmap:u4	kb:reproduce covers the catalog (a38e74d9f518)
+A018	roadmap:u4	NOT verified: test-m1u4 red suite, in .agent/polish.md
+A019	roadmap:u5	u5 ships src/questions/QuestionCombobox.svelte + tests/question-combobox.dom.test.ts
+A020	roadmap:u5	vitest dom project: jsdom 29.1.1 + resolve.conditions ['browser']
+A021	roadmap:u5	svelte-check --fail-on-warnings in pnpm check
+A022	roadmap:u5	intake rendered in App.svelte against local $state
+A023	roadmap:u5	select-only APG combobox hosted on div role=combobox rather than readonly input (m1u5.md D1)
+A024	roadmap:u5	bits-ui probe green on wt/spike-m1u5-lib dca4f87; drags 7 runtime packages, portalled popup, +10.06 s of gate
+A025	roadmap:u5	u5 gate rc=0: 342 files 0 errors 0 warnings, 133 tests, 3 assets
+A026	roadmap:u5	26 contract predicates, all pass
+A027	roadmap:u5	map report .scratch/agents/map-m1u5.md 29/29
+A028	roadmap:u6	u6 ships src/demo/{DemoController.svelte.ts,describe.ts,RunControls.svelte,AnswerPanel.svelte} + rewritten App.svelte + tools/smoke.mjs + three suites
+A029	roadmap:u6	cancellation ruled trailing optional AbortSignal (m1u6.md D1); alt B changed 0 existing tests
+A030	roadmap:u6	cancel latency 1.869 vs 0.355 ms, both under the 62 ms cooperative granularity
+A031	roadmap:u6	DEMO_BUDGET frozen with wallClockMs at 5000, not the probe's 2000
+A032	roadmap:u6	u6 gate rc=0: 350 files 0 errors 0 warnings, 171 tests, 10 files
+A033	roadmap:u6	pnpm smoke rc=0; real browser answers dosage-reduction-content, rendered canonical text equals bag bytes via verifyBag
+A034	roadmap:u6	32 contract predicates all pass; four needed an implementation fix
+A035	roadmap:u7	u7 ships src/app.css + src/demo/{copy,descriptor}.ts + AboutPanel.svelte + rewritten App/AnswerPanel + tools/{copy-check,contrast}.mjs + public/licenses/*
+A036	roadmap:u7	fonts self-host from @fontsource-variable at 5.3.0, latin + latin-ext only
+A037	roadmap:u7	dist/ carries 6 woff2 = 176732 B
+A038	roadmap:u7	three OFL texts in dist/ byte-equal to each package's LICENSE
+A039	roadmap:u7	copy:check = 79 strings, 20 words/sentence INSTRUCTIONS, 25 DESCRIPTIONS
+A040	roadmap:u7	contrast:check = 17 declared pairs, WCAG luminance, floored not rounded
+A041	roadmap:u7	--border needed #8f8270 to clear 3:1
+A042	roadmap:u7	u7 gate rc=0 from clean cache: 355 files 0 errors 0 warnings, 171 tests, 3 assets
+A043	roadmap:u7	pnpm smoke rc=0 after being taught to open the new disclosure
+A044	roadmap:u7	real-browser visual QA over 11 states at 320/375/1280 px: overflow=false everywhere, three families resolve
+A045	roadmap:u7	probe committed only on wt/map-m1u7 124e34d, not in gate; fails svelte-check with 41 type errors
+A046	roadmap:dispatch	u1/u2 branches: wt/spike-m1u1-det, wt/test-m1u2 b0fb200, wt/spike-m1u2-{js,pl}
+A047	roadmap:dispatch	u3: .agent/contracts/m1u3-rev-checkset.md 45 rows; wt/test-m1u3 22c8b97; wt/spike-m1u3-{js,pl}
+A048	roadmap:dispatch	u4: .agent/contracts/m1u4-rev-checkset.md 24 rows; wt/test-m1u4 0240aae; wt/spike-m1u4-{gen,src}
+A049	roadmap:dispatch	u5/u7 branches: wt/spike-m1u5-lib dca4f87, wt/map-m1u7 124e34d, wt/res-m1u7 d712fa9
+A050	roadmap:dispatch	u6 branches: wt/test-m1u6 2f87e0b 23/23, wt/spike-m1u6-handle b896d2e, wt/spike-m1u6-signal 3066404
+A051	roadmap:dispatch	judgment-review ledger .agent/review-m1.md is committed
+A052	roadmap:calibration	main/est ratios 1.74 (u1), 1.87 (u2), 1.69 (u4) => M1 ratio 1.77
+A053	roadmap:calibration	u6 exact hit 75K x 1.77 = 133K actual 133K; u5 original 145K -> 257K; u5 calibrated 124K missed by 1.69
+A054	roadmap:context	recorded per-unit context gauges (main=/mate=/harvest= K/240K) for u1,u2,u4,u5,u6,u7
+A055	roadmap:planning	planning actuals main=76% 183K/240K, mate=80% 191K/240K, five teammates across three waves
+A056	roadmap:projection	projection 6 kernel units x ~35 rows ~= 210 rows; u1-u4 rows seed .agent/review-m1.md
+A057	memory:stack	swipl-wasm 8.0.7 = SWI-Prolog 10.1.13; Svelte 5.57.0; Vite 8.2.2; TypeScript 5.9.3; Cytoscape.js 3.34.2
+A058	memory:install	@types/cytoscape uninstalled; TypeScript pinned to 5.x
+A059	memory:gate	Gate section's last clean-cache run: rc=0 13.9s, svelte-check 319 files 0 errors, vitest 3 files/38 tests, vite 112 modules
+A060	memory:gate	kb:reproduce stays out of the chain because two forced builds cost 10.5s
+A061	memory:kb	vendored bag kb/cnl-ckc-kb-g952cc950a0c6.tar.gz 1.48 MB, 1047 members = 1041 payload + 5 tag + tagmanifest, with .sha256 sidecar
+A062	memory:kb	archive dialect: ustar magic + five GNU ././@LongLink L headers; single root dir; all regular files; mode 0644; uid/gid 0; gzip mtime 0
+A063	memory:kb	payload 337 docs x 3 representations (ace/pl/align) + queries/ 4 .ace questions + source/ + audit/
+A064	memory:kb	rights profile redistributable; bag records swipl 9.2.9 as compiler; bag name tags last guidelines/ commit 952cc950a0c6
+A065	memory:u1	kb:build emits kb/generated/{kb.pvm,kb.qlf,kb-manifest.json}, gitignored; input = 337 pl/ files sorted, joined with % file:<path> markers
+A066	memory:u1	kb:reproduce hashes pvm 3ae8d455d875, qlf 62bc61cc7d0e, catalog a38e74d9f518
+A067	memory:u1	sizes pvm 437132 B, qlf 2168708 B
+A068	memory:u1	live load measured outside vitest: image 121 ms, qlf 238 ms, both schema 1 / 337 documents / SWI 10.1.13
+A069	memory:u1	swipl-bundle 6243055 B; swipl-bundle-no-data 2616873 B
+A070	memory:u1	all 9 schema predicates multifile and static; clause counts 337/337/1834/1834/1254/2513/1003/16/1193
+A071	memory:u2	JSON.stringify corruption: '$guideline_id'/5 re-enters at arity 1 with ref([1]); 1r3 serializes as 3r1
+A072	memory:u2	display via term_string/3 [quoted,numbervars,ignore_ops] matched write_canonical on all 7 real answers at 0.0437 ms/binding
+A073	memory:u2	.gitignore spells kb/generated and node_modules without a trailing slash
+A074	memory:u2	EngineSession holds the logic with an injected image loader; worker.ts is message plumbing only
+A075	memory:u3	stack_limit reducible 1073741824 -> 8388608 B; catchable error(resource_error(stack),stack_overflow{...}) in 0.681 ms; +0.346 ms / +0.30%
+A076	memory:u3	build reports threads=false; library(time) raises existence_error; call_with_time_limit/2 and alarm/4 raise procedure existence errors
+A077	memory:u3	repeat under the full wrapper emitted 100000 answers in 452.232 ms with D=1, I=true
+A078	memory:u3	in-worker 25 ms timer never fired across 249.80 ms; main-thread fired at 25.97 ms; hard deadline = wallClockMs + 500 ms, main thread only
+A079	memory:u3	solve yields a macrotask between solutions; granularity = 62.00 ms worst real step over 80
+A080	memory:u3	Query.close() is load-bearing and undeclared (.d.ts declares only next/once); 8 cascading failures measured before it was wired
+A081	memory:u3	wrapper reserves BudgetDepth_, BudgetInference_, BudgetResource_; strips the trailing full stop from goals
+A082	memory:u3	terminate 2.7-3.5 ms; terminate->respawn->boot 181.75-223.96 ms in Node; 335 ms browser boot floor; dynamic/1 overlay 337->338, recreate restores 337
+A083	memory:u3	heap exhaustion returns typed assertz/1: Not enough resources: no_memory at ~2222464 KiB peak RSS
+A084	memory:measured	corpus 800 noun atoms, 127 verbs, 337 docs, 0.6s co-load
+A085	memory:measured	9 schema predicates; 1834 static guideline_entity/4 clause sites; 316 entity solutions; 1254 event clause sites vs 232 derivable
+A086	memory:measured	7 explicit edge schemas plus 9053 Horn body->head edges
+A087	memory:measured	corpus load 337-file consult 2806ms, concatenated 3299ms, load_string 3578ms, QLF 213ms + 724ms boot, saved PVM 335ms (437,064 B; 10.8s to build)
+A088	memory:measured	concatenated pl/ = 4,716,517 B raw, 169,571 B gzip-9
+A089	memory:measured	production build 3,500,973 B raw / 1,339,723 B gzip: worker 3,062,652 B + PVM 437,064 B
+A090	memory:measured	oracle fidelity: live WASM byte-matched committed category-a-recommendations.pl (7 rows, in order); other three value-equal only
+A091	memory:measured	anti-hard-coding recipe measured 796ms; committed traces carry no proof-dependency edges; meta-interpreter 4.03-5.09s vs 0.14-0.22s plain
+A092	memory:u4	catalog generation median 0.631 ms, artifact ~3.3 kB; rejected SRC alternative measured 1036.812 ms
+A093	memory:u4	bag queries/ = 4 ids x 4 files, none of it in the PVM; PAYLOAD regex admits data/guidelines/*/pl/*.pl only
+A094	memory:u4	'category-B-recommendation' 24 sites / 5 ground facts; 'evidence-type-3-recommendation' 3 sites all ground; near-miss atoms exist
+A095	memory:u4	MANIFEST_VERSION 2 adds the catalog block
+A096	memory:u4	forbidden-reach byte scan scope = src, tools, vite.config.ts, index.html; tests/ deliberately out of scope
+A097	memory:u5	eslint-plugin-svelte 3.23.0 ships 86 rules and zero a11y-* rules
+A098	memory:u5	axe-core 4.13.0; color-contrast always lands in incomplete under jsdom
+A099	memory:u5	bits-ui 2.19.0 needs @internationalized/date as a required peer
+A100	memory:u6	pnpm smoke = node tools/smoke.mjs, outside pnpm gate; negative control removing kb/generated/kb.pvm gives rc 1 via waitForSelector timeout
+A101	memory:u6	smoke keys on [role="option"][id$="-option-<questionId>"]; option ids are ${uid}-option-${questionId} in QUESTION_IDS order
+A102	memory:u7	literata alone is 1883680 B across 58 files
+A103	memory:u7	role tokens = exactly ten named custom properties in :root
+A104	memory:u7	contrast.mjs floors the ratio rather than rounding, and fails when a colour token appears in no pair
+A105	memory:u7	copy-check.mjs grades src/demo/copy.ts and src/demo/describe.ts; sentinel is U+E000
+A106	memory:u7	the bag labels all 337 documents unreviewed; upstream tools/goal.py:3140 counts five adjudication states
+A107	memory:u7	tools/probe-u7.mjs on wt/map-m1u7 124e34d is 545 lines
+A108	memory:scratch	three .scratch survivors exist: agents/map-m1u1.md, agents/spike-m1u1-det.md, validate-report.py
+A109	memory:scratch	probe branches wt/res-m1-1 36cc56f and wt/res-m1-2 5863141
+A110	memory:serena	Serena language_servers = ['svelte','typescript','markdown','json','yaml']; .serena/ is committed
+A111	contract:m1u1	m1u1 C1 artifact table lists tools/kb/{bag,produce,build,check}.mjs; roadmap names six including paths.mjs and reproduce.mjs
+A112	contract:m1u1	D0.2 tsx, vite-node, jiti and esbuild all absent; vitest ships no vite-node dependency
+A113	contract:m1u2	D0.3 production emitted a hashed 437064-byte PVM; vite.config.ts:7 pins assetsInlineLimit: 0
+A114	contract:m1u2	C1 names tests/engine-terms.test.ts and tests/engine-live.test.ts as the shipped test files
+A115	contract:m1u2	D1.1 PL's 197-line parser preserved 1/3 adversarial forms; PL ships an 853 B helper plus 38.7-81.6 ms consult
+A116	contract:m1u2	D1.2 streaming 0.0414 vs 0.0345 ms/query; a queued callback stayed blocked through a 94.65 ms synchronous next()
+A117	contract:m1u3	D5 terminate 3.52 ms, spinner gone 0.19 ms, post-stop CPU 0.34 ms/200 ms; recreate 5/5 median 194.82 ms; residue 193.13 ms; PL spike 2.745 / 261.579 ms
+A118	contract:m1u3	D6/D7 pointers: tools/kb/produce.mjs:72-96 sink-and-drain; src/engine/terms.ts:125-129 decodeOnce collapse
+A119	contract:m1u4	D1 catalog artifact 2644 B, integrated generation median 0.631 ms over 50 runs
+A120	contract:m1u4	D6 committed category-A file 734 B in two LF-terminated lines; live-derivable result = 481-byte substring at offsets [249,730)
+A121	contract:m1u4	D7 pointers: eslint no-restricted-imports.js:858-864; tools/kb/check.mjs:13-34,66-75
+A122	contract:m1u4	D8 Role in {product 10336, context 8911}; Locator ref(1..23) / box(1..9); Sentence 1-25; 337 unique doc ids
+A123	contract:m1u4	D9 differential branches wt/spike-m1u4-gen 65f496a and wt/spike-m1u4-src c193a87
+A124	contract:m1u5	matrix seeded 2ca27a0; verdict table 26 rows; MAIN rerun 342 files, 7 test files / 133 tests, 3 assets, build 117 modules
+A125	contract:m1u6	base 5e3bf46; wave-1 inputs map-m1u6 25/25, spike-m1u6-handle 10/10, spike-m1u6-signal 10/10
+A126	contract:m1u6	D1 diffstats: alt B 3 files / +507 -5 / 0 existing tests changed; alt A 4 files / +569 -71 / 1 existing test changed
+A127	contract:m1u6	D5 ten trials per catalog id, observed maximum 119.972 ms, all 60 runs solutions
+A128	contract:m1u6	R10 six ids settle answer at 7/5/2/1/3/12 in 480 ms
+A129	contract:m1u6	G1 gate rc 0 recorded with 337 files and input digest 021d1220c6a0
+A130	contract:m1u6	close: wt/map-m1u6 deleted; src/demo/DemoController.svelte.d.ts and tools/smoke.sh stayed out of the primary tree
+A131	contract:m1u7	gate identity = kb:build && kb:asset-check && copy:check && contrast:check && format:check && lint && check && test && build
+A132	contract:m1u7	T6 perturbing --text-muted gave rc 1 naming 3 failing pairs; restoring gave rc 0
+A133	contract:m1u7	C6 a 26-word probe sentence gave rc 1 naming file, key and count; removing it gave rc 0
+A134	contract:m1u7	Atkinson Hyperlegible Next 2.001 and Literata 3.103, both OFL 1.1 with no Reserved Font Name
+A135	contract:m1u7	G4-G5 recorded fail(low): tools/visual-qa.mjs is not in the primary tree, 41 implicit-any errors under svelte-check
+A136	memory:gate	kb:asset-check sibling scan matches ../cnl-ckc only at a name boundary, so cnl-ckc-demo does not trip it
