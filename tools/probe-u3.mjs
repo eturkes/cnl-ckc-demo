@@ -304,6 +304,41 @@ try {
     out('R45-workers', workerEvents.length);
   }
 
+  if (scenario === 'R45b') {
+    // Does the client stay usable after the abort if nobody resets it?
+    out(
+      'R45b',
+      await page.evaluate(async () => {
+        const { EngineClient, BUDGET_MAX } = window.probe;
+        const small = { ...BUDGET_MAX, wallClockMs: 30_000, answerCap: 10 };
+        const client = new EngineClient();
+        await client.boot();
+        await client.consult(':- dynamic(r45_hog/1).\n');
+        const outcome = await client.query('between(1,100000000,I),assertz(r45_hog(I)),fail.', {
+          ...BUDGET_MAX,
+          wallClockMs: 240_000,
+          answerCap: 10,
+        });
+        const after = await client.query(
+          'findall(D,guideline_document(D,_,_),Ds),length(Ds,N).',
+          small,
+        );
+        const residue = await client.query('catch(r45_hog(_),_,fail).', small);
+        client.dispose();
+        return {
+          outcome: { kind: outcome.kind, limit: outcome.limit, code: outcome.error?.code },
+          afterNoReset: {
+            kind: after.kind,
+            code: after.error?.code,
+            message: after.error?.message?.slice(0, 120),
+            documents: after.solutions?.[0]?.display?.N,
+          },
+          residue: { kind: residue.kind, code: residue.error?.code },
+        };
+      }),
+    );
+  }
+
   const broken = log.filter((e) => e.status !== 200 && e.path.startsWith(`/${NESTED}`));
   out('assets', { served: log.filter((e) => e.status === 200).length, broken: broken.map((e) => e.path) });
 } finally {
