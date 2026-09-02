@@ -356,3 +356,51 @@ and survives `/resume`; a new session clears it.
 - The chromiumfish launcher is resolved from the pnpm global store and ships no types,
   so `tools/smoke.mjs` carries the file's one `no-unsafe-assignment` disable. A JSDoc
   cast does not clear it, because the awaited dynamic import is still `any`.
+
+## Presentation and framing (u7)
+
+- Fonts self-host from `@fontsource-variable/{atkinson-hyperlegible-next,
+  atkinson-hyperlegible-mono,literata}@5.3.0` (OFL 1.1, no Reserved Font Name,
+  zero transitive deps). Their CSS entrypoints are AXIS-scoped (`wght.css`,
+  `opsz.css`), never subset-scoped, so importing one emits every unicode-range
+  subset — literata alone is 1883680 B across 58 files. `src/app.css` therefore
+  hand-authors `@font-face` against the six latin/latin-ext woff2 files:
+  176732 B, and family names drop the packages' `Variable` suffix.
+- Vite resolves a bare package specifier inside CSS `url()`, so the font rules
+  need no relative path into `node_modules`.
+- Role tokens: `--surface`, `--surface-raised`, `--surface-sunken`, `--text`,
+  `--text-muted`, `--border`, `--action`, `--action-text`, `--warn`,
+  `--focus-ring`. `--field` used to be consumed with an inline `#fff` fallback
+  and defined nowhere. `--border` must be at least `#8f8270` to clear 3:1
+  against `--surface`; the old `#ddd6c9` was 1.99:1.
+- `tools/contrast.mjs` grades a DECLARED pair table, not the DOM: jsdom has no
+  canvas, so axe-core reports every `color-contrast` result as `incomplete`. It
+  floors the ratio rather than rounding, and it fails when a colour token
+  appears in no pair.
+- `tools/copy-check.mjs` is static — there is no TS runner here. It grades
+  `src/demo/copy.ts` (`INSTRUCTIONS` ≤20 words/sentence, `DESCRIPTIONS` ≤25) and
+  `src/demo/describe.ts`. A period between digits is not a sentence boundary, so
+  `License 1.1.` is one sentence; the sentinel is `U+E000` because a control
+  character trips ESLint `no-control-regex`.
+- CDC's four reuse requirements for public-domain content: attribution naming
+  the developing agency; a nonendorsement disclaimer "prominently and
+  unambiguously displayed"; no change to substantive content; a statement that
+  the material is free on the agency website. The second one is why attribution
+  and nonendorsement cannot live inside the About disclosure.
+- The bag labels all 337 documents `unreviewed`. Upstream `tools/goal.py:3140`
+  counts `approved`/`rejected`/`contested`/`stale`/`unreviewed`, so the label
+  means no adjudication decision was recorded, not that a check failed.
+- The six question strings are payload, not copy: they are generated from the
+  compiled goals, and rewriting them would make the displayed question differ
+  from the one that runs. The copy validator does not grade them.
+- `pnpm smoke` must open the canonical-answer disclosure before reading it. A
+  `<details>` body is not visible, so a visibility wait times out at 45 s.
+- Visual-QA walker = `tools/probe-u7.mjs` on branch `wt/map-m1u7` `124e34d`,
+  545 lines, real browser at 320/375/1280 px. Regeneration: copy it into
+  `tools/` and run it; it writes PNGs to `.probe/` and JSON to stdout. It is NOT
+  in the gate — it fails `svelte-check` with 41 implicit-any errors, and the
+  typed port is an open polish entry.
+- New `.mjs` in `tools/` is type-checked by `svelte-check` AND type-aware
+  linted, so regex capture groups and destructured array elements arrive as
+  `string | undefined`. Prefer `exec(...)?.[1]` with an `undefined` guard over
+  indexing a match, and default destructured numbers (`const [r = 0] = ...`).

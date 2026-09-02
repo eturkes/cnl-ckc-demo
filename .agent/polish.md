@@ -73,3 +73,16 @@ Off-spine improvements. Each entry carries the acceptance check that closes it.
   renders in the alert with no Retry, so a transient PVM fetch failure needs a page
   reload. Accept: a failed boot offers a retry control that rebuilds the engine, and a
   second failure still reports one alert rather than accumulating them.
+- **Typed port of the visual-QA walker** — the state walker lives only on
+  `wt/map-m1u7` `124e34d` and fails `svelte-check` with 41 implicit-any errors,
+  so u7's responsive evidence comes from an out-of-tree script. Accept:
+  `tools/visual-qa.mjs` passes `pnpm check` and `pnpm lint`, `pnpm visual-qa`
+  exits 0, and its JSON reports `overflow=false` for every state at 320, 375 and
+  1280 px.
+- **Axe over the two new disclosures** — u6's `V11` axe sweep predates the About
+  panel and the canonical-answer `<details>`. Accept: a dom test runs `axe.run`
+  with each disclosure open and closed and reports zero violations.
+- **Copy validator reaches only two files** — `tools/copy-check.mjs` grades
+  `copy.ts` and `describe.ts` by path, so prose added to a new component escapes
+  it. Accept: the validator derives its file set from the source tree, and a new
+  component carrying a 30-word sentence fails the gate.

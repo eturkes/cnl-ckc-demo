@@ -174,6 +174,10 @@ try {
   await page.locator(`[role="option"][id$="-option-${QUESTION}"]`).click();
   await page.getByRole('button', { name: 'Run' }).click();
 
+  // The canonical answer ships behind a disclosure, so a visibility wait needs
+  // it open first. Opening it is also what proves the control works.
+  await page.locator('.canonical summary').click();
+
   const answer = page.locator('section[aria-labelledby] .canonical code');
   await answer.waitFor({ timeout: 45_000 });
   const rendered = (await answer.textContent())?.trim();

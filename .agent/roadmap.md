@@ -17,7 +17,7 @@ non-negotiable = answers trace to genuine Prolog solutions.
 
 ## Milestones
 
-- **M1 — live question→answer spine** — IN-PROGRESS, units below.
+- **M1 — live question→answer spine** — IMPLEMENTED, units below.
 - **M2 — provenance ladder** — UNPLANNED. Per selected solution, a live
   meta-interpreter proof → clause → ACE sentence → coverage region → aligned
   source passage → guideline page; lazy PDF; projection-loss and
@@ -30,7 +30,7 @@ non-negotiable = answers trace to genuine Prolog solutions.
   (answer↔trace↔graph), dark theme + full visual system, CSP/static-host
   decision + release proof, performance/responsive/a11y hardening.
 
-## M1 — IN-PROGRESS
+## M1 — IMPLEMENTED
 
 Spine: pick one of six built-in questions in an honest combobox → a worker-owned
 saved PVM runs its compiled goal → live bindings render. No source ladder, no
@@ -115,15 +115,37 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
   No `diff-m1u6`: no `oracle` flag, so nothing to differentiate against. NOT verified:
   boot-error recovery is out of scope by ruling Q7 and sits in `.agent/polish.md`.
   Judgment review is M1's.
-- **u7 — demo presentation + honest framing** · docs · est 60K, uncalibrated (no docs analog) · OPEN (u6 shipped)
-  Self-hosted Atkinson Hyperlegible Next + Literata with licences, light role
-  tokens, responsive answer composition, and limitation copy: fixed catalog,
-  non-clinical prepared demo, `unreviewed` projections, CDC attribution and
-  nonendorsement.
-  Accept: no scaffold copy survives; a copy sentence-length validator passes
-  (20 words instructions / 25 descriptions); font licences ship; token contrast
-  ≥4.5:1 normal and ≥3:1 large; visual QA covers every u5 state at mobile and
-  desktop widths.
+- **u7 — demo presentation + honest framing** · docs · est 60K → actual 229K · DONE
+  `src/app.css` (font faces + role tokens) + `src/demo/{copy,descriptor}.ts` +
+  `src/demo/AboutPanel.svelte` + rewritten `App.svelte`/`AnswerPanel.svelte` +
+  `tools/{copy-check,contrast}.mjs` + `public/licenses/*` .
+  Fonts self-host from `@fontsource-variable` at 5.3.0 through hand-authored
+  `@font-face` over latin + latin-ext alone: the packages' CSS entrypoints are
+  axis-scoped, not subset-scoped, so importing one ships Cyrillic, Greek and
+  Vietnamese to an English corpus. `dist/` carries 6 woff2 = 176732 B and three
+  OFL texts byte-equal to each package's `LICENSE`.
+  Two new gate steps, both fail-closed with a proven negative control:
+  `copy:check` (79 strings, 20 words/sentence `INSTRUCTIONS`, 25
+  `DESCRIPTIONS`) and `contrast:check` (17 declared pairs, WCAG luminance,
+  floored not rounded). `--border` needed `#8f8270` to clear 3:1.
+  Limitations sit in an About disclosure and the canonical Prolog answer in its
+  own (user rulings); CDC attribution, the nonendorsement disclaimer and the
+  free-availability statement stay in the always-visible footer, because CDC's
+  terms require that disclaimer to be prominently displayed.
+  Gate rc=0 from clean cache: 355 files 0 errors 0 warnings, 171 tests, 3 assets.
+  `pnpm smoke` rc=0 after being taught to open the new disclosure — it caught the
+  regression that the canonical answer is no longer visible by default.
+  Real-browser visual QA over 11 states at 320/375/1280 px: `overflow=false`
+  everywhere, and the three families resolve in the rendered `fontFamily`.
+  `harvest=63% 152K/240K`, `main=96% 229K/240K`, `mate=72% 172K/240K` (res-m1u7).
+  Wave 1 failed as a wave: both teammates saturated without flushing (map 5/26 at
+  169K, res 4/16 at 172K) across two flush directives each, so MAIN self-derived
+  the WCAG thresholds, the CDC terms and the `unreviewed` semantics. Harvest was
+  map's 545-line browser probe, which MAIN ran directly.
+  NOT verified: the probe is committed only on `wt/map-m1u7` `124e34d`, not in the
+  gate — it fails `svelte-check` with 41 type errors and porting it typed is in
+  `.agent/polish.md`. No `test-m1u7` red suite and no axe pass over the two new
+  disclosures. Judgment review is M1's.
 
 MILESTONE-REVIEW dispatch inputs — contract | fixed check set | evidence branches:
 
@@ -132,6 +154,7 @@ MILESTONE-REVIEW dispatch inputs — contract | fixed check set | evidence branc
 - u3 `.agent/contracts/m1u3.md` | `.agent/contracts/m1u3-rev-checkset.md`, 47 rows | `wt/test-m1u3` `22c8b97`, `wt/spike-m1u3-{js,pl}`
 - u4 `.agent/contracts/m1u4.md` | `.agent/contracts/m1u4-rev-checkset.md`, 24 rows | `wt/test-m1u4` `0240aae`, `wt/spike-m1u4-{gen,src}`
 - u5 `.agent/contracts/m1u5.md` (26 predicates + verdict table) | — | `wt/spike-m1u5-lib` `dca4f87`; map report `.scratch/agents/map-m1u5.md` 29/29
+- u7 `.agent/contracts/m1u7.md` (34 predicates + verdict table + D1–D9) | — | `wt/map-m1u7` `124e34d` (probe), `wt/res-m1u7` `d712fa9`
 - u6 `.agent/contracts/m1u6.md` (32 predicates + verdict table + D1–D10 + Q1–Q8 rulings) | — | `wt/test-m1u6` `2f87e0b` 23/23, `wt/spike-m1u6-{handle,signal}` `b896d2e`/`3066404`
 
 u1–u4 shipped their mechanical assurance and carry no judgment adjudication; those rows
