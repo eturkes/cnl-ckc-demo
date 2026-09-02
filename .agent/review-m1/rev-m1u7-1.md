@@ -26,10 +26,10 @@ Grade: `python3 -P .scratch/validate-report.py .agent/review-m1/rev-m1u7-1.md --
 | U7-18 | pass: All three shipped OFL files compare byte-equal to package licences, and every disclosure href resolves in the built dist. | `dist/licenses/`; `src/demo/copy.ts:70-74` |
 | U7-19 | fail(low): The historical 11-state walker evidence is credible, but it was not rerun after presentation changes, so current-commit overflow remains unmeasured. | `.agent/contracts/m1u7.md:202`; `git diff 672f334..HEAD` |
 | U7-20 | fail(med): Grid and padding adapt correctly, but question and live error/status surfaces lack the required overflow-wrap containment. | `src/questions/QuestionCombobox.svelte:252-303`; `src/demo/RunControls.svelte:89-104` |
-| U7-21 | unknown | unknown |
-| U7-22 | unknown | unknown |
-| U7-23 | unknown | unknown |
-| U7-24 | unknown | unknown |
+| U7-21 | pass: The declared nine-step gate ran from absent generated assets at rc 0; check reported 361 files, 0 errors, and 0 warnings. | `rm -rf kb/generated && pnpm gate`; `package.json` |
+| U7-22 | pass: The one authorized browser smoke opened the canonical disclosure and matched the rendered two-row answer to bytes read from the verified bag. | `pnpm smoke`; `tools/smoke.mjs:69-89,177-189` |
+| U7-23 | fail(low): The recorded fail verdict is sound, but its 41-error count is wrong—64 reproduce—and the polish entry has no required priority. | `.agent/contracts/m1u7.md:208`; `.agent/polish.md:76-82` |
+| U7-24 | fail(med): Four current measurements contradict durable u7 numbers: 81 copy strings, 361 checked files, 221 tests, and 3774068 dist bytes. | `.agent/roadmap.md:131-138`; `.agent/memory.md:214` |
 | U7-25 | unknown | unknown |
 | U7-26 | unknown | unknown |
 
@@ -157,19 +157,27 @@ Breached predicate: U7-20/R4. Impact: a long unbroken catalog or engine error to
 
 ### U7-21
 
-unknown
+Removed `kb/generated` and ran the complete gate. It regenerated 337 inputs, verified 3 assets, passed copy (81), contrast (17), format, lint, type-check, 221 tests, and build at rc 0. A separate `pnpm check` reported `361 FILES 0 ERRORS 0 WARNINGS 0 FILES_WITH_PROBLEMS`. `package.json` orders `kb:build`, `kb:asset-check`, `copy:check`, `contrast:check`, `format:check`, `lint`, `check`, `test`, `build`, matching the contract identity.
+
+Command: `rm -rf kb/generated && pnpm gate`, then `pnpm check`. Observed: gate rc 0, 3 assets, 221 tests, and 361/0/0 check result.
 
 ### U7-22
 
-unknown
+Ran the single authorized real-browser smoke. It reported rc 0 at a nested URL, answered `dosage-reduction-content` with two rows, matched the bag, and served eight requests. `tools/smoke.mjs:78` invokes `verifyBag` over the archive at run time; lines 177-185 click `.canonical summary` before reading the code and compare it to the unwrapped committed answer.
+
+Command: `pnpm smoke`. Observed: `smoke: ok ... 2 rows matching the bag, 8 nested requests served`.
 
 ### U7-23
 
-unknown
+**Severity: low.** The walker is absent from current `tools/` and `package.json` has no `visual-qa` script. Materializing commit `124e34d` temporarily at its original path reproduced 548 lines and `pnpm check` rc 1 with `362 FILES 64 ERRORS ... 1 FILES_WITH_PROBLEMS`; it was removed and status returned clean. Thus the fail(low) outcome is sound, but `.agent/contracts/m1u7.md:208` records 41 errors while memory and the run show 64. The polish entry has an acceptance check but no `pri` field.
+
+Breached predicate: U7-23 recorded-evidence accuracy and polish shape. Impact: the deferral is actionable, but its durable count conflicts and its scheduling priority is undefined. **Acceptance check:** change the contract count to 64, add an explicit `pri` to the typed-walker polish entry, and retain the current 64-error reproduction command.
 
 ### U7-24
 
-unknown
+**Severity: medium.** Re-ran every number. Fonts remain 6/176732 B; contrast remains 17 pairs; assets remain 3; walker remains 548 lines and 64 errors. Four durable u7 measurements are stale at current HEAD: copy is 81, not 79; `svelte-check` is 361 files, not 355; tests are 221, not 171; `dist/` is 14 files / 3774068 B, not 3773949 B. The contract's 41 walker errors also conflicts with the reproduced 64 recorded elsewhere.
+
+Breached predicate: U7-24 claim reproducibility. Impact: product gates pass, but the roadmap, contract, and memory no longer honestly describe the reviewed artifact. **Acceptance check:** refresh all current-commit counts in their canonical durable locations, resolve 41 versus 64 to the reproduced 64, and rerun the same census from the resulting commit.
 
 ### U7-25
 
