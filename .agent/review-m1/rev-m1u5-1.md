@@ -6,12 +6,12 @@ Grade: `python3 -P .scratch/validate-report.py .agent/review-m1/rev-m1u5-1.md --
 
 | id | finding | evidence |
 | --- | --- | --- |
-| I01 | unknown | unknown |
-| I02 | unknown | unknown |
-| I03 | unknown | unknown |
-| I04 | unknown | unknown |
-| I05 | unknown | unknown |
-| I06 | unknown | unknown |
+| I01 | pass: host preserves the implicit-listbox combobox relation and label-derived accessible name in closed and open frames | `pnpm exec vitest … rev-m1u5-structure-probe…` 1/1; `src/questions/QuestionCombobox.svelte:180-190` |
+| I02 | pass: expanded state tracks hidden, open, commit, cancel and click-toggle transitions with exact string values | structure probe 1/1; `src/questions/QuestionCombobox.svelte:187,204` |
+| I03 | fail(low): runtime options follow catalog order, but the suite embeds two generated question sentences as source literals | `tests/question-combobox.dom.test.ts:217,234`; `.agent/review-m1/red-m1u5-i03.test.mjs` rc=1 |
+| I04 | pass: each of six controlled selections yields one true and five false attributes; null yields six false attributes | structure probe 1/1; `src/questions/QuestionCombobox.svelte:207-216` |
+| I05 | pass: active descendant is valued only while open, disappears when closed, and DOM focus stays on the host | structure probe 1/1; `src/questions/QuestionCombobox.svelte:160-172,188` |
+| I06 | pass: controlled text selects catalog copy or the prompt, and the combobox subtree contains no focusable descendant | structure probe 1/1; `src/questions/QuestionCombobox.svelte:191-194` |
 | I07 | unknown | unknown |
 | I08 | unknown | unknown |
 | I09 | unknown | unknown |
@@ -37,8 +37,16 @@ Grade: `python3 -P .scratch/validate-report.py .agent/review-m1/rev-m1u5-1.md --
 
 ## Details
 
-One `### <row id>` section per row needing a ruling. Omit sections for clean `pass` rows.
+### I03
+
+**Ruling:** The rendered option labels come from `QUESTION_CATALOG`, but K5 comments copy the
+full `recommendation-exists` and `dosage-reduction-content` questions. This breaches I03's
+explicit component-and-suite literal census. Runtime behavior is unchanged, but generated copy
+can drift while the suite keeps stale explanatory claims.
+
+**Acceptance:** Replace both sentence literals with catalog-id descriptions. Then
+`node --test .agent/review-m1/red-m1u5-i03.test.mjs` must return rc=0.
 
 ## Register
 
-Out-of-contract observations, each with an evidence pointer and a concrete acceptance check.
+None.
