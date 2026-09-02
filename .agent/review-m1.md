@@ -22,7 +22,7 @@ which close on U03's and U11/U12's mutants.
 | u2 | kernel | `.agent/contracts/m1u2-rev-checkset.md` | 28 | **28 complete** | 4 |
 | u3 | kernel | `.agent/contracts/m1u3-rev-checkset.md` | 45 | **45 complete** | 1, 2, 3 |
 | u4 | kernel | `.agent/contracts/m1u4-rev-checkset.md` | 24 | **24 complete** | 1, 2 |
-| u5 | kernel | not enumerated | ? | 0 | pending |
+| u5 | kernel | `.agent/contracts/m1u5-rev-checkset.md` | 28 | 0 seeded | 5 |
 | u6 | kernel | `.agent/contracts/m1u6-rev-checkset.md` | 28 | **28 complete** | 4 |
 | u7 | docs | not enumerated (spot-check grade) | ? | 0 | pending |
 | cross-cutting | — | not enumerated | ? | 0 | pending |
@@ -285,3 +285,39 @@ Reviewer evidence = `.agent/review-m1/rev-m1u2-1.md`, probes on `wt/rev-m1u2-1` 
 | u2 | rev-m1u2-1 | E26 | accepted fail(med) | `probe/e26_browser_evidence.py` rc 1; `pnpm smoke` covers built static output only | commit one browser script that boots BOTH the Vite dev server and the built output and reads 337 from each. P6.2's two deployment modes are assertion-only today (P6.2, G3). No browser or port was launched in this wave, per the shared-resource assignment |
 | u2 | rev-m1u2-1 | E27 | accepted fail(med) | `probe/e27_corpus_census.py` rc 1, 13/27 absent | add the 13 named cases and make the census exit 0 — term: negative and zero integers, float, shared-variable identity, hyphenated atom, operator term, empty atom, quoted atom, deep nesting; protocol: unmatched id, duplicate id, boot failure before a request, two-request correlation, request before boot completes. `EngineSession.handle` is directly driveable, so each is cheap (Q, invariant I) |
 | u2 | rev-m1u2-1 | E28 | accepted fail(low) — rides on E11 + E19 | report E28; `pnpm build` resolves only `swipl-bundle-no-data`, main chunk 63609 B with zero engine markers, worker 3074438 B | close E11 and E19, then rerun both mutants plus `pnpm build`. Every other concern in the C1 census ships; the ledger overstates only where two mechanical rules stay convention rather than gate-owned |
+
+## Rows — u5
+
+Check set `.agent/contracts/m1u5-rev-checkset.md`, 28 rows, seeded session 5.
+Reviewer evidence = `.agent/review-m1/rev-m1u5-1.md`, probes on `wt/rev-m1u5-1`.
+
+| unit | reviewer | row | verdict | evidence | acceptance check |
+| --- | --- | --- | --- | --- | --- |
+| u5 | rev-m1u5-1 | I01 | unknown | — | — |
+| u5 | rev-m1u5-1 | I02 | unknown | — | — |
+| u5 | rev-m1u5-1 | I03 | unknown | — | — |
+| u5 | rev-m1u5-1 | I04 | unknown | — | — |
+| u5 | rev-m1u5-1 | I05 | unknown | — | — |
+| u5 | rev-m1u5-1 | I06 | unknown | — | — |
+| u5 | rev-m1u5-1 | I07 | unknown | — | — |
+| u5 | rev-m1u5-1 | I08 | unknown | — | — |
+| u5 | rev-m1u5-1 | I09 | unknown | — | — |
+| u5 | rev-m1u5-1 | I10 | unknown | — | — |
+| u5 | rev-m1u5-1 | I11 | unknown | — | — |
+| u5 | rev-m1u5-1 | I12 | unknown | — | — |
+| u5 | rev-m1u5-1 | I13 | unknown | — | — |
+| u5 | rev-m1u5-1 | I14 | unknown | — | — |
+| u5 | rev-m1u5-1 | I15 | unknown | — | — |
+| u5 | rev-m1u5-1 | I16 | unknown | — | — |
+| u5 | rev-m1u5-1 | I17 | unknown | — | — |
+| u5 | rev-m1u5-1 | I18 | unknown | — | — |
+| u5 | rev-m1u5-1 | I19 | unknown | — | — |
+| u5 | rev-m1u5-1 | I20 | unknown | — | — |
+| u5 | rev-m1u5-1 | I21 | unknown | — | — |
+| u5 | rev-m1u5-1 | I22 | unknown | — | — |
+| u5 | rev-m1u5-1 | I23 | unknown | — | — |
+| u5 | rev-m1u5-1 | I24 | unknown | — | — |
+| u5 | rev-m1u5-1 | I25 | unknown | — | — |
+| u5 | rev-m1u5-1 | I26 | unknown | — | — |
+| u5 | rev-m1u5-1 | I27 | unknown | — | — |
+| u5 | rev-m1u5-1 | I28 | unknown | — | — |
