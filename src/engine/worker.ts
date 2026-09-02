@@ -7,7 +7,7 @@ import loadImageModule from 'swipl-wasm/dist/loadImageDefault.js';
 import manifest from '@kb/kb-manifest.json';
 import pvmUrl from '@kb/kb.pvm?url';
 
-import type { EngineRequest, EngineResponse } from './protocol.js';
+import { WORKER_FAILURE_ID, type EngineRequest, type EngineResponse } from './protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from './session.js';
 
 /** Vite resolves this CommonJS default to either the function or `{ default: fn }`. */
@@ -83,10 +83,28 @@ self.addEventListener('message', (event: MessageEvent<EngineRequest>) => {
   })();
 });
 
+// Both channels carry no correlation id — a request that never deserialized has
+// none, and a stray rejection belongs to no request — so both settle every caller
+// through the reserved id. The parent's own `error` and `messageerror` cover the
+// cases where the worker dies without being able to post at all.
 self.addEventListener('messageerror', () => {
   post({
-    id: 'unknown',
+    id: WORKER_FAILURE_ID,
     kind: 'error',
     error: { code: 'protocol', message: 'worker could not deserialize a request' },
+  });
+});
+
+self.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+  // `reason` is `any` on the DOM event; widening it to `unknown` is what keeps the
+  // message construction type-safe.
+  const reason: unknown = event.reason;
+  post({
+    id: WORKER_FAILURE_ID,
+    kind: 'error',
+    error: {
+      code: 'worker',
+      message: `unhandled rejection in worker: ${reason instanceof Error ? reason.message : String(reason)}`,
+    },
   });
 });

@@ -39,8 +39,13 @@ export const DESCRIPTIONS = {
   projection:
     'The demo does not reproduce guideline text unchanged. It runs a compiled projection of that text into a controlled language, and then into Prolog.',
 
+  // No corpus number is written here. The count is read from the booted engine and
+  // substituted into `corpusSize`, so shipped copy can never state a size the engine
+  // does not report.
+  corpusSize: 'The engine reports {documents} compiled documents.',
+
   unreviewed:
-    'All 337 compiled documents carry the label unreviewed. No person has adjudicated any of them. ' +
+    'Every compiled document carries the label unreviewed. No person has adjudicated any of them. ' +
     'The other labels in that vocabulary are approved, rejected, contested and stale.',
 
   prolog:

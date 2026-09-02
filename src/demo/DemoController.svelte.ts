@@ -83,6 +83,13 @@ export class DemoController {
   state = $state.raw<DemoState>({ kind: 'booting' });
   selected = $state<QuestionId | null>(null);
   solutionIndex = $state(-1);
+  /**
+   * What the booted engine reported, kept past `idle`.
+   *
+   * The view states a corpus size, and the only honest source for it is the engine
+   * that answers the questions; `idle.contract` disappears the moment a run starts.
+   */
+  contract = $state.raw<EngineContract | null>(null);
 
   readonly #engine: DemoEngine;
   #active: ActiveRun | undefined;
@@ -133,6 +140,7 @@ export class DemoController {
   async #boot(): Promise<void> {
     const outcome = await this.#engine.boot();
     if (this.#disposed) return;
+    if (outcome.kind === 'booted') this.contract = outcome.contract;
     this.state =
       outcome.kind === 'booted'
         ? { kind: 'idle', contract: outcome.contract }

@@ -34,6 +34,16 @@ const ANSWERS = new RegExp(['queries', 'answers'].join('/'));
  * `cnl-ckc-demo` among them — from reading as the sibling.
  */
 const SIBLING = new RegExp(`${['\\.\\.', 'cnl-ckc'].join('/')}(?![\\w.-])`);
+/**
+ * JSON round-tripping an engine value is the one measured corruption path:
+ * `'$guideline_id'/5` re-enters as arity 1 with `ref([1])` and `1r3` flips to `3r1`
+ * (u2 P3.12). The rule was comment-only, so a new call shipped silently. `src/` is
+ * the app the engine runs in and carries no legitimate use; `tools/` writes real
+ * JSON artifacts and is out of scope. Assembled from parts so this scanner is not
+ * itself a match.
+ */
+const SERIALIZE = new RegExp(['JSON', 'stringify'].join('\\.'));
+const SERIALIZE_ROOTS = ['src'];
 
 /** @param {string} path @returns {string[]} every file at or under `path` */
 const walk = (path) => {
@@ -102,6 +112,12 @@ for (const root of PRODUCTION_ROOTS) {
   }
 }
 
+for (const root of SERIALIZE_ROOTS) {
+  for (const path of walk(join(ROOT, root))) {
+    if (SERIALIZE.test(readFileSync(path, 'latin1'))) fail(`JSON serialization in ${relative(ROOT, path)}`);
+  }
+}
+
 if (failures.length > 0) {
   process.stderr.write(`kb:asset-check failed —\n${failures.map((line) => `  ${line}`).join('\n')}\n`);
   process.exitCode = 1;
@@ -110,6 +126,7 @@ if (failures.length > 0) {
   process.stdout.write(
     `kb:asset-check ok — ${assets.length} assets verified, catalog re-derived from the bag, ` +
       `sibling-path scan clean over ${SCAN_ROOTS.length} roots, ` +
-      `answer-oracle scan clean over ${PRODUCTION_ROOTS.length} roots\n`,
+      `answer-oracle scan clean over ${PRODUCTION_ROOTS.length} roots, ` +
+      `JSON-serialization scan clean over ${SERIALIZE_ROOTS.length} root\n`,
   );
 }

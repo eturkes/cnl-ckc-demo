@@ -249,6 +249,9 @@ describe('P3 decode traps', () => {
   it('P3.11 fails closed on a value it does not recognize', () => {
     expect(() => decodeTerm(Symbol('nope'))).toThrow(DecodeError);
     expect(() => decodeTerm({ $t: 'unheard-of' })).toThrow(DecodeError);
+    // A dict's own tag may be any atom, so an unrecognized `$t` wrapper that also
+    // carries `$tag` must fail closed rather than decode as a dict (M1 review E18).
+    expect(() => decodeTerm({ $t: 'unheard-of', $tag: 'point' })).toThrow(DecodeError);
     expect(() => decodeTerm(Number.POSITIVE_INFINITY)).toThrow(DecodeError);
   });
 
@@ -275,4 +278,141 @@ describe('P2 protocol shape', () => {
     );
     expect(structuredClone(response)).toEqual(response);
   });
+});
+
+// M1 review E27: the Q-corpus shapes the committed suite never drove, plus the two
+// defects the census exposed — a boot that loads the image twice under concurrency
+// (E05) and a shared variable that re-enters as two (E16).
+describe('Q corpus census', () => {
+  it('E27 decodes negative and zero integers', () => {
+    expect(termOf('X is -7.')).toEqual({ kind: 'integer', value: -7 });
+    expect(termOf('X is 0.')).toEqual({ kind: 'integer', value: 0 });
+  });
+
+  it('E27 decodes a genuine float', () => {
+    expect(termOf('X is 0.5.')).toEqual({ kind: 'float', value: 0.5 });
+  });
+
+  it('E27 decodes a variable shared across two arguments as one variable', () => {
+    const shared = termOf('X = f(A,A).');
+    expect(shared.kind).toBe('compound');
+    if (shared.kind !== 'compound') return;
+    const [left, right] = shared.args;
+    expect(left?.kind).toBe('variable');
+    expect(right?.kind).toBe('variable');
+    if (left?.kind !== 'variable' || right?.kind !== 'variable') return;
+    expect(left.id).toBe(right.id);
+    // Negative control: two distinct variables must not collapse into one id.
+    const distinct = termOf('X = f(A,B).');
+    if (distinct.kind !== 'compound') return;
+    const [a, b] = distinct.args;
+    if (a?.kind !== 'variable' || b?.kind !== 'variable') return;
+    expect(a.id).not.toBe(b.id);
+  });
+
+  it('E27 decodes hyphenated, empty and quoted atoms as atoms', () => {
+    expect(termOf("X = 'category-B-recommendation'.")).toEqual({
+      kind: 'atom',
+      value: 'category-B-recommendation',
+    });
+    expect(termOf("X = ''.")).toEqual({ kind: 'atom', value: '' });
+    expect(termOf("X = 'has space'.")).toEqual({ kind: 'atom', value: 'has space' });
+  });
+
+  it('E27 decodes an operator term as its compound, not as text', () => {
+    expect(termOf('X = (1+2).')).toEqual({
+      kind: 'compound',
+      functor: '+',
+      args: [
+        { kind: 'integer', value: 1 },
+        { kind: 'integer', value: 2 },
+      ],
+    });
+  });
+
+  it('E27 decodes deep nesting to its full depth', () => {
+    let term = termOf('X = f(g(h(i(j(k(1)))))).');
+    for (const functor of ['f', 'g', 'h', 'i', 'j', 'k']) {
+      expect(term.kind).toBe('compound');
+      if (term.kind !== 'compound') return;
+      expect(term.functor).toBe(functor);
+      const [next] = term.args;
+      if (next === undefined) throw new Error(`${functor} lost its argument`);
+      term = next;
+    }
+    expect(term).toEqual({ kind: 'integer', value: 1 });
+  });
+
+  it('E16 re-enters a shared variable as one variable, not two', () => {
+    const encode = createEncoder(engine.prolog);
+    const variant = (goal: string): boolean =>
+      decodeOnce(engine.prolog.query('T =@= f(A,A).', { T: encode(termOf(goal)) }).once()).kind ===
+      'bindings';
+    // The wrapper shares variables by name within one conversion, so an unnamed
+    // `Var` splits `f(A,A)` into `f(_,_)` — which is still a variant of itself, and
+    // is why comparing two decodes of the same term could not catch it.
+    expect(variant('X = f(A,A).')).toBe(true);
+    expect(variant('X = f(A,B).')).toBe(false);
+  });
+
+  it('E05 loads the image once when two boots race', async () => {
+    let loads = 0;
+    const counting = new EngineSession({
+      loadImage: async (bytes) => {
+        loads += 1;
+        return loadImage(bytes);
+      },
+      expected: manifest.contract,
+    });
+    const pvm = new Uint8Array(readGenerated('kb.pvm'));
+    const [first, second] = await Promise.all([counting.boot(pvm), counting.boot(pvm)]);
+    expect(first).toEqual(manifest.contract);
+    expect(second).toEqual(manifest.contract);
+    expect(loads).toBe(1);
+  }, 120_000);
+
+  it('E27 settles a request typed when boot failed before it', async () => {
+    const broken = new EngineSession({
+      loadImage: () => Promise.reject(new Error('image unavailable')),
+      expected: manifest.contract,
+    });
+    const bootResponse = await broken.handle({ id: 'b1', kind: 'boot' }, new Uint8Array(0));
+    expect(bootResponse).toMatchObject({ id: 'b1', kind: 'error', error: { code: 'boot' } });
+    const queryResponse = await broken.handle(
+      { id: 'q1', kind: 'query', goal: CATEGORY_A_GOAL, budget: BUDGET },
+      new Uint8Array(0),
+    );
+    expect(queryResponse.kind).toBe('error');
+    expect(queryResponse.id).toBe('q1');
+  });
+
+  it('E27 settles a request issued before boot completes, without hanging it', async () => {
+    const late = new EngineSession({ loadImage, expected: manifest.contract });
+    const pvm = new Uint8Array(readGenerated('kb.pvm'));
+    const booting = late.handle({ id: 'boot-1', kind: 'boot' }, pvm);
+    const early = late.handle(
+      { id: 'query-1', kind: 'query', goal: CATEGORY_A_GOAL, budget: BUDGET },
+      pvm,
+    );
+    const [bootResponse, earlyResponse] = await Promise.all([booting, early]);
+    expect(bootResponse).toMatchObject({ id: 'boot-1', kind: 'booted' });
+    expect(earlyResponse).toMatchObject({ id: 'query-1', kind: 'error' });
+  }, 120_000);
+
+  it('E27 answers two correlated requests with their own ids', async () => {
+    const [first, second] = await Promise.all([
+      session.handle(
+        { id: 'first', kind: 'query', goal: 'true.', budget: BUDGET },
+        new Uint8Array(0),
+      ),
+      session.handle(
+        { id: 'second', kind: 'query', goal: 'guideline_document(D,_,_).', budget: BUDGET },
+        new Uint8Array(0),
+      ),
+    ]);
+    expect(first.id).toBe('first');
+    expect(second.id).toBe('second');
+    expect(first.kind).not.toBe('error');
+    expect(second.kind).not.toBe('error');
+  }, 120_000);
 });

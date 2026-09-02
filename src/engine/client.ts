@@ -7,6 +7,7 @@
 // main-thread timer fired at 25.97 ms.
 
 import { validateBudget } from './budget.js';
+import { WORKER_FAILURE_ID } from './protocol.js';
 import type {
   BudgetSpec,
   EngineContract,
@@ -104,6 +105,14 @@ export class EngineClient {
       // ids stay monotonic, but a queued response can still outlive its worker.
       if (generation !== this.#generation) return;
       const response = event.data;
+      // A worker-level failure names no request, so it settles all of them: the
+      // worker that reported it will never answer what it is already holding.
+      if (response.id === WORKER_FAILURE_ID) {
+        this.#abort(
+          response.kind === 'error' ? response.error.message : `worker reported ${response.kind}`,
+        );
+        return;
+      }
       // An unclaimed id means the two sides disagree about what is in flight;
       // surfacing it beats dropping a response that some caller is awaiting.
       if (!this.#pending.has(response.id)) {

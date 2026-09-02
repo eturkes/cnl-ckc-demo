@@ -66,6 +66,15 @@ export interface PlSolution {
   display: Record<string, string>;
 }
 
+/**
+ * Reserved id for a worker-level failure that belongs to no single request.
+ *
+ * The client mints ids as `r<n>`, so this collides with nothing, and a response
+ * carrying it settles EVERY in-flight caller: a worker that cannot deserialize a
+ * request, or that rejects a promise nobody awaits, will never answer them.
+ */
+export const WORKER_FAILURE_ID = 'worker-failure';
+
 /** A request before the client assigns its correlation id. */
 export type EngineRequestBody =
   | { kind: 'boot' }

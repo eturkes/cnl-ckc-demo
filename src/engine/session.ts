@@ -90,7 +90,8 @@ const TOLERATED = /library\(shlib\)/;
  *
  * A microtask yield does not admit posted messages, so it cannot deliver a cancel;
  * only returning to the task queue does. This is what makes cooperative abort real,
- * at a granularity of one solution step — measured at 62 ms worst case on real goals.
+ * at a granularity of one solution step — 50.11 ms worst step over 80 sampled Node
+ * steps on this corpus, a sample maximum rather than a per-goal or browser bound.
  */
 const yieldToEvents = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -115,6 +116,8 @@ const requireInteger = (term: PlTerm | undefined, what: string): number => {
 export class EngineSession {
   #engine: Engine | undefined;
   #contract: EngineContract | undefined;
+  /** In-flight boot, so concurrent callers share one image load. */
+  #booting: Promise<EngineContract> | undefined;
   #active: string | undefined;
   #cancelling = false;
   /** Cancels that arrived before their query did; see `requestCancel`. */
@@ -131,9 +134,22 @@ export class EngineSession {
     return this.#engine !== undefined;
   }
 
-  /** Boot once; a later request reuses the same engine rather than reloading it. */
+  /**
+   * Boot once; a later request reuses the same engine rather than reloading it.
+   *
+   * Caching the finished engine is not enough. Two boots issued before the first
+   * resolves both miss that check and load the image twice, so the in-flight promise
+   * is what single-flights them. It clears on settle, leaving a failed boot retryable.
+   */
   async boot(image: Uint8Array): Promise<EngineContract> {
     if (this.#engine !== undefined && this.#contract !== undefined) return this.#contract;
+    this.#booting ??= this.#bootOnce(image).finally(() => {
+      this.#booting = undefined;
+    });
+    return this.#booting;
+  }
+
+  async #bootOnce(image: Uint8Array): Promise<EngineContract> {
     const engine = await this.#options.loadImage(image);
     this.#failClosed(engine, 'image load', TOLERATED);
     const contract = readContract(engine);

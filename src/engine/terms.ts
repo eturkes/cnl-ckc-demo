@@ -2,10 +2,10 @@
 // encode that produce it.
 //
 // Decoding happens inside the worker, before any DTO is built. Native swipl-wasm
-// values must never reach the boundary and must never re-enter a query: passing a
-// binding through `JSON.stringify` rewrites `'$guideline_id'/5` into arity 1 with
+// values must never reach the boundary and must never re-enter a query: JSON
+// round-tripping a binding rewrites `'$guideline_id'/5` into arity 1 with
 // `ref([1])` and flips `1r3` to `3r1`, which would silently falsify every answer
-// the demo claims came from Prolog.
+// the demo claims came from Prolog. `kb:asset-check` bans that call from `src/`.
 //
 // The wrapper ABI below (`$t` discriminants, the one-element compound argument
 // envelope, `$tag` dicts) is undocumented and read off the installed package. An
@@ -33,7 +33,8 @@ export interface PrologConstructors {
   List: new (items: unknown[], tail?: unknown) => unknown;
   Rational: new (numerator: PlInteger, denominator: PlInteger) => unknown;
   String: new (value: string) => unknown;
-  Var: new (id?: number) => unknown;
+  /** The argument is a sharing NAME, not the decoded id; see `createEncoder`. */
+  Var: new (name?: number) => unknown;
 }
 
 export class DecodeError extends Error {
@@ -92,7 +93,10 @@ export function decodeTerm(value: unknown): PlTerm {
     }
     return { kind: 'compound', functor: value.functor, args: packed[0].map(decodeTerm) };
   }
-  if (typeof value.$tag === 'string' && value.$tag !== 'bindings') {
+  // `$t` absent is load-bearing: a dict carries a user tag that may be any atom, so
+  // `{ $t: 'x', $tag: 'foo' }` is an unrecognized wrapper, not a dict, and must fail
+  // closed instead of decoding as one.
+  if (value.$t === undefined && typeof value.$tag === 'string' && value.$tag !== 'bindings') {
     const entries: Record<string, PlTerm> = {};
     for (const [key, item] of Object.entries(value))
       if (key !== '$tag') entries[key] = decodeTerm(item);
@@ -136,10 +140,12 @@ export function decodeOnce(value: unknown): OnceResult {
  * Build a term encoder bound to one engine's constructors.
  *
  * Variables are interned per encoder so a term sharing one variable across two
- * arguments re-enters sharing it too.
+ * arguments re-enters sharing it too. The wrapper shares by NAME — it keys
+ * `ctx.vars` on the `$t:'v'` payload and ignores JS object identity — and it treats
+ * a falsy name as unnamed, so the names minted here are dense and start at 1.
  */
 export function createEncoder(constructors: PrologConstructors): (term: PlTerm) => unknown {
-  const variables = new Map<number, unknown>();
+  const names = new Map<number, number>();
   const encode = (term: PlTerm): unknown => {
     switch (term.kind) {
       case 'atom':
@@ -157,17 +163,24 @@ export function createEncoder(constructors: PrologConstructors): (term: PlTerm) 
       case 'compound':
         return new constructors.Compound(term.functor, ...term.args.map(encode));
       case 'variable': {
-        const existing = variables.get(term.id);
-        if (existing !== undefined) return existing;
-        const created = new constructors.Var();
-        variables.set(term.id, created);
-        return created;
+        let name = names.get(term.id);
+        if (name === undefined) {
+          name = names.size + 1;
+          names.set(term.id, name);
+        }
+        return new constructors.Var(name);
       }
       case 'dict':
         return Object.fromEntries([
           ['$tag', term.tag],
           ...Object.entries(term.entries).map(([key, item]) => [key, encode(item)] as const),
         ]);
+      default: {
+        // A new `PlTerm` variant must gain an arm here rather than encode as
+        // `undefined`, which the wrapper would refuse only at query time.
+        const exhaustive: never = term;
+        throw new DecodeError(`unsupported term kind: ${String(exhaustive)}`);
+      }
     }
   };
   return encode;

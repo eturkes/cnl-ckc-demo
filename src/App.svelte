@@ -86,7 +86,7 @@
     }}
   />
 
-  <AboutPanel />
+  <AboutPanel documents={demo.contract?.documents} />
 
   <!-- CDC's reuse terms require attribution, a nonendorsement disclaimer that is
        prominently displayed, and a statement that the material is free at the

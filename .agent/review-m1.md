@@ -11,8 +11,9 @@ overrules the reviewer), `unknown` (not yet adjudicated; carries forward).
 
 Every `fixed` row with a code fix is red under a mutant that removes it:
 `.scratch/verify-fixes.py` restores each pre-fix behaviour and reruns the closing test,
-**18/18 RED**. Contract-ruling closures carry no mutant: R28, R37, R41, R44, R45, and U04/U08
-which close on U03's and U11/U12's mutants.
+**26/26 RED**. Contract-ruling closures carry no mutant: R28, R37, R41, R44, R45, and U04/U08
+which close on U03's and U11/U12's mutants. Session 5 adds two more: E11 is a
+compile-time guard proven by variant injection, and E27 is test-only.
 
 ## Coverage
 
@@ -40,7 +41,7 @@ it reverts session-2 fixes and must never be merged.
 Session 4 adjudicated **56 rows** (u2 28, u6 28) and closed **12 defects** — the 10 it
 inherited (U03, U04, U08, U11, U12 from u1; R36, R37, R41, R44, R45 from u3) plus u6's own
 L25 and L28 — under a clean-`kb/generated` `pnpm gate` rc 0 (198 tests / 13 files, 3 assets,
-0 errors 0 warnings) and `.scratch/verify-fixes.py` **18/18 RED**. Fix sizing was wrong in the
+0 errors 0 warnings) and `.scratch/verify-fixes.py` **26/26 RED**. Fix sizing was wrong in the
 useful direction: the estimate was six, the actual was twelve, because six closed as contract
 rulings costing a paragraph each rather than a test.
 
@@ -193,7 +194,7 @@ Reviewer evidence = `.agent/review-m1/rev-m1u3-4.md`, probes + browser harness
 | --- | --- | --- | --- | --- | --- |
 | u3 | rev-m1u3-4 | R14 | pass | report R14; `tests/rev-m1u3-4-r14.test.ts` 2/2 | — |
 | u3 | rev-m1u3-4 | R33 | pass | report R33; main chunk 0 engine hits vs 5 in the worker chunk | — |
-| u3 | rev-m1u3-4 | R34 | accepted fail(med) | report R34 | a committed test asserts an overlay present, hard-cancels, and re-reads 337 from the replacement engine — the roadmap accept clause has no direct evidence today |
+| u3 | rev-m1u3-4 | R34 | fixed(med) | `tests/engine-client-live.test.ts` "R34 drops an asserted overlay and re-reads the corpus from the replacement engine" | a consulted overlay is proven present, `reset()` terminates its worker and boots a second real engine that re-verifies 337 documents, and the overlay goal then FAILS — green, red under mutant `R34` |
 | u3 | rev-m1u3-4 | R35 | accepted fail(med) | report R35 | P4.4, P4.5 and P4.7 each get a committed test, P6.2-P6.5 move into `pnpm gate` as deterministic checks, and the 6 unexercised Q-corpus cases are covered or struck with a reason |
 | u3 | rev-m1u3-4 | R36 | fixed(low) | `src/engine/{protocol,client,session}.ts`; `pnpm check` 357 files 0 errors 0 warnings | dead `Pending.generation` removed, the double `#generation` advance carries its why, and `SolveResult`/`QueryOutcome` derive from `EngineResponse` in `protocol.ts` — one declaration site, per P2.4/P6.1 |
 | u3 | rev-m1u3-4 | R37 | fixed(low) | `.agent/contracts/m1u3.md` D1 scope note | D1 is restated as a Node-proven composition whose browser leg was measured later at R39/R41; the gate stays browser-free on the `pnpm smoke` precedent. Documentation ruling: no mutant applies |
@@ -259,32 +260,32 @@ Reviewer evidence = `.agent/review-m1/rev-m1u2-1.md`, probes on `wt/rev-m1u2-1` 
 | --- | --- | --- | --- | --- | --- |
 | u2 | rev-m1u2-1 | E01 | pass | report E01; 63609-byte main chunk holds zero engine markers against the worker positive control | — |
 | u2 | rev-m1u2-1 | E02 | pass | report E02; one hashed 437132-byte PVM, inlining disabled | — |
-| u2 | rev-m1u2-1 | E03 | accepted fail(med) | `src/demo/copy.ts:43` "All 337 compiled documents…" — MAIN reconfirmed the literal | derive the displayed count from `BootOutcome.contract` so no shipped copy states a corpus number, then `probe/e03_contract_literals.py` exits 0. Boot's own comparison is sound; this is the second, UI-visible source of truth (P1.3, D0.5, invariant I) |
+| u2 | rev-m1u2-1 | E03 | fixed(med) | `tests/about-copy.dom.test.ts`, 3 cases; `src/demo/AboutPanel.svelte:8` | copy states no corpus number (no 3+ digit run in `INSTRUCTIONS`/`DESCRIPTIONS`) and the panel renders `{documents}` substituted from `DemoController.contract`, which `#boot` sets from `BootOutcome.contract` — green, red under mutant `E03` |
 | u2 | rev-m1u2-1 | E04 | pass | report E04; three injected loader failures each settle typed `code: boot` | — |
-| u2 | rev-m1u2-1 | E05 | accepted fail(med) | `src/engine/session.ts:124`; `probe/e05_single_boot.py` measured 2 loader calls, expected 1 | single-flight the in-progress boot (cache the promise, not the completed engine) so two concurrent `boot()` calls invoke `loadImage` once — P1.5 |
+| u2 | rev-m1u2-1 | E05 | fixed(med) | `tests/engine-session.test.ts` "E05 loads the image once when two boots race" | `boot()` caches the in-flight promise, so two concurrent boots invoke `loadImage` once and both receive the same contract; the promise clears on settle, leaving a failed boot retryable — green, red under mutant `E05` |
 | u2 | rev-m1u2-1 | E06 | pass | report E06; every request/response variant, all ten `PlTerm` shapes and bigint clone deeply equal | — |
 | u2 | rev-m1u2-1 | E07 | pass | report E07; unknown and duplicate ids each raise `code: protocol`, the claimed request settles once | — |
 | u2 | rev-m1u2-1 | E08 | pass | report E08; every declared response kind terminal, solutions one correlated array | — |
 | u2 | rev-m1u2-1 | E09 | pass | report E09; `protocol.ts` alone declares the correlated unions | — |
-| u2 | rev-m1u2-1 | E10 | accepted fail(med) | `src/engine/worker.ts`; `probe/e10_worker_rejection.py` rc 1 | route worker-local `unhandledrejection` to a typed parent failure; two in-flight calls settle typed with timers and listeners released. Parent `error`/`messageerror` already abort pending requests, so this is the one uncovered channel — and boot carries no client deadline, making it an unbounded pending path (P2.5) |
-| u2 | rev-m1u2-1 | E11 | accepted fail(med) | `src/engine/terms.ts:141` `createEncoder` switch — MAIN reconfirmed no `default: never` arm, unlike `describe.ts` | add the `never` exhaustiveness guard so a new `PlTerm` variant fails `pnpm check` instead of encoding as `undefined`; `probe/e11_exhaustiveness.py` exits 0 on a named error (P3.1) |
+| u2 | rev-m1u2-1 | E10 | fixed(med) | `src/engine/worker.ts:96`, `src/engine/client.ts:113`; `tests/engine-cancel.test.ts` "E10 settles every in-flight caller when the worker reports a failure of its own" | the worker routes `unhandledrejection` AND `messageerror` to the reserved `WORKER_FAILURE_ID`, and the client settles every pending caller typed `code:worker` on it, releasing each deadline timer (`clock.armed.size === 0`) — green, red under mutant `E10`. The boot-deadline half is out of this row and sits in `.agent/polish.md` |
+| u2 | rev-m1u2-1 | E11 | fixed(med) | injected `kind:'probe'` variant → `pnpm check` rc 1, `terms.ts:182` "not assignable to type 'never'" | `createEncoder` gained the `default` never arm, so a new `PlTerm` variant fails `pnpm check` instead of encoding as `undefined`. Compile-time guard: no vitest mutant applies, the injection is the control |
 | u2 | rev-m1u2-1 | E12 | pass | report E12; `foo(bar,7)` and `foo([bar,7])` keep the one-element envelope distinction | — |
 | u2 | rev-m1u2-1 | E13 | pass | report E13; `1 rdiv 3` → `1r3`, normalized `3 rdiv 1` → integer 3 | — |
 | u2 | rev-m1u2-1 | E14 | pass | report E14; atom and string of identical text keep distinct tags; direct decode of `f(V,V)` shares one id | — |
 | u2 | rev-m1u2-1 | E15 | pass | report E15; 30-digit integer exact as bigint; the `1.0 → integer 1` wrapper deviation is declared at the decode site | — |
-| u2 | rev-m1u2-1 | E16 | accepted fail(med) | `src/engine/terms.ts:141`; `probe/e16_shared_roundtrip.py` → re-query ids 2009 and 2011 | preserve alias identity through encode so `f(A,A)` re-enters sharing one variable. 20/20 ground shapes including the full `'$guideline_id'/5` already round-trip; only the shared-variable case splits (P3.7, invariant I) |
+| u2 | rev-m1u2-1 | E16 | fixed(med) | `tests/engine-session.test.ts` "E16 re-enters a shared variable as one variable, not two" | the encoder names every variable (`new Var(name)`, dense from 1) because the wrapper shares by NAME within one conversion and treats a falsy name as unnamed; `f(A,A)` is now `=@= f(A,A)` and `f(A,B)` is not — green, red under mutant `E16` |
 | u2 | rev-m1u2-1 | E17 | pass | report E17; the worker-owned session decodes before constructing `PlSolution`; no native value is retained | — |
-| u2 | rev-m1u2-1 | E18 | accepted fail(low) — NARROWED | `src/engine/terms.ts:94-100`; report E18 + its Register entry | the dict half is REJECTED: `$tag` is a dict's own user tag, which SWI lets be any atom, so P3.11's "tag" is the `$t` wrapper discriminator and `{ $tag: 'unsupported' }` is a supported shape, not an unrecognized one — memory's `$tag`-dict ABI statement stands and E18's check text is what is wrong. RESIDUAL, real: the dict branch is tested AFTER every `$t` branch without requiring `$t` absent, so `{ $t: 'x', $tag: 'foo' }` — an unrecognized wrapper — decodes as a dict instead of failing closed. Fix = `value.$t === undefined &&` in the dict guard at line 94, plus a decode test for that exact object |
-| u2 | rev-m1u2-1 | E19 | accepted fail(med) | `src/engine/session.ts:335`; `probe/e19_json_stringify.py` — full gate stays rc 0 with `JSON.stringify(raw)` inserted | add a production static barrier for `JSON.stringify` over a native engine value whose mutant makes `pnpm gate` nonzero. P3.12 is currently comment-enforced only, and the corruption it names is measured (`'$guideline_id'/5` → arity 1, `1r3` → `3r1`) |
+| u2 | rev-m1u2-1 | E18 | fixed(low) | `src/engine/terms.ts:96`; `tests/engine-session.test.ts` P3.11 case `{ $t: 'unheard-of', $tag: 'point' }` | the dict guard requires `$t` absent, so an unrecognized wrapper carrying `$tag` fails closed instead of decoding as a dict — green, red under mutant `E18`. The dict half of the check text stays rejected per session 4 |
+| u2 | rev-m1u2-1 | E19 | fixed(med) | `tools/kb/check.mjs` SERIALIZE scan; `tests/kb-reach.test.ts` "fails kb:asset-check on a serializing call" | `kb:asset-check` bans JSON serialization over `src/` and reports it as a fourth scan class; a planted call in `src/` returns rc 1 — green, red under mutant `E19`. `tools/` keeps the call because it writes real JSON artifacts |
 | u2 | rev-m1u2-1 | E20 | pass | report E20; `term_string/3` with all three options; 20/20 adversarial terms re-read as variants | — |
 | u2 | rev-m1u2-1 | E21 | pass | report E21; counts read from the engine and compared to the manifest, no engine-output fixture | — |
-| u2 | rev-m1u2-1 | E22 | accepted fail(med) | `tests/engine-session.test.ts:122` proves 7 solutions through internal `EngineSession.solve`; `probe/e22_shipped_client_live.py` rc 1 | commit a real-image `EngineClient.query` test asserting seven category-A solutions. Client tests use scripted workers and live tests use the session, so no committed case joins the shipped surface to the real PVM (P5.2, G2) |
+| u2 | rev-m1u2-1 | E22 | fixed(med) | `tests/engine-client-live.test.ts` "E22 proves the seven category-A solutions through EngineClient.query" | a worker-shaped adapter over a REAL per-spawn `EngineSession` joins the shipped `EngineClient.query` to the real PVM; the seven ids are read out of the run's bindings, not a fixture — green, red under mutant `E22` |
 | u2 | rev-m1u2-1 | E23 | pass | report E23; replacing runtime consult with a no-op turns the overlay test red | — |
 | u2 | rev-m1u2-1 | E24 | pass | report E24; planted controls fail per forbidden class, own `../cnl-ckc-demo` prefix accepted | — |
 | u2 | rev-m1u2-1 | E25 | pass | report E25; `kb/generated` absent → `pnpm test` rc 1, 9 failed files, no skipped live case | — |
 | u2 | rev-m1u2-1 | E26 | accepted fail(med) | `probe/e26_browser_evidence.py` rc 1; `pnpm smoke` covers built static output only | commit one browser script that boots BOTH the Vite dev server and the built output and reads 337 from each. P6.2's two deployment modes are assertion-only today (P6.2, G3). No browser or port was launched in this wave, per the shared-resource assignment |
-| u2 | rev-m1u2-1 | E27 | accepted fail(med) | `probe/e27_corpus_census.py` rc 1, 13/27 absent | add the 13 named cases and make the census exit 0 — term: negative and zero integers, float, shared-variable identity, hyphenated atom, operator term, empty atom, quoted atom, deep nesting; protocol: unmatched id, duplicate id, boot failure before a request, two-request correlation, request before boot completes. `EngineSession.handle` is directly driveable, so each is cheap (Q, invariant I) |
-| u2 | rev-m1u2-1 | E28 | accepted fail(low) — rides on E11 + E19 | report E28; `pnpm build` resolves only `swipl-bundle-no-data`, main chunk 63609 B with zero engine markers, worker 3074438 B | close E11 and E19, then rerun both mutants plus `pnpm build`. Every other concern in the C1 census ships; the ledger overstates only where two mechanical rules stay convention rather than gate-owned |
+| u2 | rev-m1u2-1 | E27 | fixed(med) | `tests/engine-session.test.ts` "Q corpus census" (8 cases) + `tests/engine-cancel.test.ts` "protocol correlation and worker-level failure" (3 cases) | all 13 named cases are committed — negative/zero integers, float, shared-variable identity, hyphenated/empty/quoted atoms, operator term, deep nesting; unmatched id, duplicate id, boot failure before a request, request before boot completes, two-request correlation. Test-only fix: no mutant applies, and E16/E18 bind two of the shapes |
+| u2 | rev-m1u2-1 | E28 | fixed(low) | `pnpm gate` rc 0 — 361 files 0 errors 0 warnings, 218 tests in 15 files, 3 assets, build 644 ms; mutants `E11` (injection) and `E19` both red | closed on its own terms: E11 and E19 are now gate-owned rather than convention, and the build still resolves `swipl-bundle-no-data` alone |
 
 ## Rows — u5
 

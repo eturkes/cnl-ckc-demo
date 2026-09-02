@@ -24,6 +24,7 @@ const DECLARED_EXPORTS = [
 const DECLARED_MEMBERS = [
   'cancel',
   'constructor',
+  'contract',
   'dispose',
   'retry',
   'run',

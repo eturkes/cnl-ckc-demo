@@ -14,7 +14,12 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { BUDGET_MAX } from '../src/engine/budget.js';
 import { EngineClient } from '../src/engine/client.js';
-import type { BudgetSpec, EngineRequest, EngineResponse } from '../src/engine/protocol.js';
+import {
+  WORKER_FAILURE_ID,
+  type BudgetSpec,
+  type EngineRequest,
+  type EngineResponse,
+} from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
 import { AnswerService } from '../src/questions/service.js';
 
@@ -377,6 +382,76 @@ describe('worker lifecycle events', () => {
     replacement?.reply({ id: replacement.last.id, kind: 'failure' });
     expect(await second).toEqual({ kind: 'failure' });
     expect(violations).toEqual([]);
+    client.dispose();
+  });
+});
+
+// M1 review E10 + E27: the correlation and worker-failure channels the committed
+// suite never drove. A response that no request claimed, a second response for one
+// request, and a worker-level failure that names no request at all.
+describe('protocol correlation and worker-level failure', () => {
+  it('E27 reports a response that matched no pending request and settles the live one', async () => {
+    const { client, workers } = scriptedClient();
+    const violations: string[] = [];
+    client.onProtocolViolation = (error) => void violations.push(error.message);
+    const pending = client.query('true.', budget());
+    await delay();
+    const worker = workers[0];
+    worker?.reply({ id: 'r-not-mine', kind: 'failure' });
+    await delay();
+    expect(violations).toEqual(['response r-not-mine matched no pending request']);
+
+    worker?.reply({ id: worker.last.id, kind: 'failure' });
+    expect(await pending).toEqual({ kind: 'failure' });
+    client.dispose();
+  });
+
+  it('E27 settles a request exactly once when its id is answered twice', async () => {
+    const { client, workers } = scriptedClient();
+    const violations: string[] = [];
+    client.onProtocolViolation = (error) => void violations.push(error.message);
+    let settlements = 0;
+    const pending = client.query('true.', budget()).then((outcome) => {
+      settlements += 1;
+      return outcome;
+    });
+    await delay();
+    const worker = workers[0];
+    const { id } = worker?.last ?? { id: '' };
+    worker?.reply({ id, kind: 'failure' });
+    worker?.reply({ id, kind: 'solutions', solutions: [] });
+    await delay();
+    expect(await pending).toEqual({ kind: 'failure' });
+    expect(settlements).toBe(1);
+    // The duplicate belongs to nothing by then, so it reads as a violation rather
+    // than as a second settlement.
+    expect(violations).toEqual([`response ${id} matched no pending request`]);
+    client.dispose();
+  });
+
+  it('E10 settles every in-flight caller when the worker reports a failure of its own', async () => {
+    const { client, workers, clock } = clockedClient();
+    const first = client.query('repeat.', budget());
+    const second = client.query('repeat.', budget());
+    await delay();
+    const worker = workers[0];
+    expect(worker?.seen).toHaveLength(2);
+
+    worker?.reply({
+      id: WORKER_FAILURE_ID,
+      kind: 'error',
+      error: { code: 'worker', message: 'unhandled rejection in worker: boom' },
+    });
+
+    for (const outcome of await Promise.all([first, second])) {
+      expect(outcome).toMatchObject({
+        kind: 'error',
+        error: { code: 'worker', message: 'unhandled rejection in worker: boom' },
+      });
+    }
+    // Settling releases the deadline timers too; a leaked one would fire later and
+    // reset a client whose callers are already done.
+    expect(clock.armed.size).toBe(0);
     client.dispose();
   });
 });

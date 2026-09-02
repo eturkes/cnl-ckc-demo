@@ -8,6 +8,19 @@
   // the rest.
 
   import { DESCRIPTIONS, FONT_LICENCES, INSTRUCTIONS } from './copy.js';
+
+  interface Props {
+    /** Read from the booted engine; absent until it answers, and never a literal. */
+    documents: number | undefined;
+  }
+
+  let { documents }: Props = $props();
+
+  const corpus = $derived(
+    documents === undefined
+      ? undefined
+      : DESCRIPTIONS.corpusSize.replace('{documents}', String(documents)),
+  );
 </script>
 
 <details class="about">
@@ -17,6 +30,9 @@
   <p>{DESCRIPTIONS.purpose}</p>
   <p>{DESCRIPTIONS.fixedCatalog}</p>
   <p>{DESCRIPTIONS.projection}</p>
+  {#if corpus}
+    <p>{corpus}</p>
+  {/if}
   <p>{DESCRIPTIONS.unreviewed}</p>
 
   <h3>{DESCRIPTIONS.licenceSummary}</h3>

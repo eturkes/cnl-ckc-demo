@@ -55,3 +55,16 @@ describe('forbidden answer-oracle reach', () => {
     expect(output).toContain('answer-oracle reach in src/zz-forbidden-reach-control.ts');
   });
 });
+
+// u2 P3.12 was comment-enforced only, so the one measured corruption path — JSON
+// round-tripping an engine value, which rewrites `'$guideline_id'/5` to arity 1 and
+// flips `1r3` to `3r1` — could ship again at rc 0 (M1 review E19).
+describe('JSON serialization ban over src/', () => {
+  it('fails kb:asset-check on a serializing call', () => {
+    const call = ['JSON', 'stringify'].join('.');
+    writeFileSync(CONTROL, `export const dump = (value: unknown): string => ${call}(value);\n`);
+    const { status, output } = assetCheck();
+    expect(status).not.toBe(0);
+    expect(output).toContain('JSON serialization in src/zz-forbidden-reach-control.ts');
+  });
+});
