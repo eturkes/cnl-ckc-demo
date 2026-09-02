@@ -18,10 +18,10 @@ Grade: `python3 -P .scratch/validate-report.py .agent/review-m1/rev-m1u7-1.md --
 | U7-10 | pass: The h1 resolves to D7 byte-for-byte, while the visible-copy census found no milestone, unit, TODO, filename, or catalog-id leak. | `src/App.svelte:48`; `src/demo/copy.ts:23` |
 | U7-11 | pass: The lede states current Prolog execution and live answers; no visible copy claims traces, provenance, graphs, or networks. | `src/demo/copy.ts:25-28`; `src/App.svelte` |
 | U7-12 | pass: U7 prose is centralized in the two copy records; the validator covers every record plus describe.ts at distinct limits and preserves 1.1. | `src/demo/copy.ts`; `tools/copy-check.mjs:23-126` |
-| U7-13 | unknown | unknown |
-| U7-14 | unknown | unknown |
-| U7-15 | unknown | unknown |
-| U7-16 | unknown | unknown |
+| U7-13 | pass: Each banned filler mutant failed by name, while a 19-word-plus-interpolation sentence passed at the 20-word limit. | `node tools/copy-check.mjs`; `tools/copy-check.mjs:19,82-94,115-119` |
+| U7-14 | pass: Separate 30-word instruction and description mutants each exited 1 and named copy.ts, the record key, and count 30. | `node tools/copy-check.mjs`; `src/demo/copy.ts` |
+| U7-15 | pass: A jsdom probe rendered every projected descriptor humanized, preserved raw fallback, and byte-matched all six option labels to generated catalog questions. | `src/demo/descriptor.ts`; `src/demo/AnswerPanel.svelte:59-63` |
+| U7-16 | pass: The always-visible footer carries developing-agency attribution, nonendorsement, and free availability outside the closed About disclosure. | `src/App.svelte:79-83`; `src/demo/copy.ts:54-63` |
 | U7-17 | unknown | unknown |
 | U7-18 | unknown | unknown |
 | U7-19 | unknown | unknown |
@@ -109,19 +109,27 @@ Command: `pnpm copy:check`, source/diff census, and validator inspection. Observ
 
 ### U7-13
 
-unknown
+Injected `simply`, `robust`, `seamlessly`, and `leverage` separately into `INSTRUCTIONS.selectQuestion`. Each `node tools/copy-check.mjs` run exited 1 and named both the banned word and source key. A template sentence with 19 literal words plus `${'many words here'}` exited 0, demonstrating that the interpolation substitutes one word at the 20-word boundary.
+
+Command: six isolated copy mutations under byte-restoring `try/finally`. Observed: four banned-word rc 1 results; interpolation rc 0 with `copy: 80 strings pass`; restored SHA-256 matched and `git status --porcelain` was empty with rc 0.
 
 ### U7-14
 
-unknown
+Replaced one value in each record, in turn, with a 30-word sentence. The instruction mutant exited 1 with `src/demo/copy.ts INSTRUCTIONS.selectQuestion: 30 words, limit 20`; the description mutant exited 1 with `src/demo/copy.ts DESCRIPTIONS.purpose: 30 words, limit 25`. Both therefore name the file, key, and measured count.
+
+Command: two `node tools/copy-check.mjs` mutation runs. Observed: rc 1 for both; the harness restored the source hash and left no worktree change.
 
 ### U7-15
 
-unknown
+Authored and ran a temporary jsdom test that passed every `QUESTION_ID` through `answerRows` and mounted `AnswerPanel`. The five projected questions rendered `<dt>` values `Recommendation`, `Recommendation`, `What`, `Recommendation`, `Recommendation`; the existential question correctly rendered no descriptor. No `<dt>` began with `noun(` or `wh(`. `describeDescriptor('adjective(unrecognized)')` returned that raw input. A mounted `QuestionCombobox` produced six option labels byte-equal to `kb/generated/question-catalog.json` questions.
+
+Command: `pnpm exec vitest run tests/review-u7.dom.test.ts --reporter=dot`. Observed: the first harness version failed before assertions because jsdom rewrote `import.meta.url` to a non-file scheme; after changing the probe's read path to `process.cwd()`, 1 file / 1 test passed. The temporary test was removed; clean status rc 0.
 
 ### U7-16
 
-unknown
+Read the complete `App.svelte` markup and its bound copy. The footer explicitly names CDC as the developing agency, states that use does not imply endorsement, and states no-charge agency-site availability. It is a sibling after `AboutPanel`, not a descendant of any `<details>`. `AboutPanel` itself has no `open` attribute, so it starts closed without hiding any footer requirement.
+
+Command: direct markup/copy inspection. Observed: all three requirements render unconditionally on first render and none is in a disclosure.
 
 ### U7-17
 
