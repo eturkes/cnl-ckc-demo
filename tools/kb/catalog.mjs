@@ -21,6 +21,22 @@ const AUTHORED = [
   { id: 'evidence-type-3-recommendation', from: 'evidence-type-1-recommendation', was: 'evidence-type-1-recommendation', now: 'evidence-type-3-recommendation' },
 ];
 
+/**
+ * The exported query ids this catalog is generated against.
+ *
+ * Goal text is derived, but *which* questions exist is declared: without this set an
+ * extra or renamed query file simply enlarges the catalog, `kb:build` and
+ * `kb:asset-check` both agree with themselves, and the drift only surfaces one gate
+ * step later as a count mismatch in `src/questions/catalog.ts`. A bag that exports a
+ * different question set is a deliberate change and must edit this list.
+ */
+const EXPORTED = [
+  'category-a-recommendations',
+  'dosage-reduction-content',
+  'evidence-type-1-recommendation',
+  'recommendation-exists',
+];
+
 const VARIABLE = /^[A-Z_][A-Za-z0-9_]*$/;
 
 /**
@@ -187,6 +203,14 @@ export const catalogRecords = (files) => {
   const exported = names.map((name) => parseQuery(name, Buffer.from(/** @type {Uint8Array} */ (files.get(name))).toString('utf8')));
   const byId = new Map(exported.map((record) => [record.id, record]));
   if (byId.size !== exported.length) throw new Error('bag carries duplicate query ids');
+
+  const missing = EXPORTED.filter((id) => !byId.has(id));
+  const extra = [...byId.keys()].filter((id) => !EXPORTED.includes(id));
+  if (missing.length > 0 || extra.length > 0) {
+    throw new Error(
+      `bag exports query ids [${[...byId.keys()].sort().join(', ')}], expected [${[...EXPORTED].sort().join(', ')}]`,
+    );
+  }
 
   const authored = AUTHORED.map(({ id, from, was, now }) => {
     const base = byId.get(from);

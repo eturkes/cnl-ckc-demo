@@ -133,7 +133,7 @@ export class EngineSession {
   async boot(image: Uint8Array): Promise<EngineContract> {
     if (this.#engine !== undefined && this.#contract !== undefined) return this.#contract;
     const engine = await this.#options.loadImage(image);
-    this.#failClosed(engine, 'image load');
+    this.#failClosed(engine, 'image load', TOLERATED);
     const contract = readContract(engine);
     const { expected } = this.#options;
     if (
@@ -198,6 +198,11 @@ export class EngineSession {
               stopped = outcome.limit;
             } else if (outcome.kind === 'resource') {
               throw new PrologFailure(`unclassified resource error: ${outcome.resource}`);
+            } else if (solutions.length >= budget.answerCap) {
+              // Proving one solution past the cap and discarding it is the only thing
+              // that separates a truncated run from a run holding exactly `answerCap`
+              // answers, which owes the caller honest exhaustion instead.
+              stopped = 'answer-cap';
             } else {
               const display: Record<string, string> = {};
               for (const [name, term] of Object.entries(outcome.bindings)) {
@@ -208,10 +213,6 @@ export class EngineSession {
           }
         }
         if (stopped !== undefined || step.done === true) break;
-        if (solutions.length >= budget.answerCap) {
-          stopped = 'answer-cap';
-          break;
-        }
         // The only point where a posted cancel can land, and the only point where
         // elapsed time is observable: `next()` itself is synchronous and uninterruptible.
         await yieldToEvents();
@@ -316,9 +317,15 @@ export class EngineSession {
     return result.bindings;
   }
 
-  /** Any drained diagnostic is fatal, and it poisons the engine that produced it. */
-  #failClosed(engine: Engine, phase: string): void {
-    const lines = (this.#options.drain?.() ?? []).filter((line) => !TOLERATED.test(line));
+  /**
+   * Any drained diagnostic is fatal, and it poisons the engine that produced it.
+   *
+   * `tolerated` is passed only where the noise is known to belong to that phase.
+   * `qsave_program` emits the `library(shlib)` pair while writing the image, so the
+   * same text out of a runtime consult is a real diagnostic, not build noise.
+   */
+  #failClosed(engine: Engine, phase: string, tolerated?: RegExp): void {
+    const lines = (this.#options.drain?.() ?? []).filter((line) => tolerated?.test(line) !== true);
     if (lines.length === 0) return;
     if (engine === this.#engine) this.#poisoned = `engine discarded after ${phase} diagnostics`;
     throw new ConsultFailure(`${phase} emitted diagnostics: ${lines.join(' / ')}`);

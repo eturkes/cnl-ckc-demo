@@ -208,16 +208,29 @@ export class EngineClient {
       case 'failure':
         return { kind: 'failure' };
       case 'limit':
+        // A heap trip leaves the engine saturated and its asserted residue live, so
+        // reuse is unsound (D9). Awaited rather than fired off like the wall-clock
+        // deadline, because here the caller is still on the stack and must not see a
+        // heap outcome before its replacement engine has re-verified the contract.
+        if (response.limit === 'heap') await this.reset('heap exhausted; engine discarded');
         return { kind: 'limit', limit: response.limit, solutions: response.solutions };
       case 'cancelled':
         return { kind: 'cancelled', solutions: response.solutions };
       case 'error':
         return { kind: 'error', error: response.error };
-      default:
+      case 'booted':
+      case 'ack':
+      case 'consulted':
         return {
           kind: 'error',
           error: { code: 'protocol', message: `query answered with ${response.kind}` },
         };
+      default: {
+        // A new response kind must be classified here rather than fall into a
+        // catch-all that reports it as a protocol violation forever.
+        const exhaustive: never = response;
+        return exhaustive;
+      }
     }
   }
 

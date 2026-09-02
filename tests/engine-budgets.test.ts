@@ -176,6 +176,23 @@ describe('P2 typed limit states', () => {
     }
   });
 
+  it('P2.5 reads an exact-fit cap as honest exhaustion rather than truncation', async () => {
+    // The cap truncated the run only if the engine still had an answer to give, so
+    // the driver proves one solution past the cap and discards it.
+    const fit = await session.solve('between(1,4,X).', budget({ answerCap: 4 }));
+    const over = await session.solve('between(1,5,X).', budget({ answerCap: 4 }));
+    const real = await session.solve(CATEGORY_A_GOAL, budget({ answerCap: 7 }));
+    expect(fit.kind).toBe('solutions');
+    expect(real.kind).toBe('solutions');
+    expect(over.kind).toBe('limit');
+    if (fit.kind === 'solutions' && over.kind === 'limit' && real.kind === 'solutions') {
+      expect(fit.solutions).toHaveLength(4);
+      expect(over.limit).toBe('answer-cap');
+      expect(over.solutions).toHaveLength(4);
+      expect(real.solutions).toHaveLength(7);
+    }
+  });
+
   it('P2.8 classifies from term structure, not from message text', () => {
     expect(
       readOutcome({ BudgetInference_: { kind: 'atom', value: 'inference_limit_exceeded' } }),
@@ -340,6 +357,34 @@ describe('P5 fail-closed inputs', () => {
     expect(afterwards.kind).toBe('error');
     if (afterwards.kind === 'error') expect(afterwards.error.code).toBe('consult');
   }, 120_000);
+
+  it('P5.3 treats the qsave shlib text as fatal anywhere but image load', async () => {
+    const captured: string[] = [];
+    const scripted = new EngineSession({
+      loadImage: loaderWith({
+        print: () => undefined,
+        printErr: (line: string) => captured.push(line),
+        on_output: (line: string, stream: string) => {
+          if (stream === 'stderr') captured.push(line);
+        },
+      }),
+      drain: () => captured.splice(0, captured.length),
+      expected: manifest.contract,
+    });
+    // Booting first proves the tolerance survives where qsave actually emits the pair.
+    await scripted.boot(new Uint8Array(readGenerated('kb.pvm')));
+
+    const response = await scripted.handle(
+      {
+        id: 'c4',
+        kind: 'consult',
+        source: ':- format(user_error,"Warning: library(shlib) probe~n",[]).\n',
+      },
+      new Uint8Array(0),
+    );
+    expect(response.kind).toBe('error');
+    if (response.kind === 'error') expect(response.error.code).toBe('consult');
+  }, 120_000);
 });
 
 /**
@@ -448,6 +493,37 @@ describe('P4 client lifecycle', () => {
     await settle();
     expect(FakeWorker.live[0]?.terminated).toBe(true);
   }, 10_000);
+
+  it('P2.7 terminates and recreates the worker after a heap limit', async () => {
+    const client = clientUnderTest();
+    const pending = client.query('true.', budget());
+    await settle();
+    const saturated = FakeWorker.live[0] as FakeWorker;
+    saturated.reply({ id: saturated.last.id, kind: 'limit', limit: 'heap', solutions: [] });
+    await settle();
+
+    // The caller is still suspended here: a saturated heap keeps its asserted residue,
+    // so the replacement must have re-verified the contract before the outcome lands.
+    const replacement = FakeWorker.live[1] as FakeWorker;
+    expect(saturated.terminated).toBe(true);
+    expect(replacement.last.kind).toBe('boot');
+    replacement.reply({
+      id: replacement.last.id,
+      kind: 'booted',
+      contract: manifest.contract,
+    });
+
+    const outcome = await pending;
+    expect(outcome.kind).toBe('limit');
+    if (outcome.kind === 'limit') expect(outcome.limit).toBe('heap');
+
+    const posts = saturated.seen.length;
+    void client.query(CATEGORY_A_GOAL, budget());
+    await settle();
+    expect(replacement.last.kind).toBe('query');
+    expect(saturated.seen).toHaveLength(posts);
+    client.dispose();
+  });
 
   it('P4.10 leaves no timer armed once a request has settled', async () => {
     const armed = new Set<number>();

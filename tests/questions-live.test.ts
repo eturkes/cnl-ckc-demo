@@ -19,11 +19,13 @@ import {
   QUESTION_CATALOG,
   QUESTION_IDS,
   isQuestionId,
+  type CatalogEntry,
   type QuestionId,
 } from '../src/questions/catalog.js';
 import { humanizeGuidelineId } from '../src/questions/humanize.js';
 import { compareTerms, serializeAnswer } from '../src/questions/serialize.js';
 import { verifyBag } from '../tools/kb/bag.mjs';
+import { catalogRecords } from '../tools/kb/catalog.mjs';
 
 const require = createRequire(import.meta.url);
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -130,6 +132,20 @@ describe('question catalog', () => {
         "'evidence-type-3-recommendation'",
       ),
     );
+  });
+
+  it('refuses a bag whose exported query set is not the declared one', () => {
+    const template = [...bagFiles.keys()].find((name) =>
+      name.endsWith('/queries/pl/dosage-reduction-content.pl'),
+    ) as string;
+    const source = Buffer.from(bagFiles.get(template) as Uint8Array).toString('utf8');
+    const extra = new Map(bagFiles);
+    extra.set(
+      template.replace('dosage-reduction-content.pl', 'zz-extra-question.pl'),
+      Buffer.from(source.replaceAll('dosage-reduction-content', 'zz-extra-question'), 'utf8'),
+    );
+    expect(() => catalogRecords(extra)).toThrow(/expected \[/);
+    expect(() => catalogRecords(bagFiles)).not.toThrow();
   });
 
   it('rejects every input that is not one of the six ids', () => {
@@ -278,6 +294,41 @@ describe('canonical order', () => {
       compareTerms({ kind: 'list', items: [atom('a')] }, { kind: 'list', items: [atom('b')] }),
     ).toBeLessThan(0);
     expect(compareTerms({ kind: 'list', items: [atom('a')] }, atom('[]'))).toBeGreaterThan(0);
+  });
+
+  // The live corpus is one uniform `'$guideline_id'/5` shape, where term order and a
+  // byte sort of the rendered text coincide — so no live case can prove the
+  // serializer consults `compareTerms` at all. These two do: an ordinal pair that the
+  // two orders disagree about, and a repeated proof.
+  const ordinalEntry: CatalogEntry = {
+    id: 'category-a-recommendations',
+    question: 'ordinal probe',
+    goal: 'true',
+    projection: [{ variable: 'S', descriptor: 'noun(sentence,countable)' }],
+    provenance: 'bag-exported',
+  };
+
+  const ordinalRow = (ordinal: number): PlSolution => ({
+    bindings: {
+      S: {
+        kind: 'compound',
+        functor: '$guideline_id',
+        args: [atom('doc'), atom('sentence'), { kind: 'integer', value: ordinal }],
+      },
+    },
+    display: { S: `'$guideline_id'(doc,sentence,${ordinal})` },
+  });
+
+  it('sorts serialized rows by term order rather than by rendered bytes', () => {
+    expect(serializeAnswer(ordinalEntry, [ordinalRow(10), ordinalRow(2)])).toBe(
+      "solutions([sol(['$guideline_id'(doc,sentence,2)]),sol(['$guideline_id'(doc,sentence,10)])])",
+    );
+  });
+
+  it('collapses duplicate proofs of one fact into a single row', () => {
+    expect(serializeAnswer(ordinalEntry, [ordinalRow(2), ordinalRow(2)])).toBe(
+      "solutions([sol(['$guideline_id'(doc,sentence,2)])])",
+    );
   });
 });
 

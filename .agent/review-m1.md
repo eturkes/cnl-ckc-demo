@@ -4,9 +4,13 @@ M1 MILESTONE-REVIEW state. One row per fixed check-set row; check text stays in
 the unit's check set, this ledger carries the ruling alone. Reviewer verdicts and
 their evidence live in the committed reports under `.agent/review-m1/`.
 
-Verdict vocabulary: `pass` (reviewer observed it, MAIN accepts), `accepted fail(sev)`
-(defect confirmed, acceptance check names what closes it), `rejected — <reason>`
-(MAIN overrules the reviewer), `unknown` (not yet adjudicated; carries forward).
+Verdict vocabulary: `pass` (reviewer observed it, MAIN observed it too), `accepted
+fail(sev)` (defect confirmed, acceptance check names what closes it), `fixed(sev)`
+(MAIN shipped the fix and reran the acceptance check), `rejected — <reason>` (MAIN
+overrules the reviewer), `unknown` (not yet adjudicated; carries forward).
+
+Every `fixed` row is red under a mutant that removes its fix: `.scratch/verify-fixes.py`
+restores each pre-fix behaviour and reruns the closing test, 6/6 RED.
 
 ## Coverage
 
@@ -32,15 +36,15 @@ u5, u6, u7 and cross-cutting. Successors inherit branches `wt/rev-m1u3-2` and
 | --- | --- | --- | --- | --- | --- |
 | u3 | — | R01 | unknown | — | — |
 | u3 | rev-m1u3-2 | R02 | pass | `.agent/review-m1/rev-m1u3-2.md` R02 | — |
-| u3 | rev-m1u3-2 | R03 | accepted fail(low) | `.agent/review-m1/rev-m1u3-2.md` R03 | a cap equal to the solution count returns `solutions`, not `answer-cap` |
+| u3 | rev-m1u3-2 | R03 | fixed(low) | `tests/engine-budgets.test.ts` "P2.5 reads an exact-fit cap as honest exhaustion" | a cap equal to the solution count returns `solutions`, not `answer-cap` — green, and red under mutant `R03` |
 | u3 | rev-m1u3-2 | R04 | pass | `.agent/review-m1/rev-m1u3-2.md` R04 | — |
 | u3 | rev-m1u3-2 | R05 | pass | `.agent/review-m1/rev-m1u3-2.md` R05 | — |
 | u3 | rev-m1u3-2 | R06 | pass | `.agent/review-m1/rev-m1u3-2.md` R06 | — |
 | u3 | — | R07 | unknown | — | — |
 | u3 | — | R08 | unknown | — | — |
-| u3 | rev-m1u3-2 | R09 | accepted fail(med) | `.agent/review-m1/rev-m1u3-2.md` R09 | `limit:'heap'` terminates and recreates the worker; a test reads 337 from the replacement |
+| u3 | rev-m1u3-2 | R09 | fixed(med) | `tests/engine-budgets.test.ts` "P2.7 terminates and recreates the worker after a heap limit" | `limit:'heap'` terminates and recreates the worker before the outcome lands; the replacement re-verifies `manifest.contract` and serves the next query — green, red under mutant `R09` |
 | u3 | rev-m1u3-2 | R10 | pass | `.agent/review-m1/rev-m1u3-2.md` R10 | — |
-| u3 | rev-m1u3-2 | R11 | accepted fail(low) | `.agent/review-m1/rev-m1u3-2.md` R11 | a new `EngineResponse` variant fails `pnpm check` at `isTerminal` AND `EngineClient.query` |
+| u3 | rev-m1u3-2 | R11 | fixed(low) | injected `kind:'probe'` variant → `pnpm check` rc 1, `protocol.ts:111` + `client.ts:231` both `not assignable to type 'never'` | a new `EngineResponse` variant fails `pnpm check` at `isTerminal` AND `EngineClient.query` |
 | u3 | rev-m1u3-2 | R12 | pass | `.agent/review-m1/rev-m1u3-2.md` R12 | — |
 | u3 | rev-m1u3-2 | R13 | pass | `.agent/review-m1/rev-m1u3-2.md` R13 | — |
 | u3 | — | R14 | unknown | — | — |
@@ -52,7 +56,7 @@ u5, u6, u7 and cross-cutting. Successors inherit branches `wt/rev-m1u3-2` and
 | u3 | rev-m1u3-2 | R20 | pass | `.agent/review-m1/rev-m1u3-2.md` R20 | — |
 | u3 | rev-m1u3-2 | R21 | pass | `.agent/review-m1/rev-m1u3-2.md` R21 | — |
 | u3 | rev-m1u3-2 | R22 | pass | `.agent/review-m1/rev-m1u3-2.md` R22 | — |
-| u3 | rev-m1u3-2 | R23 | accepted fail(low) | `.agent/review-m1/rev-m1u3-2.md` R23 | a runtime consult emitting `library(shlib)` is fatal; only image load tolerates it |
+| u3 | rev-m1u3-2 | R23 | fixed(low) | `tests/engine-budgets.test.ts` "P5.3 treats the qsave shlib text as fatal anywhere but image load" | a runtime consult emitting `library(shlib)` is fatal; only image load tolerates it — green, red under mutant `R23` |
 | u3 | rev-m1u3-2 | R24 | pass | `.agent/review-m1/rev-m1u3-2.md` R24 | — |
 | u3 | rev-m1u3-2 | R25 | pass | `.agent/review-m1/rev-m1u3-2.md` R25 | — |
 | u3 | rev-m1u3-2 | R26 | rejected — contract defect | `.agent/review-m1/rev-m1u3-2.md` R26 | memory records the 3 undeclared calls; `swipl-wasm` pinned exact; a version bump re-verifies them |
@@ -80,13 +84,13 @@ u5, u6, u7 and cross-cutting. Successors inherit branches `wt/rev-m1u3-2` and
 | u4 | rev-m1u4-2 | c03 | pass | `.agent/review-m1/rev-m1u4-2.md` c03 | — |
 | u4 | rev-m1u4-2 | c04 | pass | `.agent/review-m1/rev-m1u4-2.md` c04 | — |
 | u4 | rev-m1u4-2 | c05 | pass | `.agent/review-m1/rev-m1u4-2.md` c05 | — |
-| u4 | rev-m1u4-2 | c06 | accepted fail(low) | `.agent/review-m1/rev-m1u4-2.md` c06 | an extra well-formed query file with a new id makes `pnpm kb:build` rc != 0 |
+| u4 | rev-m1u4-2 | c06 | fixed(low) | `tests/questions-live.test.ts` "refuses a bag whose exported query set is not the declared one" | `catalogRecords` throws on the extra-file case, so `kb:build` exits nonzero — green, red under mutant `c06` |
 | u4 | rev-m1u4-2 | c07 | pass | `.agent/review-m1/rev-m1u4-2.md` c07 | — |
 | u4 | rev-m1u4-2 | c08 | pass | `.agent/review-m1/rev-m1u4-2.md` c08 | — |
 | u4 | rev-m1u4-2 | c09 | pass | `.agent/review-m1/rev-m1u4-2.md` c09 | — |
 | u4 | rev-m1u4-2 | c10 | pass | `.agent/review-m1/rev-m1u4-2.md` c10 | — |
 | u4 | rev-m1u4-2 | c11 | pass | `.agent/review-m1/rev-m1u4-2.md` c11 | — |
-| u4 | rev-m1u4-2 | c12 | accepted fail(med) | `.agent/review-m1/rev-m1u4-2.md` c12 | replacing the serializer row sort with a byte sort turns `pnpm test` red |
+| u4 | rev-m1u4-2 | c12 | fixed(med) | `tests/questions-live.test.ts` "sorts serialized rows by term order rather than by rendered bytes" + "collapses duplicate proofs of one fact into a single row" | a byte-sort row mutant and a dedup-removal mutant each turn `pnpm test` red |
 | u4 | rev-m1u4-2 | c13 | pass | `.agent/review-m1/rev-m1u4-2.md` c13 | — |
 | u4 | rev-m1u4-2 | c14 | pass | `.agent/review-m1/rev-m1u4-2.md` c14 | — |
 | u4 | rev-m1u4-2 | c15 | pass | `.agent/review-m1/rev-m1u4-2.md` c15 | — |

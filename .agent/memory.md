@@ -103,7 +103,8 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   `tools/kb/produce.mjs` re-implements its four steps, asserts the contract
   inside the building engine, and fails closed on any diagnostic. `qsave_program`
   legitimately emits two `library(shlib)` warnings under WASM; that pair is the
-  only tolerated noise.
+  only tolerated noise, and it is tolerated at image load alone — the same text
+  drained from a runtime consult is fatal and poisons its engine.
 - All 9 schema predicates are multifile and **static** (dynamic=false). Clause
   counts: version 337, document 337, entity 1834, cardinality 1834, event 1254,
   arg 2513, pp 1003, property 16, operator 1193. A direct `assertz` raises a
@@ -152,6 +153,9 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   raise procedure existence errors.
 - Prolog limits do not bound a query: `repeat` under the full wrapper emitted 100000
   answers in 452.232 ms with `D=1`, `I=true`. The JS answer cap and deadline terminate it.
+- `answer-cap` is reported only after the driver proves one solution past the cap and
+  discards it: a run holding exactly `answerCap` answers is honest exhaustion and
+  reports `solutions`. Hitting the cap therefore costs one extra solution step.
 - A worker timer cannot fire inside a synchronous step: in-worker 25 ms never fired
   across 249.80 ms of `repeat,fail`; main-thread 25 ms fired at 25.97 ms. Hard deadline
   is main-thread only, at `wallClockMs + 500 ms`.
@@ -179,6 +183,9 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   restores 337. Browser `Worker.terminate()` is UNMEASURED.
 - Heap exhaustion returns typed `assertz/1: Not enough resources: no_memory`, no throw,
   no abort, ~2222464 KiB peak RSS; engine still answers but must be recreated.
+  `EngineClient.query` awaits that recreation on `limit:'heap'`, so a caller never sees
+  a heap outcome before its replacement engine re-verified the contract. The wall-clock
+  deadline fires its reset instead, because there the caller is already settled.
 
 ## Measured (do not re-measure)
 
@@ -280,6 +287,11 @@ and survives `/resume`; a new session clears it.
   `kb/generated/question-catalog.json`; `kb:asset-check` re-derives it and fails on any
   mismatch. Generation median 0.631 ms, artifact ~3.3 kB. The rejected alternative —
   repo-source goals policed by a bag-divergence gate step — measured 1036.812 ms.
+- `tools/kb/catalog.mjs` declares the four exported query ids in `EXPORTED` and refuses
+  any bag whose exported set differs. Goal text stays derived; which questions exist is
+  declared, because an extra or renamed query file otherwise enlarges the catalog with
+  both catalog gate steps agreeing with themselves. A bag exporting a different question
+  set must edit that list.
 - Bag `queries/` = 4 ids × 4 files (`.ace`, `pl/`, `answers/`, `traces/`). **None of it is
   in the PVM**: `payloadSource`'s `PAYLOAD` regex admits `data/guidelines/*/pl/*.pl` only.
   Query goals therefore reach the engine from the catalog, never from the image.
