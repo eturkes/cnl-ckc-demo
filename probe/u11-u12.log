@@ -1,0 +1,25 @@
+baseline: 337 payload files
+--- U11: corpus-size assertion inside the building engine ---
+  ACCEPTED  schema=1 docs=336 image=436512B  <- one payload file dropped (336 docs)
+  ACCEPTED  schema=1 docs=1 image=240865B  <- a single payload file (1 doc)
+  ACCEPTED  schema=2 docs=1 image=240865B  <- schema version 2, not 1
+findall_loop/4: Unknown procedure: guideline_document/3
+  REFUSED   image build: engine reported NaN documents  <- schema fact only, 0 documents
+  REFUSED   payload declares 2 distinct schema versions  <- mixed schema versions 1 and 2
+--- U12: consult diagnostics are fatal ---
+  REFUSED   image build: engine emitted 1 diagnostic line(s)  <- payload writes to user_error
+  REFUSED   image build: engine emitted 1 diagnostic line(s)  <- payload has a syntax error
+  REFUSED   image build: engine emitted 4 diagnostic line(s)  <- payload calls an undefined predicate
+  REFUSED   image build: engine emitted 5 diagnostic line(s)  <- payload emits a warning (discontiguous)
+--- U12: what noise does image save actually emit? ---
+  consult-phase diagnostics: 0
+  save-phase diagnostic lines: 2
+    "Warning: [Thread main] /swipl/library/qsave.pl:47: \n"
+    "Warning: [Thread main]   library(shlib): No such file\n"
+  lines matching SAVE_NOISE: 2
+  lines mentioning library(shlib): 1
+  survivors after the filter: []
+--- U12: runtime-consult path treats the same text as fatal ---
+  verifyQlf(clean qlf)  -> 1
+  verifyImage(clean)    -> 1
+  readContract exported = true
