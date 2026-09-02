@@ -14,21 +14,21 @@ Evidence = a path, a `file:line`, or a backticked command that reruns.
 | E01 | pass: only `worker.ts` imports `swipl-wasm`; the main import graph reaches client DTO and budget code only, and the emitted 63609-byte main chunk contains zero engine markers against the worker positive control | `src/main.ts`; `src/engine/worker.ts`; `dist/assets/index-8N2BVi8K.js` |
 | E02 | pass: worker imports `kb.pvm?url`, checks `fetch` status, and reads an `ArrayBuffer`; no runtime source-consult path exists, and build emitted one hashed 437132-byte PVM with inlining disabled | `src/engine/worker.ts:8`; `vite.config.ts:23`; `dist/assets/kb-mjdzunFE.pvm` |
 | E03 | fail(med): `src/demo/copy.ts:43` hard-codes `337` into shipped UI copy even though boot reads and compares both contract values correctly — breached P1.3, D0.5, and invariant I — a regenerated valid engine with a changed document count would boot while the UI states stale evidence — acceptance: derive the displayed count from `BootOutcome.contract` and make the literal probe exit 0 | `python3 -P probe/e03_contract_literals.py` → rc 1; typed mismatch test passed |
-| E04 | unknown | unknown |
-| E05 | unknown | unknown |
+| E04 | pass: three injected loader failures labeled fetch, malformed image, and init throw each settled `EngineClient.boot` as typed `code: boot`; no pending promise or unhandled rejection remained | `src/engine/worker.ts:62-85`; runtime probe 3/3 passed |
+| E05 | fail(med): `src/engine/session.ts:124` caches only a completed engine, so two concurrent boot requests invoked the image loader twice — breached P1.5 — duplicate WASM engines race to become session state and double startup cost — acceptance: single-flight the in-progress boot and make the E05 probe pass with one loader call | `python3 -P probe/e05_single_boot.py` → expected 1, received 2 |
 | E06 | pass: every declared request and response variant, all ten `PlTerm` shapes, bigint, and scalar error DTOs cloned deeply equal with only plain-object or array prototypes | `src/engine/protocol.ts`; `src/engine/terms.ts`; runtime probe 4/4 passed |
 | E07 | pass: client-generated ids are posted and echoed; an unknown id and a duplicate settled id each invoked `onProtocolViolation` with `code: protocol`, while the claimed request settled once | `src/engine/client.ts:108-122`; runtime probe 4/4 passed |
-| E08 | unknown | unknown |
+| E08 | pass: all declared response kinds are terminal, solution delivery is one correlated array, malformed syntax returns typed `prolog`, and an honest zero-solution goal returns `failure`; targeted tests settled each once | `tests/engine-session.test.ts:164-175`; `tests/engine-budgets.test.ts:215` |
 | E09 | pass: `protocol.ts` alone declares the correlated request and response unions; client, session, and worker import them without a structural duplicate | `src/engine/protocol.ts`; `src/engine/{client,session,worker}.ts` |
-| E10 | unknown | unknown |
+| E10 | fail(med): `src/engine/worker.ts` has no `unhandledrejection` channel, although parent `error` and `messageerror` abort all pending requests — breached P2.5 — a worker-local rejected promise can leave boot pending without a deadline — acceptance: route worker unhandled rejection to a parent failure and prove two in-flight calls settle typed with timers and listeners released | `python3 -P probe/e10_worker_rejection.py` → rc 1 |
 | E11 | fail(med): `src/engine/terms.ts:144` `createEncoder` has no `never` exhaustiveness guard; after adding a variant and satisfying the unrelated rank table, `pnpm check` stays green — breached P3.1 — a future decoded term can encode as `undefined` without compiler refusal — acceptance: add a `never` guard and make the E11 probe exit 0 on a named exhaustiveness error | `python3 -P probe/e11_exhaustiveness.py` → rc 1 |
 | E12 | pass: live decoding produced arities 2 and 1 for `foo(bar,7)` and `foo([bar,7])`; canonical displays were `foo(bar,7)` and `foo([bar,7])`, preserving the one-element envelope distinction | `tests/engine-session.test.ts:188`; `src/engine/terms.ts:86` |
 | E13 | pass: live `1 rdiv 3` decoded as numerator 1 and denominator 3 with display `1r3`; normalized `3 rdiv 1` decoded and displayed as integer `3`, never as `1r3` | `tests/engine-session.test.ts:216`; `src/engine/terms.ts:72` |
-| E14 | unknown | unknown |
-| E15 | unknown | unknown |
+| E14 | pass: live atom and string bindings with identical text retained distinct tags; an unbound variable stayed explicit, and both arguments of `f(V,V)` decoded with the same variable id | `src/engine/terms.ts:61-102`; runtime probe 3/3 passed |
+| E15 | pass: the live integer `123456789012345678901234567890` remained exact as bigint; live `1.0` arrived as integer 1, and the decode-site contract explicitly declares that wrapper deviation | `src/engine/terms.ts:54-69`; `.agent/polish.md` Integral floats |
 | E16 | unknown | unknown |
 | E17 | pass: worker-owned `EngineSession` decodes each native result before constructing `PlSolution`; no native value is retained or re-entered, and fresh class-backed terms use the ruled constructors | `src/engine/session.ts`; `src/engine/terms.ts`; `.agent/memory.md` Engine runtime |
-| E18 | unknown | unknown |
+| E18 | fail(low): `src/engine/terms.ts:97` rejects unknown `$t` but accepts every non-bindings `$tag` object as a dict, contrary to this row's required fail-closed probe — breached P3.11 under the check-set reading — an unsupported wrapper object can enter the DTO union — acceptance: reject the synthetic unsupported dict and make the E18 probe pass | `python3 -P probe/e18_unknown_dict.py` → second assertion did not throw |
 | E19 | fail(med): `src/engine/session.ts:335` the gate accepts `JSON.stringify` over a native query result — breached P3.12 — the measured arity and rational corruption path can be reintroduced without deterministic detection — acceptance: add a production static barrier whose mutant makes `pnpm gate` nonzero | `python3 -P probe/e19_json_stringify.py` → rc 1 after green gate |
 | E20 | unknown | unknown |
 | E21 | unknown | unknown |
@@ -46,9 +46,21 @@ Evidence = a path, a `file:line`, or a backticked command that reruns.
 
 `python3 -P probe/e03_contract_literals.py` exits 1 on the executable string in `src/demo/copy.ts:43`. Engine boot itself is sound: the targeted committed mismatch test returned typed `code: contract`. The defect is the second, UI-visible source of truth, not the boot comparison.
 
+### E05
+
+`python3 -P probe/e05_single_boot.py` starts two `boot()` calls before the injected loader resolves. Both calls enter `loadImage`; the red test measured 2 invocations against the required 1. The completed-engine cache handles sequential calls but does not single-flight initialization.
+
+### E10
+
+The client registers parent-side `error` and `messageerror` listeners and their existing tests release timers. `python3 -P probe/e10_worker_rejection.py` exits 1 only because the worker shell has no `unhandledrejection` listener. A boot request has no client deadline, so this missing channel is an unbounded pending path.
+
 ### E11
 
 `python3 -P probe/e11_exhaustiveness.py` adds a sentinel `PlTerm` variant, updates the unrelated exhaustive `TYPE_RANK`, runs `pnpm check`, and restores both files. The command exits 1 because the checker reports zero errors. `createEncoder` can therefore fall through its switch and return `undefined` for a newly decoded variant.
+
+### E18
+
+`python3 -P probe/e18_unknown_dict.py` proves the unknown `$t` branch throws but `{ $tag: 'unsupported', field: 1 }` decodes as a `dict`. The fixed row requires both to throw. The Register records the conflict with the memory's broader `$tag`-dict ABI statement.
 
 ### E19
 
@@ -64,4 +76,4 @@ Concern census: shared protocol, worker shell, client correlation, session dispa
 
 ## Register
 
-Out-of-contract observations, each with an evidence pointer and a concrete acceptance check.
+- **E18 check-set conflict** — `.agent/memory.md` Engine runtime declares `$tag` dicts part of the wrapper ABI, and `PlTerm` deliberately carries `kind: 'dict'`; E18 instead requires a `$tag` dict to fail. Acceptance: MAIN rules whether supported SWI dicts belong to P3.1, then either amends E18 or restricts the decoder with an explicit supported-tag test.
