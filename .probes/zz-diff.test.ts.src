@@ -1,0 +1,100 @@
+// c20 differential replay: the two wave-1 spikes re-run against 9020e62's own artifacts.
+import { readFileSync, readdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { describe, expect, it } from 'vitest';
+
+import { BUDGET_MAX } from '../src/engine/budget.js';
+import type { PlSolution } from '../src/engine/protocol.js';
+import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
+import { QUESTION_CATALOG, QUESTION_IDS, type QuestionId } from '../src/questions/catalog.js';
+import { serializeAnswer } from '../src/questions/serialize.js';
+import { verifyBag } from '../tools/kb/bag.mjs';
+// Reference implementation lifted verbatim from wt/spike-m1u4-src c193a87.
+import { serializeResult } from '../.probes/spike/src-serializer.js';
+
+const require = createRequire(import.meta.url);
+const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
+const read = (name: string): Buffer => readFileSync(join(ROOT, 'kb', 'generated', name));
+const manifest = JSON.parse(read('kb-manifest.json').toString('utf8')) as {
+  contract: { schemaVersion: number; documents: number };
+};
+const ledger: string[] = [];
+const note = (line: string): void => void ledger.push(line);
+const diagnostics: string[] = [];
+const loadImage: ImageLoader = async (image) => {
+  const factory = require('swipl-wasm/dist/loadImageDefault.js') as
+    | ((i: Uint8Array) => (o?: Record<string, unknown>) => Promise<Engine>)
+    | { default: (i: Uint8Array) => (o?: Record<string, unknown>) => Promise<Engine> };
+  const load = typeof factory === 'function' ? factory : factory.default;
+  return load(image)({ printErr: (line: string) => diagnostics.push(line) });
+};
+const bagFiles = ((): Map<string, Uint8Array> => {
+  const kb = join(ROOT, 'kb');
+  const archive = readdirSync(kb).filter((n) => n.endsWith('.tar.gz'))[0] as string;
+  return verifyBag(readFileSync(join(kb, archive))).files;
+})();
+
+describe('c20 differential replay', () => {
+  it('agrees with the spike-src reference serializer on every live answer', async () => {
+    const session = new EngineSession({
+      loadImage,
+      drain: () => diagnostics.splice(0),
+      expected: manifest.contract,
+    });
+    await session.boot(new Uint8Array(read('kb.pvm')));
+    for (const id of QUESTION_IDS) {
+      const entry = QUESTION_CATALOG[id];
+      const out = await session.solve(entry.goal, BUDGET_MAX, `d-${id}`);
+      const solutions: PlSolution[] = out.kind === 'solutions' ? out.solutions : [];
+      const mine = serializeAnswer(entry, solutions);
+      const reference = serializeResult(
+        {
+          id,
+          projection:
+            entry.projection.length === 0
+              ? { kind: 'boolean' as const }
+              : {
+                  kind: 'variables' as const,
+                  variables: entry.projection.map((p) => ({ name: p.variable })),
+                },
+        } as never,
+        solutions,
+      ).text;
+      // The spike wraps in result/1; MAIN emits the argument alone.
+      const stripped = reference.replace(/^result\(/u, '').replace(/\)$/u, '');
+      note(`c20 ${id} rows=${solutions.length} mainEqualsSpike=${mine === stripped} bytes=${Buffer.byteLength(mine)}/${Buffer.byteLength(stripped)}`);
+    }
+  }, 240_000);
+
+  it('agrees with the spike-gen reference parser on every exported goal', async () => {
+    const spike = (await import('../.probes/spike/nested/gen-catalog.mjs')) as {
+      parseQueryFile: (source: string, filename: string) => unknown;
+    };
+    const names = [...bagFiles.keys()].filter((n) => /\/queries\/pl\/[^/]+\.pl$/u.test(n)).sort();
+    for (const name of names) {
+      const source = Buffer.from(bagFiles.get(name) as Uint8Array).toString('utf8');
+      let parsed: Record<string, unknown> = {};
+      try {
+        parsed = spike.parseQueryFile(source, name) as Record<string, unknown>;
+      } catch (error) {
+        note(`c20 spike-gen ${name} threw ${error instanceof Error ? error.message : String(error)}`);
+        continue;
+      }
+      const id = String(parsed['id'] ?? name);
+      const spikeGoal = String(parsed['goal'] ?? parsed['goalText'] ?? '<no goal field>');
+      const mine = (QUESTION_CATALOG as Record<string, { goal: string }>)[id]?.goal ?? '<absent>';
+      note(
+        `c20 spike-gen ${id} keys=${Object.keys(parsed).join('|')} identicalBytes=${spikeGoal === mine} ` +
+          `spikeBytes=${Buffer.byteLength(spikeGoal)} mainBytes=${Buffer.byteLength(mine)} spikeHead=${spikeGoal.slice(0, 48)}`,
+      );
+    }
+  });
+
+  it('prints', () => {
+    process.stdout.write(`\n@@LEDGER\n${ledger.join('\n')}\n@@END\n`);
+    expect(ledger.length).toBeGreaterThan(0);
+  });
+});

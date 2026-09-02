@@ -1,0 +1,23 @@
+
+ RUN  v4.1.11 /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2
+
+·
+@@LEDGER
+c20 category-a-recommendations rows=7 mainEqualsSpike=true bytes=481/481
+c20 category-b-recommendations rows=5 mainEqualsSpike=true bytes=347/347
+c20 dosage-reduction-content rows=2 mainEqualsSpike=true bytes=158/158
+c20 evidence-type-1-recommendation rows=1 mainEqualsSpike=true bytes=79/79
+c20 evidence-type-3-recommendation rows=3 mainEqualsSpike=true bytes=213/213
+c20 recommendation-exists rows=12 mainEqualsSpike=true bytes=3/3
+c20 spike-gen data/guidelines/cdc-2022-opioid/queries/pl/category-a-recommendations.pl threw data/guidelines/cdc-2022-opioid/queries/pl/category-a-recommendations.pl: id/filename mismatch (category-a-recommendations)
+c20 spike-gen data/guidelines/cdc-2022-opioid/queries/pl/dosage-reduction-content.pl threw data/guidelines/cdc-2022-opioid/queries/pl/dosage-reduction-content.pl: id/filename mismatch (dosage-reduction-content)
+c20 spike-gen data/guidelines/cdc-2022-opioid/queries/pl/evidence-type-1-recommendation.pl threw data/guidelines/cdc-2022-opioid/queries/pl/evidence-type-1-recommendation.pl: id/filename mismatch (evidence-type-1-recommendation)
+c20 spike-gen data/guidelines/cdc-2022-opioid/queries/pl/recommendation-exists.pl threw data/guidelines/cdc-2022-opioid/queries/pl/recommendation-exists.pl: id/filename mismatch (recommendation-exists)
+@@END
+··
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  14:08:30
+   Duration  831ms (transform 151ms, setup 0ms, import 205ms, tests 477ms, environment 0ms)
+
