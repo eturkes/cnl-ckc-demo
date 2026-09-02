@@ -10,10 +10,10 @@ Grade: `python3 -P .scratch/validate-report.py .agent/review-m1/rev-m1u7-1.md --
 | U7-02 | pass: The clean generated build contains exactly six woff2 files, 176732 bytes total, and no other font format. | `pnpm kb:build && pnpm build`; `dist/assets/` |
 | U7-03 | pass: Six faces omit the Variable suffix, and all three role tokens retain named system and generic fallback stacks. | `src/app.css` |
 | U7-04 | pass: Each of six face rules declares swap and one of the paired latin or latin-ext ranges, with no other subset source. | `src/app.css` |
-| U7-05 | unknown | unknown |
-| U7-06 | unknown | unknown |
-| U7-07 | unknown | unknown |
-| U7-08 | unknown | unknown |
+| U7-05 | fail(low): Used and defined token sets match, but D2's specifically required `--field` token is absent rather than defined and consumed. | `src/app.css:94-109`; `src/questions/QuestionCombobox.svelte:258` |
+| U7-06 | pass: The checker parses `:root`, implements WCAG sRGB luminance and ratio math, floors results, and grades a declared table. | `tools/contrast.mjs:31-126` |
+| U7-07 | pass: All 17 declared pairs pass category-specific thresholds; independent samples include border on surface at a floored 3.41:1. | `pnpm contrast:check`; `tools/contrast.mjs:31-60` |
+| U7-08 | pass: Undefined, malformed, empty-table, and orphan-token mutants each exited 1 with a cause-specific diagnostic, then restored byte-exactly. | `node tools/contrast.mjs`; `tools/contrast.mjs:104-120` |
 | U7-09 | unknown | unknown |
 | U7-10 | unknown | unknown |
 | U7-11 | unknown | unknown |
@@ -59,19 +59,29 @@ Command: the Python `@font-face` block enumerator. Observed: `font_face_blocks 6
 
 ### U7-05
 
-unknown
+**Severity: low.** Extracted the `:root` definition set and every `var(--...)` use across `src/**`. Both sets contain the same 13 properties; there are no undefined or unused properties and no inline hex fallback. However, `src/app.css:94-109` does not define `--field`, while `src/questions/QuestionCombobox.svelte:258,293` uses `--surface-raised` for fields. This diverges from D2 and the row's explicit requirement that `--field` be defined.
+
+Breached predicate: U7-05/D2's `--field` definition requirement. Impact: no runtime styling defect, but the shipped token model does not implement its recorded field-role decision. **Acceptance check:** define `--field` in `:root`, consume it at each field background, declare its contrast pairs, and make the extracted definition/use diff empty with no inline fallback.
+
+Command: the Python root-definition/use-set diff plus `/usr/bin/rg -n -- '--field|surface-raised|var\(--' src`. Observed: `defs 13`, `uses 13`, both set diffs empty, zero inline fallbacks, and zero `--field` hits.
 
 ### U7-06
 
-unknown
+Read `tools/contrast.mjs:31-126` against WCAG 2.x. It parses only the `:root` body, accepts explicit hex colours, linearizes sRGB at 0.04045, applies the 0.2126/0.7152/0.0722 weights, computes `(L1 + 0.05) / (L2 + 0.05)`, and floors to two decimals before comparison. `PAIRS` is a declared 17-row table with per-row minima; imports are file/path only, with no DOM or canvas path.
+
+Command: direct source inspection. Observed: formula, fail-closed parser, floor operation, and declared-table loop all match the predicate.
 
 ### U7-07
 
-unknown
+Ran the checker and independently recomputed three representative ratios using a separate Python implementation. `pnpm contrast:check` reported `17 pairs pass`. Independent floored results were `--text`/`--surface` 15.10:1 (normal minimum 4.5), `--border`/`--surface` 3.41:1 (non-text minimum 3), and `--action-text`/`--action` 8.51:1 (normal minimum 4.5). The table assigns `NORMAL` or `LARGE` per use site rather than using one global threshold.
+
+Command: `pnpm contrast:check` plus the independent Python WCAG calculation. Observed: rc 0 and all sampled ratios exceed their declared category minima.
 
 ### U7-08
 
-unknown
+Mutated one source at a time under a `try/finally` harness. An undefined `--missing` pair exited 1 with `not defined in :root`; `--text: banana` exited 1 with `not a hex colour`; an empty `PAIRS` table exited 1 with `the pair table is empty`; an added `--orphan` colour exited 1 with `colour tokens in no pair: --orphan`.
+
+Command: four `node tools/contrast.mjs` mutant runs. Observed: rc 1 for all four with cause-specific messages. The harness restored `src/app.css` and `tools/contrast.mjs`; pre/post SHA-256 maps matched, `git status --porcelain` was empty with rc 0, and `git rev-parse --short HEAD` returned `8d8e2e2` as the positive control.
 
 ### U7-09
 
