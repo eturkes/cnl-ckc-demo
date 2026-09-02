@@ -1,3 +1,5 @@
+import '@fontsource-variable/atkinson-hyperlegible-next';
+import '@fontsource-variable/literata';
 import { mount } from 'svelte';
 
 import App from './App.svelte';

@@ -7,8 +7,10 @@
   --accent: #1c6b6b;
   --modal: #9a6410;
 
-  --font-prose: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
-  --font-ui: ui-sans-serif, 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-prose:
+    'Literata Variable', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  --font-ui:
+    'Atkinson Hyperlegible Next Variable', ui-sans-serif, 'Inter', 'Segoe UI', system-ui, sans-serif;
   --font-code: ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Menlo, monospace;
 
   color-scheme: light;
