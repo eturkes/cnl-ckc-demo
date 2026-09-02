@@ -1,0 +1,8 @@
+openSync /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u1-1/kb/cnl-ckc-kb-g952cc950a0c6.tar.gz
+openSync /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u1-1/kb/generated/kb.pvm
+writeSync 21
+openSync /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u1-1/kb/generated/kb.qlf
+writeSync 21
+openSync /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u1-1/kb/generated/question-catalog.json
+writeSync 21
+writeSync 1

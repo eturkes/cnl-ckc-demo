@@ -1,0 +1,9 @@
+
+> cnl-ckc-demo@0.0.0 kb:build /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u1-1
+> node tools/kb/build.mjs
+
+kb:build ok — 337 files (cnl-ckc-kb-g952cc950a0c6.tar.gz) → pvm 437132 B, qlf 2168708 B, catalog 6 entries from 4 queries, schema 1, 337 documents
+
+real	0m4.514s
+user	0m5.558s
+sys	0m0.186s

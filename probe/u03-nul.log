@@ -1,0 +1,18 @@
+--- readBag on a long name carrying an embedded NUL ---
+  declared name : "bag/data/g/pl/nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn\u0000evil.pl"
+  OUTCOME       : ACCEPTED
+  root          : "bag"
+  stored as     : ["data/g/pl/nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"]
+  name rewritten: true
+--- control char (non-NUL) in a long name ---
+  -> control-char
+--- NUL truncation used to smuggle a name past safeName ---
+  tail="/../../../../etc/passwd"    -> ["data/g/pl/nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn.pl"]
+  tail=".."                         -> ["data/g/pl/nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn.pl"]
+  tail="/x"                         -> ["data/g/pl/nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn.pl"]
+--- full verifyBag on a bag whose manifest lists the TRUNCATED name ---
+  OUTCOME: bag VERIFIES; payload = ["data/g/pl/nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn.pl"]
+--- control: same bag with the manifest listing the REAL (NUL-bearing) name ---
+  -> control-char
+--- sanity: the well-formed PAYLOAD constant still verifies ---
+  -> empty-archive (empty archive control) data/guidelines/g/pl/doc.pl

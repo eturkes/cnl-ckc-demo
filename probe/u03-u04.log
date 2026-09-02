@@ -1,0 +1,28 @@
+--- U03 seven classes ---
+  unsupported-typeflag     <- non-regular type (symlink)
+  absolute-path            <- absolute path
+  dotdot-segment           <- dotdot segment
+  control-char             <- control char in name
+  duplicate-name           <- duplicate name
+  multiple-roots           <- resolves outside root (foreign root)
+  bad-size                 <- size inconsistent with stream
+  distinct=7/7  accepted=0  untyped=0
+--- U03 extras ---
+  NUL in long name   -> ACCEPTED
+  file at root       -> root-file
+  block device       -> unsupported-typeflag
+  fifo               -> unsupported-typeflag
+  hardlink           -> unsupported-typeflag
+  char device        -> unsupported-typeflag
+  pax header         -> unsupported-typeflag
+--- U04 refusal-not-repair ---
+  dotdot-segment     verbatim=true  accepted-as="REFUSED"  <- "bag/a/../a/../a"
+  dotdot-segment     verbatim=true  accepted-as="REFUSED"  <- "bag/../a/../a/../a"
+  absolute-path      verbatim=true  accepted-as="REFUSED"  <- "/abs.pl"
+  empty-segment      verbatim=true  accepted-as="REFUSED"  <- "bag//double.pl"
+  dot-segment        verbatim=true  accepted-as="REFUSED"  <- "bag/./dot.pl"
+  backslash          verbatim=true  accepted-as="REFUSED"  <- "bag/a\\b.pl"
+  dotdot-segment     verbatim=true  accepted-as="REFUSED"  <- "bag/deep/../../../../etc/shadow"
+  absolute-path      verbatim=true  accepted-as="REFUSED"  <- "/bag/lead-slash.pl"
+  prefix-split ..    -> dotdot-segment
+  long-name ..       -> dotdot-segment
