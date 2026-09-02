@@ -134,3 +134,4 @@ A133	contract:m1u7	C6 a 26-word probe sentence gave rc 1 naming file, key and co
 A134	contract:m1u7	Atkinson Hyperlegible Next 2.001 and Literata 3.103, both OFL 1.1 with no Reserved Font Name
 A135	contract:m1u7	G4-G5 recorded fail(low): tools/visual-qa.mjs is not in the primary tree, 41 implicit-any errors under svelte-check
 A136	memory:gate	kb:asset-check sibling scan matches ../cnl-ckc only at a name boundary, so cnl-ckc-demo does not trip it
+A137	roadmap:u7	wave 1 failed as a wave: map-m1u7 5/26 at 169K and res-m1u7 4/16 at 172K, across two flush directives each
