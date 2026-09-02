@@ -11,7 +11,13 @@ const source = ts.createSourceFile(
   ts.ScriptKind.TS,
 );
 
-const expectedExports = new Set(['DEMO_BUDGET', 'DemoEngine', 'createDemoEngine', 'DemoState', 'DemoController']);
+const expectedExports = new Set([
+  'DEMO_BUDGET',
+  'DemoEngine',
+  'createDemoEngine',
+  'DemoState',
+  'DemoController',
+]);
 const expectedMembers = new Set([
   'constructor',
   'state',
@@ -35,7 +41,8 @@ for (const statement of source.statements) {
     }
   } else if (statement.name !== undefined && ts.isIdentifier(statement.name)) {
     exports.add(statement.name.text);
-    if (ts.isClassDeclaration(statement) && statement.name.text === 'DemoController') controller = statement;
+    if (ts.isClassDeclaration(statement) && statement.name.text === 'DemoController')
+      controller = statement;
   }
 }
 if (controller === undefined) throw new Error('DemoController export missing');
@@ -59,7 +66,12 @@ const missing = {
   members: difference(expectedMembers, members),
 };
 
-if (extras.exports.length || extras.members.length || missing.exports.length || missing.members.length) {
+if (
+  extras.exports.length ||
+  extras.members.length ||
+  missing.exports.length ||
+  missing.members.length
+) {
   console.error(JSON.stringify({ extras, missing }, null, 2));
   process.exitCode = 1;
 } else {
