@@ -151,7 +151,7 @@ MILESTONE-REVIEW dispatch inputs — contract | fixed check set | evidence branc
 
 - u1 `.agent/contracts/m1u1.md` | — | `wt/spike-m1u1-det`; partial reports `map-m1u1` 17/25, `spike-m1u1-det` 9/12
 - u2 `.agent/contracts/m1u2.md` | — | `wt/test-m1u2` `b0fb200`, `wt/spike-m1u2-{js,pl}`
-- u3 `.agent/contracts/m1u3.md` | `.agent/contracts/m1u3-rev-checkset.md`, 47 rows | `wt/test-m1u3` `22c8b97`, `wt/spike-m1u3-{js,pl}`
+- u3 `.agent/contracts/m1u3.md` | `.agent/contracts/m1u3-rev-checkset.md`, 45 rows | `wt/test-m1u3` `22c8b97`, `wt/spike-m1u3-{js,pl}`
 - u4 `.agent/contracts/m1u4.md` | `.agent/contracts/m1u4-rev-checkset.md`, 24 rows | `wt/test-m1u4` `0240aae`, `wt/spike-m1u4-{gen,src}`
 - u5 `.agent/contracts/m1u5.md` (26 predicates + verdict table) | — | `wt/spike-m1u5-lib` `dca4f87`; map report `.scratch/agents/map-m1u5.md` 29/29
 - u7 `.agent/contracts/m1u7.md` (34 predicates + verdict table + D1–D9) | — | `wt/map-m1u7` `124e34d` (probe), `wt/res-m1u7` `d712fa9`
@@ -160,6 +160,11 @@ MILESTONE-REVIEW dispatch inputs — contract | fixed check set | evidence branc
 u1–u4 shipped their mechanical assurance and carry no judgment adjudication; those rows
 seed `.agent/review-m1.md`. Projection: 6 `kernel` units × ~35 rows ≈ 210 rows plus u7
 spot-check, cross-cutting and `audit-m1` ⇒ size MILESTONE-REVIEW at ~3–4 sessions.
+
+Judgment-review ledger = `.agent/review-m1.md` (committed, read first by every resumed
+MILESTONE-REVIEW session). Session 1 takes u3 + u4 — the two units whose check sets are
+already fixed — plus `audit-m1`. u1, u2, u5, u6, u7, cross-cutting stay pending and
+enumerate their check sets when their session dispatches them.
 
 Calibration: `main=`/`est` ran 1.74 (u1), 1.87 (u2), 1.69 (u4) ⇒ **M1 ratio 1.77**, applied
 to every `kernel` estimate above. u6 is the first exact hit — raw 75K × 1.77 = 133K,
