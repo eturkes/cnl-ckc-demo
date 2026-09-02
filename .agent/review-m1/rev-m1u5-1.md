@@ -18,12 +18,12 @@ Grade: `python3 -P .scratch/validate-report.py .agent/review-m1/rev-m1u5-1.md --
 | I10 | pass: regular arrows move one step and clamp at both endpoints; Home and End jump exactly, with zero selection emits | behavior probe 11/13 pass; `src/questions/QuestionCombobox.svelte:116-134` |
 | I11 | pass: open Enter emits the active catalog id exactly once, closes the popup and retains combobox DOM focus | behavior probe 11/13 pass; `tests/question-combobox.dom.test.ts:264-273` |
 | I12 | pass: Escape emits nothing, closes, clears typeahead and restores active state to the controlled selection on reopen | behavior probe 11/13 pass; `src/questions/QuestionCombobox.svelte:60-64,143-146` |
-| I13 | unknown | unknown |
-| I14 | unknown | unknown |
-| I15 | unknown | unknown |
-| I16 | unknown | unknown |
-| I17 | unknown | unknown |
-| I18 | unknown | unknown |
+| I13 | pass: open Tab emits the active id once, closes and leaves the cancelable event unprevented for native focus traversal | behavior probe 11/13 pass; `tests/question-combobox.dom.test.ts:287-295` |
+| I14 | pass: open Alt+ArrowUp commits the moved active option exactly once and closes, while its closed counterpart remains inert | behavior probe 11/13 pass; `src/questions/QuestionCombobox.svelte:119-125` |
+| I15 | pass: host clicks toggle without selection, and focusout to an external node cancels the popup without selection | behavior probe 11/13 pass; `src/questions/QuestionCombobox.svelte:156-162` |
+| I16 | pass: direct and nested option targets resolve to the owning option, emit its id once, close and restore host focus | nested-target probe pass; `src/questions/QuestionCombobox.svelte:165-175` |
+| I17 | pass: open, keyboard and typeahead active changes each scroll only the new option once with nearest alignment; clamp is silent | receiver-count probe pass; `src/questions/QuestionCombobox.svelte:41-46` |
+| I18 | pass: mixed printable, arrow, keyboard and pointer commits emit only catalog ids, while a frozen selected prop keeps displayed text unchanged | fuzz-sequence probe pass; `tests/question-combobox.dom.test.ts:350-361` |
 | I19 | unknown | unknown |
 | I20 | unknown | unknown |
 | I21 | unknown | unknown |
