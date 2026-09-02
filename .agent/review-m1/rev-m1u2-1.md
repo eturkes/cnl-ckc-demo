@@ -11,19 +11,19 @@ Evidence = a path, a `file:line`, or a backticked command that reruns.
 
 | id | finding | evidence |
 | --- | --- | --- |
-| E01 | unknown | unknown |
-| E02 | unknown | unknown |
-| E03 | unknown | unknown |
+| E01 | pass: only `worker.ts` imports `swipl-wasm`; the main import graph reaches client DTO and budget code only, and the emitted 63609-byte main chunk contains zero engine markers against the worker positive control | `src/main.ts`; `src/engine/worker.ts`; `dist/assets/index-8N2BVi8K.js` |
+| E02 | pass: worker imports `kb.pvm?url`, checks `fetch` status, and reads an `ArrayBuffer`; no runtime source-consult path exists, and build emitted one hashed 437132-byte PVM with inlining disabled | `src/engine/worker.ts:8`; `vite.config.ts:23`; `dist/assets/kb-mjdzunFE.pvm` |
+| E03 | fail(med): `src/demo/copy.ts:43` hard-codes `337` into shipped UI copy even though boot reads and compares both contract values correctly — breached P1.3, D0.5, and invariant I — a regenerated valid engine with a changed document count would boot while the UI states stale evidence — acceptance: derive the displayed count from `BootOutcome.contract` and make the literal probe exit 0 | `python3 -P probe/e03_contract_literals.py` → rc 1; typed mismatch test passed |
 | E04 | unknown | unknown |
 | E05 | unknown | unknown |
-| E06 | unknown | unknown |
-| E07 | unknown | unknown |
+| E06 | pass: every declared request and response variant, all ten `PlTerm` shapes, bigint, and scalar error DTOs cloned deeply equal with only plain-object or array prototypes | `src/engine/protocol.ts`; `src/engine/terms.ts`; runtime probe 4/4 passed |
+| E07 | pass: client-generated ids are posted and echoed; an unknown id and a duplicate settled id each invoked `onProtocolViolation` with `code: protocol`, while the claimed request settled once | `src/engine/client.ts:108-122`; runtime probe 4/4 passed |
 | E08 | unknown | unknown |
 | E09 | pass: `protocol.ts` alone declares the correlated request and response unions; client, session, and worker import them without a structural duplicate | `src/engine/protocol.ts`; `src/engine/{client,session,worker}.ts` |
 | E10 | unknown | unknown |
 | E11 | fail(med): `src/engine/terms.ts:144` `createEncoder` has no `never` exhaustiveness guard; after adding a variant and satisfying the unrelated rank table, `pnpm check` stays green — breached P3.1 — a future decoded term can encode as `undefined` without compiler refusal — acceptance: add a `never` guard and make the E11 probe exit 0 on a named exhaustiveness error | `python3 -P probe/e11_exhaustiveness.py` → rc 1 |
-| E12 | unknown | unknown |
-| E13 | unknown | unknown |
+| E12 | pass: live decoding produced arities 2 and 1 for `foo(bar,7)` and `foo([bar,7])`; canonical displays were `foo(bar,7)` and `foo([bar,7])`, preserving the one-element envelope distinction | `tests/engine-session.test.ts:188`; `src/engine/terms.ts:86` |
+| E13 | pass: live `1 rdiv 3` decoded as numerator 1 and denominator 3 with display `1r3`; normalized `3 rdiv 1` decoded and displayed as integer `3`, never as `1r3` | `tests/engine-session.test.ts:216`; `src/engine/terms.ts:72` |
 | E14 | unknown | unknown |
 | E15 | unknown | unknown |
 | E16 | unknown | unknown |
@@ -41,6 +41,10 @@ Evidence = a path, a `file:line`, or a backticked command that reruns.
 | E28 | fail(low): `src/engine/terms.ts:144` and the production scan ledger lack deterministic checks for the E11 and E19 mechanical rules; the C1 concern set and no-data engine split otherwise hold — breached `CLAUDE.md` Engineering — per-file assurance overstates what the gate owns — acceptance: close E11 and E19, then rerun both mutants plus `pnpm build` | `probe/e11_exhaustiveness.py`; `probe/e19_json_stringify.py`; built worker 3074438 B |
 
 ## Details
+
+### E03
+
+`python3 -P probe/e03_contract_literals.py` exits 1 on the executable string in `src/demo/copy.ts:43`. Engine boot itself is sound: the targeted committed mismatch test returned typed `code: contract`. The defect is the second, UI-visible source of truth, not the boot comparison.
 
 ### E11
 
