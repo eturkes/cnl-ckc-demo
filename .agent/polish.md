@@ -98,11 +98,11 @@ Off-spine improvements. Each entry carries the acceptance check that closes it.
   and otherwise serves the stale hashed asset (M1 review A100). Accept: the smoke
   fails when the served `dist/` is stale against the current KB input hash, and
   the control is exercised without deleting `dist/`.
-- **Mutation harness is scratch-local** — `.scratch/verify-fixes.py` is what proves
-  the six M1-review fix tests bind to their fixes (6/6 RED), but it is gitignored, so
-  the claim does not rerun from committed state (M1 review session 2). Accept: a
-  committed mutation runner takes a mutant table, restores every file it touches, and
-  a documented command reproduces the 6/6 kill result from a clean checkout. `pri` med.
+- **Mutation harness is scratch-local** — `.scratch/verify-fixes.py` is what proves the
+  M1-review fix tests bind to their fixes (31 mutants, 31/31 RED), but it is gitignored,
+  so the claim does not rerun from committed state (M1 review session 2). Accept: a
+  committed mutation runner takes a mutant table, restores every file it touches, and a
+  documented command reproduces the full kill result from a clean checkout. `pri` med.
 - **Humanizer label test asserts its own artifact** — `tests/questions-live.test.ts:294`
   matches `/^\S+ — sentence \d+, \w+ \d+$/u`, a grammar that exists only in
   `src/questions/humanize.ts`, so the expectation comes from the artifact under test.
