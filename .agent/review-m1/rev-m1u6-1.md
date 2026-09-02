@@ -15,15 +15,15 @@ Evidence = a path, a `file:line`, or a backticked command that reruns.
 | L02 | unknown | unknown |
 | L03 | unknown | unknown |
 | L04 | unknown | unknown |
-| L05 | unknown | unknown |
-| L06 | unknown | unknown |
+| L05 | pass: Source census found one `EngineClient` and one `AnswerService`; typed boot failure reached `boot-error`, and the R1 lifecycle test passed. | `src/demo/DemoController.svelte.ts:40`; `pnpm exec vitest run tests/demo-lifecycle.test.ts --reporter=dot` |
+| L06 | pass: Booting Run, inactive Cancel and Retry, and out-of-range solution calls preserved state; the R2 and ADV1 lifecycle checks passed. | `src/demo/DemoController.svelte.ts:108`; `tests/demo-lifecycle.test.ts:197` |
 | L07 | unknown | unknown |
 | L08 | unknown | unknown |
-| L09 | unknown | unknown |
-| L10 | unknown | unknown |
+| L09 | pass: The only asynchronous result write follows the active-controller identity guard; the R5 test kept the successor after a retired result. | `src/demo/DemoController.svelte.ts:175`; `tests/demo-lifecycle.test.ts:256` |
+| L10 | pass: `cancel()` aborted, entered `cancelling`, and stayed pending until `active.done`; the R6 test then observed `settled` as terminal. | `src/demo/DemoController.svelte.ts:121`; `tests/demo-lifecycle.test.ts:289` |
 | L11 | unknown | unknown |
-| L12 | unknown | unknown |
-| L13 | unknown | unknown |
+| L12 | pass: `dispose()` marks ownership retired, aborts the active signal, clears it, and disposes once; R8 observed no later state write. | `src/demo/DemoController.svelte.ts:135`; `tests/demo-lifecycle.test.ts:336` |
+| L13 | pass: `DEMO_BUDGET` is frozen at the measured values including 5000 ms, and R9 passed the same object with no goal or consult surface. | `src/demo/DemoController.svelte.ts:25`; `tests/demo-lifecycle.test.ts:355` |
 | L14 | unknown | unknown |
 | L15 | unknown | unknown |
 | L16 | unknown | unknown |
@@ -38,11 +38,13 @@ Evidence = a path, a `file:line`, or a backticked command that reruns.
 | L25 | unknown | unknown |
 | L26 | unknown | unknown |
 | L27 | unknown | unknown |
-| L28 | unknown | unknown |
+| L28 | fail(low): `src/demo/DemoController.svelte.ts:70` exports `solutionsOf`, while lines 88, 99 and 104 expose `booted`, `solutions` and `solution` beyond the declared surface — breached D10 and the fixed public API — callers can bind to an API that the contract does not protect — acceptance: the exact export/member probe exits 0. | `pnpm exec node probe/m1u6-l28-public-api.mjs`; `probe/m1u6-l28-public-api.mjs` |
 
 ## Details
 
-One `### <row id>` section per row needing a ruling. Omit sections for clean `pass` rows.
+### L28
+
+`pnpm exec node probe/m1u6-l28-public-api.mjs` exits 1 at the target. It reports the extra module export `solutionsOf` and extra public members `booted`, `solution` and `solutions`; nothing declared is missing. The D10 file split, `App` injection seam, and controller-free child props otherwise match. Severity is low because the divergence expands the compile-time surface without changing the shipped interaction.
 
 ## Register
 
