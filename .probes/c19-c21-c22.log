@@ -1,0 +1,279 @@
+== G4 kb:reproduce ==
+
+> cnl-ckc-demo@0.0.0 kb:reproduce /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> node tools/kb/reproduce.mjs
+
+kb:reproduce ok — two forced builds are byte-identical: kb.pvm 3ae8d455d875, kb.qlf 62bc61cc7d0e, question-catalog.json a38e74d9f518
+REPRODUCE_RC=0
+== c22 P6.3 absent kb/generated -> pnpm test ==
+
+> cnl-ckc-demo@0.0.0 test /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> vitest run
+
+
+ RUN  v4.1.11 /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+
+ ❯ |node| tests/kb-live.test.ts (5 tests | 5 failed) 18ms
+     × has been built 7ms
+     × records only values it observed 4ms
+     × loads the saved state into a live engine 1ms
+     × loads the forced QLF fallback into a live engine 2ms
+     × refuses a truncated saved state instead of booting a partial engine 1ms
+ ❯ |node| tests/demo-lifecycle.test.ts (0 test)
+ ❯ |node| tests/engine-budgets.test.ts (0 test)
+ ❯ |node| tests/engine-session.test.ts (0 test)
+ ❯ |node| tests/questions-live.test.ts (0 test)
+ ❯ |node| tests/engine-cancel.test.ts (0 test)
+ ❯ |dom| tests/question-combobox.dom.test.ts (0 test)
+ ❯ |dom| tests/demo-controller.dom.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |node| tests/demo-lifecycle.test.ts [ tests/demo-lifecycle.test.ts ]
+Error: Cannot find package '@kb/kb-manifest.json' imported from /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean/tests/demo-lifecycle.test.ts
+ ❯ tests/demo-lifecycle.test.ts:6:1
+      4| import { fileURLToPath } from 'node:url';
+      5|
+      6| import manifest from '@kb/kb-manifest.json';
+       | ^
+      7| import { describe, expect, it, vi } from 'vitest';
+      8|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  |node| tests/engine-budgets.test.ts [ tests/engine-budgets.test.ts ]
+Error: ENOENT: no such file or directory, open '/run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean/kb/generated/kb-manifest.json'
+ ❯ readGenerated tests/engine-budgets.test.ts:26:49
+     24|
+     25| /** Fails rather than skips when the payload is missing; `pnpm kb:buil…
+     26| const readGenerated = (name: string): Buffer => readFileSync(join(GENE…
+       |                                                 ^
+     27|
+     28| const manifest = JSON.parse(readGenerated('kb-manifest.json').toString…
+ ❯ tests/engine-budgets.test.ts:28:29
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  |node| tests/engine-cancel.test.ts [ tests/engine-cancel.test.ts ]
+Error: Cannot find package '@kb/question-catalog.json' imported from /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean/src/questions/catalog.ts
+ ❯ src/questions/catalog.ts:5:1
+      3| // artifact, because they are knowledge-base content and the bag owns …
+      4|
+      5| import generated from '@kb/question-catalog.json';
+       | ^
+      6|
+      7| /**
+ ❯ src/questions/service.ts:11:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+ FAIL  |node| tests/engine-session.test.ts [ tests/engine-session.test.ts ]
+Error: ENOENT: no such file or directory, open '/run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean/kb/generated/kb-manifest.json'
+ ❯ readGenerated tests/engine-session.test.ts:30:49
+     28|
+     29| /** Fails rather than skips when the payload is missing; `pnpm kb:buil…
+     30| const readGenerated = (name: string): Buffer => readFileSync(join(GENE…
+       |                                                 ^
+     31|
+     32| const manifest = JSON.parse(readGenerated('kb-manifest.json').toString…
+ ❯ tests/engine-session.test.ts:32:29
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+ FAIL  |node| tests/questions-live.test.ts [ tests/questions-live.test.ts ]
+Error: Cannot find package '@kb/question-catalog.json' imported from /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean/src/questions/catalog.ts
+ ❯ src/questions/catalog.ts:5:1
+      3| // artifact, because they are knowledge-base content and the bag owns …
+      4|
+      5| import generated from '@kb/question-catalog.json';
+       | ^
+      6|
+      7| /**
+ ❯ tests/questions-live.test.ts:18:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯
+
+ FAIL  |dom| tests/demo-controller.dom.test.ts [ tests/demo-controller.dom.test.ts ]
+Error: Failed to resolve import "@kb/question-catalog.json" from "src/questions/catalog.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean/src/questions/catalog.ts:5:22
+  2  |  // selects against; goals, projections and question text come from the generated
+  3  |  // artifact, because they are knowledge-base content and the bag owns it.
+  4  |  import generated from "@kb/question-catalog.json";
+     |                         ^
+  5  |  /**
+  6  |  * Every question the demo can run. Free text is not one of them: the intake
+ ❯ TransformPluginContext._formatLog ../../../../../node_modules/.pnpm/vite@8.2.2_@types+node@26.4.0/node_modules/vite/dist/node/chunks/node.js:31147:39
+ ❯ TransformPluginContext.error ../../../../../node_modules/.pnpm/vite@8.2.2_@types+node@26.4.0/node_modules/vite/dist/node/chunks/node.js:31144:14
+ ❯ normalizeUrl ../../../../../node_modules/.pnpm/vite@8.2.2_@types+node@26.4.0/node_modules/vite/dist/node/chunks/node.js:28083:18
+ ❯ ../../../../../node_modules/.pnpm/vite@8.2.2_@types+node@26.4.0/node_modules/vite/dist/node/chunks/node.js:28153:30
+ ❯ TransformPluginContext.transform ../../../../../node_modules/.pnpm/vite@8.2.2_@types+node@26.4.0/node_modules/vite/dist/node/chunks/node.js:28119:4
+ ❯ EnvironmentPluginContainer.transform ../../../../../node_modules/.pnpm/vite@8.2.2_@types+node@26.4.0/node_modules/vite/dist/node/chunks/node.js:30932:14
+ ❯ loadAndTransform ../../../../../node_modules/.pnpm/vite@8.2.2_@types+node@26.4.0/node_modules/vite/dist/node/chunks/node.js:20671:26
+ ❯ fetchModule ../../../../../node_modules/.pnpm/vite@8.2.2_@types+node@26.4.0/node_modules/vite/dist/node/chunks/node.js:34343:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯
+
+ FAIL  |dom| tests/question-combobox.dom.test.ts [ tests/question-combobox.dom.test.ts ]
+Error: Failed to resolve import "@kb/question-catalog.json" from "src/questions/catalog.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean/src/questions/catalog.ts:5:22
+  2  |  // selects against; goals, projections and question text come from the generated
+  3  |  // artifact, because they are knowledge-base content and the bag owns it.
+  4  |  import generated from "@kb/question-catalog.json";
+     |                         ^
+  5  |  /**
+  6  |  * Every question the demo can run. Free text is not one of them: the intake
+ ❯ TransformPluginContext._formatLog ../../../../../node_modules/.pnpm/vite@8.2.2_@types+node@26.4.0/node_modules/vite/dist/node/chunks/node.js:31147:39
+ ❯ TransformPluginContext.error ../../../../../node_modules/.pnpm/vite@8.2.2_@types+node@26.4.0/node_modules/vite/dist/node/chunks/node.js:31144:14
+ ❯ normalizeUrl ../../../../../node_modules/.pnpm/vite@8.2.2_@types+node@26.4.0/node_modules/vite/dist/node/chunks/node.js:28083:18
+ ❯ ../../../../../node_modules/.pnpm/vite@8.2.2_@types+node@26.4.0/node_modules/vite/dist/node/chunks/node.js:28153:30
+ ❯ TransformPluginContext.transform ../../../../../node_modules/.pnpm/vite@8.2.2_@types+node@26.4.0/node_modules/vite/dist/node/chunks/node.js:28119:4
+ ❯ EnvironmentPluginContainer.transform ../../../../../node_modules/.pnpm/vite@8.2.2_@types+node@26.4.0/node_modules/vite/dist/node/chunks/node.js:30932:14
+ ❯ loadAndTransform ../../../../../node_modules/.pnpm/vite@8.2.2_@types+node@26.4.0/node_modules/vite/dist/node/chunks/node.js:20671:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |node| tests/kb-live.test.ts > generated runtime payload > has been built
+AssertionError: run pnpm kb:build first: expected undefined to be defined
+ ❯ tests/kb-live.test.ts:22:49
+     20| describe('generated runtime payload', () => {
+     21|   it('has been built', () => {
+     22|     expect(manifest, 'run pnpm kb:build first').toBeDefined();
+       |                                                 ^
+     23|     for (const entry of manifest?.assets ?? []) {
+     24|       expect(existsSync(join(GENERATED_DIR, entry.path)), `${entry.pat…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/12]⎯
+
+ FAIL  |node| tests/kb-live.test.ts > generated runtime payload > records only values it observed
+AssertionError: expected undefined to deeply equal { schemaVersion: 1, documents: 337 }
+
+- Expected:
+{
+  "documents": 337,
+  "schemaVersion": 1,
+}
+
++ Received:
+undefined
+
+ ❯ tests/kb-live.test.ts:29:32
+     27|
+     28|   it('records only values it observed', () => {
+     29|     expect(manifest?.contract).toEqual({ schemaVersion: SCHEMA_VERSION…
+       |                                ^
+     30|     expect(manifest?.input.files).toBe(DOCUMENTS);
+     31|     expect(manifest?.assets.map((entry) => entry.kind).sort()).toEqual…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/12]⎯
+
+ FAIL  |node| tests/kb-live.test.ts > generated runtime payload > loads the saved state into a live engine
+Error: ENOENT: no such file or directory, open '/run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean/kb/generated/kb.pvm'
+ ❯ asset tests/kb-live.test.ts:18:45
+     16|
+     17| const manifest = loadManifest();
+     18| const asset = (name: string): Uint8Array => readFileSync(join(GENERATE…
+       |                                             ^
+     19|
+     20| describe('generated runtime payload', () => {
+ ❯ tests/kb-live.test.ts:38:42
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/12]⎯
+
+ FAIL  |node| tests/kb-live.test.ts > generated runtime payload > loads the forced QLF fallback into a live engine
+Error: ENOENT: no such file or directory, open '/run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean/kb/generated/kb.qlf'
+ ❯ asset tests/kb-live.test.ts:18:45
+     16|
+     17| const manifest = loadManifest();
+     18| const asset = (name: string): Uint8Array => readFileSync(join(GENERATE…
+       |                                             ^
+     19|
+     20| describe('generated runtime payload', () => {
+ ❯ tests/kb-live.test.ts:49:40
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/12]⎯
+
+ FAIL  |node| tests/kb-live.test.ts > generated runtime payload > refuses a truncated saved state instead of booting a partial engine
+Error: ENOENT: no such file or directory, open '/run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean/kb/generated/kb.pvm'
+ ❯ asset tests/kb-live.test.ts:18:45
+     16|
+     17| const manifest = loadManifest();
+     18| const asset = (name: string): Uint8Array => readFileSync(join(GENERATE…
+       |                                             ^
+     19|
+     20| describe('generated runtime payload', () => {
+ ❯ tests/kb-live.test.ts:59:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/12]⎯
+
+
+ Test Files  8 failed | 2 passed (10)
+      Tests  5 failed | 33 passed (38)
+   Start at  15:03:33
+   Duration  2.81s (transform 2.46s, setup 0ms, import 296ms, tests 142ms, environment 1.95s)
+
+ ELIFECYCLE  Test failed. See above for more details.
+ABSENT_TEST_RC=1
+== restore ==
+
+> cnl-ckc-demo@0.0.0 kb:build /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> node tools/kb/build.mjs
+
+kb:build ok — 337 files (cnl-ckc-kb-g952cc950a0c6.tar.gz) → pvm 437132 B, qlf 2168708 B, catalog 6 entries from 4 queries, schema 1, 337 documents
+REBUILD_RC=0
+== c19 mutant: PRODUCTION_ROOTS = [] ==
+MUTATED
+MUTATE_RC=0
+
+> cnl-ckc-demo@0.0.0 gate /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> pnpm kb:build && pnpm kb:asset-check && pnpm copy:check && pnpm contrast:check && pnpm format:check && pnpm lint && pnpm check && pnpm test && pnpm build
+
+
+> cnl-ckc-demo@0.0.0 kb:build /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> node tools/kb/build.mjs
+
+kb:build cached — 337 files, input 021d1220c6a0
+
+> cnl-ckc-demo@0.0.0 kb:asset-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> node tools/kb/check.mjs
+
+kb:asset-check ok — 3 assets verified, catalog re-derived from the bag, sibling-path scan clean over 6 roots, answer-oracle scan clean over 0 roots
+
+> cnl-ckc-demo@0.0.0 copy:check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> node tools/copy-check.mjs
+
+copy: 79 strings pass
+
+> cnl-ckc-demo@0.0.0 contrast:check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> node tools/contrast.mjs
+
+contrast: 17 pairs pass
+
+> cnl-ckc-demo@0.0.0 format:check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> cnl-ckc-demo@0.0.0 lint /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> eslint .
+
+
+/run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean/tools/kb/check.mjs
+  100:38  error  Unsafe argument of type `any` assigned to a parameter of type `string`  @typescript-eslint/no-unsafe-argument
+
+✖ 1 problem (1 error, 0 warnings)
+
+ ELIFECYCLE  Command failed with exit code 1.
+ ELIFECYCLE  Command failed with exit code 1.
+MUTANT_GATE_RC=1
+
+> cnl-ckc-demo@0.0.0 kb:asset-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> node tools/kb/check.mjs
+
+kb:asset-check ok — 3 assets verified, catalog re-derived from the bag, sibling-path scan clean over 6 roots, answer-oracle scan clean over 4 roots
+RESTORED_CHECK_RC=0

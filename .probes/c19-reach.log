@@ -1,0 +1,48 @@
+
+> cnl-ckc-demo@0.0.0 kb:asset-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> node tools/kb/check.mjs
+
+kb:asset-check ok — 3 assets verified, catalog re-derived from the bag, sibling-path scan clean over 6 roots, answer-oracle scan clean over 4 roots
+BASE_RC=0
+
+> cnl-ckc-demo@0.0.0 kb:asset-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> node tools/kb/check.mjs
+
+kb:asset-check failed —
+  answer-oracle reach in src/zz-reach-static.ts
+ ELIFECYCLE  Command failed with exit code 1.
+RC[static-import]=1
+
+> cnl-ckc-demo@0.0.0 kb:asset-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> node tools/kb/check.mjs
+
+kb:asset-check failed —
+  answer-oracle reach in src/zz-reach-dynamic.ts
+ ELIFECYCLE  Command failed with exit code 1.
+RC[dynamic-import]=1
+
+> cnl-ckc-demo@0.0.0 kb:asset-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> node tools/kb/check.mjs
+
+kb:asset-check failed —
+  answer-oracle reach in src/zz-reach-fs.ts
+ ELIFECYCLE  Command failed with exit code 1.
+RC[fs-read]=1
+
+> cnl-ckc-demo@0.0.0 kb:asset-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> node tools/kb/check.mjs
+
+kb:asset-check ok — 3 assets verified, catalog re-derived from the bag, sibling-path scan clean over 6 roots, answer-oracle scan clean over 4 roots
+RC[assembled-evasion]=0
+
+> cnl-ckc-demo@0.0.0 kb:asset-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> node tools/kb/check.mjs
+
+kb:asset-check ok — 3 assets verified, catalog re-derived from the bag, sibling-path scan clean over 6 roots, answer-oracle scan clean over 4 roots
+RC[generated-root]=0
+
+> cnl-ckc-demo@0.0.0 kb:asset-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> node tools/kb/check.mjs
+
+kb:asset-check ok — 3 assets verified, catalog re-derived from the bag, sibling-path scan clean over 6 roots, answer-oracle scan clean over 4 roots
+RESTORE_RC=0

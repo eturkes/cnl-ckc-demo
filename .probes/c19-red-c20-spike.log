@@ -1,0 +1,33 @@
+== c19 control at base ==
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+BASE_CONTROL_RC=0
+== c19 control under ANSWERS mutant ==
+     × fails kb:asset-check on a static import 177ms
+     × fails kb:asset-check on a dynamic import 182ms
+     × fails kb:asset-check on a filesystem read 166ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |node| tests/zz-reach.test.ts > forbidden answer-oracle reach > fails kb:asset-check on a static import
+ FAIL  |node| tests/zz-reach.test.ts > forbidden answer-oracle reach > fails kb:asset-check on a dynamic import
+ FAIL  |node| tests/zz-reach.test.ts > forbidden answer-oracle reach > fails kb:asset-check on a filesystem read
+ Test Files  1 failed (1)
+      Tests  3 failed | 1 passed (4)
+MUTANT_CONTROL_RC=1
+== c19 control under PRODUCTION_ROOTS narrowed to public ==
+     × fails kb:asset-check on a static import 177ms
+     × fails kb:asset-check on a dynamic import 195ms
+     × fails kb:asset-check on a filesystem read 214ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |node| tests/zz-reach.test.ts > forbidden answer-oracle reach > fails kb:asset-check on a static import
+ FAIL  |node| tests/zz-reach.test.ts > forbidden answer-oracle reach > fails kb:asset-check on a dynamic import
+ FAIL  |node| tests/zz-reach.test.ts > forbidden answer-oracle reach > fails kb:asset-check on a filesystem read
+ Test Files  1 failed (1)
+      Tests  3 failed | 1 passed (4)
+ROOTS_CONTROL_RC=1
+== c20 D9 spike replay (gen 65f496a) ==
+category-a-recommendations: sameTermAfterD4Flatten=true identicalBytes=false sameProjection=true sameQuestion=false spike=281B main=311B
+dosage-reduction-content: sameTermAfterD4Flatten=true identicalBytes=false sameProjection=true sameQuestion=false spike=182B main=202B
+evidence-type-1-recommendation: sameTermAfterD4Flatten=true identicalBytes=false sameProjection=true sameQuestion=false spike=286B main=316B
+recommendation-exists: sameTermAfterD4Flatten=true identicalBytes=false sameProjection=true sameQuestion=false spike=91B main=96B
+SPIKE-GEN AGREEMENT 0/4 exported ids
+SPIKE_GEN_RC=0

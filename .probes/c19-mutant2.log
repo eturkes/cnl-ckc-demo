@@ -1,0 +1,108 @@
+MUTATED-regex
+MUTATE_RC=0
+
+> cnl-ckc-demo@0.0.0 gate /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> pnpm kb:build && pnpm kb:asset-check && pnpm copy:check && pnpm contrast:check && pnpm format:check && pnpm lint && pnpm check && pnpm test && pnpm build
+
+
+> cnl-ckc-demo@0.0.0 kb:build /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> node tools/kb/build.mjs
+
+kb:build cached — 337 files, input 021d1220c6a0
+
+> cnl-ckc-demo@0.0.0 kb:asset-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> node tools/kb/check.mjs
+
+kb:asset-check ok — 3 assets verified, catalog re-derived from the bag, sibling-path scan clean over 6 roots, answer-oracle scan clean over 4 roots
+
+> cnl-ckc-demo@0.0.0 copy:check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> node tools/copy-check.mjs
+
+copy: 79 strings pass
+
+> cnl-ckc-demo@0.0.0 contrast:check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> node tools/contrast.mjs
+
+contrast: 17 pairs pass
+
+> cnl-ckc-demo@0.0.0 format:check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> cnl-ckc-demo@0.0.0 lint /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> eslint .
+
+
+> cnl-ckc-demo@0.0.0 check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> svelte-check --tsconfig ./tsconfig.json --fail-on-warnings
+
+1788329192015 START "/run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean"
+1788329192020 COMPLETED 356 FILES 0 ERRORS 0 WARNINGS 0 FILES_WITH_PROBLEMS
+
+> cnl-ckc-demo@0.0.0 test /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> vitest run
+
+
+ RUN  v4.1.11 /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+
+ Test Files  10 passed (10)
+      Tests  171 passed (171)
+   Start at  15:06:34
+   Duration  5.57s (transform 5.58s, setup 0ms, import 8.07s, tests 13.66s, environment 3.99s)
+
+
+> cnl-ckc-demo@0.0.0 build /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> vite build
+
+vite v8.2.2 building client environment for production...
+transforming...
+[plugin rolldown:vite-resolve] Module "node:fs" has been externalized for browser compatibility, imported by "/run/host/home/eturkes/Projects/cnl-ckc-demo/node_modules/.pnpm/swipl-wasm@8.0.7/node_modules/swipl-wasm/dist/swipl/swipl-bundle-no-data.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "node:crypto" has been externalized for browser compatibility, imported by "/run/host/home/eturkes/Projects/cnl-ckc-demo/node_modules/.pnpm/swipl-wasm@8.0.7/node_modules/swipl-wasm/dist/swipl/swipl-bundle-no-data.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[33m[EVAL] [0mUse of direct `eval` function is strongly discouraged as it poses security risks and may cause issues with minification.
+ - Use of direct `eval` here. in ../../../../../node_modules/.pnpm/swipl-wasm@8.0.7/node_modules/swipl-wasm/dist/swipl/swipl-bundle-no-data.js at 38892..38896
+ [38;5;240m │[0m 
+ [38;5;240m │[0m [38;5;115mHelp[0m: Consider using indirect eval. For more information, check the documentation: https://rolldown.rs/guide/troubleshooting#avoiding-direct-eval
+
+[33m[EVAL] [0mUse of direct `eval` function is strongly discouraged as it poses security risks and may cause issues with minification.
+ - Use of direct `eval` here. in ../../../../../node_modules/.pnpm/swipl-wasm@8.0.7/node_modules/swipl-wasm/dist/swipl/swipl-bundle-no-data.js at 2588535..2588539
+ [38;5;240m │[0m 
+ [38;5;240m │[0m [38;5;115mHelp[0m: Consider using indirect eval. For more information, check the documentation: https://rolldown.rs/guide/troubleshooting#avoiding-direct-eval
+
+✓ 131 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                                                  0.45 kB │ gzip:  0.31 kB
+dist/assets/atkinson-hyperlegible-mono-latin-ext-wght-normal-CXgNM06D.woff2     10.74 kB
+dist/assets/atkinson-hyperlegible-mono-latin-wght-normal-CoA7y8X5.woff2         17.75 kB
+dist/assets/atkinson-hyperlegible-next-latin-ext-wght-normal-C6vrW8VD.woff2     19.09 kB
+dist/assets/atkinson-hyperlegible-next-latin-wght-normal-BcXVPD7q.woff2         33.99 kB
+dist/assets/literata-latin-ext-wght-normal-BnEbWgdZ.woff2                       42.65 kB
+dist/assets/literata-latin-wght-normal-DLxlUchJ.woff2                           52.49 kB
+dist/assets/kb-mjdzunFE.pvm                                                    437.13 kB
+dist/assets/worker-Dk-VoTc5.js                                               3,074.24 kB
+dist/assets/index-ma8WW6_U.css                                                   8.28 kB │ gzip:  2.03 kB
+dist/assets/index-CzoEE96V.js                                                   63.38 kB │ gzip: 23.37 kB
+
+✓ built in 490ms
+MUTANT2_GATE_RC=0
+
+> cnl-ckc-demo@0.0.0 kb:asset-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-3/.probes/clean
+> node tools/kb/check.mjs
+
+kb:asset-check ok — 3 assets verified, catalog re-derived from the bag, sibling-path scan clean over 6 roots, answer-oracle scan clean over 4 roots
+RESTORED_CHECK_RC=0
