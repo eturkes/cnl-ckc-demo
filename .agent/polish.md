@@ -74,7 +74,7 @@ Off-spine improvements. Each entry carries the acceptance check that closes it.
   reload. Accept: a failed boot offers a retry control that rebuilds the engine, and a
   second failure still reports one alert rather than accumulating them.
 - **Typed port of the visual-QA walker** — the state walker lives only on
-  `wt/map-m1u7` `124e34d` and fails `svelte-check` with 41 implicit-any errors,
+  `wt/map-m1u7` `124e34d` and fails `svelte-check` with 64 implicit-any errors,
   so u7's responsive evidence comes from an out-of-tree script. Accept:
   `tools/visual-qa.mjs` passes `pnpm check` and `pnpm lint`, `pnpm visual-qa`
   exits 0, and its JSON reports `overflow=false` for every state at 320, 375 and
@@ -86,3 +86,15 @@ Off-spine improvements. Each entry carries the acceptance check that closes it.
   `copy.ts` and `describe.ts` by path, so prose added to a new component escapes
   it. Accept: the validator derives its file set from the source tree, and a new
   component carrying a 30-word sentence fails the gate.
+
+- **Inference budget re-arms per solution** — `call_with_inference_limit/3` is
+  applied per solution, so the inference budget bounds one step and not the whole
+  request: 50 solutions of ~800 inferences each pass a 3000 limit, while one
+  5000-deep step trips at 1000 (M1 review R06). Accept: a multi-solution goal
+  whose total inferences exceed the budget reaches `limit: 'inference'`, or the
+  contract records that the bound is per-step by design.
+- **Smoke negative control is weak** — removing `kb/generated/kb.pvm` alone
+  leaves `pnpm smoke` at rc 0, because it rebuilds only when `dist/` is missing
+  and otherwise serves the stale hashed asset (M1 review A100). Accept: the smoke
+  fails when the served `dist/` is stale against the current KB input hash, and
+  the control is exercised without deleting `dist/`.
