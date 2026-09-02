@@ -25,13 +25,13 @@ Evidence = a path, a `file:line`, or a backticked command that reruns.
 | L12 | pass: `dispose()` marks ownership retired, aborts the active signal, clears it, and disposes once; R8 observed no later state write. | `src/demo/DemoController.svelte.ts:135`; `tests/demo-lifecycle.test.ts:336` |
 | L13 | pass: `DEMO_BUDGET` is frozen at the measured values including 5000 ms, and R9 passed the same object with no goal or consult surface. | `src/demo/DemoController.svelte.ts:25`; `tests/demo-lifecycle.test.ts:355` |
 | L14 | unknown | unknown |
-| L15 | unknown | unknown |
-| L16 | unknown | unknown |
-| L17 | unknown | unknown |
-| L18 | unknown | unknown |
-| L19 | unknown | unknown |
-| L20 | unknown | unknown |
-| L21 | unknown | unknown |
+| L15 | pass: One status and one alert remain mounted through the shared controls; first-render and error-state checks found one each, one error occurrence, and no focusable status. | `src/demo/RunControls.svelte:51`; `tests/demo-controller.dom.test.ts:150` |
+| L16 | pass: The ten-state sweep observed ten distinct visible text surfaces, with explicit booting, boot error, idle, running, cancelling and five result labels. | `tests/demo-controller.dom.test.ts:168`; `src/demo/describe.ts:58` |
+| L17 | pass: All six limit kinds render their literal kind and a partial-answer count; the zero-retained branch remains partial and never claims no answers or no proof. | `src/demo/describe.ts:71`; `tests/demo-controller.dom.test.ts:193` |
+| L18 | pass: Cancelled results use explicit cancellation wording plus a grammatically counted partial-answer surface; zero, one and many share the same count path. | `src/demo/describe.ts:76`; `tests/demo-controller.dom.test.ts:213` |
+| L19 | pass: Existential failure says no proof and no; existential answer says yes, while `answerRows` returns no projected rows, so twelve proofs create no radios. | `src/demo/describe.ts:53`; `tests/demo-controller.dom.test.ts:221` |
+| L20 | pass: Many rows form one native fieldset radio group, one row omits the group, and zero rows leave terminal text; controller code resets to -1 and selects 0 on settlement. | `src/demo/AnswerPanel.svelte:39`; `src/demo/DemoController.svelte.ts:158`; `tests/demo-controller.dom.test.ts:234` |
+| L21 | pass: The state matrix uses native typed buttons and `disabled`; Run and Cancel follow selection and live state, while Retry exists only for a settled engine error. | `src/demo/RunControls.svelte:43`; `tests/demo-controller.dom.test.ts:266` |
 | L22 | unknown | unknown |
 | L23 | unknown | unknown |
 | L24 | unknown | unknown |
