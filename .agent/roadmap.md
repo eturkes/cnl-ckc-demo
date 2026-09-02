@@ -128,18 +128,21 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
   Vietnamese to an English corpus. `dist/` carries 6 woff2 = 176732 B and three
   OFL texts byte-equal to each package's `LICENSE`.
   Two new gate steps, both fail-closed with a proven negative control:
-  `copy:check` (79 strings, 20 words/sentence `INSTRUCTIONS`, 25
+  `copy:check` (81 strings, 20 words/sentence `INSTRUCTIONS`, 25
   `DESCRIPTIONS`) and `contrast:check` (17 declared pairs, WCAG luminance,
   floored not rounded). `--border` needed `#8f8270` to clear 3:1.
   Limitations sit in an About disclosure and the canonical Prolog answer in its
   own (user rulings); CDC attribution, the nonendorsement disclaimer and the
   free-availability statement stay in the always-visible footer, because CDC's
   terms require that disclaimer to be prominently displayed.
-  Gate rc=0 from clean cache: 355 files 0 errors 0 warnings, 171 tests, 3 assets.
+  Gate rc=0 from clean cache. Counts below are M1's closing reading, not u7's:
+  366 files 0 errors 0 warnings, 228 tests in 16 files, 3 assets.
   `pnpm smoke` rc=0 after being taught to open the new disclosure — it caught the
   regression that the canonical answer is no longer visible by default.
   Real-browser visual QA over 11 states at 320/375/1280 px: `overflow=false`
-  everywhere, and the three families resolve in the rendered `fontFamily`.
+  everywhere, and the three families resolve in the rendered `fontFamily`. That
+  walker stayed out of tree; `pnpm browser:check` now measures five states at
+  320 px on every run, and `presentation:check` owns the CSS side in the gate.
   `harvest=63% 152K/240K`, `main=96% 229K/240K`, `mate=72% 172K/240K` (res-m1u7).
   Wave 1 failed as a wave: both teammates saturated without flushing (map 10/26 at
   182K, res 4/16 at 183K, both 76%) across two flush directives each, so MAIN self-derived

@@ -259,6 +259,7 @@
     font-family: var(--font-prose);
     font-size: 1rem;
     line-height: 1.4;
+    overflow-wrap: anywhere;
     cursor: pointer;
   }
 
@@ -298,6 +299,7 @@
     padding: 0.5rem 0.6rem;
     border-radius: 0.2rem;
     font-family: var(--font-prose);
+    overflow-wrap: anywhere;
     cursor: pointer;
   }
 

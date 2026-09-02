@@ -15,11 +15,12 @@
     "engine:check": "node tools/engine-check.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "gate": "pnpm kb:build && pnpm kb:asset-check && pnpm engine:check && pnpm copy:check && pnpm contrast:check && pnpm format:check && pnpm lint && pnpm check && pnpm test && pnpm build",
+    "gate": "pnpm kb:build && pnpm kb:asset-check && pnpm engine:check && pnpm copy:check && pnpm contrast:check && pnpm presentation:check && pnpm format:check && pnpm lint && pnpm check && pnpm test && pnpm build",
     "kb:asset-check": "node tools/kb/check.mjs",
     "kb:build": "node tools/kb/build.mjs",
     "kb:reproduce": "node tools/kb/reproduce.mjs",
     "lint": "eslint .",
+    "presentation:check": "node tools/presentation-check.mjs",
     "preview": "vite preview",
     "smoke": "node tools/smoke.mjs",
     "test": "vitest run"

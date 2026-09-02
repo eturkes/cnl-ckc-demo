@@ -90,6 +90,7 @@
   .alert {
     margin: 0;
     font-size: 0.9rem;
+    overflow-wrap: anywhere;
   }
 
   .status {

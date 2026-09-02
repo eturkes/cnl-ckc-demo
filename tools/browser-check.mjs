@@ -27,6 +27,8 @@ const ERRORED = '[data-engine="error"]';
 const TIMEOUT = 60_000;
 /** Long enough that solutions are still arriving, short enough to stay inside the run. */
 const ABORT_AFTER_MS = 400;
+/** The narrowest viewport the presentation promises to contain. */
+const NARROW = 320;
 
 /** @type {(message: string) => never} */
 const fail = failWith('browser-check');
@@ -93,6 +95,50 @@ const readDocuments = async (page, mode) => {
   const reported = /reports (\d+) compiled documents/.exec(text)?.[1];
   if (reported === undefined) fail(`${mode}: About panel states no document count`);
   return Number(reported);
+};
+
+/**
+ * Widest element crossing the right viewport edge, plus the document's own scroll
+ * width. Reported by tag and class so a regression names the surface that broke,
+ * and measured on live boxes because `overflow-wrap` only shows in layout.
+ */
+const OVERFLOW_PROBE = `(() => {
+  const root = document.documentElement;
+  const limit = root.clientWidth;
+  let worst;
+  for (const el of document.querySelectorAll('body *')) {
+    const right = el.getBoundingClientRect().right;
+    // Sub-pixel rounding puts a full-width box a hair past its container.
+    if (right <= limit + 0.5) continue;
+    if (worst === undefined || right > worst.right) {
+      worst = { right, at: el.tagName.toLowerCase() + '.' + (el.getAttribute('class') ?? '') };
+    }
+  }
+  return { limit, scrollWidth: root.scrollWidth, worst };
+})()`;
+
+/**
+ * Fail unless the page fits its viewport in the given interaction state.
+ *
+ * @param {import('./browser.mjs').Page} page
+ * @param {string} state
+ * @returns {Promise<void>}
+ */
+const fitsNarrow = async (page, state) => {
+  const seen =
+    /** @type {{limit: number, scrollWidth: number, worst?: {right: number, at: string}}} */ (
+      await page.evaluate(OVERFLOW_PROBE)
+    );
+  if (seen.scrollWidth > seen.limit) {
+    fail(
+      `${NARROW}px ${state}: document scrolls to ${seen.scrollWidth}px in a ${seen.limit}px viewport`,
+    );
+  }
+  if (seen.worst !== undefined) {
+    fail(
+      `${NARROW}px ${state}: ${seen.worst.at} reaches ${Math.round(seen.worst.right)}px past ${seen.limit}px`,
+    );
+  }
 };
 
 /** Drives a real module worker in the page; a string keeps it out of Node's scope. */
@@ -172,6 +218,28 @@ try {
     }
   }
 
+  // U7-19 — the containment `pnpm presentation:check` asserts in CSS, measured in
+  // layout at the narrowest supported viewport. The static check cannot see a box
+  // that overflows for a reason other than an unbroken word.
+  const narrowPage = await browser.newPage({ viewport: { width: NARROW, height: 720 } });
+  narrowPage.on('pageerror', (error) => {
+    raised ??= `narrow viewport raised ${error.message}`;
+  });
+  await narrowPage.goto(builtUrl, { waitUntil: 'load', timeout: TIMEOUT });
+  await narrowPage.waitForSelector(READY, { timeout: TIMEOUT });
+  await fitsNarrow(narrowPage, 'idle');
+  await narrowPage.locator('[role="combobox"]').click();
+  await fitsNarrow(narrowPage, 'listbox open');
+  await narrowPage.locator('[role="option"]:first-of-type').click();
+  await narrowPage.getByRole('button', { name: 'Run' }).click();
+  // Engine-authored text is the whole risk, so measure once it is on screen.
+  await narrowPage.locator('section[aria-labelledby] .summary').waitFor({ timeout: TIMEOUT });
+  await fitsNarrow(narrowPage, 'answers rendered');
+  await narrowPage.locator('.canonical summary').click();
+  await fitsNarrow(narrowPage, 'canonical form open');
+  await narrowPage.locator('details.about summary').click();
+  await fitsNarrow(narrowPage, 'about open');
+
   // R40 — cancel delivery between solutions, in a real browser.
   const probe = /** @type {Record<string, unknown>} */ (await devPage.evaluate(CANCEL_PROBE));
   if (typeof probe.error === 'string') fail(`cancel probe: ${probe.error}`);
@@ -195,8 +263,9 @@ try {
 
   console.log(
     `browser-check: ok — dev ${dev.url} and built ${builtUrl} both report ${String(documents)} ` +
-      `documents; cancel delivered after ${String(solutions)} of up to ${String(probe.cap)} ` +
-      `solutions in ${Number(probe.elapsed).toFixed(0)} ms, engine still ${String(probe.after)}`,
+      `documents; five states fit ${String(NARROW)}px; cancel delivered after ${String(solutions)} ` +
+      `of up to ${String(probe.cap)} solutions in ${Number(probe.elapsed).toFixed(0)} ms, ` +
+      `engine still ${String(probe.after)}`,
   );
 } catch (cause) {
   // A browser timeout or a launcher fault must read as this check's own one-line

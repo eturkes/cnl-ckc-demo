@@ -225,10 +225,15 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   335ms** boot+load (437,132 B; `kb:reproduce` runs two forced builds in 8.741s).
   PVM is the shipping form, QLF
   the fallback. Concatenated `pl/` = 4,716,517 B raw, **169,571 B** gzip-9.
-- Production build at u7 = 14 files / **3,773,949 B** raw: worker 3,074,247 B +
-  PVM 437,132 B + 6 woff2 176,732 B + licences. The pre-u7 figure was 3,500,973 B
-  raw / 1,339,723 B gzip, before fonts and licences joined `dist/`. Re-measure
-  this whole line whenever a unit adds a shipped asset class.
+- Production build from u7 on = 14 files, **≈3.77 MB** raw, dominated by two blobs
+  neither the app nor a unit moves: worker ≈3.07 MB (swipl-wasm) + PVM 437,132 B.
+  Then 6 woff2 = **176,732 B** exactly, pinned by `presentation:check`, plus three
+  OFL texts and the app's own ≈71 kB of html/css/js. The raw total is the one
+  figure here that drifts on ANY source byte, so it is recorded to two decimals
+  and `du -sb dist` is what reports it — a durable exact total re-stales itself
+  every commit (M1 review U7-24, A089). Pre-u7 it was 3,500,973 B raw / 1,339,723 B
+  gzip, before fonts and licences joined `dist/`. Re-derive the file count and the
+  asset-class list whenever a unit ships a new class.
   No COOP/COEP needed. `loadImageDefault` uses
   direct `eval` → a strict CSP host is a live risk, owned by M4.
 - Engine: unified stack limit 1GiB (reducible), Emscripten heap ceiling 2GiB,
