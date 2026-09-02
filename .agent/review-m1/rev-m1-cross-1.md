@@ -14,14 +14,14 @@ Grade: `python3 -P .scratch/validate-report.py .agent/review-m1/rev-m1-cross-1.m
 | X06 | pass: abort propagates through controller, service, client, worker and session; tests prove one cancel post, listener removal and result-owned settlement | `tests/engine-cancel.test.ts:C3-C6`; `tests/demo-lifecycle.test.ts:R6` |
 | X07 | pass: every exported query-capable surface requires `BudgetSpec`; the UI alone calls it with the frozen `DEMO_BUDGET`, and omission fails validation | `src/demo/DemoController.svelte.ts:25-31,163`; `src/engine/client.ts:203-211` |
 | X08 | fail(low): the `&&` gate fails closed and out-of-gate reruns remain runnable, but memory records an obsolete chain that omits two current checks | `.agent/memory.md:37-51`; `package.json:14` |
-| X09 | fail(low): current main has 14 files / 3774137 B, not memory's 3773949 B; split remains clean and the old gzip figure is marked pre-u7 | `.agent/memory.md:228-231`; build census in `### X09` |
-| X10 | fail(low): both projects run all 16 committed files and 228 tests, but memory still reports obsolete 3-file/38-test and 58-test totals | `vite.config.ts:27-44`; `.agent/memory.md:57,156` |
+| X09 | pass: current main builds 14 files at about 3.77 MB, with zero engine markers in the main chunk and separate worker/PVM assets | `.agent/memory.md:242-249`; build census in `### X09` |
+| X10 | pass: node and DOM projects classify all 16 committed test files exactly once; the suite runs 228/228 and current gate memory reports 16/228 | `vite.config.ts:27-44`; `.agent/memory.md:68-71` |
 | X11 | pass: generated outputs are ignored, none are tracked, and slashless `node_modules`/`kb/generated` rules match real worktree symlinks | `.gitignore:1-24`; `git check-ignore -v node_modules kb/generated` |
 | X12 | fail(low): deny and Serena sets are correctly partitioned and enforcement works, but `Read(/coverage/**)` matches no real path in the current tree | `.claude/settings.json:3-13`; `.serena/project.yml:99-102` |
-| X13 | unknown | unknown |
-| X14 | unknown | unknown |
-| X15 | unknown | unknown |
-| X16 | unknown | unknown |
+| X13 | fail(med): core hashes, counts and current gate shape reproduce, but one gate total is stale and several runtime timings lack named instruments or browser counterparts | `.agent/memory.md:120-121,170,188-193,228-260` |
+| X14 | fail(med): project `CLAUDE.md` is dense and rule-focused, but 493-line memory retains review provenance, correction stories and package/code duplication | `.agent/memory.md:19,43-71,193,203,340`; `CLAUDE.md:1-57` |
+| X15 | fail(med): calibration arithmetic is correct, but roadmap omits session 6, lists three fixed check sets absent and disagrees with the ledger by 34 adjudicated rows | `.agent/roadmap.md:156-184`; `.agent/review-m1.md:18-33` |
+| X16 | fail(med): all 29 polish entries now carry acceptance and priority, but one is already closed and three roadmap `NOT verified` items have no open entry | `.agent/polish.md:16-19`; `.agent/roadmap.md:60-62,97-98,151-154` |
 | X17 | unknown | unknown |
 | X18 | unknown | unknown |
 | X19 | unknown | unknown |
@@ -79,15 +79,15 @@ Failure: `.agent/memory.md`'s fenced `pnpm gate` expansion omits `pnpm copy:chec
 
 ### X09
 
-Built in the review worktree with the current shared toolchain and generated assets. Observed 14 regular files / 3,774,068 file bytes, main-engine identifier hits 0 and worker hits 487. A read-only census of MAIN's current built `dist` observed the authoritative 14 files / 3,774,137 B; its CSS is 69 B larger than this branch build. Both measurements differ from memory's 3,773,949 B, so the durable exact figure is not current. The worker remains separate from the main chunk and the hashed PVM remains a distinct asset.
+Built in the review worktree with the current shared toolchain and generated assets. Observed 14 regular files / 3,774,068 file bytes, main-engine identifier hits 0 and worker hits 487. A read-only census of MAIN's current built `dist` observed 14 files / 3,774,137 B; the difference was a 69 B CSS delta while this review was concurrent with the u7 fix. Both satisfy the current durable claim: 14 files, approximately 3.77 MB, dominated by a separate ≈3.07 MB worker and 437,132 B PVM.
 
-Severity: low. Impact: agents using the exact build census as a regression oracle start from a false baseline; runtime behavior and split are unaffected. The only gzip figure is explicitly labelled `pre-u7`, so it satisfies the stale-label clause. Acceptance check: from current committed `main`, clean-build once, record the exact 14-file raw-byte census and instrument in memory, and make the same command reproduce it.
+MAIN commit `bc3576f` retired the drift-prone exact total, records `du -sb dist` as its instrument, and marks the old 3,500,973 B / 1,339,723 B gzip total explicitly pre-u7. The split and stale-label predicates therefore pass at current `main`.
 
 ### X10
 
 Current `main` tracks 16 test files. The node project includes `tests/**/*.test.ts` and excludes `*.dom.test.ts`; the DOM project includes exactly `tests/**/*.dom.test.ts`. Classification = 13 node + 3 DOM, with zero file excluded by both. I materialized current-main's added `tests/engine-recovery.test.ts` temporarily, linked the generated payload read-only, and ran `pnpm exec vitest run --reporter=dot`: 16/16 files and 228/228 tests passed, no skipped-file line.
 
-Failure is the reported total: `.agent/memory.md` still says `vitest 3 files / 38 tests` for the last clean-cache gate and later says `Gate rc=0 at 58 tests`; neither matches 16/228. Severity: low because Vitest discovers and runs the full suite correctly, but durable coverage claims misstate its size. Acceptance check: replace both historical-looking current claims with one instrumented 16-file/228-test current census, or mark each old number explicitly stale.
+MAIN commit `bc3576f` refreshed the active Gate claim to `vitest 16 files / 228 tests` and labels it M1-close shape that must be rerun rather than quoted. The `58 tests / 330 files` line remains inside the explicitly unit-scoped u2 history, not as the current suite total. Current discovery, execution and reporting agree.
 
 ### X11
 
@@ -101,19 +101,39 @@ Failure: disk census found real paths for 8 of 9 deny entries; `coverage/` does 
 
 ### X13
 
-unknown
+Walked current-main memory by section and reproduced its high-value live claims with package/source inspection, `pnpm kb:reproduce` (all three hashes), a clean build (14 files, main split clean), the complete Vitest census (16/228), the six-record bag catalog, and the 548-line walker branch. Package pins, PVM/QLF sizes, catalog hashes, current gate shape, current test shape and generated-asset split agree.
+
+**Stale:** `Engine runtime (u2)` still says `Gate rc=0 at 58 tests / 330 files` (`.agent/memory.md:170`); current M1-close shape is 16 files / 228 tests and 366 checked files. The unit heading explains provenance to a careful reader, but the sentence itself asserts an unqualified gate total.
+
+**Unverifiable as written:** no command, script, row or log is named for image/QLF live load 121/238 ms; display 0.0437 ms/binding; stack trip 0.681 ms and +0.346 ms/+0.30%; 100000-solution repeat 452.232 ms; worker/main timer 249.80/25.97 ms; corpus load 2806/3299/3578/213+724/335 ms; anti-hard-coding 796 ms; or catalog generation median 0.631 ms. These exact numbers cannot be regenerated from memory alone.
+
+**Node figures without a browser counterpart:** the load, display, stack/overhead, repeat, timer, corpus-load and anti-hard-coding measurements above. The cancellation/restart and heap sections do carry paired browser results; browser per-step granularity is explicitly marked unmeasured. **Unrun by this review:** full `pnpm gate`, `pnpm browser:check`, `pnpm smoke`, heap/hard-cancel probes, the SWI clause census and the 45-mutant runner; their commands or evidence branches are named, so they are unrun rather than unverifiable.
+
+Severity: med. Every future session reads this file, so one stale total plus instrument-free exact measurements repeatedly convert durable state into archaeology. Acceptance check: remove or explicitly historicize 58/330, attach a runnable instrument/evidence pointer to every exact measurement above, and pair each product-relevant Node runtime number with browser data or an explicit browser-unmeasured label.
 
 ### X14
 
-unknown
+`CLAUDE.md` is 57 lines / 11,574 B, dense, generalized and future-facing. A provenance/date/discovery scan found no authored violation; matches were the rules that prohibit those forms. It does not duplicate project implementation state.
+
+Memory is 493 lines / 32,882 B and fails the same rules. Provenance/correction narrative includes `Rejected:` (`:19`), review-row origin stories (`:43-71`), `The 62.00 ms figure had no source` (`:193`), `8 cascading failures before it was wired` (`:203`) and `The rejected alternative` (`:340`). No calendar date was found. Duplication includes exact dependency versions already owned by `package.json`, the full gate already owned by its script, protocol/worker implementation already stated in code comments, and volatile gate/build/test totals already owned by commands and history.
+
+Severity: med. The content is mostly technically valuable, but history and duplication inflate every session's attached state and helped stale X13/X15 claims survive. Acceptance check: retain only constraints, non-obvious current facts and runnable evidence; delete rejected-option/correction stories, package/script restatements and unit-era totals; move closed-review narrative to `.agent/archive/`.
 
 ### X15
 
-unknown
+Recomputed calibration: 226/130=1.74, 224/120=1.87 and 228/135=1.69; mean=1.7667→1.77. Then 75×1.77=132.75→133 and 145×1.77=256.65→257. Those arithmetic claims pass. Recorded gauges exist for u1, u2, u4-u7; u3 has no unit gauge.
+
+Current ledger coverage sums to 354 adjudicated rows: u1-u7=209, audit=137, cross-cutting=8. Roadmap stops at session 5's historical 320 and has no session 6 record, so it omits u7's 26 rows plus cross-cutting's 8. It still says u7 and cross-cutting are unenumerated (`.agent/roadmap.md:167-179`) while the ledger has u7 26/26 and cross 8/24. Its dispatch table also shows no fixed check set for u1, u6 or u7 (`:158,163-164`), although all three committed sets appear in ledger coverage. Session-5's 31-mutant/current-gate paragraph is not labelled historical and is superseded by 45 mutants and 16/228.
+
+Severity: med. Unit implementation statuses are DONE and calibration is sound, but the executable review resume point would dispatch completed u7 work and mis-size the remaining ledger. Acceptance check: add session 6 with u7=26 and cross=8 so total=354, mark cross 8/24 as the sole active surface, populate all seven check-set paths, record u3's missing gauge or state it unavailable, and label old session snapshots historical.
 
 ### X16
 
-unknown
+Parsed current-main polish into 29 entries: 29/29 contain `Accept:` and 29/29 contain `pri low|med|high`; MAIN's u7 fix closed the former register-wide field defect. Most remaining entries still describe open work.
+
+One entry is already closed: `Four-query byte differential` says only category-A is byte-proven, but `tests/questions-live.test.ts:183-196` byte-compares all four bag-exported ids through `committedResult`. The roadmap cross-index has three unmatched `NOT verified` items: u2 dev+built browser smokes are now closed by `pnpm browser:check` but remain in roadmap; u5's missing separate red suite has no polish entry; u7's missing separate red suite has no polish entry. The u5 real-browser half maps to `Combobox predicates are jsdom-only`; u6 boot recovery, u7 walker and u7 axe each map correctly.
+
+Severity: med. The register is structurally complete, but its sole consumer can spend a unit on already-shipped work while two explicitly deferred suites have no consumable unit. Acceptance check: remove the four-query entry; delete the now-closed u2 browser-smoke roadmap clause; add prioritized acceptance-bearing u5/u7 red-suite entries or strike each with a reason; then require every roadmap `NOT verified` clause to map one-to-one to an open register entry.
 
 ### X17
 
