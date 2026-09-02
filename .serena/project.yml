@@ -108,8 +108,10 @@ ls_additional_workspace_folders: []
 #     - "**/obj/**"
 # Note: global ignored_paths from serena_config.yml are also applied additively.
 # Committed, non-gitignored paths whose read cost exceeds their value. Gitignored caches
-# (node_modules/, dist/, coverage/, .serena/cache/) are already excluded by the gitignore flag
-# above and are listed in .claude/settings.json permissions.deny instead.
+# (node_modules/, dist/, .serena/cache/) are already excluded by the gitignore flag
+# above and are listed in .claude/settings.json permissions.deny instead. Every deny rule
+# must match a real path: a coverage/ pair was carried for output no script produces, and
+# both halves come back together when a --coverage run is configured (M1 review X12).
 ignored_paths: ['pnpm-lock.yaml', 'kb/*.tar.gz']
 
 # whether the project is in read-only mode

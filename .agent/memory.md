@@ -167,7 +167,8 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
 - Node has no DOM `Worker`, so `EngineSession` holds the logic with an injected
   image loader and `worker.ts` is message plumbing only. Tests drive the session.
 - Built output: main chunk carries 0 engine bytes; worker chunk plus a hashed
-  `kb-<hash>.pvm` carry it. Gate rc=0 at 58 tests / 330 files.
+  `kb-<hash>.pvm` carry it. The split is the durable claim; the gate reading that
+  first proved it (58 tests / 330 files) is a u2-era snapshot, not a current total.
 
 ## Budgets and cancellation (u3)
 
@@ -279,7 +280,7 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
 ## Scratch conventions
 
 - Artifacts a later mode dispatches from live in `.agent/contracts/`, committed;
-  `.scratch/` is gitignored and holds working state alone. Three files there are
+  `.scratch/` is gitignored and holds working state alone. Four files there are
   still an open polish entry's acceptance-check source and must survive until it
   closes: `agents/map-m1u1.md`, `agents/spike-m1u1-det.md`, `validate-report.py`,
   `verify-fixes.py`. Everything else below this bullet is regenerable.
@@ -302,11 +303,11 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   verdict into the finding cell, which must open `pass:` or `fail(low|med|high):`.
   Grading needs a sibling `<stem>.ids`; a seeded all-`unknown` skeleton exits 1,
   which is what makes it a usable deliverable-first counter.
-- MILESTONE-REVIEW ledger `.agent/review-m1.md` is HAND-MAINTAINED from here.
-  `.scratch/{seed,build}-ledger.py` generated its first shape from the committed
-  check sets and carry MAIN's session-1 rulings inline; both are scratch-local, so
-  treat the committed ledger as the source and re-derive a generator only if a
-  later session needs a bulk reshape.
+- A MILESTONE-REVIEW ledger is HAND-MAINTAINED after its first shape. M1's closed at
+  354 rows and now sits at `.agent/archive/review-m1.md`; `.scratch/{seed,build}-ledger.py`
+  generated that first shape from the committed check sets and carry MAIN's session-1
+  rulings inline. Both are scratch-local, so the committed ledger is the source and a
+  generator gets re-derived only for a bulk reshape.
 - Worktree toolchain env = symlink the primary `node_modules` into the worktree.
   `.gitignore` therefore spells `node_modules` without a trailing slash, since
   the slash form matches directories only and leaves the symlink untracked.

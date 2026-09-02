@@ -4,7 +4,6 @@
       "Read(/.serena/cache/**)",
       "Read(/node_modules/**)",
       "Read(/dist/**)",
-      "Read(/coverage/**)",
       "Read(/.vite/**)",
       "Read(/kb/**/*.tar.gz)",
       "Read(/kb/generated/**)",

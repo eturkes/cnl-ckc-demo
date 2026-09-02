@@ -8,7 +8,6 @@ kb/generated
 
 # Build output (Vite) + tool caches
 dist/
-coverage/
 *.tsbuildinfo
 .vite/
 
