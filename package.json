@@ -6,6 +6,7 @@
   "license": "Apache-2.0 WITH LLVM-exception",
   "description": "Demo: deterministic Prolog queries over the cnl-ckc clinical knowledge base, with proof-to-source traces and an entity graph.",
   "scripts": {
+    "browser:check": "node tools/browser-check.mjs",
     "build": "vite build",
     "check": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
     "contrast:check": "node tools/contrast.mjs",
