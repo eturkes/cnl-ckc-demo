@@ -291,6 +291,21 @@ describe('P4 cancellation', () => {
     expect(session.requestCancel('q-done')).toBe(false);
   });
 
+  it('P4.1 defers a cancel that outran its own query', async () => {
+    // The worker awaits between receiving a query message and entering `solve`, so a
+    // cancel can land while nothing is active. Dropping it runs the query to completion.
+    expect(session.requestCancel('q-early')).toBe(false);
+    const solved = await session.solve('between(1,1000000,X).', budget(), 'q-early');
+    expect(solved).toEqual({ kind: 'cancelled', solutions: [] });
+  });
+
+  it('P4.1 leaves a query untouched by a cancel aimed at another id', async () => {
+    expect(session.requestCancel('q-other')).toBe(false);
+    const solved = await session.solve('between(1,3,X).', budget(), 'q-unrelated');
+    expect(solved.kind).toBe('solutions');
+    if (solved.kind === 'solutions') expect(solved.solutions).toHaveLength(3);
+  });
+
   it('P4.3 leaves the engine usable after a cooperative cancel', async () => {
     await expectEngineSound();
   });
@@ -573,5 +588,36 @@ describe('P4 client lifecycle', () => {
     const worker = FakeWorker.live[0];
     worker?.reply({ id: worker.last.id, kind: 'ack', accepted: false });
     expect(await cancelling).toBe(false);
+  });
+});
+
+describe('P1 bounded runtime loading', () => {
+  it('P1.1 arms one deadline for a consult and discards the engine when it expires', async () => {
+    const armed = new Map<number, () => void>();
+    let next = 0;
+    const client = new EngineClient({
+      spawn: () => new FakeWorker() as unknown as Worker,
+      schedule: (fn) => {
+        const handle = ++next;
+        armed.set(handle, fn);
+        return handle;
+      },
+      cancelSchedule: (handle) => armed.delete(handle as number),
+    });
+    FakeWorker.live = [];
+    // A `:- Goal.` directive runs arbitrary Prolog, so an unbounded consult has no
+    // soft check, no watchdog and no cancel.
+    const loading = client.consult(':- repeat, fail.');
+    await settle();
+    expect(armed.size).toBe(1);
+    const worker = FakeWorker.live[0];
+    expect(worker?.last.kind).toBe('consult');
+    for (const fire of [...armed.values()]) fire();
+
+    expect(await loading).toMatchObject({ kind: 'error', error: { code: 'consult' } });
+    await settle();
+    expect(worker?.terminated).toBe(true);
+    expect(armed.size).toBe(0);
+    client.dispose();
   });
 });

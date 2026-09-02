@@ -91,6 +91,9 @@ const TOLERATED = /library\(shlib\)/;
  */
 const yieldToEvents = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
+/** Held cancels awaiting their query. Small: one session runs one query at a time. */
+const DEFERRED_CANCELS = 8;
+
 const message = (cause: unknown): string =>
   cause instanceof Error ? cause.message : String(cause);
 
@@ -117,6 +120,8 @@ export class EngineSession {
   #contract: EngineContract | undefined;
   #active: string | undefined;
   #cancelling = false;
+  /** Cancels that arrived before their query did; see `requestCancel`. */
+  readonly #deferred = new Set<string>();
   /** A failed runtime load leaves clauses resident, so its engine is never reused. */
   #poisoned: string | undefined;
   readonly #options: SessionOptions;
@@ -155,11 +160,24 @@ export class EngineSession {
    *
    * Returns whether the target was the request actually in flight; an unknown or
    * already-settled id is reported, not silently accepted.
+   *
+   * A cancel can still outrun its query, because the worker awaits between receiving
+   * the query message and entering `solve`. Such a target is held rather than dropped,
+   * so the matching `solve` starts already cancelling instead of running to completion.
    */
   requestCancel(target: string): boolean {
-    if (this.#active === undefined || this.#active !== target) return false;
-    this.#cancelling = true;
-    return true;
+    if (this.#active === target) {
+      this.#cancelling = true;
+      return true;
+    }
+    this.#deferred.add(target);
+    // A target that never arrives would accumulate forever, and only the newest can
+    // still be in flight. Holding an already-settled id costs nothing either, because
+    // the client mints ids monotonically and never reuses one.
+    if (this.#deferred.size > DEFERRED_CANCELS) {
+      this.#deferred.delete(this.#deferred.values().next().value as string);
+    }
+    return false;
   }
 
   /** Run one goal under its budget and return every solution decoded. */
@@ -177,15 +195,17 @@ export class EngineSession {
 
     const restore = this.#lowerStack(engine, budget.stackBytes);
     this.#active = id;
-    this.#cancelling = false;
+    this.#cancelling = this.#deferred.delete(id);
     const started = Date.now();
     const encode = createEncoder(engine.prolog);
     const solutions: PlSolution[] = [];
     const query = engine.prolog.query(wrapGoal(goal, budget));
     const iterator = query[Symbol.iterator]();
-    let stopped: LimitKind | 'cancelled' | undefined;
+    // A cancel held from before dispatch settles the run without proving a solution:
+    // the caller asked to stop before any answer existed.
+    let stopped: LimitKind | 'cancelled' | undefined = this.#cancelling ? 'cancelled' : undefined;
     try {
-      for (;;) {
+      while (stopped === undefined) {
         const step = iterator.next();
         // A final solution can arrive together with `done: true`; reading `value`
         // before `done` is what keeps the last answer.

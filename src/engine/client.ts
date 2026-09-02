@@ -36,6 +36,16 @@ export type BootOutcome =
  */
 const HARD_GRACE_MS = 500;
 
+/**
+ * Hard bound on a runtime load.
+ *
+ * A `:- Goal.` directive runs arbitrary Prolog inside the live engine, so `consult`
+ * needs a watchdog for exactly the reason a query does — it has no soft check between
+ * solutions and no cancel. Set far above the 2806 ms a full 337-file corpus consult
+ * measures, because only a runaway directive should ever reach it.
+ */
+const CONSULT_DEADLINE_MS = 10_000;
+
 interface Pending {
   resolve: (response: EngineResponse) => void;
   generation: number;
@@ -238,8 +248,16 @@ export class EngineClient {
   async consult(
     source: string,
   ): Promise<{ kind: 'consulted' } | { kind: 'error'; error: EngineError }> {
-    const response = await this.#send({ kind: 'consult', source });
+    const response = await this.#send({ kind: 'consult', source }, CONSULT_DEADLINE_MS);
     if (response.kind === 'consulted') return { kind: 'consulted' };
+    // The watchdog already terminated the worker, so the load neither completed nor
+    // left a usable engine — the same discard a diagnostic earns.
+    if (response.kind === 'limit') {
+      return {
+        kind: 'error',
+        error: { code: 'consult', message: `runtime load exceeded ${CONSULT_DEADLINE_MS} ms` },
+      };
+    }
     return {
       kind: 'error',
       error:

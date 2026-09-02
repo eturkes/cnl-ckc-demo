@@ -100,9 +100,35 @@ class ScriptWorker {
     this.terminated = true;
   }
 
-  reply(response: EngineResponse): void {
-    for (const listener of this.#listeners.get('message') ?? []) listener({ data: response });
+  emit(type: string, event: unknown): void {
+    for (const listener of this.#listeners.get(type) ?? []) listener(event);
   }
+
+  reply(response: EngineResponse): void {
+    this.emit('message', { data: response });
+  }
+
+  get last(): EngineRequest {
+    const request = this.seen.at(-1);
+    if (request === undefined) throw new Error('worker received nothing');
+    return request;
+  }
+}
+
+/** Injected clock: nothing fires until the test says so, and armed timers stay countable. */
+class Clock {
+  readonly armed = new Map<number, { handle: number; fn: () => void }>();
+  #next = 0;
+
+  readonly schedule = (fn: () => void): unknown => {
+    const handle = ++this.#next;
+    this.armed.set(handle, { handle, fn });
+    return handle;
+  };
+
+  readonly cancel = (handle: unknown): void => {
+    this.armed.delete(handle as number);
+  };
 }
 
 const liveClient = (): { client: EngineClient; worker: LiveWorker } => {
@@ -122,6 +148,24 @@ const scriptedClient = (): { client: EngineClient; workers: ScriptWorker[] } => 
     }),
     workers,
   };
+};
+
+const clockedClient = (
+  prepare: (worker: ScriptWorker) => void = () => undefined,
+): { client: EngineClient; workers: ScriptWorker[]; clock: Clock } => {
+  const workers: ScriptWorker[] = [];
+  const clock = new Clock();
+  const client = new EngineClient({
+    spawn: () => {
+      const worker = new ScriptWorker();
+      prepare(worker);
+      workers.push(worker);
+      return worker as unknown as Worker;
+    },
+    schedule: clock.schedule,
+    cancelSchedule: clock.cancel,
+  });
+  return { client, workers, clock };
 };
 
 describe('signal-bound cancellation', () => {
@@ -271,5 +315,68 @@ describe('signal-bound cancellation', () => {
     } finally {
       client.dispose();
     }
+  });
+});
+
+// Lifecycle branches the happy-path worker mock never reaches: each is a settlement
+// path that only a hostile transport or a retired generation can drive.
+describe('worker lifecycle events', () => {
+  it('C8 settles every in-flight caller once on `messageerror`', async () => {
+    const { client, workers, clock } = clockedClient();
+    const first = client.query('true.', budget());
+    const second = client.query('fail.', budget());
+    await delay();
+    expect(clock.armed.size).toBe(2);
+    workers[0]?.emit('messageerror', {});
+    for (const outcome of await Promise.all([first, second])) {
+      expect(outcome).toMatchObject({
+        kind: 'error',
+        error: { code: 'worker', message: 'client could not deserialize a response' },
+      });
+    }
+    expect(clock.armed.size).toBe(0);
+    client.dispose();
+  });
+
+  it('C9 settles typed when `postMessage` throws, leaving no armed timer', async () => {
+    const { client, clock } = clockedClient((worker) => {
+      // A payload the structured clone algorithm refuses never reaches the worker.
+      worker.postMessage = (): never => {
+        throw new Error('structured clone failed');
+      };
+    });
+    expect(await client.query('true.', budget())).toMatchObject({
+      kind: 'error',
+      error: { code: 'protocol' },
+    });
+    expect(clock.armed.size).toBe(0);
+    client.dispose();
+  });
+
+  it('C10 ignores a watchdog left over from a retired generation', async () => {
+    const { client, workers, clock } = clockedClient();
+    const violations: string[] = [];
+    client.onProtocolViolation = (error) => violations.push(error.message);
+    const first = client.query('true.', budget());
+    await delay();
+    const stale = [...clock.armed.values()][0];
+    void client.reset('probe');
+    await delay();
+    expect(await first).toMatchObject({ kind: 'error', error: { code: 'worker' } });
+
+    const replacement = workers[1];
+    const boot = replacement?.seen.find((request) => request.kind === 'boot');
+    if (boot === undefined) throw new Error('replacement boot was not posted');
+    replacement?.reply({ id: boot.id, kind: 'booted', contract: manifest.contract });
+    const second = client.query('true.', budget());
+    await delay();
+    // The retired generation's timer body still exists; firing it must not settle,
+    // terminate or violate anything belonging to the live generation.
+    stale?.fn();
+    expect(replacement?.terminated).toBe(false);
+    replacement?.reply({ id: replacement.last.id, kind: 'failure' });
+    expect(await second).toEqual({ kind: 'failure' });
+    expect(violations).toEqual([]);
+    client.dispose();
   });
 });
