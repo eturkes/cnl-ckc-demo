@@ -1,0 +1,86 @@
+
+ RUN  v4.1.11 /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u1-1
+
+xxxxx
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |node| tests/kb-live.test.ts > generated runtime payload > has been built
+AssertionError: run pnpm kb:build first: expected undefined to be defined
+ ❯ tests/kb-live.test.ts:22:49
+     20| describe('generated runtime payload', () => {
+     21|   it('has been built', () => {
+     22|     expect(manifest, 'run pnpm kb:build first').toBeDefined();
+       |                                                 ^
+     23|     for (const entry of manifest?.assets ?? []) {
+     24|       expect(existsSync(join(GENERATED_DIR, entry.path)), `${entry.pat…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |node| tests/kb-live.test.ts > generated runtime payload > records only values it observed
+AssertionError: expected undefined to deeply equal { schemaVersion: 1, documents: 337 }
+
+- Expected:
+{
+  "documents": 337,
+  "schemaVersion": 1,
+}
+
++ Received:
+undefined
+
+ ❯ tests/kb-live.test.ts:29:32
+     27|
+     28|   it('records only values it observed', () => {
+     29|     expect(manifest?.contract).toEqual({ schemaVersion: SCHEMA_VERSION…
+       |                                ^
+     30|     expect(manifest?.input.files).toBe(DOCUMENTS);
+     31|     expect(manifest?.assets.map((entry) => entry.kind).sort()).toEqual…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |node| tests/kb-live.test.ts > generated runtime payload > loads the saved state into a live engine
+Error: ENOENT: no such file or directory, open '/run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u1-1/kb/generated/kb.pvm'
+ ❯ asset tests/kb-live.test.ts:18:45
+     16|
+     17| const manifest = loadManifest();
+     18| const asset = (name: string): Uint8Array => readFileSync(join(GENERATE…
+       |                                             ^
+     19|
+     20| describe('generated runtime payload', () => {
+ ❯ tests/kb-live.test.ts:38:42
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |node| tests/kb-live.test.ts > generated runtime payload > loads the forced QLF fallback into a live engine
+Error: ENOENT: no such file or directory, open '/run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u1-1/kb/generated/kb.qlf'
+ ❯ asset tests/kb-live.test.ts:18:45
+     16|
+     17| const manifest = loadManifest();
+     18| const asset = (name: string): Uint8Array => readFileSync(join(GENERATE…
+       |                                             ^
+     19|
+     20| describe('generated runtime payload', () => {
+ ❯ tests/kb-live.test.ts:49:40
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |node| tests/kb-live.test.ts > generated runtime payload > refuses a truncated saved state instead of booting a partial engine
+Error: ENOENT: no such file or directory, open '/run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u1-1/kb/generated/kb.pvm'
+ ❯ asset tests/kb-live.test.ts:18:45
+     16|
+     17| const manifest = loadManifest();
+     18| const asset = (name: string): Uint8Array => readFileSync(join(GENERATE…
+       |                                             ^
+     19|
+     20| describe('generated runtime payload', () => {
+ ❯ tests/kb-live.test.ts:59:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed (5)
+   Start at  16:15:28
+   Duration  663ms (transform 108ms, setup 0ms, import 139ms, tests 52ms, environment 0ms)
+

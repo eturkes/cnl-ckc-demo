@@ -1,0 +1,48 @@
+{
+  "manifestVersion": 2,
+  "source": {
+    "bag": "cnl-ckc-kb-g952cc950a0c6.tar.gz",
+    "sha256": "465741ae9defc0ea619748d63e6168087c194423132422d116487b12865035f0",
+    "bagitVersion": "1.0",
+    "payloadFiles": 1041,
+    "tagFiles": 5
+  },
+  "input": {
+    "files": 337,
+    "bytes": 4740529,
+    "sha256": "021d1220c6a0ed0e2fce8129f0539b73d2d43029958c068277aa8abcea17cf8d"
+  },
+  "toolchain": {
+    "swiplWasm": "8.0.7",
+    "prolog": "10.1.13"
+  },
+  "catalog": {
+    "queryFiles": 4,
+    "sha256": "6cbb890920dd41bdad8645b9ce5b8b3c94a0bfc8030464e4a14addd9b9ed8e1c",
+    "entries": 6
+  },
+  "assets": [
+    {
+      "kind": "pvm",
+      "path": "kb.pvm",
+      "bytes": 437132,
+      "sha256": "3ae8d455d87501fb3c65299b51f8d3e9a6a968754f82d65b59f306d26f855a1e"
+    },
+    {
+      "kind": "qlf",
+      "path": "kb.qlf",
+      "bytes": 2168708,
+      "sha256": "62bc61cc7d0edf216d37c784dfe4d6f7a49469fcf50c459642a9508335936a12"
+    },
+    {
+      "kind": "catalog",
+      "path": "question-catalog.json",
+      "bytes": 3337,
+      "sha256": "a38e74d9f5189b5bf709e927bdcc70ed5de3fd671599a988a18e63879dcafe6d"
+    }
+  ],
+  "contract": {
+    "schemaVersion": 1,
+    "documents": 337
+  }
+}

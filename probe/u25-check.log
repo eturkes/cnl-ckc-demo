@@ -1,0 +1,2 @@
+kb:asset-check failed —
+  no manifest at kb/generated/kb-manifest.json; run pnpm kb:build
