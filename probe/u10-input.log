@@ -1,0 +1,8 @@
+payload pl/ files       = 337 (manifest input.files = 337)
+recomputed input bytes  = 4740529 (manifest = 4740529)
+recomputed input sha256 = 021d1220c6a0ed0e2fce8129f0539b73d2d43029958c068277aa8abcea17cf8d
+manifest  input.sha256  = 021d1220c6a0ed0e2fce8129f0539b73d2d43029958c068277aa8abcea17cf8d
+MATCH = true
+sorted order is code-fixed: first=data/guidelines/cdc-2022-opioid/pl/cdc2022-opioid-rec01-imp01.pl  last=data/guidelines/cdc-2022-opioid/pl/cdc2022-opioid-s9-05.pl
+reversed-order digest differs = true
+marker-free digest differs   = true

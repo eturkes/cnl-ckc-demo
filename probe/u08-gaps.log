@@ -1,0 +1,10 @@
+  digest-mismatch          <- Q12 edited manifest digest
+  other:unexpected end of file <- Q14 truncated gzip (half)
+  other:unexpected end of file <- Q14 truncated gzip (header only)
+  other:unexpected end of file <- Q16 zero-length input
+  no-end-marker            <- Q16 gzip of zero bytes
+  no-end-marker            <- Q15 truncated tar (gzip re-cut)
+  dotdot-segment           <- Q19 a/../a/../a literal
+  ACCEPTED                 <- Q17 NUL in long name
+  unsupported-typeflag     <- Q5 block device typeflag 4
+  (sanity: DECL/NOTICE/BODY 54/7/29, sha live=true, raw=96)
