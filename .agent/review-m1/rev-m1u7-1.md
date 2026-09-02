@@ -14,10 +14,10 @@ Grade: `python3 -P .scratch/validate-report.py .agent/review-m1/rev-m1u7-1.md --
 | U7-06 | pass: The checker parses `:root`, implements WCAG sRGB luminance and ratio math, floors results, and grades a declared table. | `tools/contrast.mjs:31-126` |
 | U7-07 | pass: All 17 declared pairs pass category-specific thresholds; independent samples include border on surface at a floored 3.41:1. | `pnpm contrast:check`; `tools/contrast.mjs:31-60` |
 | U7-08 | pass: Undefined, malformed, empty-table, and orphan-token mutants each exited 1 with a cause-specific diagnostic, then restored byte-exactly. | `node tools/contrast.mjs`; `tools/contrast.mjs:104-120` |
-| U7-09 | unknown | unknown |
-| U7-10 | unknown | unknown |
-| U7-11 | unknown | unknown |
-| U7-12 | unknown | unknown |
+| U7-09 | pass: A muted-text mutant exited 1 and named all three failing pairs; restoration returned 17 passing pairs and the original hash. | `pnpm contrast:check`; `src/app.css:99` |
+| U7-10 | pass: The h1 resolves to D7 byte-for-byte, while the visible-copy census found no milestone, unit, TODO, filename, or catalog-id leak. | `src/App.svelte:48`; `src/demo/copy.ts:23` |
+| U7-11 | pass: The lede states current Prolog execution and live answers; no visible copy claims traces, provenance, graphs, or networks. | `src/demo/copy.ts:25-28`; `src/App.svelte` |
+| U7-12 | pass: U7 prose is centralized in the two copy records; the validator covers every record plus describe.ts at distinct limits and preserves 1.1. | `src/demo/copy.ts`; `tools/copy-check.mjs:23-126` |
 | U7-13 | unknown | unknown |
 | U7-14 | unknown | unknown |
 | U7-15 | unknown | unknown |
@@ -85,19 +85,27 @@ Command: four `node tools/contrast.mjs` mutant runs. Observed: rc 1 for all four
 
 ### U7-09
 
-unknown
+Changed `--text-muted` from `#545d66` to `#b0b0b0` under a `try/finally` harness. `pnpm contrast:check` exited 1 and named `--text-muted` on `--surface` (1.97:1), `--surface-raised` (2.13:1), and `--surface-sunken` (1.8:1). Restoring the token returned rc 0 with `contrast: 17 pairs pass`; the restored file matched its original SHA-256.
+
+Command: the Python mutation harness invoking `pnpm contrast:check` before and after restoration. Observed: mutant rc 1, three named real pairs, restored rc 0, byte restoration true, and clean `git status --porcelain` rc 0.
 
 ### U7-10
 
-unknown
+Compared `src/demo/copy.ts:23` with D7 and followed `src/App.svelte:48` to the rendered h1. The bytes match `Controlled Natural Language - Clinical Knowledge Compiler (CNL CKC) Demo`. A source census for `M1`–`M4`, unit ids, `TODO`, filenames, and catalog ids found only implementation imports, ids, types, or comments; rendered components expose question text, not catalog ids.
+
+Command: the Python wordmark equality check, `/usr/bin/rg` source census, and direct component inspection. Observed: `wordmark_exact True`; no banned marker occurs in `INSTRUCTIONS` or `DESCRIPTIONS`; raw-source hits are non-visible code/comments.
 
 ### U7-11
 
-unknown
+Read the lede and every panel-bound copy entry. It says the demo runs Prolog against a compiled knowledge base and that answers are live, not stored. Case-insensitive scans of the actual copy strings found zero `trace`, `provenance`, `graph`, or `network` terms. App, Answer, and About panels bind those copy records and add no future-feature claim.
+
+Command: copy-record scan plus direct reads of `src/App.svelte`, `src/demo/AnswerPanel.svelte`, and `src/demo/AboutPanel.svelte`. Observed: no M2 trace or M3 graph claim on the shipped surface.
 
 ### U7-12
 
-unknown
+Censused u7's diff from `d5017dd` to `672f334` and current component literals. U7-added prose renders through `INSTRUCTIONS` or `DESCRIPTIONS`; existing short control labels remain in their components, generated questions remain catalog payload, and state wording remains in `src/demo/describe.ts` as the explicit validator exception. `tools/copy-check.mjs` lists both copy-record buckets at 20/25 words and `describe.ts` at 25, rejects an empty extraction, and replaces digit-dot-digit with a sentinel before sentence splitting.
+
+Command: `pnpm copy:check`, source/diff census, and validator inspection. Observed: rc 0 with `copy: 81 strings pass`; four instruction keys and 15 description keys were present; `1.1.` stays one sentence by the `U+E000` path.
 
 ### U7-13
 
