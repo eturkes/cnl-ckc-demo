@@ -26,17 +26,17 @@ Evidence = a path, a `file:line`, or a backticked command that reruns.
 | E13 | pass: live `1 rdiv 3` decoded as numerator 1 and denominator 3 with display `1r3`; normalized `3 rdiv 1` decoded and displayed as integer `3`, never as `1r3` | `tests/engine-session.test.ts:216`; `src/engine/terms.ts:72` |
 | E14 | pass: live atom and string bindings with identical text retained distinct tags; an unbound variable stayed explicit, and both arguments of `f(V,V)` decoded with the same variable id | `src/engine/terms.ts:61-102`; runtime probe 3/3 passed |
 | E15 | pass: the live integer `123456789012345678901234567890` remained exact as bigint; live `1.0` arrived as integer 1, and the decode-site contract explicitly declares that wrapper deviation | `src/engine/terms.ts:54-69`; `.agent/polish.md` Integral floats |
-| E16 | unknown | unknown |
+| E16 | fail(med): `src/engine/terms.ts:141` round-trips 20/20 ground shapes and the exact five-argument guideline id, but live `f(A,A)` re-query returns two different variable ids — breached P3.7 and invariant I — shared-variable semantics change across the term boundary — acceptance: preserve alias identity through encode and make the E16 live probe pass | `python3 -P probe/e16_shared_roundtrip.py` → ids 2009 and 2011 |
 | E17 | pass: worker-owned `EngineSession` decodes each native result before constructing `PlSolution`; no native value is retained or re-entered, and fresh class-backed terms use the ruled constructors | `src/engine/session.ts`; `src/engine/terms.ts`; `.agent/memory.md` Engine runtime |
 | E18 | fail(low): `src/engine/terms.ts:97` rejects unknown `$t` but accepts every non-bindings `$tag` object as a dict, contrary to this row's required fail-closed probe — breached P3.11 under the check-set reading — an unsupported wrapper object can enter the DTO union — acceptance: reject the synthetic unsupported dict and make the E18 probe pass | `python3 -P probe/e18_unknown_dict.py` → second assertion did not throw |
 | E19 | fail(med): `src/engine/session.ts:335` the gate accepts `JSON.stringify` over a native query result — breached P3.12 — the measured arity and rational corruption path can be reintroduced without deterministic detection — acceptance: add a production static barrier whose mutant makes `pnpm gate` nonzero | `python3 -P probe/e19_json_stringify.py` → rc 1 after green gate |
-| E20 | unknown | unknown |
-| E21 | unknown | unknown |
-| E22 | unknown | unknown |
-| E23 | unknown | unknown |
+| E20 | pass: production display uses only `term_string/3` with all three required options; 20/20 adversarial live terms re-read as variants, with exact quoting for dollar, hyphenated, mixed-case, empty, quoted, and operator cases | `src/engine/session.ts:48,354`; live display corpus 20/20 passed |
+| E21 | pass: committed tests load the generated PVM, read schema and document counts from the engine, compare them to the manifest, and independently bind that manifest to schema 1 and 337 without an engine-output fixture | `tests/engine-session.test.ts:23-117`; targeted live tests 5/5 passed |
+| E22 | fail(med): `tests/engine-session.test.ts:122` proves seven category-A solutions through internal `EngineSession.solve`, not the shipped `EngineClient` surface; no committed test combines the real PVM, client query, and seven-result assertion — breached P5.2 and G2 — client correlation or worker plumbing can regress while the claimed end-to-end proof stays green — acceptance: commit a real-image `EngineClient.query` test asserting seven solutions and make the E22 census pass | `python3 -P probe/e22_shipped_client_live.py` → rc 1 |
+| E23 | pass: the committed overlay declares all four static predicates dynamic, injects a complete proof, and asserts changed serialized output; replacing runtime consult with a no-op makes that exact test red | `python3 -P probe/e23_overlay_mutant.py` → rc 0 after test failure |
 | E24 | pass: asset check found no answer-oracle or sibling reach; planted controls failed for each forbidden class, while this repository's `../cnl-ckc-demo` prefix remained accepted | `pnpm kb:asset-check`; `tools/kb/check.mjs` |
-| E25 | unknown | unknown |
-| E26 | unknown | unknown |
+| E25 | pass: with `kb/generated` absent, `pnpm test` returned rc 1 with 9 failed files, 6 failed and 36 passed tests, and no skipped live case; failures named the missing manifest, PVM, and QLF | `pnpm test` with `kb/generated` moved aside → rc 1 |
+| E26 | fail(med): clean-generation `pnpm gate` is green and emitted paths are correctly excluded, but P6.2 still has no committed real-browser proof that reads 337 from both dev server and built output — breached P6.2 and G3 — the milestone's two deployment modes remain assertion-only — acceptance: commit one browser script that boots both modes, reads 337 from each, and make the E26 evidence probe pass | `python3 -P probe/e26_browser_evidence.py` → rc 1; clean gate 187/187 |
 | E27 | fail(med): `tests/engine-session.test.ts:187` the committed engine suites omit 8 of 19 term cases and 5 of 8 protocol cases, although `EngineSession.handle` is directly driveable — breached Q and invariant I — regressions in the omitted traps can pass the suite — acceptance: add all 13 named cases and make the census probe exit 0 | `python3 -P probe/e27_corpus_census.py` → rc 1, 13/27 absent |
 | E28 | fail(low): `src/engine/terms.ts:144` and the production scan ledger lack deterministic checks for the E11 and E19 mechanical rules; the C1 concern set and no-data engine split otherwise hold — breached `CLAUDE.md` Engineering — per-file assurance overstates what the gate owns — acceptance: close E11 and E19, then rerun both mutants plus `pnpm build` | `probe/e11_exhaustiveness.py`; `probe/e19_json_stringify.py`; built worker 3074438 B |
 
@@ -58,6 +58,10 @@ The client registers parent-side `error` and `messageerror` listeners and their 
 
 `python3 -P probe/e11_exhaustiveness.py` adds a sentinel `PlTerm` variant, updates the unrelated exhaustive `TYPE_RANK`, runs `pnpm check`, and restores both files. The command exits 1 because the checker reports zero errors. `createEncoder` can therefore fall through its switch and return `undefined` for a newly decoded variant.
 
+### E16
+
+A live battery re-queried 20 ground shapes, including the full `'$guideline_id'/5`; all were byte-structure equal after decode and encode. The variable case failed separately: direct decode preserved both occurrences of `A`, but re-query returned ids 2009 and 2011. `python3 -P probe/e16_shared_roundtrip.py` reproduces the alias split.
+
 ### E18
 
 `python3 -P probe/e18_unknown_dict.py` proves the unknown `$t` branch throws but `{ $tag: 'unsupported', field: 1 }` decodes as a `dict`. The fixed row requires both to throw. The Register records the conflict with the memory's broader `$tag`-dict ABI statement.
@@ -65,6 +69,14 @@ The client registers parent-side `error` and `messageerror` listeners and their 
 ### E19
 
 `python3 -P probe/e19_json_stringify.py` inserts `JSON.stringify(raw)` between a native `query(...).once()` and `decodeOnce`, runs the complete gate, and restores `session.ts`. All 195 tests and the full gate pass, so comments alone protect the measured corruption path.
+
+### E22
+
+The seven-result test calls the internal session helper directly. Client lifecycle tests use scripted workers, and live tests use `EngineSession`; no committed case joins the two. The later browser smoke uses the shipped client for a different question and does not assert seven category-A solutions.
+
+### E26
+
+`rm -rf kb/generated && pnpm gate` returned rc 0: 356 files, zero diagnostics, 187 tests, and 3 assets. `pnpm kb:reproduce` also returned rc 0. `kb/generated`, `.vite`, and `dist` are gitignored and denied from reads; Serena correctly omits those gitignored caches from `ignored_paths`. Current browser evidence is the built-static-output `pnpm smoke` from u6. It neither drives the Vite dev server nor reads the 337 count in both modes; the open polish entry states the same limit. No browser or port was launched in this review wave, as required by the shared-resource assignment.
 
 ### E27
 
