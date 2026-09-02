@@ -14,10 +14,10 @@ Grade: `python3 -P .scratch/validate-report.py .agent/review-m1/rev-m1-cross-1.m
 | X06 | pass: abort propagates through controller, service, client, worker and session; tests prove one cancel post, listener removal and result-owned settlement | `tests/engine-cancel.test.ts:C3-C6`; `tests/demo-lifecycle.test.ts:R6` |
 | X07 | pass: every exported query-capable surface requires `BudgetSpec`; the UI alone calls it with the frozen `DEMO_BUDGET`, and omission fails validation | `src/demo/DemoController.svelte.ts:25-31,163`; `src/engine/client.ts:203-211` |
 | X08 | fail(low): the `&&` gate fails closed and out-of-gate reruns remain runnable, but memory records an obsolete chain that omits two current checks | `.agent/memory.md:37-51`; `package.json:14` |
-| X09 | unknown | unknown |
-| X10 | unknown | unknown |
-| X11 | unknown | unknown |
-| X12 | unknown | unknown |
+| X09 | fail(low): current main has 14 files / 3774137 B, not memory's 3773949 B; split remains clean and the old gzip figure is marked pre-u7 | `.agent/memory.md:228-231`; build census in `### X09` |
+| X10 | fail(low): both projects run all 16 committed files and 228 tests, but memory still reports obsolete 3-file/38-test and 58-test totals | `vite.config.ts:27-44`; `.agent/memory.md:57,156` |
+| X11 | pass: generated outputs are ignored, none are tracked, and slashless `node_modules`/`kb/generated` rules match real worktree symlinks | `.gitignore:1-24`; `git check-ignore -v node_modules kb/generated` |
+| X12 | fail(low): deny and Serena sets are correctly partitioned and enforcement works, but `Read(/coverage/**)` matches no real path in the current tree | `.claude/settings.json:3-13`; `.serena/project.yml:99-102` |
 | X13 | unknown | unknown |
 | X14 | unknown | unknown |
 | X15 | unknown | unknown |
@@ -79,19 +79,25 @@ Failure: `.agent/memory.md`'s fenced `pnpm gate` expansion omits `pnpm copy:chec
 
 ### X09
 
-unknown
+Built in the review worktree with the current shared toolchain and generated assets. Observed 14 regular files / 3,774,068 file bytes, main-engine identifier hits 0 and worker hits 487. A read-only census of MAIN's current built `dist` observed the authoritative 14 files / 3,774,137 B; its CSS is 69 B larger than this branch build. Both measurements differ from memory's 3,773,949 B, so the durable exact figure is not current. The worker remains separate from the main chunk and the hashed PVM remains a distinct asset.
+
+Severity: low. Impact: agents using the exact build census as a regression oracle start from a false baseline; runtime behavior and split are unaffected. The only gzip figure is explicitly labelled `pre-u7`, so it satisfies the stale-label clause. Acceptance check: from current committed `main`, clean-build once, record the exact 14-file raw-byte census and instrument in memory, and make the same command reproduce it.
 
 ### X10
 
-unknown
+Current `main` tracks 16 test files. The node project includes `tests/**/*.test.ts` and excludes `*.dom.test.ts`; the DOM project includes exactly `tests/**/*.dom.test.ts`. Classification = 13 node + 3 DOM, with zero file excluded by both. I materialized current-main's added `tests/engine-recovery.test.ts` temporarily, linked the generated payload read-only, and ran `pnpm exec vitest run --reporter=dot`: 16/16 files and 228/228 tests passed, no skipped-file line.
+
+Failure is the reported total: `.agent/memory.md` still says `vitest 3 files / 38 tests` for the last clean-cache gate and later says `Gate rc=0 at 58 tests`; neither matches 16/228. Severity: low because Vitest discovers and runs the full suite correctly, but durable coverage claims misstate its size. Acceptance check: replace both historical-looking current claims with one instrumented 16-file/228-test current census, or mark each old number explicitly stale.
 
 ### X11
 
-unknown
+Read every `.gitignore` rule, checked tracked ignored files with `git ls-files -ci --exclude-standard` (empty), and inspected ignored status after builds. Real worktree `.vite/` and `node_modules` are ignored. A temporary `kb/generated` symlink was also ignored; `git check-ignore -v` identified the slashless rules at `.gitignore:2,7`, proving the memory rationale against actual symlink objects. Primary-tree `dist`, `.scratch`, `.vite`, local settings and Headroom marker exist and match their classes. Dormant `coverage/`, `.probe/` and `CLAUDE.local.md` rules name documented optional outputs/overrides rather than stale tracked artifacts. Worktree status returned clean after every temporary artifact was removed.
 
 ### X12
 
-unknown
+Parsed `.claude/settings.json` as 326 B / 9 deny entries and `.serena/project.yml` as two `ignored_paths`. The partition is correct: tracked, non-gitignored `pnpm-lock.yaml` and `kb/*.tar.gz` appear in both; gitignored cache/generated/local paths appear only in deny. `.serena/.gitignore` owns `/cache`, so `ignore_all_files_in_gitignore: true` excludes it without duplication. A primary-root `Read(pnpm-lock.yaml)` was denied, while `Read(CLAUDE.md)` succeeded.
+
+Failure: disk census found real paths for 8 of 9 deny entries; `coverage/` does not exist anywhere in the current primary tree. That breaches X12's explicit every-rule-matches-a-real-path predicate even though the rule is semantically plausible for future coverage output. Severity: low. Impact: the synced-pair claim overstates present disk correspondence but denies no required-readable path. Acceptance check: either create and document the coverage producer/path, or remove `coverage/` from both `.gitignore` and deny until such output exists; then require 9/9 real matches and repeat the denied/readable controls.
 
 ### X13
 
