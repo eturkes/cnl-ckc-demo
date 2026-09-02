@@ -24,15 +24,16 @@ Grade: `python3 -P .scratch/validate-report.py .agent/review-m1/rev-m1u5-1.md --
 | I16 | pass: direct and nested option targets resolve to the owning option, emit its id once, close and restore host focus | nested-target probe pass; `src/questions/QuestionCombobox.svelte:165-175` |
 | I17 | pass: open, keyboard and typeahead active changes each scroll only the new option once with nearest alignment; clamp is silent | receiver-count probe pass; `src/questions/QuestionCombobox.svelte:41-46` |
 | I18 | pass: mixed printable, arrow, keyboard and pointer commits emit only catalog ids, while a frozen selected prop keeps displayed text unchanged | fuzz-sequence probe pass; `tests/question-combobox.dom.test.ts:350-361` |
-| I19 | unknown | unknown |
-| I20 | unknown | unknown |
-| I21 | unknown | unknown |
+| I19 | pass: axe reports zero violations closed and open; each state enumerates only `color-contrast` as incomplete | axe probe 1/1; closed/open=`violations:[]`, `incomplete:[color-contrast]` |
+| I20 | pass: warning-fatal Svelte check reports 359 files, zero errors and warnings; eslint-plugin-svelte has 86 rules and zero a11y rules | `pnpm check` rc=0; `package.json:10`; plugin census=86/0 |
+| I21 | pass: the exact controlled prop pair imports only catalog data; its complete two-edge graph reaches JSON, never engine, service or worker code | `src/questions/QuestionCombobox.svelte:9-18`; forbidden graph scan rc=1, positive control rc=0 |
 | I22 | unknown | unknown |
 | I23 | unknown | unknown |
-| I24 | unknown | unknown |
-| I25 | unknown | unknown |
+| I24 | pass: node and DOM projects run independently with the required exclusion and browser condition; the lock resolves jsdom exactly 29.1.1 | `vite.config.ts:15-22`; node=11 files/151 tests, dom=2 files/47 tests, both rc=0; `pnpm-lock.yaml:2236` |
+| I25 | pass: one listbox-scoped suppression names the emitted warning exactly, and removing pointer handlers leaves all keyboard commit cases green | `src/questions/QuestionCombobox.svelte:196-207`; no-ignore check=1 named warning; keyboard probe=3/3 |
+
 | I26 | unknown | unknown |
-| I27 | unknown | unknown |
+| I27 | pass: all five prescribed mutations turn the full DOM project red and every source mutation restores byte-identically before the next run | mutation rc=1 each: S7, K6, K9, B1, S5/S6; `tests/question-combobox.dom.test.ts:91-360` |
 | I28 | unknown | unknown |
 
 ## Details
