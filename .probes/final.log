@@ -1,0 +1,21 @@
+
+ RUN  v4.1.11 /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2
+
+·
+@@LEDGER
+c04/c20 D4 prefixRows=7 flatRows=7 identicalBytes=true goalBytes=311/281
+c07 empty object => rejected: budget stackBytes must be a positive safe integer, got undef
+c07 undefined => rejected: budget spec is missing
+c07 null => rejected: budget spec is missing
+c07 answerCap 0 => rejected: budget answerCap must be a positive safe integer, got 0
+c07 negative wall clock => rejected: budget wallClockMs must be a positive safe integer, got -1
+c07 non-integer depth => rejected: budget depth must be a positive safe integer, got 1.5
+c07 valid BUDGET_MAX => accepted
+@@END
+··
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  14:13:48
+   Duration  669ms (transform 74ms, setup 0ms, import 101ms, tests 390ms, environment 0ms)
+

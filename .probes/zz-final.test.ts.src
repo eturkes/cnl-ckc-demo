@@ -1,0 +1,83 @@
+// Final review probes: D4 term identity (c04/c20) and real budget validation (c07).
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { describe, expect, it } from 'vitest';
+
+import { BUDGET_MAX, validateBudget } from '../src/engine/budget.js';
+import type { BudgetSpec } from '../src/engine/protocol.js';
+import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
+import { QUESTION_CATALOG } from '../src/questions/catalog.js';
+import { serializeAnswer } from '../src/questions/serialize.js';
+
+const require = createRequire(import.meta.url);
+const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
+const read = (n: string): Buffer => readFileSync(join(ROOT, 'kb', 'generated', n));
+const manifest = JSON.parse(read('kb-manifest.json').toString('utf8')) as {
+  contract: { schemaVersion: number; documents: number };
+};
+const ledger: string[] = [];
+const note = (l: string): void => void ledger.push(l);
+const diagnostics: string[] = [];
+const loadImage: ImageLoader = async (image) => {
+  const factory = require('swipl-wasm/dist/loadImageDefault.js') as
+    | ((i: Uint8Array) => (o?: Record<string, unknown>) => Promise<Engine>)
+    | { default: (i: Uint8Array) => (o?: Record<string, unknown>) => Promise<Engine> };
+  const load = typeof factory === 'function' ? factory : factory.default;
+  return load(image)({ printErr: (line: string) => diagnostics.push(line) });
+};
+
+// wt/spike-m1u4-gen 65f496a emits the flattened infix form; D4 chose the bag-verbatim
+// prefix form and rests on both parsing to the identical term. Measured, not assumed.
+const SPIKE_FLAT =
+  "guideline_entity(actual,A,recommendation,countable),guideline_cardinality(actual,A,na,eq,1)," +
+  "guideline_entity(actual,B,'category-A-recommendation',countable),guideline_cardinality(actual,B,na,eq,1)," +
+  'guideline_event(actual,C,be),guideline_arg(actual,C,1,A),guideline_arg(actual,C,2,B)';
+
+describe('final probes', () => {
+  it('D4: flattened infix and bag-verbatim prefix are the same query', async () => {
+    const session = new EngineSession({
+      loadImage,
+      drain: () => diagnostics.splice(0),
+      expected: manifest.contract,
+    });
+    await session.boot(new Uint8Array(read('kb.pvm')));
+    const entry = QUESTION_CATALOG['category-a-recommendations'];
+    const prefix = await session.solve(entry.goal, BUDGET_MAX, 'prefix');
+    const flat = await session.solve(SPIKE_FLAT, BUDGET_MAX, 'flat');
+    const rows = (o: typeof prefix): number => (o.kind === 'solutions' ? o.solutions.length : -1);
+    const text = (o: typeof prefix): string =>
+      o.kind === 'solutions' ? serializeAnswer(entry, o.solutions) : `<${o.kind}>`;
+    note(
+      `c04/c20 D4 prefixRows=${rows(prefix)} flatRows=${rows(flat)} identicalBytes=${text(prefix) === text(flat)} ` +
+        `goalBytes=${Buffer.byteLength(entry.goal)}/${Buffer.byteLength(SPIKE_FLAT)}`,
+    );
+  }, 240_000);
+
+  it('c07: the real budget validator rejects absent and out-of-range specs', () => {
+    for (const [label, spec] of [
+      ['empty object', {}],
+      ['undefined', undefined],
+      ['null', null],
+      ['answerCap 0', { ...BUDGET_MAX, answerCap: 0 }],
+      ['negative wall clock', { ...BUDGET_MAX, wallClockMs: -1 }],
+      ['non-integer depth', { ...BUDGET_MAX, depth: 1.5 }],
+      ['valid BUDGET_MAX', BUDGET_MAX],
+    ] as [string, unknown][]) {
+      let out = 'accepted';
+      try {
+        validateBudget(spec as BudgetSpec);
+      } catch (error) {
+        out = `rejected: ${(error instanceof Error ? error.message : String(error)).slice(0, 60)}`;
+      }
+      note(`c07 ${label} => ${out}`);
+    }
+  });
+
+  it('prints', () => {
+    process.stdout.write(`\n@@LEDGER\n${ledger.join('\n')}\n@@END\n`);
+    expect(ledger.length).toBeGreaterThan(0);
+  });
+});
