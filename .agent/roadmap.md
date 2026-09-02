@@ -166,6 +166,16 @@ spot-check, cross-cutting and `audit-m1` ⇒ size MILESTONE-REVIEW at ~3–4 ses
 Judgment-review ledger = `.agent/review-m1.md` (committed, read first by every resumed
 MILESTONE-REVIEW session); reviewer reports = `.agent/review-m1/`.
 
+Session 2 adjudicated **12 rows** (u3 R01/R07/R08/R28/R29/R30, u4 c19-c24 — **u4 is
+complete at 24/24**) and closed all six session-1 defects with fixes at `61fdd78`, each
+red under a mutant that removes it (`.scratch/verify-fixes.py`, 6/6). It also seeded u1's
+30-row check set at `.agent/contracts/m1u1-rev-checkset.md`. Five new accepted defects
+carry into session 3: R01, R08, R28, R29, c19 (c24 rides on c19). Cost:
+`main=90% 216K/240K` at the close commit, `mate=87% 208K/240K` (rev-m1u3-3). `rev-m1u3-3` saturated at 6 of
+20 rows; `rev-m1u4-3` finished its 6 and flushed the u1 census, and the difference was
+census-first ordering. Size session 3 at two teammates, one unit each, every check set
+seeded before dispatch.
+
 Session 1 adjudicated **180 rows**: u3 25/45, u4 18/24, `audit-m1` 137/137. Six accepted
 defects are QUEUED FOR SESSION 2 with acceptance checks in the ledger — R03 (a cap equal
 to the solution count reports `answer-cap`), R09 (a heap limit does not recreate the

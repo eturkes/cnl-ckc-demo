@@ -16,32 +16,44 @@ restores each pre-fix behaviour and reruns the closing test, 6/6 RED.
 
 | unit | tier | check set | rows | adjudicated | session |
 | --- | --- | --- | --- | --- | --- |
-| u1 | kernel | not enumerated | ? | 0 | pending |
+| u1 | kernel | `.agent/contracts/m1u1-rev-checkset.md` | 30 | 0 | seeded s2 |
 | u2 | kernel | not enumerated | ? | 0 | pending |
-| u3 | kernel | `.agent/contracts/m1u3-rev-checkset.md` | 45 | 25 | 1 |
-| u4 | kernel | `.agent/contracts/m1u4-rev-checkset.md` | 24 | 18 | 1 |
+| u3 | kernel | `.agent/contracts/m1u3-rev-checkset.md` | 45 | 31 | 1, 2 |
+| u4 | kernel | `.agent/contracts/m1u4-rev-checkset.md` | 24 | **24 complete** | 1, 2 |
 | u5 | kernel | not enumerated | ? | 0 | pending |
 | u6 | kernel | not enumerated | ? | 0 | pending |
 | u7 | docs | not enumerated (spot-check grade) | ? | 0 | pending |
 | cross-cutting | — | not enumerated | ? | 0 | pending |
 | audit-m1 | — | `.agent/review-m1/audit-m1.ids`, self-enumerated | 137 | 137 | 1 |
 
-Session 2 resume point = u3 rows still `unknown`, then u4, then enumerate u1, u2,
-u5, u6, u7 and cross-cutting. Successors inherit branches `wt/rev-m1u3-2` and
-`wt/rev-m1u4-2`, which hold every probe and red test the reports cite.
+Session 3 resume point = the 30 seeded u1 rows, then the 14 u3 rows still `unknown`
+(R14, R33-R45), then enumerate u2, u5, u6, u7 and cross-cutting. Successors inherit
+branches `wt/rev-m1u3-3` `2ce9e23` and `wt/rev-m1u4-3` `d7d23a2`, which hold every
+probe and red test the session-2 reports cite — including the u3 browser harness and
+the ready `zz-reach.test.ts.src` that closes c19.
+
+Open accepted defects carried into session 3, each with its acceptance check above:
+R01, R08, R28, R29 (u3) and c19 (u4, with c24 riding on it). Session 2 fixed the six
+session-1 defects instead; sizing says one session closes roughly six.
+
+`rev-m1u3-3` saturated at 87% with 6 of 20 rows written, repeating the wave-1 failure
+of u7 and review session 1 — three flush directives across three sessions have now all
+landed late. The shape that works is the one `audit-m1` and `rev-m1u4-3` used: flush the
+whole census first, then fill rows in place. Seed it for the reviewer rather than asking
+for it, and cap a reviewer at one unit.
 
 ## Rows — u3, u4
 
 | unit | reviewer | row | verdict | evidence | acceptance check |
 | --- | --- | --- | --- | --- | --- |
-| u3 | — | R01 | unknown | — | — |
+| u3 | rev-m1u3-3 | R01 | accepted fail(low) | `.agent/review-m1/rev-m1u3-3.md` R01 | `EngineClient.consult` arms a deadline, or the public client surface stops exposing it — a `:- Goal.` directive runs unbounded today, though c07 proves no `src/questions/` or `src/demo/` path reaches it |
 | u3 | rev-m1u3-2 | R02 | pass | `.agent/review-m1/rev-m1u3-2.md` R02 | — |
 | u3 | rev-m1u3-2 | R03 | fixed(low) | `tests/engine-budgets.test.ts` "P2.5 reads an exact-fit cap as honest exhaustion" | a cap equal to the solution count returns `solutions`, not `answer-cap` — green, and red under mutant `R03` |
 | u3 | rev-m1u3-2 | R04 | pass | `.agent/review-m1/rev-m1u3-2.md` R04 | — |
 | u3 | rev-m1u3-2 | R05 | pass | `.agent/review-m1/rev-m1u3-2.md` R05 | — |
 | u3 | rev-m1u3-2 | R06 | pass | `.agent/review-m1/rev-m1u3-2.md` R06 | — |
-| u3 | — | R07 | unknown | — | — |
-| u3 | — | R08 | unknown | — | — |
+| u3 | rev-m1u3-3 | R07 | pass | `.agent/review-m1/rev-m1u3-3.md` R07 | — |
+| u3 | rev-m1u3-3 | R08 | accepted fail(med) | `.agent/review-m1/rev-m1u3-3.md` R08 | a cancel posted before `solve` sets `#active` still settles `cancelled`; today `requestCancel` acks `accepted:false` and the query runs to completion |
 | u3 | rev-m1u3-2 | R09 | fixed(med) | `tests/engine-budgets.test.ts` "P2.7 terminates and recreates the worker after a heap limit" | `limit:'heap'` terminates and recreates the worker before the outcome lands; the replacement re-verifies `manifest.contract` and serves the next query — green, red under mutant `R09` |
 | u3 | rev-m1u3-2 | R10 | pass | `.agent/review-m1/rev-m1u3-2.md` R10 | — |
 | u3 | rev-m1u3-2 | R11 | fixed(low) | injected `kind:'probe'` variant → `pnpm check` rc 1, `protocol.ts:111` + `client.ts:231` both `not assignable to type 'never'` | a new `EngineResponse` variant fails `pnpm check` at `isTerminal` AND `EngineClient.query` |
@@ -61,9 +73,9 @@ u5, u6, u7 and cross-cutting. Successors inherit branches `wt/rev-m1u3-2` and
 | u3 | rev-m1u3-2 | R25 | pass | `.agent/review-m1/rev-m1u3-2.md` R25 | — |
 | u3 | rev-m1u3-2 | R26 | rejected — contract defect | `.agent/review-m1/rev-m1u3-2.md` R26 | memory records the 3 undeclared calls; `swipl-wasm` pinned exact; a version bump re-verifies them |
 | u3 | rev-m1u3-2 | R27 | pass | `.agent/review-m1/rev-m1u3-2.md` R27 | — |
-| u3 | — | R28 | unknown | — | — |
-| u3 | — | R29 | unknown | — | — |
-| u3 | — | R30 | unknown | — | — |
+| u3 | rev-m1u3-3 | R28 | accepted fail(low) | `.agent/review-m1/rev-m1u3-3.md` R28 | a real-PVM heap trip test, or the contract records heap as unit-tested by design — the R09 fix added a fake-worker recreation test, not a live trip |
+| u3 | rev-m1u3-3 | R29 | accepted fail(low) | `.agent/review-m1/rev-m1u3-3.md` R29 | `messageerror`, a `postMessage` failure and a stale watchdog from a retired generation each get a committed test; the three are green on `wt/rev-m1u3-3` `2ce9e23` |
+| u3 | rev-m1u3-3 | R30 | pass | `.agent/review-m1/rev-m1u3-3.md` R30 | — |
 | u3 | rev-m1u3-2 | R31 | pass | `.agent/review-m1/rev-m1u3-2.md` R31 | — |
 | u3 | rev-m1u3-2 | R32 | pass | `.agent/review-m1/rev-m1u3-2.md` R32 | — |
 | u3 | — | R33 | unknown | — | — |
@@ -97,12 +109,12 @@ u5, u6, u7 and cross-cutting. Successors inherit branches `wt/rev-m1u3-2` and
 | u4 | rev-m1u4-2 | c16 | pass | `.agent/review-m1/rev-m1u4-2.md` c16 | — |
 | u4 | rev-m1u4-2 | c17 | pass | `.agent/review-m1/rev-m1u4-2.md` c17 | — |
 | u4 | rev-m1u4-2 | c18 | pass | `.agent/review-m1/rev-m1u4-2.md` c18 | — |
-| u4 | — | c19 | unknown | — | — |
-| u4 | — | c20 | unknown | — | — |
-| u4 | — | c21 | unknown | — | — |
-| u4 | — | c22 | unknown | — | — |
-| u4 | — | c23 | unknown | — | — |
-| u4 | — | c24 | unknown | — | — |
+| u4 | rev-m1u4-3 | c19 | accepted fail(med) | `.agent/review-m1/rev-m1u4-3.md` c19 | commit the reviewer's `.probes/zz-reach.test.ts.src` (or its equivalent) as `tests/kb-reach.test.ts`: green at base, red under a never-matching `ANSWERS` pattern and under `PRODUCTION_ROOTS=['public']` |
+| u4 | rev-m1u4-3 | c20 | pass (after `61fdd78`) | `.agent/review-m1/rev-m1u4-3.md` c20 + `.scratch/verify-fixes.py` | the byte-sort mutant leg is the c12 defect and now turns `pnpm test` red under MAIN's own rerun; provenance audit and both spike replays were already clean |
+| u4 | rev-m1u4-3 | c21 | pass | `.agent/review-m1/rev-m1u4-3.md` c21 | — |
+| u4 | rev-m1u4-3 | c22 | pass | `.agent/review-m1/rev-m1u4-3.md` c22 | — |
+| u4 | rev-m1u4-3 | c23 | pass | `.agent/review-m1/rev-m1u4-3.md` c23 | — |
+| u4 | rev-m1u4-3 | c24 | accepted fail(low) — duplicate of c19 | `.agent/review-m1/rev-m1u4-3.md` c24 | closes on c19's acceptance check; the authoring ledger over all 14 touched files is clean and the c12 half is already fixed |
 
 ## Rows — audit-m1
 

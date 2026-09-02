@@ -103,3 +103,10 @@ Off-spine improvements. Each entry carries the acceptance check that closes it.
   the claim does not rerun from committed state (M1 review session 2). Accept: a
   committed mutation runner takes a mutant table, restores every file it touches, and
   a documented command reproduces the 6/6 kill result from a clean checkout. `pri` med.
+- **Humanizer label test asserts its own artifact** — `tests/questions-live.test.ts:294`
+  matches `/^\S+ — sentence \d+, \w+ \d+$/u`, a grammar that exists only in
+  `src/questions/humanize.ts`, so the expectation comes from the artifact under test.
+  D8 constrains only what the humanizer may not know, so no external oracle exists
+  (M1 review c20 register). Accept: the contract states the label grammar and the test
+  cites it, or the test drops the shape assertion and keeps the `not.toContain` gloss
+  checks that carry the real force. `pri` low.

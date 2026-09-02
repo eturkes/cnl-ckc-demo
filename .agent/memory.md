@@ -240,8 +240,11 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
 - Artifacts a later mode dispatches from live in `.agent/contracts/`, committed;
   `.scratch/` is gitignored and holds working state alone. Three files there are
   still an open polish entry's acceptance-check source and must survive until it
-  closes: `agents/map-m1u1.md`, `agents/spike-m1u1-det.md`, `validate-report.py`.
-  Everything else below this bullet is regenerable.
+  closes: `agents/map-m1u1.md`, `agents/spike-m1u1-det.md`, `validate-report.py`,
+  `verify-fixes.py`. Everything else below this bullet is regenerable.
+- `.scratch/verify-fixes.py` = the mutation runner behind the six `fixed` ledger rows:
+  each mutant restores one pre-fix behaviour, reruns that fix's closing test, and must
+  print RED. Restores every file it touches. Rerun = `python3 -P .scratch/verify-fixes.py`.
 - `.scratch/kb/` = the vendored bag extracted for agent reading:
   `tar xzf kb/cnl-ckc-kb-*.tar.gz -C .scratch/ && ln -sfn cnl-ckc-kb-* .scratch/kb`.
 - `.scratch/validate-report.py` grades wave reports (`--units N`, `--verdict`).
