@@ -18,7 +18,7 @@ Grade: `python3 -P .scratch/validate-report.py .agent/review-m1/rev-m1-cross-1.m
 | X10 | pass: node and DOM projects classify all 16 committed test files exactly once; the suite runs 228/228 and current gate memory reports 16/228 | `vite.config.ts:27-44`; `.agent/memory.md:68-71` |
 | X11 | pass: generated outputs are ignored, none are tracked, and slashless `node_modules`/`kb/generated` rules match real worktree symlinks | `.gitignore:1-24`; `git check-ignore -v node_modules kb/generated` |
 | X12 | fail(low): deny and Serena sets are correctly partitioned and enforcement works, but `Read(/coverage/**)` matches no real path in the current tree | `.claude/settings.json:3-13`; `.serena/project.yml:99-102` |
-| X13 | fail(med): core hashes, counts and current gate shape reproduce, but one gate total is stale and several runtime timings lack named instruments or browser counterparts | `.agent/memory.md:120-121,170,188-193,228-260` |
+| X13 | fail(med): core hashes and current gate shape reproduce, but two claims are stale and several runtime timings lack named instruments or browser counterparts | `.agent/memory.md:120-121,170,188-193,281-289` |
 | X14 | fail(med): project `CLAUDE.md` is dense and rule-focused, but 493-line memory retains review provenance, correction stories and package/code duplication | `.agent/memory.md:19,43-71,193,203,340`; `CLAUDE.md:1-57` |
 | X15 | fail(med): calibration arithmetic is correct, but roadmap omits session 6, lists three fixed check sets absent and disagrees with the ledger by 34 adjudicated rows | `.agent/roadmap.md:156-184`; `.agent/review-m1.md:18-33` |
 | X16 | fail(med): all 29 polish entries now carry acceptance and priority, but one is already closed and three roadmap `NOT verified` items have no open entry | `.agent/polish.md:16-19`; `.agent/roadmap.md:60-62,97-98,151-154` |
@@ -26,10 +26,10 @@ Grade: `python3 -P .scratch/validate-report.py .agent/review-m1/rev-m1-cross-1.m
 | X18 | fail(low): all 42 M1-era subjects state cause and fix, but seven omit the `(M1…)` trace and disappear from the documented grep's 35 hits | `git log main 79233c3^..main`; `.agent/roadmap.md:256` |
 | X19 | fail(low): domain render/budget/error logic is properly distinct, but built-browser setup and cleanup remain duplicated between `smoke` and `browser-check` despite a shared module | `tools/smoke.mjs:53-109`; `tools/browser-check.mjs:173-279` |
 | X20 | fail(low): non-obvious decisions usually carry reasons, but at least seven comments retain review provenance and ten file headers merely restate their module's purpose | `tools/engine-check.mjs:1,26,136`; `tools/kb/check.mjs:40,51` |
-| X21 | unknown | unknown |
-| X22 | unknown | unknown |
-| X23 | unknown | unknown |
-| X24 | unknown | unknown |
+| X21 | fail(med): shipped UI copy observes the human/machine boundary and ASD register, but the repository has no human-facing README or entry document | `src/demo/copy.ts`; `git ls-tree --name-only main` |
+| X22 | fail(low): required pins and sections hold with no deprecations, but `cytoscape` is an unused production dependency while M3 remains unplanned | `package.json:27-50`; `git grep -F cytoscape main -- src tools tests` rc 1 |
+| X23 | fail(med): a clean clone has no committed setup path, Node/pnpm prerequisite, package-manager version or install/run command; execution cannot begin as written | root tree census; `package.json:1-25` |
+| X24 | fail(med): validator, mutator and visual walker have rerun/port records, but five browser claims and two research branches lack a scheduled committed evidence port | `.agent/memory.md:281-318`; `.agent/polish.md:68-75,95-99` |
 
 ### X01
 
@@ -103,7 +103,7 @@ Failure: disk census found real paths for 8 of 9 deny entries; `coverage/` does 
 
 Walked current-main memory by section and reproduced its high-value live claims with package/source inspection, `pnpm kb:reproduce` (all three hashes), a clean build (14 files, main split clean), the complete Vitest census (16/228), the six-record bag catalog, and the 548-line walker branch. Package pins, PVM/QLF sizes, catalog hashes, current gate shape, current test shape and generated-asset split agree.
 
-**Stale:** `Engine runtime (u2)` still says `Gate rc=0 at 58 tests / 330 files` (`.agent/memory.md:170`); current M1-close shape is 16 files / 228 tests and 366 checked files. The unit heading explains provenance to a careful reader, but the sentence itself asserts an unqualified gate total.
+**Stale:** `Engine runtime (u2)` still says `Gate rc=0 at 58 tests / 330 files` (`.agent/memory.md:170`); current M1-close shape is 16 files / 228 tests and 366 checked files. The unit heading explains provenance to a careful reader, but the sentence itself asserts an unqualified gate total. Scratch conventions also says `Three files` must survive, then names four (`map-m1u1.md`, `spike-m1u1-det.md`, `validate-report.py`, `verify-fixes.py`; `:281-285`).
 
 **Unverifiable as written:** no command, script, row or log is named for image/QLF live load 121/238 ms; display 0.0437 ms/binding; stack trip 0.681 ms and +0.346 ms/+0.30%; 100000-solution repeat 452.232 ms; worker/main timer 249.80/25.97 ms; corpus load 2806/3299/3578/213+724/335 ms; anti-hard-coding 796 ms; or catalog generation median 0.631 ms. These exact numbers cannot be regenerated from memory alone.
 
@@ -171,16 +171,32 @@ Severity: low. No correctness risk; the breach is recurring token cost and prove
 
 ### X21
 
-unknown
+Enumerated consumption-time surfaces. Human-facing UI = generated six question labels; `copy.ts` framing/instructions/disclosures/licence labels; `describe.ts` state/error/answer wording; inline `Answer`, `Choose an answer`, `Run`, `Cancel`, `Retry`; About/footer links; and externally supplied OFL texts. Current copy/presentation gates plus u7's fixed review cover sentence limits, banned filler, role labels, framing claims and descriptor output. The shipped prose is direct, active and terminology-stable; generated question text remains payload and legal licence text remains upstream text.
+
+Machine/code surfaces are correctly separate: protocol `kind`/error codes, manifest/catalog JSON fields, request logs, diagnostics and validator failure codes are not rewritten as prose contracts. No UI string exposes those payload names except deliberately rendered error/limit codes.
+
+Failure: the root tree contains no `README*`, docs directory or other reader entry document. The only Markdown outside `.agent/` is `CLAUDE.md`, which instructs agents rather than a user consuming the demo. Severity: med because the shipped app itself is readable, but a person landing on the repository receives neither purpose nor launch/use guidance. Acceptance check: add a human-facing README that states the demo's scope/limits and links to the run path, using ≤20-word instructions and ≤25-word descriptions.
 
 ### X22
 
-unknown
+Read current `package.json`, lock resolution and import/config sites. `swipl-wasm` is exact `8.0.7`; TypeScript `^5.9.3` cannot cross major 6 and stays under the `<6.1` cap; `@types/cytoscape` is absent; jsdom resolves exactly 29.1.1 and its `^29.1.1` range cannot cross to incompatible 30. Runtime font packages and swipl live in dependencies; linters, compilers, tests and DOM tooling live in devDependencies. Package-manager deprecation fields were empty.
+
+`pnpm outdated --format json` reported six: `@types/node` 26.4.0→26.4.1, `globals` 17.11.0→17.12.0, `typescript-eslint` 8.68.0→8.69.0 (compatible maintenance drift); jsdom 29.1.1→30.0.1 (held for Node incompatibility); swipl-wasm 8.0.7→8.1.1 (held exact by R26); TypeScript 5.9.3→7.0.2 (held by the supported cap). None is deprecated.
+
+Failure: `cytoscape ^3.34.2` has no import or tool/test use (`git grep` rc 1 with an axe import as positive control). M3 is unplanned, so it is installed today only for future scope. Severity: low; tree-shaking keeps it out of `dist`, but install surface and dependency policy are needlessly wider. Acceptance check: remove `cytoscape` from package and lock until M3 starts, run the gate, and separately review the three compatible outdated dev-tool updates.
 
 ### X23
 
-unknown
+Walked every committed top-level file as a fresh user. There is no README/docs setup path. `package.json` exposes scripts but declares no `packageManager`, `engines`, Node version, pnpm prerequisite, dependency-install command, generated-KB step or recommended dev/preview command. `CLAUDE.md` is agent policy and `.agent/**` is internal project state, not a user setup contract.
+
+Therefore no clean-clone execution was possible **as written**: the first step is absent before any command can be tested. This review's successful builds/tests relied on the machine's pre-existing pnpm, Node and shared `node_modules` symlink, which a clean clone does not have.
+
+Severity: med. A knowledgeable contributor can infer `pnpm install`, but X23 requires only committed instructions and every prerequisite stated. Acceptance check: commit a README plus `packageManager`/`engines`; from a dependency-free clone follow only that path through `pnpm install --frozen-lockfile`, generated-asset build, `pnpm dev` (or preview), and one stated verification command, with no unstated global tool except the declared Node/package-manager pair.
 
 ### X24
 
-unknown
+Enumerated durable scratch/branch evidence. Good pairs: mutation claim → `.scratch/verify-fixes.py` command + `Mutation harness is scratch-local` port entry; report grading → `.scratch/validate-report.py` command + validator-port acceptance inside `Report validator splits on escaped pipes`; u1 partial reports → named files + `Finish the u1 wave-1 reports`; visual-QA evidence → `wt/map-m1u7` copy/run recipe + typed-port polish entry. Both scratch scripts and all named branches exist. Seed/build-ledger scripts no longer back a claim because the committed hand-maintained ledger is explicitly authoritative.
+
+Failure: `tools/probe-u3.mjs` on `wt/rev-m1u3-4` backs durable R38/R39/R41/R42/R45 browser claims. Memory gives a copy/run command but no scheduled committed port; the R45 product-fix entry does not port the evidence harness. Likewise `wt/res-m1-1` and `wt/res-m1-2` back stack/tooling/dependency measurements but carry only branch summaries, with neither per-probe regeneration commands nor a port schedule.
+
+Severity: med. Branches currently survive, so evidence is recoverable, but deletion makes seven claim families non-rerunnable from committed state. Acceptance check: commit or schedule one typed browser harness covering R38/R39/R41/R42/R45, and either port the still-authoritative `res-m1-*` probes with commands or prune every durable claim that relies on them. The report validator run at review close is the required live recorded-path check.
