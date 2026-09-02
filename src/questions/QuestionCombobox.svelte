@@ -233,7 +233,7 @@
     font-size: 0.8rem;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--ink-soft);
+    color: var(--text-muted);
   }
 
   .control {
@@ -246,9 +246,9 @@
     box-sizing: border-box;
     width: 100%;
     padding: 0.65rem 2.2rem 0.65rem 0.75rem;
-    border: 1px solid var(--rule);
+    border: 1px solid var(--border);
     border-radius: 0.25rem;
-    background: var(--field, #fff);
+    background: var(--surface-raised);
     font-family: var(--font-prose);
     font-size: 1rem;
     line-height: 1.4;
@@ -256,19 +256,19 @@
   }
 
   .box:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--action);
     outline-offset: 1px;
   }
 
   .box.prompt {
-    color: var(--ink-soft);
+    color: var(--text-muted);
   }
 
   .caret {
     position: absolute;
     top: 0.7rem;
     right: 0.8rem;
-    color: var(--ink-soft);
+    color: var(--text-muted);
     pointer-events: none;
   }
 
@@ -281,9 +281,9 @@
     overflow-y: auto;
     margin: 0;
     padding: 0.25rem;
-    border: 1px solid var(--rule);
+    border: 1px solid var(--border);
     border-radius: 0.25rem;
-    background: var(--field, #fff);
+    background: var(--surface-raised);
     list-style: none;
   }
 
@@ -295,8 +295,8 @@
   }
 
   .list li.active {
-    background: var(--accent);
-    color: var(--field, #fff);
+    background: var(--action);
+    color: var(--action-text);
   }
 
   .list li[aria-selected='true']::after {

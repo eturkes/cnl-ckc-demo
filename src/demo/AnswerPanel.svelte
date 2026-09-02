@@ -6,6 +6,7 @@
   // stop and the arrow keys without a line of script. Every cell renders text the
   // engine itself produced, so nothing here reconstructs Prolog syntax.
 
+  import { DESCRIPTIONS } from './copy.js';
   import type { AnswerRow } from './describe.js';
 
   interface Props {
@@ -63,16 +64,20 @@
     </dl>
   {/if}
 
+  <!-- The engine's own text, kept behind a disclosure: it is the evidence that
+       the answer came from a proof, not the answer a reader came to read. -->
   {#if serialized !== ''}
-    <p class="canonical">
-      Canonical Prolog answer: <code>{serialized}</code>
-    </p>
+    <details class="canonical">
+      <summary>{DESCRIPTIONS.prologSummary}</summary>
+      <p>{DESCRIPTIONS.prolog}</p>
+      <code>{serialized}</code>
+    </details>
   {/if}
 </section>
 
 <style>
   section {
-    border-top: 1px solid var(--rule);
+    border-top: 1px solid var(--border);
     margin-top: 1.5rem;
     padding-top: 1rem;
   }
@@ -83,7 +88,7 @@
     font-size: 1rem;
     letter-spacing: 0.02em;
     text-transform: uppercase;
-    color: var(--ink-soft);
+    color: var(--text-muted);
   }
 
   .summary {
@@ -94,7 +99,7 @@
 
   fieldset {
     margin: 0 0 1rem;
-    border: 1px solid var(--rule);
+    border: 1px solid var(--border);
     border-radius: 0.25rem;
     padding: 0.5rem 0.75rem 0.75rem;
   }
@@ -103,7 +108,7 @@
     padding: 0 0.35rem;
     font-family: var(--font-ui);
     font-size: 0.8rem;
-    color: var(--ink-soft);
+    color: var(--text-muted);
   }
 
   label {
@@ -116,15 +121,29 @@
     overflow-wrap: anywhere;
   }
 
+  /* Label above value while the viewport is narrow, label beside value once
+     there is room for a column that does not squeeze the engine's own text. */
   dl {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.15rem 1rem;
     margin: 0 0 1rem;
+  }
+
+  @media (min-width: 34rem) {
+    dl {
+      grid-template-columns: minmax(6rem, max-content) 1fr;
+      align-items: baseline;
+      row-gap: 0.5rem;
+    }
   }
 
   dt {
     font-family: var(--font-ui);
     font-size: 0.75rem;
     letter-spacing: 0.02em;
-    color: var(--ink-soft);
+    text-transform: uppercase;
+    color: var(--text-muted);
   }
 
   dd {
@@ -134,10 +153,45 @@
     overflow-wrap: anywhere;
   }
 
+  @media (min-width: 34rem) {
+    dd {
+      margin-bottom: 0;
+    }
+  }
+
   .canonical {
-    margin: 0;
-    font-size: 0.8rem;
-    color: var(--ink-soft);
+    border: 1px solid var(--border);
+    border-radius: 0.25rem;
+    background: var(--surface-raised);
+    padding: 0 0.75rem;
+  }
+
+  .canonical summary {
+    margin: 0 -0.75rem;
+    padding: 0.5rem 0.75rem;
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    color: var(--action);
+    cursor: pointer;
+  }
+
+  .canonical summary:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: -2px;
+  }
+
+  .canonical p {
+    margin: 0 0 0.5rem;
+    font-family: var(--font-prose);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  code {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-family: var(--font-code);
+    font-size: 0.85rem;
     overflow-wrap: anywhere;
   }
 </style>

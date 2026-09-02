@@ -1,5 +1,7 @@
 <script lang="ts">
+  import AboutPanel from './demo/AboutPanel.svelte';
   import AnswerPanel from './demo/AnswerPanel.svelte';
+  import { DESCRIPTIONS, INSTRUCTIONS } from './demo/copy.js';
   import { DemoController, solutionsOf } from './demo/DemoController.svelte.js';
   import { answerRows, describeState, type AnswerRow } from './demo/describe.js';
   import RunControls from './demo/RunControls.svelte';
@@ -12,8 +14,6 @@
   }
 
   let { controller }: Props = $props();
-
-  const guideline = 'CDC Clinical Practice Guideline for Prescribing Opioids for Pain (2022)';
 
   // The controller is an ownership handoff read once at construction, not a
   // reactive input: swapping it mid-life would strand the engine it owns.
@@ -45,11 +45,9 @@
 </script>
 
 <main data-engine={engine}>
-  <h1>cnl-ckc-demo</h1>
-  <p class="lede">
-    Ask a question against a compiled clinical knowledge base. Every answer comes from real Prolog
-    execution, and traces back to the guideline sentence that produced it.
-  </p>
+  <h1>{DESCRIPTIONS.wordmark}</h1>
+  <p class="lede">{DESCRIPTIONS.lede}</p>
+  <p class="hint">{INSTRUCTIONS.selectQuestion} {INSTRUCTIONS.runQuestion}</p>
 
   <QuestionCombobox
     selected={demo.selected}
@@ -88,39 +86,59 @@
     }}
   />
 
-  <p class="colophon">
-    Knowledge base compiled from {guideline}. Proof traces and the entity graph arrive with their
-    milestones.
-  </p>
+  <AboutPanel />
+
+  <!-- CDC's reuse terms require attribution, a nonendorsement disclaimer that is
+       prominently displayed, and a statement that the material is free at the
+       source. A disclosure would satisfy none of those, so the footer carries
+       all three unconditionally. -->
+  <footer>
+    <p>{DESCRIPTIONS.attribution} {DESCRIPTIONS.freeAvailability}</p>
+    <p>{DESCRIPTIONS.nonendorsement}</p>
+  </footer>
 </main>
 
 <style>
+  /* Padding scales with the viewport: a fixed 4rem top inset spends a third of a
+     320px-tall phone viewport before the first word. */
   main {
     max-width: 46rem;
     margin: 0 auto;
-    padding: 4rem 1.5rem;
+    padding: clamp(1.5rem, 6vw, 4rem) clamp(1rem, 4vw, 1.5rem);
   }
 
   h1 {
     margin: 0 0 0.5rem;
-    font-family: var(--font-code);
-    font-size: 1.5rem;
-    font-weight: 600;
+    font-family: var(--font-ui);
+    font-size: clamp(1.25rem, 4.5vw, 1.75rem);
+    font-weight: 700;
+    line-height: 1.2;
     letter-spacing: -0.01em;
-    color: var(--accent);
+    text-wrap: balance;
+    color: var(--action);
   }
 
   .lede {
     font-family: var(--font-prose);
-    font-size: 1.2rem;
-    margin: 0 0 2rem;
+    font-size: clamp(1.05rem, 2.5vw, 1.2rem);
+    margin: 0 0 1rem;
   }
 
-  .colophon {
-    border-top: 1px solid var(--rule);
+  .hint {
+    margin: 0 0 2rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
     margin-top: 2rem;
     padding-top: 1rem;
-    color: var(--ink-soft);
-    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  footer p {
+    margin: 0 0 0.5rem;
   }
 </style>

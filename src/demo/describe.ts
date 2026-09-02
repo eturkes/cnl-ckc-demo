@@ -12,6 +12,7 @@ import { humanizeGuidelineId } from '../questions/humanize.js';
 import type { AnswerResult } from '../questions/service.js';
 
 import type { DemoState } from './DemoController.svelte.js';
+import { describeDescriptor } from './descriptor.js';
 
 export interface StateDescription {
   /** Polite live-region text. Empty means there is nothing to announce yet. */
@@ -26,7 +27,7 @@ export interface StateDescription {
 
 export interface AnswerCell {
   variable: string;
-  /** ACE descriptor the question compiler attached to this column. */
+  /** Reader-facing label for this column, formatted from its ACE descriptor. */
   descriptor: string;
   text: string;
 }
@@ -150,7 +151,7 @@ export const answerRows = (id: QuestionId, solutions: readonly PlSolution[]): An
       const binding = solution.bindings[variable];
       return {
         variable,
-        descriptor,
+        descriptor: describeDescriptor(descriptor),
         text: binding === undefined ? display : humanizeGuidelineId(binding, display),
       };
     });

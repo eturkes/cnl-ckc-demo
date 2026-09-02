@@ -62,27 +62,27 @@
     font: inherit;
     font-family: var(--font-ui);
     padding: 0.4rem 1.1rem;
-    border: 1px solid var(--accent);
+    border: 1px solid var(--action);
     border-radius: 0.25rem;
-    background: var(--accent);
-    color: var(--paper);
+    background: var(--action);
+    color: var(--action-text);
     cursor: pointer;
   }
 
   button:disabled {
-    border-color: var(--ink-soft);
+    border-color: var(--text-muted);
     background: transparent;
-    color: var(--ink-soft);
+    color: var(--text-muted);
     cursor: not-allowed;
   }
 
   button.retry {
-    border-color: var(--modal);
-    background: var(--modal);
+    border-color: var(--warn);
+    background: var(--warn);
   }
 
   button:focus-visible {
-    outline: 2px solid var(--ink);
+    outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
   }
 
@@ -93,12 +93,12 @@
   }
 
   .status {
-    color: var(--ink-soft);
+    color: var(--text-muted);
   }
 
   .alert:not(:empty) {
-    border-left: 3px solid var(--modal);
+    border-left: 3px solid var(--warn);
     padding-left: 0.6rem;
-    color: var(--ink);
+    color: var(--text);
   }
 </style>
