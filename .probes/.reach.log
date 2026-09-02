@@ -1,0 +1,5 @@
+
+> cnl-ckc-demo@0.0.0 kb:asset-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2
+> node tools/kb/check.mjs
+
+kb:asset-check ok — 3 assets verified, catalog re-derived from the bag, sibling-path scan clean over 6 roots, answer-oracle scan clean over 4 roots

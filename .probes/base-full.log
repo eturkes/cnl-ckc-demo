@@ -1,0 +1,25 @@
+
+> cnl-ckc-demo@0.0.0 test /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2
+> vitest run
+
+
+ RUN  v4.1.11 /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2
+
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+
+ Test Files  10 passed (10)
+      Tests  171 passed (171)
+   Start at  13:41:24
+   Duration  2.91s (transform 2.67s, setup 0ms, import 4.01s, tests 7.42s, environment 1.96s)
+

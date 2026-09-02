@@ -1,0 +1,73 @@
+
+ RUN  v4.1.11 /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2
+
+
+@@LEDGER
+c01 ids=6 keys=6
+c01 prototype=null
+c01 frozenRoot=true
+c01 frozenEntries=true
+c01 prototypeKeysReachable=[]
+c01 computedLookupResolves=true
+c01 idsSorted=true
+c02 corpus=25 distinctResults=["{\"kind\":\"rejected\",\"reason\":\"unknown-id\"}"]
+c02 engineCalls=0
+c03 category-a-recommendations goalBytes=311 proj=1 prov=bag-exported goalHasQuestionText=false questionInGoal=false
+c03 category-b-recommendations goalBytes=311 proj=1 prov=repo-authored goalHasQuestionText=false questionInGoal=false
+c03 dosage-reduction-content goalBytes=202 proj=1 prov=bag-exported goalHasQuestionText=false questionInGoal=false
+c03 evidence-type-1-recommendation goalBytes=316 proj=1 prov=bag-exported goalHasQuestionText=false questionInGoal=false
+c03 evidence-type-3-recommendation goalBytes=316 proj=1 prov=repo-authored goalHasQuestionText=false questionInGoal=false
+c03 recommendation-exists goalBytes=96 proj=0 prov=bag-exported goalHasQuestionText=false questionInGoal=false
+c07 forwardedGoalIsCatalogGoal=true
+c07 forwardedBudgetIdentical=true
+c07 invalidBudgetResult={"kind":"error","id":"category-a-recommendations","error":{"code":"budget","message":"answerCap must be a positive integer"}}
+c08 bagPresentForTests=true
+c08 serializedFromInjectedDto=solutions([sol(['$guideline_id'(product,'probe-doc',9,ref(1),[])])])
+c09 solutions-empty->answer failure->failure cancelled->cancelled limit:stack->limit/stack limit:depth->limit/depth limit:inference->limit/inference limit:wall-clock->limit/wall-clock limit:answer-cap->limit/answer-cap limit:heap->limit/heap error:boot->error/boot error:contract->error/contract error:prolog->error/prolog error:decode->error/decode error:protocol->error/protocol error:worker->error/worker error:budget->error/budget error:consult->error/consult
+c09 distinctTags=17 of 17
+c09 honestZeroSerialized=no
+c10 projectionLength=0
+c10 twelveProofs=yes
+c10 zeroProofs=no
+c10 oneProof=yes
+c10 nonExistenceEmpty=solutions([])
+c11 undeclaredLeak=false out=solutions([sol(['$guideline_id'(product,'doc-1',3,ref(1),[])])])
+c11 rationalJsonStringify={"kind":"rational","numerator":1,"denominator":3}
+c11 rationalDisplayPreserved=solutions([sol([1r3])])
+c11 compoundDisplayPreserved=solutions([sol(['$guideline_id'(product,'doc-1',3,ref(1),[])])])
+c11 missingDeclaredVariable="category-a-recommendations: solution does not bind projected variable A"
+c12 termOrder=solutions([sol(['$guideline_id'(product,'doc-1',1,ref(1),[])]),sol(['$guideline_id'(product,'doc-1',2,ref(1),[])]),sol(['$guideline_id'(product,'doc-1',10,ref(1),[])])])
+c12 byteOrder=solutions([sol(['$guideline_id'(product,'doc-1',1,ref(1),[])]),sol(['$guideline_id'(product,'doc-1',10,ref(1),[])]),sol(['$guideline_id'(product,'doc-1',2,ref(1),[])])])
+c12 divergent=true
+c12 mixedShapeOrder=["variable","float","integer","rational","integer","atom","string","compound","list"]
+c12 tiesAmongDistinct=[]
+c12 antisymmetric=true
+c12 permutationInvariant=true
+c12 duplicatesCollapse=solutions([sol(['$guideline_id'(product,'doc-1',10,ref(1),[])])])
+c15 verbatimDisplay=solutions([sol([weird'text\with,commas])])
+c15 grammarShape=true
+c15 displayUsedNotTerm=true
+c16 product/ref => cdc2022-opioid-rec01 — sentence 1, ref 1
+c16 context/box => other-corpus-doc — sentence 25, box 9
+c16 no-hyphen doc id => plaindoc — sentence 1, ref 1
+c16 non-atom doc id => ENGINE-TEXT
+c16 wrong arity => ENGINE-TEXT
+c16 wrong functor => ENGINE-TEXT
+c16 locator arity 2 => ENGINE-TEXT
+c16 sentence not integer => ENGINE-TEXT
+c16 atom => ENGINE-TEXT
+c16 string => ENGINE-TEXT
+c16 variable => ENGINE-TEXT
+c16 list => ENGINE-TEXT
+c17 label=cdc2022-opioid-rec01 — sentence 3, ref 1
+c17 labelInSerialized=false
+c17 serializedEqualsDisplayGrammar=true
+c17 sortKeyIsTermNotDisplay=true out=solutions([sol([aaa-display-for-doc-a]),sol([zzz-display-for-doc-b])])
+@@END
+···············
+
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  13:39:38
+   Duration  326ms (transform 121ms, setup 0ms, import 154ms, tests 22ms, environment 0ms)
+

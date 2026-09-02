@@ -1,0 +1,170 @@
+// Review probes rev-m1u4-2, live PVM half: rows c05, c10, c13, c14, c18, c22.
+import { readFileSync, readdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { beforeAll, describe, expect, it } from 'vitest';
+
+import { BUDGET_MAX } from '../src/engine/budget.js';
+import type { PlSolution } from '../src/engine/protocol.js';
+import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
+import { QUESTION_CATALOG, QUESTION_IDS, type QuestionId } from '../src/questions/catalog.js';
+import { serializeAnswer } from '../src/questions/serialize.js';
+import { verifyBag } from '../tools/kb/bag.mjs';
+
+const require = createRequire(import.meta.url);
+const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
+const GENERATED = join(ROOT, 'kb', 'generated');
+const read = (name: string): Buffer => readFileSync(join(GENERATED, name));
+const manifest = JSON.parse(read('kb-manifest.json').toString('utf8')) as {
+  contract: { schemaVersion: number; documents: number };
+};
+
+const ledger: string[] = [];
+const note = (line: string): void => void ledger.push(line);
+const diagnostics: string[] = [];
+const drain = (): string[] => diagnostics.splice(0);
+
+const loadImage: ImageLoader = async (image) => {
+  const factory = require('swipl-wasm/dist/loadImageDefault.js') as
+    | ((i: Uint8Array) => (o?: Record<string, unknown>) => Promise<Engine>)
+    | { default: (i: Uint8Array) => (o?: Record<string, unknown>) => Promise<Engine> };
+  const load = typeof factory === 'function' ? factory : factory.default;
+  return load(image)({ printErr: (line: string) => diagnostics.push(line) });
+};
+
+const bagFiles = ((): Map<string, Uint8Array> => {
+  const kb = join(ROOT, 'kb');
+  const archive = readdirSync(kb).filter((n) => n.endsWith('.tar.gz'))[0] as string;
+  return verifyBag(readFileSync(join(kb, archive))).files;
+})();
+
+/** Whole committed answer file, and the balanced result/1 argument inside it. */
+const committed = (id: string): { file: string; result: string } => {
+  const path = [...bagFiles.keys()].find((n) => n.endsWith(`/answers/${id}.pl`)) as string;
+  const file = Buffer.from(bagFiles.get(path) as Uint8Array).toString('utf8');
+  const open = file.indexOf('result(') + 'result('.length;
+  let depth = 1;
+  for (let i = open; i < file.length; i += 1) {
+    if (file[i] === '(') depth += 1;
+    else if (file[i] === ')') {
+      depth -= 1;
+      if (depth === 0) return { file, result: file.slice(open, i) };
+    }
+  }
+  throw new Error('unbalanced');
+};
+
+let session: EngineSession;
+const solutions = new Map<QuestionId, PlSolution[]>();
+
+const solve = async (host: EngineSession, id: QuestionId): Promise<PlSolution[]> => {
+  const out = await host.solve(QUESTION_CATALOG[id].goal, BUDGET_MAX, `probe-${id}`);
+  if (out.kind === 'solutions') return out.solutions;
+  if (out.kind === 'failure') return [];
+  throw new Error(`${id}: ${out.kind}`);
+};
+
+beforeAll(async () => {
+  session = new EngineSession({ loadImage, drain, expected: manifest.contract });
+  await session.boot(new Uint8Array(read('kb.pvm')));
+  for (const id of QUESTION_IDS) solutions.set(id, await solve(session, id));
+}, 120_000);
+
+describe('live ledger', () => {
+  it('records counts, byte verdicts and the whole-file gap', () => {
+    for (const id of QUESTION_IDS) {
+      const rows = solutions.get(id) as PlSolution[];
+      const live = serializeAnswer(QUESTION_CATALOG[id], rows);
+      const bagged = [...bagFiles.keys()].some((n) => n.endsWith(`/answers/${id}.pl`));
+      if (!bagged) {
+        note(`c05 ${id} count=${rows.length} provenance=${QUESTION_CATALOG[id].provenance} noCommittedAnswer live=${live.slice(0, 60)}`);
+        continue;
+      }
+      const { file, result } = committed(id);
+      note(
+        `c13/c14 ${id} count=${rows.length} byteEqual=${live === result} liveBytes=${Buffer.byteLength(live)} ` +
+          `committedResultBytes=${Buffer.byteLength(result)} wholeFileBytes=${Buffer.byteLength(file)} ` +
+          `wholeFileReproduced=${file.includes(live) && live === result ? 'substring-only' : 'no'}`,
+      );
+    }
+    note(`c10 recommendation-exists proofs=${(solutions.get('recommendation-exists') as PlSolution[]).length} serialized=${serializeAnswer(QUESTION_CATALOG['recommendation-exists'], solutions.get('recommendation-exists') as PlSolution[])}`);
+    note(`c10 exhausted=${serializeAnswer(QUESTION_CATALOG['recommendation-exists'], [])}`);
+    expect(solutions.size).toBe(6);
+  });
+
+  it('names an injected divergence exactly rather than reporting non-empty', () => {
+    const id: QuestionId = 'dosage-reduction-content';
+    const rows = solutions.get(id) as PlSolution[];
+    const extra = rows[0] as PlSolution;
+    const injected = [
+      ...rows,
+      {
+        bindings: { ...extra.bindings, A: { kind: 'atom' as const, value: 'zz-divergent' } },
+        display: { ...extra.display, A: 'zz-divergent' },
+      },
+    ];
+    const live = serializeAnswer(QUESTION_CATALOG[id], injected);
+    const { result } = committed(id);
+    let message = '<no assertion error>';
+    try {
+      expect(live).toBe(result);
+    } catch (error) {
+      message = (error instanceof Error ? error.message : String(error)).replace(/\s+/gu, ' ');
+    }
+    note(`c14 divergenceNamesId=${message.includes('zz-divergent')} message=${message.slice(0, 180)}`);
+  });
+
+  it('proves the overlay absent, injects it, and checks a fresh engine drops it', async () => {
+    const marker = `rev2-${process.pid}-overlay`;
+    const entry = QUESTION_CATALOG['category-a-recommendations'];
+    const before = serializeAnswer(entry, solutions.get('category-a-recommendations') as PlSolution[]);
+    note(`c18 markerAbsentBefore=${!before.includes(marker)} baselineRows=${(solutions.get('category-a-recommendations') as PlSolution[]).length}`);
+
+    const gid = (n: number): string => `'$guideline_id'(product,'${marker}',${n},ref(1),[])`;
+    const body =
+      `guideline_entity(actual,${gid(1)},recommendation,countable).\n` +
+      `guideline_cardinality(actual,${gid(1)},na,eq,1).\n` +
+      `guideline_entity(actual,${gid(2)},'category-A-recommendation',countable).\n` +
+      `guideline_cardinality(actual,${gid(2)},na,eq,1).\n` +
+      `guideline_event(actual,${gid(3)},be).\n` +
+      `guideline_arg(actual,${gid(3)},1,${gid(1)}).\n` +
+      `guideline_arg(actual,${gid(3)},2,${gid(2)}).\n`;
+
+    // Without dynamic/1 the schema predicates are static: record what the engine does.
+    const bare = await session.handle(
+      { id: 'overlay-bare', kind: 'consult', source: body },
+      new Uint8Array(read('kb.pvm')),
+    );
+    note(`c18 consultWithoutDynamic=${JSON.stringify(bare).slice(0, 160)}`);
+    const afterBare = serializeAnswer(entry, await solve(session, 'category-a-recommendations'));
+    note(`c18 resultChangedWithoutDynamic=${afterBare !== before}`);
+
+    const declared = await session.handle(
+      {
+        id: 'overlay',
+        kind: 'consult',
+        source:
+          ':- dynamic(guideline_entity/4).\n:- dynamic(guideline_cardinality/5).\n' +
+          ':- dynamic(guideline_event/3).\n:- dynamic(guideline_arg/4).\n' +
+          body,
+      },
+      new Uint8Array(read('kb.pvm')),
+    );
+    note(`c18 consultWithDynamic=${JSON.stringify(declared).slice(0, 120)}`);
+    const after = await solve(session, 'category-a-recommendations');
+    const afterText = serializeAnswer(entry, after);
+    note(`c18 rowsAfter=${after.length} changed=${afterText !== before} carriesMarker=${afterText.includes(marker)}`);
+
+    const fresh = new EngineSession({ loadImage, drain, expected: manifest.contract });
+    await fresh.boot(new Uint8Array(read('kb.pvm')));
+    const freshText = serializeAnswer(entry, await solve(fresh, 'category-a-recommendations'));
+    note(`c18 freshEngineMarkerGone=${!freshText.includes(marker)} freshEqualsBaseline=${freshText === before}`);
+  }, 240_000);
+
+  it('prints', () => {
+    process.stdout.write(`\n@@LEDGER\n${ledger.join('\n')}\n@@END\n`);
+    expect(ledger.length).toBeGreaterThan(0);
+  });
+});

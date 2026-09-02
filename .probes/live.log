@@ -1,0 +1,28 @@
+
+ RUN  v4.1.11 /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2
+
+···
+@@LEDGER
+c13/c14 category-a-recommendations count=7 byteEqual=true liveBytes=481 committedResultBytes=481 wholeFileBytes=734 wholeFileReproduced=substring-only
+c05 category-b-recommendations count=5 provenance=repo-authored noCommittedAnswer live=solutions([sol(['$guideline_id'(product,'cdc2022-opioid-rec0
+c13/c14 dosage-reduction-content count=2 byteEqual=true liveBytes=158 committedResultBytes=158 wholeFileBytes=407 wholeFileReproduced=substring-only
+c13/c14 evidence-type-1-recommendation count=1 byteEqual=true liveBytes=79 committedResultBytes=79 wholeFileBytes=340 wholeFileReproduced=substring-only
+c05 evidence-type-3-recommendation count=3 provenance=repo-authored noCommittedAnswer live=solutions([sol(['$guideline_id'(product,'cdc2022-opioid-rec0
+c13/c14 recommendation-exists count=12 byteEqual=true liveBytes=3 committedResultBytes=3 wholeFileBytes=246 wholeFileReproduced=substring-only
+c10 recommendation-exists proofs=12 serialized=yes
+c10 exhausted=no
+c14 divergenceNamesId=false message=<no assertion error>
+c18 markerAbsentBefore=true baselineRows=7
+c18 consultWithoutDynamic={"id":"overlay-bare","kind":"consulted"}
+c18 resultChangedWithoutDynamic=true
+c18 consultWithDynamic={"id":"overlay","kind":"consulted"}
+c18 rowsAfter=8 changed=true carriesMarker=true
+c18 freshEngineMarkerGone=true freshEqualsBaseline=true
+@@END
+·
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  13:58:46
+   Duration  1.63s (transform 150ms, setup 0ms, import 243ms, tests 1.19s, environment 0ms)
+

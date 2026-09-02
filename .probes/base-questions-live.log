@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2
+
+··················
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  13:30:19
+   Duration  1.16s (transform 146ms, setup 0ms, import 239ms, tests 741ms, environment 0ms)
+

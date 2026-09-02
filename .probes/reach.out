@@ -1,0 +1,35 @@
+## c19 baseline
+rc=1 :: > cnl-ckc-demo@0.0.0 kb:asset-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2 kb:asset-check failed — 
+
+## c19 static import reach
+rc=1 :: > cnl-ckc-demo@0.0.0 kb:asset-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2 kb:asset-check failed —   answer-oracle reach in src/questions/catalog.ts 
+
+## c19 dynamic import() reach
+rc=1 :: > cnl-ckc-demo@0.0.0 kb:asset-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2 kb:asset-check failed —   answer-oracle reach in src/questions/catalog.ts 
+
+## c19 fs read reach
+rc=1 :: > cnl-ckc-demo@0.0.0 kb:asset-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2 kb:asset-check failed —   answer-oracle reach in src/questions/catalog.ts 
+
+## c19 bare literal in a comment
+rc=1 :: > cnl-ckc-demo@0.0.0 kb:asset-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2 kb:asset-check failed —   answer-oracle reach in src/questions/catalog.ts 
+
+## c19 reach parked in kb/generated (production-reachable via @kb alias, outside PRODUCTION_ROOTS)
+rc=1 :: > cnl-ckc-demo@0.0.0 kb:asset-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2 kb:asset-check failed — 
+
+## c19 sibling-path scan control (../cnl-ckc)
+rc=1 :: > cnl-ckc-demo@0.0.0 kb:asset-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2 kb:asset-check failed —   sibling path in src/questions/catalog.ts 
+
+## c22 absent kb/generated: tests must FAIL, not skip
+rc=1
+Error: Cannot find package '@kb/kb-manifest.json' imported from /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2/tests/demo-lifecycle.test.ts
+Error: ENOENT: no such file or directory, open '/run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2/kb/generated/kb-manifest.json'
+Error: Cannot find package '@kb/question-catalog.json' imported from /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2/src/questions/catalog.ts
+Error: ENOENT: no such file or directory, open '/run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2/kb/generated/kb-manifest.json'
+Error: Cannot find package '@kb/question-catalog.json' imported from /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2/src/questions/catalog.ts
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+Error: ENOENT: no such file or directory, open '/run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2/kb/generated/kb.pvm'
+Error: ENOENT: no such file or directory, open '/run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2/kb/generated/kb.qlf'
+
+## c22 restored
+rc=1
+?? .probes/

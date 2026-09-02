@@ -1,0 +1,36 @@
+## c04 goal byte-equality (independent extractor vs shipped catalog)
+category-a-recommendations: equal=true mineBytes=311 shippedBytes=311 prefixForm=true sha=311
+dosage-reduction-content: equal=true mineBytes=202 shippedBytes=202 prefixForm=true sha=202
+evidence-type-1-recommendation: equal=true mineBytes=316 shippedBytes=316 prefixForm=true sha=316
+recommendation-exists: equal=true mineBytes=96 shippedBytes=96 prefixForm=true sha=96
+records=6 queryFiles=4
+provenance: category-a-recommendations=bag-exported/proj1 category-b-recommendations=repo-authored/proj1 dosage-reduction-content=bag-exported/proj1 evidence-type-1-recommendation=bag-exported/proj1 evidence-type-3-recommendation=repo-authored/proj1 recommendation-exists=bag-exported/proj0
+
+## c05 substitution mutants (each must throw)
+
+## c05 substitution mutants (awaited)
+zero-hit atom: threw "category-b-recommendations question: category-Z-recommendation occurs 0 times, expected exactly 1"
+near-miss substring (category-B-decision): threw "category-b-recommendations question: category-B-decision occurs 0 times, expected exactly 1"
+near-miss (evidence-type-2-recommendation): threw "category-b-recommendations question: evidence-type-2-recommendation occurs 0 times, expected exactly 1"
+two-hit atom (bare `recommendation`): threw "category-b-recommendations question: recommendation occurs 2 times, expected exactly 1"
+unknown base id: threw "category-b-recommendations: derives from no-such-query, which the bag does not export"
+identity substitution (was === now): NO THROW -> 5 records  <-- guard did not fire
+
+## c06 determinism
+two in-process runs byte-identical=true bytes=3337
+
+## c06 fail-closed on structural bag mutation (each must throw)
+mutated goal/1 (goal( removed): threw "no goal/1 term"
+missing query file (category-a deleted): threw "category-b-recommendations: derives from category-a-recommendations, which the bag does not export"
+extra VALID query file (duplicate content, new path): threw "bag carries duplicate query ids"
+extra query file with distinct id: NO THROW -> 7 records [category-a-recommendations,category-b-recommendations,dosage-reduction-content,evidence-type-1-recommendation,evidence-type-3-recommendation,extra-query,recommendation-exists]
+projection functor unexpected (answer/2 -> reply/2): threw "projection item is not answer/2: reply(A,noun(recommendation,countable))"
+projection arity wrong (answer/3): threw "answer/3, expected answer/2"
+projection names a non-variable: threw "projection names aa, which is not a variable"
+answers/1 not a list: threw "answers/1 is not a list: foo"
+question comment removed: threw "data/guidelines/cdc-2022-opioid/queries/pl/category-a-recommendations.pl: no question comment"
+no $guideline_query term: threw "data/guidelines/cdc-2022-opioid/queries/pl/category-a-recommendations.pl: no '$guideline_query' term"
+no projection term: threw "data/guidelines/cdc-2022-opioid/queries/pl/category-a-recommendations.pl: no '$guideline_query_projection' term"
+duplicate query id in two files: threw "bag carries duplicate query ids"
+empty goal: threw "data/guidelines/cdc-2022-opioid/queries/pl/category-a-recommendations.pl: empty goal"
+all queries removed: threw "bag carries no compiled queries"

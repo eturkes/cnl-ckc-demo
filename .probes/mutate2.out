@@ -1,0 +1,4 @@
+c20 c20-hardcoded-yes: RED rc=1 ::  Tests 1 failed | 170 passed (171) | ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯ | FAIL |node| tests/questions-live.test.ts > live answers > answers an existence question yes or no rather than with rows
+c20 c20-hardcoded-no: RED rc=1 ::  Tests 3 failed | 168 passed (171) | ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯ | FAIL |node| tests/demo-lifecycle.test.ts > run lifecycle > R10 returns 7 / 5 / 2 / 1 / 3 / 12 live PVM solutions through createDemoEngine
+c20 c20-humanizer-corpus-gloss: RED rc=1 ::  Tests 1 failed | 170 passed (171) | ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯ | FAIL |node| tests/questions-live.test.ts > guideline id humanizer > formats a real binding structurally
+c20 c20-service-ignores-id: RED rc=1 ::  Tests 1 failed | 170 passed (171) | ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯ | FAIL |node| tests/demo-lifecycle.test.ts > run lifecycle > R10 returns 7 / 5 / 2 / 1 / 3 / 12 live PVM solutions through createDemoEngine

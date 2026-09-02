@@ -1,0 +1,19 @@
+
+ RUN  v4.1.11 /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-m1u4-2
+
+··
+@@LEDGER
+c14 dosage-reduction-content projected=C divergenceDetected=true namesValue=true msg=expected 'solutions([sol([zz-divergent]),sol([\…' to be 'solutions([sol([\'$guideline_id\'(pro…' // Object.is equality
+c14 evidence-type-1-recommendation projected=A divergenceDetected=true namesValue=true msg=expected 'solutions([sol([zz-divergent]),sol([\…' to be 'solutions([sol([\'$guideline_id\'(pro…' // Object.is equality
+c14 missing-solution detected=true msg=expected 'solutions([sol([\'$guideline_id\'(pro…' to be 'solutions([sol([\'$guideline_id\'(pro…' // Object.is equality
+c18b baselineRows=7 markerAbsent=true
+c18b consultWithoutDynamic={"id":"bare","kind":"consulted"} rows=8 carriesMarker=true diagnostics=[]
+c18b consultWithDynamic={"id":"dyn","kind":"consulted"} rows=8 carriesMarker=true
+@@END
+·
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  14:01:02
+   Duration  1.13s (transform 138ms, setup 0ms, import 237ms, tests 724ms, environment 0ms)
+
