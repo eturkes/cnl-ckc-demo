@@ -152,7 +152,7 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
 MILESTONE-REVIEW dispatch inputs — contract | fixed check set | evidence branches:
 
 - u1 `.agent/contracts/m1u1.md` | — | `wt/spike-m1u1-det`; partial reports `map-m1u1` 17/25, `spike-m1u1-det` 9/12
-- u2 `.agent/contracts/m1u2.md` | — | `wt/test-m1u2` `b0fb200`, `wt/spike-m1u2-{js,pl}`
+- u2 `.agent/contracts/m1u2.md` | `.agent/contracts/m1u2-rev-checkset.md`, 28 rows | `wt/test-m1u2` `b0fb200`, `wt/spike-m1u2-{js,pl}`
 - u3 `.agent/contracts/m1u3.md` | `.agent/contracts/m1u3-rev-checkset.md`, 45 rows | `wt/test-m1u3` `22c8b97`, `wt/spike-m1u3-{js,pl}`
 - u4 `.agent/contracts/m1u4.md` | `.agent/contracts/m1u4-rev-checkset.md`, 24 rows | `wt/test-m1u4` `0240aae`, `wt/spike-m1u4-{gen,src}`
 - u5 `.agent/contracts/m1u5.md` (26 predicates + verdict table) | — | `wt/spike-m1u5-lib` `dca4f87`; map report `.scratch/agents/map-m1u5.md` 29/29
@@ -160,14 +160,33 @@ MILESTONE-REVIEW dispatch inputs — contract | fixed check set | evidence branc
 - u6 `.agent/contracts/m1u6.md` (32 predicates + verdict table + D1–D10 + Q1–Q8 rulings) | — | `wt/test-m1u6` `2f87e0b` 23/23, `wt/spike-m1u6-{handle,signal}` `b896d2e`/`3066404`
 
 Projection was 6 `kernel` units × ~35 rows ≈ 210 rows plus u7, cross-cutting and
-`audit-m1`, sized at 3–4 sessions. Actual after 3 sessions: **236 rows adjudicated**
-(u1 30, u3 45, u4 24, `audit-m1` 137), with u2, u5, u6, u7 and cross-cutting still
-unenumerated ⇒ **5–6 sessions**, because the projection counted rows but not the fix
-backlog each session inherits. Session-3 yield with seeded skeletons = 44 rows + 5 fixes
-in one window; size session 4 the same way.
+`audit-m1`, sized at 3–4 sessions. Actual after 4 sessions: **292 rows adjudicated**
+(u1 30, u2 28, u3 45, u4 24, u6 28, `audit-m1` 137), with u5, u7 and cross-cutting still
+unenumerated ⇒ **6 sessions**, because the projection counted rows but not the fix backlog
+each session inherits. Yield with seeded skeletons is stable at two reviewers per window:
+44 rows + 5 fixes (session 3), 56 rows + 12 fixes (session 4). Session 5 inherits 13 fixes
+and 3 unenumerated surfaces, so it is fix-heavy — size it at one reviewer, not two.
 
 Judgment-review ledger = `.agent/review-m1.md` (committed, read first by every resumed
 MILESTONE-REVIEW session); reviewer reports = `.agent/review-m1/`.
+
+Session 4 adjudicated **56 rows** — u2 28/28 and u6 28/28 — so **u1, u2, u3, u4 and u6 are
+complete**; only u5, u7 and cross-cutting remain unenumerated. It closed **12 defects** at
+`541b736` (the 10 inherited) and at this commit (u6's L25 and L28), leaving 13 open: u3's
+R34/R35/R40 and u2's eleven. `.scratch/verify-fixes.py` grew to 18 mutants, 18/18 RED, and
+`pnpm gate` is rc 0 from a clean `kb/generated` — 198 tests in 13 files, 3 assets, 0 errors
+0 warnings. u6 came back nearly clean (26 pass, 2 fail, both low after ruling); u2 came back
+with 11 fails in 28, which is where M1's remaining risk sits. Two rulings changed a scope
+source rather than code: **L25** — V12 forbade JS-templating any binding, which outlawed the
+`humanizeGuidelineId` formatter u4 shipped and live-tested, so on the user's ruling the
+predicate now admits a structural formatter over engine-authored tokens and the untested
+recognized branch gained a DOM case; **E18** — P3.11's "tag" is the `$t` wrapper discriminator,
+not a dict's own `$tag`, so the reviewer's dict half is rejected and only a narrow real hole
+survives. Cost: `main=80% 192K/240K`, `mate=69% 165K/240K` (rev-m1u2-1). Both reviewers again
+finished 100% of their rows in one window under the seeded-skeleton recipe, but `rev-m1u2-1`
+burned 104K with nothing on disk before its first flush — the same session-1/2 shape — and
+recovered only after one flush directive. Seeding is necessary and not sufficient: the brief
+must also make the FIRST batch land early, not merely define one.
 
 Session 3 adjudicated **44 rows** — u1 30/30 and u3's last 14, so **u1, u3 and u4 are
 complete** at 30/30, 45/45 and 24/24. It also closed all five defects carried in

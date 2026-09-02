@@ -384,7 +384,38 @@ describe('view states and accessibility', () => {
     }
   });
 
-  it('V12 renders only serialized or engine display text, never decoded bindings or JSON', () => {
+  it('V12 formats a recognized guideline id from its own tokens, never from JS vocabulary', () => {
+    // The atom fixture above takes `humanizeGuidelineId`'s fallback, so only this
+    // case exercises the recognized `'$guideline_id'/5` branch V12 permits.
+    const binding: PlSolution['bindings'][string] = {
+      kind: 'compound',
+      functor: '$guideline_id',
+      args: [
+        { kind: 'atom', value: 'product' },
+        { kind: 'atom', value: 'cdc2022-opioid-rec02' },
+        { kind: 'integer', value: 42 },
+        { kind: 'compound', functor: 'ref', args: [{ kind: 'integer', value: 7 }] },
+        { kind: 'list', items: [] },
+      ],
+    };
+    const result: AnswerResult = {
+      kind: 'answer',
+      id: ID,
+      serialized: 'allowed-serialized',
+      solutions: [{ bindings: { A: binding }, display: { A: 'engine-display-text' } }],
+    };
+    controller.solutionIndex = 0;
+    setState({ kind: 'settled', id: ID, result });
+    const visible = text(answerRegion());
+
+    expect(visible).toContain('cdc2022-opioid-rec02 — sentence 42, ref 7');
+    // Every token in the label is the term's own; nothing is glossed or stringified.
+    for (const invented of ['recommendation', 'reference', 'document', 'guideline_id', '$'])
+      expect(visible).not.toContain(invented);
+    expect(visible).not.toMatch(/["{](?:kind|value|functor|args)[":]/u);
+  });
+
+  it('V12 falls back to engine display text for an unrecognized binding, never to JSON', () => {
     const result = answer(ID, 2, 'source-of-truth');
     if (result.kind !== 'answer') throw new Error('answer fixture changed kind');
     controller.solutionIndex = 0;

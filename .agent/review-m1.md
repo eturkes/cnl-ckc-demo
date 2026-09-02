@@ -11,7 +11,7 @@ overrules the reviewer), `unknown` (not yet adjudicated; carries forward).
 
 Every `fixed` row with a code fix is red under a mutant that removes it:
 `.scratch/verify-fixes.py` restores each pre-fix behaviour and reruns the closing test,
-**16/16 RED**. Contract-ruling closures carry no mutant: R28, R37, R41, R44, R45, and U04/U08
+**18/18 RED**. Contract-ruling closures carry no mutant: R28, R37, R41, R44, R45, and U04/U08
 which close on U03's and U11/U12's mutants.
 
 ## Coverage
@@ -19,33 +19,38 @@ which close on U03's and U11/U12's mutants.
 | unit | tier | check set | rows | adjudicated | session |
 | --- | --- | --- | --- | --- | --- |
 | u1 | kernel | `.agent/contracts/m1u1-rev-checkset.md` | 30 | **30 complete** | 3 |
-| u2 | kernel | not enumerated | ? | 0 | pending |
+| u2 | kernel | `.agent/contracts/m1u2-rev-checkset.md` | 28 | **28 complete** | 4 |
 | u3 | kernel | `.agent/contracts/m1u3-rev-checkset.md` | 45 | **45 complete** | 1, 2, 3 |
 | u4 | kernel | `.agent/contracts/m1u4-rev-checkset.md` | 24 | **24 complete** | 1, 2 |
 | u5 | kernel | not enumerated | ? | 0 | pending |
-| u6 | kernel | not enumerated | ? | 0 | pending |
+| u6 | kernel | `.agent/contracts/m1u6-rev-checkset.md` | 28 | **28 complete** | 4 |
 | u7 | docs | not enumerated (spot-check grade) | ? | 0 | pending |
 | cross-cutting | — | not enumerated | ? | 0 | pending |
 | audit-m1 | — | `.agent/review-m1/audit-m1.ids`, self-enumerated | 137 | 137 | 1 |
 
-Session 4 resume point = enumerate and adjudicate u2, u5, u6, u7 and cross-cutting; u1,
-u3 and u4 are closed. Seed each check set before dispatch, one unit per reviewer.
-Evidence branches: `wt/rev-m1u1-1` `939de23` (u1 probes) and `wt/rev-m1u3-4` `48008d3`
-(`tools/probe-u3.mjs`, the browser harness the five D-claim rows ran on). Session 2's
-claim that `wt/rev-m1u3-3` held a browser harness does not reproduce — that branch
-carries Node vitest suites only, and it is also based on a pre-`61fdd78` commit, so it
-reverts session-2 fixes and must never be merged.
+Session 5 resume point = enumerate and adjudicate **u5, u7 and cross-cutting**, and close the
+13 open fixes below; u1, u2, u3, u4 and u6 are complete. Seed each check set before dispatch,
+one unit per reviewer. Evidence branches: `wt/rev-m1u1-1` `939de23` (u1 probes),
+`wt/rev-m1u3-4` `48008d3` (`tools/probe-u3.mjs`, the browser harness the five D-claim rows ran
+on), `wt/rev-m1u2-1` `085eb57` (eleven u2 probes) and `wt/rev-m1u6-1` `ca41697` (three u6
+probes). Session 2's claim that `wt/rev-m1u3-3` held a browser harness does not reproduce —
+that branch carries Node vitest suites only, and it is also based on a pre-`61fdd78` commit, so
+it reverts session-2 fixes and must never be merged.
 
-Session 4 closed **10 of the 13** it inherited — U03, U04, U08, U11, U12 (u1) and R36, R37,
-R41, R44, R45 (u3) — under a clean-cache `pnpm gate` rc 0 (357 files 0 errors 0 warnings,
-195 tests / 12 files, 3 assets) and `.scratch/verify-fixes.py` 16/16 RED. Sizing was wrong in
-the useful direction: the estimate was six, the actual was ten, because five closed as contract
-rulings that cost a paragraph each rather than a test.
+Session 4 adjudicated **56 rows** (u2 28, u6 28) and closed **12 defects** — the 10 it
+inherited (U03, U04, U08, U11, U12 from u1; R36, R37, R41, R44, R45 from u3) plus u6's own
+L25 and L28 — under a clean-`kb/generated` `pnpm gate` rc 0 (198 tests / 13 files, 3 assets,
+0 errors 0 warnings) and `.scratch/verify-fixes.py` **18/18 RED**. Fix sizing was wrong in the
+useful direction: the estimate was six, the actual was twelve, because six closed as contract
+rulings costing a paragraph each rather than a test.
 
-Open into session 5: **R34, R35 and R40** (u3), plus whatever u2 and u6 raise. R40 is narrowed
-to one unmet part — browser cancel delivery between solutions. R34 and R35 are the recreation
-half of u3: P4.4/P4.5/P4.7 need committed tests and P6.2-P6.5 need to become deterministic gate
-steps, and both need a window, not a paragraph.
+Open into session 5 — **13 accepted defects**, none `high`:
+- u3, carried since session 3: **R34, R35, R40**. R40 is narrowed to one unmet part, browser
+  cancel delivery between solutions. R34 and R35 are u3's recreation half — P4.4/P4.5/P4.7
+  need committed tests and P6.2-P6.5 need to become deterministic gate steps, a window each.
+- u2, new: **E03, E05, E10, E11, E16, E18, E19, E22, E26, E27, E28**. E11 and E19 are single
+  mechanical barriers that E28 rides on; E03, E05, E16 and E18 are each a small localized
+  change; E22, E26 and E27 buy committed coverage that does not exist today.
 
 What worked in session 3, and should be repeated: MAIN seeded both skeletons and both
 `.ids` files BEFORE dispatch and graded them nonzero, capped each reviewer at one unit,
@@ -200,3 +205,83 @@ Reviewer evidence = `.agent/review-m1/rev-m1u3-4.md`, probes + browser harness
 | u3 | rev-m1u3-4 | R43 | pass | report R43; `terms.ts` byte-unchanged, bait text classifies three ways | — |
 | u3 | rev-m1u3-4 | R44 | fixed(low) | `.agent/contracts/m1u3.md` D8; `src/engine/{client,session}.ts` comments; `.agent/memory.md` | the unsourced 62.00 ms is replaced everywhere by its source's 50.11 ms across 80 sampled Node steps, scoped as a sample maximum; D8's false "no undeclared-API dependency" now names the three calls and cites R26 |
 | u3 | rev-m1u3-4 | R45 | fixed(high) | `.agent/contracts/m1u3.md` D9 scope note; `.agent/polish.md` "Browser WASM abort leaves a dead session" | closed on the acceptance check's SECOND branch: D9 and memory stop claiming browser heap recreation and record the abort, the dead-session P3.4 breach and the explicit-`reset()` recovery. Reachability bounds it — M1's six bounded catalog goals with no free-text intake reach no abort. Automatic recovery is a `pri high` polish entry gated on free-text intake |
+## Rows — u6
+
+Check set `.agent/contracts/m1u6-rev-checkset.md`, 28 rows — **u6 complete at 28/28**.
+Reviewer evidence = `.agent/review-m1/rev-m1u6-1.md`, probes on `wt/rev-m1u6-1` `ca41697`
+(`probe/m1u6-l23-l24.dom.test.js`, `probe/m1u6-l25.dom.test.js`, `probe/m1u6-l28-public-api.js`).
+The four `pass after fix` predicates the check set flagged for independent re-derivation —
+R3 (L07), R4 (L08), V6 (L19), V10 (L23) — each re-derived `pass`; V10 on the reviewer's
+own ten-state probe rather than on the committed suite.
+
+| unit | reviewer | row | verdict | evidence | acceptance check |
+| --- | --- | --- | --- | --- | --- |
+| u6 | rev-m1u6-1 | L01 | pass | report L01; `src/engine/client.ts:200`, `src/questions/service.ts:43`, `tests/engine-cancel.test.ts:172` | — |
+| u6 | rev-m1u6-1 | L02 | pass | report L02; `tests/engine-cancel.test.ts:199,215` | — |
+| u6 | rev-m1u6-1 | L03 | pass | report L03; `tests/engine-cancel.test.ts:235,253` | — |
+| u6 | rev-m1u6-1 | L04 | pass | report L04; `tests/engine-cancel.test.ts:277`, `src/engine/client.ts:98` | — |
+| u6 | rev-m1u6-1 | L05 | pass | report L05; `src/demo/DemoController.svelte.ts:40` | — |
+| u6 | rev-m1u6-1 | L06 | pass | report L06; `tests/demo-lifecycle.test.ts:197` | — |
+| u6 | rev-m1u6-1 | L07 | pass | report L07; ordering re-read at `DemoController.svelte.ts:159,169` | — (R3 `pass after fix` re-derived independently: `running` is assigned before dispatch and no unconditional `await previous?.done` precedes it) |
+| u6 | rev-m1u6-1 | L08 | pass | report L08; `DemoController.svelte.ts:157,169`; max concurrency 1 | — (R4 `pass after fix` re-derived: the chain is on `ActiveRun.query`, not on the settle promise) |
+| u6 | rev-m1u6-1 | L09 | pass | report L09; `DemoController.svelte.ts:175` | — |
+| u6 | rev-m1u6-1 | L10 | pass | report L10; `DemoController.svelte.ts:121` | — |
+| u6 | rev-m1u6-1 | L11 | pass | report L11; `DemoController.svelte.ts:117,155` | — |
+| u6 | rev-m1u6-1 | L12 | pass | report L12; `DemoController.svelte.ts:135` | — |
+| u6 | rev-m1u6-1 | L13 | pass | report L13; `DemoController.svelte.ts:25` frozen, `wallClockMs` 5000 | — |
+| u6 | rev-m1u6-1 | L14 | pass | report L14; real generated PVM, six ids at 7/5/2/1/3/12 | — |
+| u6 | rev-m1u6-1 | L15 | pass | report L15; `RunControls.svelte:51`; one status + one alert from first render | — |
+| u6 | rev-m1u6-1 | L16 | pass | report L16; ten distinct visible text labels, none colour- or icon-only | — |
+| u6 | rev-m1u6-1 | L17 | pass | report L17; `describe.ts:71`, all six `LimitKind` values | — |
+| u6 | rev-m1u6-1 | L18 | pass | report L18; `describe.ts:76` | — |
+| u6 | rev-m1u6-1 | L19 | pass | report L19; `describe.ts:53` | — (V6 `pass after fix` re-derived: an existential question projects no columns, so 12 proofs create no radios) |
+| u6 | rev-m1u6-1 | L20 | pass | report L20; `AnswerPanel.svelte:39`; one tab stop per group | — |
+| u6 | rev-m1u6-1 | L21 | pass | report L21; `RunControls.svelte:43`; native `disabled`, no `aria-disabled` substitute | — |
+| u6 | rev-m1u6-1 | L22 | pass | report L22; `RunControls.svelte:30` `$effect.pre` | — |
+| u6 | rev-m1u6-1 | L23 | pass | report L23; `probe/m1u6-l23-l24.dom.test.js` on `wt/rev-m1u6-1` | — (V10 `pass after fix` re-derived on an independent ten-state probe: region always mounted, `aria-busy` true only for `running`/`cancelling`, false during `booting`) |
+| u6 | rev-m1u6-1 | L24 | pass | report L24; same probe | — (sweep covers u7's About panel and the canonical-answer `<details>` closed, each open, and both open; only `color-contrast` incomplete) |
+| u6 | rev-m1u6-1 | L25 | fixed(low) | `src/demo/describe.ts:155`; `.agent/contracts/m1u6.md` V12; `tests/demo-controller.dom.test.ts` "V12 formats a recognized guideline id" | reviewer found `answerRows` renders `humanizeGuidelineId`'s structural label for a recognized `'$guideline_id'/5` binding, which V12 as first written outlawed, and that the committed V12 fixture binds an ATOM so the recognized branch never rendered. USER RULING: keep the formatter, amend the predicate — without it the four id-projecting questions render `write_canonical` bytes in every answer cell. Severity med → low: no shipped behaviour changed; the defects were the predicate text and the fixture. V12 now admits a structural formatter over engine-authored tokens with a `display` fallback and forbids `JSON.stringify`, glossed corpus vocabulary and JS-assembled Prolog syntax; a second DOM case asserts the label carries only the term's own tokens — green, red under mutant `L25` |
+| u6 | rev-m1u6-1 | L26 | pass | report L26; `pnpm gate` rc 0 at target `6ff2d9c` — 337 KB files, 3 assets, 187 tests in 11 files; `pnpm check` 356 files 0 errors 0 warnings | — |
+| u6 | rev-m1u6-1 | L27 | pass | report L27; `pnpm smoke` rc 0, five asset classes 200 | — (caveat, already `.agent/polish.md` "Smoke negative control is weak": removing the PVM alone still returns 0, so the recorded control proves the build path runs, not that the served output is fresh. Only removing `dist` with it returns 1) |
+| u6 | rev-m1u6-1 | L28 | fixed(low) | `src/demo/DemoController.svelte.ts`; `.agent/contracts/m1u6.md` fixed public API; `tests/demo-api.test.ts` | shipped surface exceeded the declared API by export `solutionsOf` and members `booted`, `solutions`, `solution`; nothing declared was missing. `solutionsOf` has a live consumer (`App.svelte:34`) so it joins the declared API; the other three had NO consumer in `src`, `tests`, `tools` or `probe` and are deleted, with the boot promise now `void this.#boot()`. The reviewer's AST probe is ported to `tests/demo-api.test.ts` so the claim reruns from committed state — green, red under mutant `L28` |
+
+## Rows — u2
+
+Check set `.agent/contracts/m1u2-rev-checkset.md`, 28 rows — **u2 complete at 28/28**.
+Reviewer evidence = `.agent/review-m1/rev-m1u2-1.md`, probes on `wt/rev-m1u2-1` `085eb57`
+(`probe/e03_contract_literals.py`, `e05_single_boot.py`, `e10_worker_rejection.py`,
+`e11_exhaustiveness.py`, `e16_shared_roundtrip.py`, `e18_unknown_dict.py`,
+`e19_json_stringify.py`, `e22_shipped_client_live.py`, `e23_overlay_mutant.py`,
+`e26_browser_evidence.py`, `e27_corpus_census.py`).
+**11 accepted defects carry to session 5**; none is fixed at this commit.
+
+| unit | reviewer | row | verdict | evidence | acceptance check |
+| --- | --- | --- | --- | --- | --- |
+| u2 | rev-m1u2-1 | E01 | pass | report E01; 63609-byte main chunk holds zero engine markers against the worker positive control | — |
+| u2 | rev-m1u2-1 | E02 | pass | report E02; one hashed 437132-byte PVM, inlining disabled | — |
+| u2 | rev-m1u2-1 | E03 | accepted fail(med) | `src/demo/copy.ts:43` "All 337 compiled documents…" — MAIN reconfirmed the literal | derive the displayed count from `BootOutcome.contract` so no shipped copy states a corpus number, then `probe/e03_contract_literals.py` exits 0. Boot's own comparison is sound; this is the second, UI-visible source of truth (P1.3, D0.5, invariant I) |
+| u2 | rev-m1u2-1 | E04 | pass | report E04; three injected loader failures each settle typed `code: boot` | — |
+| u2 | rev-m1u2-1 | E05 | accepted fail(med) | `src/engine/session.ts:124`; `probe/e05_single_boot.py` measured 2 loader calls, expected 1 | single-flight the in-progress boot (cache the promise, not the completed engine) so two concurrent `boot()` calls invoke `loadImage` once — P1.5 |
+| u2 | rev-m1u2-1 | E06 | pass | report E06; every request/response variant, all ten `PlTerm` shapes and bigint clone deeply equal | — |
+| u2 | rev-m1u2-1 | E07 | pass | report E07; unknown and duplicate ids each raise `code: protocol`, the claimed request settles once | — |
+| u2 | rev-m1u2-1 | E08 | pass | report E08; every declared response kind terminal, solutions one correlated array | — |
+| u2 | rev-m1u2-1 | E09 | pass | report E09; `protocol.ts` alone declares the correlated unions | — |
+| u2 | rev-m1u2-1 | E10 | accepted fail(med) | `src/engine/worker.ts`; `probe/e10_worker_rejection.py` rc 1 | route worker-local `unhandledrejection` to a typed parent failure; two in-flight calls settle typed with timers and listeners released. Parent `error`/`messageerror` already abort pending requests, so this is the one uncovered channel — and boot carries no client deadline, making it an unbounded pending path (P2.5) |
+| u2 | rev-m1u2-1 | E11 | accepted fail(med) | `src/engine/terms.ts:141` `createEncoder` switch — MAIN reconfirmed no `default: never` arm, unlike `describe.ts` | add the `never` exhaustiveness guard so a new `PlTerm` variant fails `pnpm check` instead of encoding as `undefined`; `probe/e11_exhaustiveness.py` exits 0 on a named error (P3.1) |
+| u2 | rev-m1u2-1 | E12 | pass | report E12; `foo(bar,7)` and `foo([bar,7])` keep the one-element envelope distinction | — |
+| u2 | rev-m1u2-1 | E13 | pass | report E13; `1 rdiv 3` → `1r3`, normalized `3 rdiv 1` → integer 3 | — |
+| u2 | rev-m1u2-1 | E14 | pass | report E14; atom and string of identical text keep distinct tags; direct decode of `f(V,V)` shares one id | — |
+| u2 | rev-m1u2-1 | E15 | pass | report E15; 30-digit integer exact as bigint; the `1.0 → integer 1` wrapper deviation is declared at the decode site | — |
+| u2 | rev-m1u2-1 | E16 | accepted fail(med) | `src/engine/terms.ts:141`; `probe/e16_shared_roundtrip.py` → re-query ids 2009 and 2011 | preserve alias identity through encode so `f(A,A)` re-enters sharing one variable. 20/20 ground shapes including the full `'$guideline_id'/5` already round-trip; only the shared-variable case splits (P3.7, invariant I) |
+| u2 | rev-m1u2-1 | E17 | pass | report E17; the worker-owned session decodes before constructing `PlSolution`; no native value is retained | — |
+| u2 | rev-m1u2-1 | E18 | accepted fail(low) — NARROWED | `src/engine/terms.ts:94-100`; report E18 + its Register entry | the dict half is REJECTED: `$tag` is a dict's own user tag, which SWI lets be any atom, so P3.11's "tag" is the `$t` wrapper discriminator and `{ $tag: 'unsupported' }` is a supported shape, not an unrecognized one — memory's `$tag`-dict ABI statement stands and E18's check text is what is wrong. RESIDUAL, real: the dict branch is tested AFTER every `$t` branch without requiring `$t` absent, so `{ $t: 'x', $tag: 'foo' }` — an unrecognized wrapper — decodes as a dict instead of failing closed. Fix = `value.$t === undefined &&` in the dict guard at line 94, plus a decode test for that exact object |
+| u2 | rev-m1u2-1 | E19 | accepted fail(med) | `src/engine/session.ts:335`; `probe/e19_json_stringify.py` — full gate stays rc 0 with `JSON.stringify(raw)` inserted | add a production static barrier for `JSON.stringify` over a native engine value whose mutant makes `pnpm gate` nonzero. P3.12 is currently comment-enforced only, and the corruption it names is measured (`'$guideline_id'/5` → arity 1, `1r3` → `3r1`) |
+| u2 | rev-m1u2-1 | E20 | pass | report E20; `term_string/3` with all three options; 20/20 adversarial terms re-read as variants | — |
+| u2 | rev-m1u2-1 | E21 | pass | report E21; counts read from the engine and compared to the manifest, no engine-output fixture | — |
+| u2 | rev-m1u2-1 | E22 | accepted fail(med) | `tests/engine-session.test.ts:122` proves 7 solutions through internal `EngineSession.solve`; `probe/e22_shipped_client_live.py` rc 1 | commit a real-image `EngineClient.query` test asserting seven category-A solutions. Client tests use scripted workers and live tests use the session, so no committed case joins the shipped surface to the real PVM (P5.2, G2) |
+| u2 | rev-m1u2-1 | E23 | pass | report E23; replacing runtime consult with a no-op turns the overlay test red | — |
+| u2 | rev-m1u2-1 | E24 | pass | report E24; planted controls fail per forbidden class, own `../cnl-ckc-demo` prefix accepted | — |
+| u2 | rev-m1u2-1 | E25 | pass | report E25; `kb/generated` absent → `pnpm test` rc 1, 9 failed files, no skipped live case | — |
+| u2 | rev-m1u2-1 | E26 | accepted fail(med) | `probe/e26_browser_evidence.py` rc 1; `pnpm smoke` covers built static output only | commit one browser script that boots BOTH the Vite dev server and the built output and reads 337 from each. P6.2's two deployment modes are assertion-only today (P6.2, G3). No browser or port was launched in this wave, per the shared-resource assignment |
+| u2 | rev-m1u2-1 | E27 | accepted fail(med) | `probe/e27_corpus_census.py` rc 1, 13/27 absent | add the 13 named cases and make the census exit 0 — term: negative and zero integers, float, shared-variable identity, hyphenated atom, operator term, empty atom, quoted atom, deep nesting; protocol: unmatched id, duplicate id, boot failure before a request, two-request correlation, request before boot completes. `EngineSession.handle` is directly driveable, so each is cheap (Q, invariant I) |
+| u2 | rev-m1u2-1 | E28 | accepted fail(low) — rides on E11 + E19 | report E28; `pnpm build` resolves only `swipl-bundle-no-data`, main chunk 63609 B with zero engine markers, worker 3074438 B | close E11 and E19, then rerun both mutants plus `pnpm build`. Every other concern in the C1 census ships; the ledger overstates only where two mechanical rules stay convention rather than gate-owned |

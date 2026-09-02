@@ -252,7 +252,7 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   `verify-fixes.py`. Everything else below this bullet is regenerable.
 - `.scratch/verify-fixes.py` = the mutation runner behind the `fixed` ledger rows: each
   mutant restores one pre-fix behaviour, reruns that fix's closing test, and must print
-  RED. 12 mutants, 12/12 RED. Restores every file it touches. Rerun =
+  RED. 18 mutants, 18/18 RED. Restores every file it touches. Rerun =
   `python3 -P .scratch/verify-fixes.py`.
 - The M1 review browser harness is `tools/probe-u3.mjs` on `wt/rev-m1u3-4` `48008d3`,
   derived from `tools/smoke.mjs`. `node tools/probe-u3.mjs <ROW>` drives built output in

@@ -84,25 +84,15 @@ export class DemoController {
   selected = $state<QuestionId | null>(null);
   solutionIndex = $state(-1);
 
-  /** Settles when the initial boot has resolved into `idle` or `boot-error`. */
-  readonly booted: Promise<void>;
-
   readonly #engine: DemoEngine;
   #active: ActiveRun | undefined;
   #disposed = false;
 
   constructor(engine: DemoEngine = createDemoEngine()) {
     this.#engine = engine;
-    this.booted = this.#boot();
-  }
-
-  get solutions(): readonly PlSolution[] {
-    return this.state.kind === 'settled' ? solutionsOf(this.state.result) : [];
-  }
-
-  /** The chosen row, or `undefined` while no row is chosen. */
-  get solution(): PlSolution | undefined {
-    return this.solutions[this.solutionIndex];
+    // `#boot` resolves the outcome into a state and never rejects, so the boot is
+    // fire-and-forget: exposing its promise would widen the public API for no reader.
+    void this.#boot();
   }
 
   select(id: QuestionId): void {
@@ -127,7 +117,8 @@ export class DemoController {
   }
 
   selectSolution(index: number): void {
-    if (Number.isInteger(index) && index >= 0 && index < this.solutions.length) {
+    const rows = this.state.kind === 'settled' ? solutionsOf(this.state.result).length : 0;
+    if (Number.isInteger(index) && index >= 0 && index < rows) {
       this.solutionIndex = index;
     }
   }
