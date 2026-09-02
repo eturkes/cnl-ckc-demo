@@ -84,7 +84,9 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
   `src/questions/QuestionCombobox.svelte` + `tests/question-combobox.dom.test.ts`;
   vitest `dom` project (jsdom 29.1.1 + `resolve.conditions:['browser']`),
   `svelte-check --fail-on-warnings` in `pnpm check`, intake rendered in `App.svelte`
-  against local `$state`. Select-only APG combobox hosted on a `<div role="combobox">`
+  against local `$state` — superseded at u6, where `App.svelte` takes a
+  `controller?: DemoController` prop and selection moved into the controller.
+  Select-only APG combobox hosted on a `<div role="combobox">`
   rather than a readonly input (`.agent/contracts/m1u5.md` D1); `bits-ui` rejected on
   surface, not correctness (D2) — its own 21-case probe is green on `wt/spike-m1u5-lib`
   `dca4f87`, and it drags 7 runtime packages, a portalled popup and +10.06 s of gate.
@@ -138,12 +140,12 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
   Real-browser visual QA over 11 states at 320/375/1280 px: `overflow=false`
   everywhere, and the three families resolve in the rendered `fontFamily`.
   `harvest=63% 152K/240K`, `main=96% 229K/240K`, `mate=72% 172K/240K` (res-m1u7).
-  Wave 1 failed as a wave: both teammates saturated without flushing (map 5/26 at
-  169K, res 4/16 at 172K) across two flush directives each, so MAIN self-derived
+  Wave 1 failed as a wave: both teammates saturated without flushing (map 10/26 at
+  182K, res 4/16 at 183K, both 76%) across two flush directives each, so MAIN self-derived
   the WCAG thresholds, the CDC terms and the `unreviewed` semantics. Harvest was
   map's 545-line browser probe, which MAIN ran directly.
   NOT verified: the probe is committed only on `wt/map-m1u7` `124e34d`, not in the
-  gate — it fails `svelte-check` with 41 type errors and porting it typed is in
+  gate — it fails `svelte-check` with 64 type errors and porting it typed is in
   `.agent/polish.md`. No `test-m1u7` red suite and no axe pass over the two new
   disclosures. Judgment review is M1's.
 
@@ -162,9 +164,29 @@ seed `.agent/review-m1.md`. Projection: 6 `kernel` units × ~35 rows ≈ 210 row
 spot-check, cross-cutting and `audit-m1` ⇒ size MILESTONE-REVIEW at ~3–4 sessions.
 
 Judgment-review ledger = `.agent/review-m1.md` (committed, read first by every resumed
-MILESTONE-REVIEW session). Session 1 takes u3 + u4 — the two units whose check sets are
-already fixed — plus `audit-m1`. u1, u2, u5, u6, u7, cross-cutting stay pending and
-enumerate their check sets when their session dispatches them.
+MILESTONE-REVIEW session); reviewer reports = `.agent/review-m1/`.
+
+Session 1 adjudicated **180 rows**: u3 25/45, u4 18/24, `audit-m1` 137/137. Six accepted
+defects are QUEUED FOR SESSION 2 with acceptance checks in the ledger — R03 (a cap equal
+to the solution count reports `answer-cap`), R09 (a heap limit does not recreate the
+engine, against D9), R11 (`EngineClient.query` switches on a catch-all `default`, not
+`never`), R23 (the `library(shlib)` tolerance applies at every phase, not image load
+alone), c06 (an extra query file silently yields a 7-entry catalog at rc 0), c12 (a
+byte-sort mutant of the serializer leaves `pnpm test` at 171/171, so the sort is unbound
+to `compareTerms`). R26 was ruled a contract defect, not a code defect: three undeclared
+`swipl-wasm` calls are load-bearing, so the package is now exact-pinned and memory
+records them. `audit-m1` found 16 stale claims; 13 are corrected in this commit and 3
+are rejected (A051 stale target, A084 instrument mismatch, A114 hedged by contract).
+
+Session 2 takes the 26 open u3/u4 rows, then enumerates u1, u2, u5, u6, u7 and
+cross-cutting. Successors inherit `wt/rev-m1u3-2` and `wt/rev-m1u4-2`, which hold every
+probe and red test the reports cite.
+
+Review-wave cost, session 1: `main=72% 173K/240K`, `mate=100% 240K/240K`
+(audit-m1, tied by rev-m1u3-2). All three teammates saturated — two needed two flush directives each and
+still closed short, repeating u7's wave-1 failure. What worked was `audit-m1`'s shape:
+a self-enumerated census flushed BEFORE any replay, then rows filled in place. Size
+session 2 at two teammates, not three, and seed every check set before dispatch.
 
 Calibration: `main=`/`est` ran 1.74 (u1), 1.87 (u2), 1.69 (u4) ⇒ **M1 ratio 1.77**, applied
 to every `kernel` estimate above. u6 is the first exact hit — raw 75K × 1.77 = 133K,

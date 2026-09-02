@@ -157,6 +157,13 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   is main-thread only, at `wallClockMs + 500 ms`.
 - `solve` yields a MACROTASK between solutions; a microtask yield admits no posted
   message and cannot deliver a cancel. Granularity = 62.00 ms worst real step over 80.
+- Production calls THREE undeclared `swipl-wasm` APIs, all load-bearing and all
+  ruled acceptable at M1 review R26: `query[Symbol.iterator]()` and `query.close?()`
+  (`common.d.ts` `Query` declares `next`/`once` alone) and the
+  `Compound`/`List`/`Rational`/`String`/`Var` constructors off `prolog` (`Prolog`
+  declares `call`/`forEach`/`query` alone). The package under-declares its own
+  surface, so `swipl-wasm` stays exact-pinned and every version bump must re-verify
+  these three against the shipped `.d.ts`.
 - `Query.close()` is load-bearing and undeclared (`.d.ts` declares only `next`/`once`).
   Abandoning an iterator on a cap, cancel or deadline leaves the frame open and every
   later query returns `failure` — measured as 8 cascading failures before it was wired.
@@ -186,16 +193,21 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   `pp/4`, `property/4`, `operator/3`, plus 9,053 Horn body→head edges.
 - Corpus load, measured: 337-file consult **2806ms** · concatenated source
   3299ms · `load_string` 3578ms · QLF **213ms** + 724ms boot · **saved PVM
-  335ms** boot+load (437,064 B; 10.8s to build). PVM is the shipping form, QLF
+  335ms** boot+load (437,132 B; `kb:reproduce` runs two forced builds in 8.741s).
+  PVM is the shipping form, QLF
   the fallback. Concatenated `pl/` = 4,716,517 B raw, **169,571 B** gzip-9.
-- Production build measured at 3,500,973 B raw / **1,339,723 B** gzip: worker
-  3,062,652 B + PVM 437,064 B. No COOP/COEP needed. `loadImageDefault` uses
+- Production build at u7 = 14 files / **3,773,949 B** raw: worker 3,074,247 B +
+  PVM 437,132 B + 6 woff2 176,732 B + licences. The pre-u7 figure was 3,500,973 B
+  raw / 1,339,723 B gzip, before fonts and licences joined `dist/`. Re-measure
+  this whole line whenever a unit adds a shipped asset class.
+  No COOP/COEP needed. `loadImageDefault` uses
   direct `eval` → a strict CSP host is a live risk, owned by M4.
 - Engine: unified stack limit 1GiB (reducible), Emscripten heap ceiling 2GiB,
   RSS ~119MB steady; asserted state persists across queries in one engine.
-- Oracle fidelity: live WASM **byte-matched** committed
-  `queries/answers/category-a-recommendations.pl` (7 rows, in order). The other
-  three committed queries are **value-equal**, not byte-proven. Committed
+- Oracle fidelity: live WASM **byte-matches all four** committed
+  `queries/answers/*.pl` — category-A 7 rows in order, then 158/158, 79/79 and
+  3/3 bytes. `tests/questions-live.test.ts` compares each with `toBe` against the
+  `result/1` argument read out of the verified bag at test time. Committed
   answers and traces are regression oracles only, never response data.
 - Anti-hard-coding recipe: vitest 4 Node env, one non-parallel worker, real
   saved image, inject a PID-unique overlay clause, assert the answer changes,
@@ -227,7 +239,15 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   `tar xzf kb/cnl-ckc-kb-*.tar.gz -C .scratch/ && ln -sfn cnl-ckc-kb-* .scratch/kb`.
 - `.scratch/validate-report.py` grades wave reports (`--units N`, `--verdict`).
   Scratch-local encoding; port it into the repo when a durable claim depends
-  on it.
+  on it. Report rows are `| id | finding | evidence |` — `--verdict` folds the
+  verdict into the finding cell, which must open `pass:` or `fail(low|med|high):`.
+  Grading needs a sibling `<stem>.ids`; a seeded all-`unknown` skeleton exits 1,
+  which is what makes it a usable deliverable-first counter.
+- MILESTONE-REVIEW ledger `.agent/review-m1.md` is HAND-MAINTAINED from here.
+  `.scratch/{seed,build}-ledger.py` generated its first shape from the committed
+  check sets and carry MAIN's session-1 rulings inline; both are scratch-local, so
+  treat the committed ledger as the source and re-derive a generator only if a
+  later session needs a bulk reshape.
 - Worktree toolchain env = symlink the primary `node_modules` into the worktree.
   `.gitignore` therefore spells `node_modules` without a trailing slash, since
   the slash form matches directories only and leaves the symlink untracked.
@@ -350,7 +370,10 @@ and survives `/resume`; a new session clears it.
   copies `dist` under a nested path, serves it with a request log, drives
   chromiumfish, and compares the rendered canonical text against the answer read out
   of the vendored bag at run time through `verifyBag`. Negative control: removing
-  `kb/generated/kb.pvm` gives rc 1 via `waitForSelector` timeout.
+  BOTH `kb/generated/kb.pvm` and `dist/` gives rc 1, thrown by the `pnpm build`
+  step. Removing the pvm alone leaves rc 0, because the smoke rebuilds only when
+  `dist/` is missing and otherwise serves the stale hashed asset — so the control
+  proves the build path, never a `waitForSelector` timeout.
 - The smoke keys on `[role="option"][id$="-option-<questionId>"]`; combobox option ids
   are `${uid}-option-${questionId}` and render in `QUESTION_IDS` order.
 - The chromiumfish launcher is resolved from the pnpm global store and ships no types,
@@ -396,9 +419,9 @@ and survives `/resume`; a new session clears it.
 - `pnpm smoke` must open the canonical-answer disclosure before reading it. A
   `<details>` body is not visible, so a visibility wait times out at 45 s.
 - Visual-QA walker = `tools/probe-u7.mjs` on branch `wt/map-m1u7` `124e34d`,
-  545 lines, real browser at 320/375/1280 px. Regeneration: copy it into
+  548 lines, real browser at 320/375/1280 px. Regeneration: copy it into
   `tools/` and run it; it writes PNGs to `.probe/` and JSON to stdout. It is NOT
-  in the gate — it fails `svelte-check` with 41 implicit-any errors, and the
+  in the gate — it fails `svelte-check` with 64 implicit-any errors, and the
   typed port is an open polish entry.
 - New `.mjs` in `tools/` is type-checked by `svelte-check` AND type-aware
   linted, so regex capture groups and destructured array elements arrive as
