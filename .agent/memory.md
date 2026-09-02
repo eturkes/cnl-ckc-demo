@@ -35,8 +35,20 @@ TS (frontend); Sigma.js+graphology, vis-network (graph).
 Single chain, `package.json` scripts:
 
 ```
-pnpm gate = pnpm kb:build && pnpm kb:asset-check && pnpm format:check && pnpm lint && pnpm check && pnpm test && pnpm build
+pnpm gate = pnpm kb:build && pnpm kb:asset-check && pnpm engine:check && pnpm copy:check
+          && pnpm contrast:check && pnpm format:check && pnpm lint && pnpm check && pnpm test && pnpm build
 ```
+
+`pnpm engine:check` (`tools/engine-check.mjs`, M1 review R35) decides u3's P6.2-P6.5:
+budget-required signatures + `.query`/`.ask` call-site arity; exactly one `swipl-wasm`
+importer, `src/engine/worker.ts` — the pattern must admit a BARE side-effect import,
+which a `from`-anchored one missed; our `PrologQuery`/`PrologConstructors` minus the
+INSTALLED `common.d.ts` must equal the R26 allowlist; a `terms.ts` export-surface pin.
+
+`pnpm browser:check` (`tools/browser-check.mjs`) stays OUT of the chain beside
+`pnpm smoke` and `kb:reproduce` — it needs a real browser. It drives the built output
+AND the Vite dev server to 337 documents (E26) and proves browser cancel delivery
+between solutions (R40). Shared browser plumbing = `tools/browser.mjs`.
 
 `kb:build` subsumes the old `kb:verify` (it proves the bag against its sidecar
 before parsing). `kb:reproduce` stays OUT of the chain — two forced builds cost
@@ -161,8 +173,10 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   is main-thread only, at `wallClockMs + 500 ms`.
 - `solve` yields a MACROTASK between solutions; a microtask yield admits no posted
   message and cannot deliver a cancel. Granularity = 50.11 ms worst step over 80 sampled
-  Node steps on the real KB — a sample maximum, never benchmarked per catalog goal and
-  never measured in a browser (M1 review R40/R44). The 62.00 ms figure had no source.
+  Node steps on the real KB — a sample maximum, never benchmarked per catalog goal.
+  **Browser delivery is proven** (M1 review R40, `pnpm browser:check`): `between(1,1e8,X)`
+  aborted at 400 ms settles `cancelled` after 90-95 solutions in ~405 ms, and the same
+  engine answers the next query. Per-step granularity in a browser stays unmeasured. The 62.00 ms figure had no source.
 - Production calls THREE undeclared `swipl-wasm` APIs, all load-bearing and all
   ruled acceptable at M1 review R26: `query[Symbol.iterator]()` and `query.close?()`
   (`common.d.ts` `Query` declares `next`/`once` alone) and the
@@ -252,8 +266,10 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   `verify-fixes.py`. Everything else below this bullet is regenerable.
 - `.scratch/verify-fixes.py` = the mutation runner behind the `fixed` ledger rows: each
   mutant restores one pre-fix behaviour, reruns that fix's closing test, and must print
-  RED. 31 mutants, 31/31 RED. Restores every file it touches. Rerun =
-  `python3 -P .scratch/verify-fixes.py`.
+  RED. 35 mutants, 35/35 RED. Restores every file it touches. Rerun =
+  `python3 -P .scratch/verify-fixes.py`. A mutant whose closing check is a GATE STEP
+  passes its argv in place of the test-file name. Two R35 mutants came back GREEN and
+  both were real defects in the fix under test — run it before believing a fix.
 - The M1 review browser harness is `tools/probe-u3.mjs` on `wt/rev-m1u3-4` `48008d3`,
   derived from `tools/smoke.mjs`. `node tools/probe-u3.mjs <ROW>` drives built output in
   a real browser and backs R38/R39/R41/R42/R45. Not in the gate; copy it into `tools/`
