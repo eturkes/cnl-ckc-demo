@@ -12,12 +12,12 @@ Grade: `python3 -P .scratch/validate-report.py .agent/review-m1/rev-m1u5-1.md --
 | I04 | pass: each of six controlled selections yields one true and five false attributes; null yields six false attributes | structure probe 1/1; `src/questions/QuestionCombobox.svelte:207-216` |
 | I05 | pass: active descendant is valued only while open, disappears when closed, and DOM focus stays on the host | structure probe 1/1; `src/questions/QuestionCombobox.svelte:160-172,188` |
 | I06 | pass: controlled text selects catalog copy or the prompt, and the combobox subtree contains no focusable descendant | structure probe 1/1; `src/questions/QuestionCombobox.svelte:191-194` |
-| I07 | unknown | unknown |
-| I08 | unknown | unknown |
-| I09 | unknown | unknown |
-| I10 | unknown | unknown |
-| I11 | unknown | unknown |
-| I12 | unknown | unknown |
+| I07 | fail(med): closed ArrowUp preserves a nonfirst controlled selection instead of activating option 1; other arrow variants pass | `.agent/review-m1/i07-i09.red.dom.test.ts` rc=1; `src/questions/QuestionCombobox.svelte:54-57,98-104` |
+| I08 | pass: closed Enter and Space open at the selection, while Home and End open at exact endpoints without emitting | behavior probe 11/13 pass; `src/questions/QuestionCombobox.svelte:100-109` |
+| I09 | fail(med): a fresh `w` from selected option 1 activates option 2, not the first catalog match; cycle, case and expiry pass | `.agent/review-m1/i07-i09.red.dom.test.ts` rc=1; `src/questions/QuestionCombobox.svelte:73-91` |
+| I10 | pass: regular arrows move one step and clamp at both endpoints; Home and End jump exactly, with zero selection emits | behavior probe 11/13 pass; `src/questions/QuestionCombobox.svelte:116-134` |
+| I11 | pass: open Enter emits the active catalog id exactly once, closes the popup and retains combobox DOM focus | behavior probe 11/13 pass; `tests/question-combobox.dom.test.ts:264-273` |
+| I12 | pass: Escape emits nothing, closes, clears typeahead and restores active state to the controlled selection on reopen | behavior probe 11/13 pass; `src/questions/QuestionCombobox.svelte:60-64,143-146` |
 | I13 | unknown | unknown |
 | I14 | unknown | unknown |
 | I15 | unknown | unknown |
@@ -46,6 +46,28 @@ can drift while the suite keeps stale explanatory claims.
 
 **Acceptance:** Replace both sentence literals with catalog-id descriptions. Then
 `node --test .agent/review-m1/red-m1u5-i03.test.mjs` must return rc=0.
+
+### I07
+
+**Ruling:** `show()` always seeds `activeIndex` from the controlled selection. The closed-key
+branch uses it unchanged for plain `ArrowUp`, so selection 4 opens at option 4. I07/K2 requires
+option 1. Keyboard users receive the same anchor for opposing arrows and cannot rely on the
+ruled directional entry behavior.
+
+**Acceptance:** From every nonfirst selection, closed `ArrowUp` must open at option 1, emit zero
+calls and preserve the closed `Alt+ArrowUp` no-op. Then run
+`pnpm exec vitest run --config .agent/review-m1/red-m1u5.config.ts -t 'I07 opens'`; it must return rc=0.
+
+### I09
+
+**Ruling:** Fresh typeahead always searches after `activeIndex`. From selected option 1, `w`
+skips that first matching label and activates option 2. This breaches I09's first-match predicate
+and makes a new prefix behave like an already-started cycle. A keyboard user can miss the first
+viable question until the search wraps.
+
+**Acceptance:** A fresh prefix must search from catalog option 1; only repeated single-character
+input may cycle after the active match. Preserve case-insensitive prefixes and 500 ms expiry. Then
+run `pnpm exec vitest run --config .agent/review-m1/red-m1u5.config.ts -t 'I09 opens'`; it must return rc=0.
 
 ## Register
 
