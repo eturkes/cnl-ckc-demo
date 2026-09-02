@@ -110,3 +110,11 @@ Off-spine improvements. Each entry carries the acceptance check that closes it.
   (M1 review c20 register). Accept: the contract states the label grammar and the test
   cites it, or the test drops the shape assertion and keeps the `not.toContain` gloss
   checks that carry the real force. `pri` low.
+
+- **Browser WASM abort leaves a dead session** — a runaway `assertz` aborts the WASM runtime
+  in a browser and surfaces as `{code:'prolog', message:'Aborted()...'}`, so `limit:'heap'`
+  never fires and `EngineClient` keeps the dead worker: every later query returns the same
+  abort, breaching u3 P3.4 (M1 review R45). Unreachable from M1's six bounded catalog goals;
+  free-text intake is what makes it reachable. Accept: an aborted runtime reaches the client
+  as its own terminal state that recreates the worker without a caller `reset()`, proven by a
+  browser probe whose next query reports 337 documents. `pri` high, gated on free-text intake.

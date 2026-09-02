@@ -112,3 +112,12 @@ export const isTerminal = (response: EngineResponse): boolean => {
     }
   }
 };
+
+/** Distributes so each arm keeps its own discriminant; a bare `Omit` over a union
+ * collapses to the shared keys and loses it. */
+type WithoutId<T> = T extends unknown ? Omit<T, 'id'> : never;
+
+/** The solve-side arms of `EngineResponse`, declared there once (u3 P6.1). */
+export type SolveResult = WithoutId<
+  Extract<EngineResponse, { kind: 'solutions' | 'failure' | 'limit' | 'cancelled' }>
+>;

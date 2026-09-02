@@ -13,16 +13,11 @@ import type {
   EngineError,
   EngineRequestBody,
   EngineResponse,
-  LimitKind,
-  PlSolution,
+  SolveResult,
 } from './protocol.js';
 
-export type QueryOutcome =
-  | { kind: 'solutions'; solutions: PlSolution[] }
-  | { kind: 'failure' }
-  | { kind: 'limit'; limit: LimitKind; solutions: PlSolution[] }
-  | { kind: 'cancelled'; solutions: PlSolution[] }
-  | { kind: 'error'; error: EngineError };
+/** The session's arms plus the one outcome only the client can produce. */
+export type QueryOutcome = SolveResult | { kind: 'error'; error: EngineError };
 
 export type BootOutcome =
   { kind: 'booted'; contract: EngineContract } | { kind: 'error'; error: EngineError };
@@ -31,7 +26,7 @@ export type BootOutcome =
  * Slack between the worker's own soft deadline and the client's hard one.
  *
  * The worker checks elapsed time between solutions, so it can overshoot by at most
- * one step — 62 ms worst case on real goals. The grace lets that soft trip report
+ * one step — 50.11 ms worst case over 80 sampled Node steps. The grace lets that soft trip report
  * itself, with its engine intact, before termination becomes the answer.
  */
 const HARD_GRACE_MS = 500;
@@ -48,7 +43,6 @@ const CONSULT_DEADLINE_MS = 10_000;
 
 interface Pending {
   resolve: (response: EngineResponse) => void;
-  generation: number;
   timer: unknown;
   abort: { signal: AbortSignal; listener: () => void } | undefined;
 }
@@ -171,7 +165,7 @@ export class EngineClient {
                 void this.cancel(id);
               },
             };
-      this.#pending.set(id, { resolve, generation: this.#generation, timer, abort });
+      this.#pending.set(id, { resolve, timer, abort });
       try {
         worker.postMessage({ ...request, id });
       } catch (cause) {
@@ -299,7 +293,8 @@ export class EngineClient {
     this.#worker?.terminate();
     this.#worker = undefined;
     // Retiring the generation before settling keeps a late response from the dead
-    // worker out of the requests the respawn is about to serve.
+    // worker out of the requests the respawn is about to serve. `#ensure()` advances
+    // it a second time when it respawns; only monotonicity is load-bearing.
     this.#generation += 1;
     this.#abort(reason);
     return asBoot(await this.#send({ kind: 'boot' }));

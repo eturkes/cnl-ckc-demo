@@ -92,8 +92,13 @@ const boot = async (factory, args, preRun) => {
 };
 
 // `qsave_program` probes for shared-library support, which a WASM build cannot
-// have. The two warnings it emits are engine noise, not payload diagnostics.
-const SAVE_NOISE = /qsave\.pl:\d+:|library\(shlib\)/;
+// have. Exactly two Warning lines are that probe's noise; an ERROR carrying the
+// same source location is a genuine save failure and stays fatal.
+const SAVE_NOISE = /^Warning:.*(?:qsave\.pl:\d+:|library\(shlib\))/u;
+
+/** Judge each physical line on its own: a chunk may carry several. */
+export const saveDiagnostics = (/** @type {string[]} */ lines) =>
+  lines.flatMap((line) => line.split('\n')).filter((line) => line.trim() !== '' && !SAVE_NOISE.test(line));
 
 /** @param {Engine} engine @param {string} source */
 const writeSource = (engine, source) => {
@@ -153,6 +158,25 @@ const requireLoaded = (contract, what) => {
 };
 
 /**
+ * The building engine must report one document per payload file this run fed it.
+ *
+ * `requireLoaded`'s `>= 1` floor saves an image for a 336-file corpus, and the
+ * literal 337 is forbidden as a production pass condition — so the run's own
+ * input count is the only expected value available. Each `% file:` marker
+ * `payloadSource` emits stands for exactly one payload document.
+ *
+ * @param {LiveContract} contract
+ * @param {string} source
+ * @param {string} what
+ */
+const requireEveryDocument = (contract, source, what) => {
+  const expected = (source.match(/^% file:/gmu) ?? []).length;
+  if (contract.documents !== expected) {
+    throw new Error(`${what}: engine reported ${contract.documents} documents, build fed ${expected} payload files`);
+  }
+};
+
+/**
  * Compile the payload and save the engine state, asserting the contract first.
  *
  * @param {string} source
@@ -166,8 +190,9 @@ export const buildImage = (source) =>
   failClosed(drain(), 'image build');
   const contract = readContract(engine);
   requireLoaded(contract, 'image build');
+  requireEveryDocument(contract, source, 'image build');
   engine.prolog.query("qsave_program('prolog.pvm').").once();
-  failClosed(drain().filter((line) => !SAVE_NOISE.test(line)), 'image save');
+  failClosed(saveDiagnostics(drain()), 'image save');
   return { image: engine.FS.readFile('prolog.pvm'), contract };
   });
 

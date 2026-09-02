@@ -160,7 +160,9 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   across 249.80 ms of `repeat,fail`; main-thread 25 ms fired at 25.97 ms. Hard deadline
   is main-thread only, at `wallClockMs + 500 ms`.
 - `solve` yields a MACROTASK between solutions; a microtask yield admits no posted
-  message and cannot deliver a cancel. Granularity = 62.00 ms worst real step over 80.
+  message and cannot deliver a cancel. Granularity = 50.11 ms worst step over 80 sampled
+  Node steps on the real KB — a sample maximum, never benchmarked per catalog goal and
+  never measured in a browser (M1 review R40/R44). The 62.00 ms figure had no source.
 - Production calls THREE undeclared `swipl-wasm` APIs, all load-bearing and all
   ruled acceptable at M1 review R26: `query[Symbol.iterator]()` and `query.close?()`
   (`common.d.ts` `Query` declares `next`/`once` alone) and the

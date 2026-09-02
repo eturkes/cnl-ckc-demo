@@ -192,6 +192,23 @@ describe('bag reader', () => {
       () => tar([{ name: '././@LongLink', typeflag: 'L', data: 'z'.repeat(5000) }]),
     ],
     ['an empty archive', 'empty-archive', () => tar([])],
+    [
+      'repeated traversal segments',
+      'dotdot-segment',
+      () => tar([{ name: `${ROOT}/a/../a/../a.pl`, data: 'x' }]),
+    ],
+    [
+      // Truncating at the interior NUL would hand back an accepted name.
+      'a NUL inside a GNU long name',
+      'control-char',
+      () =>
+        tar([{ name: `${ROOT}/data/guidelines/g/pl/${'n'.repeat(80)}\u0000evil.pl`, data: 'x' }]),
+    ],
+    [
+      'a truncated gzip stream',
+      'truncated',
+      () => tar([{ name: `${ROOT}/a.pl`, data: 'x' }]).slice(0, 20),
+    ],
   ];
 
   it.each(refusals)('refuses %s', (_what, reason, build) => {
@@ -266,6 +283,18 @@ describe('bag reader', () => {
         ),
     ],
     [
+      'an edited manifest digest',
+      'digest-mismatch',
+      () =>
+        wellFormed((entries) =>
+          entries.map((e) =>
+            e.name.endsWith('/manifest-sha256.txt')
+              ? { ...e, data: `${sha('other')}  ${PAYLOAD}\n` }
+              : e,
+          ),
+        ),
+    ],
+    [
       'a payload manifest reaching outside data/',
       'manifest-line',
       () =>
@@ -282,7 +311,12 @@ describe('bag reader', () => {
   });
 
   it('refuses rather than repairs: the offending name is reported unchanged', () => {
-    for (const hostile of [`${ROOT}/../escape.pl`, '/abs.pl', `${ROOT}/a\\b.pl`]) {
+    for (const hostile of [
+      `${ROOT}/../escape.pl`,
+      '/abs.pl',
+      `${ROOT}/a\\b.pl`,
+      `${ROOT}/a/../a/../a.pl`,
+    ]) {
       let caught: unknown;
       try {
         readBag(tar([{ name: hostile, data: 'x' }]));

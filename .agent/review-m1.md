@@ -11,7 +11,8 @@ overrules the reviewer), `unknown` (not yet adjudicated; carries forward).
 
 Every `fixed` row with a code fix is red under a mutant that removes it:
 `.scratch/verify-fixes.py` restores each pre-fix behaviour and reruns the closing test,
-**12/12 RED**. R28 is the one `fixed` row with no mutant — it closes as a contract ruling.
+**16/16 RED**. Contract-ruling closures carry no mutant: R28, R37, R41, R44, R45, and U04/U08
+which close on U03's and U11/U12's mutants.
 
 ## Coverage
 
@@ -35,12 +36,16 @@ claim that `wt/rev-m1u3-3` held a browser harness does not reproduce — that br
 carries Node vitest suites only, and it is also based on a pre-`61fdd78` commit, so it
 reverts session-2 fixes and must never be merged.
 
-Open accepted defects carried into session 4, each with its acceptance check below:
-U03, U04, U08, U11, U12 (u1) and R34, R35, R36, R37, R40, R41, R44, R45 (u3) — 13 rows,
-one of them `high`. Session 3 first closed the five it inherited (R01, R08, R28, R29,
-c19+c24) under a green `pnpm gate` (rc 0, 356 files 0 errors 0 warnings, 187 tests,
-3 assets). Sizing holds: a session closes roughly six, so 13 open needs two sessions of
-fixes alongside the remaining enumeration.
+Session 4 closed **10 of the 13** it inherited — U03, U04, U08, U11, U12 (u1) and R36, R37,
+R41, R44, R45 (u3) — under a clean-cache `pnpm gate` rc 0 (357 files 0 errors 0 warnings,
+195 tests / 12 files, 3 assets) and `.scratch/verify-fixes.py` 16/16 RED. Sizing was wrong in
+the useful direction: the estimate was six, the actual was ten, because five closed as contract
+rulings that cost a paragraph each rather than a test.
+
+Open into session 5: **R34, R35 and R40** (u3), plus whatever u2 and u6 raise. R40 is narrowed
+to one unmet part — browser cancel delivery between solutions. R34 and R35 are the recreation
+half of u3: P4.4/P4.5/P4.7 need committed tests and P6.2-P6.5 need to become deterministic gate
+steps, and both need a window, not a paragraph.
 
 What worked in session 3, and should be repeated: MAIN seeded both skeletons and both
 `.ids` files BEFORE dispatch and graded them nonzero, capped each reviewer at one unit,
@@ -144,16 +149,16 @@ Reviewer evidence = `.agent/review-m1/rev-m1u1-1.md`, probe logs on `wt/rev-m1u1
 | --- | --- | --- | --- | --- | --- |
 | u1 | rev-m1u1-1 | U01 | pass | report U01 | — |
 | u1 | rev-m1u1-1 | U02 | pass | report U02 | — |
-| u1 | rev-m1u1-1 | U03 | accepted fail(low) | report U03; `probe/red-nul.mjs` rc 1 | a NUL inside a GNU `L` long name is refused with its own typed reason — `readBag` truncates at the first NUL before `safeName` runs, so the member is accepted today |
-| u1 | rev-m1u1-1 | U04 | accepted fail(low) — same cause as U03 | report U04 | closes on U03: refusal must not repair, and truncating a NUL-bearing name into an accepted one is repair |
+| u1 | rev-m1u1-1 | U03 | fixed(low) | `tests/kb-bag.test.ts` "refuses a NUL inside a GNU long name" | the `L` branch strips one trailing NUL terminator and lets `safeName` refuse the rest, so an interior NUL is `control-char`, never truncated into an accepted name — green, red under mutant `U03` |
+| u1 | rev-m1u1-1 | U04 | fixed(low) — closed with U03 | `tests/kb-bag.test.ts` refuse-not-repair loop, now including `a/../a/../a.pl` | no rejected name is rewritten into an accepted one; the NUL repair path is gone and the verbatim-detail loop covers a repeated-traversal name |
 | u1 | rev-m1u1-1 | U05 | pass | report U05 | — |
 | u1 | rev-m1u1-1 | U06 | pass | report U06 | — |
 | u1 | rev-m1u1-1 | U07 | pass | report U07 | — |
-| u1 | rev-m1u1-1 | U08 | accepted fail(low) | report U08; `probe/u08-gaps.log` | `tests/kb-bag.test.ts` census reaches 20/20 on the Q corpus — edited-manifest-digest, truncated-gzip, NUL-in-name and literal `a/../a/../a` have no case, and the NUL gap is what hid U03 |
+| u1 | rev-m1u1-1 | U08 | fixed(low) | `tests/kb-bag.test.ts`, 36 cases (was 32) | the four named Q-corpus gaps have cases — edited-manifest-digest, truncated-gzip, NUL-in-long-name and literal `a/../a/../a` — taking the census to 20/20; two of them are red under mutants `U03` and `U08` |
 | u1 | rev-m1u1-1 | U09 | pass | report U09 | — |
 | u1 | rev-m1u1-1 | U10 | pass | report U10 | — |
-| u1 | rev-m1u1-1 | U11 | accepted fail(med) | report U11; `probe/red-p22.mjs` rc 1 | `requireLoaded` compares the engine-read document count against the number of `pl/` files this build fed, not `>=1`; a 336-file corpus must abort before `qsave_program`. Comparing against the run's own input count satisfies P2.2 without the literal that I forbids |
-| u1 | rev-m1u1-1 | U12 | accepted fail(low) | report U12 | `SAVE_NOISE` matches the two `library(shlib)` warnings by their text rather than by any `qsave.pl:<n>:` prefix; `ERROR: …qsave.pl:99: cannot write state` must abort the build |
+| u1 | rev-m1u1-1 | U11 | fixed(med) | `tests/kb-produce.test.ts` "refuses a corpus that loads fewer documents than it fed" | `requireEveryDocument` compares the engine-read count against this run's own `% file:` marker count BEFORE `qsave_program`; a 2-marker source reporting 1 document aborts — green, red under mutant `U11` |
+| u1 | rev-m1u1-1 | U12 | fixed(low) | `tests/kb-produce.test.ts` "tolerates the two qsave shlib warnings and nothing else" | `SAVE_NOISE` requires a `Warning:` prefix and `saveDiagnostics` splits chunks per line, so `ERROR: …qsave.pl:99: cannot write state` is fatal — green, red under mutant `U12` |
 | u1 | rev-m1u1-1 | U13 | pass | report U13 | — |
 | u1 | rev-m1u1-1 | U14 | pass | report U14; `probe/u14-interrupt.log` rc 137 | — |
 | u1 | rev-m1u1-1 | U15 | pass | report U15 | — |
@@ -185,13 +190,13 @@ Reviewer evidence = `.agent/review-m1/rev-m1u3-4.md`, probes + browser harness
 | u3 | rev-m1u3-4 | R33 | pass | report R33; main chunk 0 engine hits vs 5 in the worker chunk | — |
 | u3 | rev-m1u3-4 | R34 | accepted fail(med) | report R34 | a committed test asserts an overlay present, hard-cancels, and re-reads 337 from the replacement engine — the roadmap accept clause has no direct evidence today |
 | u3 | rev-m1u3-4 | R35 | accepted fail(med) | report R35 | P4.4, P4.5 and P4.7 each get a committed test, P6.2-P6.5 move into `pnpm gate` as deterministic checks, and the 6 unexercised Q-corpus cases are covered or struck with a reason |
-| u3 | rev-m1u3-4 | R36 | accepted fail(low) | report R36 | the dead field is removed, the double mutation carries its why, and the outcome union has one spelling |
-| u3 | rev-m1u3-4 | R37 | accepted fail(low) | report R37 | the browser hard-stop probe is committed and gated, or D1 is restated as a Node-proven composition |
+| u3 | rev-m1u3-4 | R36 | fixed(low) | `src/engine/{protocol,client,session}.ts`; `pnpm check` 357 files 0 errors 0 warnings | dead `Pending.generation` removed, the double `#generation` advance carries its why, and `SolveResult`/`QueryOutcome` derive from `EngineResponse` in `protocol.ts` — one declaration site, per P2.4/P6.1 |
+| u3 | rev-m1u3-4 | R37 | fixed(low) | `.agent/contracts/m1u3.md` D1 scope note | D1 is restated as a Node-proven composition whose browser leg was measured later at R39/R41; the gate stays browser-free on the `pnpm smoke` precedent. Documentation ruling: no mutant applies |
 | u3 | rev-m1u3-4 | R38 | pass | report R38; `node tools/probe-u3.mjs R38` | — |
 | u3 | rev-m1u3-4 | R39 | pass | report R39; main timer fired at 1004 ms while the worker soft check never did | — |
-| u3 | rev-m1u3-4 | R40 | accepted fail(med) | report R40 | D4 cites its own source's number (50.11 ms, not 62.00 ms), browser cancel delivery between solutions is proven, and any latency claim is scoped to the benchmarked corpus |
-| u3 | rev-m1u3-4 | R41 | accepted fail(low) | report R41; 5/5 browser cycles, restart 526.4-1732.5 ms median 641.6 | D5 and memory record the browser restart distribution rather than the Node figures 181.75-261.58 ms; post-termination CPU stays declared unmeasured |
+| u3 | rev-m1u3-4 | R40 | accepted fail(med) — NARROWED | report R40; `.agent/contracts/m1u3.md` D4 | two of three parts are closed at this session's fix commit — D4 now cites 50.11 ms and scopes it to 80 sampled Node steps on that corpus. REMAINING: browser cancel delivery between solutions is still unproven, in Node evidence only |
+| u3 | rev-m1u3-4 | R41 | fixed(low) | `.agent/contracts/m1u3.md` D5 | D5 now records browser restart 526.4-1732.5 ms median 641.6 as the UI-facing figure and marks 181.75-223.96 ms as Node; post-termination CPU is declared unmeasured in a browser. Memory already carried both. Documentation ruling |
 | u3 | rev-m1u3-4 | R42 | pass | report R42; `node tools/probe-u3.mjs R42` | — |
 | u3 | rev-m1u3-4 | R43 | pass | report R43; `terms.ts` byte-unchanged, bait text classifies three ways | — |
-| u3 | rev-m1u3-4 | R44 | accepted fail(low) — re-scoped by MAIN | report R44 | the undeclared-API half is already ruled at R26 (contract defect, closed by the exact pin plus the memory record of all three calls), so this row carries the granularity claim alone: the 62 ms bound is benchmarked beyond 80 Node steps or restated as covering that sample |
-| u3 | rev-m1u3-4 | R45 | accepted fail(high) | report R45; `node tools/probe-u3.mjs R45`, `Aborted()` at 12088 ms | in a browser, a runaway `assertz` loop must reach the client as a state that triggers engine recreation. Today it aborts the WASM runtime and surfaces as `code:'prolog'` with `Aborted(). Build with -sASSERTIONS for more info.`, so D9's heap path never runs. Either classify the abort as its own terminal state that recreates, or D9 and memory stop claiming heap recreation in the browser |
+| u3 | rev-m1u3-4 | R44 | fixed(low) | `.agent/contracts/m1u3.md` D8; `src/engine/{client,session}.ts` comments; `.agent/memory.md` | the unsourced 62.00 ms is replaced everywhere by its source's 50.11 ms across 80 sampled Node steps, scoped as a sample maximum; D8's false "no undeclared-API dependency" now names the three calls and cites R26 |
+| u3 | rev-m1u3-4 | R45 | fixed(high) | `.agent/contracts/m1u3.md` D9 scope note; `.agent/polish.md` "Browser WASM abort leaves a dead session" | closed on the acceptance check's SECOND branch: D9 and memory stop claiming browser heap recreation and record the abort, the dead-session P3.4 breach and the explicit-`reset()` recovery. Reachability bounds it — M1's six bounded catalog goals with no free-text intake reach no abort. Automatic recovery is a `pri high` polish entry gated on free-text intake |

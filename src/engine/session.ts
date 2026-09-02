@@ -20,9 +20,12 @@ import type {
   EngineError,
   EngineRequest,
   EngineResponse,
+  SolveResult,
   LimitKind,
   PlSolution,
 } from './protocol.js';
+
+export type { SolveResult };
 import {
   createEncoder,
   decodeOnce,
@@ -108,12 +111,6 @@ const requireInteger = (term: PlTerm | undefined, what: string): number => {
   }
   return term.value;
 };
-
-export type SolveResult =
-  | { kind: 'solutions'; solutions: PlSolution[] }
-  | { kind: 'failure' }
-  | { kind: 'limit'; limit: LimitKind; solutions: PlSolution[] }
-  | { kind: 'cancelled'; solutions: PlSolution[] };
 
 export class EngineSession {
   #engine: Engine | undefined;
