@@ -4,6 +4,12 @@ Off-spine improvements. Each entry carries the acceptance check that closes it a
 a `pri` — `high` = a defect reachable in the shipped product, `med` = a gate or
 evidence gap under a durable claim, `low` = a feature or a tidy-up.
 
+- **README setup path has no mechanical owner** — the ordered install/build path is a
+  durable human-facing claim verified once by hand (M1 review X23) and re-stales on any
+  `package.json`, lockfile or `tools/kb/` change. Accept: one script clones HEAD into a
+  scratch dir, runs only the README's commands, and asserts rc 0 plus the document and
+  module counts; it sits beside `smoke` and `browser:check` outside `pnpm gate`, because
+  it needs a clean clone. `pri` med.
 - **Phased boot telemetry** — replace the single boot spinner with ordered
   progress phases. Accept: each phase emits one accessible status event in
   order, and no percentage is reported that the runtime does not supply. `pri` low.
