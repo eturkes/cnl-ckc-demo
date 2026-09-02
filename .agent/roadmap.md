@@ -159,12 +159,31 @@ MILESTONE-REVIEW dispatch inputs — contract | fixed check set | evidence branc
 - u7 `.agent/contracts/m1u7.md` (34 predicates + verdict table + D1–D9) | — | `wt/map-m1u7` `124e34d` (probe), `wt/res-m1u7` `d712fa9`
 - u6 `.agent/contracts/m1u6.md` (32 predicates + verdict table + D1–D10 + Q1–Q8 rulings) | — | `wt/test-m1u6` `2f87e0b` 23/23, `wt/spike-m1u6-{handle,signal}` `b896d2e`/`3066404`
 
-u1–u4 shipped their mechanical assurance and carry no judgment adjudication; those rows
-seed `.agent/review-m1.md`. Projection: 6 `kernel` units × ~35 rows ≈ 210 rows plus u7
-spot-check, cross-cutting and `audit-m1` ⇒ size MILESTONE-REVIEW at ~3–4 sessions.
+Projection was 6 `kernel` units × ~35 rows ≈ 210 rows plus u7, cross-cutting and
+`audit-m1`, sized at 3–4 sessions. Actual after 3 sessions: **236 rows adjudicated**
+(u1 30, u3 45, u4 24, `audit-m1` 137), with u2, u5, u6, u7 and cross-cutting still
+unenumerated ⇒ **5–6 sessions**, because the projection counted rows but not the fix
+backlog each session inherits. Session-3 yield with seeded skeletons = 44 rows + 5 fixes
+in one window; size session 4 the same way.
 
 Judgment-review ledger = `.agent/review-m1.md` (committed, read first by every resumed
 MILESTONE-REVIEW session); reviewer reports = `.agent/review-m1/`.
+
+Session 3 adjudicated **44 rows** — u1 30/30 and u3's last 14, so **u1, u3 and u4 are
+complete** at 30/30, 45/45 and 24/24. It also closed all five defects carried in
+(R01, R08, R28, R29, c19+c24) at `7005a40`; `.scratch/verify-fixes.py` grew to 12 mutants
+and reports 12/12 RED, and `pnpm gate` is rc 0 from a clean cache — 356 files 0 errors
+0 warnings, 187 tests, 3 assets. 13 new accepted defects carry into session 4, one of
+them `high`: R45 proves that in a real browser a runaway `assertz` aborts the WASM runtime
+as `code:'prolog'` after 12088 ms instead of yielding `limit:'heap'`, so D9's recreation
+path never runs there. MAIN re-scoped R44 (its undeclared-API half was already ruled at
+R26) and rejected U29 (the read-exclusion synced-pair rule exempts gitignored caches, so
+the u1 contract is what is stale). Cost: `main=86% 207K/240K`, `mate=75% 180K/240K`
+(rev-m1u3-4, tied by rev-m1u1-1 at 71%). Both reviewers finished 100% of their rows in one window — the first wave
+here to do so. What produced that: MAIN seeded both report skeletons and both `.ids`
+files before dispatch and graded them nonzero, capped each reviewer at one unit, and gave
+the expensive unit an explicit cheap-first ordering. Session 4 takes u2, u5, u6, u7 and
+cross-cutting, and the 13 open fixes.
 
 Session 2 adjudicated **12 rows** (u3 R01/R07/R08/R28/R29/R30, u4 c19-c24 — **u4 is
 complete at 24/24**) and closed all six session-1 defects with fixes at `61fdd78`, each

@@ -178,11 +178,17 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   return `bindings success:true`, throw nothing, leave clauses loaded. Only drained
   stderr (`printErr` + `on_output`) reveals it, and the engine is already dirty, so a
   diagnostic poisons the session rather than the request.
-- Hard cancel: terminate 2.7-3.5 ms; terminate->respawn->boot 181.75-223.96 ms in Node
-  against a 335 ms browser boot floor; `dynamic/1` overlay takes 337 -> 338 and recreate
-  restores 337. Browser `Worker.terminate()` is UNMEASURED.
-- Heap exhaustion returns typed `assertz/1: Not enough resources: no_memory`, no throw,
-  no abort, ~2222464 KiB peak RSS; engine still answers but must be recreated.
+- Hard cancel: terminate 2.7-3.5 ms; terminate->respawn->boot 181.75-223.96 ms in Node.
+  **In a real browser the same cycle costs 526.4-1732.5 ms, median 641.6 over 5/5 cycles**
+  (M1 review R41) — the Node figure is not a browser figure, and any UI claim must use the
+  browser one. Each cycle drops the overlay and re-reads 337 from the replacement engine.
+  Post-termination worker CPU stays unmeasured.
+- Heap exhaustion **in Node** returns typed `assertz/1: Not enough resources: no_memory`,
+  no throw, no abort, ~2222464 KiB peak RSS; engine still answers but must be recreated.
+  **In a browser it does not.** A runaway `assertz` loop aborts the WASM runtime after
+  12088 ms and reaches the client as `{code:'prolog', message:'Aborted(). Build with
+  -sASSERTIONS for more info.'}` — never `limit:'heap'`, so D9's heap-triggered
+  recreation never runs there (M1 review R45, open `fail(high)`).
   `EngineClient.query` awaits that recreation on `limit:'heap'`, so a caller never sees
   a heap outcome before its replacement engine re-verified the contract. The wall-clock
   deadline fires its reset instead, because there the caller is already settled.
@@ -242,9 +248,14 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   still an open polish entry's acceptance-check source and must survive until it
   closes: `agents/map-m1u1.md`, `agents/spike-m1u1-det.md`, `validate-report.py`,
   `verify-fixes.py`. Everything else below this bullet is regenerable.
-- `.scratch/verify-fixes.py` = the mutation runner behind the six `fixed` ledger rows:
-  each mutant restores one pre-fix behaviour, reruns that fix's closing test, and must
-  print RED. Restores every file it touches. Rerun = `python3 -P .scratch/verify-fixes.py`.
+- `.scratch/verify-fixes.py` = the mutation runner behind the `fixed` ledger rows: each
+  mutant restores one pre-fix behaviour, reruns that fix's closing test, and must print
+  RED. 12 mutants, 12/12 RED. Restores every file it touches. Rerun =
+  `python3 -P .scratch/verify-fixes.py`.
+- The M1 review browser harness is `tools/probe-u3.mjs` on `wt/rev-m1u3-4` `48008d3`,
+  derived from `tools/smoke.mjs`. `node tools/probe-u3.mjs <ROW>` drives built output in
+  a real browser and backs R38/R39/R41/R42/R45. Not in the gate; copy it into `tools/`
+  to re-run.
 - `.scratch/kb/` = the vendored bag extracted for agent reading:
   `tar xzf kb/cnl-ckc-kb-*.tar.gz -C .scratch/ && ln -sfn cnl-ckc-kb-* .scratch/kb`.
 - `.scratch/validate-report.py` grades wave reports (`--units N`, `--verdict`).
