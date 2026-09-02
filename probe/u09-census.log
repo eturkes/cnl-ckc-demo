@@ -1,0 +1,13 @@
+root=cnl-ckc-kb-g952cc950a0c6
+members(regular)=1047  payload(data/)=1041  tag=6
+manifest-listed payload=1041  tagmanifest-listed=5
+tag members: NOTICE, README-dist.md, bagit.txt, manifest-sha256.txt, release-manifest.tsv, tagmanifest-sha256.txt
+payload+tag+tagmanifest = 1041 + 5 + 1 = 1047
+names >100 chars (need a GNU L header): 5
+  102 data/guidelines/cdc-2022-opioid/queries/answers/category-a-recommendations.pl
+  106 data/guidelines/cdc-2022-opioid/queries/answers/evidence-type-1-recommendation.pl
+  101 data/guidelines/cdc-2022-opioid/queries/pl/evidence-type-1-recommendation.pl
+  101 data/guidelines/cdc-2022-opioid/queries/traces/category-a-recommendations.pl
+  105 data/guidelines/cdc-2022-opioid/queries/traces/evidence-type-1-recommendation.pl
+raw scan: header blocks=1052  GNU L headers=5
+readBag standalone member count = 1047

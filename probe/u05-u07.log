@@ -1,0 +1,20 @@
+--- U05 BagIt 1.0 + both manifests verified ---
+  bagit-version          <- BagIt-Version: 0.97
+  bagit-version          <- BagIt-Version absent line
+  bagit-missing          <- bagit.txt missing
+  digest-mismatch        <- tagmanifest digest flipped
+  digest-mismatch        <- tag file body flipped (NOTICE)
+  manifest-missing       <- payload manifest missing
+  manifest-missing       <- tagmanifest missing
+--- U06 both-direction completeness ---
+  unlisted-payload       <- extra UNLISTED payload file
+  unlisted-payload       <- extra UNLISTED tag file
+  missing-member         <- manifest entry, no member
+  ACCEPTED               <- CONTROL well-formed bag
+--- U07 one-byte mutants on the REAL vendored bag ---
+  digest-mismatch        <- payload byte (a data/ .pl file)
+  bagit-version          <- tag byte (bagit.txt)
+  digest-mismatch        <- manifest line (manifest-sha256.txt)
+  wrote a sidecar-consistent tampered bag; run kb:build next
+  restore with: cp probe/bag.orig kb/cnl-ckc-kb-g952cc950a0c6.tar.gz && cp probe/sidecar.orig kb/cnl-ckc-kb-g952cc950a0c6.tar.gz.sha256
+  sanity: PAYLOAD=data/guidelines/g/pl/doc.pl DECL/NOTICE/BODY lengths 54/7/29, tar() live=true
