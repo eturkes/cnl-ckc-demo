@@ -36,7 +36,8 @@ Single chain, `package.json` scripts:
 
 ```
 pnpm gate = pnpm kb:build && pnpm kb:asset-check && pnpm engine:check && pnpm copy:check
-          && pnpm contrast:check && pnpm format:check && pnpm lint && pnpm check && pnpm test && pnpm build
+          && pnpm contrast:check && pnpm presentation:check && pnpm format:check
+          && pnpm lint && pnpm check && pnpm test && pnpm build
 ```
 
 `pnpm engine:check` (`tools/engine-check.mjs`, M1 review R35) decides u3's P6.2-P6.5:
@@ -45,16 +46,29 @@ importer, `src/engine/worker.ts` — the pattern must admit a BARE side-effect i
 which a `from`-anchored one missed; our `PrologQuery`/`PrologConstructors` minus the
 INSTALLED `common.d.ts` must equal the R26 allowlist; a `terms.ts` export-surface pin.
 
+`pnpm presentation:check` (`tools/presentation-check.mjs`, M1 review U7-20/U7-26)
+grades three DECLARED tables against source alone, no build and no browser: six
+`@font-face` rows (exact `5.3.0` pin, one face per package/subset pair, `swap`, a
+`unicode-range`, an installed local `@fontsource-variable` file, family names minus
+the `Variable` suffix, no remote url in `app.css`), three shipped OFL texts
+byte-equal to each package `LICENSE`, and seven selectors that render
+engine-authored text carrying `overflow-wrap`. Parse note: rule bodies are matched
+brace-free so only leaf rules match and `@media` never matches alone; CSS comments
+are stripped first, or a documented rule carries its comment in its selector list.
+
 `pnpm browser:check` (`tools/browser-check.mjs`) stays OUT of the chain beside
 `pnpm smoke` and `kb:reproduce` — it needs a real browser. It drives the built output
-AND the Vite dev server to 337 documents (E26) and proves browser cancel delivery
-between solutions (R40). Shared browser plumbing = `tools/browser.mjs`.
+AND the Vite dev server to 337 documents (E26), measures five interaction states at
+320 px for horizontal overflow (U7-19), and proves browser cancel delivery between
+solutions (R40). Shared browser plumbing = `tools/browser.mjs`.
 
 `kb:build` subsumes the old `kb:verify` (it proves the bag against its sidecar
 before parsing). `kb:reproduce` stays OUT of the chain — two forced builds cost
 10.5s — and is the rerunnable check behind the byte-reproducibility claim.
-Last clean-cache run (`rm -rf kb/generated && pnpm gate`): **rc=0**, 13.9s;
-svelte-check 319 files 0 errors; vitest 3 files / 38 tests; vite 112 modules.
+Last clean-cache run (`rm -rf kb/generated && pnpm gate`) at M1's close: **rc=0**;
+svelte-check 366 files 0 errors 0 warnings; vitest 16 files / 228 tests; vite 131
+modules. These four move on almost every commit — read them as a shape, and rerun
+the gate rather than quoting them (M1 review U7-24).
 
 `kb:asset-check`'s sibling-path scan matches `../cnl-ckc` only at a name
 boundary — this project's own `cnl-ckc-demo` shares that prefix and must not
@@ -271,10 +285,11 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   `verify-fixes.py`. Everything else below this bullet is regenerable.
 - `.scratch/verify-fixes.py` = the mutation runner behind the `fixed` ledger rows: each
   mutant restores one pre-fix behaviour, reruns that fix's closing test, and must print
-  RED. 35 mutants, 35/35 RED. Restores every file it touches. Rerun =
-  `python3 -P .scratch/verify-fixes.py`. A mutant whose closing check is a GATE STEP
-  passes its argv in place of the test-file name. Two R35 mutants came back GREEN and
-  both were real defects in the fix under test — run it before believing a fix.
+  RED. 45 mutants, 45/45 RED. Restores every file it touches. Rerun =
+  `python3 -P .scratch/verify-fixes.py`, or `… .py <substring>` to run one campaign.
+  A mutant whose closing check is a GATE STEP passes its argv in place of the
+  test-file name. Two R35 mutants came back GREEN and both were real defects in the
+  fix under test — run it before believing a fix.
 - The M1 review browser harness is `tools/probe-u3.mjs` on `wt/rev-m1u3-4` `48008d3`,
   derived from `tools/smoke.mjs`. `node tools/probe-u3.mjs <ROW>` drives built output in
   a real browser and backs R38/R39/R41/R42/R45. Not in the gate; copy it into `tools/`
