@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { BUDGET_MAX, validateBudget } from '../src/engine/budget.js';
+import { BUDGET_MAX, readOutcome, validateBudget } from '../src/engine/budget.js';
 import { EngineClient } from '../src/engine/client.js';
 import type {
   BudgetSpec,
@@ -292,13 +292,14 @@ describe('R05/R06 depth and inference compose with backtracking', () => {
   });
 
   it('yields early solutions before the inference limit terminates the run', async () => {
+    // Three cheap solutions, then a 5001-deep one that exceeds the per-step budget.
     const solved = await session.solve(
-      'member(N,[1,2,3,5000]),probe_deep(N).',
+      'between(1,10,X),N is (X//4)*5000+1,probe_deep(N).',
       budget({ inferences: 1000 }),
     );
     expect(solved).toMatchObject({ kind: 'limit', limit: 'inference' });
     if (solved.kind !== 'limit') return;
-    expect(solved.solutions.map((s) => s.bindings.N)).toEqual([
+    expect(solved.solutions.map((s) => s.bindings.X)).toEqual([
       { kind: 'integer', value: 1 },
       { kind: 'integer', value: 2 },
       { kind: 'integer', value: 3 },
@@ -745,6 +746,50 @@ describe('R31 budget assertions are engine-sensitive', () => {
       expect(solved.kind).not.toBe('limit');
     }
   });
+});
+
+// ---------------------------------------------------------------- R43
+
+describe('R43 classification reads decoded structure alone', () => {
+  it('ignores every message-shaped payload and selects on atom identity only', () => {
+    // Identical text, different decoded structure: only the atom classifies.
+    for (const kind of ['string', 'atom'] as const) {
+      const outcome = readOutcome({ BudgetInference_: { kind, value: 'inference_limit_exceeded' } });
+      expect(outcome.kind).toBe(kind === 'atom' ? 'limit' : 'solution');
+    }
+    // A compound or dict carrying the same functor text never selects a limit.
+    expect(
+      readOutcome({
+        BudgetResource_: { kind: 'compound', functor: 'stack', args: [{ kind: 'atom', value: 'x' }] },
+      }).kind,
+    ).toBe('solution');
+    expect(readOutcome({ BudgetResource_: { kind: 'dict', tag: 'stack', entries: {} } }).kind).toBe(
+      'solution',
+    );
+    // Misleading user bindings cannot fabricate a limit.
+    expect(
+      readOutcome({
+        Message: { kind: 'string', value: 'stack_overflow: resource_error(stack)' },
+        Other: { kind: 'atom', value: 'depth_limit_exceeded' },
+      }).kind,
+    ).toBe('solution');
+    // Exactly the three wrapper variables select, and each to its own state.
+    expect(readOutcome({ BudgetResource_: { kind: 'atom', value: 'stack' } })).toEqual({
+      kind: 'limit',
+      limit: 'stack',
+    });
+    expect(readOutcome({ BudgetDepth_: { kind: 'atom', value: 'depth_limit_exceeded' } })).toEqual({
+      kind: 'limit',
+      limit: 'depth',
+    });
+    // An unbound wrapper variable is not a limit.
+    expect(readOutcome({ BudgetResource_: { kind: 'variable', id: 1 } }).kind).toBe('solution');
+  });
+
+  it('catches stack structurally, so it never reaches the message-only native path', async () => {
+    const solved = await session.solve('length(L,20000000).', budget({ stackBytes: 8388608 }));
+    expect(solved).toMatchObject({ kind: 'limit', limit: 'stack' });
+  }, 60_000);
 });
 
 // ---------------------------------------------------------------- R26 / R44
