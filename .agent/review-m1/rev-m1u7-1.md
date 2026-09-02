@@ -22,10 +22,10 @@ Grade: `python3 -P .scratch/validate-report.py .agent/review-m1/rev-m1u7-1.md --
 | U7-14 | pass: Separate 30-word instruction and description mutants each exited 1 and named copy.ts, the record key, and count 30. | `node tools/copy-check.mjs`; `src/demo/copy.ts` |
 | U7-15 | pass: A jsdom probe rendered every projected descriptor humanized, preserved raw fallback, and byte-matched all six option labels to generated catalog questions. | `src/demo/descriptor.ts`; `src/demo/AnswerPanel.svelte:59-63` |
 | U7-16 | pass: The always-visible footer carries developing-agency attribution, nonendorsement, and free availability outside the closed About disclosure. | `src/App.svelte:79-83`; `src/demo/copy.ts:54-63` |
-| U7-17 | unknown | unknown |
-| U7-18 | unknown | unknown |
-| U7-19 | unknown | unknown |
-| U7-20 | unknown | unknown |
+| U7-17 | pass: About states projection, universal unreviewed status with the exact five-value vocabulary, fixed questions, and no clinical use. | `src/demo/copy.ts:31-50`; `/run/host/home/eturkes/Projects/cnl-ckc/tools/goal.py:3125-3147` |
+| U7-18 | pass: All three shipped OFL files compare byte-equal to package licences, and every disclosure href resolves in the built dist. | `dist/licenses/`; `src/demo/copy.ts:70-74` |
+| U7-19 | fail(low): The historical 11-state walker evidence is credible, but it was not rerun after presentation changes, so current-commit overflow remains unmeasured. | `.agent/contracts/m1u7.md:202`; `git diff 672f334..HEAD` |
+| U7-20 | fail(med): Grid and padding adapt correctly, but question and live error/status surfaces lack the required overflow-wrap containment. | `src/questions/QuestionCombobox.svelte:252-303`; `src/demo/RunControls.svelte:89-104` |
 | U7-21 | unknown | unknown |
 | U7-22 | unknown | unknown |
 | U7-23 | unknown | unknown |
@@ -133,19 +133,27 @@ Command: direct markup/copy inspection. Observed: all three requirements render 
 
 ### U7-17
 
-unknown
+Read every About-bound string. It states that the demo runs a compiled projection rather than unchanged CDC text; every compiled document is `unreviewed`; the other values are `approved`, `rejected`, `contested`, and `stale`; the six-question list is fixed; and the demo is not for clinical decisions. A direct bag scan found 337 `label` rows, all `unreviewed`. Upstream `tools/goal.py:3125-3147` derives exactly the same five counters.
+
+Command: direct copy inspection, tarfile label-row census, and upstream source read. Observed: `label_rows 337`, `Counter({'unreviewed': 337})`, and vocabulary equality.
 
 ### U7-18
 
-unknown
+Compared each built licence to its package source with `cmp -s`. Atkinson Hyperlegible Next, Atkinson Hyperlegible Mono, and Literata each returned rc 0; shipped sizes were 4599, 4609, and 4506 bytes. The three `FONT_LICENCES` hrefs each resolve to a regular file below `dist/`, and `AboutPanel` renders the complete array.
+
+Command: three `cmp -s` calls plus href-resolution census. Observed: three rc 0 comparisons and three `exists True` links.
 
 ### U7-19
 
-unknown
+**Severity: low.** The contract records a real-browser walker at commit `124e34d`: 11 states at 320, 375, and 1280 CSS px, all `overflow=false`. I did not rerun that browser-only walker because it is absent from this branch and outside the authorized command set. Current HEAD changed `App.svelte`, `AboutPanel.svelte`, `copy.ts`, and combobox logic after u7, including a newly rendered corpus line. Thus the historical measurement has clear provenance but does not measure the current commit.
+
+Breached predicate: U7-19/R1 current-commit measurement. Impact: no overflow is observed, but the three-width, every-state guarantee is unsupported after the later presentation diff. **Acceptance check:** run the typed/current walker over every reachable state at 320/375/1280 and require `scrollWidth <= clientWidth` for every row.
 
 ### U7-20
 
-unknown
+**Severity: medium.** `AnswerPanel.svelte:126-139` uses one grid column below 34rem and two above; `App.svelte:107` uses viewport-scaled `clamp` padding. Binding labels, values, and canonical code carry `overflow-wrap:anywhere`. However, the census found no containment on `.box` or `.list li`, which render generated question strings, and none on `.status` or `.alert`, which can render a question or engine-authored error. Only three answer selectors define the property.
+
+Breached predicate: U7-20/R4. Impact: a long unbroken catalog or engine error token can force horizontal overflow on narrow viewports despite the adaptive grid. **Acceptance check:** add explicit inherited or per-surface `overflow-wrap:anywhere` covering combobox value/options and live status/alert, then render adversarial unbroken strings at 320 px with `scrollWidth <= clientWidth`.
 
 ### U7-21
 
