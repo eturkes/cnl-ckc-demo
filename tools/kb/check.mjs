@@ -44,6 +44,13 @@ const SIBLING = new RegExp(`${['\\.\\.', 'cnl-ckc'].join('/')}(?![\\w.-])`);
  */
 const SERIALIZE = new RegExp(['JSON', 'stringify'].join('\\.'));
 const SERIALIZE_ROOTS = ['src'];
+/**
+ * Question sentences are compiled from the bag, so source holds none of them —
+ * literal or comment. A copy reads as fact and drifts silently the next time the
+ * corpus recompiles. `tests/` is in scope because the suites assert labels through
+ * `QUESTION_CATALOG`; the sentences themselves are never the fixture (m1u5 I03).
+ */
+const QUESTION_ROOTS = ['src', 'tests'];
 
 /** @param {string} path @returns {string[]} every file at or under `path` */
 const walk = (path) => {
@@ -118,6 +125,29 @@ for (const root of SERIALIZE_ROOTS) {
   }
 }
 
+/** @type {string[]} */
+let questions = [];
+try {
+  // Same `JSON.parse` discipline as `loadManifest`: through `unknown`, so the shape
+  // claim is explicit rather than an `any` that lint would refuse.
+  const parsed = /** @type {unknown} */ (
+    JSON.parse(readFileSync(join(GENERATED_DIR, 'question-catalog.json'), 'utf8'))
+  );
+  questions = /** @type {{ entries: { question: string }[] }} */ (parsed).entries.map(
+    (entry) => entry.question,
+  );
+} catch {
+  fail('question-catalog.json: unreadable, so the question-literal scan cannot run');
+}
+for (const root of QUESTION_ROOTS) {
+  for (const path of walk(join(ROOT, root))) {
+    const source = readFileSync(path, 'latin1');
+    for (const question of questions) {
+      if (source.includes(question)) fail(`catalog question text in ${relative(ROOT, path)}`);
+    }
+  }
+}
+
 if (failures.length > 0) {
   process.stderr.write(`kb:asset-check failed —\n${failures.map((line) => `  ${line}`).join('\n')}\n`);
   process.exitCode = 1;
@@ -127,6 +157,7 @@ if (failures.length > 0) {
     `kb:asset-check ok — ${assets.length} assets verified, catalog re-derived from the bag, ` +
       `sibling-path scan clean over ${SCAN_ROOTS.length} roots, ` +
       `answer-oracle scan clean over ${PRODUCTION_ROOTS.length} roots, ` +
-      `JSON-serialization scan clean over ${SERIALIZE_ROOTS.length} root\n`,
+      `JSON-serialization scan clean over ${SERIALIZE_ROOTS.length} root, ` +
+      `${questions.length} question sentences absent from ${QUESTION_ROOTS.length} roots\n`,
   );
 }

@@ -118,3 +118,18 @@ Off-spine improvements. Each entry carries the acceptance check that closes it.
   free-text intake is what makes it reachable. Accept: an aborted runtime reaches the client
   as its own terminal state that recreates the worker without a caller `reset()`, proven by a
   browser probe whose next query reports 337 documents. `pri` high, gated on free-text intake.
+- **Combobox predicates are jsdom-only** — 9 of u5's 26 predicates rest on behavior jsdom
+  stubs: S1/S7 (accessible name, activedescendant announcement), K5 (real timer scheduling
+  and key repeat), K8/K10/P2/P3 (native focus traversal, `focusout.relatedTarget` ordering,
+  mousedown prevention), B1 (`scrollIntoView` visibility), B3 (axe without layout or canvas)
+  (M1 review I26). Accept: one `tests/question-combobox.browser.test.ts` drives real keyboard,
+  Tab and pointer input in Chromium, reads focus after each, reads the AX tree for S1/S7,
+  wraps native `scrollIntoView` to record receiver and arguments while preserving it,
+  exercises K5 on both sides of 500 ms, and runs axe closed and open. `pri` med.
+- **Boot carries no deadline** — `EngineClient.boot()` arms no timer, so a worker that never
+  answers `boot` leaves the caller pending forever; `query` and `consult` are the only
+  bounded requests (M1 review E10, excluded from that fix on purpose). A naive deadline
+  loops, because the boot failure path calls `reset()`, which boots again. Accept: a hung
+  boot settles as `{ kind: 'error', code: 'worker' }` inside a bounded wall clock, the
+  recovery attempts one recreate at most, and a worker stub that never replies proves
+  both. `pri` med.

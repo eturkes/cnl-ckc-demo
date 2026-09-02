@@ -177,7 +177,8 @@ describe('K keyboard, closed', () => {
   });
 
   it('K2 opens on ArrowUp at option 1 and ignores Alt+ArrowUp', () => {
-    render();
+    // A non-first selection is what separates K2 from K1: ArrowUp must ignore it.
+    render(QUESTION_IDS[3]);
     key('ArrowUp');
     expect(isOpen()).toBe(true);
     expect(active()).toBe(0);
@@ -210,7 +211,7 @@ describe('K keyboard, closed', () => {
   it('K5 opens on a printable key and runs a 500 ms prefix buffer', () => {
     vi.useFakeTimers();
     render(QUESTION_IDS[0]);
-    // "Is there a recommendation?" is the only label starting with `i`.
+    // `recommendation-exists` is the only label starting with `i`.
     key('i');
     expect(isOpen()).toBe(true);
     expect(active()).toBe(5);
@@ -231,11 +232,38 @@ describe('K keyboard, closed', () => {
   it('K5 matches a multi-character prefix case-insensitively', () => {
     vi.useFakeTimers();
     render(QUESTION_IDS[0]);
-    // "What does a dosage-reduction have?" is the only `wha` label.
+    // `dosage-reduction-content` is the only `wha` label.
     key('W');
     key('h');
     key('A');
     expect(active()).toBe(2);
+  });
+
+  it('K5 opens a fresh prefix at the first match, not after the selection', () => {
+    vi.useFakeTimers();
+    render(QUESTION_IDS[3]);
+    key('w');
+    expect(active()).toBe(0);
+    // Only the repeat walks on from that match.
+    key('w');
+    expect(active()).toBe(1);
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it('K5 holds the prefix buffer to the 500 ms boundary', () => {
+    vi.useFakeTimers();
+    render(QUESTION_IDS[0]);
+    key('w');
+    vi.advanceTimersByTime(499);
+    key('h');
+    vi.advanceTimersByTime(499);
+    key('a');
+    // Both gaps stayed inside the window, so `wha` matched as one prefix.
+    expect(active()).toBe(2);
+    vi.advanceTimersByTime(500);
+    // Expiry at exactly 500 ms makes the next `w` a fresh prefix, not a cycle.
+    key('w');
+    expect(active()).toBe(0);
   });
 });
 

@@ -362,10 +362,10 @@ and survives `/resume`; a new session clears it.
 - ESLint types a `.svelte` import as `any`, so a member access on a narrowed value
   inside a template reads as unsafe. Derive the value in the script instead.
 - Svelte 5 `unmount()` returns a promise → `void unmount(app)` in tests.
-- `bits-ui` 2.19.0 works and its own 21-case probe is green (`wt/spike-m1u5-lib`
-  `dca4f87`), but it needs `@internationalized/date` as a required peer, ships 7
-  runtime packages, portals the popup outside the app root, and costs the dom project
-  10.06 s. The demo hand-authors its combobox instead.
+- `bits-ui` 2.19.0 works — 21 dom cases green on a spike — but it needs
+  `@internationalized/date` as a required peer, ships 7 runtime packages, portals the
+  popup outside the app root, and costs the dom project 10.06 s. The demo
+  hand-authors its combobox instead.
 - APG's select-only example commits the active option on blur. This widget cancels
   instead, matching a native `select`, because u6 turns a selection into a Prolog run.
 

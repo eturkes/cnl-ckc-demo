@@ -69,16 +69,22 @@
     hide();
   };
 
-  /** APG search order: start after the active option and wrap. */
-  const search = (prefix: string, from: number): number => {
+  /** First label matching `prefix`, scanning from `from` and wrapping. */
+  const scan = (prefix: string, from: number): number => {
     const order = [...LABELS.slice(from), ...LABELS.slice(0, from)];
-    const starts = (label: string, text: string): boolean => label.toLowerCase().startsWith(text);
-    const match = order.find((label) => starts(label, prefix));
-    if (match !== undefined) return LABELS.indexOf(match);
+    const match = order.find((label) => label.toLowerCase().startsWith(prefix));
+    return match === undefined ? -1 : LABELS.indexOf(match);
+  };
+
+  // K5 diverges from APG's example here: a fresh prefix names the FIRST matching
+  // question, so it scans from option 1. APG scans from after the active option,
+  // which lands the same keystroke on a different question per selection.
+  const search = (prefix: string, after: number): number => {
+    const first = scan(prefix, 0);
+    if (first >= 0) return first;
     const head = prefix[0] ?? '';
-    if (![...prefix].every((char) => char === head)) return -1;
-    const cycled = order.find((label) => starts(label, head));
-    return cycled === undefined ? -1 : LABELS.indexOf(cycled);
+    // Only a repeated single character cycles, walking on from the active option.
+    return [...prefix].every((char) => char === head) ? scan(head, after) : -1;
   };
 
   const type = (char: string): void => {
@@ -97,13 +103,14 @@
     if (ctrlKey || metaKey) return;
     if (!open) {
       if (key === 'ArrowUp' && altKey) return; // K2: no-op while closed
-      if (key === 'ArrowDown' || key === 'ArrowUp' || key === 'Enter' || key === ' ') {
+      if (key === 'ArrowDown' || key === 'Enter' || key === ' ') {
         event.preventDefault();
         show();
-      } else if (key === 'Home' || key === 'End') {
+      } else if (key === 'ArrowUp' || key === 'Home' || key === 'End') {
+        // K2 + K4: these three open at a fixed end, not at the selection.
         event.preventDefault();
         show();
-        activeIndex = key === 'Home' ? 0 : LAST;
+        activeIndex = key === 'End' ? LAST : 0;
       } else if (printable(key)) {
         event.preventDefault();
         show();

@@ -12,6 +12,8 @@ import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { QUESTION_CATALOG } from '../src/questions/catalog.js';
+
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const CONTROL = join(ROOT, 'src', 'zz-forbidden-reach-control.ts');
 // Assembled at run time so this file is not itself a literal reach the scan must skip.
@@ -66,5 +68,18 @@ describe('JSON serialization ban over src/', () => {
     const { status, output } = assetCheck();
     expect(status).not.toBe(0);
     expect(output).toContain('JSON serialization in src/zz-forbidden-reach-control.ts');
+  });
+});
+
+// M1 review I03: a suite comment carried two generated questions, so the copy the
+// corpus owns lived in two places. The sentence is read from the catalog here for
+// the same reason the scan exists — this file is one of the scanned surfaces.
+describe('catalog question text ban over src/ and tests/', () => {
+  it('fails kb:asset-check on a copied question sentence', () => {
+    const sentence = QUESTION_CATALOG['recommendation-exists'].question;
+    writeFileSync(CONTROL, `export const label = ${JSON.stringify(sentence)};\n`);
+    const { status, output } = assetCheck();
+    expect(status).not.toBe(0);
+    expect(output).toContain('catalog question text in src/zz-forbidden-reach-control.ts');
   });
 });

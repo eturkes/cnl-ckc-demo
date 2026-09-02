@@ -91,7 +91,8 @@ contract. Parallelism lives inside a unit's teammate wave, not across units.
   surface, not correctness (D2) — its own 21-case probe is green on `wt/spike-m1u5-lib`
   `dca4f87`, and it drags 7 runtime packages, a portalled popup and +10.06 s of gate.
   Gate rc=0: 342 files 0 errors 0 warnings, 133 tests, 3 assets. 26 contract
-  predicates, all `pass`.
+  predicates all `pass` at close; the M1 review then found K2 and K5 breached in the
+  widget (I07, I09), both fixed with the suite cases that bind them.
   `harvest=56% 135K/240K`, `main=87% 209K/240K`, `mate=47% 114K/240K` (spike-m1u5-lib).
   NOT verified: no separate `test-m1u5` red suite (D6) and no real-browser run —
   every predicate is jsdom-observed. Judgment review is M1's.
@@ -155,24 +156,37 @@ MILESTONE-REVIEW dispatch inputs — contract | fixed check set | evidence branc
 - u2 `.agent/contracts/m1u2.md` | `.agent/contracts/m1u2-rev-checkset.md`, 28 rows | `wt/test-m1u2` `b0fb200`, `wt/spike-m1u2-{js,pl}`
 - u3 `.agent/contracts/m1u3.md` | `.agent/contracts/m1u3-rev-checkset.md`, 45 rows | `wt/test-m1u3` `22c8b97`, `wt/spike-m1u3-{js,pl}`
 - u4 `.agent/contracts/m1u4.md` | `.agent/contracts/m1u4-rev-checkset.md`, 24 rows | `wt/test-m1u4` `0240aae`, `wt/spike-m1u4-{gen,src}`
-- u5 `.agent/contracts/m1u5.md` (26 predicates + verdict table) | — | `wt/spike-m1u5-lib` `dca4f87`; map report `.scratch/agents/map-m1u5.md` 29/29
+- u5 `.agent/contracts/m1u5.md` (26 predicates + verdict table) | `.agent/contracts/m1u5-rev-checkset.md`, 28 rows | `wt/spike-m1u5-lib` `dca4f87`, `wt/rev-m1u5-1` (three acceptance harnesses)
 - u7 `.agent/contracts/m1u7.md` (34 predicates + verdict table + D1–D9) | — | `wt/map-m1u7` `124e34d` (probe), `wt/res-m1u7` `d712fa9`
 - u6 `.agent/contracts/m1u6.md` (32 predicates + verdict table + D1–D10 + Q1–Q8 rulings) | — | `wt/test-m1u6` `2f87e0b` 23/23, `wt/spike-m1u6-{handle,signal}` `b896d2e`/`3066404`
 
 Projection was 6 `kernel` units × ~35 rows ≈ 210 rows plus u7, cross-cutting and
-`audit-m1`, sized at 3–4 sessions. Actual after 4 sessions: **292 rows adjudicated**
-(u1 30, u2 28, u3 45, u4 24, u6 28, `audit-m1` 137), with u5, u7 and cross-cutting still
+`audit-m1`, sized at 3–4 sessions. Actual after 5 sessions: **320 rows adjudicated**
+(u1 30, u2 28, u3 45, u4 24, u5 28, u6 28, `audit-m1` 137), with u7 and cross-cutting still
 unenumerated ⇒ **6 sessions**, because the projection counted rows but not the fix backlog
-each session inherits. Yield with seeded skeletons is stable at two reviewers per window:
-44 rows + 5 fixes (session 3), 56 rows + 12 fixes (session 4). Session 5 inherits 13 fixes
-and 3 unenumerated surfaces, so it is fix-heavy — size it at one reviewer, not two.
+each session inherits. Yield with seeded skeletons: 44 rows + 5 fixes (session 3, two
+reviewers), 56 rows + 12 fixes (session 4, two), 28 rows + 16 fixes (session 5, one). Session
+6 inherits 3 fixes and 2 unenumerated surfaces — the lightest fix load of the run ⇒ size it at
+two reviewers, u7 (`docs`, spot-check grade) and cross-cutting.
 
 Judgment-review ledger = `.agent/review-m1.md` (committed, read first by every resumed
 MILESTONE-REVIEW session); reviewer reports = `.agent/review-m1/`.
 
-Session 4 adjudicated **56 rows** — u2 28/28 and u6 28/28 — so **u1, u2, u3, u4 and u6 are
-complete**; only u5, u7 and cross-cutting remain unenumerated. It closed **12 defects** at
-`541b736` (the 10 inherited) and at this commit (u6's L25 and L28), leaving 13 open: u3's
+Session 5 adjudicated **28 rows** — u5 28/28 — so **u1 through u6 are complete**; only u7 and
+cross-cutting remain unenumerated. It closed **16 defects**: eleven inherited at `b3ca42c`
+(u2's E03, E05, E10, E11, E16, E18, E19, E22, E27, E28 and u3's R34) plus u5's own I03, I07,
+I09, I23 and I28 at this commit, leaving 3 open — R35, R40, E26. `.scratch/verify-fixes.py`
+grew to 31 mutants, 31/31 RED, and `pnpm gate` is rc 0 from a clean `kb/generated` — 361 files
+0 errors 0 warnings, 221 tests in 15 files, 3 assets. u5's two `med` fails are the session's
+finding: the widget opened closed-`ArrowUp` at the current selection and started a fresh
+typeahead prefix after the active option, breaching K2 and K5, and u5's own suite asserted both
+predicates from a starting state where the correct and the broken widget agree — the same shape
+as u2's E16, whose round-trip case compared two equally-broken decodes with `=@=`. A green
+suite is evidence about the cases it names, never about the predicate they were written for.
+Cost: `main=77% 186K/240K`, `mate=37% 88K/240K` (rev-m1u5-1), which finished 28/28 in one window.
+
+Session 4 adjudicated **56 rows** — u2 28/28 and u6 28/28. It closed **12 defects** at
+`541b736` (the 10 inherited) and at `70c49b5` (u6's L25 and L28), leaving 14 open: u3's
 R34/R35/R40 and u2's eleven. `.scratch/verify-fixes.py` grew to 18 mutants, 18/18 RED, and
 `pnpm gate` is rc 0 from a clean `kb/generated` — 198 tests in 13 files, 3 assets, 0 errors
 0 warnings. u6 came back nearly clean (26 pass, 2 fail, both low after ruling); u2 came back

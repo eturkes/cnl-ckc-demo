@@ -150,7 +150,7 @@ describe('question catalog', () => {
 
   it('rejects every input that is not one of the six ids', () => {
     const rejected: unknown[] = [
-      'Which recommendation is a category-A-recommendation?',
+      QUESTION_CATALOG['category-a-recommendations'].question,
       'true',
       'guideline_entity(actual,A,recommendation,countable)',
       'Category-A-Recommendations',

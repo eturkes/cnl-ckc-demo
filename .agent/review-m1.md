@@ -11,9 +11,9 @@ overrules the reviewer), `unknown` (not yet adjudicated; carries forward).
 
 Every `fixed` row with a code fix is red under a mutant that removes it:
 `.scratch/verify-fixes.py` restores each pre-fix behaviour and reruns the closing test,
-**26/26 RED**. Contract-ruling closures carry no mutant: R28, R37, R41, R44, R45, and U04/U08
-which close on U03's and U11/U12's mutants. Session 5 adds two more: E11 is a
-compile-time guard proven by variant injection, and E27 is test-only.
+**31/31 RED**. Contract-ruling closures carry no mutant: R28, R37, R41, R44, R45, and U04/U08
+which close on U03's and U11/U12's mutants. Session 5 adds three more: E11 is a
+compile-time guard proven by variant injection, E27 is test-only, and I28 is judgment-only.
 
 ## Coverage
 
@@ -23,42 +23,45 @@ compile-time guard proven by variant injection, and E27 is test-only.
 | u2 | kernel | `.agent/contracts/m1u2-rev-checkset.md` | 28 | **28 complete** | 4 |
 | u3 | kernel | `.agent/contracts/m1u3-rev-checkset.md` | 45 | **45 complete** | 1, 2, 3 |
 | u4 | kernel | `.agent/contracts/m1u4-rev-checkset.md` | 24 | **24 complete** | 1, 2 |
-| u5 | kernel | `.agent/contracts/m1u5-rev-checkset.md` | 28 | 0 seeded | 5 |
+| u5 | kernel | `.agent/contracts/m1u5-rev-checkset.md` | 28 | **28 complete** | 5 |
 | u6 | kernel | `.agent/contracts/m1u6-rev-checkset.md` | 28 | **28 complete** | 4 |
 | u7 | docs | not enumerated (spot-check grade) | ? | 0 | pending |
 | cross-cutting | — | not enumerated | ? | 0 | pending |
 | audit-m1 | — | `.agent/review-m1/audit-m1.ids`, self-enumerated | 137 | 137 | 1 |
 
-Session 5 resume point = enumerate and adjudicate **u5, u7 and cross-cutting**, and close the
-13 open fixes below; u1, u2, u3, u4 and u6 are complete. Seed each check set before dispatch,
-one unit per reviewer. Evidence branches: `wt/rev-m1u1-1` `939de23` (u1 probes),
-`wt/rev-m1u3-4` `48008d3` (`tools/probe-u3.mjs`, the browser harness the five D-claim rows ran
-on), `wt/rev-m1u2-1` `085eb57` (eleven u2 probes) and `wt/rev-m1u6-1` `ca41697` (three u6
-probes). Session 2's claim that `wt/rev-m1u3-3` held a browser harness does not reproduce —
-that branch carries Node vitest suites only, and it is also based on a pre-`61fdd78` commit, so
-it reverts session-2 fixes and must never be merged.
+Session 6 resume point = enumerate and adjudicate **u7 and cross-cutting**, the last two
+surfaces, and close the 3 open fixes below; u1 through u6 are complete. Seed each check set
+before dispatch, one unit per reviewer. Evidence branches: `wt/rev-m1u1-1` `939de23` (u1
+probes), `wt/rev-m1u3-4` `48008d3` (`tools/probe-u3.mjs`, the browser harness the five D-claim
+rows ran on), `wt/rev-m1u2-1` `085eb57` (eleven u2 probes), `wt/rev-m1u6-1` `ca41697` (three u6
+probes) and `wt/rev-m1u5-1` `d2135ff` (`tools/review-m1/red-m1u5-*.test.mjs`, u5's three
+acceptance harnesses; re-add that worktree to rerun one, because each reads — and the I23 one
+mutates and restores — the primary tree by relative path). Session 2's claim
+that `wt/rev-m1u3-3` held a browser harness does not reproduce — that branch carries Node
+vitest suites only, and it is also based on a pre-`61fdd78` commit, so it reverts session-2
+fixes and must never be merged.
 
-Session 4 adjudicated **56 rows** (u2 28, u6 28) and closed **12 defects** — the 10 it
-inherited (U03, U04, U08, U11, U12 from u1; R36, R37, R41, R44, R45 from u3) plus u6's own
-L25 and L28 — under a clean-`kb/generated` `pnpm gate` rc 0 (198 tests / 13 files, 3 assets,
-0 errors 0 warnings) and `.scratch/verify-fixes.py` **26/26 RED**. Fix sizing was wrong in the
-useful direction: the estimate was six, the actual was twelve, because six closed as contract
-rulings costing a paragraph each rather than a test.
+Session 5 adjudicated **28 rows** (u5) and closed **16 defects** — 11 of the 14 inherited
+(R34; E03, E05, E10, E11, E16, E18, E19, E22, E27, E28) plus u5's own I03, I07, I09, I23 and
+I28 — under a clean-`kb/generated` `pnpm gate` rc 0 (361 files 0 errors 0 warnings, 221 tests
+in 15 files, 3 assets) and `.scratch/verify-fixes.py` **31/31 RED**. Two of u5's five were
+behaviour defects the unit's own suite passed over: K2's "option 1" and K5's "first match" were
+each asserted from a starting state where the correct and the broken widget agree. That is the
+failure a fixed check set catches and a green suite does not, and it is the argument for
+enumerating checks from the contract rather than from the diff.
 
-Open into session 5 — **13 accepted defects**, none `high`:
-- u3, carried since session 3: **R34, R35, R40**. R40 is narrowed to one unmet part, browser
-  cancel delivery between solutions. R34 and R35 are u3's recreation half — P4.4/P4.5/P4.7
-  need committed tests and P6.2-P6.5 need to become deterministic gate steps, a window each.
-- u2, new: **E03, E05, E10, E11, E16, E18, E19, E22, E26, E27, E28**. E11 and E19 are single
-  mechanical barriers that E28 rides on; E03, E05, E16 and E18 are each a small localized
-  change; E22, E26 and E27 buy committed coverage that does not exist today.
+Open into session 6 — **3 accepted defects**, none `high`:
+- u3, carried since session 3: **R35** — P4.4/P4.5/P4.7 need committed tests and P6.2-P6.5
+  need to become deterministic gate steps, a window each — and **R40**, narrowed to one unmet
+  part, browser cancel delivery between solutions.
+- u2: **E26** — one browser script that boots BOTH the Vite dev server and the built output and
+  reads 337 from each, extending `tools/smoke.mjs`. E03's fix helps: the count is now
+  DOM-observable.
 
-What worked in session 3, and should be repeated: MAIN seeded both skeletons and both
-`.ids` files BEFORE dispatch and graded them nonzero, capped each reviewer at one unit,
-and gave the expensive unit an explicit cheap-first ordering. Both reviewers finished
-100% of their rows (30/30 and 14/14) inside one window — the first wave in this project
-to do so. One flush directive went to `rev-m1u3-4` at 67% with 5 of 14 filled; it landed
-and the remaining nine rows followed, browser probes included.
+The dispatch recipe holds at three sessions running: MAIN seeds the skeleton and the `.ids`
+file BEFORE dispatch and grades them nonzero, caps each reviewer at one unit, and orders the
+expensive rows cheap-first. Sessions 3, 4 and 5 each finished 100% of their rows in one
+window (30/30 and 14/14, then 28+28, then 28/28).
 
 ## Rows — u3, u4
 
@@ -294,31 +297,31 @@ Reviewer evidence = `.agent/review-m1/rev-m1u5-1.md`, probes on `wt/rev-m1u5-1`.
 
 | unit | reviewer | row | verdict | evidence | acceptance check |
 | --- | --- | --- | --- | --- | --- |
-| u5 | rev-m1u5-1 | I01 | unknown | — | — |
-| u5 | rev-m1u5-1 | I02 | unknown | — | — |
-| u5 | rev-m1u5-1 | I03 | unknown | — | — |
-| u5 | rev-m1u5-1 | I04 | unknown | — | — |
-| u5 | rev-m1u5-1 | I05 | unknown | — | — |
-| u5 | rev-m1u5-1 | I06 | unknown | — | — |
-| u5 | rev-m1u5-1 | I07 | unknown | — | — |
-| u5 | rev-m1u5-1 | I08 | unknown | — | — |
-| u5 | rev-m1u5-1 | I09 | unknown | — | — |
-| u5 | rev-m1u5-1 | I10 | unknown | — | — |
-| u5 | rev-m1u5-1 | I11 | unknown | — | — |
-| u5 | rev-m1u5-1 | I12 | unknown | — | — |
-| u5 | rev-m1u5-1 | I13 | unknown | — | — |
-| u5 | rev-m1u5-1 | I14 | unknown | — | — |
-| u5 | rev-m1u5-1 | I15 | unknown | — | — |
-| u5 | rev-m1u5-1 | I16 | unknown | — | — |
-| u5 | rev-m1u5-1 | I17 | unknown | — | — |
-| u5 | rev-m1u5-1 | I18 | unknown | — | — |
-| u5 | rev-m1u5-1 | I19 | unknown | — | — |
-| u5 | rev-m1u5-1 | I20 | unknown | — | — |
-| u5 | rev-m1u5-1 | I21 | unknown | — | — |
-| u5 | rev-m1u5-1 | I22 | unknown | — | — |
-| u5 | rev-m1u5-1 | I23 | unknown | — | — |
-| u5 | rev-m1u5-1 | I24 | unknown | — | — |
-| u5 | rev-m1u5-1 | I25 | unknown | — | — |
-| u5 | rev-m1u5-1 | I26 | unknown | — | — |
-| u5 | rev-m1u5-1 | I27 | unknown | — | — |
-| u5 | rev-m1u5-1 | I28 | unknown | — | — |
+| u5 | rev-m1u5-1 | I01 | pass | report I01; combobox role, label-derived accessible name, `aria-controls`, no `aria-haspopup`, closed and open | — |
+| u5 | rev-m1u5-1 | I02 | pass | report I02; `aria-expanded` exact strings across open, commit, cancel and click-toggle | — |
+| u5 | rev-m1u5-1 | I03 | fixed(low) | `tools/kb/check.mjs` question-literal scan over `src/` + `tests/`; control in `tests/kb-reach.test.ts` | the two generated sentences in the suite comments now read as catalog ids and `tests/questions-live.test.ts` takes its rejected sentence from `QUESTION_CATALOG`, so a copied sentence fails `kb:asset-check` — `node --test tools/review-m1/red-m1u5-i03.test.mjs` rc 0, red under mutant `I03` |
+| u5 | rev-m1u5-1 | I04 | pass | report I04; six selections plus null census one `true` and five `false` | — |
+| u5 | rev-m1u5-1 | I05 | pass | report I05; `aria-activedescendant` valued open, absent closed, DOM focus never leaves the host | — |
+| u5 | rev-m1u5-1 | I06 | pass | report I06; controlled text is catalog copy or the prompt, no focusable descendant | — |
+| u5 | rev-m1u5-1 | I07 | fixed(med) | `tests/question-combobox.dom.test.ts` "K2 opens on ArrowUp at option 1 and ignores Alt+ArrowUp", now driven from selection 4 | closed `ArrowUp` joins `Home`/`End` on the fixed-end branch, so it opens at option 1 from every selection and emits nothing while closed `Alt+ArrowUp` stays inert — `node --test tools/review-m1/red-m1u5-i07-i09.test.mjs` rc 0, red under mutant `I07` |
+| u5 | rev-m1u5-1 | I08 | pass | report I08; Enter and Space open at the selection, Home and End at the endpoints, zero emits | — |
+| u5 | rev-m1u5-1 | I09 | fixed(med) | `tests/question-combobox.dom.test.ts` "K5 opens a fresh prefix at the first match, not after the selection" | `search` scans a fresh prefix from option 1 and reserves the after-active scan for a repeated single character, so K5's first-match rule holds from any selection and the cycle survives — same harness rc 0, red under mutant `I09` |
+| u5 | rev-m1u5-1 | I10 | pass | report I10; arrows step one and clamp at both ends, Home and End jump, zero emits | — |
+| u5 | rev-m1u5-1 | I11 | pass | report I11; open Enter emits the active id once, closes, retains focus | — |
+| u5 | rev-m1u5-1 | I12 | pass | report I12; Escape emits nothing, closes, clears the buffer, restores the active option | — |
+| u5 | rev-m1u5-1 | I13 | pass | report I13; Tab emits once, closes, leaves the cancelable event unprevented | — |
+| u5 | rev-m1u5-1 | I14 | pass | report I14; open `Alt+ArrowUp` commits the moved active option exactly once | — |
+| u5 | rev-m1u5-1 | I15 | pass | report I15; host click toggles and outside `focusout` cancels, neither emitting | — |
+| u5 | rev-m1u5-1 | I16 | pass | report I16; direct and nested option targets each emit once and return focus | — |
+| u5 | rev-m1u5-1 | I17 | pass | report I17; one `scrollIntoView({block:'nearest'})` per active change, receiver = the new option | — |
+| u5 | rev-m1u5-1 | I18 | pass | report I18; mixed key and pointer fuzz emits catalog ids alone; a frozen prop holds the display | — |
+| u5 | rev-m1u5-1 | I19 | pass | report I19; axe reports zero violations closed and open, `color-contrast` the only incomplete | — |
+| u5 | rev-m1u5-1 | I20 | pass | report I20; `pnpm check` rc 0 warning-fatal; `eslint-plugin-svelte` 86 rules, 0 `a11y-*` | — |
+| u5 | rev-m1u5-1 | I21 | pass | report I21; the prop pair imports catalog data alone and its graph reaches no engine, service or worker | — |
+| u5 | rev-m1u5-1 | I22 | pass | report I22; host is the ruled `div` and the text-field affordance comes from CSS alone | — |
+| u5 | rev-m1u5-1 | I23 | fixed(low) | `tests/question-combobox.dom.test.ts` "K5 holds the prefix buffer to the 500 ms boundary" | the case observes the buffer alive across two 499 ms gaps and expired at exactly 500 ms, so `TYPEAHEAD_MS` 1 and 599 each turn the dom project red — `node --test tools/review-m1/red-m1u5-i23.test.mjs` rc 0, red under both `I23` mutants |
+| u5 | rev-m1u5-1 | I24 | pass | report I24; at the review target node ran 11 files/151 tests and dom 2 files/47 tests, both rc 0, jsdom pinned 29.1.1 | — |
+| u5 | rev-m1u5-1 | I25 | pass | report I25; one listbox-scoped `svelte-ignore` naming the emitted warning; keyboard commit survives pointer removal | — |
+| u5 | rev-m1u5-1 | I26 | pass | report I26; 17 predicates browser-safe, 9 browser-suspect, one Chromium probe specified, no browser launched | probe deferred to `.agent/polish.md` "Combobox predicates are jsdom-only"; u5's roadmap entry already records that no browser ran |
+| u5 | rev-m1u5-1 | I27 | pass | report I27; all five prescribed mutations turn the dom project red, each source restored byte-identically | — |
+| u5 | rev-m1u5-1 | I28 | fixed(low) | `.agent/contracts/m1u5.md` Source, `.agent/memory.md` bits-ui bullet, suite comments | the dead `.scratch/agents/map-m1u5.md` and `wt/spike-m1u5-lib` `dca4f87` pointers are gone while D2 keeps the measurements, the memory bullet keeps the dependency, DOM and 10.06 s facts, and the suite copy closes with I03 — judgment-only, so the five-file ledger reruns as its check |
