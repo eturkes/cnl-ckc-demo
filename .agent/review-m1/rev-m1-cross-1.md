@@ -10,10 +10,10 @@ Grade: `python3 -P .scratch/validate-report.py .agent/review-m1/rev-m1-cross-1.m
 | X02 | fail(low): current sources carry no oracle or question literals, but the answer-oracle scan omits runtime-loaded `kb/generated` production assets | `tools/kb/check.mjs:21`; primary `kb/generated/` scan in `### X02` |
 | X03 | fail(low): all 12 request/response arms clone cleanly and share protocol declarations, but committed coverage clones only one query response | `src/engine/protocol.ts:79`; `tests/engine-session.test.ts:279` |
 | X04 | pass: one catalog id selects the displayed question and reaches `EngineClient.query` unchanged; the paired generated goal supplies the run bytes | `src/questions/QuestionCombobox.svelte:200`; `src/questions/service.ts:45-46` |
-| X05 | unknown | unknown |
-| X06 | unknown | unknown |
-| X07 | unknown | unknown |
-| X08 | unknown | unknown |
+| X05 | pass: all six answer outcomes have producers and distinct render branches; every switch closes with an exhaustive `never` default | `src/questions/service.ts:19-27`; `src/demo/describe.ts:57-95` |
+| X06 | pass: abort propagates through controller, service, client, worker and session; tests prove one cancel post, listener removal and result-owned settlement | `tests/engine-cancel.test.ts:C3-C6`; `tests/demo-lifecycle.test.ts:R6` |
+| X07 | pass: every exported query-capable surface requires `BudgetSpec`; the UI alone calls it with the frozen `DEMO_BUDGET`, and omission fails validation | `src/demo/DemoController.svelte.ts:25-31,163`; `src/engine/client.ts:203-211` |
+| X08 | fail(low): the `&&` gate fails closed and out-of-gate reruns remain runnable, but memory records an obsolete chain that omits two current checks | `.agent/memory.md:37-51`; `package.json:14` |
 | X09 | unknown | unknown |
 | X10 | unknown | unknown |
 | X11 | unknown | unknown |
@@ -59,19 +59,23 @@ The bag replay produced six paired records. Exported pairs come from one query f
 
 ### X05
 
-unknown
+Enumerated `AnswerResult`'s six members and traced each producer in `AnswerService`/controller: `answer`, `failure`, `limit`, `cancelled`, `error`, and invalid-id `rejected`. `describeResult` has one branch per member. Answer/failure, each limit kind, cancellation, errors and rejection have distinct status/summary/error text; the error code and limit discriminant remain visible. Both production switches end in `const exhaustive: never`, not a semantic catch-all. The cancellation/lifecycle targeted run was 2 files / 24 tests, rc 0.
 
 ### X06
 
-unknown
+Traced `AbortController.abort()` at `DemoController.cancel` through `AnswerService.ask`, `EngineClient.query`, private `cancel(target)`, the worker's cancel branch and `EngineSession.requestCancel`. `EngineClient` guards the listener with `cancelSent`, posts the query before arming it, removes it in `#settle`, and treats the cancel `ack` as a separate pending request. The query's later `cancelled` response owns the UI result.
+
+Ran `pnpm exec vitest run tests/engine-cancel.test.ts tests/demo-lifecycle.test.ts --reporter=dot`: 2 files / 24 tests passed. C4 observes exactly one cancel post after two abort calls; C6 observes one listener removal and no late post; C3 drives the real session to a partial cancelled result; R6 proves `cancelling` waits for and renders the query result rather than the ack.
 
 ### X07
 
-unknown
+Censused exported surfaces reaching `EngineClient.query`: `EngineClient.query(goal, budget, signal)`, `AnswerService.ask(id, budget, signal)`, `DemoEngine.ask(id, budget, signal)`, and `DemoController.run/retry` through its private dispatch. Every typed query/ask surface requires `BudgetSpec`; `EngineClient` validates it before posting, so a JavaScript caller that omits it receives typed `budget` error rather than an unbounded run. The only UI dispatch passes the frozen `DEMO_BUDGET` object. Lifecycle R9 asserts object identity and absence of controller goal/consult escape hatches; the targeted run passed.
 
 ### X08
 
-unknown
+`package.json` defines one nine-step `&&` chain: build assets, asset/copy/contrast checks, formatting, lint, type check, tests, production build. No pipeline or subshell masks a status. Out-of-gate reruns remain addressable: `pnpm kb:reproduce` ran rc 0 and reproduced all three hashes; `pnpm smoke` is a committed script; `wt/map-m1u7` and `wt/rev-m1u3-4` still exist for the two browser walkers; the primary `.scratch/verify-fixes.py` exists at its recorded path.
+
+Failure: `.agent/memory.md`'s fenced `pnpm gate` expansion omits `pnpm copy:check` and `pnpm contrast:check`, yet its nearby measurements are presented as the current chain. Package reality is nine steps; memory states seven. Severity: low, because invoking `pnpm gate` still runs the correct package script, but a future agent reasoning from the durable expansion can misclassify both checks as out of gate. Acceptance check: make the memory expansion byte-match `package.json` and name the same nine steps in order.
 
 ### X09
 
