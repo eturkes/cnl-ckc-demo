@@ -112,6 +112,8 @@ try {
   console.log(`core_js\tmin/gzip=${size(core)}\tworker_min/gzip=${size(worker)}\ttotal_min=${readFileSync(core).byteLength + readFileSync(worker).byteLength}`);
   console.log(`viewer_components_js\tmin/gzip=${size(components, true)}`);
   console.log(`generic_viewer_app_js\tmin/gzip=${size(app, true)}\tcss_raw/gzip=${size(css)}\thtml_raw/gzip=${size(html)}`);
+  const genericCsp = readFileSync(html, 'utf8').match(/http-equiv="Content-Security-Policy"\s+content="([^"]+)"/)?.[1];
+  console.log(`generic_viewer_csp\t${genericCsp}`);
   console.log(`archives\tnpm_tree=${treeSize(npm)}\trelease_zip=${readFileSync(releaseZip).byteLength}`);
   for (const name of ['cmaps', 'iccs', 'image_decoders', 'standard_fonts', 'wasm']) console.log(`support\t${name}=${treeSize(join(npm, name))}`);
   if (pdf) await browserProbe(npm);
