@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import gzip
+import json
 import re
 import statistics
 import subprocess
@@ -55,8 +56,56 @@ def main() -> None:
     )
 
     coverage = (root / "coverage.tsv").read_text().splitlines()
-    pages = [int(fields[2][1:]) for line in coverage if line and not line.startswith("#") for fields in [line.split("\t")]]
+    coverage_rows = {fields[0]: fields for line in coverage if line and not line.startswith("#") for fields in [line.split("\t")]}
+    pages = [int(fields[2][1:]) for fields in coverage_rows.values()]
     print(f"coverage\trows={len(pages)}\tpage_min={min(pages)}\tpage_max={max(pages)}\tdistinct_pages={len(set(pages))}")
+
+    regions = {}
+    text_marker = re.compile(r"^\[([^\]|]+) \| p\d+ \| [^\]]+\]\n", re.MULTILINE)
+    for path in sorted((root / "source").glob("*.txt")):
+        text = path.read_text()
+        if path.name == "box3-extraction.txt":
+            body = text.split("HTML Box 3 decoded character range: [630335, 638736)\n", 1)[1]
+            for index, line in enumerate((line for line in body.splitlines() if line), 1):
+                regions[f"B3-{index:02d}"] = re.sub(r"^\d+\. ", "", line)
+            continue
+        for match in text_marker.finditer(text):
+            end = text.find("\n", match.end())
+            regions[match.group(1)] = text[match.end() : len(text) if end < 0 else end]
+    projection = {}
+    for line in (root / "audit/projection-notes.tsv").read_text().splitlines():
+        if line and not line.startswith("#"):
+            doc_id, region, kept, dropped = line.split("\t")
+            projection[doc_id] = (region, kept, dropped)
+    chunk_raw = []
+    chunk_gzip = []
+    for path in sorted((root / "ace").glob("*.ace")):
+        doc_id = path.stem
+        region, kept, dropped = projection[doc_id]
+        _, _, page, section, _ = coverage_rows[region]
+        data = json.dumps(
+            {
+                "id": doc_id,
+                "ace": path.read_text().rstrip("\n"),
+                "align": (root / "align" / f"{doc_id}.tsv").read_text().rstrip("\n"),
+                "region": region,
+                "page": page,
+                "section": section,
+                "source": regions[region],
+                "kept": kept,
+                "dropped": dropped,
+                "label": "unreviewed",
+            },
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ).encode()
+        chunk_raw.append(len(data))
+        chunk_gzip.append(len(gzip.compress(data, compresslevel=9, mtime=0)))
+    print(
+        f"doc_chunks\tcount={len(chunk_raw)}\traw_median={statistics.median(chunk_raw):g}\traw_max={max(chunk_raw)}\t"
+        f"raw_total={sum(chunk_raw)}\tgzip_median={statistics.median(chunk_gzip):g}\tgzip_max={max(chunk_gzip)}\t"
+        f"gzip_total={sum(chunk_gzip)}"
+    )
 
     pdf = root / "source/rr7103a1-H.pdf"
     info = subprocess.run(["pdfinfo", str(pdf)], check=True, capture_output=True, text=True).stdout
