@@ -42,7 +42,7 @@ def main() -> None:
         data = path.read_bytes()
         if path.name == "box3-extraction.txt":
             body = data.split(b"HTML Box 3 decoded character range: [630335, 638736)\n", 1)[1]
-            payload_sizes.extend(len(line) for line in body.splitlines() if line)
+            payload_sizes.extend(len(re.sub(rb"^\d+\. ", b"", line)) for line in body.splitlines() if line)
             continue
         for match in marker.finditer(data):
             start = match.end()
