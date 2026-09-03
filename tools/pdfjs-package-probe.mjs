@@ -104,7 +104,7 @@ try {
   const app = join(releaseDir, 'web/viewer.mjs');
   const css = join(releaseDir, 'web/viewer.css');
   const html = join(releaseDir, 'web/viewer.html');
-  console.log(`package\tversion=${version}\tlicense=${metadata.license}\tpublished=${registry.time[version]}\tunpacked=${metadata.dist.unpackedSize}`);
+  console.log(`package\tversion=${version}\tlicense=${metadata.license}\tpublished=${registry.time[version]}\tunpacked=${metadata.dist.unpackedSize}\tnode=${metadata.engines?.node}`);
   const canvasRegistry = await (await fetch('https://registry.npmjs.org/@napi-rs%2fcanvas')).json();
   const canvasVersion = canvasRegistry['dist-tags'].latest;
   const canvasLeaves = Object.keys(canvasRegistry.versions[canvasVersion].optionalDependencies ?? {});
