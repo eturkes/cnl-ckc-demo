@@ -263,8 +263,44 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   import no answer fixture. Measured 796ms.
 - Committed trace artifacts carry **no** proof-dependency edges (all sampled
   clause nodes have empty child lists) → a proof tree drawn from them would be
-  fabricated. M2 derives proofs from a live meta-interpreter instead: measured
-  4.03–5.09s for all solutions vs 0.14–0.22s for the plain query.
+  fabricated. M2 derives proofs from a live meta-interpreter instead; costs in
+  `Live proof derivation (M2 planning)` below.
+
+## Live proof derivation (M2 planning)
+
+- `clause/2` and `clause/3` reach every static schema predicate in the shipped
+  `kb.pvm` (`dynamic=no` throughout). Rules dominate: arg 2351/2513, cardinality
+  1693/1834, entity 1693/1834, event 1170/1254, operator 1158/1193, pp 981/1003,
+  property 7/16; document and schema_version are all facts.
+- The loaded `swipl-bundle-no-data` image is CLOSED: `autoload=false`,
+  `unknown=error`, no `library(lists)` — `append/3`, `member/2`, `maplist/2`,
+  `sub_term/2` all absent. Any Prolog helper must be builtin-only.
+- An unbounded naive meta-interpreter exhausts the 1 GiB stack in ~8.5 s on the
+  corpus's recursive rule-head chains. The shipping design is depth-capped:
+  conjunction preserves the cap, each `clause/2` expansion decrements it, cap 0
+  fails closed before head expansion. **Cap 1 is complete** — projected-value
+  multisets equal the plain query for all six catalog goals and hold to cap 20.
+- Cap-1 live `sentence(Doc,S)` multisets equal all four committed trace oracles
+  exactly (category-A 7 sol/49 nodes, dosage 2/10, evidence-1 1/7, existence
+  `yes` 1/2), zero divergences.
+- Re-proving the SELECTED solution returns the byte-identical proof from the
+  all-solutions run for all 18 slots; medians 0.097–291.419 ms. MI over ALL
+  solutions costs 0.518–2.914 s on the four broad goals against 0.017–0.096 ms
+  plain — never put it in the UI path.
+- Clause identity = `clause/3` reference → `clause_property(Ref, file(...) +
+  line_count(L))`. All 10321 `L` values are unique against the deterministic
+  concatenated payload, exact clause text recovers 10321/10321, and the
+  line+newline hash resolves all 68 committed trace nodes. Rendering `clause/2`
+  output reproduces the committed `clause_sha256` **0/10321** times: `clause/2`
+  injects `user:` into rule bodies, `fullstop(true)` adds a trailing space, and
+  operator handling compacts either way. Ship no bespoke canonical renderer.
+- Budget that passes all 19 selected claims: cap 1, stack 16 MiB, outer depth
+  100, 100000 inferences, answer cap 1; deterministic maxima 6403 inferences and
+  outer depth ≥20. Worst synchronous proof step 291.419 ms, so cooperative cancel
+  cannot interrupt mid-proof and the main-thread watchdog stays mandatory. Node
+  figures only.
+- The interpreter compiles INTO the image: +964 B, boot 116.977 ms vs 123.216 ms
+  for boot+consult. Runtime `consult` buys nothing and is fail-open (m1u3 D6).
 
 ## Upstream reuse (`../cnl-ckc`, read-only, never linked)
 
@@ -314,9 +350,17 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
 - A watcher that greps a subagent transcript for its own marker self-matches the
   brief's copy of it. Match assistant text only:
   `jq -r 'select(.message.role=="assistant")|.message.content[]?|select(.type=="text")|.text' "$t" | rg -q MARKER`.
+- Lagging research teammate → send a COST directive, not a flush directive: cap each
+  finding at ~250 chars, ship no detail sections, run one measurement pass per row,
+  flush after every row. In M2 planning a bare "flush now" moved nobody; the cost
+  directive carried every lagging teammate to complete inside one poll. Send it at the
+  FIRST lagging poll — the brief's batch size is what it corrects.
 - Probe branches survive their worktrees: `wt/res-m1-1` (`36cc56f`, swipl-wasm
-  load/worker/terms/trace/perf/test/errors/deploy probes) and `wt/res-m1-2`
-  (`5863141`, cytoscape layout/perf/test, axe, contrast, combobox probes).
+  load/worker/terms/trace/perf/test/errors/deploy probes), `wt/res-m1-2`
+  (`5863141`, cytoscape layout/perf/test, axe, contrast, combobox probes),
+  `wt/res-m2-2` (`0a48b79`, every meta-interpreter, cap-completeness, oracle,
+  clause-identity and budget probe behind `Live proof derivation (M2 planning)`)
+  and `wt/res-m2-3` (`24d027e`, asset-shape, PDF-viewer and ladder-UI probes).
 
 ## Read-exclusion set
 
@@ -384,7 +428,7 @@ and survives `/resume`; a new session clears it.
   jsdom with `resolve.conditions: ['browser']`; without that condition svelte resolves
   to `index-server.js` and `mount` throws `lifecycle_function_unavailable`. The node
   project excludes the glob so swipl-wasm keeps its node entry.
-- jsdom is pinned to 29.1.1. jsdom 30 pulls undici 8, which assigns
+- jsdom is capped at `^29.1.1`, exact only in the lockfile. jsdom 30 pulls undici 8, which assigns
   `webidl.util.markAsUncloneable` from `node:worker_threads`; Node v20.19.2 does not
   export it, so the vitest fork dies before any test runs.
 - axe-core 4.13.0 runs in that project. `color-contrast` always lands in `incomplete`

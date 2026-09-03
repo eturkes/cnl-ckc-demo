@@ -187,3 +187,22 @@ evidence gap under a durable claim, `low` = a feature or a tidy-up.
   committed state (M1 review X24). Accept: one typed browser harness in `tools/` covers all
   five rows, and the `res-m1-*` probes are either ported with their commands or every
   durable claim resting on them is pruned. `pri` med.
+
+- **Owned PDF viewer** — M2 u7 ships a native `<iframe>` at `#page=N`, so the viewer is a
+  black box: no assertion can read the displayed page, and the passage cannot be
+  highlighted inside the PDF. PDF.js was rejected on cost — +504727 B gzip, 34.78 MB
+  unpacked, and an engine range that excludes the pinned Node 20. Accept: an owned viewer
+  renders the coverage row's physical page, a browser check reads the rendered page number
+  and the highlighted region from the DOM, `pnpm gate` still runs under Node 20, and the
+  viewer's bytes load only after the user activates the page. `pri` low.
+- **Generation-scoped proof cache** — every selection re-proves, and the worst measured
+  synchronous proof step is 291.419 ms, which no cooperative cancel can interrupt.
+  Re-selecting a solution already proved in the same session pays that cost again.
+  Accept: re-selecting a proved solution issues no meta-interpreter call and returns the
+  byte-identical proof; a changed KB input hash empties the cache, proven by a test that
+  rebuilds the image and reads a miss. `pri` low.
+- **Corpus-wide provenance browser** — the M2 ladder resolves the SELECTED solution alone,
+  so the other 336 documents' coverage rows, regions and alignment are reachable only by
+  asking a question that reaches them. Accept: a document-first view lists every document's
+  coverage rows and opens each one's passage and page through the same resolver the ladder
+  uses, adding no eager asset fetch to the answer path. `pri` low.
