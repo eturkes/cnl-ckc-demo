@@ -41,3 +41,15 @@ export const humanizeGuidelineId = (term: PlTerm, display: string): string => {
   if (id === undefined || ordinal === undefined || place === undefined) return display;
   return `${id} — sentence ${ordinal}, ${place}`;
 };
+
+/**
+ * Reader-facing value for a catalog projection.
+ *
+ * Clinical advice is stored as an exact guideline passage in a Prolog string.
+ * Returning the decoded value removes Prolog's string delimiters without
+ * rewriting any source wording.
+ */
+export const humanizeAnswerTerm = (term: PlTerm, display: string): string => {
+  if (term.kind === 'string') return term.value;
+  return humanizeGuidelineId(term, display);
+};

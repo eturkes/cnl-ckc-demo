@@ -16,7 +16,7 @@ import { GENERATED_DIR, MANIFEST_PATH, ROOT, loadManifest, payloadSource } from 
 /** @typedef {import('../../src/kb/manifest.ts').KbManifest} KbManifest */
 /** @typedef {import('./produce.mjs').LiveContract} LiveContract */
 
-const MANIFEST_VERSION = 3;
+const MANIFEST_VERSION = 4;
 
 /** Locate the single vendored bag and prove it against its committed sidecar. */
 const readVerifiedBag = () => {
@@ -74,6 +74,7 @@ const main = async () => {
     cached.input.sha256 === inputDigest &&
     cached.source.sha256 === digest &&
     cached.toolchain.swiplWasm === swiplWasm &&
+    cached.catalog.sha256 === sha256(catalogBytes) &&
     assetsIntact(cached)
   ) {
     process.stdout.write(`kb:build cached — ${names.length} files, input ${inputDigest.slice(0, 12)}\n`);
@@ -129,8 +130,8 @@ const main = async () => {
     input: { files: names.length, bytes: Buffer.byteLength(source, 'utf8'), sha256: inputDigest },
     toolchain: { swiplWasm, prolog: contract.prolog },
     catalog: {
-      queryFiles: catalog.names.length,
-      sha256: sha256(Buffer.from(catalog.source, 'utf8')),
+      sourceFiles: catalog.names.length,
+      sha256: sha256(catalogBytes),
       entries: catalog.records.length,
     },
     provenance: {
@@ -162,7 +163,7 @@ const main = async () => {
   process.stdout.write(
     `kb:build ok — ${names.length} files (${basename(bag)}) → ` +
       `pvm ${image.byteLength} B, qlf ${qlf.byteLength} B, ` +
-      `catalog ${catalog.records.length} entries from ${catalog.names.length} queries, ` +
+      `catalog ${catalog.records.length} entries from ${catalog.names.length} controlled sources, ` +
       `provenance ${provenance.stats.documents} documents/${provenance.stats.clauses} clauses, ` +
       `graph ${graph.model.stats.nodes} nodes/${graph.model.stats.edges} edges, ` +
       `schema ${contract.schemaVersion}, ${contract.documents} documents\n`,

@@ -6,13 +6,12 @@
 // mechanically checkable. `tools/copy-check.mjs` grades this file on every gate
 // run.
 //
-// The six question strings are NOT here. They are generated from the bag's
-// compiled goals, and rewriting them into smoother English would make the
-// displayed question differ from the question that runs.
+// Question strings are NOT here. The generated catalog keeps each displayed
+// clinical topic next to the Prolog goal that runs it.
 
 /** Imperative text. One instruction per sentence, 20 words per sentence. */
 export const INSTRUCTIONS = {
-  selectQuestion: 'Select one of the six prepared questions.',
+  selectQuestion: 'Select a prepared clinical question.',
   runQuestion: 'Select Run to prove the question against the knowledge base.',
   notClinical: 'Do not use this demo to make clinical decisions.',
   readLicence: 'Read the font licences for the three typefaces below.',
@@ -34,10 +33,10 @@ export const DESCRIPTIONS = {
     'This is a prepared demonstration of a knowledge compiler. It is not a clinical tool, and it gives no medical advice.',
 
   fixedCatalog:
-    'The question list is fixed. A developer wrote these six questions, and the demo compiles each one to a Prolog goal before it runs.',
+    'The question list is fixed. Each topic indexes aligned guideline passages from the verified knowledge-base export and runs as a Prolog query.',
 
   projection:
-    'The demo does not reproduce guideline text unchanged. It runs a compiled projection of that text into a controlled language, and then into Prolog.',
+    'The source guideline is projected into controlled language and Prolog. Results present aligned guideline passages returned by the engine.',
 
   // No corpus number is written here. The count is read from the booted engine and
   // substituted into `corpusSize`, so shipped copy can never state a size the engine

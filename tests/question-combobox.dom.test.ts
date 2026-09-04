@@ -116,7 +116,7 @@ describe('S structure', () => {
     expect(combo().hasAttribute('aria-haspopup')).toBe(false);
   });
 
-  it('S5 renders a named listbox owning the six catalog options in order', () => {
+  it('S5 renders a named listbox owning every catalog option in order', () => {
     render();
     key('ArrowDown');
     expect(listbox().getAttribute('aria-labelledby')).toBe(combo().getAttribute('aria-labelledby'));
@@ -126,14 +126,9 @@ describe('S structure', () => {
   it('S6 marks only the selected option aria-selected', () => {
     render(QUESTION_IDS[2]);
     key('ArrowDown');
-    expect(options().map((o) => o.getAttribute('aria-selected'))).toEqual([
-      'false',
-      'false',
-      'true',
-      'false',
-      'false',
-      'false',
-    ]);
+    expect(options().map((o) => o.getAttribute('aria-selected'))).toEqual(
+      QUESTION_IDS.map((_, index) => String(index === 2)),
+    );
   });
 
   it('S7 keeps DOM focus on the combobox and moves aria-activedescendant', () => {
@@ -198,45 +193,43 @@ describe('K keyboard, closed', () => {
     expect(onSelect).not.toHaveBeenCalled();
   });
 
-  it('K4 opens on Home at option 1 and on End at option 6', () => {
+  it('K4 opens on Home at the first option and on End at the last option', () => {
     render();
     key('Home');
     expect(active()).toBe(0);
     key('Escape');
     key('End');
-    expect(active()).toBe(5);
+    expect(active()).toBe(QUESTION_IDS.length - 1);
     expect(onSelect).not.toHaveBeenCalled();
   });
 
   it('K5 opens on a printable key and runs a 500 ms prefix buffer', () => {
     vi.useFakeTimers();
     render(QUESTION_IDS[0]);
-    // `recommendation-exists` is the only label starting with `i`.
-    key('i');
+    key('h');
     expect(isOpen()).toBe(true);
-    expect(active()).toBe(5);
+    expect(active()).toBe(1);
     vi.advanceTimersByTime(600);
     // Same-character repeats cycle; every search starts after the active option.
     key('w');
     expect(active()).toBe(0);
     key('w');
-    expect(active()).toBe(1);
+    expect(active()).toBe(3);
     key('w');
-    expect(active()).toBe(2);
+    expect(active()).toBe(4);
     // A prefix no label carries leaves the active option where it was.
     key('z');
-    expect(active()).toBe(2);
+    expect(active()).toBe(4);
     expect(onSelect).not.toHaveBeenCalled();
   });
 
   it('K5 matches a multi-character prefix case-insensitively', () => {
     vi.useFakeTimers();
     render(QUESTION_IDS[0]);
-    // `dosage-reduction-content` is the only `wha` label.
     key('W');
     key('h');
     key('A');
-    expect(active()).toBe(2);
+    expect(active()).toBe(4);
   });
 
   it('K5 opens a fresh prefix at the first match, not after the selection', () => {
@@ -246,7 +239,7 @@ describe('K keyboard, closed', () => {
     expect(active()).toBe(0);
     // Only the repeat walks on from that match.
     key('w');
-    expect(active()).toBe(1);
+    expect(active()).toBe(3);
     expect(onSelect).not.toHaveBeenCalled();
   });
 
@@ -259,7 +252,7 @@ describe('K keyboard, closed', () => {
     vi.advanceTimersByTime(499);
     key('a');
     // Both gaps stayed inside the window, so `wha` matched as one prefix.
-    expect(active()).toBe(2);
+    expect(active()).toBe(4);
     vi.advanceTimersByTime(500);
     // Expiry at exactly 500 ms makes the next `w` a fresh prefix, not a cycle.
     key('w');
@@ -274,8 +267,8 @@ describe('K keyboard, open', () => {
     expect(active()).toBe(0);
     key('ArrowUp');
     expect(active()).toBe(0);
-    for (let i = 0; i < 7; i += 1) key('ArrowDown');
-    expect(active()).toBe(5);
+    for (let i = 0; i < QUESTION_IDS.length + 1; i += 1) key('ArrowDown');
+    expect(active()).toBe(QUESTION_IDS.length - 1);
     expect(onSelect).not.toHaveBeenCalled();
   });
 
@@ -283,7 +276,7 @@ describe('K keyboard, open', () => {
     render(QUESTION_IDS[0]);
     key('ArrowDown');
     key('End');
-    expect(active()).toBe(5);
+    expect(active()).toBe(QUESTION_IDS.length - 1);
     key('Home');
     expect(active()).toBe(0);
     expect(onSelect).not.toHaveBeenCalled();
@@ -327,7 +320,7 @@ describe('K keyboard, open', () => {
     key('ArrowDown');
     key('End');
     key('ArrowUp', { altKey: true });
-    expect(selectedIds()).toEqual([QUESTION_IDS[5]]);
+    expect(selectedIds()).toEqual([QUESTION_IDS[QUESTION_IDS.length - 1]]);
     expect(isOpen()).toBe(false);
   });
 });

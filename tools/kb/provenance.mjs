@@ -4,7 +4,7 @@
 // resolves those joins once at build time, rejects ambiguous input, and emits a
 // small line-to-document index plus one independently addressable document chunk.
 
-import { payloadSource } from './paths.mjs';
+import { payloadDocuments } from './payload.mjs';
 
 const GUIDELINE_ID = /^[a-z0-9](?:[a-z0-9-]{0,249})$/u;
 const REGION_ID = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,249})$/u;
@@ -372,7 +372,7 @@ const ARITIES = new Map([
  * @returns {ClauseSite[]}
  */
 export const parseClauseSites = (files) => {
-  const { source, names } = payloadSource(files);
+  const { source, names } = payloadDocuments(files);
   const expectedNames = new Set(names);
   /** @type {ClauseSite[]} */
   const clauses = [];

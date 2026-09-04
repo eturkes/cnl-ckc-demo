@@ -58,14 +58,17 @@ const solved = async (goal: string): Promise<PlSolution[]> => {
 const projectionKey = (entry: CatalogEntry, solution: PlSolution): string =>
   entry.projection.map(({ variable }) => solution.display[variable] ?? '<missing>').join('\u0000');
 
-const selectionOf = (entry: CatalogEntry, solution: PlSolution): Readonly<Record<string, string>> =>
-  Object.fromEntries(
-    entry.projection.map(({ variable }) => {
-      const value = solution.display[variable];
-      if (value === undefined) throw new Error(`${entry.id} omitted projected ${variable}`);
-      return [variable, value];
-    }),
-  );
+const selectionOf = (
+  entry: CatalogEntry,
+  solution: PlSolution,
+): Readonly<Record<string, string>> => {
+  for (const { variable } of entry.projection) {
+    if (solution.display[variable] === undefined) {
+      throw new Error(`${entry.id} omitted projected ${variable}`);
+    }
+  }
+  return solution.display;
+};
 
 const flatten = (steps: readonly ProofStep[]): ProofStep[] =>
   steps.flatMap((step) => [step, ...flatten(step.children)]);
@@ -133,24 +136,26 @@ describe('selected constraint and typed RPC', () => {
   it(
     'binds the selected canonical row rather than returning the first proof',
     async () => {
-      const entry = QUESTION_CATALOG['category-a-recommendations'];
+      const entry = QUESTION_CATALOG[QUESTION_IDS[0]];
       const plain = await solved(entry.goal);
       const second = plain[1];
-      if (second === undefined) throw new Error('category A yielded fewer than two rows');
+      if (second === undefined) throw new Error('clinical topic yielded fewer than two rows');
       const selected = selectionOf(entry, second);
       const result = await session.prove({ goal: entry.goal, selected }, proofBudget);
       expect(result.kind).toBe('proof');
       if (result.kind !== 'proof') return;
-      expect(
-        flatten(result.steps)
-          .map((step) => step.head)
-          .join('\n'),
-      ).toContain(second.display.A);
+      const source = second.bindings.Source;
+      if (source?.kind !== 'compound' || source.args[2]?.kind !== 'integer') {
+        throw new Error('selected clinical answer has no source sentence');
+      }
+      expect(flatten(result.steps).map((step) => step.sentence)).toContain(
+        Number(source.args[2].value),
+      );
 
       const absent = await session.prove(
         {
           goal: entry.goal,
-          selected: { A: "'$guideline_id'(context,'m2-absent',1,ref(1),[])" },
+          selected: { Answer: '"m2-absent"' },
         },
         proofBudget,
       );
@@ -203,7 +208,7 @@ describe('selected constraint and typed RPC', () => {
     const client = new EngineClient({ spawn: () => new LiveWorker() as unknown as Worker });
     try {
       expect(await client.boot()).toMatchObject({ kind: 'booted' });
-      const entry = QUESTION_CATALOG['dosage-reduction-content'];
+      const entry = QUESTION_CATALOG[QUESTION_IDS[2]];
       const answer = await client.query(entry.goal, queryBudget);
       if (answer.kind !== 'solutions' || answer.solutions[0] === undefined) {
         throw new Error(`expected a solution, got ${answer.kind}`);

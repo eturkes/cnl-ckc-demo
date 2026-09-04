@@ -44,10 +44,10 @@ export interface KbManifest {
     /** SWI-Prolog version reported by the engine at build time. */
     prolog: string;
   };
-  /** Exported queries the catalog derives from. Queries never enter the runtime image. */
+  /** Controlled source files selected by the generated clinical catalog. */
   catalog: {
-    queryFiles: number;
-    /** Digest of the concatenated query source, so a checker can re-derive the catalog. */
+    sourceFiles: number;
+    /** Digest of the emitted catalog, so a checker can detect any topic or goal drift. */
     sha256: string;
     entries: number;
   };

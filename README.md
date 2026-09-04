@@ -1,7 +1,7 @@
 # CNL CKC Demo
 
 A static browser demo of an executable clinical-guideline knowledge base. It runs
-SWI-Prolog in a web worker, answers six prepared questions from 337 compiled
+SWI-Prolog in a web worker, answers seven prepared clinical questions from 337 compiled
 documents, traces a selected solution back to its source, and exposes the full
 semantic graph.
 
@@ -24,7 +24,7 @@ The shipped answers are produced at run time. They are not stored UI fixtures.
   advice.
 - Every compiled document is labelled `unreviewed`; no human adjudication is
   recorded.
-- The six questions are prepared examples, not unrestricted natural-language
+- The seven questions are prepared examples, not unrestricted natural-language
   input.
 - The controlled language is a projection. The evidence ladder identifies
   material kept, changed, or omitted.

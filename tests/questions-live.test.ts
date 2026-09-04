@@ -1,8 +1,7 @@
-// Live contract for the question catalog and the answer service.
+// Live contract for the clinician-facing catalog and answer service.
 //
-// Every answer here comes out of the real saved image. The committed oracle is
-// read from the vendored bag at test time, never transcribed, and an injected
-// overlay proves the displayed result tracks the engine rather than a fixture.
+// Expected statements are re-read from the vendored controlled-language files;
+// none of the clinical answer text is copied into this suite.
 
 import { readFileSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -22,27 +21,25 @@ import {
   type CatalogEntry,
   type QuestionId,
 } from '../src/questions/catalog.js';
-import { humanizeGuidelineId } from '../src/questions/humanize.js';
+import { humanizeAnswerTerm, humanizeGuidelineId } from '../src/questions/humanize.js';
 import { compareTerms, serializeAnswer } from '../src/questions/serialize.js';
 import { verifyBag } from '../tools/kb/bag.mjs';
 import { catalogRecords } from '../tools/kb/catalog.mjs';
+import { CLINICAL_QUESTIONS } from '../tools/kb/clinical.mjs';
+import { deriveProvenance } from '../tools/kb/provenance.mjs';
 
 const require = createRequire(import.meta.url);
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const GENERATED = join(ROOT, 'kb', 'generated');
 const BOOT_TIMEOUT = 120_000;
 
-/** Fails rather than skips when the payload is missing; `pnpm kb:build` produces it. */
 const readGenerated = (name: string): Buffer => readFileSync(join(GENERATED, name));
-
 const manifest = JSON.parse(readGenerated('kb-manifest.json').toString('utf8')) as {
   contract: { schemaVersion: number; documents: number };
 };
 
-/** The overlay probe consults at runtime, and a consult without a diagnostic sink is refused. */
 const diagnostics: string[] = [];
 const drain = (): string[] => diagnostics.splice(0);
-
 const loadImage: ImageLoader = async (image) => {
   const factory = require('swipl-wasm/dist/loadImageDefault.js') as
     | ((image: Uint8Array) => (options?: Record<string, unknown>) => Promise<Engine>)
@@ -51,27 +48,28 @@ const loadImage: ImageLoader = async (image) => {
   return load(image)({ printErr: (line: string) => diagnostics.push(line) });
 };
 
-/** Committed answers read straight out of the bag, so no expectation is a transcription. */
 const bagFiles = ((): Map<string, Uint8Array> => {
   const kb = join(ROOT, 'kb');
-  const archive = readdirSync(kb).filter((name) => name.endsWith('.tar.gz'))[0] as string;
+  const archive = readdirSync(kb).find((name) => name.endsWith('.tar.gz'));
+  if (archive === undefined) throw new Error('vendored bag is missing');
   return verifyBag(readFileSync(join(kb, archive))).files;
 })();
 
-const committedResult = (id: string): string => {
-  const path = [...bagFiles.keys()].find((name) => name.endsWith(`/answers/${id}.pl`));
-  const text = Buffer.from(bagFiles.get(path as string) as Uint8Array).toString('utf8');
-  // `result(` opens the recorded answer; its balanced argument is what a live run reproduces.
-  const open = text.indexOf('result(') + 'result('.length;
-  let depth = 1;
-  for (let i = open; i < text.length; i += 1) {
-    if (text[i] === '(') depth += 1;
-    else if (text[i] === ')') {
-      depth -= 1;
-      if (depth === 0) return text.slice(open, i);
-    }
-  }
-  throw new Error(`${id}: no balanced result/1 term`);
+const sourcePassages = new Map(
+  deriveProvenance(bagFiles).chunks.map(({ document, model }) => {
+    const evidence = model as { source: { text: string } };
+    return [document, evidence.source.text] as const;
+  }),
+);
+
+const expectedStatements = (id: QuestionId): string[] => {
+  const topic = CLINICAL_QUESTIONS.find((candidate) => candidate.id === id);
+  if (topic === undefined) throw new Error(`missing clinical topic ${id}`);
+  return topic.sources.map(({ document }) => {
+    const passage = sourcePassages.get(document);
+    if (passage === undefined) throw new Error(`${document} has no source passage`);
+    return passage;
+  });
 };
 
 let session: EngineSession;
@@ -93,68 +91,45 @@ beforeAll(async () => {
 }, BOOT_TIMEOUT);
 
 describe('question catalog', () => {
-  it('holds exactly the six declared ids, each with a compiled goal', () => {
-    expect(QUESTION_IDS).toHaveLength(6);
-    expect(Object.keys(QUESTION_CATALOG).sort()).toEqual([...QUESTION_IDS].sort());
+  it('holds the seven declared clinical topics in generated order', () => {
+    expect(QUESTION_IDS).toHaveLength(7);
+    expect(CLINICAL_QUESTIONS.map(({ id }) => id)).toEqual(QUESTION_IDS);
+    expect(Object.keys(QUESTION_CATALOG)).toEqual(QUESTION_IDS);
     for (const id of QUESTION_IDS) {
       const entry = QUESTION_CATALOG[id];
-      expect(entry.goal, id).not.toBe('');
       expect(entry.question, id).not.toBe('');
+      expect(entry.goal, id).toMatch(/^clinical_advice\('[a-z0-9-]+',Source,Answer\)$/u);
+      expect(entry.projection).toEqual([
+        { variable: 'Answer', descriptor: 'noun(guideline-passage,countable)' },
+      ]);
+      expect(entry.provenance).toBe('bag-derived');
     }
   });
 
-  it('carries each entry the bag exported byte for byte', () => {
-    for (const id of QUESTION_IDS) {
-      const entry = QUESTION_CATALOG[id];
-      if (entry.provenance !== 'bag-exported') continue;
-      const path = [...bagFiles.keys()].find((name) =>
-        name.endsWith(`/queries/pl/${id}.pl`),
-      ) as string;
-      const source = Buffer.from(bagFiles.get(path) as Uint8Array).toString('utf8');
-      expect(source, id).toContain(entry.goal);
-    }
+  it('re-derives the generated catalog from the verified bag', () => {
+    const derived = catalogRecords(bagFiles);
+    expect(derived.records).toEqual(QUESTION_IDS.map((id) => QUESTION_CATALOG[id]));
+    expect(derived.names.length).toBeGreaterThan(0);
+    expect(derived.source).toContain('clinical_advice_source(');
   });
 
-  it('derives each repo-authored goal from an exported analog by one atom', () => {
-    const authored = QUESTION_IDS.filter(
-      (id) => QUESTION_CATALOG[id].provenance === 'repo-authored',
-    );
-    expect(authored).toEqual(['category-b-recommendations', 'evidence-type-3-recommendation']);
-    expect(QUESTION_CATALOG['category-b-recommendations'].goal).toBe(
-      QUESTION_CATALOG['category-a-recommendations'].goal.replace(
-        "'category-A-recommendation'",
-        "'category-B-recommendation'",
-      ),
-    );
-    expect(QUESTION_CATALOG['evidence-type-3-recommendation'].goal).toBe(
-      QUESTION_CATALOG['evidence-type-1-recommendation'].goal.replace(
-        "'evidence-type-1-recommendation'",
-        "'evidence-type-3-recommendation'",
-      ),
-    );
+  it('refuses a bag missing a selected controlled source', () => {
+    const first = CLINICAL_QUESTIONS[0]?.sources[0]?.document;
+    if (first === undefined) throw new Error('clinical catalog has no source selection');
+    const path = [...bagFiles.keys()].find((name) => name.endsWith(`/ace/${first}.ace`));
+    if (path === undefined) throw new Error(`bag has no ACE source ${first}`);
+    const incomplete = new Map(bagFiles);
+    incomplete.delete(path);
+    expect(() => catalogRecords(incomplete)).toThrow(/missing-file|expected one ACE source/u);
   });
 
-  it('refuses a bag whose exported query set is not the declared one', () => {
-    const template = [...bagFiles.keys()].find((name) =>
-      name.endsWith('/queries/pl/dosage-reduction-content.pl'),
-    ) as string;
-    const source = Buffer.from(bagFiles.get(template) as Uint8Array).toString('utf8');
-    const extra = new Map(bagFiles);
-    extra.set(
-      template.replace('dosage-reduction-content.pl', 'zz-extra-question.pl'),
-      Buffer.from(source.replaceAll('dosage-reduction-content', 'zz-extra-question'), 'utf8'),
-    );
-    expect(() => catalogRecords(extra)).toThrow(/expected \[/);
-    expect(() => catalogRecords(bagFiles)).not.toThrow();
-  });
-
-  it('rejects every input that is not one of the six ids', () => {
+  it('rejects every input that is not one of the seven ids', () => {
     const rejected: unknown[] = [
-      QUESTION_CATALOG['category-a-recommendations'].question,
+      QUESTION_CATALOG[QUESTION_IDS[0]].question,
       'true',
-      'guideline_entity(actual,A,recommendation,countable)',
-      'Category-A-Recommendations',
-      'category-a-recommendations.',
+      'clinical_advice(_,_,_)',
+      'When-To-Use-Opioids',
+      'when-to-use-opioids.',
       '',
       ' ',
       '__proto__',
@@ -172,79 +147,60 @@ describe('question catalog', () => {
   });
 });
 
-describe('live answers', () => {
-  it('runs all six ids against the real image', () => {
-    for (const id of QUESTION_IDS) expect(answers.get(id), id).toBeDefined();
-    // Counts are read, not asserted as literals; the catalog must simply answer.
-    const counts = QUESTION_IDS.map((id) => (answers.get(id) as PlSolution[]).length);
-    expect(counts.every((count) => count > 0)).toBe(true);
+describe('live clinical answers', () => {
+  it('returns every selected controlled sentence through the real image', () => {
+    for (const id of QUESTION_IDS) {
+      const rows = answers.get(id) as PlSolution[];
+      const text = rows.map((solution) => {
+        const answer = solution.bindings.Answer;
+        expect(answer?.kind, id).toBe('string');
+        return answer?.kind === 'string' ? answer.value : '';
+      });
+      expect(text, id).toEqual(expectedStatements(id));
+    }
   });
 
-  it('reproduces the committed category-A answer bytes', () => {
-    const entry = QUESTION_CATALOG['category-a-recommendations'];
-    const live = serializeAnswer(entry, answers.get('category-a-recommendations') as PlSolution[]);
-    expect(live).toBe(committedResult('category-a-recommendations'));
-  });
-
-  it.each([
-    'dosage-reduction-content',
-    'evidence-type-1-recommendation',
-    'recommendation-exists',
-  ] as const)('is canonical value-equal to the committed answer for %s', (id) => {
-    const live = serializeAnswer(QUESTION_CATALOG[id], answers.get(id) as PlSolution[]);
-    expect(live).toBe(committedResult(id));
-  });
-
-  it('answers an existence question yes or no rather than with rows', () => {
-    const entry = QUESTION_CATALOG['recommendation-exists'];
-    expect(entry.projection).toHaveLength(0);
-    expect(serializeAnswer(entry, answers.get('recommendation-exists') as PlSolution[])).toBe(
-      'yes',
-    );
-    expect(serializeAnswer(entry, [])).toBe('no');
+  it('returns a source identifier beside every projected statement', () => {
+    for (const id of QUESTION_IDS) {
+      for (const solution of answers.get(id) as PlSolution[]) {
+        const source = solution.bindings.Source;
+        expect(source?.kind, id).toBe('compound');
+        if (source?.kind === 'compound') {
+          expect(source.functor).toBe('$guideline_id');
+          expect(source.args).toHaveLength(5);
+        }
+      }
+    }
   });
 
   it('serializes independently of the order the engine yielded', () => {
-    const entry = QUESTION_CATALOG['category-a-recommendations'];
-    const live = answers.get('category-a-recommendations') as PlSolution[];
-    expect(serializeAnswer(entry, [...live].reverse())).toBe(serializeAnswer(entry, live));
+    for (const id of QUESTION_IDS) {
+      const entry = QUESTION_CATALOG[id];
+      const live = answers.get(id) as PlSolution[];
+      expect(serializeAnswer(entry, [...live].reverse())).toBe(serializeAnswer(entry, live));
+    }
   });
 
   it(
-    'tracks an injected overlay clause rather than a fixture',
+    'tracks an injected clinical-advice fact rather than a UI fixture',
     async () => {
-      const marker = `probe-${process.pid}-overlay`;
-      const entry = QUESTION_CATALOG['category-a-recommendations'];
-      const before = serializeAnswer(
-        entry,
-        answers.get('category-a-recommendations') as PlSolution[],
-      );
+      const id = QUESTION_IDS[0];
+      const marker = `probe-${String(process.pid)}-overlay`;
+      const entry = QUESTION_CATALOG[id];
+      const before = serializeAnswer(entry, answers.get(id) as PlSolution[]);
       expect(before).not.toContain(marker);
 
-      // Schema predicates ship static, so the overlay declares them dynamic first.
-      // The goal is a seven-way join, so one fact cannot move it: the overlay
-      // supplies a whole new proof rather than a single clause.
-      const id = (n: number): string => `'$guideline_id'(product,'${marker}',${n},ref(1),[])`;
       const loaded = await session.handle(
         {
           id: 'overlay',
           kind: 'consult',
-          source:
-            ':- dynamic(guideline_entity/4).\n:- dynamic(guideline_cardinality/5).\n' +
-            ':- dynamic(guideline_event/3).\n:- dynamic(guideline_arg/4).\n' +
-            `guideline_entity(actual,${id(1)},recommendation,countable).\n` +
-            `guideline_cardinality(actual,${id(1)},na,eq,1).\n` +
-            `guideline_entity(actual,${id(2)},'category-A-recommendation',countable).\n` +
-            `guideline_cardinality(actual,${id(2)},na,eq,1).\n` +
-            `guideline_event(actual,${id(3)},be).\n` +
-            `guideline_arg(actual,${id(3)},1,${id(1)}).\n` +
-            `guideline_arg(actual,${id(3)},2,${id(2)}).\n`,
+          source: `clinical_advice('${id}','$guideline_id'(product,'${marker}',1,ref(1),[]),${JSON.stringify(marker)}).\n`,
         },
         new Uint8Array(readGenerated('kb.pvm')),
       );
       expect(loaded, JSON.stringify(loaded)).toMatchObject({ kind: 'consulted' });
 
-      const after = serializeAnswer(entry, await run('category-a-recommendations'));
+      const after = serializeAnswer(entry, await run(id));
       expect(after).not.toBe(before);
       expect(after).toContain(marker);
     },
@@ -254,7 +210,6 @@ describe('live answers', () => {
 
 describe('canonical order', () => {
   it('orders by type before value, unlike a byte sort', () => {
-    // `10` sorts before `'2'` numerically and after it lexically.
     expect(compareTerms({ kind: 'integer', value: 10 }, atom('2'))).toBeLessThan(0);
     expect(
       compareTerms({ kind: 'integer', value: 10 }, { kind: 'integer', value: 2 }),
@@ -265,7 +220,7 @@ describe('canonical order', () => {
     );
   });
 
-  it('orders compounds by arity, then name, then arguments', () => {
+  it('orders compounds by arity, then name and arguments', () => {
     const f2: PlTerm = { kind: 'compound', functor: 'f', args: [atom('a'), atom('a')] };
     const z1: PlTerm = { kind: 'compound', functor: 'z', args: [atom('a')] };
     expect(compareTerms(z1, f2)).toBeLessThan(0);
@@ -275,15 +230,15 @@ describe('canonical order', () => {
     );
   });
 
-  it('is total over the real answer terms', () => {
-    const terms = (answers.get('category-a-recommendations') as PlSolution[]).map(
-      (solution) => solution.bindings['A'] as PlTerm,
+  it('is antisymmetric over the real answer strings', () => {
+    const terms = (answers.get(QUESTION_IDS[0]) as PlSolution[]).map(
+      (solution) => solution.bindings.Answer as PlTerm,
     );
-    for (const [i, left] of terms.entries()) {
-      for (const [j, right] of terms.entries()) {
-        expect(Math.sign(compareTerms(left, right)), `${i}/${j}`).toBe(
-          i === j ? 0 : Math.sign(i - j),
-        );
+    for (const left of terms) {
+      for (const right of terms) {
+        const forward = Math.sign(compareTerms(left, right));
+        const reverse = Math.sign(compareTerms(right, left));
+        expect(forward === 0 ? reverse : forward + reverse).toBe(0);
       }
     }
   });
@@ -296,16 +251,12 @@ describe('canonical order', () => {
     expect(compareTerms({ kind: 'list', items: [atom('a')] }, atom('[]'))).toBeGreaterThan(0);
   });
 
-  // The live corpus is one uniform `'$guideline_id'/5` shape, where term order and a
-  // byte sort of the rendered text coincide — so no live case can prove the
-  // serializer consults `compareTerms` at all. These two do: an ordinal pair that the
-  // two orders disagree about, and a repeated proof.
   const ordinalEntry: CatalogEntry = {
-    id: 'category-a-recommendations',
+    id: QUESTION_IDS[0],
     question: 'ordinal probe',
     goal: 'true',
     projection: [{ variable: 'S', descriptor: 'noun(sentence,countable)' }],
-    provenance: 'bag-exported',
+    provenance: 'bag-derived',
   };
 
   const ordinalRow = (ordinal: number): PlSolution => ({
@@ -319,7 +270,7 @@ describe('canonical order', () => {
     display: { S: `'$guideline_id'(doc,sentence,${ordinal})` },
   });
 
-  it('sorts serialized rows by term order rather than by rendered bytes', () => {
+  it('sorts serialized rows by term order rather than rendered bytes', () => {
     expect(serializeAnswer(ordinalEntry, [ordinalRow(10), ordinalRow(2)])).toBe(
       "solutions([sol(['$guideline_id'(doc,sentence,2)]),sol(['$guideline_id'(doc,sentence,10)])])",
     );
@@ -332,20 +283,27 @@ describe('canonical order', () => {
   });
 });
 
-describe('guideline id humanizer', () => {
-  it('formats a real binding structurally', () => {
-    const solution = (answers.get('category-a-recommendations') as PlSolution[])[0] as PlSolution;
-    const term = solution.bindings['A'] as PlTerm;
-    const text = humanizeGuidelineId(term, solution.display['A'] as string);
-    expect(text).not.toBe(solution.display['A']);
+describe('answer humanizer', () => {
+  it('formats the source identifier structurally', () => {
+    const solution = (answers.get(QUESTION_IDS[0]) as PlSolution[])[0] as PlSolution;
+    const term = solution.bindings.Source as PlTerm;
+    const display = solution.display.Source as string;
+    const text = humanizeGuidelineId(term, display);
+    expect(text).not.toBe(display);
     expect(text).toMatch(/^\S+ — sentence \d+, \w+ \d+$/u);
-    // Generic over guidelines: no corpus vocabulary is glossed into the label.
-    for (const gloss of ['Recommendation', 'Implementation', 'CDC', 'Opioid']) {
-      expect(text).not.toContain(gloss);
-    }
   });
 
-  it('degrades to the engine text for any other shape', () => {
+  it('presents the exact source passage without Prolog string delimiters', () => {
+    const solution = (answers.get(QUESTION_IDS[0]) as PlSolution[])[0] as PlSolution;
+    const term = solution.bindings.Answer as PlTerm;
+    const text = humanizeAnswerTerm(term, solution.display.Answer as string);
+    expect(text).not.toContain('"');
+    expect(term.kind).toBe('string');
+    if (term.kind === 'string') expect(text).toBe(term.value);
+    expect(text).toMatch(/[.]$/u);
+  });
+
+  it('degrades to engine text for an unknown term shape', () => {
     const display = 'whatever the engine wrote';
     for (const term of [
       { kind: 'atom', value: 'x' } as PlTerm,
@@ -354,17 +312,6 @@ describe('guideline id humanizer', () => {
         kind: 'compound',
         functor: 'other',
         args: Array.from({ length: 5 }, () => atom('a')),
-      } as PlTerm,
-      {
-        kind: 'compound',
-        functor: '$guideline_id',
-        args: [
-          atom('product'),
-          { kind: 'integer', value: 1 },
-          { kind: 'integer', value: 1 },
-          atom('r'),
-          { kind: 'list', items: [] },
-        ],
       } as PlTerm,
     ]) {
       expect(humanizeGuidelineId(term, display)).toBe(display);

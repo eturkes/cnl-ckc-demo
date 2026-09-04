@@ -1,6 +1,6 @@
-// The six demo questions. Ids are declared here because they are the API the UI
-// selects against; goals, projections and question text come from the generated
-// artifact, because they are knowledge-base content and the bag owns it.
+// The clinician-facing demo questions. Ids are declared here because they are
+// the API the UI selects against; goals, projections and question text come from
+// the generated artifact because the verified knowledge-base bag owns them.
 
 import generated from '@kb/question-catalog.json';
 
@@ -10,12 +10,13 @@ import generated from '@kb/question-catalog.json';
  * executable surface.
  */
 export const QUESTION_IDS = [
-  'category-a-recommendations',
-  'category-b-recommendations',
-  'dosage-reduction-content',
-  'evidence-type-1-recommendation',
-  'evidence-type-3-recommendation',
-  'recommendation-exists',
+  'when-to-use-opioids',
+  'starting-opioid-therapy',
+  'acute-pain-prescription-duration',
+  'opioid-follow-up',
+  'opioid-safety',
+  'continuing-or-tapering-opioids',
+  'opioid-use-disorder-treatment',
 ] as const;
 
 export type QuestionId = (typeof QUESTION_IDS)[number];
@@ -27,8 +28,8 @@ export interface ProjectionVar {
   descriptor: string;
 }
 
-/** `bag-exported` goals are verbatim bag bytes; `repo-authored` ones derive from an exported analog by one atom. */
-export type Provenance = 'bag-exported' | 'repo-authored';
+/** The topic is curated, while its returned statements and proof coordinates are bag-derived. */
+export type Provenance = 'bag-derived';
 
 export interface CatalogEntry {
   id: QuestionId;
@@ -40,7 +41,7 @@ export interface CatalogEntry {
   provenance: Provenance;
 }
 
-const PROVENANCES: readonly string[] = ['bag-exported', 'repo-authored'];
+const PROVENANCES: readonly string[] = ['bag-derived'];
 
 const build = (): Readonly<Record<QuestionId, CatalogEntry>> => {
   const emitted = new Map(generated.entries.map((entry) => [entry.id, entry]));

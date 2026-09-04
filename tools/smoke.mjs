@@ -6,9 +6,8 @@
 // the rendered answer together, and it serves them from a NESTED path because
 // `base: './'` is the whole reason a nested static host works at all.
 //
-// The oracle is read out of the vendored bag at run time rather than written
-// here, so the expectation cannot drift from the knowledge base it claims to
-// reproduce.
+// The expected statements are re-derived from the vendored bag at run time, so
+// the check cannot drift from the knowledge base it claims to reproduce.
 
 import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
@@ -18,42 +17,38 @@ import { join } from 'node:path';
 
 import { failWith, launch, serve } from './browser.mjs';
 import { verifyBag } from './kb/bag.mjs';
+import { clinicalArtifacts } from './kb/clinical.mjs';
 import { ROOT } from './kb/paths.mjs';
 
-const QUESTION = 'dosage-reduction-content';
+const QUESTION = 'when-to-use-opioids';
 const NESTED = 'some/nested';
 
 /** @type {(message: string) => never} */
 const fail = failWith('smoke');
 
 /**
- * The bag's own recorded answer for `id`, unwrapped from its `result(...)` envelope.
+ * Canonical answer expected from the clinical statements selected in the bag.
  *
  * @param {string} id
- * @returns {string}
+ * @returns {{ serialized: string, rows: number }}
  */
-const committedAnswer = (id) => {
+const expectedAnswer = (id) => {
   const kb = join(ROOT, 'kb');
   const archive = readdirSync(kb).find((name) => name.endsWith('.tar.gz'));
   if (archive === undefined) fail('no bag archive in kb/');
   const { files } = verifyBag(readFileSync(join(kb, archive)));
-  const path = [...files.keys()].find((name) => name.endsWith(`/answers/${id}.pl`));
-  const bytes = path === undefined ? undefined : files.get(path);
-  if (bytes === undefined) fail(`bag has no committed answer for ${id}`);
-  const text = Buffer.from(bytes).toString('utf8');
-  const open = text.indexOf('result(') + 'result('.length;
-  let depth = 1;
-  for (let i = open; i < text.length; i += 1) {
-    if (text[i] === '(') depth += 1;
-    else if (text[i] === ')' && (depth -= 1) === 0) return text.slice(open, i);
+  const statements = clinicalArtifacts(files).answers.get(id);
+  if (statements === undefined || statements.length === 0) {
+    fail(`clinical catalog has no statements for ${id}`);
   }
-  return fail(`committed answer for ${id} is unbalanced`);
+  const rows = [...statements].sort().map((statement) => `sol([${JSON.stringify(statement)}])`);
+  return { serialized: `solutions([${rows.join(',')}])`, rows: statements.length };
 };
 
 // Never trust a leftover dist tree: this check proves the current source.
 execFileSync('pnpm', ['build'], { cwd: ROOT, stdio: 'inherit' });
 
-const expected = committedAnswer(QUESTION);
+const expected = expectedAnswer(QUESTION);
 const root = await mkdtemp(join(tmpdir(), 'cnl-ckc-smoke-'));
 /** @type {import('./browser.mjs').LogEntry[]} */
 const log = [];
@@ -86,12 +81,15 @@ try {
   const answer = page.locator('section[aria-labelledby] .canonical code');
   await answer.waitFor({ timeout: 45_000 });
   const rendered = (await answer.textContent())?.trim();
-  if (rendered !== expected) {
-    fail(`rendered answer differs from the bag\n  bag: ${expected}\n  dom: ${String(rendered)}`);
+  if (rendered !== expected.serialized) {
+    fail(
+      `rendered answer differs from the bag\n  bag: ${expected.serialized}\n  dom: ${String(rendered)}`,
+    );
   }
 
   const rows = await page.locator('section[aria-labelledby] fieldset input[type="radio"]').count();
-  if (rows !== 2) fail(`expected 2 answer rows, rendered ${rows}`);
+  if (rows !== expected.rows)
+    fail(`expected ${String(expected.rows)} answer rows, rendered ${rows}`);
   if ((await page.locator('[data-engine="error"]').count()) > 0)
     fail('the engine reported an error');
 
@@ -101,7 +99,7 @@ try {
 
   const served = log.filter((entry) => entry.status === 200).length;
   console.log(
-    `smoke: ok — ${url} answered ${QUESTION} with ${rows} rows matching the bag, ` +
+    `smoke: ok — ${url} answered ${QUESTION} with ${rows} bag-derived rows, ` +
       `${served} nested requests served`,
   );
 } finally {

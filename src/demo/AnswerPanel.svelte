@@ -3,8 +3,8 @@
   //
   // One-of-N is the APG Radio Group pattern, and native radios inside a
   // `fieldset` supply the group relationship, the checked state, the single tab
-  // stop and the arrow keys without a line of script. Every cell renders text the
-  // engine itself produced, so nothing here reconstructs Prolog syntax.
+  // stop and the arrow keys without a line of script. Every cell starts with a
+  // value the engine produced; the descriptor layer only makes it readable.
 
   import { DESCRIPTIONS } from './copy.js';
   import type { AnswerRow } from './describe.js';
@@ -51,7 +51,7 @@
 
   {#if rows.length > 1}
     <fieldset>
-      <legend>Choose an answer</legend>
+      <legend>Select a passage to inspect its source</legend>
       {#each rows as row, index (index)}
         <label>
           <input
@@ -68,7 +68,7 @@
     </fieldset>
   {/if}
 
-  {#if selectedRow !== undefined}
+  {#if selectedRow !== undefined && rows.length === 1}
     <dl>
       {#each selectedRow.cells as cell (cell.variable)}
         <dt>{cell.descriptor}</dt>
@@ -128,12 +128,17 @@
   label {
     display: flex;
     gap: 0.6rem;
-    align-items: baseline;
+    align-items: flex-start;
     border-top: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
-    padding: 0.45rem 0;
-    font-family: var(--font-code);
-    font-size: 0.8rem;
+    padding: 0.65rem 0;
+    font-size: 0.9rem;
+    line-height: 1.45;
     overflow-wrap: anywhere;
+  }
+
+  label input {
+    margin-top: 0.25rem;
+    flex: 0 0 auto;
   }
 
   /* Label above value while the viewport is narrow, label beside value once
@@ -162,8 +167,8 @@
 
   dd {
     margin: 0 0 0.5rem;
-    font-family: var(--font-code);
-    font-size: 0.84rem;
+    font-size: 0.94rem;
+    line-height: 1.5;
     overflow-wrap: anywhere;
   }
 

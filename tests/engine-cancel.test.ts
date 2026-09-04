@@ -22,6 +22,7 @@ import {
 } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
 import { AnswerService } from '../src/questions/service.js';
+import { QUESTION_IDS } from '../src/questions/catalog.js';
 
 const require = createRequire(import.meta.url);
 const GENERATED = join(dirname(dirname(fileURLToPath(import.meta.url))), 'kb', 'generated');
@@ -243,9 +244,9 @@ describe('signal-bound cancellation', () => {
     const { client, workers } = scriptedClient();
     const service = new AnswerService(client);
     try {
-      expect(await service.ask('category-a-recommendations', budget(), controller.signal)).toEqual({
+      expect(await service.ask(QUESTION_IDS[0], budget(), controller.signal)).toEqual({
         kind: 'cancelled',
-        id: 'category-a-recommendations',
+        id: QUESTION_IDS[0],
         serialized: 'solutions([])',
         solutions: [],
       });

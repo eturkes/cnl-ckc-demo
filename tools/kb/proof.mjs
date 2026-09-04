@@ -32,6 +32,7 @@ derive(true,_,[],proved) :- !.
 derive(M:A,D,P,S) :- !, (M == user -> derive(A,D,P,S) ; P=[], S=limit).
 derive((A,B),D,P,S) :- !, derive_conjunction(A,B,D,P,S).
 derive(\+ A,D,[naf(A)],S) :- !, findall(R,derive(A,D,_,R),Rs), naf_status(Rs,S).
+derive(clinical_advice(Q,Source,Answer),_,[node(line(Line),Head,[])],proved) :- !, clinical_advice_source(Q,Source,Answer,Head,Line).
 derive(H,0,[],limit) :- schema_goal(H), !.
 derive(H,D,[node(line(L),H,Sub)],S) :- D > 0, D1 is D-1, resolve(H,B,L), derive(B,D1,Sub,S).
 derive_conjunction(A,B,D,P,proved) :- derive(A,D,PA,proved), derive(B,D,PB,proved), app(PA,PB,P).

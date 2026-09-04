@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Select-only APG combobox over the six catalog questions. Contract =
+  // Select-only APG combobox over the clinician-facing catalog. Contract =
   // `.agent/contracts/m1u5.md`; predicate ids appear on the rules they encode.
   //
   // Host is a `div`, not a readonly `<input>` (D1): an input announces "read only

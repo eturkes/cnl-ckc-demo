@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { QUESTION_CATALOG } from '../src/questions/catalog.js';
+import { QUESTION_CATALOG, QUESTION_IDS } from '../src/questions/catalog.js';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const CONTROL = join(ROOT, 'src', 'zz-forbidden-reach-control.ts');
@@ -76,7 +76,7 @@ describe('JSON serialization ban over src/', () => {
 // the same reason the scan exists — this file is one of the scanned surfaces.
 describe('catalog question text ban over src/ and tests/', () => {
   it('fails kb:asset-check on a copied question sentence', () => {
-    const sentence = QUESTION_CATALOG['recommendation-exists'].question;
+    const sentence = QUESTION_CATALOG[QUESTION_IDS[0]].question;
     writeFileSync(CONTROL, `export const label = ${JSON.stringify(sentence)};\n`);
     const { status, output } = assetCheck();
     expect(status).not.toBe(0);

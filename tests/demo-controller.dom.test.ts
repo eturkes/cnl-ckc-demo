@@ -17,7 +17,6 @@ import {
 
 const CONTRACT: EngineContract = { schemaVersion: 1, documents: 337 };
 const ID = QUESTION_IDS[0];
-const EXISTENCE_ID = QUESTION_IDS[5];
 
 type Deferred<T> = {
   promise: Promise<T>;
@@ -47,8 +46,8 @@ class ViewEngine implements DemoEngine {
 }
 
 const solution = (index: number, prefix = 'allowed'): PlSolution => ({
-  bindings: { A: { kind: 'atom', value: `binding-poison-${String(index)}` } },
-  display: { A: `${prefix}-display-${String(index)}` },
+  bindings: { Answer: { kind: 'atom', value: `binding-poison-${String(index)}` } },
+  display: { Answer: `${prefix}-display-${String(index)}` },
 });
 
 const answer = (id: QuestionId, count = 1, prefix = 'allowed'): AnswerResult => ({
@@ -218,17 +217,11 @@ describe('view states and accessibility', () => {
     expect(text(answerRegion())).toMatch(/\b2\b/u);
   });
 
-  it('V6 renders failure as no proof and existential outcomes as yes or no', () => {
-    setState({ kind: 'settled', id: EXISTENCE_ID, result: failure(EXISTENCE_ID, 'no') });
+  it('V6 renders an empty clinical result as no proof, never as an answer row', () => {
+    setState({ kind: 'settled', id: ID, result: failure(ID, 'solutions([])') });
     expect(text()).toMatch(/no proof/iu);
-    expect(text(answerRegion())).toMatch(/\bno\b/iu);
-    expect(text(answerRegion())).not.toMatch(/solutions\s*\(|\[\s*\]/u);
-
-    controller.solutionIndex = 0;
-    setState({ kind: 'settled', id: EXISTENCE_ID, result: answer(EXISTENCE_ID, 12, 'yes') });
-    expect(text(answerRegion())).toMatch(/\byes\b/iu);
     expect(radios()).toHaveLength(0);
-    expect(text(answerRegion())).not.toMatch(/solutions\s*\(|\[\s*\]/u);
+    expect(target.querySelector('fieldset')).toBeNull();
   });
 
   it('V7 renders many answers as one labelled native radio group with index zero checked', () => {
@@ -400,7 +393,7 @@ describe('view states and accessibility', () => {
       kind: 'answer',
       id: ID,
       serialized: 'allowed-serialized',
-      solutions: [{ bindings: { A: binding }, display: { A: 'engine-display-text' } }],
+      solutions: [{ bindings: { Answer: binding }, display: { Answer: 'engine-display-text' } }],
     };
     controller.solutionIndex = 0;
     setState({ kind: 'settled', id: ID, result });

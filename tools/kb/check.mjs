@@ -96,10 +96,10 @@ if (manifest === undefined) {
       // Re-deriving proves the shipped catalog is what this bag yields, which a
       // digest comparison against the manifest alone would not.
       const catalog = catalogRecords(files);
-      if (catalog.names.length !== manifest.catalog.queryFiles) fail(`bag holds ${catalog.names.length} queries, manifest says ${manifest.catalog.queryFiles}`);
+      if (catalog.names.length !== manifest.catalog.sourceFiles) fail(`catalog uses ${catalog.names.length} controlled sources, manifest says ${manifest.catalog.sourceFiles}`);
       if (catalog.records.length !== manifest.catalog.entries) fail(`catalog derives ${catalog.records.length} entries, manifest says ${manifest.catalog.entries}`);
-      if (sha256(Buffer.from(catalog.source, 'utf8')) !== manifest.catalog.sha256) fail('recomputed query digest does not match the manifest');
       const emitted = Buffer.from(catalogJson(catalog.records), 'utf8');
+      if (sha256(emitted) !== manifest.catalog.sha256) fail('recomputed catalog digest does not match the manifest');
       const shipped = readFileSync(join(GENERATED_DIR, 'question-catalog.json'));
       if (!emitted.equals(shipped)) fail('question-catalog.json does not match the catalog re-derived from the bag');
 

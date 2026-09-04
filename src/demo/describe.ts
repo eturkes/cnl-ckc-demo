@@ -8,7 +8,7 @@
 
 import type { LimitKind, PlSolution } from '../engine/protocol.js';
 import { QUESTION_CATALOG, type CatalogEntry, type QuestionId } from '../questions/catalog.js';
-import { humanizeGuidelineId } from '../questions/humanize.js';
+import { humanizeAnswerTerm } from '../questions/humanize.js';
 import type { AnswerResult } from '../questions/service.js';
 
 import type { DemoState } from './DemoController.svelte.js';
@@ -61,8 +61,8 @@ const describeResult = (entry: CatalogEntry, result: AnswerResult): StateDescrip
         ? { ...blank, status: 'Answer: yes.', summary: 'Yes. The knowledge base proves it.' }
         : {
             ...blank,
-            status: `${count(result.solutions.length, 'answer')} for this question.`,
-            summary: count(result.solutions.length, 'answer'),
+            status: `${count(result.solutions.length, 'guideline passage')} for this question.`,
+            summary: count(result.solutions.length, 'guideline passage'),
           };
     case 'failure':
       return isExistential(entry)
@@ -152,7 +152,7 @@ export const answerRows = (id: QuestionId, solutions: readonly PlSolution[]): An
       return {
         variable,
         descriptor: describeDescriptor(descriptor),
-        text: binding === undefined ? display : humanizeGuidelineId(binding, display),
+        text: binding === undefined ? display : humanizeAnswerTerm(binding, display),
       };
     });
     return { cells, label: cells.map((cell) => cell.text).join(', ') };

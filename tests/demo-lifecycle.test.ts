@@ -369,7 +369,7 @@ describe('run lifecycle', () => {
     await run;
   });
 
-  it('R10 returns 7 / 5 / 2 / 1 / 3 / 12 live PVM solutions through createDemoEngine', async () => {
+  it('R10 returns every curated clinical statement through createDemoEngine', async () => {
     vi.stubGlobal('Worker', RealPvmWorker);
     const engine = createDemoEngine();
     try {
@@ -380,9 +380,8 @@ describe('run lifecycle', () => {
         expect(result.kind, id).toBe('answer');
         if (result.kind !== 'answer') throw new Error(`${id}: ${result.kind}`);
         counts.push(result.solutions.length);
-        if (id === 'recommendation-exists') expect(result.serialized).toBe('yes');
       }
-      expect(counts).toEqual([7, 5, 2, 1, 3, 12]);
+      expect(counts).toEqual([2, 2, 1, 1, 4, 1, 1]);
     } finally {
       engine.dispose();
       vi.unstubAllGlobals();
