@@ -109,14 +109,53 @@
   color-scheme: light;
 }
 
+:root[data-theme='dark'] {
+  --surface: #10191a;
+  --surface-raised: #172426;
+  --surface-sunken: #0b1314;
+  --text: #f4f1e9;
+  --text-muted: #b6c1c0;
+  --border: #788b88;
+  --action: #83d4ce;
+  --action-text: #0b2323;
+  --warn: #efb866;
+  --focus-ring: #f4f1e9;
+
+  color-scheme: dark;
+}
+
 * {
   box-sizing: border-box;
 }
 
 body {
+  min-width: 20rem;
+  min-height: 100vh;
   margin: 0;
-  background: var(--surface);
+  background:
+    radial-gradient(
+      circle at 10% 0%,
+      color-mix(in srgb, var(--action) 9%, transparent),
+      transparent 28rem
+    ),
+    var(--surface);
   color: var(--text);
   font-family: var(--font-ui);
   line-height: 1.55;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button,
+a,
+summary {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: var(--action);
+  color: var(--action-text);
 }

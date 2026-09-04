@@ -1,78 +1,105 @@
 # CNL CKC Demo
 
-This demo answers questions about a clinical guideline by running Prolog in your
-browser. Each answer is a live proof, never a stored result.
+A static browser demo of an executable clinical-guideline knowledge base. It runs
+SWI-Prolog in a web worker, answers six prepared questions from 337 compiled
+documents, traces a selected solution back to its source, and exposes the full
+semantic graph.
 
-The knowledge base is compiled from CDC source material into a controlled natural
-language, and then into Prolog. The demo boots that compiled knowledge base as a
-SWI-Prolog saved state in a web worker. The engine reports the document count, and
-that count is 337 for the vendored knowledge base.
+The shipped answers are produced at run time. They are not stored UI fixtures.
 
-## Limits
+## What is included
 
-Read these limits before you read any answer.
+- A bounded SWI-Prolog/WASM query engine with cancellation and worker recovery.
+- A six-step evidence ladder: live proof, compiled clause, controlled sentence,
+  coverage region, aligned source passage, and physical guideline PDF page.
+- Explicit projection-loss and `unreviewed` disclosures.
+- A lazily loaded semantic graph with search, bounded neighborhoods, shortest
+  paths, fCoSE layout, and complete keyboard-usable HTML navigation.
+- Light and dark themes, responsive layouts, local fonts, and relative asset
+  paths for nested static hosting.
 
-- Do not use this demo to make clinical decisions. It gives no medical advice.
-- Every compiled document carries the label `unreviewed`. No person has
-  adjudicated any of them.
-- The question list is fixed. A developer wrote the six questions, and the demo
-  compiles each one to a Prolog goal before it runs.
-- The demo does not reproduce guideline text unchanged. It runs a projection of
-  that text.
+## Important limits
+
+- **Do not use this demo to make clinical decisions.** It gives no medical
+  advice.
+- Every compiled document is labelled `unreviewed`; no human adjudication is
+  recorded.
+- The six questions are prepared examples, not unrestricted natural-language
+  input.
+- The controlled language is a projection. The evidence ladder identifies
+  material kept, changed, or omitted.
 
 Source: CDC. The Centers for Disease Control and Prevention developed the source
-material. The source material is available on the agency website at no charge.
-Use of this material does not imply endorsement by the Centers for Disease
-Control and Prevention, the Department of Health and Human Services, or the
+material, which is available on the agency website at no charge. Use does not
+imply endorsement by CDC, the Department of Health and Human Services, or the
 United States Government.
 
 ## Prerequisites
 
-You must install these two tools first. The demo needs no other global tool.
-
 - Node.js `^20.19.0 || >=22.12.0`
-- pnpm 10, which `corepack enable` installs from the `packageManager` field
+- pnpm 10, installed through Corepack
+- `chromiumfish` for `pnpm smoke` and `pnpm browser:check`
 
-## Run the demo
-
-Run these commands in order from the repository root.
+## Run locally
 
 ```sh
+corepack enable
 pnpm install --frozen-lockfile
 pnpm kb:build
 pnpm dev
 ```
 
-`pnpm kb:build` compiles the vendored knowledge base into `kb/generated/`. Run it
-once. Run it again after you change the bag in `kb/`.
+Open the URL printed by Vite. Wait for the engine to report ready, select a
+question, and select **Run**. Evidence data and the graph renderer load only when
+their controls are activated.
 
-`pnpm dev` prints a local URL. Open that URL. Wait for the engine to boot, select
-a question, then select **Run**.
+For a production build:
 
-To serve the production build instead, run `pnpm build` and then `pnpm preview`.
+```sh
+pnpm build
+pnpm preview
+```
 
-## Verify the checkout
+## Verification
 
-One command decides the whole project.
+The normal deterministic gate rebuilds the vendored knowledge-base export and
+checks generated assets, engine boundaries, copy, contrast, presentation,
+formatting, lint, types, tests, and the production bundle:
 
 ```sh
 pnpm gate
 ```
 
-`pnpm gate` compiles the knowledge base, verifies the shipped assets, checks the
-engine boundaries, grades the copy and the colour contrast, checks the fonts and
-the licences, formats, lints, type-checks, runs the tests, and builds. It must
-exit 0.
+The release check adds byte-for-byte knowledge-base reproduction and real-browser
+proofs for the nested production build, live answers, lazy graph, responsive
+states, and cancellation:
 
-Two more checks need a real browser, so they stay outside the gate. Run
-`pnpm smoke` to prove that the built site answers a question. Run
-`pnpm browser:check` to prove that the development server and the built site
-agree, that five states fit a 320px viewport, and that a cancelled query stops
-between solutions.
+```sh
+pnpm release:check
+```
+
+Generated runtime files live under `kb/generated/` and are intentionally ignored.
+`pnpm kb:reproduce` derives a fresh tree and compares it with the current one.
+
+## Static deployment
+
+The application has no server-side runtime. Publish `dist/` at any static path;
+Vite emits relative URLs. The included GitHub Pages workflow runs the gate and
+deploys `dist/` on pushes to `main` or manual dispatch.
+
+SWI-Prolog/WASM generates JavaScript functions, and the app starts a module
+worker. A static host that sets CSP headers should begin with a policy equivalent
+to:
+
+```text
+default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; frame-src 'self'; object-src 'none'; base-uri 'none'
+```
+
+Validate the exact policy on the chosen host; this repository does not inject a
+CSP meta tag because deployment headers are the authoritative boundary.
 
 ## Licences
 
-The demo ships under Apache-2.0 WITH LLVM-exception. It sets text in Atkinson
-Hyperlegible Next, Atkinson Hyperlegible Mono and Literata. Each typeface ships
-under the SIL Open Font License 1.1, and the demo serves each licence from
-`public/licenses/`.
+The demo is Apache-2.0 WITH LLVM-exception. Atkinson Hyperlegible Next, Atkinson
+Hyperlegible Mono, and Literata are included under the SIL Open Font License 1.1;
+their licence texts are served from `public/licenses/`.

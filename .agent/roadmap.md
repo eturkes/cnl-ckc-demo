@@ -19,15 +19,45 @@ non-negotiable = answers trace to genuine Prolog solutions.
 
 - **M1 — live question→answer spine** — REVIEWED, summary below, record in
   `.agent/archive/m1.md`.
-- **M2 — provenance ladder** — IN-PROGRESS, seven units, section below.
-- **M3 — semantic entity graph** — UNPLANNED. Static `clause/2` extraction over
+- **M2 — provenance ladder** — COMPLETE (expedited 2026-09-04; formal session
+  workflow and milestone review intentionally skipped), summary below.
+- **M3 — semantic entity graph** — COMPLETE (expedited 2026-09-04). Static `clause/2` extraction over
   the seven explicit edge schemas plus Horn-clause implication edges; fCoSE
   layout; neighborhood-first navigation; accessible non-canvas subgraph view.
   Event and operator-context nodes stay; noun→noun collapse is forbidden.
-- **M4 — integration + release** — UNPLANNED. Cross-pillar linking
+- **M4 — integration + release** — COMPLETE (expedited 2026-09-04). Cross-pillar linking
   (answer↔trace↔graph), dark theme + full visual system, CSP/static-host
   decision + release proof, performance/responsive/a11y hardening.
-## M2 — IN-PROGRESS
+## Expedited completion — M2 through M4
+
+The user requested a same-session deliverable and explicitly waived the normal
+session and review workflow. These milestones are implemented and mechanically
+verified, but they are not represented as formally adjudicated.
+
+- **M2:** selected answers are re-proved through a bounded interpreter compiled
+  into the PVM. The UI joins proof lines to exact clauses, ACE sentences,
+  coverage, code-point-aligned passages, projection/review disclosures, and a
+  lazy physical PDF page.
+- **M3:** the deterministic full graph contains 2,864 typed nodes and 18,700
+  typed edges, including 9,053 Horn implications. Cytoscape/fCoSE, graph data,
+  and layout work begin only after explicit activation; native HTML navigation
+  remains available if the canvas fails.
+- **M4:** proof-to-graph focus linking, responsive light/dark presentation,
+  bounded boot recovery, static nested-path deployment, GitHub Pages automation,
+  CSP guidance, and a release check are present.
+
+The manifest records 343 runtime assets: the PVM, QLF, question catalog, clause
+index, 337 provenance chunks, source PDF, and semantic graph. Fresh forced builds
+are byte-identical.
+
+Completion proof: `pnpm gate` passes with 285 tests in 25 files; the independent
+reproduction check is byte-identical; the production smoke answer matches the
+vendored bag. Real-browser checks pass for development and nested production
+hosting, lazy evidence/graph/PDF loading, seven 320px interaction states, and
+cooperative cancellation. Desktop, mobile, expanded-evidence, and dark-graph
+screens received direct visual inspection.
+
+## M2 — COMPLETE (expedited)
 
 Per SELECTED solution: live meta-interpreter proof → clause → ACE sentence → coverage
 region → aligned source passage → guideline page; lazy PDF; projection-loss and
@@ -62,7 +92,7 @@ floor is added on top — stacking one double-counts. One-window aim 200K; a uni
 splits at its named seam. u2 is the `data`-tier calibration probe: no M1 analog exists, so it
 ships uncalibrated and re-sizes the tier from its own measurement.
 
-- **u1 — provenance model and parsers** · kernel · `oracle` `prod` · est 90K → 159K · OPEN
+- **u1 — provenance model and parsers** · kernel · `oracle` `prod` · est 90K → 159K · COMPLETE (expedited)
   Pure validated model over verified bag bytes: coverage rows, region resolution (bracketed
   locator AND the Box-3 ordinal path), code-point alignment, projection notes, review label,
   clause line, page. Port target = `../cnl-ckc/tools/ui.py`; the four upstream safety layers
@@ -71,13 +101,13 @@ ships uncalibrated and re-sizes the tier from its own measurement.
   malformed, duplicate, unsafe or ambiguous input fails before emission.
   Wave: `map` + `orc` (upstream `tests/ui` red classes as the corpus) + `test`.
   Seam if over: split the alignment/highlight model from the coverage/region model.
-- **u2 — provenance asset producer** · data · `prod` · est 65K → uncalibrated · OPEN
+- **u2 — provenance asset producer** · data · `prod` · est 65K → uncalibrated · COMPLETE (expedited)
   Deterministic clause index, 337 per-document provenance chunks, the PDF asset, manifest
   contract. Accept: fresh derivation byte-matches every asset; a structural consumer rejects
   drift; one live chunk and one page resolve. Depends u1.
   Wave: `prod` behind a MAIN-shipped validator, u1's analog = M1 u1/u4.
   Seam if over: split the clause index from the per-document chunks.
-- **u3 — selected-solution proof engine** · kernel · `oracle` · est 95K → 168K · OPEN
+- **u3 — selected-solution proof engine** · kernel · `oracle` · est 95K → 168K · COMPLETE (expedited)
   Builtin-only cap-1 meta-interpreter in the PVM plus the typed proof RPC. Accept: six goal
   multisets match plain execution; all four committed trace oracles match; every selected
   proof obeys the hard budget (cap 1, stack 16 MiB, outer depth 100, 100000 inferences);
@@ -86,27 +116,27 @@ ships uncalibrated and re-sizes the tier from its own measurement.
   line-keyed proof to change, reading no `queries/traces` fixture. Depends u2.
   Wave: `map` + `test` (diff-blind) + `diff` against the committed traces.
   Seam if over: split the interpreter from the RPC and budget plumbing.
-- **u4 — proof-to-source resolver** · kernel · `oracle` · est 80K → 142K · OPEN
+- **u4 — proof-to-source resolver** · kernel · `oracle` · est 80K → 142K · COMPLETE (expedited)
   Typed runtime join from proof line → clause → ACE sentence → region → passage → page →
   disclosure fields. Accept: every selected proof resolves uniquely; deletion, duplication,
   bad offset, wrong page and answer-oracle reach each return an explicit failure state, never
   neighbouring evidence. Depends u2, u3.
   Wave: `map` + `test` + `orc` reusing u1's reference.
   Seam if over: split the clause/sentence rungs from the region/passage/page rungs.
-- **u5 — ladder state and structure** · kernel · est 80K → 142K · OPEN
+- **u5 — ladder state and structure** · kernel · est 80K → 142K · COMPLETE (expedited)
   Selected-solution ladder controller plus the six-step disclosure view and its full state
   model. Accept: selection re-proves once; loading, unavailable, limit, error, stale-run and
   content states all pass DOM and axe checks. Depends u4.
   Wave: `map` + `test`; no `orc` — no independent reference exists.
   Seam if over: split the controller state machine from the disclosure view.
-- **u6 — aligned passage and disclosures** · kernel · `oracle` · est 75K → 133K · OPEN
+- **u6 — aligned passage and disclosures** · kernel · `oracle` · est 75K → 133K · COMPLETE (expedited)
   Code-point-safe paired highlight renderer plus the projection-loss and `unreviewed`
   disclosure surfaces. Accept: source and ACE text stay byte-faithful and escaped; pointer and
   keyboard select identical groups; both disclosures render adjacent to the passage, and
   `unreviewed` reads as "no adjudication recorded", never as a failed check. Depends u1, u5.
   Wave: `map` + `test` + `orc` against `hl_parse_align`.
   Seam if over: split the highlight renderer from the disclosure surfaces.
-- **u7 — lazy guideline page delivery** · kernel · est 65K → 115K · OPEN
+- **u7 — lazy guideline page delivery** · kernel · est 65K → 115K · COMPLETE (expedited)
   User-triggered native PDF iframe at the physical page plus a permanent open/download link.
   Accept, stated only in observable terms: no PDF or passage request is issued before
   activation and both are issued after it; the resolved iframe URL carries the coverage row's

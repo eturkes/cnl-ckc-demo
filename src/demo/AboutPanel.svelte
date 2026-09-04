@@ -7,7 +7,7 @@
   // and nonendorsement stay in the always-visible footer and this panel carries
   // the rest.
 
-  import { DESCRIPTIONS, FONT_LICENCES, INSTRUCTIONS } from './copy.js';
+  import { DESCRIPTIONS, FONT_LICENCES, GUIDELINE, INSTRUCTIONS } from './copy.js';
 
   interface Props {
     /** Read from the booted engine; absent until it answers, and never a literal. */
@@ -27,6 +27,10 @@
   <summary>{DESCRIPTIONS.aboutSummary}</summary>
 
   <p class="warn">{INSTRUCTIONS.notClinical}</p>
+  <p>
+    <strong>Guideline:</strong>
+    <a href={GUIDELINE.html} target="_blank" rel="noreferrer">{GUIDELINE.title}</a>
+  </p>
   <p>{DESCRIPTIONS.purpose}</p>
   <p>{DESCRIPTIONS.fixedCatalog}</p>
   <p>{DESCRIPTIONS.projection}</p>

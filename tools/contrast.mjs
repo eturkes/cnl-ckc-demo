@@ -49,10 +49,15 @@ const PAIRS = [
   { fg: '--action-text', bg: '--action', min: LARGE, where: 'selected option text on its fill' },
 ];
 
-/** @param {string} css @returns {Map<string, string>} `:root` custom properties */
-const rootTokens = (css) => {
-  const body = /:root\s*\{([^}]*)\}/.exec(css)?.[1];
-  if (body === undefined) throw new Error(`${CSS}: no :root block`);
+/**
+ * @param {string} css
+ * @param {RegExp} selector
+ * @param {string} name
+ * @returns {Map<string, string>}
+ */
+const tokenBlock = (css, selector, name) => {
+  const body = selector.exec(css)?.[1];
+  if (body === undefined) throw new Error(`${CSS}: no ${name} block`);
   /** @type {Map<string, string>} */
   const tokens = new Map();
   for (const [, name, value] of body.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)) {
@@ -100,20 +105,37 @@ const contrast = (a, b) => {
 };
 
 const main = () => {
-  const tokens = rootTokens(readFileSync(CSS, 'utf8'));
+  const css = readFileSync(CSS, 'utf8');
+  const light = tokenBlock(css, /:root\s*\{([^}]*)\}/, ':root');
+  const darkOverrides = tokenBlock(
+    css,
+    /:root\[data-theme=['"]dark['"]\]\s*\{([^}]*)\}/,
+    'dark theme',
+  );
+  const dark = new Map(light);
+  for (const [name, value] of darkOverrides) dark.set(name, value);
   if (PAIRS.length === 0) throw new Error('the pair table is empty');
 
   const failures = [];
-  for (const { fg, bg, min, where } of PAIRS) {
-    const [fgValue, bgValue] = [tokens.get(fg), tokens.get(bg)];
-    if (fgValue === undefined) throw new Error(`${fg} is not defined in :root`);
-    if (bgValue === undefined) throw new Error(`${bg} is not defined in :root`);
-    // Floor rather than round: 4.4999 must not report as 4.5 and pass.
-    const ratio = Math.floor(contrast(rgb(fgValue, fg), rgb(bgValue, bg)) * 100) / 100;
-    if (ratio < min) failures.push(`${fg} on ${bg} = ${ratio}:1, need ${min}:1 — ${where}`);
+  /** @type {[string, Map<string, string>][]} */
+  const themes = [
+    ['light', light],
+    ['dark', dark],
+  ];
+  for (const [theme, tokens] of themes) {
+    for (const { fg, bg, min, where } of PAIRS) {
+      const [fgValue, bgValue] = [tokens.get(fg), tokens.get(bg)];
+      if (fgValue === undefined) throw new Error(`${fg} is not defined for ${theme}`);
+      if (bgValue === undefined) throw new Error(`${bg} is not defined for ${theme}`);
+      // Floor rather than round: 4.4999 must not report as 4.5 and pass.
+      const ratio = Math.floor(contrast(rgb(fgValue, fg), rgb(bgValue, bg)) * 100) / 100;
+      if (ratio < min) {
+        failures.push(`${theme}: ${fg} on ${bg} = ${ratio}:1, need ${min}:1 — ${where}`);
+      }
+    }
   }
 
-  const unused = [...tokens.keys()].filter(
+  const unused = [...light.keys()].filter(
     (name) => !name.startsWith('--font-') && !PAIRS.some((p) => p.fg === name || p.bg === name),
   );
   if (unused.length > 0) failures.push(`colour tokens in no pair: ${unused.join(', ')}`);
@@ -123,7 +145,7 @@ const main = () => {
     for (const line of failures) console.error(`  ${line}`);
     process.exit(1);
   }
-  console.log(`contrast: ${PAIRS.length} pairs pass`);
+  console.log(`contrast: ${String(PAIRS.length * 2)} light/dark pairs pass`);
 };
 
 main();

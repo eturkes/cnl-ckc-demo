@@ -11,7 +11,7 @@
 // reproduce.
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { cp, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -50,7 +50,8 @@ const committedAnswer = (id) => {
   return fail(`committed answer for ${id} is unbalanced`);
 };
 
-if (!existsSync(join(ROOT, 'dist', 'index.html'))) execFileSync('pnpm', ['build'], { cwd: ROOT });
+// Never trust a leftover dist tree: this check proves the current source.
+execFileSync('pnpm', ['build'], { cwd: ROOT, stdio: 'inherit' });
 
 const expected = committedAnswer(QUESTION);
 const root = await mkdtemp(join(tmpdir(), 'cnl-ckc-smoke-'));

@@ -106,7 +106,7 @@ export const describeState = (state: DemoState): StateDescription => {
       return {
         ...blank,
         error: `The Prolog engine did not start. ${state.error.message}`,
-        summary: 'The engine is unavailable. Reload the page to try again.',
+        summary: 'The engine is unavailable. Select Retry to start it again.',
       };
     case 'idle':
       return {

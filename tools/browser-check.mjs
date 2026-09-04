@@ -13,7 +13,6 @@
 // Outside `pnpm gate` on the `pnpm smoke` precedent: it needs a real browser.
 
 import { execFileSync, spawn } from 'node:child_process';
-import { existsSync } from 'node:fs';
 import { cp, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -170,7 +169,8 @@ const CANCEL_PROBE = `(async () => {
   }
 })()`;
 
-if (!existsSync(join(ROOT, 'dist', 'index.html'))) execFileSync('pnpm', ['build'], { cwd: ROOT });
+// Never trust a leftover dist tree: this check proves the current source.
+execFileSync('pnpm', ['build'], { cwd: ROOT, stdio: 'inherit' });
 
 const root = await mkdtemp(join(tmpdir(), 'cnl-ckc-browser-'));
 /** @type {import('./browser.mjs').LogEntry[]} */
@@ -197,6 +197,20 @@ try {
   const builtUrl = `http://127.0.0.1:${String(server.port)}/${NESTED}/`;
   await builtPage.goto(builtUrl, { waitUntil: 'load', timeout: TIMEOUT });
   const builtDocuments = await readDocuments(builtPage, 'built');
+  if (log.some((entry) => /semantic-graph-.+\.json$/u.test(entry.path))) {
+    fail('built: semantic graph data loaded before activation');
+  }
+  if (log.some((entry) => /cytoscape(?:-fcose|\.esm)-.+\.js$/u.test(entry.path))) {
+    fail('built: graph renderer loaded before activation');
+  }
+  await builtPage.getByRole('button', { name: 'Explore graph' }).click();
+  await builtPage.waitForSelector('.graph-shell .counts', { timeout: TIMEOUT });
+  if (!log.some((entry) => /semantic-graph-.+\.json$/u.test(entry.path))) {
+    fail('built: graph activation requested no semantic graph data');
+  }
+  if (!log.some((entry) => /cytoscape(?:-fcose|\.esm)-.+\.js$/u.test(entry.path))) {
+    fail('built: graph activation requested no visual renderer');
+  }
 
   // E26, leg 2 — dev server, the mode every contributor runs and no check drove.
   dev = await devServer();
@@ -237,6 +251,33 @@ try {
   await fitsNarrow(narrowPage, 'answers rendered');
   await narrowPage.locator('.canonical summary').click();
   await fitsNarrow(narrowPage, 'canonical form open');
+  await narrowPage.waitForSelector('details.ladder > summary', { timeout: TIMEOUT });
+  if (log.some((entry) => /assets\/cdc[^/]+\.json$/u.test(entry.path))) {
+    fail('provenance evidence loaded before its disclosure opened');
+  }
+  if (log.some((entry) => /assets\/guideline-[^/]+\.pdf$/u.test(entry.path))) {
+    fail('guideline PDF loaded before its viewer was requested');
+  }
+  await narrowPage.locator('details.ladder > summary').click();
+  await narrowPage.waitForSelector('.ladder .disclosures', { timeout: TIMEOUT });
+  if (!log.some((entry) => /assets\/cdc[^/]+\.json$/u.test(entry.path))) {
+    fail('opening the provenance ladder requested no document evidence');
+  }
+  const pageHref = await narrowPage.locator('.page-actions a').getAttribute('href');
+  if (
+    pageHref === null ||
+    !/\/some\/nested\/assets\/guideline-[^#]+\.pdf#page=\d+$/u.test(pageHref)
+  ) {
+    fail(`physical-page link is not nested-host safe: ${String(pageHref)}`);
+  }
+  await fitsNarrow(narrowPage, 'provenance open');
+  await narrowPage.getByRole('button', { name: 'Load page viewer' }).click();
+  await narrowPage.waitForSelector('.ladder iframe', { timeout: TIMEOUT });
+  await narrowPage.locator('.ladder iframe').waitFor({ timeout: TIMEOUT });
+  if (!log.some((entry) => /assets\/guideline-[^/]+\.pdf$/u.test(entry.path))) {
+    fail('opening the guideline viewer requested no PDF');
+  }
+  await fitsNarrow(narrowPage, 'guideline viewer open');
   await narrowPage.locator('details.about summary').click();
   await fitsNarrow(narrowPage, 'about open');
 
@@ -263,7 +304,8 @@ try {
 
   console.log(
     `browser-check: ok — dev ${dev.url} and built ${builtUrl} both report ${String(documents)} ` +
-      `documents; five states fit ${String(NARROW)}px; cancel delivered after ${String(solutions)} ` +
+      `documents; graph and evidence stay lazy; seven states fit ${String(NARROW)}px; ` +
+      `cancel delivered after ${String(solutions)} ` +
       `of up to ${String(probe.cap)} solutions in ${Number(probe.elapsed).toFixed(0)} ms, ` +
       `engine still ${String(probe.after)}`,
   );

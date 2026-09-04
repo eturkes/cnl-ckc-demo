@@ -49,7 +49,7 @@ export const DESCRIPTIONS = {
     'The other labels in that vocabulary are approved, rejected, contested and stale.',
 
   prolog:
-    'The canonical answer below is the text the Prolog engine itself produced. Nothing rewrites it for display.',
+    'The Prolog engine renders each value below in canonical syntax. The demo sorts those values into the exported answer format.',
 
   attribution:
     'Source: CDC. The Centers for Disease Control and Prevention developed the source material.',
@@ -64,6 +64,11 @@ export const DESCRIPTIONS = {
   fonts:
     'This demo sets text in Atkinson Hyperlegible Next, Atkinson Hyperlegible Mono and Literata. ' +
     'Each typeface ships under the SIL Open Font License 1.1.',
+} as const;
+
+export const GUIDELINE = {
+  title: 'CDC Clinical Practice Guideline for Prescribing Opioids for Pain — United States, 2022',
+  html: 'https://www.cdc.gov/mmwr/volumes/71/rr/rr7103a1.htm',
 } as const;
 
 /** Font licence files, copied verbatim from each package and served from `dist/`. */

@@ -8,6 +8,8 @@
 
   import { DESCRIPTIONS } from './copy.js';
   import type { AnswerRow } from './describe.js';
+  import ProvenanceLadder from '../provenance/ProvenanceLadder.svelte';
+  import type { GraphFocus, ProvenanceState } from '../provenance/model.js';
 
   interface Props {
     rows: AnswerRow[];
@@ -18,9 +20,20 @@
     /** Canonical serialized answer, engine-authored. Empty before the first run settles. */
     serialized: string;
     onSelect: (index: number) => void;
+    provenance?: ProvenanceState;
+    onGraphFocus?: (focus: GraphFocus) => void;
   }
 
-  let { rows, selectedIndex, busy, summary, serialized, onSelect }: Props = $props();
+  let {
+    rows,
+    selectedIndex,
+    busy,
+    summary,
+    serialized,
+    onSelect,
+    provenance = { kind: 'idle' },
+    onGraphFocus = () => undefined,
+  }: Props = $props();
 
   const uid = $props.id();
   const headingId = `${uid}-heading`;
@@ -72,6 +85,10 @@
       <p>{DESCRIPTIONS.prolog}</p>
       <code>{serialized}</code>
     </details>
+  {/if}
+
+  {#if provenance.kind !== 'idle'}
+    <ProvenanceLadder state={provenance} {onGraphFocus} />
   {/if}
 </section>
 

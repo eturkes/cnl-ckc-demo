@@ -1,0 +1,874 @@
+<script lang="ts">
+  import { onDestroy, tick } from 'svelte';
+
+  import graphAssetUrl from '@kb/graph/semantic-graph.json?url&no-inline';
+
+  import { mountGraphCanvas, type GraphCanvas } from './canvas.js';
+  import {
+    DEFAULT_NEIGHBOR_LIMIT,
+    MAX_NEIGHBOR_LIMIT,
+    SemanticGraphModel,
+    graphFocusKey,
+    graphRelationLabel,
+    parseSemanticGraph,
+    type GraphFocus,
+    type GraphPath,
+    type GraphSubgraph,
+    type SemanticGraphEdge,
+    type SemanticGraphNode,
+  } from './model.js';
+
+  interface Props {
+    /** URL injection keeps nested-host and failure-path checks independent of Vite output names. */
+    graphUrl?: string;
+    /** Applied after activation; supplying a focus token never fetches the graph by itself. */
+    focus?: GraphFocus | null;
+    /** User-originated selection from the canvas, search results, path, or HTML graph. */
+    onSelect?: (node: SemanticGraphNode) => void;
+  }
+
+  let { graphUrl = graphAssetUrl, focus = null, onSelect = () => undefined }: Props = $props();
+
+  const uid = $props.id();
+  const headingId = `${uid}-heading`;
+  const searchId = `${uid}-search`;
+  const searchHelpId = `${uid}-search-help`;
+  const pathHeadingId = `${uid}-path-heading`;
+  const htmlHeadingId = `${uid}-html-heading`;
+
+  type Phase = 'inactive' | 'loading' | 'ready' | 'error';
+
+  let phase = $state<Phase>('inactive');
+  let model = $state.raw<SemanticGraphModel | null>(null);
+  let selectedId = $state<string | null>(null);
+  let query = $state('');
+  let depth = $state(1);
+  let nodeLimit = $state(DEFAULT_NEIGHBOR_LIMIT);
+  let path = $state.raw<GraphPath | null>(null);
+  let pathStatus = $state('');
+  let loadError = $state('');
+  let canvasError = $state('');
+  let canvasHost = $state<HTMLElement>();
+  let canvas = $state.raw<GraphCanvas>();
+  let request: AbortController | undefined;
+  let destroyed = false;
+  let appliedFocus = '';
+
+  const selected = $derived(
+    model === null || selectedId === null ? undefined : model.node(selectedId),
+  );
+  const searchResults = $derived(model === null ? [] : model.search(query));
+  const subgraph = $derived<GraphSubgraph>(
+    model === null || selectedId === null
+      ? { nodes: [], edges: [], truncatedNodes: false, truncatedEdges: false }
+      : model.neighborhood(selectedId, depth, nodeLimit, path?.nodes ?? [], path?.edges ?? []),
+  );
+  const relations = $derived(
+    model === null || selectedId === null ? [] : model.incident(selectedId).slice(0, 60),
+  );
+  const canExpand = $derived(
+    selected !== undefined && (depth < 3 || nodeLimit < MAX_NEIGHBOR_LIMIT),
+  );
+
+  const choose = (id: string, notify = true): void => {
+    const node = model?.node(id);
+    if (node === undefined) return;
+    selectedId = node.id;
+    depth = 1;
+    nodeLimit = DEFAULT_NEIGHBOR_LIMIT;
+    path = null;
+    pathStatus = '';
+    if (notify) onSelect(node);
+  };
+
+  const peerOf = (edge: SemanticGraphEdge): SemanticGraphNode | undefined => {
+    if (model === null || selectedId === null) return undefined;
+    return model.node(edge.source === selectedId ? edge.target : edge.source);
+  };
+
+  const findPath = (target: string): void => {
+    if (model === null || selectedId === null) return;
+    const found = model.shortestPath(selectedId, target);
+    path = found ?? null;
+    pathStatus =
+      found === undefined
+        ? 'No connecting path was found.'
+        : `Shortest path: ${String(Math.max(0, found.nodes.length - 1))} relationships.`;
+  };
+
+  const expand = (): void => {
+    depth = Math.min(3, depth + 1);
+    nodeLimit = Math.min(MAX_NEIGHBOR_LIMIT, nodeLimit + DEFAULT_NEIGHBOR_LIMIT);
+  };
+
+  const activate = async (): Promise<void> => {
+    request?.abort();
+    canvas?.destroy();
+    canvas = undefined;
+    model = null;
+    selectedId = null;
+    path = null;
+    loadError = '';
+    canvasError = '';
+    phase = 'loading';
+    const active = new AbortController();
+    request = active;
+    try {
+      const response = await fetch(graphUrl, {
+        signal: active.signal,
+        headers: { accept: 'application/json' },
+      });
+      if (!response.ok) throw new Error(`graph asset returned HTTP ${String(response.status)}`);
+      const value: unknown = await response.json();
+      const loaded = new SemanticGraphModel(parseSemanticGraph(value));
+      if (destroyed || active.signal.aborted) return;
+      model = loaded;
+      const initial =
+        (focus === null ? undefined : loaded.resolveFocus(focus)) ??
+        loaded.data.nodes.find((node) => node.kind === 'document') ??
+        loaded.data.nodes[0];
+      selectedId = initial?.id ?? null;
+      appliedFocus = graphFocusKey(focus);
+      phase = 'ready';
+      await tick();
+      if (destroyed || active.signal.aborted || canvasHost === undefined) return;
+      try {
+        canvas = await mountGraphCanvas(canvasHost, (id) => {
+          choose(id);
+        });
+      } catch (cause) {
+        canvasError = `The visual graph is unavailable. Use the complete HTML navigation below. ${
+          cause instanceof Error ? cause.message : String(cause)
+        }`;
+      }
+    } catch (cause) {
+      if (destroyed || active.signal.aborted) return;
+      phase = 'error';
+      loadError = `The semantic graph did not load. ${cause instanceof Error ? cause.message : String(cause)}`;
+    } finally {
+      if (request === active) request = undefined;
+    }
+  };
+
+  $effect(() => {
+    const current = canvas;
+    const view = subgraph;
+    const root = selectedId;
+    const route = path;
+    if (current !== undefined && root !== null) current.update(view, root, route);
+  });
+
+  $effect(() => {
+    const current = model;
+    const next = focus;
+    const key = graphFocusKey(next);
+    if (current === null) return;
+    if (next === null) {
+      appliedFocus = '';
+      return;
+    }
+    if (key === appliedFocus) return;
+    appliedFocus = key;
+    const resolved = current.resolveFocus(next);
+    if (resolved !== undefined) choose(resolved.id, false);
+  });
+
+  onDestroy(() => {
+    destroyed = true;
+    request?.abort();
+    canvas?.destroy();
+  });
+</script>
+
+<section class="graph-shell" aria-labelledby={headingId}>
+  <header>
+    <div>
+      <p class="eyebrow">Knowledge map</p>
+      <h2 id={headingId}>Explore the semantic graph</h2>
+    </div>
+    {#if phase === 'ready' && model !== null}
+      <p class="counts">
+        {model.data.stats.nodes.toLocaleString()} nodes · {model.data.stats.edges.toLocaleString()}
+        relationships
+      </p>
+    {/if}
+  </header>
+
+  {#if phase === 'inactive'}
+    <div class="activation">
+      <p>
+        Navigate the documents, entities, events, values, and logical context compiled into the
+        knowledge base.
+      </p>
+      <button class="primary" type="button" onclick={() => void activate()}>Explore graph</button>
+      <p class="load-note">
+        The graph data and layout engine load only after you select this control.
+      </p>
+    </div>
+  {:else if phase === 'loading'}
+    <div class="pending" role="status">
+      <span class="pulse" aria-hidden="true"></span>
+      Loading the semantic graph.
+    </div>
+  {:else if phase === 'error'}
+    <div class="load-failure" role="alert">
+      <p>{loadError}</p>
+      <button class="primary" type="button" onclick={() => void activate()}>Try again</button>
+    </div>
+  {:else if model !== null && selected !== undefined}
+    <div class="toolbar">
+      <label for={searchId}>Find a node</label>
+      <div class="search-row">
+        <input
+          id={searchId}
+          type="search"
+          placeholder="Search labels, kinds, or document IDs"
+          autocomplete="off"
+          bind:value={query}
+          aria-describedby={searchHelpId}
+        />
+        <button type="button" onclick={() => canvas?.recenter(selectedId ?? undefined)}>
+          Recenter
+        </button>
+        <button type="button" disabled={!canExpand} onclick={expand}>Expand</button>
+      </div>
+      <p id={searchHelpId} class="help">
+        Select a result to move the neighborhood. Select Path to keep this node and show the
+        shortest connection.
+      </p>
+
+      {#if query.trim() !== ''}
+        <div class="search-results" aria-label="Graph search results">
+          {#if searchResults.length === 0}
+            <p>No matching nodes.</p>
+          {:else}
+            <ul>
+              {#each searchResults as result (result.id)}
+                <li>
+                  <button class="result" type="button" onclick={() => choose(result.id)}>
+                    <span>{result.label}</span>
+                    <small>{result.kind}</small>
+                  </button>
+                  {#if result.id !== selectedId}
+                    <button class="path-action" type="button" onclick={() => findPath(result.id)}>
+                      Path
+                      <span class="visually-hidden"> to {result.label}</span>
+                    </button>
+                  {/if}
+                </li>
+              {/each}
+            </ul>
+          {/if}
+        </div>
+      {/if}
+    </div>
+
+    <div class="selection-card">
+      <div>
+        <p class="kind">{selected.kind.replace(/-/gu, ' ')}</p>
+        <h3>{selected.label}</h3>
+        <p class="identifier">{selected.id}</p>
+      </div>
+      {#if selected.document !== undefined}
+        <p class="location">
+          {selected.document}{selected.sentence === undefined
+            ? ''
+            : ` · sentence ${String(selected.sentence)}`}
+        </p>
+      {/if}
+    </div>
+
+    <div class="canvas-frame">
+      <div class="canvas" bind:this={canvasHost} aria-hidden="true"></div>
+      <div class="legend" aria-hidden="true">
+        <span class="document">Document</span>
+        <span class="entity">Entity</span>
+        <span class="event">Event</span>
+        <span class="operator">Operator</span>
+        <span class="value">Value</span>
+      </div>
+    </div>
+    {#if canvasError !== ''}
+      <p class="canvas-error" role="status">{canvasError}</p>
+    {/if}
+
+    <p class="view-status" role="status">
+      Showing {subgraph.nodes.length.toLocaleString()} nodes and
+      {subgraph.edges.length.toLocaleString()} relationships at depth {depth}.
+      {#if subgraph.truncatedNodes || subgraph.truncatedEdges}
+        The view is capped for readability. Select Expand to reveal more.
+      {/if}
+    </p>
+
+    {#if path !== null}
+      <section class="path-panel" aria-labelledby={pathHeadingId}>
+        <div class="panel-heading">
+          <h3 id={pathHeadingId}>Shortest path</h3>
+          <button
+            type="button"
+            onclick={() => {
+              path = null;
+              pathStatus = '';
+            }}>Clear</button
+          >
+        </div>
+        <p>{pathStatus}</p>
+        <ol>
+          {#each path.nodes as id (id)}
+            {@const node = model.node(id)}
+            {#if node !== undefined}
+              <li><button type="button" onclick={() => choose(node.id)}>{node.label}</button></li>
+            {/if}
+          {/each}
+        </ol>
+      </section>
+    {:else if pathStatus !== ''}
+      <p class="path-status" role="status">{pathStatus}</p>
+    {/if}
+
+    <section class="html-graph" aria-labelledby={htmlHeadingId}>
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Accessible graph view</p>
+          <h3 id={htmlHeadingId}>Relationships from {selected.label}</h3>
+        </div>
+      </div>
+
+      {#if relations.length === 0}
+        <p>This node has no relationships.</p>
+      {:else}
+        <ul class="relations">
+          {#each relations as relation (relation.id)}
+            {@const peer = peerOf(relation)}
+            {#if peer !== undefined}
+              <li>
+                <span class="relation">{graphRelationLabel(relation)}</span>
+                <button type="button" onclick={() => choose(peer.id)}>{peer.label}</button>
+                <small>{peer.kind.replace(/-/gu, ' ')}</small>
+              </li>
+            {/if}
+          {/each}
+        </ul>
+        {#if model.incident(selected.id).length > relations.length}
+          <p class="help">
+            Showing the first {relations.length} of {model.incident(selected.id).length} direct relationships.
+            Use search to reach any node.
+          </p>
+        {/if}
+      {/if}
+
+      <details>
+        <summary>Nodes in this visual neighborhood</summary>
+        <ul class="node-index">
+          {#each subgraph.nodes as node (node.id)}
+            <li>
+              <button
+                type="button"
+                aria-current={node.id === selectedId ? 'true' : undefined}
+                onclick={() => choose(node.id)}>{node.label}</button
+              >
+              <small>{node.kind.replace(/-/gu, ' ')}</small>
+            </li>
+          {/each}
+        </ul>
+      </details>
+    </section>
+  {/if}
+</section>
+
+<style>
+  .graph-shell {
+    margin-top: 2rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background: var(--surface-raised);
+    box-shadow: 0 1.25rem 3rem color-mix(in srgb, var(--text) 8%, transparent);
+    overflow: hidden;
+  }
+
+  header,
+  .activation,
+  .pending,
+  .load-failure,
+  .toolbar,
+  .selection-card,
+  .view-status,
+  .path-panel,
+  .path-status,
+  .html-graph {
+    padding-inline: clamp(1rem, 3vw, 1.5rem);
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: end;
+    padding-block: 1.2rem;
+    border-bottom: 1px solid var(--border);
+    background:
+      radial-gradient(
+        circle at 93% 0%,
+        color-mix(in srgb, var(--action) 15%, transparent),
+        transparent 45%
+      ),
+      var(--surface-sunken);
+  }
+
+  h2,
+  h3,
+  p {
+    margin-top: 0;
+  }
+
+  h2 {
+    margin-bottom: 0;
+    font-size: clamp(1.15rem, 3vw, 1.45rem);
+    line-height: 1.2;
+  }
+
+  h3 {
+    margin-bottom: 0.25rem;
+    font-size: 1.05rem;
+  }
+
+  .eyebrow,
+  .kind {
+    margin-bottom: 0.2rem;
+    color: var(--action);
+    font-family: var(--font-code);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .counts,
+  .load-note,
+  .help,
+  .location,
+  .view-status,
+  small {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+
+  .counts {
+    margin-bottom: 0;
+    white-space: nowrap;
+  }
+
+  .activation,
+  .pending,
+  .load-failure {
+    padding-block: 1.5rem;
+  }
+
+  .activation > p:first-child {
+    max-width: 56rem;
+    font-family: var(--font-prose);
+  }
+
+  .load-note {
+    margin: 0.65rem 0 0;
+  }
+
+  .pending {
+    display: flex;
+    gap: 0.65rem;
+    align-items: center;
+  }
+
+  .pulse {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    background: var(--action);
+    animation: pulse 1.2s ease-in-out infinite alternate;
+  }
+
+  @keyframes pulse {
+    to {
+      opacity: 0.3;
+      transform: scale(0.72);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pulse {
+      animation: none;
+    }
+  }
+
+  button,
+  input {
+    font: inherit;
+  }
+
+  button {
+    border: 1px solid var(--action);
+    border-radius: 0.3rem;
+    padding: 0.38rem 0.7rem;
+    background: transparent;
+    color: var(--action);
+    cursor: pointer;
+  }
+
+  button:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--action) 10%, transparent);
+  }
+
+  button:focus-visible,
+  input:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  button.primary {
+    background: var(--action);
+    color: var(--action-text);
+    font-weight: 700;
+  }
+
+  .toolbar {
+    padding-block: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .toolbar > label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .search-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 0.45rem;
+  }
+
+  input {
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: 0.3rem;
+    padding: 0.5rem 0.65rem;
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  .help {
+    margin: 0.45rem 0 0;
+  }
+
+  .search-results {
+    max-height: 17rem;
+    margin-top: 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: 0.3rem;
+    background: var(--surface);
+    overflow-y: auto;
+  }
+
+  .search-results > p {
+    margin: 0;
+    padding: 0.65rem;
+  }
+
+  .search-results ul,
+  .relations,
+  .node-index {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .search-results li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.35rem;
+    align-items: center;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
+    padding: 0.35rem;
+  }
+
+  .search-results li:last-child {
+    border-bottom: 0;
+  }
+
+  .result {
+    display: flex;
+    min-width: 0;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-color: transparent;
+    text-align: left;
+  }
+
+  .result span,
+  .identifier {
+    overflow-wrap: anywhere;
+  }
+
+  .path-action {
+    font-size: 0.8rem;
+  }
+
+  .selection-card {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: start;
+    padding-block: 0.9rem;
+    background: color-mix(in srgb, var(--surface-sunken) 62%, transparent);
+  }
+
+  .kind,
+  .identifier,
+  .location {
+    margin-bottom: 0;
+  }
+
+  .identifier {
+    color: var(--text-muted);
+    font-family: var(--font-code);
+    font-size: 0.72rem;
+  }
+
+  .location {
+    text-align: right;
+  }
+
+  .canvas-frame {
+    position: relative;
+    border-block: 1px solid var(--border);
+    background:
+      linear-gradient(color-mix(in srgb, var(--border) 12%, transparent) 1px, transparent 1px),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--border) 12%, transparent) 1px,
+        transparent 1px
+      ),
+      var(--surface);
+    background-size: 24px 24px;
+  }
+
+  .canvas {
+    width: 100%;
+    height: clamp(24rem, 62vh, 40rem);
+  }
+
+  .legend {
+    position: absolute;
+    right: 0.65rem;
+    bottom: 0.65rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    max-width: calc(100% - 1.3rem);
+    border: 1px solid var(--border);
+    border-radius: 0.35rem;
+    padding: 0.35rem;
+    background: color-mix(in srgb, var(--surface-raised) 92%, transparent);
+  }
+
+  .legend span {
+    border-radius: 999px;
+    padding: 0.15rem 0.42rem;
+    color: white;
+    font-size: 0.68rem;
+  }
+
+  .legend .document {
+    background: #245c73;
+  }
+
+  .legend .entity {
+    background: #176b68;
+  }
+
+  .legend .event {
+    background: #956019;
+  }
+
+  .legend .operator {
+    background: #75558a;
+  }
+
+  .legend .value {
+    background: #5d6871;
+  }
+
+  .canvas-error,
+  .load-failure {
+    border-left: 3px solid var(--warn);
+    padding-block: 0.6rem;
+    padding-left: 0.75rem;
+  }
+
+  .canvas-error {
+    margin: 0.75rem 1rem 0;
+  }
+
+  .view-status {
+    margin: 0;
+    padding-block: 0.7rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .path-panel,
+  .html-graph {
+    padding-block: 1rem;
+  }
+
+  .path-panel {
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--warn) 7%, var(--surface-raised));
+  }
+
+  .path-panel p {
+    margin-bottom: 0.5rem;
+  }
+
+  .path-panel ol {
+    margin: 0;
+    padding-left: 1.6rem;
+  }
+
+  .path-panel li + li {
+    margin-top: 0.35rem;
+  }
+
+  .path-panel li::marker {
+    color: var(--warn);
+    font-family: var(--font-code);
+    font-weight: 700;
+  }
+
+  .path-status {
+    margin: 0;
+    padding-block: 0.7rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .relations {
+    margin-top: 0.75rem;
+  }
+
+  .relations li {
+    display: grid;
+    grid-template-columns: minmax(7rem, 0.45fr) minmax(0, 1fr) auto;
+    gap: 0.55rem;
+    align-items: center;
+    border-top: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
+    padding-block: 0.45rem;
+  }
+
+  .relations button,
+  .node-index button,
+  .path-panel li button {
+    border-color: transparent;
+    padding: 0.2rem 0.3rem;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+
+  .relation {
+    color: var(--text-muted);
+    font-family: var(--font-code);
+    font-size: 0.74rem;
+  }
+
+  details {
+    margin-top: 1rem;
+    border-top: 1px solid var(--border);
+    padding-top: 0.7rem;
+  }
+
+  summary {
+    color: var(--action);
+    cursor: pointer;
+    font-weight: 700;
+  }
+
+  .node-index {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 0.35rem 0.75rem;
+    margin-top: 0.65rem;
+  }
+
+  .node-index li {
+    display: flex;
+    min-width: 0;
+    justify-content: space-between;
+    gap: 0.4rem;
+    align-items: baseline;
+  }
+
+  .node-index button[aria-current='true'] {
+    border-color: var(--action);
+    font-weight: 700;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 34rem) {
+    header,
+    .selection-card {
+      display: block;
+    }
+
+    .counts,
+    .location {
+      margin-top: 0.5rem;
+      text-align: left;
+      white-space: normal;
+    }
+
+    .search-row {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .search-row input {
+      grid-column: 1 / -1;
+    }
+
+    .canvas {
+      height: 24rem;
+    }
+
+    .relations li {
+      grid-template-columns: 1fr auto;
+    }
+
+    .relation {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

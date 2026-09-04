@@ -16,6 +16,7 @@ import { readdirSync } from 'node:fs';
  * @typedef {object} Locator
  * @property {() => Promise<void>} click
  * @property {() => Promise<number>} count
+ * @property {(name: string) => Promise<string | null>} getAttribute
  * @property {() => Promise<string | null>} textContent
  * @property {(options?: object) => Promise<void>} waitFor
  *
@@ -40,7 +41,9 @@ const TYPES = {
   '.html': 'text/html',
   '.js': 'text/javascript',
   '.json': 'application/json',
+  '.pdf': 'application/pdf',
   '.wasm': 'application/wasm',
+  '.woff2': 'font/woff2',
 };
 
 /**
