@@ -28,7 +28,20 @@ describe('generated runtime payload', () => {
   it('records only values it observed', () => {
     expect(manifest?.contract).toEqual({ schemaVersion: SCHEMA_VERSION, documents: DOCUMENTS });
     expect(manifest?.input.files).toBe(DOCUMENTS);
-    expect(manifest?.assets.map((entry) => entry.kind).sort()).toEqual(['catalog', 'pvm', 'qlf']);
+    const kinds = manifest?.assets.map((entry) => entry.kind) ?? [];
+    expect(kinds.filter((kind) => kind === 'provenance-document')).toHaveLength(DOCUMENTS);
+    expect(kinds.filter((kind) => kind === 'pvm')).toHaveLength(1);
+    expect(kinds.filter((kind) => kind === 'qlf')).toHaveLength(1);
+    expect(kinds.filter((kind) => kind === 'catalog')).toHaveLength(1);
+    expect(kinds.filter((kind) => kind === 'provenance-index')).toHaveLength(1);
+    expect(kinds.filter((kind) => kind === 'source-pdf')).toHaveLength(1);
+    expect(kinds.filter((kind) => kind === 'semantic-graph')).toHaveLength(1);
+    expect(kinds).toHaveLength(DOCUMENTS + 6);
+    expect(manifest?.provenance).toMatchObject({
+      schemaVersion: SCHEMA_VERSION,
+      documents: DOCUMENTS,
+    });
+    expect(manifest?.graph).toMatchObject({ schemaVersion: SCHEMA_VERSION });
     expect(manifest?.source.bagitVersion).toBe('1.0');
   });
 

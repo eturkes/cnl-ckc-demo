@@ -2,8 +2,15 @@
 // by both `pnpm kb:asset-check` and the application. Every number in a manifest
 // is observed during the run that wrote it; none is a copied constant.
 
-/** Runtime artifact kinds. `pvm` is the shipping payload, `qlf` the fallback, `catalog` the question set. */
-export type KbAssetKind = 'pvm' | 'qlf' | 'catalog';
+/** Every generated artifact class. Per-document provenance remains independently addressable. */
+export type KbAssetKind =
+  | 'pvm'
+  | 'qlf'
+  | 'catalog'
+  | 'provenance-index'
+  | 'provenance-document'
+  | 'source-pdf'
+  | 'semantic-graph';
 
 export interface KbAsset {
   kind: KbAssetKind;
@@ -43,6 +50,17 @@ export interface KbManifest {
     /** Digest of the concatenated query source, so a checker can re-derive the catalog. */
     sha256: string;
     entries: number;
+  };
+  provenance: {
+    schemaVersion: number;
+    documents: number;
+    clauses: number;
+    alignmentSpans: number;
+  };
+  graph: {
+    schemaVersion: number;
+    nodes: number;
+    edges: number;
   };
   assets: KbAsset[];
   /** Values read back out of a live engine during the build, never assumed. */

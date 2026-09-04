@@ -8,6 +8,8 @@ import { join, relative } from 'node:path';
 
 import { sha256, verifyBag } from './bag.mjs';
 import { catalogJson, catalogRecords } from './catalog.mjs';
+import { deriveSemanticGraph, GRAPH_SCHEMA_VERSION } from './graph.mjs';
+import { deriveProvenance, PROVENANCE_SCHEMA_VERSION } from './provenance.mjs';
 import { GENERATED_DIR, ROOT, loadManifest, payloadSource } from './paths.mjs';
 
 /** Build inputs and runtime assets. Excludes `.agent/` and `CLAUDE.md`, where the sibling project is legitimately discussed. */
@@ -100,9 +102,75 @@ if (manifest === undefined) {
       const emitted = Buffer.from(catalogJson(catalog.records), 'utf8');
       const shipped = readFileSync(join(GENERATED_DIR, 'question-catalog.json'));
       if (!emitted.equals(shipped)) fail('question-catalog.json does not match the catalog re-derived from the bag');
+
+      const provenance = deriveProvenance(files);
+      const graph = deriveSemanticGraph(files, provenance.clauses);
+      if (
+        manifest.provenance.schemaVersion !== PROVENANCE_SCHEMA_VERSION ||
+        manifest.provenance.documents !== provenance.stats.documents ||
+        manifest.provenance.clauses !== provenance.stats.clauses ||
+        manifest.provenance.alignmentSpans !== provenance.stats.alignmentSpans
+      ) {
+        fail('manifest provenance metadata does not match the bag-derived model');
+      }
+      if (
+        manifest.graph.schemaVersion !== GRAPH_SCHEMA_VERSION ||
+        manifest.graph.nodes !== graph.model.stats.nodes ||
+        manifest.graph.edges !== graph.model.stats.edges
+      ) {
+        fail('manifest graph metadata does not match the bag-derived model');
+      }
+
+      const derived = [
+        { kind: 'provenance-index', path: provenance.index.path, bytes: provenance.index.bytes },
+        ...provenance.chunks.map((chunk) => ({
+          kind: 'provenance-document',
+          path: chunk.path,
+          bytes: chunk.bytes,
+        })),
+        { kind: 'source-pdf', path: provenance.pdf.path, bytes: provenance.pdf.bytes },
+        { kind: 'semantic-graph', path: graph.path, bytes: graph.bytes },
+      ];
+      const derivedKinds = new Set([
+        'provenance-index',
+        'provenance-document',
+        'source-pdf',
+        'semantic-graph',
+      ]);
+      const recorded = manifest.assets.filter((entry) => derivedKinds.has(entry.kind));
+      if (recorded.length !== derived.length) {
+        fail(`manifest records ${recorded.length} derived provenance/graph assets, expected ${derived.length}`);
+      }
+      const recordedByPath = new Map(recorded.map((entry) => [entry.path, entry]));
+      for (const expected of derived) {
+        const entry = recordedByPath.get(expected.path);
+        if (entry === undefined) {
+          fail(`${expected.path}: absent from manifest`);
+          continue;
+        }
+        if (entry.kind !== expected.kind) fail(`${expected.path}: kind ${entry.kind}, expected ${expected.kind}`);
+        if (entry.bytes !== expected.bytes.byteLength || entry.sha256 !== sha256(expected.bytes)) {
+          fail(`${expected.path}: manifest metadata differs from fresh derivation`);
+        }
+        try {
+          if (!Buffer.from(expected.bytes).equals(readFileSync(join(GENERATED_DIR, expected.path)))) {
+            fail(`${expected.path}: bytes differ from fresh derivation`);
+          }
+        } catch {
+          fail(`${expected.path}: missing`);
+        }
+      }
     }
   } catch (/** @type {unknown} */ error) {
     fail(`${manifest.source.bag}: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+if (manifest !== undefined) {
+  const expected = new Set(['kb-manifest.json', ...manifest.assets.map((entry) => entry.path)]);
+  for (const path of walk(GENERATED_DIR)) {
+    const generatedPath = relative(GENERATED_DIR, path);
+    if (!expected.has(generatedPath)) fail(`unexpected generated asset ${generatedPath}`);
   }
 }
 

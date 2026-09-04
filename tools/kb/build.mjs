@@ -3,18 +3,20 @@
 // Usage: node tools/kb/build.mjs [--force]
 // Exit 0 = artifacts on disk match a manifest this run verified end to end.
 
-import { mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { basename, dirname, join } from 'node:path';
 
 import { sha256, verifyBag } from './bag.mjs';
 import { catalogJson, catalogRecords } from './catalog.mjs';
+import { deriveSemanticGraph, GRAPH_SCHEMA_VERSION } from './graph.mjs';
+import { deriveProvenance, PROVENANCE_SCHEMA_VERSION } from './provenance.mjs';
 import { buildImage, buildQlf, swiplWasmVersion, verifyImage, verifyQlf } from './produce.mjs';
 import { GENERATED_DIR, MANIFEST_PATH, ROOT, loadManifest, payloadSource } from './paths.mjs';
 
 /** @typedef {import('../../src/kb/manifest.ts').KbManifest} KbManifest */
 /** @typedef {import('./produce.mjs').LiveContract} LiveContract */
 
-const MANIFEST_VERSION = 2;
+const MANIFEST_VERSION = 3;
 
 /** Locate the single vendored bag and prove it against its committed sidecar. */
 const readVerifiedBag = () => {
@@ -43,8 +45,15 @@ const assetsIntact = (manifest) =>
     }
   });
 
-/** @param {Uint8Array} bytes @param {string} path @param {'pvm' | 'qlf' | 'catalog'} kind */
+/** @param {Uint8Array} bytes @param {string} path @param {import('../../src/kb/manifest.ts').KbAssetKind} kind */
 const asset = (bytes, path, kind) => ({ kind, path, bytes: bytes.byteLength, sha256: sha256(bytes) });
+
+/** @param {string} path @param {Uint8Array} bytes */
+const writeGenerated = (path, bytes) => {
+  const target = join(GENERATED_DIR, path);
+  mkdirSync(dirname(target), { recursive: true });
+  writeFileSync(target, bytes);
+};
 
 const main = async () => {
   const force = process.argv.includes('--force');
@@ -54,6 +63,8 @@ const main = async () => {
   const swiplWasm = swiplWasmVersion();
   const catalog = catalogRecords(files);
   const catalogBytes = Buffer.from(catalogJson(catalog.records), 'utf8');
+  const provenance = deriveProvenance(files);
+  const graph = deriveSemanticGraph(files, provenance.clauses);
 
   const cached = loadManifest();
   if (
@@ -87,9 +98,23 @@ const main = async () => {
   requireSameContract('qlf', fallback);
 
   mkdirSync(GENERATED_DIR, { recursive: true });
+  // These directories contain a finite derived inventory. Clear them on a real
+  // rebuild so a removed document can never survive as an unmanifested asset.
+  rmSync(join(GENERATED_DIR, 'provenance'), { recursive: true, force: true });
+  rmSync(join(GENERATED_DIR, 'graph'), { recursive: true, force: true });
   writeFileSync(join(GENERATED_DIR, 'kb.pvm'), image);
   writeFileSync(join(GENERATED_DIR, 'kb.qlf'), qlf);
   writeFileSync(join(GENERATED_DIR, 'question-catalog.json'), catalogBytes);
+  writeGenerated(provenance.index.path, provenance.index.bytes);
+  for (const chunk of provenance.chunks) writeGenerated(chunk.path, chunk.bytes);
+  writeGenerated(provenance.pdf.path, provenance.pdf.bytes);
+  writeGenerated(graph.path, graph.bytes);
+
+  const provenanceAssets = [
+    asset(provenance.index.bytes, provenance.index.path, 'provenance-index'),
+    ...provenance.chunks.map((chunk) => asset(chunk.bytes, chunk.path, 'provenance-document')),
+    asset(provenance.pdf.bytes, provenance.pdf.path, 'source-pdf'),
+  ];
 
   /** @type {KbManifest} */
   const manifest = {
@@ -108,10 +133,23 @@ const main = async () => {
       sha256: sha256(Buffer.from(catalog.source, 'utf8')),
       entries: catalog.records.length,
     },
+    provenance: {
+      schemaVersion: PROVENANCE_SCHEMA_VERSION,
+      documents: provenance.stats.documents,
+      clauses: provenance.stats.clauses,
+      alignmentSpans: provenance.stats.alignmentSpans,
+    },
+    graph: {
+      schemaVersion: GRAPH_SCHEMA_VERSION,
+      nodes: graph.model.stats.nodes,
+      edges: graph.model.stats.edges,
+    },
     assets: [
       asset(image, 'kb.pvm', 'pvm'),
       asset(qlf, 'kb.qlf', 'qlf'),
       asset(catalogBytes, 'question-catalog.json', 'catalog'),
+      ...provenanceAssets,
+      asset(graph.bytes, graph.path, 'semantic-graph'),
     ],
     contract: { schemaVersion: contract.schemaVersion, documents: contract.documents },
   };
@@ -125,6 +163,8 @@ const main = async () => {
     `kb:build ok — ${names.length} files (${basename(bag)}) → ` +
       `pvm ${image.byteLength} B, qlf ${qlf.byteLength} B, ` +
       `catalog ${catalog.records.length} entries from ${catalog.names.length} queries, ` +
+      `provenance ${provenance.stats.documents} documents/${provenance.stats.clauses} clauses, ` +
+      `graph ${graph.model.stats.nodes} nodes/${graph.model.stats.edges} edges, ` +
       `schema ${contract.schemaVersion}, ${contract.documents} documents\n`,
   );
 };
