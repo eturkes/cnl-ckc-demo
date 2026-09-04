@@ -14,12 +14,16 @@ import {
   validateBudget,
   wrapGoal,
 } from './budget.js';
+import { PROOF_BUDGET_MAX } from './protocol.js';
 import type {
   BudgetSpec,
   EngineContract,
   EngineError,
   EngineRequest,
   EngineResponse,
+  ProofInput,
+  ProofOutcome,
+  ProofStep,
   SolveResult,
   LimitKind,
   PlSolution,
@@ -80,6 +84,11 @@ const SCHEMA_GOAL = 'findall(V,guideline_schema_version(V),Vs),sort(Vs,Us),lengt
 const DOCUMENTS_GOAL = 'findall(D,guideline_document(D,_,_),Ds),length(Ds,N).';
 const STACK_FLAG_GOAL = 'current_prolog_flag(stack_limit,V).';
 
+const PROOF_TREE = 'ProofTree_';
+const PROOF_STATE = 'ProofState_';
+const PROOF_INTERNALS = new Set([PROOF_TREE, PROOF_STATE]);
+const PROOF_VARIABLE = /^[A-Z][A-Za-z0-9_]*$/u;
+
 const CONSULT_PATH = '/u3-runtime-load.pl';
 
 /** Diagnostics `qsave_program` emits under WASM for reasons unrelated to the payload. */
@@ -111,6 +120,107 @@ const requireInteger = (term: PlTerm | undefined, what: string): number => {
     throw new Error(`engine did not report ${what} as an integer`);
   }
   return term.value;
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/** Proof callers can lower a cap, but cannot enlarge the reviewed proof envelope. */
+const proofBudget = (budget: BudgetSpec): BudgetSpec => ({
+  stackBytes: Math.min(budget.stackBytes, PROOF_BUDGET_MAX.stackBytes),
+  depth: Math.min(budget.depth, PROOF_BUDGET_MAX.depth),
+  inferences: Math.min(budget.inferences, PROOF_BUDGET_MAX.inferences),
+  wallClockMs: Math.min(budget.wallClockMs, PROOF_BUDGET_MAX.wallClockMs),
+  answerCap: 1,
+});
+
+const bareGoal = (goal: string): string => goal.trim().replace(/\.$/u, '');
+
+/** Extract the names from term_string/3's `variable_names` option result. */
+const variableNames = (term: PlTerm | undefined): Set<string> => {
+  if (term?.kind !== 'list') throw new DecodeError('goal variable_names is not a list');
+  const names = new Set<string>();
+  for (const item of term.items) {
+    if (
+      item.kind !== 'compound' ||
+      item.functor !== '=' ||
+      item.args.length !== 2 ||
+      item.args[0]?.kind !== 'atom'
+    ) {
+      throw new DecodeError('goal variable_names contains an invalid entry');
+    }
+    names.add(item.args[0].value);
+  }
+  return names;
+};
+
+const asSafeLine = (term: PlTerm | undefined): number => {
+  if (term?.kind !== 'integer') throw new DecodeError('proof line is not an integer');
+  const line = Number(term.value);
+  if (!Number.isSafeInteger(line) || line < 1) throw new DecodeError(`invalid proof line ${line}`);
+  return line;
+};
+
+/** First source id nested in a clause head, following the interpreter's probe. */
+const sourceId = (term: PlTerm): { document: string; sentence: number } | undefined => {
+  if (term.kind === 'compound') {
+    if (term.functor === '$guideline_id' && term.args.length === 5) {
+      const document = term.args[1];
+      const sentence = term.args[2];
+      if (
+        (document?.kind === 'atom' || document?.kind === 'string') &&
+        sentence?.kind === 'integer'
+      ) {
+        const number = Number(sentence.value);
+        if (Number.isSafeInteger(number)) return { document: document.value, sentence: number };
+      }
+    }
+    for (const arg of term.args) {
+      const found = sourceId(arg);
+      if (found !== undefined) return found;
+    }
+    return undefined;
+  }
+  const nested =
+    term.kind === 'list'
+      ? term.items
+      : term.kind === 'improper-list'
+        ? [...term.items, term.tail]
+        : term.kind === 'dict'
+          ? Object.values(term.entries)
+          : [];
+  for (const arg of nested) {
+    const found = sourceId(arg);
+    if (found !== undefined) return found;
+  }
+  return undefined;
+};
+
+const readProofInput = (
+  input: ProofInput,
+): { goal: string; selected: Readonly<Record<string, string>> | undefined } => {
+  if (!isRecord(input)) throw new PrologFailure('proof input is missing');
+  const source = input as Record<string, unknown>;
+  const goal = source.goal;
+  const constrained = source.constrainedGoal;
+  if (typeof goal === 'string' && constrained === undefined) {
+    if (!isRecord(source.selected)) throw new PrologFailure('proof selected bindings are missing');
+    return {
+      goal,
+      selected: Object.fromEntries(
+        Object.entries(source.selected).map(([name, value]) => {
+          if (typeof value !== 'string') {
+            throw new PrologFailure(`selected binding ${name} is not canonical text`);
+          }
+          return [name, value];
+        }),
+      ),
+    };
+  }
+  if (typeof constrained === 'string' && goal === undefined && source.selected === undefined) {
+    return { goal: constrained, selected: undefined };
+  }
+  throw new PrologFailure('proof input must contain selected bindings or one constrained goal');
 };
 
 export class EngineSession {
@@ -271,6 +381,121 @@ export class EngineSession {
   }
 
   /**
+   * Re-prove exactly one selected solution and return only source-bearing nodes.
+   *
+   * The meta-interpreter is part of the saved state. Canonical selected values
+   * enter as native query bindings after a ground `term_string/2` parse, so none
+   * of their text is executable and no runtime consult contaminates the engine.
+   */
+  async prove(
+    input: ProofInput,
+    budget: BudgetSpec,
+    id = '',
+  ): Promise<Exclude<ProofOutcome, { kind: 'error' }>> {
+    const engine = this.#require();
+    const spec = proofBudget(validateBudget(budget));
+    const { goal, selected } = readProofInput(input);
+    assertGoalAvoidsReserved(goal);
+
+    // Parse independently before wrapping. `term_string/2` otherwise turns bad
+    // syntax into a zero-solution proof, indistinguishable from an honest failure.
+    const parsed = decodeOnce(
+      engine.prolog.query('term_string(T,S,[variable_names(Vs)]).', { S: goal }).once(),
+    );
+    if (parsed.kind !== 'bindings') {
+      throw new PrologFailure(
+        parsed.kind === 'prolog-error' ? parsed.message : `goal does not parse: ${goal}`,
+      );
+    }
+    const names = variableNames(parsed.bindings.Vs);
+    for (const internal of PROOF_INTERNALS) {
+      if (names.has(internal)) {
+        throw new PrologFailure(`goal may not name reserved proof variable ${internal}`);
+      }
+    }
+
+    /** Native bindings passed to the one proof query. */
+    const initial: Record<string, unknown> = {};
+    const encode = createEncoder(engine.prolog);
+    for (const [name, canonical] of Object.entries(selected ?? {})) {
+      if (!PROOF_VARIABLE.test(name)) {
+        throw new PrologFailure(`selected binding name is not a Prolog variable: ${name}`);
+      }
+      if (!names.has(name)) throw new PrologFailure(`selected binding ${name} is absent from goal`);
+      const rebound = decodeOnce(
+        engine.prolog.query('term_string(T,S),ground(T).', { S: canonical }).once(),
+      );
+      if (rebound.kind !== 'bindings' || rebound.bindings.T === undefined) {
+        throw new PrologFailure(
+          rebound.kind === 'prolog-error'
+            ? rebound.message
+            : `selected binding ${name} is not a ground canonical term`,
+        );
+      }
+      initial[name] = encode(rebound.bindings.T);
+    }
+
+    const constrained = bareGoal(goal);
+    // The first arm derives the selected proof. The second preserves the MI's
+    // third state: no proof because its own one-level schema cap was reached.
+    const metaGoal =
+      `once(((mi((${constrained}),1,${PROOF_TREE}),${PROOF_STATE}=proved);` +
+      `(mi_limited((${constrained}),1),${PROOF_STATE}=limited)))`;
+
+    const restore = this.#lowerStack(engine, spec.stackBytes);
+    this.#active = id;
+    this.#cancelling = this.#deferred.delete(id);
+    const started = Date.now();
+    const query = engine.prolog.query(wrapGoal(metaGoal, spec), initial);
+    const iterator = query[Symbol.iterator]();
+    let proof: PlTerm | undefined;
+    let stopped: LimitKind | 'cancelled' | undefined = this.#cancelling ? 'cancelled' : undefined;
+    try {
+      // Admit a cancel posted directly behind this request before entering the
+      // one synchronous interpreter step. Once that step starts, only the hard
+      // client watchdog can interrupt the worker.
+      await yieldToEvents();
+      if (this.#cancelling) stopped = 'cancelled';
+      if (stopped === undefined) {
+        const step = iterator.next();
+        if (step.value !== undefined) {
+          const result = decodeOnce(step.value);
+          if (result.kind === 'prolog-error') throw new PrologFailure(result.message);
+          if (result.kind === 'bindings') {
+            const outcome = readOutcome(result.bindings);
+            if (outcome.kind === 'limit') {
+              stopped = outcome.limit;
+            } else if (outcome.kind === 'resource') {
+              throw new PrologFailure(`unclassified resource error: ${outcome.resource}`);
+            } else {
+              const state = outcome.bindings[PROOF_STATE];
+              if (state?.kind !== 'atom') {
+                throw new DecodeError('proof result carries no state');
+              }
+              if (state.value === 'limited') stopped = 'depth';
+              else if (state.value === 'proved') {
+                proof = outcome.bindings[PROOF_TREE];
+                if (proof === undefined) throw new DecodeError('proved result carries no tree');
+              } else throw new DecodeError(`unknown proof state ${state.value}`);
+            }
+          }
+        }
+        if (Date.now() - started > spec.wallClockMs) stopped = 'wall-clock';
+      }
+    } finally {
+      query.close?.();
+      restore();
+      this.#active = undefined;
+      this.#cancelling = false;
+    }
+
+    if (stopped === 'cancelled') return { kind: 'cancelled' };
+    if (stopped !== undefined) return { kind: 'limit', limit: stopped };
+    if (proof === undefined) return { kind: 'failure' };
+    return { kind: 'proof', steps: this.#proofSteps(engine, proof) };
+  }
+
+  /**
    * Load Prolog text into the running engine, fail-closed on any diagnostic.
    *
    * The result value is worthless here: a syntax error and a failing directive both
@@ -308,6 +533,15 @@ export class EngineSession {
           const budget = validateBudget(request.budget);
           const solved = await this.solve(request.goal, budget, id);
           return solved.kind === 'failure' ? { id, kind: 'failure' } : { id, ...solved };
+        }
+        case 'proof': {
+          const budget = validateBudget(request.budget);
+          const proven = await this.prove(request.input, budget, id);
+          if (proven.kind === 'limit') {
+            return { id, kind: 'limit', limit: proven.limit, solutions: [] };
+          }
+          if (proven.kind === 'cancelled') return { id, kind: 'cancelled', solutions: [] };
+          return { id, ...proven };
         }
         default: {
           const exhaustive: never = request;
@@ -348,6 +582,41 @@ export class EngineSession {
     const result = decodeOnce(engine.prolog.query(goal).once());
     if (result.kind !== 'bindings') throw new PrologFailure(`no binding from ${goal}`);
     return result.bindings;
+  }
+
+  /** Decode the MI's nested node/3 list into a structured-clone-safe tree. */
+  #proofSteps(engine: Engine, term: PlTerm): ProofStep[] {
+    if (term.kind !== 'list') throw new DecodeError('proof tree is not a list');
+    const display = createEncoder(engine.prolog);
+    const steps: ProofStep[] = [];
+    for (const item of term.items) {
+      // Negation-as-failure is interpreter bookkeeping, not a source clause.
+      if (item.kind === 'compound' && item.functor === 'naf' && item.args.length === 1) continue;
+      if (item.kind !== 'compound' || item.functor !== 'node' || item.args.length !== 3) {
+        throw new DecodeError('proof tree contains an invalid node');
+      }
+      const lineTerm = item.args[0];
+      const head = item.args[1];
+      const children = item.args[2];
+      if (
+        lineTerm?.kind !== 'compound' ||
+        lineTerm.functor !== 'line' ||
+        lineTerm.args.length !== 1 ||
+        head?.kind !== 'compound' ||
+        children === undefined
+      ) {
+        throw new DecodeError('proof node has an invalid line, head, or children');
+      }
+      const provenance = sourceId(head);
+      steps.push({
+        line: asSafeLine(lineTerm.args[0]),
+        head: this.#display(engine, display(head)),
+        predicate: `${head.functor}/${head.args.length}`,
+        ...(provenance ?? {}),
+        children: this.#proofSteps(engine, children),
+      });
+    }
+    return steps;
   }
 
   /**

@@ -7,15 +7,19 @@
 // main-thread timer fired at 25.97 ms.
 
 import { validateBudget } from './budget.js';
-import { WORKER_FAILURE_ID } from './protocol.js';
+import { PROOF_BUDGET_MAX, WORKER_FAILURE_ID } from './protocol.js';
 import type {
   BudgetSpec,
   EngineContract,
   EngineError,
   EngineRequestBody,
   EngineResponse,
+  ProofInput,
+  ProofOutcome,
   SolveResult,
 } from './protocol.js';
+
+export type { ProofInput, ProofOutcome, ProofStep } from './protocol.js';
 
 /** The session's arms plus the one outcome only the client can produce. */
 export type QueryOutcome = SolveResult | { kind: 'error'; error: EngineError };
@@ -31,6 +35,9 @@ export type BootOutcome =
  * itself, with its engine intact, before termination becomes the answer.
  */
 const HARD_GRACE_MS = 500;
+
+/** One initial attempt and one automatic replacement attempt are allowed. */
+const BOOT_DEADLINE_MS = 30_000;
 
 /**
  * Hard bound on a runtime load.
@@ -70,7 +77,15 @@ export class EngineClient {
   constructor(options: ClientOptions = {}) {
     this.#options = {
       spawn: options.spawn ?? defaultSpawn,
-      schedule: options.schedule ?? ((fn, ms) => setTimeout(fn, ms)),
+      schedule:
+        options.schedule ??
+        ((fn, ms) => {
+          const handle = setTimeout(fn, ms);
+          // A caller that abandons the client must not keep a Node test process
+          // alive solely for its watchdog. Browser timer handles are numbers.
+          if (typeof handle === 'object' && 'unref' in handle) handle.unref();
+          return handle;
+        }),
       cancelSchedule: options.cancelSchedule ?? ((handle) => clearTimeout(handle as never)),
     };
   }
@@ -142,6 +157,7 @@ export class EngineClient {
     request: EngineRequestBody,
     deadlineMs?: number,
     signal?: AbortSignal,
+    deadline?: (id: string) => void,
   ): Promise<EngineResponse> {
     const id = `r${++this.#nextId}`;
     // An aborted signal is aborted forever, so a reused one must not boot a worker
@@ -160,7 +176,7 @@ export class EngineClient {
         deadlineMs === undefined
           ? undefined
           : this.#options.schedule(() => {
-              this.#onDeadline(id);
+              (deadline ?? ((target) => this.#onDeadline(target)))(id);
             }, deadlineMs);
       let cancelSent = false;
       const abort =
@@ -196,8 +212,35 @@ export class EngineClient {
     void this.reset(`wall-clock deadline exceeded for ${id}`);
   }
 
+  /** A hung image load is retired without recursively starting another boot. */
+  #onBootDeadline(id: string): void {
+    if (!this.#pending.has(id)) return;
+    this.#settle(id, {
+      id,
+      kind: 'error',
+      error: { code: 'boot', message: `boot exceeded ${BOOT_DEADLINE_MS} ms` },
+    });
+    this.#worker?.terminate();
+    this.#worker = undefined;
+    this.#generation += 1;
+    this.#abort(`worker retired after boot deadline for ${id}`);
+  }
+
+  async #bootAttempt(): Promise<{ outcome: BootOutcome; timedOut: boolean }> {
+    let timedOut = false;
+    const response = await this.#send({ kind: 'boot' }, BOOT_DEADLINE_MS, undefined, (id) => {
+      timedOut = true;
+      this.#onBootDeadline(id);
+    });
+    return { outcome: asBoot(response), timedOut };
+  }
+
   async boot(): Promise<BootOutcome> {
-    return asBoot(await this.#send({ kind: 'boot' }));
+    const first = await this.#bootAttempt();
+    if (!first.timedOut || this.#disposed) return first.outcome;
+    // Exactly one automatic recreation. A second timeout retires that worker and
+    // returns its typed boot error; it never enters an unbounded respawn loop.
+    return (await this.#bootAttempt()).outcome;
   }
 
   async query(goal: string, budget: BudgetSpec, signal?: AbortSignal): Promise<QueryOutcome> {
@@ -232,6 +275,7 @@ export class EngineClient {
       case 'error':
         return { kind: 'error', error: response.error };
       case 'booted':
+      case 'proof':
       case 'ack':
       case 'consulted':
         return {
@@ -241,6 +285,56 @@ export class EngineClient {
       default: {
         // A new response kind must be classified here rather than fall into a
         // catch-all that reports it as a protocol violation forever.
+        const exhaustive: never = response;
+        return exhaustive;
+      }
+    }
+  }
+
+  /** Re-prove one selected catalog solution through the compiled meta-interpreter. */
+  async prove(input: ProofInput, budget: BudgetSpec, signal?: AbortSignal): Promise<ProofOutcome> {
+    let requested: BudgetSpec;
+    try {
+      requested = validateBudget(budget);
+    } catch (cause) {
+      return {
+        kind: 'error',
+        error: { code: 'budget', message: cause instanceof Error ? cause.message : String(cause) },
+      };
+    }
+    const spec: BudgetSpec = {
+      stackBytes: Math.min(requested.stackBytes, PROOF_BUDGET_MAX.stackBytes),
+      depth: Math.min(requested.depth, PROOF_BUDGET_MAX.depth),
+      inferences: Math.min(requested.inferences, PROOF_BUDGET_MAX.inferences),
+      wallClockMs: Math.min(requested.wallClockMs, PROOF_BUDGET_MAX.wallClockMs),
+      answerCap: 1,
+    };
+    const response = await this.#send(
+      { kind: 'proof', input, budget: spec },
+      spec.wallClockMs + HARD_GRACE_MS,
+      signal,
+    );
+    switch (response.kind) {
+      case 'proof':
+        return { kind: 'proof', steps: response.steps };
+      case 'failure':
+        return { kind: 'failure' };
+      case 'limit':
+        if (response.limit === 'heap') await this.reset('heap exhausted; engine discarded');
+        return { kind: 'limit', limit: response.limit };
+      case 'cancelled':
+        return { kind: 'cancelled' };
+      case 'error':
+        return { kind: 'error', error: response.error };
+      case 'booted':
+      case 'solutions':
+      case 'ack':
+      case 'consulted':
+        return {
+          kind: 'error',
+          error: { code: 'protocol', message: `proof answered with ${response.kind}` },
+        };
+      default: {
         const exhaustive: never = response;
         return exhaustive;
       }
@@ -306,6 +400,8 @@ export class EngineClient {
     // it a second time when it respawns; only monotonicity is load-bearing.
     this.#generation += 1;
     this.#abort(reason);
+    // An explicit reset retains its original semantics: one requested replacement,
+    // distinct from `boot()`'s automatic retry policy.
     return asBoot(await this.#send({ kind: 'boot' }));
   }
 

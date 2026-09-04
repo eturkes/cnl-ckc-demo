@@ -26,6 +26,7 @@ const DECLARED_MEMBERS = [
   'constructor',
   'contract',
   'dispose',
+  'provenance',
   'retry',
   'run',
   'select',

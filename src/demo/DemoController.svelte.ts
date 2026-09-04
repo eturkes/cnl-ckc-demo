@@ -9,7 +9,15 @@
 // by itself.
 
 import { EngineClient, type BootOutcome } from '../engine/client.js';
-import type { BudgetSpec, EngineContract, EngineError, PlSolution } from '../engine/protocol.js';
+import type {
+  BudgetSpec,
+  EngineContract,
+  EngineError,
+  PlSolution,
+  ProofInput,
+  ProofOutcome,
+} from '../engine/protocol.js';
+import type { ProvenanceState } from '../provenance/model.js';
 import { QUESTION_CATALOG, type QuestionId } from '../questions/catalog.js';
 import { serializeAnswer } from '../questions/serialize.js';
 import { AnswerService, type AnswerResult } from '../questions/service.js';
@@ -30,10 +38,19 @@ export const DEMO_BUDGET: Readonly<BudgetSpec> = Object.freeze({
   answerCap: 32,
 });
 
+const PROOF_BUDGET: Readonly<BudgetSpec> = Object.freeze({
+  stackBytes: 16_777_216,
+  depth: 100,
+  inferences: 100_000,
+  wallClockMs: 3_000,
+  answerCap: 1,
+});
+
 /** The controller's whole view of the engine: one boot, one budgeted ask, one dispose. */
 export interface DemoEngine {
   boot(): Promise<BootOutcome>;
   ask(id: unknown, budget: BudgetSpec, signal?: AbortSignal): Promise<AnswerResult>;
+  prove?(input: ProofInput, budget: BudgetSpec, signal?: AbortSignal): Promise<ProofOutcome>;
   dispose(): void;
 }
 
@@ -43,6 +60,7 @@ export const createDemoEngine = (): DemoEngine => {
   return {
     boot: () => client.boot(),
     ask: (id, budget, signal) => service.ask(id, budget, signal),
+    prove: (input, budget, signal) => client.prove(input, budget, signal),
     dispose: () => {
       client.dispose();
     },
@@ -83,6 +101,7 @@ export class DemoController {
   state = $state.raw<DemoState>({ kind: 'booting' });
   selected = $state<QuestionId | null>(null);
   solutionIndex = $state(-1);
+  provenance = $state.raw<ProvenanceState>({ kind: 'idle' });
   /**
    * What the booted engine reported, kept past `idle`.
    *
@@ -93,6 +112,8 @@ export class DemoController {
 
   readonly #engine: DemoEngine;
   #active: ActiveRun | undefined;
+  #proofController: AbortController | undefined;
+  #proofToken = 0;
   #disposed = false;
 
   constructor(engine: DemoEngine = createDemoEngine()) {
@@ -110,8 +131,12 @@ export class DemoController {
     return this.#start(this.selected);
   }
 
-  /** Reruns the settled run, never the current selection: changing that is Run's job. */
+  /** Restarts a failed boot, or reruns the settled question rather than the current selection. */
   retry(): Promise<void> {
+    if (this.state.kind === 'boot-error') {
+      this.state = { kind: 'booting' };
+      return this.#boot();
+    }
     return this.state.kind === 'settled' ? this.#start(this.state.id) : Promise.resolve();
   }
 
@@ -127,18 +152,31 @@ export class DemoController {
     const rows = this.state.kind === 'settled' ? solutionsOf(this.state.result).length : 0;
     if (Number.isInteger(index) && index >= 0 && index < rows) {
       this.solutionIndex = index;
+      if (this.state.kind === 'settled') {
+        const solution = solutionsOf(this.state.result)[index];
+        if (solution !== undefined) void this.#trace(this.state.id, index, solution);
+      }
     }
   }
 
   dispose(): void {
     this.#disposed = true;
     this.#active?.controller.abort();
+    this.#proofController?.abort();
     this.#active = undefined;
     this.#engine.dispose();
   }
 
   async #boot(): Promise<void> {
-    const outcome = await this.#engine.boot();
+    let outcome: BootOutcome;
+    try {
+      outcome = await this.#engine.boot();
+    } catch (cause) {
+      outcome = {
+        kind: 'error',
+        error: { code: 'worker', message: cause instanceof Error ? cause.message : String(cause) },
+      };
+    }
     if (this.#disposed) return;
     if (outcome.kind === 'booted') this.contract = outcome.contract;
     this.state =
@@ -154,6 +192,10 @@ export class DemoController {
     const controller = new AbortController();
     const previous = this.#active;
     previous?.controller.abort();
+    this.#proofController?.abort();
+    this.#proofController = undefined;
+    this.#proofToken += 1;
+    this.provenance = { kind: 'idle' };
     this.solutionIndex = -1;
     this.state = { kind: 'running', id };
 
@@ -175,6 +217,8 @@ export class DemoController {
         retire();
         this.state = { kind: 'settled', id, result };
         this.solutionIndex = solutionsOf(result).length > 0 ? 0 : -1;
+        const first = solutionsOf(result)[0];
+        if (first !== undefined) void this.#trace(id, 0, first);
       },
       (cause: unknown) => {
         retire();
@@ -184,5 +228,53 @@ export class DemoController {
 
     this.#active = { id, controller, query, done };
     return done;
+  }
+
+  async #trace(id: QuestionId, solution: number, selected: PlSolution): Promise<void> {
+    if (this.#engine.prove === undefined) {
+      this.provenance = { kind: 'unavailable', message: 'Proof tracing is unavailable.' };
+      return;
+    }
+    this.#proofController?.abort();
+    const controller = new AbortController();
+    this.#proofController = controller;
+    const token = ++this.#proofToken;
+    this.provenance = { kind: 'loading', solution };
+    let outcome: ProofOutcome;
+    try {
+      outcome = await this.#engine.prove(
+        { goal: QUESTION_CATALOG[id].goal, selected: selected.display },
+        PROOF_BUDGET,
+        controller.signal,
+      );
+    } catch (cause) {
+      outcome = {
+        kind: 'error',
+        error: { code: 'worker', message: cause instanceof Error ? cause.message : String(cause) },
+      };
+    }
+    if (this.#disposed || controller.signal.aborted || token !== this.#proofToken) return;
+    this.#proofController = undefined;
+    switch (outcome.kind) {
+      case 'proof':
+        this.provenance = { kind: 'ready', solution, steps: outcome.steps };
+        break;
+      case 'failure':
+        this.provenance = { kind: 'failure', solution };
+        break;
+      case 'limit':
+        this.provenance = { kind: 'limit', solution, limit: outcome.limit };
+        break;
+      case 'cancelled':
+        this.provenance = { kind: 'cancelled', solution };
+        break;
+      case 'error':
+        this.provenance = { kind: 'error', solution, error: outcome.error };
+        break;
+      default: {
+        const exhaustive: never = outcome;
+        return exhaustive;
+      }
+    }
   }
 }

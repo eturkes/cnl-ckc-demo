@@ -37,6 +37,18 @@ export interface BudgetSpec {
   answerCap: number;
 }
 
+/**
+ * Proofs are intentionally tighter than ordinary demo queries. The selected
+ * solution is re-proved once, and callers may lower but never raise these caps.
+ */
+export const PROOF_BUDGET_MAX: Readonly<BudgetSpec> = Object.freeze({
+  stackBytes: 16_777_216,
+  depth: 100,
+  inferences: 100_000,
+  wallClockMs: 1_000,
+  answerCap: 1,
+});
+
 export type EngineErrorCode =
   /** The image failed to fetch, load, or initialize. */
   | 'boot'
@@ -67,6 +79,39 @@ export interface PlSolution {
 }
 
 /**
+ * One request for a live selected-solution derivation.
+ *
+ * `selected` values are canonical strings previously returned in a solution's
+ * `display` map. They are parsed back into ground Prolog terms inside the worker,
+ * never interpolated into source. A caller that already substituted the selected
+ * values into the catalog goal can provide that constrained goal directly.
+ */
+export type ProofInput =
+  { goal: string; selected: Readonly<Record<string, string>> } | { constrainedGoal: string };
+
+/** A source-bearing clause in the live proof tree. */
+export interface ProofStep {
+  /** One-based line in the deterministic combined `/prolog.pl` build input. */
+  line: number;
+  /** Canonical text rendered by the engine from the resolved clause head. */
+  head: string;
+  /** Predicate indicator, e.g. `guideline_entity/4`. */
+  predicate: string;
+  /** Provenance recovered from a nested `$guideline_id/5`, when present. */
+  document?: string;
+  sentence?: number;
+  children: ProofStep[];
+}
+
+/** Every terminal result of a selected-solution proof request. */
+export type ProofOutcome =
+  | { kind: 'proof'; steps: ProofStep[] }
+  | { kind: 'failure' }
+  | { kind: 'limit'; limit: LimitKind }
+  | { kind: 'cancelled' }
+  | { kind: 'error'; error: EngineError };
+
+/**
  * Reserved id for a worker-level failure that belongs to no single request.
  *
  * The client mints ids as `r<n>`, so this collides with nothing, and a response
@@ -79,6 +124,7 @@ export const WORKER_FAILURE_ID = 'worker-failure';
 export type EngineRequestBody =
   | { kind: 'boot' }
   | { kind: 'query'; goal: string; budget: BudgetSpec }
+  | { kind: 'proof'; input: ProofInput; budget: BudgetSpec }
   | { kind: 'consult'; source: string }
   | { kind: 'cancel'; target: string };
 
@@ -89,6 +135,7 @@ export type EngineRequest = EngineRequestBody & { id: string };
 export type EngineResponse =
   | { id: string; kind: 'booted'; contract: EngineContract }
   | { id: string; kind: 'solutions'; solutions: PlSolution[] }
+  | { id: string; kind: 'proof'; steps: ProofStep[] }
   | { id: string; kind: 'failure' }
   /** A limit stopped the run; `solutions` holds whatever was already proven. */
   | { id: string; kind: 'limit'; limit: LimitKind; solutions: PlSolution[] }
@@ -108,6 +155,7 @@ export const isTerminal = (response: EngineResponse): boolean => {
   switch (response.kind) {
     case 'booted':
     case 'solutions':
+    case 'proof':
     case 'failure':
     case 'limit':
     case 'cancelled':

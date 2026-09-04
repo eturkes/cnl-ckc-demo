@@ -263,7 +263,7 @@ describe('view states and accessibility', () => {
     expect(text()).toMatch(/no proof/iu);
   });
 
-  it('V8 uses native button disabled states and reserves Retry for settled errors', () => {
+  it('V8 uses native button disabled states and offers Retry for engine errors', () => {
     controller.select(ID);
     flushSync();
     const bootRun = buttonNamed(/^run\b/iu);
@@ -295,10 +295,8 @@ describe('view states and accessibility', () => {
     expect(retry.disabled).toBe(false);
     expect(retry.hasAttribute('aria-disabled')).toBe(false);
 
-    setState({ kind: 'boot-error', error: { code: 'boot', message: 'no retry' } });
-    expect(
-      [...target.querySelectorAll('button')].some((button) => /retry/iu.test(text(button))),
-    ).toBe(false);
+    setState({ kind: 'boot-error', error: { code: 'boot', message: 'retry boot' } });
+    expect(buttonNamed(/^retry\b/iu).disabled).toBe(false);
   });
 
   it('V8 disables Run without a selection even after boot', () => {
