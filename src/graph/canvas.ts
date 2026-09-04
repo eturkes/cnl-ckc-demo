@@ -1,6 +1,12 @@
 import type cytoscape from 'cytoscape';
 
-import type { GraphPath, GraphSubgraph, SemanticGraphNodeKind } from './model.js';
+import {
+  graphNodeLabel,
+  graphRelationLabel,
+  type GraphPath,
+  type GraphSubgraph,
+  type SemanticGraphNodeKind,
+} from './model.js';
 
 export interface GraphCanvas {
   update(subgraph: GraphSubgraph, selectedId: string, path: GraphPath | null): void;
@@ -25,11 +31,16 @@ const elementsOf = (
 ): cytoscape.ElementDefinition[] => {
   const pathNodes = new Set(path?.nodes ?? []);
   const pathEdges = new Set(path?.edges ?? []);
+  const hasHighlight = path !== null;
   return [
     ...subgraph.nodes.map((node) => ({
       group: 'nodes' as const,
-      data: { id: node.id, label: node.label, kind: node.kind },
-      classes: [node.id === selectedId ? 'selected' : '', pathNodes.has(node.id) ? 'path' : '']
+      data: { id: node.id, label: graphNodeLabel(node), kind: node.kind },
+      classes: [
+        node.id === selectedId ? 'selected' : '',
+        pathNodes.has(node.id) ? 'path' : '',
+        hasHighlight && !pathNodes.has(node.id) ? 'context' : '',
+      ]
         .filter(Boolean)
         .join(' '),
     })),
@@ -43,10 +54,10 @@ const elementsOf = (
           id: edge.id,
           source: edge.source,
           target: edge.target,
-          label: edge.label,
+          label: graphRelationLabel(edge),
           kind: edge.kind,
         },
-        classes: pathEdges.has(edge.id) ? 'path' : '',
+        classes: pathEdges.has(edge.id) ? 'path' : hasHighlight ? 'context' : '',
       })),
   ];
 };
@@ -88,6 +99,18 @@ const stylesheet = (): cytoscape.StylesheetJson => [
     },
   },
   {
+    selector: 'node.context',
+    style: {
+      opacity: 0.52,
+    },
+  },
+  {
+    selector: 'edge.context',
+    style: {
+      opacity: 0.16,
+    },
+  },
+  {
     selector: '.path',
     style: {
       'background-color': '#b34a21',
@@ -99,13 +122,38 @@ const stylesheet = (): cytoscape.StylesheetJson => [
     },
   },
   {
+    selector: 'node.path',
+    style: {
+      'font-size': 11,
+      height: 40,
+      width: 66,
+      'text-max-width': '112px',
+    },
+  },
+  {
+    selector: 'edge.path',
+    style: {
+      label: 'data(label)',
+      color: '#6f2b13',
+      'font-family': 'Atkinson Hyperlegible Next, sans-serif',
+      'font-size': 9,
+      'font-weight': 700,
+      'text-background-color': '#fffdf8',
+      'text-background-opacity': 0.9,
+      'text-background-padding': '2px',
+      'text-rotation': 'autorotate',
+    },
+  },
+  {
     selector: 'node.selected',
     style: {
-      'border-color': '#ffffff',
-      'border-width': 4,
-      'underlay-color': '#174f9e',
-      'underlay-opacity': 0.55,
-      'underlay-padding': 5,
+      'background-color': '#174f9e',
+      'border-color': '#d05a2a',
+      'border-width': 5,
+      'font-size': 13,
+      height: 48,
+      width: 92,
+      'underlay-opacity': 0,
       'z-index': 10,
     },
   },
@@ -138,7 +186,21 @@ export const mountGraphCanvas = async (
   });
   resize.observe(container);
 
-  const layout = (): void => {
+  const layout = (selectedId: string, path: GraphPath | null): void => {
+    if (path !== null) {
+      const highlighted = new Set(path.nodes);
+      cy.layout({
+        name: 'concentric',
+        animate: false,
+        fit: true,
+        padding: 38,
+        minNodeSpacing: 48,
+        concentric: (node: cytoscape.NodeSingular) =>
+          node.id() === selectedId ? 3 : highlighted.has(node.id()) ? 2 : 1,
+        levelWidth: () => 1,
+      }).run();
+      return;
+    }
     cy.layout({
       name: 'fcose',
       quality: 'default',
@@ -158,7 +220,7 @@ export const mountGraphCanvas = async (
         cy.elements().remove();
         cy.add(elementsOf(subgraph, selectedId, path));
       });
-      layout();
+      layout(selectedId, path);
     },
     recenter(selectedId) {
       if (selectedId === undefined) {

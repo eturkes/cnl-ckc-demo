@@ -124,7 +124,7 @@ describe('bag-derived provenance assets', () => {
 });
 
 describe('static semantic graph asset', () => {
-  it('maps every explicit schema site and every Horn rule to a typed edge', () => {
+  it('maps every schema site, Horn rule, and unique rule-body relation to typed edges', () => {
     const predicateKinds = new Map([
       ['guideline_entity', 'entity'],
       ['guideline_cardinality', 'cardinality'],
@@ -140,8 +140,25 @@ describe('static semantic graph asset', () => {
       if (kind !== undefined) expected.set(kind, (expected.get(kind) ?? 0) + 1);
     }
     expected.set('implies', provenance.clauses.filter(({ kind }) => kind === 'rule').length);
-    expect(graph.model.stats.byEdgeKind).toEqual(Object.fromEntries([...expected].sort()));
-    expect(graph.model.stats).toMatchObject({ documents: 337, clauses: 10_321, edges: 18_700 });
+    for (const [kind, minimum] of expected) {
+      expect(graph.model.stats.byEdgeKind[kind], kind).toBeGreaterThanOrEqual(minimum);
+    }
+    expect(graph.model.stats.byEdgeKind).toEqual({
+      argument: 3805,
+      cardinality: 1834,
+      entity: 1834,
+      event: 1254,
+      implies: 9804,
+      operator: 1193,
+      preposition: 1197,
+      property: 43,
+    });
+    expect(graph.model.stats).toMatchObject({
+      documents: 337,
+      clauses: 10_321,
+      nodes: 2901,
+      edges: 20_964,
+    });
   });
 
   it('keeps event and operator context nodes and gives every edge source provenance', () => {

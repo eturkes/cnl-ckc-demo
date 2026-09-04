@@ -5,14 +5,19 @@
 
   import { mountGraphCanvas, type GraphCanvas } from './canvas.js';
   import {
+    DEFAULT_ANSWER_GRAPH_LIMIT,
     DEFAULT_NEIGHBOR_LIMIT,
+    MAX_ANSWER_GRAPH_LIMIT,
     MAX_NEIGHBOR_LIMIT,
     SemanticGraphModel,
     graphFocusKey,
+    graphNodeKindLabel,
+    graphNodeLabel,
     graphRelationLabel,
     parseSemanticGraph,
-    type GraphEvidenceSubgraph,
+    type GraphAnswerView,
     type GraphFocus,
+    type GraphFocusToken,
     type GraphPath,
     type GraphSubgraph,
     type SemanticGraphEdge,
@@ -53,7 +58,8 @@
   let depth = $state(1);
   let nodeLimit = $state(DEFAULT_NEIGHBOR_LIMIT);
   let path = $state.raw<GraphPath | null>(null);
-  let evidenceView = $state.raw<GraphEvidenceSubgraph | null>(null);
+  let evidenceView = $state.raw<GraphAnswerView | null>(null);
+  let answerFocus = $state.raw<GraphFocusToken | null>(null);
   let pathStatus = $state('');
   let loadError = $state('');
   let canvasError = $state('');
@@ -70,18 +76,27 @@
   const selected = $derived(
     model === null || selectedId === null ? undefined : model.node(selectedId),
   );
-  const searchResults = $derived(model === null ? [] : model.search(query));
+  const evidenceRoot = $derived(
+    model === null || evidenceView === null ? undefined : model.node(evidenceView.root),
+  );
+  const searchResults = $derived(model === null ? [] : model.searchConcepts(query));
   const subgraph = $derived<GraphSubgraph>(
     model === null || selectedId === null
       ? { nodes: [], edges: [], truncatedNodes: false, truncatedEdges: false }
       : (evidenceView ??
-          model.neighborhood(selectedId, depth, nodeLimit, path?.nodes ?? [], path?.edges ?? [])),
+          model.conceptNeighborhood(
+            selectedId,
+            depth,
+            nodeLimit,
+            path?.nodes ?? [],
+            path?.edges ?? [],
+          )),
   );
   const relationPool = $derived(
     model === null || selectedId === null
       ? []
       : evidenceView === null
-        ? model.incident(selectedId)
+        ? model.conceptIncident(selectedId)
         : evidenceView.edges.filter(
             (edge) => edge.source === selectedId || edge.target === selectedId,
           ),
@@ -89,18 +104,23 @@
   const relations = $derived(relationPool.slice(0, 60));
   const canExpand = $derived(
     selected !== undefined &&
-      (evidenceView !== null || depth < 3 || nodeLimit < MAX_NEIGHBOR_LIMIT),
+      (evidenceView !== null
+        ? evidenceView.truncatedNodes && nodeLimit < MAX_ANSWER_GRAPH_LIMIT
+        : depth < 3 || nodeLimit < MAX_NEIGHBOR_LIMIT),
   );
 
   const choose = (id: string, notify = true, retainEvidence = false): void => {
     const node = model?.node(id);
     if (node === undefined) return;
     selectedId = node.id;
-    depth = 1;
-    nodeLimit = DEFAULT_NEIGHBOR_LIMIT;
     path = null;
     pathStatus = '';
-    if (!retainEvidence) evidenceView = null;
+    if (!retainEvidence) {
+      depth = 1;
+      nodeLimit = DEFAULT_NEIGHBOR_LIMIT;
+      evidenceView = null;
+      answerFocus = null;
+    }
     if (notify) onSelect(node);
   };
 
@@ -112,7 +132,8 @@
   const findPath = (target: string): void => {
     if (model === null || selectedId === null) return;
     evidenceView = null;
-    const found = model.shortestPath(selectedId, target);
+    answerFocus = null;
+    const found = model.shortestConceptPath(selectedId, target);
     path = found ?? null;
     pathStatus =
       found === undefined
@@ -122,8 +143,9 @@
 
   const expand = (): void => {
     if (evidenceView !== null) {
-      evidenceView = null;
-      depth = 2;
+      if (model === null || answerFocus === null) return;
+      nodeLimit = Math.min(MAX_ANSWER_GRAPH_LIMIT, nodeLimit + DEFAULT_ANSWER_GRAPH_LIMIT);
+      evidenceView = model.answerSubgraph(answerFocus, nodeLimit) ?? evidenceView;
       return;
     }
     depth = Math.min(3, depth + 1);
@@ -141,9 +163,12 @@
   const applyFocus = (next: GraphFocus, reveal = false): void => {
     const current = model;
     if (current === null) return;
-    const scoped = typeof next === 'string' ? undefined : current.evidenceSubgraph(next);
-    const resolved = current.resolveFocus(next) ?? scoped?.nodes[0];
+    nodeLimit = typeof next === 'string' ? DEFAULT_NEIGHBOR_LIMIT : DEFAULT_ANSWER_GRAPH_LIMIT;
+    const scoped = typeof next === 'string' ? undefined : current.answerSubgraph(next, nodeLimit);
+    const resolved =
+      (scoped === undefined ? undefined : current.node(scoped.root)) ?? current.resolveFocus(next);
     evidenceView = scoped ?? null;
+    answerFocus = scoped === undefined || typeof next === 'string' ? null : next;
     query = '';
     if (resolved !== undefined) choose(resolved.id, false, true);
     if (reveal) void revealFocusedGraph();
@@ -157,6 +182,7 @@
     selectedId = null;
     path = null;
     evidenceView = null;
+    answerFocus = null;
     loadError = '';
     canvasError = '';
     phase = 'loading';
@@ -172,22 +198,30 @@
       const loaded = new SemanticGraphModel(parseSemanticGraph(value));
       if (destroyed || active.signal.aborted) return;
       model = loaded;
+      nodeLimit =
+        focus === null || typeof focus === 'string'
+          ? DEFAULT_NEIGHBOR_LIMIT
+          : DEFAULT_ANSWER_GRAPH_LIMIT;
       const scoped =
-        focus === null || typeof focus === 'string' ? undefined : loaded.evidenceSubgraph(focus);
+        focus === null || typeof focus === 'string'
+          ? undefined
+          : loaded.answerSubgraph(focus, nodeLimit);
       const initial =
+        (scoped === undefined ? undefined : loaded.node(scoped.root)) ??
         (focus === null ? undefined : loaded.resolveFocus(focus)) ??
-        scoped?.nodes[0] ??
-        loaded.data.nodes.find((node) => node.kind === 'document') ??
+        loaded.defaultConcept('opioid therapy') ??
         loaded.data.nodes[0];
       selectedId = initial?.id ?? null;
       evidenceView = scoped ?? null;
+      answerFocus =
+        scoped === undefined || focus === null || typeof focus === 'string' ? null : focus;
       appliedFocus = graphFocusKey(focus);
       phase = 'ready';
       await tick();
       if (destroyed || active.signal.aborted || canvasHost === undefined) return;
       try {
         canvas = await mountGraphCanvas(canvasHost, (id) => {
-          choose(id);
+          choose(id, true, evidenceView !== null);
         });
       } catch (cause) {
         canvasError = `The visual graph is unavailable. Use the complete HTML navigation below. ${
@@ -211,7 +245,7 @@
     const current = canvas;
     const view = subgraph;
     const root = selectedId;
-    const route = path;
+    const route = path ?? evidenceView?.highlight ?? null;
     if (current !== undefined && root !== null) current.update(view, root, route);
   });
 
@@ -223,6 +257,7 @@
     if (next === null) {
       appliedFocus = '';
       evidenceView = null;
+      answerFocus = null;
       return;
     }
     if (key === appliedFocus) return;
@@ -261,8 +296,8 @@
     </div>
     {#if phase === 'ready' && model !== null}
       <p class="counts">
-        {model.data.stats.nodes.toLocaleString()} nodes · {model.data.stats.edges.toLocaleString()}
-        relationships
+        {model.conceptNodeCount.toLocaleString()} concepts/actions ·
+        {model.conceptEdgeCount.toLocaleString()} semantic links
       </p>
     {/if}
   </header>
@@ -270,8 +305,8 @@
   {#if phase === 'inactive'}
     <div class="activation">
       <p>
-        Navigate the documents, entities, events, values, and logical context compiled into the
-        knowledge base.
+        Explore clinical concepts and actions connected across the compiled knowledge base. The map
+        starts with opioid therapy; answer links add the exact proof path as a highlight.
       </p>
       <button class="primary" type="button" onclick={() => void activate()}>Explore graph</button>
       <p class="load-note">
@@ -291,39 +326,53 @@
   {:else if model !== null && selected !== undefined}
     {#if evidenceView !== null}
       <div class="evidence-focus" tabindex="-1" bind:this={focusNotice}>
-        <p class="kind">Answer evidence</p>
+        <p class="kind">Answer map</p>
         <p>
-          <strong
-            >Focused on {evidenceView.sentences.length}
-            {evidenceView.sentences.length === 1
-              ? 'controlled sentence'
-              : 'controlled sentences'}</strong
-          >
-          from <code>{evidenceView.document}</code>. This view contains only the relationships
-          compiled from the selected source contribution.
+          {#if evidenceRoot !== undefined}
+            <strong>{graphNodeLabel(evidenceRoot)} is the primary concept.</strong>
+          {/if}
+          Orange paths are the {evidenceView.highlight.edges.length}
+          {evidenceView.highlight.edges.length === 1 ? 'relationship' : 'relationships'} proved by this
+          answer contribution. Muted branches show how the concept connects elsewhere in the knowledge
+          base.
         </p>
+        <details class="projection-note">
+          <summary>How this map was derived</summary>
+          <p>
+            The primary concept is ranked mechanically from terms and semantic roles in the question
+            and deterministic answer. The highlight comes from
+            {evidenceView.sentences.length}
+            {evidenceView.sentences.length === 1 ? 'controlled sentence' : 'controlled sentences'}
+            in <code>{evidenceView.document}</code>. {evidenceView.hiddenTechnicalNodes} parser or provenance
+            nodes and {evidenceView.hiddenTechnicalEdges} lower-level relationships are hidden here and
+            remain inspectable in the proof view.
+          </p>
+        </details>
       </div>
     {/if}
 
     <div class="toolbar">
-      <label for={searchId}>Find a node</label>
+      <label for={searchId}>Find a concept or action</label>
       <div class="search-row">
         <input
           id={searchId}
           type="search"
-          placeholder="Search labels, kinds, or document IDs"
+          placeholder="Search clinical concepts and actions"
           autocomplete="off"
           bind:value={query}
           aria-describedby={searchHelpId}
         />
-        <button type="button" onclick={() => canvas?.recenter(selectedId ?? undefined)}>
-          Recenter
+        <button
+          type="button"
+          onclick={() =>
+            canvas?.recenter(evidenceView === null ? (selectedId ?? undefined) : undefined)}
+        >
+          {evidenceView === null ? 'Recenter' : 'Fit answer map'}
         </button>
         <button type="button" disabled={!canExpand} onclick={expand}>Expand</button>
       </div>
       <p id={searchHelpId} class="help">
-        Select a result to move the neighborhood. Select Path to keep this node and show the
-        shortest connection.
+        Select a result to move the map. Select Path to show the shortest semantic connection.
       </p>
 
       {#if query.trim() !== ''}
@@ -335,13 +384,13 @@
               {#each searchResults as result (result.id)}
                 <li>
                   <button class="result" type="button" onclick={() => choose(result.id)}>
-                    <span>{result.label}</span>
-                    <small>{result.kind}</small>
+                    <span>{graphNodeLabel(result)}</span>
+                    <small>{graphNodeKindLabel(result)}</small>
                   </button>
                   {#if result.id !== selectedId}
                     <button class="path-action" type="button" onclick={() => findPath(result.id)}>
                       Path
-                      <span class="visually-hidden"> to {result.label}</span>
+                      <span class="visually-hidden"> to {graphNodeLabel(result)}</span>
                     </button>
                   {/if}
                 </li>
@@ -354,9 +403,14 @@
 
     <div class="selection-card" tabindex="-1" bind:this={selectionCard}>
       <div>
-        <p class="kind">{selected.kind.replace(/-/gu, ' ')}</p>
-        <h3>{selected.label}</h3>
-        <p class="identifier">{selected.id}</p>
+        <p class="kind">
+          {evidenceView?.root === selected.id ? 'Primary concept' : graphNodeKindLabel(selected)}
+        </p>
+        <h3>{graphNodeLabel(selected)}</h3>
+        <p class="identifier">
+          {relationPool.length} direct semantic
+          {relationPool.length === 1 ? 'relationship' : 'relationships'}
+        </p>
       </div>
       {#if selected.document !== undefined}
         <p class="location">
@@ -370,11 +424,11 @@
     <div class="canvas-frame">
       <div class="canvas" bind:this={canvasHost} aria-hidden="true"></div>
       <div class="legend" aria-hidden="true">
-        <span class="document">Document</span>
-        <span class="entity">Entity</span>
-        <span class="event">Event</span>
-        <span class="operator">Operator</span>
-        <span class="value">Value</span>
+        <span class="primary-focus">Primary focus</span>
+        <span class="entity">Concept</span>
+        <span class="event">Action</span>
+        <span class="value">Attribute</span>
+        {#if evidenceView !== null}<span class="answer-path">Current answer</span>{/if}
       </div>
     </div>
     {#if canvasError !== ''}
@@ -382,10 +436,10 @@
     {/if}
 
     <p class="view-status" role="status">
-      Showing {subgraph.nodes.length.toLocaleString()} nodes and
-      {subgraph.edges.length.toLocaleString()} relationships{evidenceView === null
+      Showing {subgraph.nodes.length.toLocaleString()} concepts/actions and
+      {subgraph.edges.length.toLocaleString()} semantic relationships{evidenceView === null
         ? ` at depth ${String(depth)}`
-        : ' for the selected answer evidence'}.
+        : `, with ${String(evidenceView.highlight.edges.length)} highlighted for the current answer`}.
       {#if subgraph.truncatedNodes || subgraph.truncatedEdges}
         The view is capped for readability. Select Expand to reveal more.
       {/if}
@@ -408,7 +462,10 @@
           {#each path.nodes as id (id)}
             {@const node = model.node(id)}
             {#if node !== undefined}
-              <li><button type="button" onclick={() => choose(node.id)}>{node.label}</button></li>
+              <li>
+                <button type="button" onclick={() => choose(node.id)}>{graphNodeLabel(node)}</button
+                >
+              </li>
             {/if}
           {/each}
         </ol>
@@ -421,7 +478,7 @@
       <div class="panel-heading">
         <div>
           <p class="eyebrow">Accessible graph view</p>
-          <h3 id={htmlHeadingId}>Relationships from {selected.label}</h3>
+          <h3 id={htmlHeadingId}>Relationships from {graphNodeLabel(selected)}</h3>
         </div>
       </div>
 
@@ -433,9 +490,11 @@
             {@const peer = peerOf(relation)}
             {#if peer !== undefined}
               <li>
-                <span class="relation">{graphRelationLabel(relation)}</span>
-                <button type="button" onclick={() => choose(peer.id)}>{peer.label}</button>
-                <small>{peer.kind.replace(/-/gu, ' ')}</small>
+                <span class="relation">{graphRelationLabel(relation, selected.id)}</span>
+                <button type="button" onclick={() => choose(peer.id, true, evidenceView !== null)}
+                  >{graphNodeLabel(peer)}</button
+                >
+                <small>{graphNodeKindLabel(peer)}</small>
               </li>
             {/if}
           {/each}
@@ -456,9 +515,10 @@
               <button
                 type="button"
                 aria-current={node.id === selectedId ? 'true' : undefined}
-                onclick={() => choose(node.id)}>{node.label}</button
+                onclick={() => choose(node.id, true, evidenceView !== null)}
+                >{graphNodeLabel(node)}</button
               >
-              <small>{node.kind.replace(/-/gu, ' ')}</small>
+              <small>{graphNodeKindLabel(node)}</small>
             </li>
           {/each}
         </ul>
@@ -555,7 +615,8 @@
     background: color-mix(in srgb, var(--action) 6%, transparent);
   }
 
-  .evidence-focus p:last-child {
+  .evidence-focus > p:last-of-type,
+  .projection-note p {
     max-width: 52rem;
     margin-bottom: 0;
     color: var(--text-muted);
@@ -571,6 +632,17 @@
     font-family: var(--font-code);
     font-size: 0.8em;
     overflow-wrap: anywhere;
+  }
+
+  .projection-note {
+    max-width: 52rem;
+    margin-top: 0.8rem;
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .projection-note p {
+    margin-top: 0.55rem;
   }
 
   .activation,
@@ -806,8 +878,11 @@
     content: '';
   }
 
-  .legend .document::before {
-    background: #245c73;
+  .legend .primary-focus::before {
+    box-sizing: border-box;
+    border: 2px solid #b34a21;
+    border-radius: 50%;
+    background: #174f9e;
   }
 
   .legend .entity::before {
@@ -818,12 +893,13 @@
     background: #956019;
   }
 
-  .legend .operator::before {
-    background: #75558a;
-  }
-
   .legend .value::before {
     background: #5d6871;
+  }
+
+  .legend .answer-path::before {
+    height: 0.18rem;
+    background: #b34a21;
   }
 
   .canvas-error,

@@ -206,6 +206,8 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
 
   /** @type {Map<string, number>} */
   const edgeKinds = new Map();
+  /** @type {Set<string>} */
+  const emittedConditions = new Set();
   const emit = (
     /** @type {ClauseSite} */ clause,
     /** @type {number} */ ordinal,
@@ -308,6 +310,107 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
         throw new Error(`unsupported graph predicate ${clause.predicate}`);
     }
     if (clause.kind === 'rule') {
+      // A rule body carries the clinical condition. Earlier graph builds used
+      // it only to resolve the parser's operator context, which left concepts
+      // such as "opioid therapy" disconnected from recommendations about
+      // starting it. Emit each body relation once per controlled sentence so
+      // the reader-facing ontology can show the condition as an ordinary
+      // entity/action path without multiplying identical bodies for every head.
+      for (const [index, call] of clause.body.entries()) {
+        const condition = (
+          /** @type {GraphEdgeKind} */ kind,
+          /** @type {string} */ source,
+          /** @type {string} */ target,
+          /** @type {string} */ label,
+        ) => {
+          const key = [clause.document, clause.sentence ?? 0, kind, source, target, label].join(
+            '\u0000',
+          );
+          if (emittedConditions.has(key)) return;
+          emittedConditions.add(key);
+          emit(clause, index + 2, kind, source, target, label, call.name);
+        };
+        if (call.name === 'guideline_arg' || call.name === 'guideline_pp') {
+          const source = resolveReference(
+            nodes,
+            globalReferences,
+            localReferences,
+            clause.document,
+            clause.sentence,
+            call.args[1] ?? '',
+          );
+          const target = resolveReference(
+            nodes,
+            globalReferences,
+            localReferences,
+            clause.document,
+            clause.sentence,
+            call.args[3] ?? '',
+          );
+          condition(
+            call.name === 'guideline_arg' ? 'argument' : 'preposition',
+            source,
+            target,
+            call.name === 'guideline_arg'
+              ? `argument ${termLabel(call.args[2] ?? '')}`
+              : termLabel(call.args[2] ?? ''),
+          );
+        } else if (call.name === 'guideline_property') {
+          const source = resolveReference(
+            nodes,
+            globalReferences,
+            localReferences,
+            clause.document,
+            clause.sentence,
+            call.args[1] ?? '',
+          );
+          const label = `${termLabel(call.args[2] ?? '')}: ${termLabel(call.args[3] ?? '')}`;
+          const target = addNode(nodes, {
+            id: valueId('property', label),
+            kind: 'value',
+            label,
+          });
+          condition('property', source, target, label);
+        }
+      }
+
+      // The consequent event is the bridge from condition to recommendation.
+      // Entity arguments on both sides then preserve the n-ary semantics instead
+      // of flattening the rule into a noun-to-noun assertion.
+      if (clause.predicate === 'guideline_event') {
+        for (const [index, call] of clause.body
+          .filter(({ name }) => name === 'guideline_event')
+          .entries()) {
+          const conditionEvent = declareCallNode(
+            nodes,
+            call,
+            clause.document,
+            clause.sentence,
+            localReferences,
+          );
+          if (conditionEvent === null || conditionEvent === headNode) continue;
+          const key = [
+            clause.document,
+            clause.sentence ?? 0,
+            'implies',
+            conditionEvent,
+            headNode,
+            'condition supports',
+          ].join('\u0000');
+          if (emittedConditions.has(key)) continue;
+          emittedConditions.add(key);
+          emit(
+            clause,
+            clause.body.length + index + 2,
+            'implies',
+            conditionEvent,
+            headNode,
+            'condition supports',
+            'guideline_condition',
+          );
+        }
+      }
+
       // The compiler gives every conditional sentence a first-class context
       // reference. Its operator clause names the modal/negative context; every
       // rule head in that context is one Horn body→head relationship. Keeping

@@ -76,7 +76,9 @@ const activate = async (root: HTMLElement): Promise<void> => {
       null,
   );
   await vi.waitFor(() =>
-    expect(root.querySelector('.counts')?.textContent).toMatch(/7 nodes\s*·\s*5\s*relationships/u),
+    expect(root.querySelector('.counts')?.textContent).toMatch(
+      /3 concepts\/actions\s*·\s*2 semantic links/u,
+    ),
   );
   await tick();
 };
@@ -104,8 +106,12 @@ describe('lazy semantic graph surface', () => {
 
     await activate(root);
     expect(fetcher).toHaveBeenCalledTimes(1);
-    expect(root.textContent).toContain('CDC 2022 opioid guideline');
-    expect(canvasState.updates.at(-1)).toMatchObject({ selected: 'doc:cdc' });
+    expect(root.querySelector('.selection-card h3')?.textContent).toBe('Dosage reduction');
+    expect(canvasState.updates.at(-1)).toMatchObject({
+      selected: 'entity:dosage',
+      nodes: 2,
+      edges: 1,
+    });
   });
 
   it('applies an external focus after activation without letting it trigger the fetch', async () => {
@@ -128,6 +134,8 @@ describe('lazy semantic graph surface', () => {
         sentence: 2,
         sentences: [2],
         lines: [22],
+        question: 'How should clinicians reduce dosage?',
+        answer: 'Clinicians should make dosage reduction gradual.',
       },
       focusRequest: 1,
     });
@@ -138,16 +146,18 @@ describe('lazy semantic graph surface', () => {
     expect(fetcher).toHaveBeenCalledTimes(1);
     expect(root.querySelector('.selection-card h3')?.textContent).toBe('Dosage reduction');
     expect(root.querySelector('.evidence-focus')?.textContent).toMatch(
-      /Focused on 1\s+controlled sentence.*cdc2022-opioid-rec05/isu,
+      /Dosage reduction is the primary concept.*Orange paths are the 1\s+relationship/isu,
     );
     expect(root.querySelector('.view-status')?.textContent).toMatch(
-      /Showing 4 nodes and\s*3 relationships for the selected answer evidence/iu,
+      /Showing 3 concepts\/actions and\s*2 semantic relationships, with 1 highlighted/iu,
     );
     expect(canvasState.updates.at(-1)).toMatchObject({
       selected: 'entity:dosage',
-      nodes: 4,
-      edges: 3,
+      nodes: 3,
+      edges: 2,
+      path: 2,
     });
+    expect(root.textContent).not.toContain('logical context');
     expect(canvasState.recentered.at(-1)).toBeUndefined();
     expect(document.activeElement).toBe(root.querySelector('.evidence-focus'));
   });
@@ -163,21 +173,23 @@ describe('lazy semantic graph surface', () => {
     input.value = 'operator';
     input.dispatchEvent(new InputEvent('input', { bubbles: true }));
     await tick();
+    expect(root.querySelector('.search-results')?.textContent).toContain('No matching nodes');
 
-    const result = [...root.querySelectorAll('.search-results button.result')].find((button) =>
-      button.textContent?.includes('should'),
-    );
+    input.value = 'gradual';
+    input.dispatchEvent(new InputEvent('input', { bubbles: true }));
+    await tick();
+    const result = root.querySelector('.search-results button.result');
     expect(result).toBeDefined();
     const path = result?.parentElement?.querySelector('button.path-action') ?? null;
     click(path);
     await tick();
-    expect(root.textContent).toContain('Shortest path: 4 relationships.');
-    expect(root.querySelectorAll('.path-panel ol li')).toHaveLength(5);
+    expect(root.textContent).toContain('Shortest path: 2 relationships.');
+    expect(root.querySelectorAll('.path-panel ol li')).toHaveLength(3);
 
     click(result ?? null);
     await tick();
-    expect(selected.at(-1)?.id).toBe('operator:should');
-    expect(root.querySelector('.selection-card h3')?.textContent).toBe('should');
+    expect(selected.at(-1)?.id).toBe('value:gradual');
+    expect(root.querySelector('.selection-card h3')?.textContent).toBe('gradual');
   });
 
   it('keeps the HTML relationships usable when the canvas renderer fails', async () => {
@@ -188,12 +200,12 @@ describe('lazy semantic graph surface', () => {
 
     expect(root.textContent).toContain('visual graph is unavailable');
     expect(root.querySelector('.html-graph')).not.toBeNull();
-    const recommendation = [...root.querySelectorAll('.relations button')].find(
-      (button) => button.textContent === 'Recommendation',
+    const action = [...root.querySelectorAll('.relations button')].find(
+      (button) => button.textContent === 'have',
     );
-    click(recommendation ?? null);
+    click(action ?? null);
     await tick();
-    expect(root.querySelector('.selection-card h3')?.textContent).toBe('Recommendation');
+    expect(root.querySelector('.selection-card h3')?.textContent).toBe('have');
   });
 
   it('reports a failed asset request and retries from an explicit control', async () => {
@@ -220,7 +232,7 @@ describe('lazy semantic graph surface', () => {
     );
     await vi.waitFor(() =>
       expect(root.querySelector('.counts')?.textContent).toMatch(
-        /7 nodes\s*·\s*5\s*relationships/u,
+        /3 concepts\/actions\s*·\s*2 semantic links/u,
       ),
     );
     expect(fetcher).toHaveBeenCalledTimes(2);

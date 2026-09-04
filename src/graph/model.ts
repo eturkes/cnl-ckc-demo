@@ -2,6 +2,8 @@ export const GRAPH_SCHEMA_VERSION = 1;
 export const DEFAULT_NEIGHBOR_LIMIT = 80;
 export const MAX_NEIGHBOR_LIMIT = 240;
 export const DEFAULT_EDGE_LIMIT = 480;
+export const DEFAULT_ANSWER_GRAPH_LIMIT = 24;
+export const MAX_ANSWER_GRAPH_LIMIT = 72;
 
 export const GRAPH_NODE_KINDS = [
   'document',
@@ -72,6 +74,10 @@ export interface GraphFocusToken {
   sentences?: readonly number[];
   /** Exact compiled clause lines in the live proof, used when sentence metadata is absent. */
   lines?: readonly number[];
+  /** Reader-visible question used only to rank the primary concept. */
+  question?: string;
+  /** Deterministically rendered answer contribution used only to rank the primary concept. */
+  answer?: string;
 }
 
 export type GraphFocus = string | GraphFocusToken;
@@ -92,6 +98,18 @@ export interface GraphEvidenceSubgraph extends GraphSubgraph {
   document: string;
   sentences: readonly number[];
   lines: readonly number[];
+}
+
+/** Reader-facing ontology projection around one cited answer contribution. */
+export interface GraphAnswerView extends GraphEvidenceSubgraph {
+  /** Entity or action the question and answer are principally about. */
+  root: string;
+  /** Concept relationships carried by the live proof, highlighted over broader context. */
+  highlight: GraphPath;
+  /** Low-level compiled nodes omitted from the concept map but retained in provenance. */
+  hiddenTechnicalNodes: number;
+  /** Low-level compiled relationships omitted from the concept map but retained in provenance. */
+  hiddenTechnicalEdges: number;
 }
 
 export class GraphDataError extends Error {
@@ -268,7 +286,39 @@ const normalized = (value: string): string =>
     .trim();
 
 const words = (value: string): readonly string[] =>
-  normalized(value).split(/[^\p{Letter}\p{Number}]+/u);
+  normalized(value)
+    .split(/[^\p{Letter}\p{Number}]+/u)
+    .filter((word) => word !== '');
+
+const singular = (word: string): string => {
+  if (word.length > 4 && word.endsWith('ies')) return `${word.slice(0, -3)}y`;
+  if (word.length > 4 && word.endsWith('ses')) return word.slice(0, -2);
+  if (word.length > 3 && word.endsWith('s') && !word.endsWith('ss')) return word.slice(0, -1);
+  return word;
+};
+
+const lexicalWords = (value: string): readonly string[] => words(value).map(singular);
+
+const phraseIncludes = (haystack: readonly string[], needle: readonly string[]): boolean => {
+  if (needle.length === 0 || needle.length > haystack.length) return false;
+  return haystack.some(
+    (_word, index) =>
+      index + needle.length <= haystack.length &&
+      needle.every((word, offset) => haystack[index + offset] === word),
+  );
+};
+
+const lexicalScore = (label: string, text: string, phraseWeight: number): number => {
+  const labelWords = lexicalWords(label);
+  const textWords = lexicalWords(text);
+  const textSet = new Set(textWords);
+  const overlap = labelWords.filter((word) => textSet.has(word)).length;
+  return (
+    (phraseIncludes(textWords, labelWords) ? phraseWeight : 0) +
+    overlap * 320 +
+    (labelWords.length > 0 ? Math.round((overlap / labelWords.length) * 120) : 0)
+  );
+};
 
 const compareNodes = (left: SemanticGraphNode, right: SemanticGraphNode): number =>
   left.label.localeCompare(right.label, 'en', { sensitivity: 'base', numeric: true }) ||
@@ -280,6 +330,39 @@ const compareEdges = (left: SemanticGraphEdge, right: SemanticGraphEdge): number
 
 const otherEnd = (edge: SemanticGraphEdge, id: string): string =>
   edge.source === id ? edge.target : edge.source;
+
+const CONCEPT_NODE_KINDS: ReadonlySet<SemanticGraphNodeKind> = new Set([
+  'entity',
+  'event',
+  'value',
+]);
+
+const isConceptNode = (node: SemanticGraphNode | undefined): node is SemanticGraphNode =>
+  node !== undefined && CONCEPT_NODE_KINDS.has(node.kind);
+
+const conceptEdgeKey = (edge: SemanticGraphEdge): string =>
+  [edge.kind, edge.source, edge.target, edge.label].join('\u001f');
+
+const isConceptRelationship = (
+  edge: SemanticGraphEdge,
+  nodes: ReadonlyMap<string, SemanticGraphNode>,
+): boolean =>
+  edge.kind !== 'cardinality' &&
+  edge.kind !== 'operator' &&
+  (edge.kind !== 'implies' || edge.label === 'condition supports') &&
+  isConceptNode(nodes.get(edge.source)) &&
+  isConceptNode(nodes.get(edge.target));
+
+const conceptRole = (edge: SemanticGraphEdge): number => {
+  if (edge.kind === 'argument') {
+    if (edge.label === 'argument 2') return 4;
+    if (edge.label === 'argument 1') return 1;
+    return 3;
+  }
+  if (edge.kind === 'preposition') return 3;
+  if (edge.kind === 'property') return 2;
+  return 1;
+};
 
 const positiveIntegers = (values: readonly number[]): readonly number[] =>
   [...new Set(values.filter((value) => Number.isSafeInteger(value) && value > 0))].sort(
@@ -301,6 +384,9 @@ export class SemanticGraphModel {
   readonly #nodes = new Map<string, SemanticGraphNode>();
   readonly #edges = new Map<string, SemanticGraphEdge>();
   readonly #adjacent = new Map<string, readonly SemanticGraphEdge[]>();
+  readonly #conceptGroups = new Map<string, readonly SemanticGraphEdge[]>();
+  readonly #conceptAdjacent = new Map<string, readonly SemanticGraphEdge[]>();
+  readonly #conceptNodeIds = new Set<string>();
   readonly #search: readonly SearchRow[];
 
   constructor(data: SemanticGraphData) {
@@ -316,6 +402,33 @@ export class SemanticGraphModel {
     }
     for (const [id, edges] of adjacent) {
       this.#adjacent.set(id, Object.freeze(edges.sort(compareEdges)));
+    }
+
+    const conceptGroups = new Map<string, SemanticGraphEdge[]>();
+    for (const edge of data.edges) {
+      if (!isConceptRelationship(edge, this.#nodes)) continue;
+      const key = conceptEdgeKey(edge);
+      const group = conceptGroups.get(key) ?? [];
+      group.push(edge);
+      conceptGroups.set(key, group);
+      this.#conceptNodeIds.add(edge.source);
+      this.#conceptNodeIds.add(edge.target);
+    }
+    const conceptAdjacent = new Map<string, SemanticGraphEdge[]>();
+    for (const id of this.#conceptNodeIds) conceptAdjacent.set(id, []);
+    for (const [key, group] of conceptGroups) {
+      group.sort((left, right) => left.line - right.line || compareEdges(left, right));
+      const frozen = Object.freeze(group);
+      this.#conceptGroups.set(key, frozen);
+      const representative = frozen[0];
+      if (representative === undefined) continue;
+      conceptAdjacent.get(representative.source)?.push(representative);
+      if (representative.target !== representative.source) {
+        conceptAdjacent.get(representative.target)?.push(representative);
+      }
+    }
+    for (const [id, edges] of conceptAdjacent) {
+      this.#conceptAdjacent.set(id, Object.freeze(edges.sort(compareEdges)));
     }
 
     this.#search = Object.freeze(
@@ -377,6 +490,35 @@ export class SemanticGraphModel {
       aScore === bScore ? compareNodes(a, b) : aScore - bScore,
     );
     return ranked.slice(0, limit).map(({ node }) => node);
+  }
+
+  /** Search the reader-facing ontology, excluding documents and parser/modality nodes. */
+  searchConcepts(query: string, limit = 24): readonly SemanticGraphNode[] {
+    if (limit < 1) return [];
+    return this.search(query, this.#search.length)
+      .filter((node) => this.#conceptNodeIds.has(node.id))
+      .slice(0, limit);
+  }
+
+  get conceptNodeCount(): number {
+    return this.#conceptNodeIds.size;
+  }
+
+  get conceptEdgeCount(): number {
+    return this.#conceptGroups.size;
+  }
+
+  defaultConcept(preferred = ''): SemanticGraphNode | undefined {
+    const requested = preferred === '' ? undefined : this.searchConcepts(preferred, 1)[0];
+    return (
+      requested ??
+      this.data.nodes.find((node) => node.kind === 'entity' && this.#conceptNodeIds.has(node.id)) ??
+      this.data.nodes.find((node) => this.#conceptNodeIds.has(node.id))
+    );
+  }
+
+  conceptIncident(id: string): readonly SemanticGraphEdge[] {
+    return this.#conceptAdjacent.get(id) ?? [];
   }
 
   resolveFocus(focus: GraphFocus): SemanticGraphNode | undefined {
@@ -462,6 +604,335 @@ export class SemanticGraphModel {
       truncatedNodes: false,
       truncatedEdges: false,
     };
+  }
+
+  #conceptRepresentatives(preferred = new Set<string>()): readonly SemanticGraphEdge[] {
+    return [...this.#conceptGroups.values()]
+      .flatMap((group) => {
+        const representative = group.find((edge) => preferred.has(edge.id)) ?? group[0];
+        return representative === undefined ? [] : [representative];
+      })
+      .sort((left, right) => left.line - right.line || compareEdges(left, right));
+  }
+
+  #primaryAnswerConcept(
+    focus: GraphFocusToken,
+    evidence: GraphEvidenceSubgraph,
+    conceptEdges: readonly SemanticGraphEdge[],
+  ): SemanticGraphNode | undefined {
+    if (focus.id !== undefined) {
+      const exact = this.#nodes.get(focus.id);
+      if (isConceptNode(exact)) return exact;
+    }
+    const candidates = evidence.nodes.filter((node) => this.#conceptNodeIds.has(node.id));
+    if (candidates.length === 0) return undefined;
+    const entityCandidates = candidates.filter((node) => node.kind === 'entity');
+    const eventCandidates = candidates.filter((node) => node.kind === 'event');
+    const semanticRole = (node: SemanticGraphNode): number =>
+      conceptEdges.reduce((best, edge) => {
+        if (edge.target !== node.id && edge.source !== node.id) return best;
+        const directionBonus = edge.target === node.id ? 1 : 0;
+        return Math.max(best, conceptRole(edge) * 100 + directionBonus * 25);
+      }, 0);
+    // Universal actors such as "clinician" are graph participants, not the
+    // clinical topic. Prefer an entity used as an object, condition or property
+    // whenever the evidence supplies one, then apply lexical ranking.
+    const topicalEntities = entityCandidates.filter((node) => semanticRole(node) > 225);
+    const tier =
+      topicalEntities.length > 0
+        ? topicalEntities
+        : entityCandidates.length > 0
+          ? entityCandidates
+          : eventCandidates.length > 0
+            ? eventCandidates
+            : candidates;
+    const score = (node: SemanticGraphNode): number => {
+      const documentSpread = new Set(this.conceptIncident(node.id).map((edge) => edge.document))
+        .size;
+      return (
+        lexicalScore(node.label, focus.question ?? '', 5_000) +
+        lexicalScore(node.label, focus.answer ?? '', 2_500) +
+        semanticRole(node) +
+        lexicalWords(node.label).length * 8 -
+        Math.min(documentSpread, 300)
+      );
+    };
+    return [...tier].sort(
+      (left, right) => score(right) - score(left) || compareNodes(left, right),
+    )[0];
+  }
+
+  /**
+   * Project a proof's parser-level graph into a bounded clinical concept map.
+   *
+   * Documents, modal operators, cardinality scaffolding and Horn implication
+   * edges remain available in `evidenceSubgraph`; this view keeps only relations
+   * whose endpoints are entities, actions or meaningful values. Identical
+   * relations asserted by several documents collapse to one visual edge, with a
+   * cited edge preferred as the representative so the live proof can highlight it.
+   */
+  answerSubgraph(
+    focus: GraphFocusToken,
+    nodeLimit = DEFAULT_ANSWER_GRAPH_LIMIT,
+  ): GraphAnswerView | undefined {
+    const evidence = this.evidenceSubgraph(focus);
+    if (evidence === undefined) return undefined;
+    const rawEvidenceIds = new Set(evidence.edges.map((edge) => edge.id));
+    const evidenceConceptEdges = evidence.edges.filter((edge) =>
+      isConceptRelationship(edge, this.#nodes),
+    );
+    const root = this.#primaryAnswerConcept(focus, evidence, evidenceConceptEdges);
+    if (root === undefined) return undefined;
+
+    // Highlight the evidence component containing the primary concept. This
+    // drops disconnected recommendation metadata without dropping any semantic
+    // path that actually reaches the question's topic.
+    const evidenceAdjacent = new Map<string, SemanticGraphEdge[]>();
+    for (const edge of evidenceConceptEdges) {
+      const source = evidenceAdjacent.get(edge.source) ?? [];
+      source.push(edge);
+      evidenceAdjacent.set(edge.source, source);
+      const target = evidenceAdjacent.get(edge.target) ?? [];
+      target.push(edge);
+      evidenceAdjacent.set(edge.target, target);
+    }
+    const evidenceNodes = new Set<string>([root.id]);
+    const queue = [root.id];
+    for (let index = 0; index < queue.length; index += 1) {
+      const current = queue[index];
+      if (current === undefined) continue;
+      for (const edge of evidenceAdjacent.get(current) ?? []) {
+        const next = otherEnd(edge, current);
+        if (evidenceNodes.has(next)) continue;
+        evidenceNodes.add(next);
+        queue.push(next);
+      }
+    }
+    const evidenceKeys = new Set(
+      evidenceConceptEdges
+        .filter((edge) => evidenceNodes.has(edge.source) && evidenceNodes.has(edge.target))
+        .map(conceptEdgeKey),
+    );
+    const representatives = this.#conceptRepresentatives(rawEvidenceIds);
+    const representativeByKey = new Map(
+      representatives.map((edge) => [conceptEdgeKey(edge), edge] as const),
+    );
+    const highlightEdges = [...evidenceKeys]
+      .flatMap((key) => {
+        const edge = representativeByKey.get(key);
+        return edge === undefined ? [] : [edge];
+      })
+      .sort((left, right) => left.line - right.line || compareEdges(left, right));
+
+    const adjacent = new Map<string, SemanticGraphEdge[]>();
+    for (const edge of representatives) {
+      const source = adjacent.get(edge.source) ?? [];
+      source.push(edge);
+      adjacent.set(edge.source, source);
+      const target = adjacent.get(edge.target) ?? [];
+      target.push(edge);
+      adjacent.set(edge.target, target);
+    }
+    const limit = Math.max(
+      evidenceNodes.size,
+      Math.min(MAX_ANSWER_GRAPH_LIMIT, Math.trunc(nodeLimit)),
+    );
+    const selected = new Set<string>(evidenceNodes);
+    selected.add(root.id);
+    const contextWords = `${focus.question ?? ''} ${focus.answer ?? ''}`;
+    const edgeRank = (edge: SemanticGraphEdge, from: string): number => {
+      const peer = this.#nodes.get(otherEnd(edge, from));
+      const occurrences = this.#conceptGroups.get(conceptEdgeKey(edge))?.length ?? 1;
+      return (
+        (evidenceKeys.has(conceptEdgeKey(edge)) ? 20_000 : 0) +
+        (peer === undefined ? 0 : lexicalScore(peer.label, contextWords, 2_000)) +
+        conceptRole(edge) * 100 +
+        Math.min(occurrences, 99)
+      );
+    };
+    const rankedEdges = (id: string): SemanticGraphEdge[] =>
+      [...(adjacent.get(id) ?? [])].sort(
+        (left, right) =>
+          edgeRank(right, id) - edgeRank(left, id) ||
+          compareNodes(
+            this.#nodes.get(otherEnd(left, id)) as SemanticGraphNode,
+            this.#nodes.get(otherEnd(right, id)) as SemanticGraphNode,
+          ) ||
+          compareEdges(left, right),
+      );
+
+    // Keep every direct branch from the topic, then admit a few explanatory
+    // peers per branch in rounds. This avoids one high-degree verb consuming the
+    // entire view while still showing how the topic connects elsewhere.
+    const directEdges = rankedEdges(root.id);
+    const selectedEdgeKeys = new Set(evidenceKeys);
+    const firstHop: string[] = [];
+    for (const edge of directEdges) {
+      const peer = otherEnd(edge, root.id);
+      if (!selected.has(peer) && selected.size >= limit) break;
+      selected.add(peer);
+      selectedEdgeKeys.add(conceptEdgeKey(edge));
+      if (!firstHop.includes(peer)) firstHop.push(peer);
+    }
+    const branchEdges = firstHop.map((id) =>
+      rankedEdges(id).filter((edge) => otherEnd(edge, id) !== root.id),
+    );
+    for (let round = 0; round < 4 && selected.size < limit; round += 1) {
+      for (const [branchIndex, edges] of branchEdges.entries()) {
+        const edge = edges[round];
+        const branch = firstHop[branchIndex];
+        if (edge === undefined || branch === undefined) continue;
+        const peer = otherEnd(edge, branch);
+        if (!selected.has(peer) && selected.size >= limit) continue;
+        selected.add(branch);
+        selected.add(peer);
+        selectedEdgeKeys.add(conceptEdgeKey(edge));
+        if (selected.size >= limit) break;
+      }
+    }
+
+    const allVisibleEdges = representatives
+      .filter(
+        (edge) =>
+          selectedEdgeKeys.has(conceptEdgeKey(edge)) &&
+          selected.has(edge.source) &&
+          selected.has(edge.target),
+      )
+      .sort((left, right) => {
+        const highlighted =
+          Number(evidenceKeys.has(conceptEdgeKey(right))) -
+          Number(evidenceKeys.has(conceptEdgeKey(left)));
+        return highlighted || compareEdges(left, right);
+      });
+    const visibleEdges = allVisibleEdges.slice(0, DEFAULT_EDGE_LIMIT);
+    const reachableWithinTwo = new Set<string>([root.id]);
+    for (const edge of directEdges) {
+      const peer = otherEnd(edge, root.id);
+      reachableWithinTwo.add(peer);
+      for (const branch of adjacent.get(peer) ?? []) reachableWithinTwo.add(otherEnd(branch, peer));
+    }
+    return {
+      document: evidence.document,
+      sentences: evidence.sentences,
+      lines: evidence.lines,
+      root: root.id,
+      highlight: {
+        nodes: Object.freeze([...evidenceNodes].filter((id) => selected.has(id))),
+        edges: Object.freeze(highlightEdges.map((edge) => edge.id)),
+      },
+      hiddenTechnicalNodes: Math.max(0, evidence.nodes.length - evidenceNodes.size),
+      hiddenTechnicalEdges: Math.max(0, evidence.edges.length - highlightEdges.length),
+      nodes: Object.freeze(
+        [...selected]
+          .map((id) => this.#nodes.get(id) as SemanticGraphNode)
+          .sort((left, right) =>
+            left.id === root.id
+              ? -1
+              : right.id === root.id
+                ? 1
+                : Number(evidenceNodes.has(right.id)) - Number(evidenceNodes.has(left.id)) ||
+                  compareNodes(left, right),
+          ),
+      ),
+      edges: Object.freeze(visibleEdges),
+      truncatedNodes: reachableWithinTwo.size > selected.size,
+      truncatedEdges: visibleEdges.length < allVisibleEdges.length,
+    };
+  }
+
+  /** Bounded ontology neighborhood with parser and document scaffolding removed. */
+  conceptNeighborhood(
+    root: string,
+    depth = 1,
+    nodeLimit = DEFAULT_NEIGHBOR_LIMIT,
+    include: readonly string[] = [],
+    includeEdges: readonly string[] = [],
+  ): GraphSubgraph {
+    if (!this.#conceptNodeIds.has(root)) {
+      return { nodes: [], edges: [], truncatedNodes: false, truncatedEdges: false };
+    }
+    const limit = Math.max(1, Math.min(MAX_NEIGHBOR_LIMIT, Math.trunc(nodeLimit)));
+    const selected = new Set<string>([root]);
+    const queue: { id: string; depth: number }[] = [{ id: root, depth: 0 }];
+    let truncatedNodes = false;
+    for (let index = 0; index < queue.length; index += 1) {
+      const current = queue[index];
+      if (current === undefined || current.depth >= depth) continue;
+      const candidates = this.conceptIncident(current.id)
+        .map((edge) => otherEnd(edge, current.id))
+        .filter((id, position, ids) => ids.indexOf(id) === position)
+        .sort((left, right) =>
+          compareNodes(
+            this.#nodes.get(left) as SemanticGraphNode,
+            this.#nodes.get(right) as SemanticGraphNode,
+          ),
+        );
+      for (const id of candidates) {
+        if (selected.has(id)) continue;
+        if (selected.size >= limit) {
+          truncatedNodes = true;
+          continue;
+        }
+        selected.add(id);
+        queue.push({ id, depth: current.depth + 1 });
+      }
+    }
+    for (const id of include) {
+      if (this.#conceptNodeIds.has(id)) selected.add(id);
+    }
+    const preferred = new Set(includeEdges);
+    const allEdges = this.#conceptRepresentatives()
+      .filter((edge) => selected.has(edge.source) && selected.has(edge.target))
+      .sort((left, right) => {
+        const preferredOrder = Number(preferred.has(right.id)) - Number(preferred.has(left.id));
+        return preferredOrder || compareEdges(left, right);
+      });
+    const edges = allEdges.slice(0, DEFAULT_EDGE_LIMIT);
+    return {
+      nodes: Object.freeze(
+        [...selected]
+          .map((id) => this.#nodes.get(id) as SemanticGraphNode)
+          .sort((left, right) =>
+            left.id === root ? -1 : right.id === root ? 1 : compareNodes(left, right),
+          ),
+      ),
+      edges: Object.freeze(edges),
+      truncatedNodes,
+      truncatedEdges: edges.length < allEdges.length,
+    };
+  }
+
+  shortestConceptPath(source: string, target: string): GraphPath | undefined {
+    if (!this.#conceptNodeIds.has(source) || !this.#conceptNodeIds.has(target)) return undefined;
+    if (source === target) return { nodes: [source], edges: [] };
+    const seen = new Set<string>([source]);
+    const queue = [source];
+    const previous = new Map<string, { node: string; edge: string }>();
+    for (let index = 0; index < queue.length; index += 1) {
+      const current = queue[index];
+      if (current === undefined) break;
+      for (const edge of this.conceptIncident(current)) {
+        const next = otherEnd(edge, current);
+        if (seen.has(next)) continue;
+        seen.add(next);
+        previous.set(next, { node: current, edge: edge.id });
+        if (next === target) {
+          const nodes = [target];
+          const edges: string[] = [];
+          let cursor = target;
+          while (cursor !== source) {
+            const step = previous.get(cursor);
+            if (step === undefined) return undefined;
+            nodes.push(step.node);
+            edges.push(step.edge);
+            cursor = step.node;
+          }
+          return { nodes: nodes.reverse(), edges: edges.reverse() };
+        }
+        queue.push(next);
+      }
+    }
+    return undefined;
   }
 
   neighborhood(
@@ -571,10 +1042,31 @@ export const graphFocusKey = (focus: GraphFocus | null): string => {
     focus.sentence,
     positiveIntegers(focus.sentences ?? []).join(','),
     positiveIntegers(focus.lines ?? []).join(','),
+    focus.question,
+    focus.answer,
   ]
     .map((value) => value ?? '')
     .join('\u001f');
 };
 
-export const graphRelationLabel = (edge: SemanticGraphEdge): string =>
-  edge.label ?? edge.kind.replace(/[_-]+/gu, ' ');
+export const graphNodeLabel = (node: SemanticGraphNode): string =>
+  node.kind === 'document' ? node.label : node.label.replace(/[_-]+/gu, ' ');
+
+export const graphNodeKindLabel = (node: SemanticGraphNode): string => {
+  if (node.kind === 'entity') return 'concept';
+  if (node.kind === 'event') return 'action';
+  if (node.kind === 'value') return 'attribute';
+  if (node.kind === 'operator-context') return 'logical context';
+  return 'document';
+};
+
+export const graphRelationLabel = (edge: SemanticGraphEdge, from?: string): string => {
+  if (edge.kind === 'argument') {
+    const outward = from === undefined || from === edge.source;
+    if (edge.label === 'argument 1') return outward ? 'actor' : 'acts in';
+    if (edge.label === 'argument 2') return outward ? 'target' : 'target of';
+    return outward ? 'participant' : 'participates in';
+  }
+  if (edge.kind === 'event') return from === edge.target ? 'action for' : 'action';
+  return edge.label.replace(/[_-]+/gu, ' ');
+};

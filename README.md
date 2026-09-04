@@ -17,8 +17,11 @@ The shipped answers are produced at run time. They are not stored UI fixtures.
 - Explicit projection-loss and `unreviewed` disclosures.
 - A lazily loaded semantic graph with search, bounded neighborhoods, shortest
   paths, fCoSE layout, and complete keyboard-usable HTML navigation.
-- A one-click proof-to-graph focus that opens only the relationships compiled
-  from the cited controlled sentences, using live proof coordinates.
+- A concept-first answer map that mechanically selects the question's primary
+  clinical entity, places it at the center, and highlights the semantic paths
+  compiled from the live proof over a bounded cross-source neighborhood.
+- Parser, document, cardinality, and modality nodes remain in the provenance
+  graph but are hidden from the primary ontology view.
 - Light and dark themes, responsive layouts, local fonts, and relative asset
   paths for nested static hosting.
 
@@ -56,7 +59,8 @@ pnpm dev
 Open the URL printed by Vite. Wait for the engine to report ready, select a
 question, and select **Run**. Select a numbered citation to inspect its proof and
 source. **Find in graph** activates the lazy graph and moves directly to that
-source contribution's controlled-sentence subgraph.
+answer map. Orange paths come only from the selected source contribution; muted
+branches show how its primary concept connects elsewhere in the knowledge base.
 
 For a production build:
 

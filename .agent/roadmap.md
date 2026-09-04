@@ -38,8 +38,9 @@ verified, but they are not represented as formally adjudicated.
   into the PVM. The UI joins proof lines to exact clauses, ACE sentences,
   coverage, code-point-aligned passages, projection/review disclosures, and a
   lazy physical PDF page.
-- **M3:** the deterministic full graph contains 2,864 typed nodes and 18,700
-  typed edges, including 9,053 Horn implications. Cytoscape/fCoSE, graph data,
+- **M3:** the deterministic full graph contains 2,901 typed nodes and 20,964
+  typed edges, including 9,804 Horn implications. Rule-body entity/action
+  relationships preserve the clinical conditions behind recommendations. Cytoscape/fCoSE, graph data,
   and layout work begin only after explicit activation; native HTML navigation
   remains available if the canvas fails.
 - **M4:** proof-to-graph focus linking, responsive light/dark presentation,
@@ -47,14 +48,16 @@ verified, but they are not represented as formally adjudicated.
   CSP guidance, and a release check are present.
   The answer surface combines every matching Prolog solution into one chat-style response;
   numbered statement citations keep source and proof inspection secondary but reachable.
-  `Find in graph` carries exact live proof lines and controlled-sentence coordinates,
-  activates the lazy graph in one click, and isolates that source contribution's relationships.
+  `Find in graph` carries exact live proof lines, controlled-sentence coordinates,
+  the question, and its deterministic answer contribution. It activates the lazy graph in one
+  click, mechanically centers the primary clinical concept, hides parser/modality scaffolding,
+  and highlights only the source contribution's semantic paths over bounded cross-source context.
 
 The manifest records 343 runtime assets: the PVM, QLF, question catalog, clause
 index, 337 provenance chunks, source PDF, and semantic graph. Fresh forced builds
 are byte-identical.
 
-Completion proof: `pnpm gate` passes with 290 tests in 25 files; the independent
+Completion proof: `pnpm gate` passes with 293 tests in 25 files; the independent
 reproduction check is byte-identical; the production smoke answer matches the
 vendored bag. Real-browser checks pass for development and nested production
 hosting, lazy evidence/graph/PDF loading, eight 320px interaction states, and

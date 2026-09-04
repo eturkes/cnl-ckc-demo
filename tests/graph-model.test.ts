@@ -137,6 +137,35 @@ describe('semantic graph indexes', () => {
     );
   });
 
+  it('projects answer evidence around a clinical concept and leaves grammar out of the map', () => {
+    const graph = model();
+    const answer = graph.answerSubgraph({
+      document: 'cdc2022-opioid-rec05',
+      sentence: 2,
+      sentences: [2],
+      lines: [22],
+      question: 'How should clinicians reduce dosage?',
+      answer: 'Clinicians should make dosage reduction gradual.',
+    });
+
+    expect(answer).toMatchObject({
+      root: 'entity:dosage',
+      highlight: {
+        nodes: ['entity:dosage', 'event:have'],
+        edges: ['edge:dosage-event'],
+      },
+      hiddenTechnicalNodes: 2,
+      hiddenTechnicalEdges: 2,
+    });
+    expect(answer?.nodes.map(({ id }) => id)).toEqual([
+      'entity:dosage',
+      'event:have',
+      'value:gradual',
+    ]);
+    expect(answer?.nodes.some(({ kind }) => kind === 'operator-context')).toBe(false);
+    expect(graph.searchConcepts('operator')).toEqual([]);
+  });
+
   it('finds a deterministic shortest path in either edge direction', () => {
     const graph = model();
     expect(graph.shortestPath('doc:cdc', 'operator:should')).toEqual({
@@ -161,7 +190,7 @@ describe('semantic graph indexes', () => {
         sentences: [2, 1, 2],
         lines: [22, 20],
       }),
-    ).toBe('\u001fentity\u001fRecommendation\u001f\u001f1\u001f1,2\u001f20,22');
+    ).toBe('\u001fentity\u001fRecommendation\u001f\u001f1\u001f1,2\u001f20,22\u001f\u001f');
     expect(graphRelationLabel(graph.data.edges[0] as (typeof graph.data.edges)[number])).toBe(
       'declares entity',
     );

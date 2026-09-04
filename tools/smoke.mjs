@@ -125,16 +125,23 @@ try {
   await graphFocus.waitFor({ timeout: 45_000 });
   await page.waitForSelector('.graph-shell .evidence-focus:focus', { timeout: 45_000 });
   const focusText = (await graphFocus.textContent()) ?? '';
-  if (!/Focused on [1-9]\d*\s+controlled sentences?/iu.test(focusText))
-    fail('the graph did not identify the cited controlled-sentence focus');
-  if (!(await page.locator('.graph-shell .view-status').textContent())?.includes('answer evidence'))
-    fail('the graph opened a general neighborhood instead of the selected answer evidence');
-  if (
-    !(await page.locator('.graph-shell .selection-card .location').textContent())?.includes(
-      'sentence 2',
-    )
-  )
-    fail('the graph did not select the first cited sentence');
+  if (!/opioid therapy is the primary concept/iu.test(focusText))
+    fail('the graph did not identify opioid therapy as the primary answer concept');
+  if (!/Orange paths are the [1-9]\d*\s+relationships?/u.test(focusText))
+    fail('the graph did not explain the proof-backed answer highlight');
+  if (!(await page.locator('.graph-shell .view-status').textContent())?.includes('highlighted'))
+    fail('the graph opened without a highlighted answer path');
+  const selectedConcept = (
+    (await page.locator('.graph-shell .selection-card h3').textContent()) ?? ''
+  ).trim();
+  if (selectedConcept !== 'opioid therapy')
+    fail(`the graph selected ${selectedConcept || 'nothing'} instead of opioid therapy`);
+  const selectedKind = (
+    (await page.locator('.graph-shell .selection-card .kind').textContent()) ?? ''
+  ).trim();
+  if (selectedKind !== 'Primary concept') fail('the graph did not mark its primary focus');
+  const nodeIndex = (await page.locator('.graph-shell .node-index').textContent()) ?? '';
+  if (/\bshould\b/iu.test(nodeIndex)) fail('the concept map exposed a grammatical modality node');
   if ((await page.getByRole('button', { name: 'Explore graph' }).count()) !== 0)
     fail('the proof-to-graph action stopped at the graph activation prompt');
   if (!log.some((entry) => graphAsset.test(entry.path)))

@@ -75,10 +75,13 @@
   );
 
   const showInGraph = (focus: ProvenanceGraphFocus): void => {
+    const answer = rows[demo.solutionIndex]?.label;
     graphFocus = {
       ...focus,
       ...(focus.sentences === undefined ? {} : { sentences: [...focus.sentences] }),
       ...(focus.lines === undefined ? {} : { lines: [...focus.lines] }),
+      ...(activeQuestion === '' ? {} : { question: activeQuestion }),
+      ...(answer === undefined || answer === '' ? {} : { answer }),
     };
     graphFocusRequest += 1;
     graphSelection = null;
