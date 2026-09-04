@@ -249,6 +249,8 @@ try {
   // Engine-authored text is the whole risk, so measure once it is on screen.
   await narrowPage.locator('section[aria-labelledby] .summary').waitFor({ timeout: TIMEOUT });
   await fitsNarrow(narrowPage, 'answers rendered');
+  await narrowPage.locator('.source-passage summary').click();
+  await fitsNarrow(narrowPage, 'exact source open');
   await narrowPage.locator('.canonical summary').click();
   await fitsNarrow(narrowPage, 'canonical form open');
   await narrowPage.waitForSelector('details.ladder > summary', { timeout: TIMEOUT });
@@ -304,7 +306,7 @@ try {
 
   console.log(
     `browser-check: ok — dev ${dev.url} and built ${builtUrl} both report ${String(documents)} ` +
-      `documents; graph and evidence stay lazy; seven states fit ${String(NARROW)}px; ` +
+      `documents; graph and evidence stay lazy; eight states fit ${String(NARROW)}px; ` +
       `cancel delivered after ${String(solutions)} ` +
       `of up to ${String(probe.cap)} solutions in ${Number(probe.elapsed).toFixed(0)} ms, ` +
       `engine still ${String(probe.after)}`,

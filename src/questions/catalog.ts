@@ -28,7 +28,7 @@ export interface ProjectionVar {
   descriptor: string;
 }
 
-/** The topic is curated, while its returned statements and proof coordinates are bag-derived. */
+/** The topic is curated, while its returned structure and proof coordinates are bag-derived. */
 export type Provenance = 'bag-derived';
 
 export interface CatalogEntry {

@@ -17,4 +17,4 @@ export const catalogRecords = (files) => {
 
 /** @param {ReturnType<typeof clinicalArtifacts>['records']} records */
 export const catalogJson = (records) =>
-  `${JSON.stringify({ catalogVersion: 2, entries: records }, undefined, 2)}\n`;
+  `${JSON.stringify({ catalogVersion: 3, entries: records }, undefined, 2)}\n`;

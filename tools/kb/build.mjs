@@ -16,7 +16,7 @@ import { GENERATED_DIR, MANIFEST_PATH, ROOT, loadManifest, payloadSource } from 
 /** @typedef {import('../../src/kb/manifest.ts').KbManifest} KbManifest */
 /** @typedef {import('./produce.mjs').LiveContract} LiveContract */
 
-const MANIFEST_VERSION = 4;
+const MANIFEST_VERSION = 5;
 
 /** Locate the single vendored bag and prove it against its committed sidecar. */
 const readVerifiedBag = () => {

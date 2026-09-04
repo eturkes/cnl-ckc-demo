@@ -1,17 +1,18 @@
-// Clinician-facing question set derived from exact guideline passages in the bag.
+// Clinician-facing question set derived from the controlled clauses in the bag.
 //
 // The source corpus primarily stores general recommendations as Horn rules. A
 // patient-free query cannot prove a conditional rule's consequent, which is why
 // the old catalog exposed schema diagnostics instead of clinical guidance. This
-// module reifies a deliberately small set of aligned source passages as
-// `clinical_advice/3` facts. The browser still obtains every displayed statement from live Prolog;
-// the paired source record makes the proof interpreter report the original
-// compiled clause line rather than the helper fact.
+// module reifies each selected recommendation as a structured `clinical_answer/3`
+// term inside `clinical_advice/3`. The browser renders that term with one generic
+// grammar; no per-answer summary prose exists. The exact source passage travels in
+// the same term as a fail-closed fallback and the paired source record makes the
+// proof interpreter report every contributing compiled sentence.
 
 import { payloadDocuments } from './payload.mjs';
 import { deriveProvenance } from './provenance.mjs';
 
-/** @typedef {{ document: string, sentence: number }} SourceSelection */
+/** @typedef {{ document: string }} SourceSelection */
 /** @typedef {{ id: string, question: string, sources: readonly SourceSelection[] }} ClinicalQuestion */
 
 /** @type {readonly ClinicalQuestion[]} */
@@ -19,58 +20,53 @@ export const CLINICAL_QUESTIONS = Object.freeze([
   {
     id: 'when-to-use-opioids',
     question: 'When should clinicians consider opioid therapy for pain?',
-    sources: [
-      { document: 'cdc2022-opioid-rec01', sentence: 2 },
-      { document: 'cdc2022-opioid-rec02', sentence: 2 },
-    ],
+    sources: [{ document: 'cdc2022-opioid-rec01' }, { document: 'cdc2022-opioid-rec02' }],
   },
   {
     id: 'starting-opioid-therapy',
     question: 'How should clinicians start opioid therapy?',
-    sources: [
-      { document: 'cdc2022-opioid-rec03', sentence: 2 },
-      { document: 'cdc2022-opioid-rec04', sentence: 2 },
-    ],
+    sources: [{ document: 'cdc2022-opioid-rec03' }, { document: 'cdc2022-opioid-rec04' }],
   },
   {
     id: 'acute-pain-prescription-duration',
     question: 'How long should opioids be prescribed for acute pain?',
-    sources: [{ document: 'cdc2022-opioid-rec06', sentence: 2 }],
+    sources: [{ document: 'cdc2022-opioid-rec06' }],
   },
   {
     id: 'opioid-follow-up',
     question: 'When and how should clinicians reassess opioid therapy?',
-    sources: [{ document: 'cdc2022-opioid-rec07', sentence: 2 }],
+    sources: [{ document: 'cdc2022-opioid-rec07' }],
   },
   {
     id: 'opioid-safety',
     question: 'What safety steps should accompany opioid prescribing?',
     sources: [
-      { document: 'cdc2022-opioid-rec08', sentence: 2 },
-      { document: 'cdc2022-opioid-rec09', sentence: 2 },
-      { document: 'cdc2022-opioid-rec10', sentence: 2 },
-      { document: 'cdc2022-opioid-rec11', sentence: 2 },
+      { document: 'cdc2022-opioid-rec08' },
+      { document: 'cdc2022-opioid-rec09' },
+      { document: 'cdc2022-opioid-rec10' },
+      { document: 'cdc2022-opioid-rec11' },
     ],
   },
   {
     id: 'continuing-or-tapering-opioids',
     question: 'When should clinicians continue, taper, or discontinue opioids?',
-    sources: [{ document: 'cdc2022-opioid-rec05', sentence: 2 }],
+    sources: [{ document: 'cdc2022-opioid-rec05' }],
   },
   {
     id: 'opioid-use-disorder-treatment',
     question: 'How should clinicians treat opioid use disorder?',
-    sources: [{ document: 'cdc2022-opioid-rec12', sentence: 2 }],
+    sources: [{ document: 'cdc2022-opioid-rec12' }],
   },
 ]);
 
 const ACE = /^data\/guidelines\/[^/]+\/ace\/([^/]+)\.ace$/u;
 const ID = /^[a-z0-9](?:[a-z0-9-]{0,249})$/u;
+const SIMPLE_ATOM = /^[a-z][A-Za-z0-9_]*$/u;
 
 /** @param {string} value */
-const quotedAtom = (value) => {
+const encodedAtom = (value) => {
   if (!ID.test(value)) throw new Error(`clinical catalog has invalid id ${value}`);
-  return `'${value}'`;
+  return SIMPLE_ATOM.test(value) ? value : `'${value}'`;
 };
 
 /** JSON strings are valid SWI double-quoted strings for this control-free corpus. @param {string} value */
@@ -101,6 +97,239 @@ const aceSentences = (files, document) => {
   }
   return { path, sentences };
 };
+
+const METADATA = /^A recommendation is a category-[A-Z]-recommendation and is an evidence-type-[1-4]-recommendation\.$/u;
+const PREPOSITIONS = new Set([
+  'above',
+  'after',
+  'against',
+  'at',
+  'before',
+  'during',
+  'for',
+  'from',
+  'in',
+  'of',
+  'on',
+  'to',
+  'with',
+]);
+
+/** @typedef {{ preposition: string, value: string }} AdviceModifier */
+/** @typedef {{ polarity: 'positive' | 'negative', verb: string, object: string, modifiers: AdviceModifier[] }} AdviceAction */
+/** @typedef {{ sentence: number, original: string, condition?: string, subject: string, mode: 'should' | 'can' | 'fact', actions: AdviceAction[] }} AdviceClause */
+/** @typedef {{ conditions: string[], subject: string, mode: AdviceClause['mode'], actions: AdviceAction[], sentences: number[] }} AdviceGroup */
+
+/** @param {string} text */
+const splitComplement = (text) => {
+  const tokens = text === '' ? [] : text.split(' ');
+  const first = tokens.findIndex((token) => PREPOSITIONS.has(token));
+  const object = (first < 0 ? tokens : tokens.slice(0, first)).join(' ');
+  /** @type {AdviceModifier[]} */
+  const modifiers = [];
+  for (let index = first; index >= 0 && index < tokens.length; ) {
+    const preposition = /** @type {string} */ (tokens[index]);
+    let end = index + 1;
+    while (end < tokens.length && !PREPOSITIONS.has(/** @type {string} */ (tokens[end]))) {
+      end += 1;
+    }
+    const value = tokens.slice(index + 1, end).join(' ');
+    if (value === '') throw new Error(`clinical action has an empty ${preposition} modifier`);
+    modifiers.push({ preposition, value });
+    index = end;
+  }
+  return { object, modifiers };
+};
+
+/** @param {string} text */
+const parseAction = (text) => {
+  let rest = text;
+  /** @type {'positive' | 'negative'} */
+  let polarity = 'positive';
+  if (rest.startsWith('not ')) {
+    polarity = 'negative';
+    rest = rest.slice(4);
+  }
+  const space = rest.indexOf(' ');
+  const verb = space < 0 ? rest : rest.slice(0, space);
+  if (!SIMPLE_ATOM.test(verb)) throw new Error(`clinical action has invalid verb ${verb}`);
+  const complement = splitComplement(space < 0 ? '' : rest.slice(space + 1));
+  return { polarity, verb, ...complement };
+};
+
+/** Reassemble an action byte for byte, before the sentence grammar adds its modal. @param {AdviceAction} action */
+const actionSource = (action) =>
+  `${action.polarity === 'negative' ? 'not ' : ''}${action.verb}` +
+  `${action.object === '' ? '' : ` ${action.object}`}` +
+  action.modifiers.map(({ preposition, value }) => ` ${preposition} ${value}`).join('');
+
+/** @param {AdviceClause} clause */
+const clauseSource = (clause) => {
+  let main;
+  if (clause.mode === 'fact') {
+    const [first] = clause.actions;
+    if (
+      clause.actions.length === 1 &&
+      first?.verb === 'is' &&
+      first.polarity === 'negative'
+    ) {
+      const complement = actionSource({ ...first, polarity: 'positive', verb: '' }).trim();
+      main = `${clause.subject} is not ${complement}`;
+    } else {
+      main = `${clause.subject} ${clause.actions.map(actionSource).join(' and ')}`;
+    }
+  } else {
+    main =
+      `${clause.subject} ${clause.mode} ` +
+      clause.actions.map(actionSource).join(` and ${clause.mode} `);
+  }
+  return `${clause.condition === undefined ? '' : `If ${clause.condition} then `}${main}.`;
+};
+
+/**
+ * Parse the tiny controlled-sentence surface used by the selected recommendations.
+ *
+ * This is a lossless parser, not a summarizer. Every accepted sentence is rebuilt
+ * byte-for-byte before it can enter the image; a future grammar form fails the KB
+ * build instead of being guessed into plausible clinical prose.
+ *
+ * @param {string} original @param {number} sentence @returns {AdviceClause}
+ */
+export const parseAdviceSentence = (original, sentence) => {
+  if (!original.endsWith('.')) throw new Error(`controlled sentence ${sentence} has no period`);
+  let main = original.slice(0, -1);
+  /** @type {string | undefined} */
+  let condition;
+  if (main.startsWith('If ')) {
+    const then = main.indexOf(' then ');
+    if (then < 0 || main.indexOf(' then ', then + 1) >= 0) {
+      throw new Error(`controlled sentence ${sentence} has an ambiguous condition`);
+    }
+    condition = main.slice(3, then);
+    main = main.slice(then + 6);
+  }
+
+  /** @type {AdviceClause['mode']} */
+  let mode;
+  /** @type {string} */
+  let subject;
+  /** @type {AdviceAction[]} */
+  let actions;
+  const should = main.indexOf(' should ');
+  const can = main.indexOf(' can ');
+  const isNot = main.indexOf(' is not ');
+  const increases = main.indexOf(' increases ');
+  if (should >= 0) {
+    mode = 'should';
+    subject = main.slice(0, should);
+    actions = main
+      .slice(should + 8)
+      .split(' and should ')
+      .map(parseAction);
+  } else if (can >= 0) {
+    mode = 'can';
+    subject = main.slice(0, can);
+    actions = main
+      .slice(can + 5)
+      .split(' and can ')
+      .map(parseAction);
+  } else if (isNot >= 0) {
+    mode = 'fact';
+    subject = main.slice(0, isNot);
+    actions = [parseAction(`not is ${main.slice(isNot + 8)}`)];
+  } else if (increases >= 0) {
+    mode = 'fact';
+    subject = main.slice(0, increases);
+    actions = main
+      .slice(increases + 11)
+      .split(' and increases ')
+      .map((text) => parseAction(`increases ${text}`));
+  } else {
+    throw new Error(`controlled sentence ${sentence} uses an unsupported clause form`);
+  }
+  if (subject === '' || actions.length === 0) {
+    throw new Error(`controlled sentence ${sentence} has an empty clause component`);
+  }
+  const parsed = {
+    sentence,
+    original,
+    ...(condition === undefined ? {} : { condition }),
+    subject,
+    mode,
+    actions,
+  };
+  const rebuilt = clauseSource(parsed);
+  if (rebuilt !== original) {
+    throw new Error(
+      `controlled sentence ${sentence} is not lossless\n  source: ${original}\n  parsed: ${rebuilt}`,
+    );
+  }
+  return parsed;
+};
+
+/** Group only identical consequents; expanding the groups yields the same clause multiset. @param {AdviceClause[]} clauses */
+const groupClauses = (clauses) => {
+  /** @type {AdviceGroup[]} */
+  const groups = [];
+  /** @type {Map<string, AdviceGroup>} */
+  const byConsequence = new Map();
+  for (const clause of clauses) {
+    const key = JSON.stringify({
+      subject: clause.subject,
+      mode: clause.mode,
+      actions: clause.actions,
+    });
+    let group = byConsequence.get(key);
+    if (group === undefined) {
+      group = {
+        conditions: [],
+        subject: clause.subject,
+        mode: clause.mode,
+        actions: clause.actions,
+        sentences: [],
+      };
+      byConsequence.set(key, group);
+      groups.push(group);
+    }
+    if (clause.condition === undefined) {
+      if (group.conditions.length > 0 || group.sentences.length > 0) {
+        throw new Error('duplicate or mixed unconditional clinical consequence');
+      }
+    } else {
+      if (group.sentences.length > 0 && group.conditions.length === 0) {
+        throw new Error('conditional and unconditional clinical clauses share a consequence');
+      }
+      if (group.conditions.includes(clause.condition)) {
+        throw new Error(`duplicate clinical condition ${clause.condition}`);
+      }
+      group.conditions.push(clause.condition);
+    }
+    group.sentences.push(clause.sentence);
+  }
+  if (groups.reduce((total, group) => total + group.sentences.length, 0) !== clauses.length) {
+    throw new Error('clinical grouping lost a controlled sentence');
+  }
+  return groups;
+};
+
+/** @param {AdviceModifier} modifier */
+const modifierTerm = (modifier) =>
+  `modifier(${encodedAtom(modifier.preposition)},${quotedString(modifier.value)})`;
+
+/** @param {AdviceAction} action */
+const actionTerm = (action) =>
+  `action(${action.polarity},${encodedAtom(action.verb)},${quotedString(action.object)},` +
+  `[${action.modifiers.map(modifierTerm).join(',')}])`;
+
+/** @param {AdviceGroup} group */
+const groupTerm = (group) =>
+  `rule([${group.conditions.map(quotedString).join(',')}],${quotedString(group.subject)},` +
+  `${group.mode},[${group.actions.map(actionTerm).join(',')}])`;
+
+/** @param {string} document @param {AdviceClause[]} clauses @param {string} passage */
+const answerTerm = (document, clauses, passage) =>
+  `clinical_answer(${encodedAtom(document)},[${groupClauses(clauses).map(groupTerm).join(',')}],` +
+  `${quotedString(passage)})`;
 
 /**
  * Ground variables in a compiled clause head so it can travel as data inside a
@@ -220,33 +449,38 @@ export const clinicalArtifacts = (files) => {
   const records = CLINICAL_QUESTIONS.map((question) => {
     if (ids.has(question.id)) throw new Error(`duplicate clinical question ${question.id}`);
     ids.add(question.id);
-    const qid = quotedAtom(question.id);
+    const qid = encodedAtom(question.id);
     /** @type {string[]} */
     const statements = [];
     for (const selection of question.sources) {
       const ace = aceSentences(files, selection.document);
       names.add(ace.path);
-      if (ace.sentences[selection.sentence - 1] === undefined) {
-        throw new Error(
-          `${selection.document}: no controlled sentence ${String(selection.sentence)}`,
-        );
+      const [metadata, ...content] = ace.sentences;
+      if (metadata === undefined || !METADATA.test(metadata)) {
+        throw new Error(`${selection.document}: first controlled sentence is not recommendation metadata`);
       }
-      const clause = clauses.get(
-        `${selection.document}\u0000${String(selection.sentence)}`,
-      );
-      if (clause === undefined) {
-        throw new Error(
-          `${selection.document}: no compiled clause for sentence ${String(selection.sentence)}`,
-        );
+      if (content.length === 0) {
+        throw new Error(`${selection.document}: recommendation has no clinical clauses`);
       }
+      const parsed = content.map((sentence, index) => parseAdviceSentence(sentence, index + 2));
+      const sites = parsed.map(({ sentence }) => {
+        const clause = clauses.get(`${selection.document}\u0000${String(sentence)}`);
+        if (clause === undefined) {
+          throw new Error(
+            `${selection.document}: no compiled clause for sentence ${String(sentence)}`,
+          );
+        }
+        return `site(${String(clause.line)},${clause.head})`;
+      });
       const text = passages.get(selection.document);
       if (text === undefined) throw new Error(`${selection.document}: no aligned source passage`);
-      const sourceId = `'$guideline_id'(product,${quotedAtom(selection.document)},${String(selection.sentence)},ref(1),[])`;
-      const statement = quotedString(text);
-      statements.push(text);
+      const first = /** @type {AdviceClause} */ (parsed[0]);
+      const sourceId = `'$guideline_id'(product,${encodedAtom(selection.document)},${String(first.sentence)},ref(1),[])`;
+      const statement = answerTerm(selection.document, parsed, text);
+      statements.push(statement);
       advice.push(`clinical_advice(${qid},${sourceId},${statement}).`);
       sources.push(
-        `clinical_advice_source(${qid},${sourceId},${statement},${clause.head},${String(clause.line)}).`,
+        `clinical_advice_source(${qid},${sourceId},${statement},[${sites.join(',')}]).`,
       );
     }
     answers.set(question.id, statements);
@@ -254,7 +488,7 @@ export const clinicalArtifacts = (files) => {
       id: question.id,
       question: question.question,
       goal: `clinical_advice(${qid},Source,Answer)`,
-      projection: [{ variable: 'Answer', descriptor: 'noun(guideline-passage,countable)' }],
+      projection: [{ variable: 'Answer', descriptor: 'noun(clinical-advice,countable)' }],
       provenance: /** @type {'bag-derived'} */ ('bag-derived'),
     };
   });
@@ -262,7 +496,7 @@ export const clinicalArtifacts = (files) => {
   const helper =
     `:- multifile(clinical_advice/3).\n` +
     `:- dynamic(clinical_advice/3).\n` +
-    `:- discontiguous(clinical_advice_source/5).\n` +
+    `:- discontiguous(clinical_advice_source/4).\n` +
     `${advice.join('\n')}\n${sources.join('\n')}\n`;
   return { records, names: [...names].sort(), source: helper, helper, answers };
 };

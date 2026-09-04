@@ -10,6 +10,8 @@ The shipped answers are produced at run time. They are not stored UI fixtures.
 ## What is included
 
 - A bounded SWI-Prolog/WASM query engine with cancellation and worker recovery.
+- Deterministic advice bullets rendered from structured controlled clauses, with
+  no separately authored summaries and an exact source-passage fallback.
 - A six-step evidence ladder: live proof, compiled clause, controlled sentence,
   coverage region, aligned source passage, and physical guideline PDF page.
 - Explicit projection-loss and `unreviewed` disclosures.

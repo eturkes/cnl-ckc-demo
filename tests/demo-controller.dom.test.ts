@@ -57,6 +57,68 @@ const answer = (id: QuestionId, count = 1, prefix = 'allowed'): AnswerResult => 
   solutions: Array.from({ length: count }, (_, index) => solution(index, prefix)),
 });
 
+const structuredAnswer = (): AnswerResult => ({
+  kind: 'answer',
+  id: ID,
+  serialized: 'structured-serialized',
+  solutions: [
+    {
+      bindings: {
+        Answer: {
+          kind: 'compound',
+          functor: 'clinical_answer',
+          args: [
+            { kind: 'atom', value: 'document-id' },
+            {
+              kind: 'list',
+              items: [
+                {
+                  kind: 'compound',
+                  functor: 'rule',
+                  args: [
+                    { kind: 'list', items: [] },
+                    { kind: 'string', value: 'Every clinician' },
+                    { kind: 'atom', value: 'should' },
+                    {
+                      kind: 'list',
+                      items: [
+                        {
+                          kind: 'compound',
+                          functor: 'action',
+                          args: [
+                            { kind: 'atom', value: 'positive' },
+                            { kind: 'atom', value: 'maximize' },
+                            { kind: 'string', value: 'a nonopioid-therapy' },
+                            {
+                              kind: 'list',
+                              items: [
+                                {
+                                  kind: 'compound',
+                                  functor: 'modifier',
+                                  args: [
+                                    { kind: 'atom', value: 'for' },
+                                    { kind: 'string', value: 'an acute-pain' },
+                                  ],
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            { kind: 'string', value: 'Exact source passage.' },
+          ],
+        },
+      },
+      display: { Answer: 'clinical_answer(...)' },
+    },
+  ],
+});
+
 const failure = (id: QuestionId, serialized = 'no'): AnswerResult => ({
   kind: 'failure',
   id,
@@ -256,6 +318,20 @@ describe('view states and accessibility', () => {
     expect(text()).toMatch(/no proof/iu);
   });
 
+  it('V7 renders structured advice as clauses and keeps the exact passage available', () => {
+    controller.solutionIndex = 0;
+    setState({ kind: 'settled', id: ID, result: structuredAnswer() });
+
+    const items = [...answerRegion().querySelectorAll<HTMLLIElement>('.advice-list > li')];
+    expect(items.map((item) => text(item))).toEqual([
+      'Clinicians should maximize nonopioid therapy for acute pain.',
+    ]);
+    expect(answerRegion().querySelector('dl')).toBeNull();
+    expect(
+      text(answerRegion().querySelector('.source-passage') ?? document.createTextNode('')),
+    ).toContain('Exact source passage.');
+  });
+
   it('V8 uses native button disabled states and offers Retry for engine errors', () => {
     controller.select(ID);
     flushSync();
@@ -353,6 +429,7 @@ describe('view states and accessibility', () => {
       ['running', { kind: 'running', id: ID }],
       ['cancelling', { kind: 'cancelling', id: ID }],
       ['answer', { kind: 'settled', id: ID, result: answer(ID, 2, 'axe') }],
+      ['structured answer', { kind: 'settled', id: ID, result: structuredAnswer() }],
       ['failure', { kind: 'settled', id: ID, result: failure(ID) }],
       ['limit', { kind: 'settled', id: ID, result: limited('answer-cap', 1) }],
       ['cancelled', { kind: 'settled', id: ID, result: cancelled(1) }],
@@ -398,12 +475,13 @@ describe('view states and accessibility', () => {
     controller.solutionIndex = 0;
     setState({ kind: 'settled', id: ID, result });
     const visible = text(answerRegion());
+    const value = text(answerRegion().querySelector('dd') ?? document.createTextNode(''));
 
     expect(visible).toContain('cdc2022-opioid-rec02 — sentence 42, ref 7');
     // Every token in the label is the term's own; nothing is glossed or stringified.
     for (const invented of ['recommendation', 'reference', 'document', 'guideline_id', '$'])
-      expect(visible).not.toContain(invented);
-    expect(visible).not.toMatch(/["{](?:kind|value|functor|args)[":]/u);
+      expect(value).not.toContain(invented);
+    expect(value).not.toMatch(/["{](?:kind|value|functor|args)[":]/u);
   });
 
   it('V12 falls back to engine display text for an unrecognized binding, never to JSON', () => {

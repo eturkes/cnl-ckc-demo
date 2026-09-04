@@ -8,7 +8,7 @@
 
 import type { LimitKind, PlSolution } from '../engine/protocol.js';
 import { QUESTION_CATALOG, type CatalogEntry, type QuestionId } from '../questions/catalog.js';
-import { humanizeAnswerTerm } from '../questions/humanize.js';
+import { presentAnswerTerm } from '../questions/humanize.js';
 import type { AnswerResult } from '../questions/service.js';
 
 import type { DemoState } from './DemoController.svelte.js';
@@ -36,6 +36,13 @@ export interface AnswerRow {
   cells: AnswerCell[];
   /** One-line accessible name for the row's radio. */
   label: string;
+  /** Deterministic renderings of every grouped controlled clause. */
+  items?: readonly string[];
+  /** Exact source text carried in the same engine binding. */
+  sourcePassage?: string;
+  /** Opaque corpus id, exposed only for diagnostics and source identity. */
+  document?: string;
+  structured?: true;
 }
 
 const LIMIT_TEXT: Record<LimitKind, string> = {
@@ -61,8 +68,8 @@ const describeResult = (entry: CatalogEntry, result: AnswerResult): StateDescrip
         ? { ...blank, status: 'Answer: yes.', summary: 'Yes. The knowledge base proves it.' }
         : {
             ...blank,
-            status: `${count(result.solutions.length, 'guideline passage')} for this question.`,
-            summary: count(result.solutions.length, 'guideline passage'),
+            status: `${count(result.solutions.length, 'recommendation')} for this question.`,
+            summary: count(result.solutions.length, 'recommendation'),
           };
     case 'failure':
       return isExistential(entry)
@@ -146,15 +153,34 @@ export const answerRows = (id: QuestionId, solutions: readonly PlSolution[]): An
   // summary. Mapping its N solutions would emit N unlabelled radios.
   if (projection.length === 0) return [];
   return solutions.map((solution) => {
-    const cells = projection.map(({ variable, descriptor }) => {
+    const presented = projection.map(({ variable, descriptor }) => {
       const display = solution.display[variable] ?? '';
       const binding = solution.bindings[variable];
+      const presentation =
+        binding === undefined
+          ? { text: display, items: [], structured: false as const }
+          : presentAnswerTerm(binding, display);
       return {
-        variable,
-        descriptor: describeDescriptor(descriptor),
-        text: binding === undefined ? display : humanizeAnswerTerm(binding, display),
+        cell: {
+          variable,
+          descriptor: describeDescriptor(descriptor),
+          text: presentation.text,
+        },
+        presentation,
       };
     });
-    return { cells, label: cells.map((cell) => cell.text).join(', ') };
+    const cells = presented.map(({ cell }) => cell);
+    const primary = presented.length === 1 ? presented[0]?.presentation : undefined;
+    return {
+      cells,
+      label: cells.map((cell) => cell.text).join(', '),
+      ...(primary?.structured === true && primary.items.length > 0
+        ? { items: primary.items, structured: true as const }
+        : {}),
+      ...(primary?.structured !== true || primary.sourcePassage === undefined
+        ? {}
+        : { sourcePassage: primary.sourcePassage }),
+      ...(primary?.document === undefined ? {} : { document: primary.document }),
+    };
   });
 };

@@ -7,6 +7,8 @@
 
 import type { PlTerm } from '../engine/terms.js';
 
+import { presentClinicalAdvice } from './advice.js';
+
 const ID = '$guideline_id';
 const ARITY = 5;
 
@@ -42,14 +44,22 @@ export const humanizeGuidelineId = (term: PlTerm, display: string): string => {
   return `${id} — sentence ${ordinal}, ${place}`;
 };
 
-/**
- * Reader-facing value for a catalog projection.
- *
- * Clinical advice is stored as an exact guideline passage in a Prolog string.
- * Returning the decoded value removes Prolog's string delimiters without
- * rewriting any source wording.
- */
-export const humanizeAnswerTerm = (term: PlTerm, display: string): string => {
-  if (term.kind === 'string') return term.value;
-  return humanizeGuidelineId(term, display);
+export interface AnswerPresentation {
+  text: string;
+  items: readonly string[];
+  structured: boolean;
+  sourcePassage?: string;
+  document?: string;
+}
+
+/** Reader-facing value plus any structured list and exact source fallback it carries. */
+export const presentAnswerTerm = (term: PlTerm, display: string): AnswerPresentation => {
+  const clinical = presentClinicalAdvice(term);
+  if (clinical !== undefined) return clinical;
+  if (term.kind === 'string') return { text: term.value, items: [], structured: false };
+  return { text: humanizeGuidelineId(term, display), items: [], structured: false };
 };
+
+/** String-only compatibility surface for callers that do not render structured lists. */
+export const humanizeAnswerTerm = (term: PlTerm, display: string): string =>
+  presentAnswerTerm(term, display).text;

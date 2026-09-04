@@ -3,8 +3,8 @@
   //
   // One-of-N is the APG Radio Group pattern, and native radios inside a
   // `fieldset` supply the group relationship, the checked state, the single tab
-  // stop and the arrow keys without a line of script. Every cell starts with a
-  // value the engine produced; the descriptor layer only makes it readable.
+  // stop and the arrow keys without a line of script. Structured answer terms
+  // become lists through one renderer; malformed terms show their exact passage.
 
   import { DESCRIPTIONS } from './copy.js';
   import type { AnswerRow } from './describe.js';
@@ -41,6 +41,7 @@
   // Derived here because ESLint types a `.svelte` import as `any`, which makes a
   // member access on a narrowed value inside the template read as unsafe.
   const selectedRow = $derived(rows[selectedIndex]);
+  const hasStructuredRows = $derived(rows.some((row) => row.structured === true));
 </script>
 
 <section aria-labelledby={headingId} aria-busy={busy}>
@@ -49,9 +50,13 @@
     <p class="summary">{summary}</p>
   {/if}
 
+  {#if hasStructuredRows}
+    <p class="render-note">{DESCRIPTIONS.clauseRendering}</p>
+  {/if}
+
   {#if rows.length > 1}
     <fieldset>
-      <legend>Select a passage to inspect its source</legend>
+      <legend>Select a recommendation to inspect its source</legend>
       {#each rows as row, index (index)}
         <label>
           <input
@@ -62,19 +67,43 @@
               onSelect(index);
             }}
           />
-          <span>{row.label}</span>
+          <span class="choice-copy">
+            {#if row.items !== undefined}
+              <ul class="advice-list">
+                {#each row.items as item (item)}
+                  <li>{item}</li>
+                {/each}
+              </ul>
+            {:else}
+              {row.label}
+            {/if}
+          </span>
         </label>
       {/each}
     </fieldset>
   {/if}
 
-  {#if selectedRow !== undefined && rows.length === 1}
+  {#if selectedRow?.items !== undefined && rows.length === 1}
+    <ul class="advice-list single">
+      {#each selectedRow.items as item (item)}
+        <li>{item}</li>
+      {/each}
+    </ul>
+  {:else if selectedRow !== undefined && rows.length === 1}
     <dl>
       {#each selectedRow.cells as cell (cell.variable)}
         <dt>{cell.descriptor}</dt>
         <dd>{cell.text}</dd>
       {/each}
     </dl>
+  {/if}
+
+  {#if selectedRow?.sourcePassage !== undefined}
+    <details class="source-passage">
+      <summary>{DESCRIPTIONS.sourcePassageSummary}</summary>
+      <p>{DESCRIPTIONS.sourcePassage}</p>
+      <blockquote>{selectedRow.sourcePassage}</blockquote>
+    </details>
   {/if}
 
   <!-- The engine's own text, kept behind a disclosure: it is the evidence that
@@ -111,6 +140,14 @@
     font-size: 0.9rem;
   }
 
+  .render-note {
+    max-width: 52rem;
+    margin: -0.25rem 0 1rem;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
   fieldset {
     margin: 0 0 1.25rem;
     border: 0;
@@ -139,6 +176,28 @@
   label input {
     margin-top: 0.25rem;
     flex: 0 0 auto;
+  }
+
+  .choice-copy {
+    min-width: 0;
+  }
+
+  .advice-list {
+    display: grid;
+    gap: 0.38rem;
+    margin: 0;
+    padding-left: 1.15rem;
+  }
+
+  .advice-list.single {
+    max-width: 52rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.94rem;
+    line-height: 1.5;
+  }
+
+  .advice-list li::marker {
+    color: var(--action);
   }
 
   /* Label above value while the viewport is narrow, label beside value once
@@ -182,6 +241,34 @@
     max-width: 52rem;
     border-top: 1px solid var(--border);
     padding: 0;
+  }
+
+  .source-passage {
+    max-width: 52rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .source-passage summary {
+    padding: 0.75rem 0;
+    color: var(--action);
+    font-size: 0.8rem;
+    font-weight: 650;
+    cursor: pointer;
+  }
+
+  .source-passage p {
+    margin: 0 0 0.55rem;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+  }
+
+  .source-passage blockquote {
+    margin: 0 0 1rem;
+    border-left: 2px solid var(--accent);
+    padding-left: 0.85rem;
+    font-family: var(--font-prose);
+    font-size: 0.9rem;
+    line-height: 1.55;
   }
 
   .canonical summary {

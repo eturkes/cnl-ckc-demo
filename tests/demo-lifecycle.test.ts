@@ -369,7 +369,7 @@ describe('run lifecycle', () => {
     await run;
   });
 
-  it('R10 returns every curated clinical statement through createDemoEngine', async () => {
+  it('R10 returns every selected clinical recommendation through createDemoEngine', async () => {
     vi.stubGlobal('Worker', RealPvmWorker);
     const engine = createDemoEngine();
     try {

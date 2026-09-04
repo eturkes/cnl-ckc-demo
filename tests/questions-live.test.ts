@@ -1,6 +1,6 @@
 // Live contract for the clinician-facing catalog and answer service.
 //
-// Expected statements are re-read from the vendored controlled-language files;
+// Expected structure is re-read from the vendored controlled-language files;
 // none of the clinical answer text is copied into this suite.
 
 import { readFileSync, readdirSync } from 'node:fs';
@@ -21,7 +21,11 @@ import {
   type CatalogEntry,
   type QuestionId,
 } from '../src/questions/catalog.js';
-import { humanizeAnswerTerm, humanizeGuidelineId } from '../src/questions/humanize.js';
+import {
+  humanizeAnswerTerm,
+  humanizeGuidelineId,
+  presentAnswerTerm,
+} from '../src/questions/humanize.js';
 import { compareTerms, serializeAnswer } from '../src/questions/serialize.js';
 import { verifyBag } from '../tools/kb/bag.mjs';
 import { catalogRecords } from '../tools/kb/catalog.mjs';
@@ -62,14 +66,21 @@ const sourcePassages = new Map(
   }),
 );
 
-const expectedStatements = (id: QuestionId): string[] => {
+const expectedDocuments = (id: QuestionId): string[] => {
   const topic = CLINICAL_QUESTIONS.find((candidate) => candidate.id === id);
   if (topic === undefined) throw new Error(`missing clinical topic ${id}`);
-  return topic.sources.map(({ document }) => {
-    const passage = sourcePassages.get(document);
-    if (passage === undefined) throw new Error(`${document} has no source passage`);
-    return passage;
-  });
+  return topic.sources.map(({ document }) => document);
+};
+
+const controlledSentenceCount = (document: string): number => {
+  const path = [...bagFiles.keys()].find((name) => name.endsWith(`/ace/${document}.ace`));
+  if (path === undefined) throw new Error(`${document} has no ACE document`);
+  const lines = Buffer.from(bagFiles.get(path) as Uint8Array)
+    .toString('utf8')
+    .trimEnd()
+    .split('\n');
+  // Sentence one carries category/evidence metadata, not a clinical action.
+  return lines.length - 1;
 };
 
 let session: EngineSession;
@@ -100,7 +111,7 @@ describe('question catalog', () => {
       expect(entry.question, id).not.toBe('');
       expect(entry.goal, id).toMatch(/^clinical_advice\('[a-z0-9-]+',Source,Answer\)$/u);
       expect(entry.projection).toEqual([
-        { variable: 'Answer', descriptor: 'noun(guideline-passage,countable)' },
+        { variable: 'Answer', descriptor: 'noun(clinical-advice,countable)' },
       ]);
       expect(entry.provenance).toBe('bag-derived');
     }
@@ -148,15 +159,45 @@ describe('question catalog', () => {
 });
 
 describe('live clinical answers', () => {
-  it('returns every selected controlled sentence through the real image', () => {
+  it('returns one structured recommendation per selected source through the real image', () => {
     for (const id of QUESTION_IDS) {
       const rows = answers.get(id) as PlSolution[];
-      const text = rows.map((solution) => {
+      const documents = rows.map((solution) => {
         const answer = solution.bindings.Answer;
-        expect(answer?.kind, id).toBe('string');
-        return answer?.kind === 'string' ? answer.value : '';
+        expect(answer?.kind, id).toBe('compound');
+        if (answer?.kind !== 'compound') return '';
+        expect(answer.functor, id).toBe('clinical_answer');
+        expect(answer.args, id).toHaveLength(3);
+        const document = answer.args[0];
+        const rules = answer.args[1];
+        const passage = answer.args[2];
+        expect(document?.kind, id).toBe('atom');
+        expect(rules?.kind, id).toBe('list');
+        expect(passage?.kind, id).toBe('string');
+        if (document?.kind !== 'atom' || rules?.kind !== 'list' || passage?.kind !== 'string') {
+          return '';
+        }
+        expect(passage.value, document.value).toBe(sourcePassages.get(document.value));
+        const presentation = presentAnswerTerm(answer, solution.display.Answer as string);
+        expect(presentation.structured, document.value).toBe(true);
+        expect(presentation.items, document.value).toHaveLength(rules.items.length);
+        expect(presentation.sourcePassage, document.value).toBe(passage.value);
+        const represented = rules.items.reduce((count, term) => {
+          expect(term.kind, document.value).toBe('compound');
+          if (term.kind !== 'compound' || term.functor !== 'rule') return count;
+          const conditions = term.args[0];
+          expect(conditions?.kind, document.value).toBe('list');
+          return (
+            count +
+            (conditions?.kind === 'list' && conditions.items.length > 0
+              ? conditions.items.length
+              : 1)
+          );
+        }, 0);
+        expect(represented, document.value).toBe(controlledSentenceCount(document.value));
+        return document.value;
       });
-      expect(text, id).toEqual(expectedStatements(id));
+      expect(documents, id).toEqual(expectedDocuments(id));
     }
   });
 
@@ -230,7 +271,7 @@ describe('canonical order', () => {
     );
   });
 
-  it('is antisymmetric over the real answer strings', () => {
+  it('is antisymmetric over the real structured answers', () => {
     const terms = (answers.get(QUESTION_IDS[0]) as PlSolution[]).map(
       (solution) => solution.bindings.Answer as PlTerm,
     );
@@ -293,14 +334,41 @@ describe('answer humanizer', () => {
     expect(text).toMatch(/^\S+ — sentence \d+, \w+ \d+$/u);
   });
 
-  it('presents the exact source passage without Prolog string delimiters', () => {
+  it('renders every structured rule deterministically and retains the exact source passage', () => {
     const solution = (answers.get(QUESTION_IDS[0]) as PlSolution[])[0] as PlSolution;
     const term = solution.bindings.Answer as PlTerm;
-    const text = humanizeAnswerTerm(term, solution.display.Answer as string);
-    expect(text).not.toContain('"');
-    expect(term.kind).toBe('string');
-    if (term.kind === 'string') expect(text).toBe(term.value);
-    expect(text).toMatch(/[.]$/u);
+    const display = solution.display.Answer as string;
+    const presentation = presentAnswerTerm(term, display);
+    expect(term.kind).toBe('compound');
+    expect(presentation.structured).toBe(true);
+    expect(presentation.items).toHaveLength(3);
+    expect(presentation.items.every((item) => item.endsWith('.'))).toBe(true);
+    expect(presentation.items.every((item) => !item.includes('-'))).toBe(true);
+    expect(presentation.text).toBe(presentation.items.join(' '));
+    expect(humanizeAnswerTerm(term, display)).toBe(presentation.text);
+    expect(presentation.sourcePassage).toBe(sourcePassages.get(presentation.document as string));
+    expect(presentation.text).not.toBe(presentation.sourcePassage);
+  });
+
+  it('fails closed to the carried source passage for malformed inner structure', () => {
+    const passage = sourcePassages.get('cdc2022-opioid-rec01');
+    if (passage === undefined) throw new Error('missing fallback passage');
+    const term: PlTerm = {
+      kind: 'compound',
+      functor: 'clinical_answer',
+      args: [
+        atom('cdc2022-opioid-rec01'),
+        atom('not-a-rule-list'),
+        { kind: 'string', value: passage },
+      ],
+    };
+    expect(presentAnswerTerm(term, 'engine display')).toEqual({
+      text: passage,
+      items: [],
+      sourcePassage: passage,
+      document: 'cdc2022-opioid-rec01',
+      structured: false,
+    });
   });
 
   it('degrades to engine text for an unknown term shape', () => {

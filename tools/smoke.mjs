@@ -6,7 +6,7 @@
 // the rendered answer together, and it serves them from a NESTED path because
 // `base: './'` is the whole reason a nested static host works at all.
 //
-// The expected statements are re-derived from the vendored bag at run time, so
+// The expected terms are re-derived from the vendored bag at run time, so
 // the check cannot drift from the knowledge base it claims to reproduce.
 
 import { execFileSync } from 'node:child_process';
@@ -27,7 +27,7 @@ const NESTED = 'some/nested';
 const fail = failWith('smoke');
 
 /**
- * Canonical answer expected from the clinical statements selected in the bag.
+ * Canonical answer expected from the structured clinical terms derived from the bag.
  *
  * @param {string} id
  * @returns {{ serialized: string, rows: number }}
@@ -37,12 +37,12 @@ const expectedAnswer = (id) => {
   const archive = readdirSync(kb).find((name) => name.endsWith('.tar.gz'));
   if (archive === undefined) fail('no bag archive in kb/');
   const { files } = verifyBag(readFileSync(join(kb, archive)));
-  const statements = clinicalArtifacts(files).answers.get(id);
-  if (statements === undefined || statements.length === 0) {
-    fail(`clinical catalog has no statements for ${id}`);
+  const terms = clinicalArtifacts(files).answers.get(id);
+  if (terms === undefined || terms.length === 0) {
+    fail(`clinical catalog has no answer terms for ${id}`);
   }
-  const rows = [...statements].sort().map((statement) => `sol([${JSON.stringify(statement)}])`);
-  return { serialized: `solutions([${rows.join(',')}])`, rows: statements.length };
+  const rows = [...terms].sort().map((term) => `sol([${term}])`);
+  return { serialized: `solutions([${rows.join(',')}])`, rows: terms.length };
 };
 
 // Never trust a leftover dist tree: this check proves the current source.
@@ -90,6 +90,12 @@ try {
   const rows = await page.locator('section[aria-labelledby] fieldset input[type="radio"]').count();
   if (rows !== expected.rows)
     fail(`expected ${String(expected.rows)} answer rows, rendered ${rows}`);
+  const bullets = await page.locator('section[aria-labelledby] .advice-list li').count();
+  if (bullets === 0) fail('the structured answer rendered no deterministic advice bullets');
+  const sources = await page.locator('section[aria-labelledby] .source-passage').count();
+  if (sources !== 1) {
+    fail(`expected one exact-source disclosure, rendered ${String(sources)}`);
+  }
   if ((await page.locator('[data-engine="error"]').count()) > 0)
     fail('the engine reported an error');
 
@@ -99,7 +105,8 @@ try {
 
   const served = log.filter((entry) => entry.status === 200).length;
   console.log(
-    `smoke: ok — ${url} answered ${QUESTION} with ${rows} bag-derived rows, ` +
+    `smoke: ok — ${url} answered ${QUESTION} with ${rows} structured rows and ` +
+      `${String(bullets)} deterministic bullets, ` +
       `${served} nested requests served`,
   );
 } finally {

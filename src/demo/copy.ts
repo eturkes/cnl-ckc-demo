@@ -27,16 +27,22 @@ export const DESCRIPTIONS = {
 
   aboutSummary: 'About this demo',
   prologSummary: 'Canonical Prolog answer',
+  sourcePassageSummary: 'Read the exact source passage',
   licenceSummary: 'Typefaces',
 
   purpose:
     'This is a prepared demonstration of a knowledge compiler. It is not a clinical tool, and it gives no medical advice.',
 
   fixedCatalog:
-    'The question list is fixed. Each topic indexes aligned guideline passages from the verified knowledge-base export and runs as a Prolog query.',
+    'The question list is fixed. Each topic selects source-aligned controlled clauses from the verified knowledge-base export and runs as a Prolog query.',
 
   projection:
-    'The source guideline is projected into controlled language and Prolog. Results present aligned guideline passages returned by the engine.',
+    'The source guideline is projected into controlled language and Prolog. Results render every selected controlled clause through fixed, content-independent rules.',
+
+  clauseRendering:
+    'The engine returned structured controlled-language clauses. Fixed rendering rules preserve their conditions, modality, negation, actions and qualifiers.',
+
+  sourcePassage: 'This passage is carried in the same Prolog result and remains unchanged.',
 
   // No corpus number is written here. The count is read from the booted engine and
   // substituted into `corpusSize`, so shipped copy can never state a size the engine
