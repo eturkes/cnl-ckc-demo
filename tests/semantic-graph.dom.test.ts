@@ -3,13 +3,13 @@ import { mount, tick, unmount } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import SemanticGraph from '../src/graph/SemanticGraph.svelte';
-import type { SemanticGraphNode } from '../src/graph/model.js';
+import type { GraphFocus, SemanticGraphNode } from '../src/graph/model.js';
 
 import { GRAPH_FIXTURE } from './graph-fixture.js';
 
 const canvasState = vi.hoisted(() => ({
   fail: '',
-  updates: [] as { selected: string; nodes: number; path: number }[],
+  updates: [] as { selected: string; nodes: number; edges: number; path: number }[],
   recentered: [] as (string | undefined)[],
   destroyed: 0,
 }));
@@ -19,13 +19,14 @@ vi.mock('../src/graph/canvas.js', () => ({
     if (canvasState.fail !== '') return Promise.reject(new Error(canvasState.fail));
     return Promise.resolve({
       update: (
-        subgraph: { nodes: unknown[] },
+        subgraph: { nodes: unknown[]; edges: unknown[] },
         selected: string,
         path: { nodes: unknown[] } | null,
       ) => {
         canvasState.updates.push({
           selected,
           nodes: subgraph.nodes.length,
+          edges: subgraph.edges.length,
           path: path?.nodes.length ?? 0,
         });
       },
@@ -52,7 +53,8 @@ const fetchOk = (): ReturnType<typeof vi.fn> =>
 
 const render = (
   props: {
-    focus?: { kind: string; label: string };
+    focus?: GraphFocus;
+    focusRequest?: number;
     onSelect?: (node: SemanticGraphNode) => void;
   } = {},
 ): HTMLElement => {
@@ -115,6 +117,39 @@ describe('lazy semantic graph surface', () => {
     await activate(root);
     expect(root.querySelector('.selection-card h3')?.textContent).toBe('Dosage reduction');
     expect(canvasState.updates.at(-1)?.selected).toBe('entity:dosage');
+  });
+
+  it('activates on an explicit answer request and opens the cited sentence subgraph', async () => {
+    const fetcher = fetchOk();
+    vi.stubGlobal('fetch', fetcher);
+    const root = render({
+      focus: {
+        document: 'cdc2022-opioid-rec05',
+        sentence: 2,
+        sentences: [2],
+        lines: [22],
+      },
+      focusRequest: 1,
+    });
+
+    await vi.waitFor(() => expect(root.querySelector('.evidence-focus')).not.toBeNull());
+    await tick();
+
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(root.querySelector('.selection-card h3')?.textContent).toBe('Dosage reduction');
+    expect(root.querySelector('.evidence-focus')?.textContent).toMatch(
+      /Focused on 1\s+controlled sentence.*cdc2022-opioid-rec05/isu,
+    );
+    expect(root.querySelector('.view-status')?.textContent).toMatch(
+      /Showing 4 nodes and\s*3 relationships for the selected answer evidence/iu,
+    );
+    expect(canvasState.updates.at(-1)).toMatchObject({
+      selected: 'entity:dosage',
+      nodes: 4,
+      edges: 3,
+    });
+    expect(canvasState.recentered.at(-1)).toBeUndefined();
+    expect(document.activeElement).toBe(root.querySelector('.evidence-focus'));
   });
 
   it('searches, selects through native controls, emits the node, and exposes a path', async () => {

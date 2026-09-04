@@ -105,6 +105,38 @@ describe('semantic graph indexes', () => {
     expect(preferred.edges[0]?.id).toBe('edge:event-operator');
   });
 
+  it('isolates every relationship from the controlled sentences cited by a proof', () => {
+    const graph = model();
+    const evidence = graph.evidenceSubgraph({
+      document: 'cdc2022-opioid-rec05',
+      sentence: 2,
+      sentences: [2],
+      lines: [22],
+    });
+
+    expect(evidence).toMatchObject({
+      document: 'cdc2022-opioid-rec05',
+      sentences: [2],
+      lines: [22],
+      truncatedNodes: false,
+      truncatedEdges: false,
+    });
+    expect(evidence?.edges.map(({ id }) => id)).toEqual([
+      'edge:recommendation-dosage',
+      'edge:dosage-event',
+      'edge:event-operator',
+    ]);
+    expect(evidence?.nodes.map(({ id }) => id).sort()).toEqual([
+      'entity:dosage',
+      'entity:recommendation',
+      'event:have',
+      'operator:should',
+    ]);
+    expect(graph.resolveFocus({ document: 'cdc2022-opioid-rec05', lines: [23] })?.id).toBe(
+      'event:have',
+    );
+  });
+
   it('finds a deterministic shortest path in either edge direction', () => {
     const graph = model();
     expect(graph.shortestPath('doc:cdc', 'operator:should')).toEqual({
@@ -121,9 +153,15 @@ describe('semantic graph indexes', () => {
 
   it('keeps focus keys stable and prefers producer edge labels', () => {
     const graph = model();
-    expect(graphFocusKey({ kind: 'entity', label: 'Recommendation', sentence: 1 })).toBe(
-      '\u001fentity\u001fRecommendation\u001f\u001f1',
-    );
+    expect(
+      graphFocusKey({
+        kind: 'entity',
+        label: 'Recommendation',
+        sentence: 1,
+        sentences: [2, 1, 2],
+        lines: [22, 20],
+      }),
+    ).toBe('\u001fentity\u001fRecommendation\u001f\u001f1\u001f1,2\u001f20,22');
     expect(graphRelationLabel(graph.data.edges[0] as (typeof graph.data.edges)[number])).toBe(
       'declares entity',
     );

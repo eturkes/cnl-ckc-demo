@@ -40,6 +40,8 @@ export interface EvidenceDocument {
 export interface GraphFocus {
   document: string;
   sentence?: number;
+  sentences?: readonly number[];
+  lines?: readonly number[];
 }
 
 export type ProvenanceState =

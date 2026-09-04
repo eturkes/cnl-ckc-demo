@@ -17,6 +17,8 @@ The shipped answers are produced at run time. They are not stored UI fixtures.
 - Explicit projection-loss and `unreviewed` disclosures.
 - A lazily loaded semantic graph with search, bounded neighborhoods, shortest
   paths, fCoSE layout, and complete keyboard-usable HTML navigation.
+- A one-click proof-to-graph focus that opens only the relationships compiled
+  from the cited controlled sentences, using live proof coordinates.
 - Light and dark themes, responsive layouts, local fonts, and relative asset
   paths for nested static hosting.
 
@@ -53,7 +55,8 @@ pnpm dev
 
 Open the URL printed by Vite. Wait for the engine to report ready, select a
 question, and select **Run**. Select a numbered citation to inspect its proof and
-source. Evidence data and the graph renderer load only when their controls are activated.
+source. **Find in graph** activates the lazy graph and moves directly to that
+source contribution's controlled-sentence subgraph.
 
 For a production build:
 

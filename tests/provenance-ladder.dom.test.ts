@@ -112,7 +112,14 @@ describe('proof-to-source provenance ladder', () => {
     const root = render(ready, (focus) => focuses.push(focus));
 
     clickNamed(root, 'Find in graph ↗');
-    expect(focuses).toEqual([{ document: 'cdc2022-opioid-rec01-imp01', sentence: 1 }]);
+    expect(focuses).toEqual([
+      {
+        document: 'cdc2022-opioid-rec01-imp01',
+        sentence: 1,
+        sentences: [1],
+        lines: [77],
+      },
+    ]);
     await openEvidence(root);
 
     const ace = root.querySelector<HTMLButtonElement>('[data-side="ace"] button');

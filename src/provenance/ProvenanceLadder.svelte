@@ -26,7 +26,19 @@
     provenanceState.kind === 'ready' ? flattenProof(provenanceState.steps) : [],
   );
   const documentId = $derived(steps.find((step) => step.document !== undefined)?.document);
-  const sentence = $derived(steps.find((step) => step.sentence !== undefined)?.sentence);
+  const documentSteps = $derived(
+    documentId === undefined ? [] : steps.filter((step) => step.document === documentId),
+  );
+  const sentences = $derived(
+    [
+      ...new Set(
+        documentSteps.flatMap((step) => (step.sentence === undefined ? [] : [step.sentence])),
+      ),
+    ].sort((left, right) => left - right),
+  );
+  const proofSourceLines = $derived(
+    [...new Set(documentSteps.map((step) => step.line))].sort((left, right) => left - right),
+  );
   const proofLines = $derived(new Set(steps.map((step) => step.line)));
   const clauses = $derived(evidence?.clauses.filter((clause) => proofLines.has(clause.line)) ?? []);
   const aceSegments = $derived(
@@ -120,7 +132,8 @@
         onclick={() => {
           onGraphFocus({
             document: documentId,
-            ...(typeof sentence === 'number' ? { sentence } : {}),
+            ...(sentences[0] === undefined ? {} : { sentence: sentences[0], sentences }),
+            ...(proofSourceLines.length === 0 ? {} : { lines: proofSourceLines }),
           });
         }}>Find in graph <span aria-hidden="true">↗</span></button
       >

@@ -47,12 +47,14 @@ verified, but they are not represented as formally adjudicated.
   CSP guidance, and a release check are present.
   The answer surface combines every matching Prolog solution into one chat-style response;
   numbered statement citations keep source and proof inspection secondary but reachable.
+  `Find in graph` carries exact live proof lines and controlled-sentence coordinates,
+  activates the lazy graph in one click, and isolates that source contribution's relationships.
 
 The manifest records 343 runtime assets: the PVM, QLF, question catalog, clause
 index, 337 provenance chunks, source PDF, and semantic graph. Fresh forced builds
 are byte-identical.
 
-Completion proof: `pnpm gate` passes with 288 tests in 25 files; the independent
+Completion proof: `pnpm gate` passes with 290 tests in 25 files; the independent
 reproduction check is byte-identical; the production smoke answer matches the
 vendored bag. Real-browser checks pass for development and nested production
 hosting, lazy evidence/graph/PDF loading, eight 320px interaction states, and

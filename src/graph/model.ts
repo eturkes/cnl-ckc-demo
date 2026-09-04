@@ -68,6 +68,10 @@ export interface GraphFocusToken {
   label?: string;
   document?: string;
   sentence?: number;
+  /** All controlled sentences represented by the selected answer contribution. */
+  sentences?: readonly number[];
+  /** Exact compiled clause lines in the live proof, used when sentence metadata is absent. */
+  lines?: readonly number[];
 }
 
 export type GraphFocus = string | GraphFocusToken;
@@ -82,6 +86,12 @@ export interface GraphSubgraph {
 export interface GraphPath {
   nodes: readonly string[];
   edges: readonly string[];
+}
+
+export interface GraphEvidenceSubgraph extends GraphSubgraph {
+  document: string;
+  sentences: readonly number[];
+  lines: readonly number[];
 }
 
 export class GraphDataError extends Error {
@@ -271,6 +281,11 @@ const compareEdges = (left: SemanticGraphEdge, right: SemanticGraphEdge): number
 const otherEnd = (edge: SemanticGraphEdge, id: string): string =>
   edge.source === id ? edge.target : edge.source;
 
+const positiveIntegers = (values: readonly number[]): readonly number[] =>
+  [...new Set(values.filter((value) => Number.isSafeInteger(value) && value > 0))].sort(
+    (left, right) => left - right,
+  );
+
 interface SearchRow {
   node: SemanticGraphNode;
   label: string;
@@ -374,16 +389,79 @@ export class SemanticGraphModel {
       kind: focus.kind === undefined ? undefined : normalized(focus.kind),
       label: focus.label === undefined ? undefined : normalized(focus.label),
       document: focus.document === undefined ? undefined : normalized(focus.document),
-      sentence: focus.sentence,
+      sentence: focus.sentence ?? positiveIntegers(focus.sentences ?? [])[0],
     };
-    return this.data.nodes.find(
-      (node) =>
-        (expected.kind === undefined || normalized(node.kind) === expected.kind) &&
-        (expected.label === undefined || normalized(node.label) === expected.label) &&
-        (expected.document === undefined ||
-          normalized(node.document ?? '') === expected.document) &&
-        (expected.sentence === undefined || node.sentence === expected.sentence),
+    const lineOnly = (focus.lines?.length ?? 0) > 0 && expected.sentence === undefined;
+    const direct = lineOnly
+      ? undefined
+      : this.data.nodes.find(
+          (node) =>
+            (expected.kind === undefined || normalized(node.kind) === expected.kind) &&
+            (expected.label === undefined || normalized(node.label) === expected.label) &&
+            (expected.document === undefined ||
+              normalized(node.document ?? '') === expected.document) &&
+            (expected.sentence === undefined || node.sentence === expected.sentence),
+        );
+    if (direct !== undefined) return direct;
+
+    // Most reusable semantic nodes intentionally carry no source location. The
+    // edge does, so a proof focus can still land on the exact clause endpoint.
+    const evidence = this.evidenceSubgraph(focus);
+    const primary = evidence?.edges.find((edge) => edge.kind !== 'implies') ?? evidence?.edges[0];
+    if (primary === undefined) return undefined;
+    const id =
+      primary.kind === 'entity' || primary.kind === 'event' || primary.kind === 'operator'
+        ? primary.target
+        : primary.source;
+    return this.node(id);
+  }
+
+  /**
+   * Return only the relationships compiled from the cited controlled sentences.
+   *
+   * Proof lines are the strongest identity. Their sentence coordinates expand
+   * the view from the proof's representative clause to every semantic relation
+   * encoded by that same controlled sentence. A line without a sentence remains
+   * visible as an exact-line fallback.
+   */
+  evidenceSubgraph(focus: GraphFocusToken): GraphEvidenceSubgraph | undefined {
+    if (focus.document === undefined) return undefined;
+    const document = normalized(focus.document);
+    const requestedLines = positiveIntegers(focus.lines ?? []);
+    const requestedSentences = positiveIntegers([
+      ...(focus.sentences ?? []),
+      ...(focus.sentence === undefined ? [] : [focus.sentence]),
+    ]);
+    if (requestedLines.length === 0 && requestedSentences.length === 0) return undefined;
+
+    const lineSet = new Set(requestedLines);
+    const sentenceSet = new Set(requestedSentences);
+    for (const edge of this.data.edges) {
+      if (normalized(edge.document) !== document || !lineSet.has(edge.line)) continue;
+      if (edge.sentence !== null) sentenceSet.add(edge.sentence);
+    }
+
+    const edges = this.data.edges.filter(
+      (edge) =>
+        normalized(edge.document) === document &&
+        ((edge.sentence !== null && sentenceSet.has(edge.sentence)) || lineSet.has(edge.line)),
     );
+    if (edges.length === 0) return undefined;
+
+    const nodeIds = new Set(edges.flatMap((edge) => [edge.source, edge.target]));
+    return {
+      document: focus.document,
+      sentences: Object.freeze([...sentenceSet].sort((left, right) => left - right)),
+      lines: Object.freeze(requestedLines),
+      nodes: Object.freeze(
+        [...nodeIds].map((id) => this.#nodes.get(id) as SemanticGraphNode).sort(compareNodes),
+      ),
+      edges: Object.freeze(
+        [...edges].sort((left, right) => left.line - right.line || compareEdges(left, right)),
+      ),
+      truncatedNodes: false,
+      truncatedEdges: false,
+    };
   }
 
   neighborhood(
@@ -485,7 +563,15 @@ export class SemanticGraphModel {
 export const graphFocusKey = (focus: GraphFocus | null): string => {
   if (focus === null) return '';
   if (typeof focus === 'string') return `id:${focus}`;
-  return [focus.id, focus.kind, focus.label, focus.document, focus.sentence]
+  return [
+    focus.id,
+    focus.kind,
+    focus.label,
+    focus.document,
+    focus.sentence,
+    positiveIntegers(focus.sentences ?? []).join(','),
+    positiveIntegers(focus.lines ?? []).join(','),
+  ]
     .map((value) => value ?? '')
     .join('\u001f');
 };

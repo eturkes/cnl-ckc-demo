@@ -112,6 +112,41 @@ try {
   if ((await page.locator('[data-engine="error"]').count()) > 0)
     fail('the engine reported an error');
 
+  // The proof-to-graph action is itself explicit graph activation. One click
+  // must load the lazy asset, move to the graph, and isolate the controlled
+  // sentences behind the selected answer contribution.
+  const graphAsset = /semantic-graph-.+\.json$/u;
+  if (log.some((entry) => graphAsset.test(entry.path)))
+    fail('the semantic graph loaded before the proof-to-graph action');
+  const findInGraph = page.getByRole('button', { name: /Find in graph/iu });
+  await findInGraph.waitFor({ timeout: 45_000 });
+  await findInGraph.click();
+  const graphFocus = page.locator('.graph-shell .evidence-focus');
+  await graphFocus.waitFor({ timeout: 45_000 });
+  await page.waitForSelector('.graph-shell .evidence-focus:focus', { timeout: 45_000 });
+  const focusText = (await graphFocus.textContent()) ?? '';
+  if (!/Focused on [1-9]\d*\s+controlled sentences?/iu.test(focusText))
+    fail('the graph did not identify the cited controlled-sentence focus');
+  if (!(await page.locator('.graph-shell .view-status').textContent())?.includes('answer evidence'))
+    fail('the graph opened a general neighborhood instead of the selected answer evidence');
+  if (
+    !(await page.locator('.graph-shell .selection-card .location').textContent())?.includes(
+      'sentence 2',
+    )
+  )
+    fail('the graph did not select the first cited sentence');
+  if ((await page.getByRole('button', { name: 'Explore graph' }).count()) !== 0)
+    fail('the proof-to-graph action stopped at the graph activation prompt');
+  if (!log.some((entry) => graphAsset.test(entry.path)))
+    fail('the proof-to-graph action requested no semantic graph data');
+  const focusTop = Number(
+    await page.evaluate(
+      "document.querySelector('.graph-shell .evidence-focus').getBoundingClientRect().top",
+    ),
+  );
+  if (focusTop < 50 || focusTop > 180)
+    fail(`the answer evidence focus did not land below the header (${String(focusTop)}px)`);
+
   const broken = log.filter((entry) => entry.status !== 200 && entry.path.startsWith(`/${NESTED}`));
   if (broken.length > 0) fail(`nested assets missing: ${broken.map((e) => e.path).join(', ')}`);
   if (raised !== undefined) fail(raised);

@@ -29,6 +29,7 @@
   const demo = injected ?? new DemoController();
 
   let graphFocus = $state.raw<SemanticGraphFocus | null>(null);
+  let graphFocusRequest = $state(0);
   let graphSelection = $state.raw<SemanticGraphNode | null>(null);
   let graphRegion = $state<HTMLElement>();
 
@@ -74,11 +75,15 @@
   );
 
   const showInGraph = (focus: ProvenanceGraphFocus): void => {
-    // A document focus is deliberately broader than a clause focus. Every graph
-    // has a document node, while some compiled clauses create no visual entity.
-    graphFocus = { document: focus.document };
+    graphFocus = {
+      ...focus,
+      ...(focus.sentences === undefined ? {} : { sentences: [...focus.sentences] }),
+      ...(focus.lines === undefined ? {} : { lines: [...focus.lines] }),
+    };
+    graphFocusRequest += 1;
+    graphSelection = null;
     graphRegion?.scrollIntoView({ block: 'start' });
-    graphRegion?.querySelector<HTMLButtonElement>('button')?.focus();
+    graphRegion?.querySelector<HTMLElement>('.graph-shell')?.focus({ preventScroll: true });
   };
 </script>
 
@@ -167,6 +172,7 @@
     <div id="graph" class="graph-region" bind:this={graphRegion}>
       <SemanticGraph
         focus={graphFocus}
+        focusRequest={graphFocusRequest}
         onSelect={(node: SemanticGraphNode) => {
           graphSelection = node;
         }}

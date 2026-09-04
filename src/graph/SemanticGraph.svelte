@@ -11,6 +11,7 @@
     graphFocusKey,
     graphRelationLabel,
     parseSemanticGraph,
+    type GraphEvidenceSubgraph,
     type GraphFocus,
     type GraphPath,
     type GraphSubgraph,
@@ -23,11 +24,18 @@
     graphUrl?: string;
     /** Applied after activation; supplying a focus token never fetches the graph by itself. */
     focus?: GraphFocus | null;
+    /** Monotonic, user-originated request to activate and reveal the supplied focus. */
+    focusRequest?: number;
     /** User-originated selection from the canvas, search results, path, or HTML graph. */
     onSelect?: (node: SemanticGraphNode) => void;
   }
 
-  let { graphUrl = graphAssetUrl, focus = null, onSelect = () => undefined }: Props = $props();
+  let {
+    graphUrl = graphAssetUrl,
+    focus = null,
+    focusRequest = 0,
+    onSelect = () => undefined,
+  }: Props = $props();
 
   const uid = $props.id();
   const headingId = `${uid}-heading`;
@@ -45,14 +53,19 @@
   let depth = $state(1);
   let nodeLimit = $state(DEFAULT_NEIGHBOR_LIMIT);
   let path = $state.raw<GraphPath | null>(null);
+  let evidenceView = $state.raw<GraphEvidenceSubgraph | null>(null);
   let pathStatus = $state('');
   let loadError = $state('');
   let canvasError = $state('');
   let canvasHost = $state<HTMLElement>();
+  let focusNotice = $state<HTMLElement>();
+  let selectionCard = $state<HTMLElement>();
   let canvas = $state.raw<GraphCanvas>();
   let request: AbortController | undefined;
   let destroyed = false;
   let appliedFocus = '';
+  let handledFocusRequest = 0;
+  let focusAfterLoad = false;
 
   const selected = $derived(
     model === null || selectedId === null ? undefined : model.node(selectedId),
@@ -61,16 +74,25 @@
   const subgraph = $derived<GraphSubgraph>(
     model === null || selectedId === null
       ? { nodes: [], edges: [], truncatedNodes: false, truncatedEdges: false }
-      : model.neighborhood(selectedId, depth, nodeLimit, path?.nodes ?? [], path?.edges ?? []),
+      : (evidenceView ??
+          model.neighborhood(selectedId, depth, nodeLimit, path?.nodes ?? [], path?.edges ?? [])),
   );
-  const relations = $derived(
-    model === null || selectedId === null ? [] : model.incident(selectedId).slice(0, 60),
+  const relationPool = $derived(
+    model === null || selectedId === null
+      ? []
+      : evidenceView === null
+        ? model.incident(selectedId)
+        : evidenceView.edges.filter(
+            (edge) => edge.source === selectedId || edge.target === selectedId,
+          ),
   );
+  const relations = $derived(relationPool.slice(0, 60));
   const canExpand = $derived(
-    selected !== undefined && (depth < 3 || nodeLimit < MAX_NEIGHBOR_LIMIT),
+    selected !== undefined &&
+      (evidenceView !== null || depth < 3 || nodeLimit < MAX_NEIGHBOR_LIMIT),
   );
 
-  const choose = (id: string, notify = true): void => {
+  const choose = (id: string, notify = true, retainEvidence = false): void => {
     const node = model?.node(id);
     if (node === undefined) return;
     selectedId = node.id;
@@ -78,6 +100,7 @@
     nodeLimit = DEFAULT_NEIGHBOR_LIMIT;
     path = null;
     pathStatus = '';
+    if (!retainEvidence) evidenceView = null;
     if (notify) onSelect(node);
   };
 
@@ -88,6 +111,7 @@
 
   const findPath = (target: string): void => {
     if (model === null || selectedId === null) return;
+    evidenceView = null;
     const found = model.shortestPath(selectedId, target);
     path = found ?? null;
     pathStatus =
@@ -97,8 +121,32 @@
   };
 
   const expand = (): void => {
+    if (evidenceView !== null) {
+      evidenceView = null;
+      depth = 2;
+      return;
+    }
     depth = Math.min(3, depth + 1);
     nodeLimit = Math.min(MAX_NEIGHBOR_LIMIT, nodeLimit + DEFAULT_NEIGHBOR_LIMIT);
+  };
+
+  const revealFocusedGraph = async (): Promise<void> => {
+    await tick();
+    const target = evidenceView === null ? selectionCard : focusNotice;
+    target?.scrollIntoView?.({ block: 'start' });
+    target?.focus({ preventScroll: true });
+    canvas?.recenter(evidenceView === null ? (selectedId ?? undefined) : undefined);
+  };
+
+  const applyFocus = (next: GraphFocus, reveal = false): void => {
+    const current = model;
+    if (current === null) return;
+    const scoped = typeof next === 'string' ? undefined : current.evidenceSubgraph(next);
+    const resolved = current.resolveFocus(next) ?? scoped?.nodes[0];
+    evidenceView = scoped ?? null;
+    query = '';
+    if (resolved !== undefined) choose(resolved.id, false, true);
+    if (reveal) void revealFocusedGraph();
   };
 
   const activate = async (): Promise<void> => {
@@ -108,6 +156,7 @@
     model = null;
     selectedId = null;
     path = null;
+    evidenceView = null;
     loadError = '';
     canvasError = '';
     phase = 'loading';
@@ -123,11 +172,15 @@
       const loaded = new SemanticGraphModel(parseSemanticGraph(value));
       if (destroyed || active.signal.aborted) return;
       model = loaded;
+      const scoped =
+        focus === null || typeof focus === 'string' ? undefined : loaded.evidenceSubgraph(focus);
       const initial =
         (focus === null ? undefined : loaded.resolveFocus(focus)) ??
+        scoped?.nodes[0] ??
         loaded.data.nodes.find((node) => node.kind === 'document') ??
         loaded.data.nodes[0];
       selectedId = initial?.id ?? null;
+      evidenceView = scoped ?? null;
       appliedFocus = graphFocusKey(focus);
       phase = 'ready';
       await tick();
@@ -140,6 +193,10 @@
         canvasError = `The visual graph is unavailable. Use the complete HTML navigation below. ${
           cause instanceof Error ? cause.message : String(cause)
         }`;
+      }
+      if (focusAfterLoad) {
+        focusAfterLoad = false;
+        await revealFocusedGraph();
       }
     } catch (cause) {
       if (destroyed || active.signal.aborted) return;
@@ -165,12 +222,28 @@
     if (current === null) return;
     if (next === null) {
       appliedFocus = '';
+      evidenceView = null;
       return;
     }
     if (key === appliedFocus) return;
     appliedFocus = key;
-    const resolved = current.resolveFocus(next);
-    if (resolved !== undefined) choose(resolved.id, false);
+    applyFocus(next);
+  });
+
+  $effect(() => {
+    const nextRequest = focusRequest;
+    const next = focus;
+    const currentPhase = phase;
+    if (nextRequest === 0 || nextRequest === handledFocusRequest) return;
+    handledFocusRequest = nextRequest;
+    focusAfterLoad = true;
+    if (currentPhase === 'inactive' || currentPhase === 'error') {
+      void activate();
+    } else if (currentPhase === 'ready' && next !== null) {
+      focusAfterLoad = false;
+      appliedFocus = graphFocusKey(next);
+      applyFocus(next, true);
+    }
   });
 
   onDestroy(() => {
@@ -180,7 +253,7 @@
   });
 </script>
 
-<section class="graph-shell" aria-labelledby={headingId}>
+<section class="graph-shell" aria-labelledby={headingId} tabindex="-1">
   <header>
     <div>
       <p class="eyebrow">Graph</p>
@@ -216,6 +289,22 @@
       <button class="primary" type="button" onclick={() => void activate()}>Try again</button>
     </div>
   {:else if model !== null && selected !== undefined}
+    {#if evidenceView !== null}
+      <div class="evidence-focus" tabindex="-1" bind:this={focusNotice}>
+        <p class="kind">Answer evidence</p>
+        <p>
+          <strong
+            >Focused on {evidenceView.sentences.length}
+            {evidenceView.sentences.length === 1
+              ? 'controlled sentence'
+              : 'controlled sentences'}</strong
+          >
+          from <code>{evidenceView.document}</code>. This view contains only the relationships
+          compiled from the selected source contribution.
+        </p>
+      </div>
+    {/if}
+
     <div class="toolbar">
       <label for={searchId}>Find a node</label>
       <div class="search-row">
@@ -263,7 +352,7 @@
       {/if}
     </div>
 
-    <div class="selection-card">
+    <div class="selection-card" tabindex="-1" bind:this={selectionCard}>
       <div>
         <p class="kind">{selected.kind.replace(/-/gu, ' ')}</p>
         <h3>{selected.label}</h3>
@@ -294,7 +383,9 @@
 
     <p class="view-status" role="status">
       Showing {subgraph.nodes.length.toLocaleString()} nodes and
-      {subgraph.edges.length.toLocaleString()} relationships at depth {depth}.
+      {subgraph.edges.length.toLocaleString()} relationships{evidenceView === null
+        ? ` at depth ${String(depth)}`
+        : ' for the selected answer evidence'}.
       {#if subgraph.truncatedNodes || subgraph.truncatedEdges}
         The view is capped for readability. Select Expand to reveal more.
       {/if}
@@ -349,10 +440,10 @@
             {/if}
           {/each}
         </ul>
-        {#if model.incident(selected.id).length > relations.length}
+        {#if relationPool.length > relations.length}
           <p class="help">
-            Showing the first {relations.length} of {model.incident(selected.id).length} direct relationships.
-            Use search to reach any node.
+            Showing the first {relations.length} of {relationPool.length} direct relationships. Use search
+            to reach any node.
           </p>
         {/if}
       {/if}
@@ -386,6 +477,7 @@
   .activation,
   .pending,
   .load-failure,
+  .evidence-focus,
   .toolbar,
   .selection-card,
   .view-status,
@@ -447,6 +539,38 @@
   .counts {
     margin-bottom: 0;
     white-space: nowrap;
+  }
+
+  .graph-shell:focus-visible,
+  .evidence-focus:focus-visible,
+  .selection-card:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+
+  .evidence-focus {
+    scroll-margin-top: 5rem;
+    padding-block: 1rem;
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--action) 6%, transparent);
+  }
+
+  .evidence-focus p:last-child {
+    max-width: 52rem;
+    margin-bottom: 0;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+  }
+
+  .evidence-focus strong {
+    color: var(--text);
+  }
+
+  .evidence-focus code {
+    color: var(--text);
+    font-family: var(--font-code);
+    font-size: 0.8em;
+    overflow-wrap: anywhere;
   }
 
   .activation,
@@ -618,6 +742,7 @@
 
   .selection-card {
     display: flex;
+    scroll-margin-top: 5rem;
     justify-content: space-between;
     gap: 1rem;
     align-items: start;
