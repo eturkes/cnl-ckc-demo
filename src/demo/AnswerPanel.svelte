@@ -8,7 +8,7 @@
     rows: AnswerRow[];
     selectedIndex: number;
     busy: boolean;
-    /** The exact prepared question currently being answered. */
+    /** Stable key for the prepared question currently being answered. */
     question: string;
     /** Terminal wording for states that do not have a complete answer. */
     summary: string;
@@ -57,14 +57,8 @@
   {:else}
     {#key question}
       <div class="thread">
-        <article class="turn question-turn" aria-label="Your question">
-          <p class="turn-name">You</p>
-          <p class="question">{question}</p>
-        </article>
-
         <article class="turn assistant-turn" aria-label="Deterministic answer">
           <header class="assistant-header">
-            <span class="assistant-mark" aria-hidden="true">CKC</span>
             <div>
               <p class="turn-name">Clinical Knowledge Compiler</p>
               <p class="answer-mode">Deterministic answer</p>
@@ -215,22 +209,11 @@
   }
 
   .thread {
-    display: grid;
-    gap: 1.5rem;
     max-width: 58rem;
   }
 
   .turn {
     min-width: 0;
-  }
-
-  .question-turn {
-    justify-self: end;
-    width: min(85%, 42rem);
-    border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
-    border-radius: 1rem 1rem 0.25rem 1rem;
-    padding: 0.8rem 1rem;
-    background: var(--surface-sunken);
   }
 
   .turn-name {
@@ -239,33 +222,8 @@
     font-weight: 700;
   }
 
-  .question {
-    margin: 0.18rem 0 0;
-    font-size: 0.96rem;
-    line-height: 1.48;
-  }
-
   .assistant-header {
-    display: flex;
-    gap: 0.7rem;
-    align-items: center;
     margin-bottom: 0.8rem;
-  }
-
-  .assistant-mark {
-    display: grid;
-    flex: 0 0 auto;
-    place-items: center;
-    width: 2.15rem;
-    height: 2.15rem;
-    border: 1px solid var(--border);
-    border-radius: 50%;
-    background: var(--surface-sunken);
-    color: var(--action);
-    font-family: var(--font-code);
-    font-size: 0.62rem;
-    font-weight: 750;
-    letter-spacing: -0.04em;
   }
 
   .answer-mode {
@@ -277,7 +235,6 @@
 
   .assistant-copy {
     min-width: 0;
-    margin-left: 2.85rem;
   }
 
   .working,
@@ -485,14 +442,6 @@
   }
 
   @media (max-width: 34rem) {
-    .question-turn {
-      width: 92%;
-    }
-
-    .assistant-copy {
-      margin-left: 0;
-    }
-
     .source-heading {
       display: block;
     }

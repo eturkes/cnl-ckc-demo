@@ -76,8 +76,10 @@ try {
 
   const points = page.locator('section[aria-labelledby] .answer-point');
   await page.waitForSelector('section[aria-labelledby] .answer-point', { timeout: 45_000 });
-  if ((await page.locator('.thread .turn').count()) !== 2)
-    fail('the answer did not render as one question and one assistant turn');
+  if ((await page.locator('.thread .turn').count()) !== 1)
+    fail('the answer did not render as one assistant response');
+  if ((await page.locator('.question-turn, .assistant-mark').count()) !== 0)
+    fail('the response repeated the question or rendered a redundant avatar');
   if ((await page.locator('input[type="radio"]').count()) !== 0)
     fail('source solutions regressed into competing answer choices');
   if ((await page.locator('.explanation').getAttribute('open')) !== null)

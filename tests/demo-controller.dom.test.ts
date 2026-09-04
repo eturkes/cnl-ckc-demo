@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import App from '../src/App.svelte';
 import type { BootOutcome } from '../src/engine/client.js';
 import type { EngineContract, EngineError, LimitKind, PlSolution } from '../src/engine/protocol.js';
-import { QUESTION_CATALOG, QUESTION_IDS, type QuestionId } from '../src/questions/catalog.js';
+import { QUESTION_IDS, type QuestionId } from '../src/questions/catalog.js';
 import type { AnswerResult } from '../src/questions/service.js';
 import {
   DemoController,
@@ -292,9 +292,8 @@ describe('view states and accessibility', () => {
     const points = [...answerRegion().querySelectorAll<HTMLElement>('.answer-point')];
     const citations = [...answerRegion().querySelectorAll<HTMLButtonElement>('.citations button')];
 
-    expect(
-      text(answerRegion().querySelector('.question-turn') ?? document.createTextNode('')),
-    ).toContain(QUESTION_CATALOG[ID].question);
+    expect(answerRegion().querySelector('.question-turn')).toBeNull();
+    expect(answerRegion().querySelector('.assistant-mark')).toBeNull();
     expect(answerRegion().querySelector('[aria-label="Deterministic answer"]')).not.toBeNull();
     expect(points).toHaveLength(3);
     expect(points.map((point) => text(point))).toEqual([
