@@ -35,21 +35,22 @@
 <style>
   button {
     display: inline-flex;
-    gap: 0.4rem;
+    gap: 0.45rem;
     align-items: center;
-    min-height: 2.25rem;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 0.25rem 0.75rem;
-    background: var(--surface-raised);
-    color: var(--text);
+    min-height: 2rem;
+    border: 0;
+    border-radius: 0.2rem;
+    padding: 0.3rem 0.45rem;
+    background: transparent;
+    color: var(--text-muted);
     font-family: var(--font-ui);
-    font-size: 0.82rem;
+    font-size: 0.78rem;
+    font-weight: 600;
     cursor: pointer;
   }
 
   button:hover {
-    border-color: var(--action);
+    background: var(--surface-sunken);
     color: var(--action);
   }
 
@@ -59,7 +60,7 @@
   }
 
   [aria-hidden='true'] {
-    font-size: 1rem;
+    font-size: 0.9rem;
     line-height: 1;
   }
 </style>

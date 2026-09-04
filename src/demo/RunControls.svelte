@@ -41,8 +41,11 @@
 </script>
 
 <div class="controls">
-  <button bind:this={runEl} type="button" disabled={!canRun} onclick={onRun}>Run</button>
-  <button bind:this={cancelEl} type="button" disabled={!busy} onclick={onCancel}>Cancel</button>
+  <button class="run" bind:this={runEl} type="button" disabled={!canRun} onclick={onRun}>Run</button
+  >
+  <button class="cancel" bind:this={cancelEl} type="button" disabled={!busy} onclick={onCancel}
+    >Cancel</button
+  >
   {#if showRetry}
     <button bind:this={retryEl} type="button" class="retry" onclick={onRetry}>Retry</button>
   {/if}
@@ -54,31 +57,48 @@
 <style>
   .controls {
     display: flex;
-    gap: 0.5rem;
-    margin: 1rem 0 0.75rem;
+    gap: 0.4rem;
+    margin: 0.75rem 0;
   }
 
   button {
     font: inherit;
     font-family: var(--font-ui);
-    padding: 0.4rem 1.1rem;
-    border: 1px solid var(--action);
-    border-radius: 0.25rem;
+    min-height: 2.5rem;
+    padding: 0.45rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.2rem;
+    background: transparent;
+    color: var(--text);
+    font-size: 0.86rem;
+    font-weight: 650;
+    cursor: pointer;
+  }
+
+  button.run,
+  button.retry {
+    border-color: var(--action);
     background: var(--action);
     color: var(--action-text);
-    cursor: pointer;
+  }
+
+  button.cancel:not(:disabled):hover {
+    border-color: var(--action);
+    color: var(--action);
   }
 
   button:disabled {
     border-color: var(--text-muted);
     background: transparent;
     color: var(--text-muted);
+    opacity: 0.55;
     cursor: not-allowed;
   }
 
   button.retry {
     border-color: var(--warn);
     background: var(--warn);
+    color: var(--action-text);
   }
 
   button:focus-visible {
@@ -89,7 +109,8 @@
   .status,
   .alert {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
+    line-height: 1.45;
     overflow-wrap: anywhere;
   }
 

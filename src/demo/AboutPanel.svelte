@@ -50,19 +50,16 @@
 
 <style>
   .about {
-    margin-top: 2rem;
-    border: 1px solid var(--border);
-    border-radius: 0.25rem;
-    background: var(--surface-sunken);
-    padding: 0 0.9rem;
+    margin-top: 3rem;
+    border-block: 1px solid var(--border);
+    padding: 0;
   }
 
   summary {
-    margin: 0 -0.9rem;
-    padding: 0.7rem 0.9rem;
-    font-family: var(--font-ui);
-    font-weight: 600;
-    color: var(--action);
+    padding: 1rem 0;
+    font-size: 0.82rem;
+    font-weight: 650;
+    color: var(--text);
     cursor: pointer;
   }
 
@@ -72,9 +69,9 @@
   }
 
   p {
-    margin: 0 0 0.75rem;
-    font-family: var(--font-prose);
-    font-size: 0.95rem;
+    max-width: 52rem;
+    margin: 0 0 0.8rem;
+    font-size: 0.86rem;
   }
 
   /* The one line a reader must not miss, so it carries weight and a rule rather
@@ -88,10 +85,7 @@
 
   h3 {
     margin: 1.25rem 0 0.5rem;
-    font-family: var(--font-ui);
-    font-size: 0.8rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    font-size: 0.78rem;
     color: var(--text-muted);
   }
 

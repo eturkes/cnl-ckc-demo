@@ -20,11 +20,11 @@ export const INSTRUCTIONS = {
 
 /** Explanatory text. 25 words per sentence. */
 export const DESCRIPTIONS = {
-  wordmark: 'Controlled Natural Language - Clinical Knowledge Compiler (CNL CKC) Demo',
+  wordmark: 'Clinical Knowledge Compiler',
 
   lede:
-    'This demo answers questions about a clinical guideline by running Prolog against a compiled knowledge base. ' +
-    'Each answer is a live proof, never a stored result.',
+    'Run prepared questions against a compiled version of the CDC guideline. ' +
+    'Every answer is proved live in the browser and traceable to its source.',
 
   aboutSummary: 'About this demo',
   prologSummary: 'Canonical Prolog answer',

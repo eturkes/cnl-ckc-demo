@@ -44,7 +44,7 @@
 </script>
 
 <section aria-labelledby={headingId} aria-busy={busy}>
-  <h2 id={headingId}>Answer</h2>
+  <h2 id={headingId}>Result</h2>
   {#if summary !== ''}
     <p class="summary">{summary}</p>
   {/if}
@@ -95,46 +95,44 @@
 <style>
   section {
     border-top: 1px solid var(--border);
-    margin-top: 1.5rem;
-    padding-top: 1rem;
+    margin: 0;
+    padding: clamp(1.25rem, 3vw, 2rem);
   }
 
   h2 {
-    margin: 0 0 0.5rem;
-    font-family: var(--font-ui);
-    font-size: 1rem;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: var(--text-muted);
+    margin: 0 0 0.6rem;
+    font-size: 0.78rem;
+    font-weight: 700;
   }
 
   .summary {
-    margin: 0 0 0.75rem;
-    font-family: var(--font-prose);
-    font-size: 1.05rem;
+    margin: 0 0 1rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
   }
 
   fieldset {
-    margin: 0 0 1rem;
-    border: 1px solid var(--border);
-    border-radius: 0.25rem;
-    padding: 0.5rem 0.75rem 0.75rem;
+    margin: 0 0 1.25rem;
+    border: 0;
+    padding: 0;
   }
 
   legend {
-    padding: 0 0.35rem;
-    font-family: var(--font-ui);
-    font-size: 0.8rem;
+    margin-bottom: 0.4rem;
+    padding: 0;
+    font-size: 0.75rem;
+    font-weight: 650;
     color: var(--text-muted);
   }
 
   label {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.6rem;
     align-items: baseline;
-    padding: 0.15rem 0;
+    border-top: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
+    padding: 0.45rem 0;
     font-family: var(--font-code);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     overflow-wrap: anywhere;
   }
 
@@ -143,30 +141,29 @@
   dl {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 0.15rem 1rem;
-    margin: 0 0 1rem;
+    gap: 0.2rem 1.25rem;
+    max-width: 52rem;
+    margin: 0 0 1.25rem;
   }
 
   @media (min-width: 34rem) {
     dl {
-      grid-template-columns: minmax(6rem, max-content) 1fr;
+      grid-template-columns: minmax(7rem, max-content) 1fr;
       align-items: baseline;
-      row-gap: 0.5rem;
+      row-gap: 0.65rem;
     }
   }
 
   dt {
-    font-family: var(--font-ui);
-    font-size: 0.75rem;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
+    font-size: 0.72rem;
+    font-weight: 650;
     color: var(--text-muted);
   }
 
   dd {
     margin: 0 0 0.5rem;
     font-family: var(--font-code);
-    font-size: 0.9rem;
+    font-size: 0.84rem;
     overflow-wrap: anywhere;
   }
 
@@ -177,17 +174,15 @@
   }
 
   .canonical {
-    border: 1px solid var(--border);
-    border-radius: 0.25rem;
-    background: var(--surface-raised);
-    padding: 0 0.75rem;
+    max-width: 52rem;
+    border-top: 1px solid var(--border);
+    padding: 0;
   }
 
   .canonical summary {
-    margin: 0 -0.75rem;
-    padding: 0.5rem 0.75rem;
-    font-family: var(--font-ui);
-    font-size: 0.85rem;
+    padding: 0.75rem 0;
+    font-size: 0.8rem;
+    font-weight: 650;
     color: var(--action);
     cursor: pointer;
   }
@@ -199,8 +194,7 @@
 
   .canonical p {
     margin: 0 0 0.5rem;
-    font-family: var(--font-prose);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text-muted);
   }
 

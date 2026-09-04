@@ -232,15 +232,13 @@
   .intake {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.45rem;
   }
 
   .label {
-    font-family: var(--font-code);
-    font-size: 0.8rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--text-muted);
+    color: var(--text);
+    font-size: 0.78rem;
+    font-weight: 650;
   }
 
   .control {
@@ -252,12 +250,12 @@
   .box {
     box-sizing: border-box;
     width: 100%;
-    padding: 0.65rem 2.2rem 0.65rem 0.75rem;
+    min-height: 3rem;
+    padding: 0.72rem 2.6rem 0.72rem 0.85rem;
     border: 1px solid var(--border);
-    border-radius: 0.25rem;
+    border-radius: 0.2rem;
     background: var(--surface-raised);
-    font-family: var(--font-prose);
-    font-size: 1rem;
+    font-size: 0.95rem;
     line-height: 1.4;
     overflow-wrap: anywhere;
     cursor: pointer;
@@ -274,8 +272,8 @@
 
   .caret {
     position: absolute;
-    top: 0.7rem;
-    right: 0.8rem;
+    top: 0.78rem;
+    right: 0.9rem;
     color: var(--text-muted);
     pointer-events: none;
   }
@@ -284,21 +282,23 @@
     position: absolute;
     z-index: 1;
     inset-inline: 0;
-    top: calc(100% + 0.25rem);
-    max-height: 14rem;
+    top: calc(100% + 0.35rem);
+    max-height: 18rem;
     overflow-y: auto;
     margin: 0;
-    padding: 0.25rem;
+    padding: 0.35rem;
     border: 1px solid var(--border);
-    border-radius: 0.25rem;
+    border-radius: 0.2rem;
     background: var(--surface-raised);
+    box-shadow: 0 0.8rem 2rem color-mix(in srgb, var(--text) 12%, transparent);
     list-style: none;
   }
 
   .list li {
-    padding: 0.5rem 0.6rem;
-    border-radius: 0.2rem;
-    font-family: var(--font-prose);
+    padding: 0.65rem 0.7rem;
+    border-radius: 0.1rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
     overflow-wrap: anywhere;
     cursor: pointer;
   }

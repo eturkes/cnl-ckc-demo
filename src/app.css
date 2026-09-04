@@ -91,16 +91,16 @@
  * declared pairs of these values on every gate run.
  */
 :root {
-  --surface: #f7f4ee;
-  --surface-raised: #fffdf8;
-  --surface-sunken: #efeade;
-  --text: #1b1f23;
-  --text-muted: #545d66;
-  --border: #8f8270;
-  --action: #135455;
-  --action-text: #fffdf8;
-  --warn: #7d4f0c;
-  --focus-ring: #1b1f23;
+  --surface: #f5f7f9;
+  --surface-raised: #ffffff;
+  --surface-sunken: #eef1f4;
+  --text: #171b21;
+  --text-muted: #53606d;
+  --border: #838e99;
+  --action: #174f9e;
+  --action-text: #ffffff;
+  --warn: #873b19;
+  --focus-ring: #171b21;
 
   --font-ui: 'Atkinson Hyperlegible Next', ui-sans-serif, 'Segoe UI', system-ui, sans-serif;
   --font-prose: 'Literata', 'Iowan Old Style', Palatino, Georgia, serif;
@@ -110,16 +110,16 @@
 }
 
 :root[data-theme='dark'] {
-  --surface: #10191a;
-  --surface-raised: #172426;
-  --surface-sunken: #0b1314;
-  --text: #f4f1e9;
-  --text-muted: #b6c1c0;
-  --border: #788b88;
-  --action: #83d4ce;
-  --action-text: #0b2323;
-  --warn: #efb866;
-  --focus-ring: #f4f1e9;
+  --surface: #111418;
+  --surface-raised: #181d23;
+  --surface-sunken: #0d1116;
+  --text: #f2f4f7;
+  --text-muted: #afb8c3;
+  --border: #727e8c;
+  --action: #8ab4f8;
+  --action-text: #102443;
+  --warn: #efa47e;
+  --focus-ring: #f2f4f7;
 
   color-scheme: dark;
 }
@@ -132,15 +132,10 @@ body {
   min-width: 20rem;
   min-height: 100vh;
   margin: 0;
-  background:
-    radial-gradient(
-      circle at 10% 0%,
-      color-mix(in srgb, var(--action) 9%, transparent),
-      transparent 28rem
-    ),
-    var(--surface);
+  background: var(--surface);
   color: var(--text);
   font-family: var(--font-ui);
+  font-size: 0.9375rem;
   line-height: 1.55;
 }
 

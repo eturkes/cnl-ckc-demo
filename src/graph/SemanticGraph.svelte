@@ -183,8 +183,8 @@
 <section class="graph-shell" aria-labelledby={headingId}>
   <header>
     <div>
-      <p class="eyebrow">Knowledge map</p>
-      <h2 id={headingId}>Explore the semantic graph</h2>
+      <p class="eyebrow">Graph</p>
+      <h2 id={headingId}>Semantic knowledge graph</h2>
     </div>
     {#if phase === 'ready' && model !== null}
       <p class="counts">
@@ -378,12 +378,8 @@
 
 <style>
   .graph-shell {
-    margin-top: 2rem;
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    background: var(--surface-raised);
-    box-shadow: 0 1.25rem 3rem color-mix(in srgb, var(--text) 8%, transparent);
-    overflow: hidden;
+    margin-top: clamp(4rem, 7vw, 5rem);
+    border-block: 1px solid var(--border);
   }
 
   header,
@@ -396,7 +392,7 @@
   .path-panel,
   .path-status,
   .html-graph {
-    padding-inline: clamp(1rem, 3vw, 1.5rem);
+    padding-inline: 0;
   }
 
   header {
@@ -404,15 +400,8 @@
     justify-content: space-between;
     gap: 1rem;
     align-items: end;
-    padding-block: 1.2rem;
+    padding-block: 1.5rem;
     border-bottom: 1px solid var(--border);
-    background:
-      radial-gradient(
-        circle at 93% 0%,
-        color-mix(in srgb, var(--action) 15%, transparent),
-        transparent 45%
-      ),
-      var(--surface-sunken);
   }
 
   h2,
@@ -423,23 +412,25 @@
 
   h2 {
     margin-bottom: 0;
-    font-size: clamp(1.15rem, 3vw, 1.45rem);
-    line-height: 1.2;
+    font-size: clamp(1.35rem, 3vw, 2rem);
+    font-weight: 650;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
   }
 
   h3 {
     margin-bottom: 0.25rem;
-    font-size: 1.05rem;
+    font-size: 1rem;
   }
 
   .eyebrow,
   .kind {
     margin-bottom: 0.2rem;
-    color: var(--action);
+    color: var(--text-muted);
     font-family: var(--font-code);
-    font-size: 0.72rem;
+    font-size: 0.65rem;
     font-weight: 700;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
@@ -461,12 +452,12 @@
   .activation,
   .pending,
   .load-failure {
-    padding-block: 1.5rem;
+    padding-block: 1.75rem;
   }
 
   .activation > p:first-child {
-    max-width: 56rem;
-    font-family: var(--font-prose);
+    max-width: 46rem;
+    color: var(--text-muted);
   }
 
   .load-note {
@@ -506,16 +497,20 @@
   }
 
   button {
-    border: 1px solid var(--action);
-    border-radius: 0.3rem;
-    padding: 0.38rem 0.7rem;
+    min-height: 2.35rem;
+    border: 1px solid var(--border);
+    border-radius: 0.2rem;
+    padding: 0.4rem 0.7rem;
     background: transparent;
-    color: var(--action);
+    color: var(--text);
+    font-size: 0.84rem;
+    font-weight: 600;
     cursor: pointer;
   }
 
   button:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--action) 10%, transparent);
+    border-color: var(--action);
+    color: var(--action);
   }
 
   button:focus-visible,
@@ -531,13 +526,14 @@
   }
 
   button.primary {
+    border-color: var(--action);
     background: var(--action);
     color: var(--action-text);
-    font-weight: 700;
+    font-weight: 650;
   }
 
   .toolbar {
-    padding-block: 1rem;
+    padding-block: 1.25rem;
     border-bottom: 1px solid var(--border);
   }
 
@@ -545,9 +541,7 @@
     display: block;
     margin-bottom: 0.35rem;
     font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    font-weight: 650;
   }
 
   .search-row {
@@ -559,9 +553,9 @@
   input {
     min-width: 0;
     border: 1px solid var(--border);
-    border-radius: 0.3rem;
-    padding: 0.5rem 0.65rem;
-    background: var(--surface);
+    border-radius: 0.2rem;
+    padding: 0.6rem 0.7rem;
+    background: var(--surface-raised);
     color: var(--text);
   }
 
@@ -573,8 +567,8 @@
     max-height: 17rem;
     margin-top: 0.65rem;
     border: 1px solid var(--border);
-    border-radius: 0.3rem;
-    background: var(--surface);
+    border-radius: 0.2rem;
+    background: var(--surface-raised);
     overflow-y: auto;
   }
 
@@ -627,8 +621,8 @@
     justify-content: space-between;
     gap: 1rem;
     align-items: start;
-    padding-block: 0.9rem;
-    background: color-mix(in srgb, var(--surface-sunken) 62%, transparent);
+    padding-block: 1rem;
+    border-bottom: 1px solid var(--border);
   }
 
   .kind,
@@ -649,16 +643,8 @@
 
   .canvas-frame {
     position: relative;
-    border-block: 1px solid var(--border);
-    background:
-      linear-gradient(color-mix(in srgb, var(--border) 12%, transparent) 1px, transparent 1px),
-      linear-gradient(
-        90deg,
-        color-mix(in srgb, var(--border) 12%, transparent) 1px,
-        transparent 1px
-      ),
-      var(--surface);
-    background-size: 24px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-sunken);
   }
 
   .canvas {
@@ -672,38 +658,46 @@
     bottom: 0.65rem;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.3rem;
+    gap: 0.75rem;
     max-width: calc(100% - 1.3rem);
     border: 1px solid var(--border);
-    border-radius: 0.35rem;
-    padding: 0.35rem;
-    background: color-mix(in srgb, var(--surface-raised) 92%, transparent);
+    border-radius: 0.15rem;
+    padding: 0.45rem 0.55rem;
+    background: var(--surface-raised);
   }
 
   .legend span {
-    border-radius: 999px;
-    padding: 0.15rem 0.42rem;
-    color: white;
-    font-size: 0.68rem;
+    display: inline-flex;
+    gap: 0.3rem;
+    align-items: center;
+    padding: 0;
+    color: var(--text-muted);
+    font-size: 0.65rem;
   }
 
-  .legend .document {
+  .legend span::before {
+    width: 0.45rem;
+    height: 0.45rem;
+    content: '';
+  }
+
+  .legend .document::before {
     background: #245c73;
   }
 
-  .legend .entity {
+  .legend .entity::before {
     background: #176b68;
   }
 
-  .legend .event {
+  .legend .event::before {
     background: #956019;
   }
 
-  .legend .operator {
+  .legend .operator::before {
     background: #75558a;
   }
 
-  .legend .value {
+  .legend .value::before {
     background: #5d6871;
   }
 
@@ -720,7 +714,7 @@
 
   .view-status {
     margin: 0;
-    padding-block: 0.7rem;
+    padding-block: 0.75rem;
     border-bottom: 1px solid var(--border);
   }
 
@@ -731,7 +725,7 @@
 
   .path-panel {
     border-bottom: 1px solid var(--border);
-    background: color-mix(in srgb, var(--warn) 7%, var(--surface-raised));
+    border-left: 2px solid var(--warn);
   }
 
   .path-panel p {
@@ -776,7 +770,7 @@
     gap: 0.55rem;
     align-items: center;
     border-top: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
-    padding-block: 0.45rem;
+    padding-block: 0.55rem;
   }
 
   .relations button,
@@ -803,7 +797,8 @@
   summary {
     color: var(--action);
     cursor: pointer;
-    font-weight: 700;
+    font-size: 0.82rem;
+    font-weight: 650;
   }
 
   .node-index {

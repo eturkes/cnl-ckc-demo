@@ -33,17 +33,21 @@ const elementsOf = (
         .filter(Boolean)
         .join(' '),
     })),
-    ...subgraph.edges.map((edge) => ({
-      group: 'edges' as const,
-      data: {
-        id: edge.id,
-        source: edge.source,
-        target: edge.target,
-        label: edge.label,
-        kind: edge.kind,
-      },
-      classes: pathEdges.has(edge.id) ? 'path' : '',
-    })),
+    // Self-relations remain in the complete HTML relationship view. Cytoscape
+    // cannot draw them as straight edges, so omit them from this compact canvas.
+    ...subgraph.edges
+      .filter((edge) => edge.source !== edge.target)
+      .map((edge) => ({
+        group: 'edges' as const,
+        data: {
+          id: edge.id,
+          source: edge.source,
+          target: edge.target,
+          label: edge.label,
+          kind: edge.kind,
+        },
+        classes: pathEdges.has(edge.id) ? 'path' : '',
+      })),
   ];
 };
 
@@ -75,12 +79,12 @@ const stylesheet = (): cytoscape.StylesheetJson => [
   {
     selector: 'edge',
     style: {
-      width: 1.25,
-      'line-color': '#8f8270',
-      'target-arrow-color': '#8f8270',
+      width: 1,
+      'line-color': '#7f8b98',
+      'target-arrow-color': '#7f8b98',
       'target-arrow-shape': 'triangle',
-      'curve-style': 'bezier',
-      opacity: 0.72,
+      'curve-style': 'straight',
+      opacity: 0.38,
     },
   },
   {
@@ -97,10 +101,10 @@ const stylesheet = (): cytoscape.StylesheetJson => [
   {
     selector: 'node.selected',
     style: {
-      'border-color': '#1b1f23',
+      'border-color': '#ffffff',
       'border-width': 4,
-      'underlay-color': '#fffdf8',
-      'underlay-opacity': 0.8,
+      'underlay-color': '#174f9e',
+      'underlay-opacity': 0.55,
       'underlay-padding': 5,
       'z-index': 10,
     },
@@ -123,7 +127,6 @@ export const mountGraphCanvas = async (
     style: stylesheet(),
     minZoom: 0.2,
     maxZoom: 3,
-    wheelSensitivity: 0.18,
     selectionType: 'single',
   });
   cy.on('tap', 'node', (event: cytoscape.EventObjectNode) => {

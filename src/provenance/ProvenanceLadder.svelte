@@ -110,7 +110,7 @@
 <section class="trace" aria-labelledby="trace-heading">
   <div class="title-row">
     <div>
-      <p class="eyebrow">Provenance</p>
+      <p class="eyebrow">Evidence</p>
       <h2 id="trace-heading">Proof to source</h2>
     </div>
     {#if documentId !== undefined}
@@ -248,11 +248,9 @@
 
 <style>
   .trace {
-    margin-top: 1.5rem;
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    background: var(--surface-raised);
-    overflow: clip;
+    max-width: 52rem;
+    margin-top: 1.75rem;
+    border-top: 1px solid var(--border);
   }
 
   .title-row {
@@ -260,27 +258,29 @@
     gap: 1rem;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 1rem 0;
+    padding: 1rem 0 0;
   }
 
   .eyebrow {
-    margin: 0;
-    color: var(--action);
-    font-size: 0.72rem;
+    margin: 0 0 0.2rem;
+    color: var(--text-muted);
+    font-family: var(--font-code);
+    font-size: 0.65rem;
     font-weight: 700;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
   h2 {
-    margin: 0.1rem 0 0;
-    font-family: var(--font-prose);
-    font-size: 1.25rem;
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 650;
   }
 
   h3 {
     margin: 0 0 0.35rem;
-    font-size: 0.9rem;
+    font-size: 0.84rem;
+    font-weight: 700;
   }
 
   p {
@@ -289,18 +289,18 @@
 
   .trace-summary {
     margin: 0;
-    padding: 0.65rem 1rem 1rem;
+    padding: 0.5rem 0 1rem;
     color: var(--text-muted);
-    font-size: 0.88rem;
+    font-size: 0.8rem;
   }
 
   .graph-link,
   .page-actions button,
   .load-error button {
     flex: none;
-    border: 1px solid var(--action);
-    border-radius: 999px;
-    padding: 0.35rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 0.2rem;
+    padding: 0.4rem 0.65rem;
     background: transparent;
     color: var(--action);
     font: inherit;
@@ -313,40 +313,47 @@
   }
 
   .ladder > summary {
-    padding: 0.75rem 1rem;
+    padding: 0.8rem 0;
     color: var(--action);
-    font-weight: 650;
+    font-size: 0.82rem;
+    font-weight: 700;
     cursor: pointer;
   }
 
   ol {
+    counter-reset: evidence-step;
     margin: 0;
-    padding: 0 1rem 1rem 3.1rem;
+    padding: 0;
+    list-style: none;
   }
 
   ol > li {
     position: relative;
-    min-height: 3rem;
-    padding: 0 0 1.25rem 0.65rem;
-    border-left: 2px solid var(--border);
+    counter-increment: evidence-step;
+    min-height: 3.5rem;
+    border-top: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
+    padding: 1rem 0 1rem 2.8rem;
   }
 
-  ol > li::marker {
-    color: var(--action);
+  ol > li::before {
+    position: absolute;
+    top: 1rem;
+    left: 0;
+    content: counter(evidence-step, decimal-leading-zero);
+    color: var(--text-muted);
     font-family: var(--font-code);
+    font-size: 0.68rem;
     font-weight: 700;
   }
 
   ol > li:last-child {
-    border-left-color: transparent;
-    padding-bottom: 0;
+    padding-bottom: 0.4rem;
   }
 
   ol p,
   blockquote,
   dd {
-    font-family: var(--font-prose);
-    font-size: 0.9rem;
+    font-size: 0.84rem;
   }
 
   .technical {
@@ -383,10 +390,11 @@
   .clause {
     display: block;
     margin: 0.4rem 0;
-    padding: 0.65rem;
-    border-radius: 0.35rem;
+    padding: 0.7rem;
+    border-radius: 0.15rem;
     background: var(--surface-sunken);
-    font-size: 0.76rem;
+    font-size: 0.73rem;
+    line-height: 1.55;
     overflow-wrap: anywhere;
   }
 
@@ -418,8 +426,9 @@
 
   blockquote {
     margin: 0.25rem 0 0.8rem;
-    border-left: 3px solid var(--action);
-    padding: 0.25rem 0 0.25rem 0.85rem;
+    border-left: 2px solid var(--action);
+    padding: 0.15rem 0 0.15rem 0.85rem;
+    font-family: var(--font-prose);
   }
 
   dl {
@@ -447,9 +456,8 @@
 
   .disclosures {
     margin-top: 0.75rem;
-    border-radius: 0.4rem;
-    padding: 0.75rem;
-    background: var(--surface-sunken);
+    border-left: 2px solid var(--border);
+    padding: 0.1rem 0 0.1rem 0.8rem;
   }
 
   .disclosures p:last-child {
@@ -473,7 +481,6 @@
     min-height: min(65vh, 42rem);
     margin-top: 0.85rem;
     border: 1px solid var(--border);
-    border-radius: 0.35rem;
     background: white;
   }
 
@@ -491,7 +498,7 @@
     }
 
     ol {
-      padding-left: 2.5rem;
+      padding-left: 0;
     }
 
     dl div {

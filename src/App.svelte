@@ -79,63 +79,68 @@
 
 <div class="site-shell">
   <header class="site-header">
-    <a class="brand" href="#top" aria-label="CNL CKC demo home">
-      <span class="brand-mark" aria-hidden="true">CNL</span>
-      <span>Clinical Knowledge Compiler</span>
-    </a>
-    <nav aria-label="Page">
-      <a href="#ask">Ask</a>
-      <a href="#graph">Graph</a>
-      <a href="#about">About</a>
-    </nav>
-    <ThemeToggle />
+    <div class="header-inner">
+      <a class="brand" href="#top" aria-label="CNL CKC demo home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>CNL / CKC</span>
+      </a>
+      <nav aria-label="Page">
+        <a href="#ask">Query</a>
+        <a href="#graph">Graph</a>
+        <a href="#about">Notes</a>
+      </nav>
+      <ThemeToggle />
+    </div>
   </header>
 
   <main id="top" data-engine={engine}>
     <section class="hero" aria-labelledby="page-title">
-      <p class="eyebrow">Executable guideline knowledge</p>
-      <h1 id="page-title">{DESCRIPTIONS.wordmark}</h1>
-      <p class="lede">{DESCRIPTIONS.lede}</p>
+      <div class="hero-copy">
+        <p class="eyebrow">Controlled language · Prolog · WebAssembly</p>
+        <h1 id="page-title">{DESCRIPTIONS.wordmark}</h1>
+        <p class="lede">{DESCRIPTIONS.lede}</p>
+      </div>
       <div class="source-note">
-        <span aria-hidden="true">Source 01</span>
-        <p>
-          Compiled from the
-          <a href={GUIDELINE.html} target="_blank" rel="noreferrer">{GUIDELINE.title}</a>. This
-          demonstration is not clinical guidance.
-        </p>
+        <span>Source material</span>
+        <a href={GUIDELINE.html} target="_blank" rel="noreferrer">{GUIDELINE.title}</a>
+        <p>Research prototype. Not clinical guidance.</p>
       </div>
     </section>
 
-    <section id="ask" class="ask-card" aria-labelledby="ask-heading">
-      <div class="section-heading">
-        <p class="eyebrow">Live Prolog</p>
-        <h2 id="ask-heading">Ask the compiled guideline</h2>
+    <section id="ask" class="workbench" aria-labelledby="ask-heading">
+      <header class="section-heading">
+        <div>
+          <p class="eyebrow">Query</p>
+          <h2 id="ask-heading">Ask the compiled guideline</h2>
+        </div>
+        <p>{INSTRUCTIONS.selectQuestion} {INSTRUCTIONS.runQuestion}</p>
+      </header>
+
+      <div class="query-area">
+        <QuestionCombobox
+          selected={demo.selected}
+          onSelect={(id: QuestionId) => {
+            demo.select(id);
+          }}
+        />
+
+        <RunControls
+          status={description.status}
+          error={description.error}
+          busy={description.busy}
+          {canRun}
+          {showRetry}
+          onRun={() => {
+            void demo.run();
+          }}
+          onCancel={() => {
+            void demo.cancel();
+          }}
+          onRetry={() => {
+            void demo.retry();
+          }}
+        />
       </div>
-      <p class="hint">{INSTRUCTIONS.selectQuestion} {INSTRUCTIONS.runQuestion}</p>
-
-      <QuestionCombobox
-        selected={demo.selected}
-        onSelect={(id: QuestionId) => {
-          demo.select(id);
-        }}
-      />
-
-      <RunControls
-        status={description.status}
-        error={description.error}
-        busy={description.busy}
-        {canRun}
-        {showRetry}
-        onRun={() => {
-          void demo.run();
-        }}
-        onCancel={() => {
-          void demo.cancel();
-        }}
-        onRetry={() => {
-          void demo.retry();
-        }}
-      />
 
       <!-- Always mounted: `aria-busy` has to be readable while the run is live, and a
            region that appears only at settle cannot announce its own replacement. -->
@@ -199,42 +204,58 @@
     position: sticky;
     z-index: 20;
     top: 0;
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--surface-raised) 96%, transparent);
+    backdrop-filter: blur(10px);
+  }
+
+  .header-inner {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto auto;
-    gap: clamp(0.5rem, 2vw, 1.5rem);
+    gap: clamp(1rem, 3vw, 2rem);
     align-items: center;
-    width: min(100% - 2rem, 76rem);
+    width: min(100% - 3rem, 72rem);
+    min-height: 3.75rem;
     margin: 0 auto;
-    border-bottom: 1px solid var(--border);
-    padding: 0.65rem 0;
-    background: color-mix(in srgb, var(--surface) 92%, transparent);
-    backdrop-filter: blur(14px);
   }
 
   .brand {
     display: flex;
     min-width: 0;
-    gap: 0.65rem;
+    gap: 0.7rem;
     align-items: center;
     color: var(--text);
-    font-size: 0.82rem;
+    font-family: var(--font-code);
+    font-size: 0.75rem;
     font-weight: 700;
+    letter-spacing: 0.08em;
     text-decoration: none;
   }
 
   .brand-mark {
-    flex: none;
-    border-radius: 0.25rem;
-    padding: 0.18rem 0.35rem;
+    display: grid;
+    grid-template-columns: repeat(3, 0.3rem);
+    gap: 0.18rem;
+  }
+
+  .brand-mark i {
+    display: block;
+    width: 0.3rem;
+    height: 1rem;
     background: var(--action);
-    color: var(--action-text);
-    font-family: var(--font-code);
-    letter-spacing: 0.08em;
+  }
+
+  .brand-mark i:nth-child(2) {
+    opacity: 0.65;
+  }
+
+  .brand-mark i:nth-child(3) {
+    opacity: 0.3;
   }
 
   nav {
     display: flex;
-    gap: clamp(0.55rem, 2vw, 1.25rem);
+    gap: 1.5rem;
   }
 
   nav a,
@@ -245,8 +266,9 @@
   }
 
   nav a {
-    font-size: 0.82rem;
-    font-weight: 650;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
     text-decoration: none;
   }
 
@@ -256,96 +278,110 @@
   }
 
   main {
-    width: min(100% - 2rem, 76rem);
+    width: min(100% - 3rem, 72rem);
     margin: 0 auto;
-    padding: clamp(2.5rem, 7vw, 6.5rem) 0 3rem;
+    padding: clamp(2.75rem, 6vw, 4rem) 0 4rem;
   }
 
   .hero {
     display: grid;
-    grid-template-columns: minmax(0, 3fr) minmax(14rem, 1fr);
-    gap: clamp(1.5rem, 5vw, 5rem);
-    align-items: end;
-    margin-bottom: clamp(2.5rem, 7vw, 5rem);
-  }
-
-  .hero > .eyebrow,
-  .hero > h1,
-  .hero > .lede {
-    grid-column: 1;
+    grid-template-columns: minmax(0, 1fr) minmax(14rem, 19rem);
+    gap: clamp(2.5rem, 7vw, 7rem);
+    align-items: start;
+    margin-bottom: clamp(3.25rem, 6vw, 4rem);
   }
 
   .eyebrow {
-    margin: 0 0 0.5rem;
+    margin: 0 0 0.8rem;
     color: var(--action);
     font-family: var(--font-code);
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     font-weight: 700;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
   }
 
   h1 {
     margin: 0;
-    font-family: var(--font-prose);
-    font-size: clamp(2.35rem, 7vw, 5.75rem);
+    max-width: 44rem;
+    font-size: clamp(2.4rem, 5vw, 3.75rem);
     font-weight: 650;
-    line-height: 0.98;
-    letter-spacing: -0.045em;
+    line-height: 1.02;
+    letter-spacing: -0.04em;
     text-wrap: balance;
   }
 
   .lede {
-    max-width: 47rem;
-    margin: 1.25rem 0 0;
-    font-family: var(--font-prose);
-    font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+    max-width: 43rem;
+    margin: 1.4rem 0 0;
+    color: var(--text-muted);
+    font-size: clamp(1rem, 1.8vw, 1.17rem);
+    line-height: 1.6;
   }
 
   .source-note {
-    grid-row: 1 / span 3;
-    grid-column: 2;
-    border-top: 3px solid var(--action);
-    padding-top: 0.75rem;
+    margin-top: 1.55rem;
+    border-left: 1px solid var(--border);
+    padding-left: 1.25rem;
   }
 
-  .source-note > span {
+  .source-note span {
     display: block;
-    margin-bottom: 0.45rem;
+    margin-bottom: 0.6rem;
     color: var(--text-muted);
     font-family: var(--font-code);
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
+    font-size: 0.67rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
   }
 
-  .source-note p {
-    margin: 0;
-    font-family: var(--font-prose);
-    font-size: 0.92rem;
+  .source-note > a {
+    display: inline;
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.45;
   }
 
-  .ask-card {
-    max-width: 54rem;
+  .source-note p {
+    margin: 0.8rem 0 0;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+  }
+
+  .workbench {
     scroll-margin-top: 5rem;
     border: 1px solid var(--border);
-    border-radius: 0.8rem;
-    padding: clamp(1rem, 4vw, 2rem);
     background: var(--surface-raised);
-    box-shadow: 0 1.5rem 4rem color-mix(in srgb, var(--text) 8%, transparent);
+  }
+
+  .section-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(15rem, 26rem);
+    gap: 2rem;
+    align-items: end;
+    border-bottom: 1px solid var(--border);
+    padding: clamp(1.25rem, 3vw, 2rem);
+    background: var(--surface-sunken);
   }
 
   .section-heading h2 {
     margin: 0;
-    font-family: var(--font-prose);
-    font-size: clamp(1.45rem, 4vw, 2.25rem);
-    line-height: 1.15;
+    font-size: clamp(1.35rem, 3vw, 2rem);
+    font-weight: 650;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
   }
 
-  .hint {
-    margin: 0.65rem 0 1.5rem;
+  .section-heading > p {
+    margin: 0;
     color: var(--text-muted);
-    font-size: 0.9rem;
+    font-size: 0.86rem;
+  }
+
+  .query-area {
+    padding: clamp(1.25rem, 3vw, 2rem);
   }
 
   .graph-region {
@@ -363,7 +399,6 @@
   }
 
   #about {
-    max-width: 54rem;
     scroll-margin-top: 5rem;
   }
 
@@ -371,12 +406,13 @@
     display: flex;
     justify-content: space-between;
     gap: 2rem;
-    width: min(100% - 2rem, 76rem);
+    width: min(100% - 3rem, 72rem);
     margin: 0 auto;
     border-top: 1px solid var(--border);
-    padding: 1.25rem 0 2.5rem;
+    padding: 1.5rem 0 3rem;
     color: var(--text-muted);
-    font-size: 0.82rem;
+    font-size: 0.76rem;
+    line-height: 1.5;
   }
 
   footer div {
@@ -398,29 +434,28 @@
   }
 
   @media (max-width: 44rem) {
-    .site-header {
+    .header-inner {
       grid-template-columns: minmax(0, 1fr) auto;
     }
 
-    .brand > span:last-child,
     nav {
       display: none;
     }
 
     .hero {
       grid-template-columns: 1fr;
-    }
-
-    .hero > .eyebrow,
-    .hero > h1,
-    .hero > .lede,
-    .source-note {
-      grid-row: auto;
-      grid-column: 1;
+      gap: 1.5rem;
     }
 
     .source-note {
-      max-width: 30rem;
+      max-width: 32rem;
+      margin-top: 0;
+    }
+
+    .section-heading {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      align-items: start;
     }
 
     footer {
@@ -435,17 +470,13 @@
 
   @media (max-width: 24rem) {
     main,
-    .site-header,
+    .header-inner,
     footer {
-      width: min(100% - 1rem, 76rem);
+      width: min(100% - 1.5rem, 72rem);
     }
 
     h1 {
-      font-size: clamp(2rem, 13vw, 3rem);
-    }
-
-    .ask-card {
-      padding: 0.85rem;
+      font-size: clamp(2rem, 11vw, 2.75rem);
     }
   }
 </style>
