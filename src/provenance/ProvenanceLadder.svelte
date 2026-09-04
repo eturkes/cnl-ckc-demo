@@ -84,11 +84,11 @@
   const describe = (value: ProvenanceState): string => {
     switch (value.kind) {
       case 'idle':
-        return 'Select an answer to trace its proof.';
+        return 'Select a citation to trace that part of the answer.';
       case 'loading':
-        return 'Re-proving the selected answer.';
+        return 'Re-proving the selected source contribution.';
       case 'failure':
-        return 'The selected answer could not be re-proved.';
+        return 'The selected source contribution could not be re-proved.';
       case 'limit':
         return `The proof trace stopped at the ${value.limit} limit.`;
       case 'cancelled':
@@ -98,7 +98,7 @@
       case 'error':
         return `The proof trace failed (${value.error.code}). ${value.error.message}`;
       case 'ready':
-        return `${String(flattenProof(value.steps).length)} source clauses re-proved this answer live.`;
+        return `${String(flattenProof(value.steps).length)} source clauses re-proved this part of the answer live.`;
       default: {
         const exhaustive: never = value;
         return exhaustive;
@@ -135,7 +135,10 @@
       <ol>
         <li>
           <h3>Live Prolog proof</h3>
-          <p>The engine re-ran the selected solution through its bounded proof interpreter.</p>
+          <p>
+            The engine re-ran the selected source contribution through its bounded proof
+            interpreter.
+          </p>
           <details class="technical">
             <summary>{steps.length} proof {steps.length === 1 ? 'step' : 'steps'}</summary>
             <ul class="proof-steps">

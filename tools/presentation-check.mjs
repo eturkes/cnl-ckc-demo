@@ -50,7 +50,10 @@ const LICENCES = [...new Set(FACES.map((f) => f.pkg))];
 const CONTAINMENT = [
   { file: 'src/questions/QuestionCombobox.svelte', selectors: ['.box', '.list li'] },
   { file: 'src/demo/RunControls.svelte', selectors: ['.status', '.alert'] },
-  { file: 'src/demo/AnswerPanel.svelte', selectors: ['label', 'dd', 'code'] },
+  {
+    file: 'src/demo/AnswerPanel.svelte',
+    selectors: ['.answer-point', '.document-id', '.source-card blockquote', '.canonical code'],
+  },
 ];
 
 /** Values that actually break an unbreakable token; `normal` and `initial` do not. */

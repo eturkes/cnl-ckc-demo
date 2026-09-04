@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import App from '../src/App.svelte';
 import type { BootOutcome } from '../src/engine/client.js';
 import type { EngineContract, EngineError, LimitKind, PlSolution } from '../src/engine/protocol.js';
-import { QUESTION_IDS, type QuestionId } from '../src/questions/catalog.js';
+import { QUESTION_CATALOG, QUESTION_IDS, type QuestionId } from '../src/questions/catalog.js';
 import type { AnswerResult } from '../src/questions/service.js';
 import {
   DemoController,
@@ -286,22 +286,48 @@ describe('view states and accessibility', () => {
     expect(target.querySelector('fieldset')).toBeNull();
   });
 
-  it('V7 renders many answers as one labelled native radio group with index zero checked', () => {
+  it('V7 combines many solutions into one assistant answer with source citations', () => {
     controller.solutionIndex = 0;
     setState({ kind: 'settled', id: ID, result: answer(ID, 3, 'choice') });
-    const fields = [...target.querySelectorAll<HTMLFieldSetElement>('fieldset')];
-    const choices = radios();
+    const points = [...answerRegion().querySelectorAll<HTMLElement>('.answer-point')];
+    const citations = [...answerRegion().querySelectorAll<HTMLButtonElement>('.citations button')];
 
-    expect(fields).toHaveLength(1);
-    expect(text(fields[0]?.querySelector('legend') ?? document.createTextNode(''))).toBeTruthy();
-    expect(choices).toHaveLength(3);
-    expect(new Set(choices.map((choice) => choice.name)).size).toBe(1);
-    expect(choices[0]?.name).toBeTruthy();
-    expect(choices.filter((choice) => choice.checked)).toEqual([choices[0]]);
-    for (const choice of choices) {
-      expect(choice.hasAttribute('tabindex')).toBe(false);
-      expect(choice.labels?.length).toBeGreaterThan(0);
-    }
+    expect(
+      text(answerRegion().querySelector('.question-turn') ?? document.createTextNode('')),
+    ).toContain(QUESTION_CATALOG[ID].question);
+    expect(answerRegion().querySelector('[aria-label="Deterministic answer"]')).not.toBeNull();
+    expect(points).toHaveLength(3);
+    expect(points.map((point) => text(point))).toEqual([
+      'choice-display-0 1',
+      'choice-display-1 2',
+      'choice-display-2 3',
+    ]);
+    expect(citations.map((citation) => citation.getAttribute('aria-label'))).toEqual([
+      'Inspect source 1 for this statement',
+      'Inspect source 2 for this statement',
+      'Inspect source 3 for this statement',
+    ]);
+    expect(radios()).toHaveLength(0);
+    expect(answerRegion().querySelector('fieldset')).toBeNull();
+    expect(answerRegion().querySelector<HTMLDetailsElement>('.explanation')?.open).toBe(false);
+  });
+
+  it('V7 opens secondary evidence and changes the traced contribution from a citation', () => {
+    controller.solutionIndex = 0;
+    setState({ kind: 'settled', id: ID, result: answer(ID, 3, 'cited') });
+    const citation = answerRegion().querySelectorAll<HTMLButtonElement>('.citations button')[1];
+    if (citation === undefined) throw new Error('second source citation is missing');
+
+    citation.click();
+    flushSync();
+
+    expect(controller.solutionIndex).toBe(1);
+    expect(answerRegion().querySelector<HTMLDetailsElement>('.explanation')?.open).toBe(true);
+    expect(
+      answerRegion()
+        .querySelectorAll<HTMLButtonElement>('.source-picker button')[1]
+        ?.getAttribute('aria-pressed'),
+    ).toBe('true');
   });
 
   it('V7 renders one answer without a group and zero answers as terminal state alone', () => {
@@ -309,7 +335,9 @@ describe('view states and accessibility', () => {
     setState({ kind: 'settled', id: ID, result: answer(ID, 1, 'sole') });
     expect(radios()).toHaveLength(0);
     expect(target.querySelector('fieldset')).toBeNull();
-    expect(text(answerRegion())).toMatch(/sole-(?:serialized|display-0)/u);
+    expect(text(answerRegion().querySelector('.answer-point') ?? document.createTextNode(''))).toBe(
+      'sole-display-0 1',
+    );
 
     controller.solutionIndex = -1;
     setState({ kind: 'settled', id: ID, result: failure(ID) });
@@ -322,14 +350,14 @@ describe('view states and accessibility', () => {
     controller.solutionIndex = 0;
     setState({ kind: 'settled', id: ID, result: structuredAnswer() });
 
-    const items = [...answerRegion().querySelectorAll<HTMLLIElement>('.advice-list > li')];
-    expect(items.map((item) => text(item))).toEqual([
-      'Clinicians should maximize nonopioid therapy for acute pain.',
-    ]);
+    const item = answerRegion().querySelector('.answer-point');
+    expect(text(item ?? document.createTextNode(''))).toBe(
+      'Clinicians should maximize nonopioid therapy for acute pain. 1',
+    );
     expect(answerRegion().querySelector('dl')).toBeNull();
     expect(
-      text(answerRegion().querySelector('.source-passage') ?? document.createTextNode('')),
-    ).toContain('Exact source passage.');
+      text(answerRegion().querySelector('.source-card blockquote') ?? document.createTextNode('')),
+    ).toBe('Exact source passage.');
   });
 
   it('V8 uses native button disabled states and offers Retry for engine errors', () => {
@@ -475,7 +503,9 @@ describe('view states and accessibility', () => {
     controller.solutionIndex = 0;
     setState({ kind: 'settled', id: ID, result });
     const visible = text(answerRegion());
-    const value = text(answerRegion().querySelector('dd') ?? document.createTextNode(''));
+    const value = text(
+      answerRegion().querySelector('.answer-point') ?? document.createTextNode(''),
+    );
 
     expect(visible).toContain('cdc2022-opioid-rec02 — sentence 42, ref 7');
     // Every token in the label is the term's own; nothing is glossed or stringified.
@@ -498,10 +528,10 @@ describe('view states and accessibility', () => {
     expect(allowed.some((value) => visible.includes(value))).toBe(true);
     expect(visible).not.toContain('binding-poison');
     expect(visible).not.toMatch(/["{](?:kind|value)[":]/u);
-    for (const choice of radios()) {
-      const label = text(choice.labels?.[0] ?? document.createTextNode(''));
-      expect(allowed.some((value) => label.includes(value))).toBe(true);
-      expect(label).not.toContain('binding-poison');
+    for (const point of answerRegion().querySelectorAll('.answer-point')) {
+      const rendered = text(point);
+      expect(allowed.some((value) => rendered.includes(value))).toBe(true);
+      expect(rendered).not.toContain('binding-poison');
     }
   });
 });

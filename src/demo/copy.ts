@@ -12,7 +12,7 @@
 /** Imperative text. One instruction per sentence, 20 words per sentence. */
 export const INSTRUCTIONS = {
   selectQuestion: 'Select a prepared clinical question.',
-  runQuestion: 'Select Run to prove the question against the knowledge base.',
+  runQuestion: 'Select Run to get a deterministic answer from the knowledge base.',
   notClinical: 'Do not use this demo to make clinical decisions.',
   readLicence: 'Read the font licences for the three typefaces below.',
 } as const;
@@ -27,7 +27,6 @@ export const DESCRIPTIONS = {
 
   aboutSummary: 'About this demo',
   prologSummary: 'Canonical Prolog answer',
-  sourcePassageSummary: 'Read the exact source passage',
   licenceSummary: 'Typefaces',
 
   purpose:
@@ -42,7 +41,12 @@ export const DESCRIPTIONS = {
   clauseRendering:
     'The engine returned structured controlled-language clauses. Fixed rendering rules preserve their conditions, modality, negation, actions and qualifiers.',
 
+  answerAssembly:
+    'All proved recommendations are combined into one answer. Numbered citations retain the source relationship for each rendered statement.',
+
   sourcePassage: 'This passage is carried in the same Prolog result and remains unchanged.',
+  sourceUnavailable:
+    'This result has no structured source passage. Its canonical Prolog value remains available below.',
 
   // No corpus number is written here. The count is read from the booted engine and
   // substituted into `corpusSize`, so shipped copy can never state a size the engine

@@ -1,17 +1,17 @@
 # CNL CKC Demo
 
 A static browser demo of an executable clinical-guideline knowledge base. It runs
-SWI-Prolog in a web worker, answers seven prepared clinical questions from 337 compiled
-documents, traces a selected solution back to its source, and exposes the full
-semantic graph.
+SWI-Prolog in a web worker, combines matching recommendations into answers for seven
+prepared clinical questions, traces each cited contribution back to its source, and
+exposes the full semantic graph.
 
 The shipped answers are produced at run time. They are not stored UI fixtures.
 
 ## What is included
 
 - A bounded SWI-Prolog/WASM query engine with cancellation and worker recovery.
-- Deterministic advice bullets rendered from structured controlled clauses, with
-  no separately authored summaries and an exact source-passage fallback.
+- One deterministic, cited answer assembled from every matching structured Prolog
+  solution, with no separately authored summaries and an exact source-passage fallback.
 - A six-step evidence ladder: live proof, compiled clause, controlled sentence,
   coverage region, aligned source passage, and physical guideline PDF page.
 - Explicit projection-loss and `unreviewed` disclosures.
@@ -52,8 +52,8 @@ pnpm dev
 ```
 
 Open the URL printed by Vite. Wait for the engine to report ready, select a
-question, and select **Run**. Evidence data and the graph renderer load only when
-their controls are activated.
+question, and select **Run**. Select a numbered citation to inspect its proof and
+source. Evidence data and the graph renderer load only when their controls are activated.
 
 For a production build:
 

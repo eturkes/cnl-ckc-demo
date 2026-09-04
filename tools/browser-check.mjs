@@ -247,10 +247,12 @@ try {
   await narrowPage.locator('[role="option"]:first-of-type').click();
   await narrowPage.getByRole('button', { name: 'Run' }).click();
   // Engine-authored text is the whole risk, so measure once it is on screen.
-  await narrowPage.locator('section[aria-labelledby] .summary').waitFor({ timeout: TIMEOUT });
+  await narrowPage.waitForSelector('section[aria-labelledby] .answer-point', {
+    timeout: TIMEOUT,
+  });
   await fitsNarrow(narrowPage, 'answers rendered');
-  await narrowPage.locator('.source-passage summary').click();
-  await fitsNarrow(narrowPage, 'exact source open');
+  await narrowPage.locator('.explanation > summary').click();
+  await fitsNarrow(narrowPage, 'sources open');
   await narrowPage.locator('.canonical summary').click();
   await fitsNarrow(narrowPage, 'canonical form open');
   await narrowPage.waitForSelector('details.ladder > summary', { timeout: TIMEOUT });

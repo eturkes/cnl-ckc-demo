@@ -14,6 +14,7 @@ import { BUDGET_MAX } from '../src/engine/budget.js';
 import type { PlSolution } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
 import type { PlTerm } from '../src/engine/terms.js';
+import { answerRows, synthesizeAnswer } from '../src/demo/describe.js';
 import {
   QUESTION_CATALOG,
   QUESTION_IDS,
@@ -199,6 +200,36 @@ describe('live clinical answers', () => {
       });
       expect(documents, id).toEqual(expectedDocuments(id));
     }
+  });
+
+  it('combines every live source into one cited answer without losing a statement', () => {
+    for (const id of QUESTION_IDS) {
+      const rows = answerRows(id, answers.get(id) as PlSolution[]);
+      const points = synthesizeAnswer(rows);
+      expect(points.length, id).toBeGreaterThan(0);
+      for (const [source, row] of rows.entries()) {
+        for (const statement of row.items ?? [row.label]) {
+          const point = points.find(({ text }) => text === statement);
+          expect(point, `${id}: ${statement}`).toBeDefined();
+          expect(point?.sources, `${id}: ${statement}`).toContain(source);
+        }
+      }
+      expect([...new Set(points.flatMap(({ sources }) => sources))].sort((a, b) => a - b)).toEqual(
+        rows.map((_, index) => index),
+      );
+    }
+  });
+
+  it('merges only byte-identical statements and retains every contributing source', () => {
+    const points = synthesizeAnswer([
+      { cells: [], label: 'first', items: ['Shared.', 'Only first.'], structured: true },
+      { cells: [], label: 'second', items: ['Shared.', 'Only second.'], structured: true },
+    ]);
+    expect(points).toEqual([
+      { text: 'Shared.', sources: [0, 1] },
+      { text: 'Only first.', sources: [0] },
+      { text: 'Only second.', sources: [1] },
+    ]);
   });
 
   it('returns a source identifier beside every projected statement', () => {

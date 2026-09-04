@@ -74,8 +74,18 @@ try {
   await page.locator(`[role="option"][id$="-option-${QUESTION}"]`).click();
   await page.getByRole('button', { name: 'Run' }).click();
 
-  // The canonical answer ships behind a disclosure, so a visibility wait needs
-  // it open first. Opening it is also what proves the control works.
+  const points = page.locator('section[aria-labelledby] .answer-point');
+  await page.waitForSelector('section[aria-labelledby] .answer-point', { timeout: 45_000 });
+  if ((await page.locator('.thread .turn').count()) !== 2)
+    fail('the answer did not render as one question and one assistant turn');
+  if ((await page.locator('input[type="radio"]').count()) !== 0)
+    fail('source solutions regressed into competing answer choices');
+  if ((await page.locator('.explanation').getAttribute('open')) !== null)
+    fail('source explanation was expanded before the user requested it');
+
+  // Source mechanics stay behind the answer's explanation disclosure. Opening
+  // both layers proves the controls while leaving them secondary in normal use.
+  await page.locator('.explanation > summary').click();
   await page.locator('.canonical summary').click();
 
   const answer = page.locator('section[aria-labelledby] .canonical code');
@@ -87,15 +97,16 @@ try {
     );
   }
 
-  const rows = await page.locator('section[aria-labelledby] fieldset input[type="radio"]').count();
-  if (rows !== expected.rows)
-    fail(`expected ${String(expected.rows)} answer rows, rendered ${rows}`);
-  const bullets = await page.locator('section[aria-labelledby] .advice-list li').count();
-  if (bullets === 0) fail('the structured answer rendered no deterministic advice bullets');
-  const sources = await page.locator('section[aria-labelledby] .source-passage').count();
-  if (sources !== 1) {
-    fail(`expected one exact-source disclosure, rendered ${String(sources)}`);
+  const sourceButtons = await page.locator('.source-picker button').count();
+  if (sourceButtons !== expected.rows) {
+    fail(`expected ${String(expected.rows)} selectable sources, rendered ${sourceButtons}`);
   }
+  const bullets = await points.count();
+  if (bullets === 0) fail('the structured answer rendered no deterministic advice statements');
+  const citations = await page.locator('.answer-point .citations button').count();
+  if (citations < expected.rows) fail('the combined answer omitted source citations');
+  if ((await page.locator('.source-card blockquote').count()) !== 1)
+    fail('the open explanation rendered no exact source passage');
   if ((await page.locator('[data-engine="error"]').count()) > 0)
     fail('the engine reported an error');
 
@@ -105,8 +116,8 @@ try {
 
   const served = log.filter((entry) => entry.status === 200).length;
   console.log(
-    `smoke: ok — ${url} answered ${QUESTION} with ${rows} structured rows and ` +
-      `${String(bullets)} deterministic bullets, ` +
+    `smoke: ok — ${url} combined ${String(expected.rows)} Prolog solutions into ` +
+      `${String(bullets)} cited deterministic statements, ` +
       `${served} nested requests served`,
   );
 } finally {

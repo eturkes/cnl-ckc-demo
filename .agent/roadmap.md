@@ -45,15 +45,17 @@ verified, but they are not represented as formally adjudicated.
 - **M4:** proof-to-graph focus linking, responsive light/dark presentation,
   bounded boot recovery, static nested-path deployment, GitHub Pages automation,
   CSP guidance, and a release check are present.
+  The answer surface combines every matching Prolog solution into one chat-style response;
+  numbered statement citations keep source and proof inspection secondary but reachable.
 
 The manifest records 343 runtime assets: the PVM, QLF, question catalog, clause
 index, 337 provenance chunks, source PDF, and semantic graph. Fresh forced builds
 are byte-identical.
 
-Completion proof: `pnpm gate` passes with 285 tests in 25 files; the independent
+Completion proof: `pnpm gate` passes with 288 tests in 25 files; the independent
 reproduction check is byte-identical; the production smoke answer matches the
 vendored bag. Real-browser checks pass for development and nested production
-hosting, lazy evidence/graph/PDF loading, seven 320px interaction states, and
+hosting, lazy evidence/graph/PDF loading, eight 320px interaction states, and
 cooperative cancellation. Desktop, mobile, expanded-evidence, and dark-graph
 screens received direct visual inspection.
 

@@ -34,7 +34,7 @@ export interface AnswerCell {
 
 export interface AnswerRow {
   cells: AnswerCell[];
-  /** One-line accessible name for the row's radio. */
+  /** One-line lossless fallback when this result has no structured clauses. */
   label: string;
   /** Deterministic renderings of every grouped controlled clause. */
   items?: readonly string[];
@@ -43,6 +43,13 @@ export interface AnswerRow {
   /** Opaque corpus id, exposed only for diagnostics and source identity. */
   document?: string;
   structured?: true;
+}
+
+export interface AnswerPoint {
+  /** One deterministic reader-facing statement. */
+  text: string;
+  /** Zero-based solution indexes whose structured terms produce this statement. */
+  sources: number[];
 }
 
 const LIMIT_TEXT: Record<LimitKind, string> = {
@@ -68,8 +75,7 @@ const describeResult = (entry: CatalogEntry, result: AnswerResult): StateDescrip
         ? { ...blank, status: 'Answer: yes.', summary: 'Yes. The knowledge base proves it.' }
         : {
             ...blank,
-            status: `${count(result.solutions.length, 'recommendation')} for this question.`,
-            summary: count(result.solutions.length, 'recommendation'),
+            status: 'Answer ready.',
           };
     case 'failure':
       return isExistential(entry)
@@ -183,4 +189,29 @@ export const answerRows = (id: QuestionId, solutions: readonly PlSolution[]): An
       ...(primary?.document === undefined ? {} : { document: primary.document }),
     };
   });
+};
+
+/**
+ * Combine every solution into one answer while retaining statement-level source links.
+ *
+ * The operation is deliberately semantic-free: preserve solution order, preserve each
+ * rendered statement byte for byte, and merge exact duplicates by joining their source
+ * indexes. No topic vocabulary or clinical judgment enters the synthesis.
+ */
+export const synthesizeAnswer = (rows: readonly AnswerRow[]): AnswerPoint[] => {
+  const points: AnswerPoint[] = [];
+  const byText = new Map<string, AnswerPoint>();
+  for (const [source, row] of rows.entries()) {
+    const statements = row.items ?? [row.label];
+    for (const text of statements) {
+      let point = byText.get(text);
+      if (point === undefined) {
+        point = { text, sources: [] };
+        byText.set(text, point);
+        points.push(point);
+      }
+      if (!point.sources.includes(source)) point.sources.push(source);
+    }
+  }
+  return points;
 };

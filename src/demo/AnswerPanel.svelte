@@ -1,13 +1,6 @@
 <script lang="ts">
-  // The settled answer.
-  //
-  // One-of-N is the APG Radio Group pattern, and native radios inside a
-  // `fieldset` supply the group relationship, the checked state, the single tab
-  // stop and the arrow keys without a line of script. Structured answer terms
-  // become lists through one renderer; malformed terms show their exact passage.
-
   import { DESCRIPTIONS } from './copy.js';
-  import type { AnswerRow } from './describe.js';
+  import { synthesizeAnswer, type AnswerRow } from './describe.js';
   import ProvenanceLadder from '../provenance/ProvenanceLadder.svelte';
   import type { GraphFocus, ProvenanceState } from '../provenance/model.js';
 
@@ -15,7 +8,9 @@
     rows: AnswerRow[];
     selectedIndex: number;
     busy: boolean;
-    /** Terminal wording for the current state; the only content when there are no rows. */
+    /** The exact prepared question currently being answered. */
+    question: string;
+    /** Terminal wording for states that do not have a complete answer. */
     summary: string;
     /** Canonical serialized answer, engine-authored. Empty before the first run settles. */
     serialized: string;
@@ -28,6 +23,7 @@
     rows,
     selectedIndex,
     busy,
+    question,
     summary,
     serialized,
     onSelect,
@@ -37,264 +33,473 @@
 
   const uid = $props.id();
   const headingId = `${uid}-heading`;
-  const group = `${uid}-answers`;
-  // Derived here because ESLint types a `.svelte` import as `any`, which makes a
-  // member access on a narrowed value inside the template read as unsafe.
-  const selectedRow = $derived(rows[selectedIndex]);
-  const hasStructuredRows = $derived(rows.some((row) => row.structured === true));
+  const sourceHeadingId = `${uid}-source-heading`;
+  const points = $derived(synthesizeAnswer(rows));
+  const resolvedIndex = $derived(
+    selectedIndex >= 0 && selectedIndex < rows.length ? selectedIndex : 0,
+  );
+  const selectedRow = $derived(rows[resolvedIndex]);
+  let explanation = $state<HTMLDetailsElement>();
+
+  const inspect = (source: number): void => {
+    if (explanation !== undefined) explanation.open = true;
+    onSelect(source);
+  };
 </script>
 
-<section aria-labelledby={headingId} aria-busy={busy}>
-  <h2 id={headingId}>Result</h2>
-  {#if summary !== ''}
-    <p class="summary">{summary}</p>
-  {/if}
+<section class="answer-region" aria-labelledby={headingId} aria-busy={busy}>
+  <h2 id={headingId}>Answer</h2>
 
-  {#if hasStructuredRows}
-    <p class="render-note">{DESCRIPTIONS.clauseRendering}</p>
-  {/if}
+  {#if question === ''}
+    {#if summary !== ''}
+      <p class="empty-answer">{summary}</p>
+    {/if}
+  {:else}
+    {#key question}
+      <div class="thread">
+        <article class="turn question-turn" aria-label="Your question">
+          <p class="turn-name">You</p>
+          <p class="question">{question}</p>
+        </article>
 
-  {#if rows.length > 1}
-    <fieldset>
-      <legend>Select a recommendation to inspect its source</legend>
-      {#each rows as row, index (index)}
-        <label>
-          <input
-            type="radio"
-            name={group}
-            checked={index === selectedIndex}
-            onchange={() => {
-              onSelect(index);
-            }}
-          />
-          <span class="choice-copy">
-            {#if row.items !== undefined}
-              <ul class="advice-list">
-                {#each row.items as item (item)}
-                  <li>{item}</li>
-                {/each}
-              </ul>
+        <article class="turn assistant-turn" aria-label="Deterministic answer">
+          <header class="assistant-header">
+            <span class="assistant-mark" aria-hidden="true">CKC</span>
+            <div>
+              <p class="turn-name">Clinical Knowledge Compiler</p>
+              <p class="answer-mode">Deterministic answer</p>
+            </div>
+          </header>
+
+          <div class="assistant-copy">
+            {#if busy}
+              <p class="working">Proving the answer against the compiled guideline…</p>
             {:else}
-              {row.label}
+              {#if summary !== ''}
+                <p class="summary">{summary}</p>
+              {/if}
+
+              {#if points.length === 1}
+                {#each points as point (point.text)}
+                  <p class="answer-point">
+                    {point.text}
+                    <span class="citations">
+                      {#each point.sources as source (source)}
+                        <button
+                          type="button"
+                          aria-label={`Inspect source ${String(source + 1)} for this statement`}
+                          onclick={() => inspect(source)}>{source + 1}</button
+                        >
+                      {/each}
+                    </span>
+                  </p>
+                {/each}
+              {:else if points.length > 1}
+                <ul class="answer-list">
+                  {#each points as point (point.text)}
+                    <li class="answer-point">
+                      {point.text}
+                      <span class="citations">
+                        {#each point.sources as source (source)}
+                          <button
+                            type="button"
+                            aria-label={`Inspect source ${String(source + 1)} for this statement`}
+                            onclick={() => inspect(source)}>{source + 1}</button
+                          >
+                        {/each}
+                      </span>
+                    </li>
+                  {/each}
+                </ul>
+              {/if}
             {/if}
-          </span>
-        </label>
-      {/each}
-    </fieldset>
-  {/if}
 
-  {#if selectedRow?.items !== undefined && rows.length === 1}
-    <ul class="advice-list single">
-      {#each selectedRow.items as item (item)}
-        <li>{item}</li>
-      {/each}
-    </ul>
-  {:else if selectedRow !== undefined && rows.length === 1}
-    <dl>
-      {#each selectedRow.cells as cell (cell.variable)}
-        <dt>{cell.descriptor}</dt>
-        <dd>{cell.text}</dd>
-      {/each}
-    </dl>
-  {/if}
+            {#if !busy && (rows.length > 0 || serialized !== '')}
+              <details class="explanation" bind:this={explanation}>
+                <summary>
+                  <span>{rows.length > 0 ? 'Sources and explanation' : 'Technical details'}</span>
+                  {#if rows.length > 0}
+                    <span class="source-count"
+                      >{rows.length} {rows.length === 1 ? 'source' : 'sources'}</span
+                    >
+                  {/if}
+                </summary>
 
-  {#if selectedRow?.sourcePassage !== undefined}
-    <details class="source-passage">
-      <summary>{DESCRIPTIONS.sourcePassageSummary}</summary>
-      <p>{DESCRIPTIONS.sourcePassage}</p>
-      <blockquote>{selectedRow.sourcePassage}</blockquote>
-    </details>
-  {/if}
+                <div class="explanation-body">
+                  {#if rows.length > 0}
+                    <p class="render-note">{DESCRIPTIONS.answerAssembly}</p>
+                    <p class="render-note">{DESCRIPTIONS.clauseRendering}</p>
 
-  <!-- The engine's own text, kept behind a disclosure: it is the evidence that
-       the answer came from a proof, not the answer a reader came to read. -->
-  {#if serialized !== ''}
-    <details class="canonical">
-      <summary>{DESCRIPTIONS.prologSummary}</summary>
-      <p>{DESCRIPTIONS.prolog}</p>
-      <code>{serialized}</code>
-    </details>
-  {/if}
+                    {#if rows.length > 1}
+                      <div
+                        class="source-picker"
+                        role="group"
+                        aria-label="Select a source to inspect"
+                      >
+                        {#each rows as row, index (index)}
+                          <button
+                            type="button"
+                            aria-pressed={index === resolvedIndex}
+                            aria-label={`Inspect source ${String(index + 1)}${row.document === undefined ? '' : `, ${row.document}`}`}
+                            onclick={() => onSelect(index)}>Source {index + 1}</button
+                          >
+                        {/each}
+                      </div>
+                    {/if}
 
-  {#if provenance.kind !== 'idle'}
-    <ProvenanceLadder state={provenance} {onGraphFocus} />
+                    {#if selectedRow !== undefined}
+                      <section class="source-card" aria-labelledby={sourceHeadingId}>
+                        <div class="source-heading">
+                          <div>
+                            <p class="source-eyebrow">Selected evidence</p>
+                            <h3 id={sourceHeadingId}>Source {resolvedIndex + 1}</h3>
+                          </div>
+                          {#if selectedRow.document !== undefined}
+                            <code class="document-id">{selectedRow.document}</code>
+                          {/if}
+                        </div>
+                        {#if selectedRow.sourcePassage !== undefined}
+                          <p>{DESCRIPTIONS.sourcePassage}</p>
+                          <blockquote>{selectedRow.sourcePassage}</blockquote>
+                        {:else}
+                          <p>{DESCRIPTIONS.sourceUnavailable}</p>
+                        {/if}
+                      </section>
+                    {/if}
+                  {/if}
+
+                  {#if serialized !== ''}
+                    <details class="canonical">
+                      <summary>{DESCRIPTIONS.prologSummary}</summary>
+                      <p>{DESCRIPTIONS.prolog}</p>
+                      <code>{serialized}</code>
+                    </details>
+                  {/if}
+
+                  {#if provenance.kind !== 'idle'}
+                    <ProvenanceLadder state={provenance} {onGraphFocus} />
+                  {/if}
+                </div>
+              </details>
+            {/if}
+          </div>
+        </article>
+      </div>
+    {/key}
   {/if}
 </section>
 
 <style>
-  section {
+  .answer-region {
     border-top: 1px solid var(--border);
     margin: 0;
     padding: clamp(1.25rem, 3vw, 2rem);
   }
 
-  h2 {
-    margin: 0 0 0.6rem;
-    font-size: 0.78rem;
-    font-weight: 700;
-  }
-
-  .summary {
-    margin: 0 0 1rem;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-  }
-
-  .render-note {
-    max-width: 52rem;
-    margin: -0.25rem 0 1rem;
-    color: var(--text-muted);
-    font-size: 0.78rem;
-    line-height: 1.45;
-  }
-
-  fieldset {
-    margin: 0 0 1.25rem;
+  .answer-region > h2 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
     border: 0;
     padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 
-  legend {
-    margin-bottom: 0.4rem;
-    padding: 0;
-    font-size: 0.75rem;
-    font-weight: 650;
+  .empty-answer {
+    margin: 0;
     color: var(--text-muted);
-  }
-
-  label {
-    display: flex;
-    gap: 0.6rem;
-    align-items: flex-start;
-    border-top: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
-    padding: 0.65rem 0;
     font-size: 0.9rem;
-    line-height: 1.45;
-    overflow-wrap: anywhere;
   }
 
-  label input {
-    margin-top: 0.25rem;
-    flex: 0 0 auto;
+  .thread {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 58rem;
   }
 
-  .choice-copy {
+  .turn {
     min-width: 0;
   }
 
-  .advice-list {
-    display: grid;
-    gap: 0.38rem;
+  .question-turn {
+    justify-self: end;
+    width: min(85%, 42rem);
+    border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    border-radius: 1rem 1rem 0.25rem 1rem;
+    padding: 0.8rem 1rem;
+    background: var(--surface-sunken);
+  }
+
+  .turn-name {
     margin: 0;
-    padding-left: 1.15rem;
-  }
-
-  .advice-list.single {
-    max-width: 52rem;
-    margin-bottom: 1.25rem;
-    font-size: 0.94rem;
-    line-height: 1.5;
-  }
-
-  .advice-list li::marker {
-    color: var(--action);
-  }
-
-  /* Label above value while the viewport is narrow, label beside value once
-     there is room for a column that does not squeeze the engine's own text. */
-  dl {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.2rem 1.25rem;
-    max-width: 52rem;
-    margin: 0 0 1.25rem;
-  }
-
-  @media (min-width: 34rem) {
-    dl {
-      grid-template-columns: minmax(7rem, max-content) 1fr;
-      align-items: baseline;
-      row-gap: 0.65rem;
-    }
-  }
-
-  dt {
     font-size: 0.72rem;
-    font-weight: 650;
-    color: var(--text-muted);
+    font-weight: 700;
   }
 
-  dd {
-    margin: 0 0 0.5rem;
-    font-size: 0.94rem;
-    line-height: 1.5;
+  .question {
+    margin: 0.18rem 0 0;
+    font-size: 0.96rem;
+    line-height: 1.48;
+  }
+
+  .assistant-header {
+    display: flex;
+    gap: 0.7rem;
+    align-items: center;
+    margin-bottom: 0.8rem;
+  }
+
+  .assistant-mark {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 2.15rem;
+    height: 2.15rem;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--surface-sunken);
+    color: var(--action);
+    font-family: var(--font-code);
+    font-size: 0.62rem;
+    font-weight: 750;
+    letter-spacing: -0.04em;
+  }
+
+  .answer-mode {
+    margin: 0.05rem 0 0;
+    color: var(--text-muted);
+    font-family: var(--font-code);
+    font-size: 0.66rem;
+  }
+
+  .assistant-copy {
+    min-width: 0;
+    margin-left: 2.85rem;
+  }
+
+  .working,
+  .summary {
+    margin: 0 0 1rem;
+    color: var(--text-muted);
+    font-size: 0.92rem;
+  }
+
+  .working {
+    font-style: italic;
+  }
+
+  .answer-list {
+    display: grid;
+    gap: 0.72rem;
+    margin: 0;
+    padding-left: 1.2rem;
+  }
+
+  .answer-point {
+    max-width: 52rem;
+    margin: 0;
+    font-size: 0.98rem;
+    line-height: 1.58;
     overflow-wrap: anywhere;
   }
 
-  @media (min-width: 34rem) {
-    dd {
-      margin-bottom: 0;
-    }
-  }
-
-  .canonical {
-    max-width: 52rem;
-    border-top: 1px solid var(--border);
-    padding: 0;
-  }
-
-  .source-passage {
-    max-width: 52rem;
-    border-top: 1px solid var(--border);
-  }
-
-  .source-passage summary {
-    padding: 0.75rem 0;
+  .answer-list .answer-point::marker {
     color: var(--action);
-    font-size: 0.8rem;
-    font-weight: 650;
+  }
+
+  .citations {
+    display: inline-flex;
+    gap: 0.18rem;
+    margin-left: 0.3rem;
+    vertical-align: 0.12em;
+  }
+
+  .citations button {
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.35rem;
+    height: 1.35rem;
+    border: 1px solid var(--border);
+    border-radius: 0.28rem;
+    padding: 0 0.25rem;
+    background: transparent;
+    color: var(--action);
+    font-family: var(--font-code);
+    font-size: 0.65rem;
+    font-weight: 700;
+    line-height: 1;
     cursor: pointer;
   }
 
-  .source-passage p {
+  .citations button:hover {
+    background: var(--surface-sunken);
+  }
+
+  .explanation {
+    max-width: 52rem;
+    margin-top: 1.35rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .explanation > summary {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 0;
+    color: var(--action);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .source-count {
+    color: var(--text-muted);
+    font-family: var(--font-code);
+    font-size: 0.66rem;
+    font-weight: 500;
+  }
+
+  .explanation-body {
+    padding-bottom: 0.25rem;
+  }
+
+  .render-note {
+    max-width: 48rem;
+    margin: 0 0 0.45rem;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    line-height: 1.48;
+  }
+
+  .source-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 1rem 0;
+  }
+
+  .source-picker button {
+    border: 1px solid var(--border);
+    border-radius: 0.3rem;
+    padding: 0.36rem 0.62rem;
+    background: transparent;
+    color: var(--action);
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
+
+  .source-picker button[aria-pressed='true'] {
+    border-color: var(--action);
+    background: var(--surface-sunken);
+    font-weight: 700;
+  }
+
+  .source-card {
+    margin: 0 0 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+    padding: 0.85rem 1rem;
+    background: color-mix(in srgb, var(--surface-sunken) 55%, transparent);
+  }
+
+  .source-heading {
+    display: flex;
+    gap: 1rem;
+    align-items: start;
+    justify-content: space-between;
+    margin-bottom: 0.65rem;
+  }
+
+  .source-eyebrow {
+    margin: 0 0 0.1rem;
+    color: var(--text-muted);
+    font-family: var(--font-code);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .source-card h3 {
+    margin: 0;
+    font-size: 0.92rem;
+  }
+
+  .source-card > p {
     margin: 0 0 0.55rem;
     color: var(--text-muted);
     font-size: 0.78rem;
   }
 
-  .source-passage blockquote {
-    margin: 0 0 1rem;
-    border-left: 2px solid var(--accent);
+  .document-id {
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    overflow-wrap: anywhere;
+  }
+
+  .source-card blockquote {
+    margin: 0;
+    border-left: 2px solid var(--action);
     padding-left: 0.85rem;
     font-family: var(--font-prose);
-    font-size: 0.9rem;
+    font-size: 0.87rem;
     line-height: 1.55;
+    overflow-wrap: anywhere;
+  }
+
+  .canonical {
+    border-top: 1px solid var(--border);
+    padding: 0;
   }
 
   .canonical summary {
     padding: 0.75rem 0;
+    color: var(--action);
     font-size: 0.8rem;
     font-weight: 650;
-    color: var(--action);
     cursor: pointer;
-  }
-
-  .canonical summary:focus-visible {
-    outline: 2px solid var(--focus-ring);
-    outline-offset: -2px;
   }
 
   .canonical p {
     margin: 0 0 0.5rem;
-    font-size: 0.8rem;
     color: var(--text-muted);
+    font-size: 0.8rem;
   }
 
-  code {
+  .canonical code {
     display: block;
     margin-bottom: 0.75rem;
     font-family: var(--font-code);
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     overflow-wrap: anywhere;
+  }
+
+  button:focus-visible,
+  summary:focus-visible {
+    border-radius: 0.15rem;
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 34rem) {
+    .question-turn {
+      width: 92%;
+    }
+
+    .assistant-copy {
+      margin-left: 0;
+    }
+
+    .source-heading {
+      display: block;
+    }
+
+    .document-id {
+      display: block;
+      margin-top: 0.35rem;
+    }
   }
 </style>

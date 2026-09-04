@@ -12,7 +12,7 @@
     type SemanticGraphNode,
   } from './graph/index.js';
   import { flattenProof, type GraphFocus as ProvenanceGraphFocus } from './provenance/model.js';
-  import type { QuestionId } from './questions/catalog.js';
+  import { QUESTION_CATALOG, type QuestionId } from './questions/catalog.js';
   import QuestionCombobox from './questions/QuestionCombobox.svelte';
 
   interface Props {
@@ -47,6 +47,11 @@
   const serialized = $derived(
     viewState.kind === 'settled' && 'serialized' in viewState.result
       ? viewState.result.serialized
+      : '',
+  );
+  const activeQuestion = $derived(
+    viewState.kind === 'running' || viewState.kind === 'cancelling' || viewState.kind === 'settled'
+      ? QUESTION_CATALOG[viewState.id].question
       : '',
   );
   const booted = $derived(viewState.kind !== 'booting' && viewState.kind !== 'boot-error');
@@ -147,6 +152,7 @@
       <AnswerPanel
         {rows}
         {serialized}
+        question={activeQuestion}
         selectedIndex={demo.solutionIndex}
         busy={description.busy}
         summary={description.summary}
