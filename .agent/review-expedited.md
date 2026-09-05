@@ -151,9 +151,9 @@ red test and never was** — its only assertion is `expect(true).toBe(true)` at
 line 104, so it is a diagnostic that prints `IDENTICAL = true`. Its targeted first
 wipe at line 76 also calls `sub_term/2`, which the closed WASM image does not
 provide, so only the broad `retractall` wipe runs. Measured independently by MAIN
-and `res-m5-2` during M5 planning. **M5 u3 therefore AUTHORS the binding
+and `res-m5-2` during M5 planning. **M5 u7 therefore AUTHORS the binding
 assertion rather than relocating an existing red one.** `rev-sem-2`'s
-`tests/graph-semantics.review.test.ts` is genuinely red and is M5 u5's oracle.
+`tests/graph-semantics.review.test.ts` is genuinely red and is M5 u12's oracle.
 
 ## Rulings — closed
 
@@ -166,7 +166,7 @@ these decide what happens about them.
    clinicians and the `actual` world holds no clinician instance, so
    `guideline_operator(actual,C,should)` failing on the bare KB is **correct**
    — supplying the instance is how a universal gets applied, not a workaround.
-   Feasibility measured by `probe-inference-feasibility`. → M5 u1, u2.
+   Feasibility measured by `probe-inference-feasibility`. → M5 u1-u3.
 2. **Graph polarity = edge state.** Keep the concept-first projection the user
    accepted; carry negation and modality on the edges. No `operator-context` node
    returns to the concept view. This **amends** M3's original line *"Event and
@@ -174,7 +174,7 @@ these decide what happens about them.
    the concept-first design and assumed nodes were the only way to carry scope.
    The roadmap contradiction — that line versus the expedited block's *"hides
    parser/modality scaffolding"* — resolves in favour of hiding the scaffolding
-   AND keeping the meaning. → M5 u4.
+   AND keeping the meaning. → M5 u11-u13.
 3. **Milestone status = M2/M3/M4 keep their COMPLETE markers**; one new milestone
    owns the remediation. They are marked built-and-shipped, not adjudicated-sound,
    and the roadmap header says so. → M5 opened, PLANNING.
@@ -182,17 +182,17 @@ these decide what happens about them.
    scope: S1, S3, S3b+, S3c+, S2, S5, C2, C3, C7.
 
    Seven more close as a **consequence**, because they are the same defect
-   decomposed and u4's acceptance check ("every edge shown asserts a relation the
+   decomposed and u13's acceptance check ("every edge shown asserts a relation the
    KB asserts, with the same scope; no sentence renders as a claim the source
    denies") cannot pass while they stand: S2b+, S11+, S12+, S14+, S15+, S17+,
    S18+. They are not separate work; they are how the fix gets graded.
 
    **Accepted-open**, each keeping its acceptance check here: A1, A3, A4, A5, A6,
    A8, A9+, A10+, A11+, S7, S13+, C1, C4u1, C4u3, C4u4, C4u5, C6. **S9 partially
-   closes** — its "hidden technical nodes" miscount resolves once u4 stops
+   closes** — its "hidden technical nodes" miscount resolves once u12 stops
    dropping polarity, but the headline "1,288 concepts/actions" including 53
    value/attribute nodes is untouched and stays open. **C4u3 partially closes** —
-   u3 restores the `queries/answers/` byte oracle, but the four `queries/traces/`
+   u6 restores the `queries/answers/` byte oracle, but the four `queries/traces/`
    oracles are a different artifact and stay open. C5 is fixed at `93cda83`; the
    register's two entries live in `.agent/polish.md`.
 

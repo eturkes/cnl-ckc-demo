@@ -595,7 +595,7 @@ and survives `/resume`; a new session clears it.
   guideline_entity(actual,A,clinician,countable), guideline_cardinality(...)` —
   and the `actual` world contains no clinician instance. Supplying one as a
   premise is how a universal gets applied, not a workaround. This is the whole
-  basis of M5 u1; do not re-derive it as a KB defect.
+  basis of M5 u1-u2; do not re-derive it as a KB defect.
 
 ## Graph renderer seam (M5 planning)
 
