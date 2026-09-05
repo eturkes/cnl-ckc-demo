@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = dirname(dirname(fileURLToPath(import.meta.url)));
+const root = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
 const workflow = readFileSync(join(root, '.github/workflows/pages.yml'), 'utf8');
 assert.equal(
   /^\s*- run: pnpm release:check\s*$/mu.test(workflow),

@@ -3,7 +3,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = dirname(dirname(fileURLToPath(import.meta.url)));
+const root = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
 const assets = join(root, 'dist/assets');
 const workers = readdirSync(assets).filter((name) => /^worker-.*\.js$/u.test(name));
 assert.equal(workers.length, 1, 'production build must emit exactly one engine worker');

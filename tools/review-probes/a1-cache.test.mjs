@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = dirname(dirname(fileURLToPath(import.meta.url)));
+const root = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
 const manifestPath = join(root, 'kb/generated/kb-manifest.json');
 const graphPath = join(root, 'kb/generated/graph/semantic-graph.json');
 const originalManifest = readFileSync(manifestPath);
@@ -13,8 +13,9 @@ const originalGraph = readFileSync(graphPath);
 
 try {
   const changedGraph = Buffer.concat([originalGraph, Buffer.from('\n')]);
+  const parsed = /** @type {unknown} */ (JSON.parse(originalManifest.toString('utf8')));
   const manifest = /** @type {{ assets: { path: string, bytes: number, sha256: string }[] }} */ (
-    JSON.parse(originalManifest.toString('utf8'))
+    parsed
   );
   const graph = manifest.assets.find(({ path }) => path === 'graph/semantic-graph.json');
   assert.ok(graph, 'manifest must record the semantic graph');

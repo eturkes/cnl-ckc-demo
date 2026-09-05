@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = dirname(dirname(fileURLToPath(import.meta.url)));
+const root = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
+/** @param {string} path */
 const read = (path) => readFileSync(join(root, path), 'utf8');
 const build = read('tools/kb/build.mjs');
 const paths = read('tools/kb/paths.mjs');
