@@ -41,4 +41,16 @@ describe('semantic graph source fidelity review', () => {
 
     expect(graph.conceptNodeCount).toBe(conceptsAndActions.length);
   });
+
+  it('keeps a nested operator edge attached to its asserted outer context', () => {
+    const edges = graph.data.edges.filter(
+      ({ document, sentence, kind }) =>
+        document === 'cdc2022-opioid-rec01' && sentence === 3 && kind === 'operator',
+    );
+    const negative = edges.find(({ label }) => label === '-');
+    const should = edges.find(({ label }) => label === 'should');
+
+    expect(negative).toBeDefined();
+    expect(should?.source).toBe(negative?.target);
+  });
 });
