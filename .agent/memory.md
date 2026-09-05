@@ -117,8 +117,10 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   builds byte-identical: `pnpm kb:reproduce` → pvm `3ae8d455d875`, qlf
   `62bc61cc7d0e`. Without the pin only ~4 bytes differ, but deflate amplifies
   them to ~389K differing bytes.
-- Sizes: pvm 437132 B, qlf 2168708 B. Live load, measured outside vitest: image
+- Sizes: pvm 444283 B, qlf 2199577 B. Live load, measured outside vitest: image
   121 ms, qlf 238 ms, both schema 1 / 337 documents / SWI 10.1.13.
+  The M2-M4 range grew both artifacts (437132/2168708 B) by compiling the
+  meta-interpreter and the build-time `clinical_advice/3` facts into the image.
 - Engine split: building needs `swipl-bundle` (6243055 B, carries the library);
   loading a saved state needs `swipl-bundle-no-data` (2616873 B). The QLF
   fallback cannot use the small engine, so choosing it costs the 6.2 MB bundle
@@ -234,33 +236,45 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   event clause sites vs **232** derivable. Runtime predicate calls expose only
   the derivable minority — the full graph needs static `clause/2` extraction.
 - Explicit edge schemas = 7: `entity/4`, `cardinality/5`, `event/3`, `arg/4`,
-  `pp/4`, `property/4`, `operator/3`, plus 9,053 Horn body→head edges.
+  `pp/4`, `property/4`, `operator/3`, plus 9,804 Horn body→head edges.
 - Corpus load, measured: 337-file consult **2806ms** · concatenated source
   3299ms · `load_string` 3578ms · QLF **213ms** + 724ms boot · **saved PVM
-  335ms** boot+load (437,132 B; `kb:reproduce` runs two forced builds in 8.741s).
+  335ms** boot+load (against a 437,132 B image; `kb:reproduce` runs two forced
+  builds in 8.741s).
   PVM is the shipping form, QLF
   the fallback. Concatenated `pl/` = 4,716,517 B raw, **169,571 B** gzip-9.
-- Production build from u7 on = 14 files, **≈3.77 MB** raw, dominated by two blobs
-  neither the app nor a unit moves: worker ≈3.07 MB (swipl-wasm) + PVM 437,132 B.
-  Then 6 woff2 = **176,732 B** exactly, pinned by `presentation:check`, plus three
-  OFL texts and the app's own ≈71 kB of html/css/js. The raw total is the one
-  figure here that drifts on ANY source byte, so it is recorded to two decimals
-  and `du -sb dist` is what reports it — a durable exact total re-stales itself
+- Production build after M2-M4 = **355 files, 21,874,052 B** raw (`du -sb dist`),
+  343 of them manifest-recorded assets. The 337 per-document provenance chunks,
+  the clause index, the semantic graph and the source PDF are what moved it off
+  the pre-M2 figure of 14 files / ≈3.77 MB. Two blobs neither the app nor a unit
+  moves: worker ≈3.07 MB (swipl-wasm) + PVM 444,283 B. Then 6 woff2 =
+  **176,732 B** exactly, pinned by `presentation:check`, plus three OFL texts and
+  the app's own ≈71 kB of html/css/js. The raw total drifts on ANY source byte,
+  so `du -sb dist` is what reports it — a durable exact total re-stales itself
   every commit (M1 review U7-24, A089). Pre-u7 it was 3,500,973 B raw / 1,339,723 B
   gzip, before fonts and licences joined `dist/`. Re-derive the file count and the
-  asset-class list whenever a unit ships a new class.
+  asset-class list whenever a unit ships a new class. **This prose rule failed**:
+  every figure above drifted silently through M2-M4 (expedited review C5), because
+  nothing mechanical re-derives them. A gate step owns this next.
   No COOP/COEP needed. `loadImageDefault` uses
   direct `eval` → a strict CSP host is a live risk, owned by M4.
 - Engine: unified stack limit 1GiB (reducible), Emscripten heap ceiling 2GiB,
   RSS ~119MB steady; asserted state persists across queries in one engine.
 - Oracle fidelity: live WASM **byte-matches all four** committed
   `queries/answers/*.pl` — category-A 7 rows in order, then 158/158, 79/79 and
-  3/3 bytes. `tests/questions-live.test.ts` compares each with `toBe` against the
-  `result/1` argument read out of the verified bag at test time. Committed
-  answers and traces are regression oracles only, never response data.
+  3/3 bytes. Committed answers and traces are regression oracles only, never
+  response data. **The comparison no longer runs**: M2-M4 rewrote
+  `tests/questions-live.test.ts` and dropped the `toBe(committedResult(id))`
+  oracle over all four exported ids, along with `catalog.mjs`'s `EXPORTED` guard
+  (expedited review C2). Nothing reads the bag's `queries/` tree today. Restoring
+  it is the cheapest real-execution evidence the project can hold.
 - Anti-hard-coding recipe: vitest 4 Node env, one non-parallel worker, real
   saved image, inject a PID-unique overlay clause, assert the answer changes,
-  import no answer fixture. Measured 796ms.
+  import no answer fixture. Measured 796ms. **The shipped overlay is weaker than
+  this**: it asserts a `clinical_advice/3` fact — the predicate the goal queries —
+  and checks only that the serialized answer changed, so it stays green while the
+  answer bypasses the KB entirely (expedited review C3/S1). A binding overlay must
+  perturb `guideline_*` and require the line-keyed proof to change too.
 - Committed trace artifacts carry **no** proof-dependency edges (all sampled
   clause nodes have empty child lists) → a proof tree drawn from them would be
   fabricated. M2 derives proofs from a live meta-interpreter instead; costs in
@@ -535,3 +549,29 @@ and survives `/resume`; a new session clears it.
   linted, so regex capture groups and destructured array elements arrive as
   `string | undefined`. Prefer `exec(...)?.[1]` with an `undefined` guard over
   indexing a match, and default destructured numbers (`const [r = 0] = ...`).
+- **The shipped answer path does not run inference.** `tools/kb/clinical.mjs`
+  parses `ace/*.ace` at BUILD time, renders each answer, and emits finished
+  `clinical_advice/3` facts; `tools/kb/paths.mjs:payloadSource` appends them to
+  the compiled payload, so the runtime goal is a fact lookup against the image.
+  Retracting every clause of all seven `guideline_*` predicates leaves the
+  rendered answer byte-identical. `tools/kb/proof.mjs:31-39` special-cases
+  `derive(clinical_advice(...))` with a cut and synthesizes `node(line(L),H,[])`
+  from build-time `site/2` records, so `resolve/3` is never reached by any
+  shipped question and the displayed "live proof" is a replayed record. Read this
+  before trusting any "re-proved"/"live" wording in copy, roadmap or tests.
+  Full adjudication → `.agent/review-expedited.md`; contract →
+  `.agent/contracts/expedited.md`; reviewer reports → `.agent/review-expedited/`.
+- Real inference over the compiled clauses **is** feasible and measured: the bare
+  KB proves no recommendation (`guideline_operator(actual,C,should)` fails), but
+  asserting one hypothetical clinician entity + cardinality makes `should`
+  operators, `maximize` events (7), `nonopioid-therapy` entities (3) and the full
+  operator→event→arg→entity join all derive. The blocker is a missing clinical
+  context premise, not a missing KB.
+- The concept graph projection drops polarity and modality: `operator` edges and
+  non-`condition supports` `implies` edges are filtered, and `operator-context` is
+  absent from `CONCEPT_NODE_KINDS` (`src/graph/model.ts`). Census = 156 negation
+  and 857 `should` contexts, every one excluded. A negated recommendation
+  therefore renders as its clinical inverse while the answer text keeps the
+  negation. The M3 roadmap line forbids exactly this ("Event and operator-context
+  nodes stay"); `a944fca` implemented the collapse and edited the roadmap's
+  expedited block to describe it as hiding "parser/modality scaffolding".
