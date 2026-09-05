@@ -575,3 +575,17 @@ and survives `/resume`; a new session clears it.
   negation. The M3 roadmap line forbids exactly this ("Event and operator-context
   nodes stay"); `a944fca` implemented the collapse and edited the roadmap's
   expedited block to describe it as hiding "parser/modality scaffolding".
+- M5 rulings, binding on PLANNING (full record → `.agent/review-expedited.md`
+  "Rulings"): answer path derives by real inference; graph carries polarity and
+  modality as EDGE STATE with no `operator-context` node returning to the concept
+  view; M2/M3/M4 keep their COMPLETE markers and M5 owns the remediation; scope =
+  the non-negotiable plus the graph, nine named rows, everything else
+  accepted-open in the ledger. Visual design + interaction structure are accepted
+  and out of scope — M5 changes what surfaces mean, never how they look.
+- Why the bare KB proves no recommendation, and why that is CORRECT: a guideline
+  clause is universally quantified over clinicians —
+  `guideline_operator(actual,$gid(...,box(1),[A]),should) :-
+  guideline_entity(actual,A,clinician,countable), guideline_cardinality(...)` —
+  and the `actual` world contains no clinician instance. Supplying one as a
+  premise is how a universal gets applied, not a workaround. This is the whole
+  basis of M5 u1; do not re-derive it as a KB defect.

@@ -142,36 +142,54 @@ Reviewer probes are committed on their own branches: `wt/rev-arch-1`
 (`tests/review-claim-replay.dom.test.ts`). Recover any of them with
 `git show wt/<name>:<path>`; the worktrees themselves are removed.
 
-Port target at remediation: `probe-kb-independence` is the anti-hard-coding gate
-C3 says is missing. It is red today, so it stays out of `pnpm gate` until the
-answer path is fixed, then lands as the binding regression test. `rev-sem-2`'s
-`tests/graph-semantics.review.test.ts` is the same shape for S2/S5/S12+/S14+/S15+.
+Port target: `probe-kb-independence` is the anti-hard-coding gate C3 says is
+missing. It is red today, so it stays out of `pnpm gate` until M5 u1/u2 fix the
+answer path, then **M5 u3 lands it as the binding regression test**.
+`rev-sem-2`'s `tests/graph-semantics.review.test.ts` is the same shape for M5 u4.
 
-## Open decisions — carry to the next session
+## Rulings — closed
 
-Three direction choices were put to the user and not yet answered. They gate the
-roadmap status edit; nothing else in this record depends on them.
+Four direction choices, all ruled by the user. The ledger's verdicts are final;
+these decide what happens about them.
 
-1. **Answer path** — derive by real inference (supply a hypothetical clinical
-   context as explicit premises; proven feasible by `probe-inference-feasibility`)
-   | keep the build-time table and correct every claim | add the four
-   bag-exported queries back as a second question class carrying real inference
-   and its byte oracles.
-2. **Graph polarity** — mark polarity/modality on concept edges (keeps the
-   projection) | restore `operator-context` nodes to the concept view (the
-   roadmap's original M3 constraint) | suppress any sentence whose polarity
-   cannot be shown, with a visible withheld count.
-3. **Roadmap status** — reopen M2/M3/M4 as IN-PROGRESS with sized remediation
-   units | keep them shipped-with-defects and open a new milestone owning
-   semantic integrity | record in `.agent/polish.md` and defer.
+1. **Answer path = derive by real inference.** Each question compiles its clinical
+   context into explicit premises; the answer derives through the `guideline_*`
+   clauses. Rationale on the record: a guideline is universally quantified over
+   clinicians and the `actual` world holds no clinician instance, so
+   `guideline_operator(actual,C,should)` failing on the bare KB is **correct**
+   — supplying the instance is how a universal gets applied, not a workaround.
+   Feasibility measured by `probe-inference-feasibility`. → M5 u1, u2.
+2. **Graph polarity = edge state.** Keep the concept-first projection the user
+   accepted; carry negation and modality on the edges. No `operator-context` node
+   returns to the concept view. This **amends** M3's original line *"Event and
+   operator-context nodes stay; noun→noun collapse is forbidden"*, which predates
+   the concept-first design and assumed nodes were the only way to carry scope.
+   The roadmap contradiction — that line versus the expedited block's *"hides
+   parser/modality scaffolding"* — resolves in favour of hiding the scaffolding
+   AND keeping the meaning. → M5 u4.
+3. **Milestone status = M2/M3/M4 keep their COMPLETE markers**; one new milestone
+   owns the remediation. They are marked built-and-shipped, not adjudicated-sound,
+   and the roadmap header says so. → M5 opened, PLANNING.
+4. **Scope = the non-negotiable plus the graph.** Nine rows carry as named M5
+   scope: S1, S3, S3b+, S3c+, S2, S5, C2, C3, C7.
 
-User's stated position: the visual design and interaction structure are
-**accepted and out of scope**; architecture, semantic behavior and assurance
-claims are what was under evaluation. Every option above preserves the accepted
-surface.
+   Seven more close as a **consequence**, because they are the same defect
+   decomposed and u4's acceptance check ("every edge shown asserts a relation the
+   KB asserts, with the same scope; no sentence renders as a claim the source
+   denies") cannot pass while they stand: S2b+, S11+, S12+, S14+, S15+, S17+,
+   S18+. They are not separate work; they are how the fix gets graded.
 
-Roadmap contradiction to resolve with decision 2: the M3 milestone line states
-*"Event and operator-context nodes stay; noun→noun collapse is forbidden"*, while
-the expedited block added in the same range says the view *"hides parser/modality
-scaffolding"*. `a944fca` implemented the second and edited the roadmap to match,
-without retracting the first.
+   **Accepted-open**, each keeping its acceptance check here: A1, A3, A4, A5, A6,
+   A8, A9+, A10+, A11+, S7, S13+, C1, C4u1, C4u3, C4u4, C4u5, C6. **S9 partially
+   closes** — its "hidden technical nodes" miscount resolves once u4 stops
+   dropping polarity, but the headline "1,288 concepts/actions" including 53
+   value/attribute nodes is untouched and stays open. **C4u3 partially closes** —
+   u3 restores the `queries/answers/` byte oracle, but the four `queries/traces/`
+   oracles are a different artifact and stay open. C5 is fixed at `93cda83`; the
+   register's two entries live in `.agent/polish.md`.
+
+Standing constraint on all of it: visual design, layout, colour, type, spacing,
+motion, component composition, affordance placement, disclosure/interaction
+structure and the chat-style answer presentation are **accepted and out of
+scope**. M5 changes what the surfaces mean, never how they look. A remediation
+that forces a visual difference stops and asks.

@@ -18,10 +18,10 @@ non-negotiable = answers trace to genuine Prolog solutions.
 ## Milestones
 
 M2/M3/M4 were adjudicated after the fact against `.agent/contracts/expedited.md`;
-the ledger is `.agent/review-expedited.md` (43 rows, 11 pass / 32 fail). Their
-COMPLETE markers are **unadjudicated build state, not a review verdict**, and are
-held unchanged pending three open user decisions listed at the ledger foot. Read
-the ledger before trusting any claim in the expedited block below.
+the ledger is `.agent/review-expedited.md` (46 rows, 11 pass / 35 fail). Their
+COMPLETE markers mean **built and shipped, not adjudicated sound** — user ruling:
+they stay as they are, and **M5 owns the remediation**. Read the ledger before
+trusting any claim in the expedited block below.
 
 - **M1 — live question→answer spine** — REVIEWED, summary below, record in
   `.agent/archive/m1.md`.
@@ -33,16 +33,105 @@ the ledger before trusting any claim in the expedited block below.
 - **M3 — semantic entity graph** — COMPLETE (expedited 2026-09-04). Static `clause/2` extraction over
   the seven explicit edge schemas plus Horn-clause implication edges; fCoSE
   layout; neighborhood-first navigation; accessible non-canvas subgraph view.
-  Event and operator-context nodes stay; noun→noun collapse is forbidden.
-  **This constraint is breached.** `a944fca` collapsed the concept view to
-  entity/event/value nodes and edited the expedited block below to describe the
-  result as hiding "parser/modality scaffolding". 156 negation and 857 `should`
-  operator-contexts are dropped, so a negated recommendation renders as its
-  clinical inverse (S2, S5, S12+, S14+, S15+, all high). Resolving the
-  contradiction is open decision 2.
+  ~~Event and operator-context nodes stay; noun→noun collapse is forbidden.~~
+  **Amended by user ruling.** That line predates the concept-first view and
+  assumed nodes were the only way to carry scope. `a944fca` collapsed the view to
+  entity/event/value nodes and dropped 156 negation and 857 `should` contexts
+  with them, so a negated recommendation renders as its clinical inverse (S2, S5,
+  S12+, S14+, S15+). The ruling keeps the collapsed view and carries polarity and
+  modality as **edge state** instead: no operator-context node returns, and no
+  edge may read as a claim the source denies. M5 u4 owns it.
 - **M4 — integration + release** — COMPLETE (expedited 2026-09-04). Cross-pillar linking
   (answer↔trace↔graph), dark theme + full visual system, CSP/static-host
   decision + release proof, performance/responsive/a11y hardening.
+- **M5 — semantic integrity** — PLANNING. Owns the expedited remediation: the
+  answer derives by real inference, the proof is a real derivation, the graph
+  carries polarity, and a mechanical check binds each claim. Section below.
+
+## M5 — semantic integrity — PLANNING
+
+Goal: **every surface asserts what the source asserts, and a rerunnable check
+binds it.** M5 exists because the expedited range shipped surfaces whose meaning
+no check decides — `pnpm gate` is green while the answer bypasses the KB.
+
+Scope = user ruling, the non-negotiable plus the graph. Nine named ledger rows:
+S1, S3, S3b+, S3c+, S2, S5, C2, C3, C7. Seven more close as a consequence,
+because u4's acceptance check cannot pass while they stand — S2b+, S11+, S12+,
+S14+, S15+, S17+, S18+ — so they are how the fix gets graded, not extra work.
+Seventeen rows stay **accepted-open** in `.agent/review-expedited.md` with their
+acceptance checks, and S9 and C4u3 close only partly; the ledger's Rulings
+section is the authority on which is which. A fix that lands an open row for free
+may take it, but no unit carries one as scope.
+
+Visual design and interaction structure are **accepted and out of scope** —
+M5 changes what the surfaces mean, never how they look. A change that forces a
+visual difference stops and asks.
+
+Three user rulings bind the units:
+
+- **Answer path = real inference.** Each question compiles its clinical context
+  into explicit premises and derives the recommendation through the `guideline_*`
+  clauses. This is not a workaround: a guideline is universally quantified over
+  clinicians, and the `actual` world holds no clinician instance, so
+  `guideline_operator(actual,C,should)` failing on the bare KB is correct.
+  Supplying the instance is how a universal gets applied. Feasibility is measured
+  — one asserted clinician entity plus cardinality makes `should` operators,
+  `maximize` events (7), `nonopioid-therapy` entities (3) and the full
+  operator→event→arg→entity join all derive.
+- **Graph = polarity as edge state.** Keep the concept-first projection; carry
+  negation and modality on the edges. No operator-context node returns.
+- **M2/M3/M4 keep their markers.** M5 owns the remediation; those milestones are
+  not reopened.
+
+- **u1 — inference answer path** · kernel · `oracle` · est raw 95K → cal 168K
+  Replace the build-time `clinical_advice/3` table with a runtime derivation:
+  each catalog question compiles its context into premises, and the answer
+  derives through the compiled guideline clauses. `parseAdviceSentence`'s
+  byte-faithful rendering is PRESERVED — it passed review, and the accepted
+  answer wording must not move. Accept: retracting any clause the answer cites
+  changes the answer; the bare KB yields no recommendation; every shipped answer
+  string is byte-identical to today's, or the difference is shown and ruled on.
+  Closes S1.
+- **u2 — genuine proof** · kernel · `oracle` · est raw 70K → cal 124K
+  Remove the `derive(clinical_advice(...))` cut so `resolve/3` runs for shipped
+  questions. Accept: every displayed step names a clause that participated; its
+  rendered head equals the compiled clause at that line, variables and all; the
+  cited site is the clause carrying the content, not the sentence's first
+  compiled clause; retracting a cited clause changes the proof. Closes S3, S3b+,
+  S3c+, and S2 on the proof and clause surfaces. Depends u1.
+- **u3 — binding checks** · kernel · `oracle` · est raw 60K → cal 106K
+  Restore the `queries/answers/*.pl` byte oracle over all four exported ids and
+  `catalog.mjs`'s `EXPORTED` guard; rewrite the overlay to perturb `guideline_*`
+  and require BOTH the projected answer and its line-keyed proof to change; port
+  `probe-kb-independence` into `pnpm gate` as the binding regression test.
+  Accept: each check is red at `a944fca` and green after u1/u2; the gate fails if
+  any one is removed. Closes C2, C3. Depends u1, u2.
+- **u4 — polarity-carrying graph** · kernel · est raw 85K → cal 150K
+  Negation and modality become edge state on the concept projection; the answer
+  highlight follows the polarity-correct path. Accept: every edge shown asserts a
+  relation the KB asserts with the same scope; no sentence renders as a claim the
+  source denies; the census of 156 negation and 857 `should` contexts is
+  represented, not dropped; the concept-first look is unchanged. Closes S2 on
+  both graph views, S5. Independent of u1–u3.
+- **u5 — claim alignment** · docs · est raw 30K → cal 53K
+  Rewrite every claim to match what now happens: `ProvenanceLadder.svelte:109,
+  113,152-153`, `copy.ts:25-27`, `AnswerPanel.svelte:70`, `README.md:7`, and this
+  roadmap's expedited block. Accept: each surviving claim names a command that
+  re-derives it. Closes C7. Depends u1–u4 — it can only state what is true once
+  it is true.
+
+Sizing model carried from M2: `cal = raw × 1.77`, the measured
+actual/estimate correction. Total ≈ 601K cal. PLANNING owns the design rulings,
+unit waves and seams; the `Accept:` clauses above are fixed and come from the
+ledger's acceptance checks, so they are not PLANNING's to relax.
+
+Reviewer probes are the starting oracles — each is RED today and turns green
+exactly when its row closes: `wt/rev-sem-1` `tests/review-answer-proof-binding.test.ts`
+(u1, u2), `wt/rev-arch-1` `tests/review-register-schema-binding.test.ts` (u1),
+`wt/rev-sem-2` `tests/graph-semantics.review.test.ts` (u4), `wt/rev-claim-1`
+`tests/review-claim-replay.dom.test.ts` (u3). Recover with
+`git show wt/<name>:<path>`.
+
 ## Expedited completion — M2 through M4
 
 The user requested a same-session deliverable and explicitly waived the normal
@@ -68,8 +157,11 @@ verified, but they are not represented as formally adjudicated.
   numbered statement citations keep source and proof inspection secondary but reachable.
   `Find in graph` carries exact live proof lines, controlled-sentence coordinates,
   the question, and its deterministic answer contribution. It activates the lazy graph in one
-  click, mechanically centers the primary clinical concept, hides parser/modality scaffolding,
+  click, mechanically centers the primary clinical concept, ~~hides parser/modality scaffolding~~,
   and highlights only the source contribution's semantic paths over bounded cross-source context.
+  The struck phrase describes dropping polarity and modality outright, which inverts
+  negated recommendations (S2, S5). M5 u4 keeps the scaffolding hidden and carries
+  polarity and modality as edge state instead.
 
 The manifest records 343 runtime assets: the PVM, QLF, question catalog, clause
 index, 337 provenance chunks, source PDF, and semantic graph. Fresh forced builds
@@ -94,8 +186,8 @@ S1/S3: `ProvenanceLadder.svelte:113,152`, `copy.ts` lede, `README.md:7`.
 Answer RENDERING passes independently: `parseAdviceSentence` rebuilds every
 accepted sentence byte-for-byte or fails the build, and `advice.ts` preserves
 condition, modality and negation. The defect is the absent derivation, not the
-wording — the accepted visual design and interaction structure are untouched by
-every open option.
+wording — which is why M5 u1 preserves the rendering and replaces only what
+feeds it, and why the accepted visual design survives the whole milestone.
 
 ## M2 — COMPLETE (expedited)
 
