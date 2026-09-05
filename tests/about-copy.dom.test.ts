@@ -52,4 +52,15 @@ describe('E03 corpus size comes from the engine', () => {
     expect(text).not.toMatch(/\d+ compiled documents/u);
     expect(text).toContain(DESCRIPTIONS.unreviewed);
   });
+
+  it('S8 discloses that prepared topics select a fixed source-aligned subset', () => {
+    const root = render(337);
+    const details = root.querySelector('details');
+    if (!(details instanceof HTMLDetailsElement)) throw new Error('about disclosure is missing');
+    details.open = true;
+    expect(details.textContent).toContain('The question list is fixed.');
+    expect(details.textContent).toContain(
+      'Each topic selects source-aligned controlled clauses from the verified knowledge-base export',
+    );
+  });
 });
