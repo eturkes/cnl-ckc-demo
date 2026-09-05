@@ -53,4 +53,18 @@ describe('semantic graph source fidelity review', () => {
     expect(negative).toBeDefined();
     expect(should?.source).toBe(negative?.target);
   });
+
+  it('does not turn a negated premise into positive event support', () => {
+    const inverted = graph.data.edges.find(
+      ({ document, sentence, kind, source, target, label }) =>
+        document === 'cdc2022-opioid-rec01' &&
+        sentence === 3 &&
+        kind === 'implies' &&
+        source === 'event:outweigh' &&
+        target === 'event:consider' &&
+        label === 'condition supports',
+    );
+
+    expect(inverted).toBeUndefined();
+  });
 });
