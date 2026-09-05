@@ -30,7 +30,8 @@ const ANSWER_DOCUMENTS = [
 
 const visibleSemantics = (document: string, sentence: number, line: number): readonly string[] => {
   const view = graph.answerSubgraph({ document, sentences: [sentence], lines: [line] });
-  if (view === undefined) throw new Error(`missing answer graph for ${document}:${String(sentence)}`);
+  if (view === undefined)
+    throw new Error(`missing answer graph for ${document}:${String(sentence)}`);
   return [...view.nodes.map(({ label }) => label), ...view.edges.map(({ label }) => label)];
 };
 
@@ -131,9 +132,10 @@ describe('semantic graph source fidelity review', () => {
       for (const id of view.highlight.edges) {
         const edge = graph.edge(id);
         expect(edge?.document, `${document}/${id}`).toBe(document);
-        expect(edge?.sentence === null || sentences.includes(edge.sentence), `${document}/${id}`).toBe(
-          true,
-        );
+        expect(
+          edge?.sentence === null || sentences.includes(edge.sentence),
+          `${document}/${id}`,
+        ).toBe(true);
       }
     }
   });
