@@ -5,10 +5,11 @@ import { fileURLToPath } from 'node:url';
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
+import { answerRows, synthesizeAnswer } from '../src/demo/describe.js';
 import { BUDGET_MAX } from '../src/engine/budget.js';
 import type { PlSolution } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
-import { QUESTION_CATALOG } from '../src/questions/catalog.js';
+import { QUESTION_CATALOG, QUESTION_IDS } from '../src/questions/catalog.js';
 import { serializeAnswer } from '../src/questions/serialize.js';
 import { verifyBag } from '../tools/kb/bag.mjs';
 import { payloadSource } from '../tools/kb/paths.mjs';
@@ -162,5 +163,47 @@ describe('expedited semantic binding review', () => {
 
     const after = await proofSession.prove(input, BUDGET_MAX);
     expect(after).not.toEqual(before);
+  });
+
+  it('S4 maps every statement to only its producing live source rows', async () => {
+    for (const id of QUESTION_IDS) {
+      const entry = QUESTION_CATALOG[id];
+      const result = await session.solve(entry.goal, BUDGET_MAX);
+      if (result.kind !== 'solutions')
+        throw new Error(`${id}: expected solutions, got ${result.kind}`);
+      const rows = answerRows(id, result.solutions);
+      const points = synthesizeAnswer(rows);
+
+      for (const [source, row] of rows.entries()) {
+        const solution = result.solutions[source];
+        if (solution === undefined) throw new Error(`${id}: source ${String(source)} is absent`);
+        const sourceTerm = solution.bindings.Source;
+        const answerTerm = solution.bindings.Answer;
+        if (
+          sourceTerm?.kind !== 'compound' ||
+          sourceTerm.functor !== '$guideline_id' ||
+          sourceTerm.args[1]?.kind !== 'atom' ||
+          answerTerm?.kind !== 'compound' ||
+          answerTerm.functor !== 'clinical_answer' ||
+          answerTerm.args[0]?.kind !== 'atom'
+        ) {
+          throw new Error(`${id}: source ${String(source)} has malformed provenance`);
+        }
+        expect(answerTerm.args[0].value).toBe(sourceTerm.args[1].value);
+        expect(row.document).toBe(sourceTerm.args[1].value);
+        for (const text of row.items ?? [row.label]) {
+          expect(points.find((point) => point.text === text)?.sources).toContain(source);
+        }
+      }
+
+      for (const point of points) {
+        expect(point.sources.length).toBeGreaterThan(0);
+        for (const source of point.sources) {
+          const row = rows[source];
+          expect(row).toBeDefined();
+          expect(row?.items ?? [row?.label]).toContain(point.text);
+        }
+      }
+    }
   });
 });
