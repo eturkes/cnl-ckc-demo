@@ -1,6 +1,6 @@
 // Gate-retention experiment: real Vitest discovery must include each declared check.
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import ts from 'typescript';
@@ -46,6 +46,7 @@ const deleteRegistration = (source: string, prefix: string): string => {
 };
 
 it('chk.retention: deleting any required live check fails an independent inventory', () => {
+  mkdirSync(join(ROOT, '.scratch'), { recursive: true });
   const directory = mkdtempSync(join(ROOT, '.scratch/m5-retention-'));
   const paths = ['legacy', 'binding'].map((label) =>
     join(ROOT, `tests/m5-retention-${process.pid}-${label}.test.ts`),
