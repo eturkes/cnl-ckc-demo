@@ -24,23 +24,30 @@ describe('M5 cited-clause answer/proof binding', () => {
         changedProofs = 0;
       const answerAfterStates: Record<string, number> = {};
       const proofAfterStates: Record<string, number> = {};
+      const resolvedSites = new Set<number>();
       const skipped: string[] = [];
       for (const { topic, document } of documents()) {
         const answer = selectedGoal(answerTermGoal(mechanism, document), topic, document);
         const proof = selectedGoal(proofTermGoal(mechanism, document), topic, document);
         const beforeAnswer = bounded(engine, answer, 100, 100000, text('Answer', 'AnswerText'));
         const beforeProof = bounded(engine, proof, 100, 100000, proofLines);
+        const clauses = CASES.filter((c) => c.document === document).flatMap((c) => c.clauses);
+        if (beforeProof.State === 'proved') {
+          const lines = JSON.parse(String(beforeProof.LineText)) as number[];
+          for (const clause of clauses) {
+            expect(
+              lines,
+              `${mechanism}:${document}:${String(clause.line)} must participate`,
+            ).toContain(clause.line);
+          }
+          for (const line of lines) resolvedSites.add(line);
+        }
         if (beforeAnswer.State !== 'proved' || beforeProof.State !== 'proved') {
           skipped.push(`${document}:${String(beforeAnswer.State)}/${String(beforeProof.State)}`);
           continue;
         }
         baselineRows += 1;
-        const lines = JSON.parse(String(beforeProof.LineText)) as number[];
-        const clauses = CASES.filter((c) => c.document === document).flatMap((c) => c.clauses);
         for (const clause of clauses) {
-          expect(lines, `${document}:${String(clause.line)} must participate`).toContain(
-            clause.line,
-          );
           const remove = `clause((${clause.head}),_,Ref),clause_property(Ref,file('/prolog.pl')),clause_property(Ref,line_count(${clause.line})),erase(Ref)`;
           const afterAnswer = bounded(
             engine,
@@ -78,6 +85,7 @@ describe('M5 cited-clause answer/proof binding', () => {
       console.log(
         JSON.stringify({
           mechanism,
+          resolvedContentSites: resolvedSites.size,
           baselineRows,
           erased,
           changedAnswers,
@@ -86,6 +94,11 @@ describe('M5 cited-clause answer/proof binding', () => {
           proofAfterStates,
           skipped,
         }),
+      );
+      expect([...resolvedSites].sort((a, b) => a - b)).toEqual(
+        mechanism === 'a'
+          ? []
+          : CASES.flatMap((c) => c.clauses.map((clause) => clause.line)).sort((a, b) => a - b),
       );
       expect(baselineRows).toBe(
         mechanism === 'a' ? 0 : mechanism === 'b' ? 9 : mechanism === 'c' ? 7 : 12,
