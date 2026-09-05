@@ -83,4 +83,14 @@ describe('semantic graph source fidelity review', () => {
 
     expect(() => parseSemanticGraph(malformed)).toThrow(GraphDataError);
   });
+
+  it('does not highlight a direct edge that skips hidden negation contexts', () => {
+    const view = graph.answerSubgraph({
+      document: 'cdc2022-opioid-rec01',
+      sentences: [3],
+      lines: [506],
+    });
+
+    expect(view?.highlight.edges).not.toContain('edge:512:12');
+  });
 });
