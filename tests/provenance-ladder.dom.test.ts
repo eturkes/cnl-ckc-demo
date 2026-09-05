@@ -103,7 +103,7 @@ describe('proof-to-source provenance ladder', () => {
     expect(root.querySelector<HTMLIFrameElement>('iframe')?.src).toContain('#page=42');
   });
 
-  it('links the proof to the graph and pairs keyboard-selected alignment spans', async () => {
+  it('links the proof to the graph and pairs pointer- and keyboard-selected spans', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => Promise.resolve(new Response(JSON.stringify(EVIDENCE_FIXTURE)))),
@@ -125,10 +125,14 @@ describe('proof-to-source provenance ladder', () => {
     const ace = root.querySelector<HTMLButtonElement>('[data-side="ace"] button');
     const source = root.querySelector<HTMLButtonElement>('[data-side="source"] button');
     if (ace === null || source === null) throw new Error('paired alignment controls missing');
-    ace.focus();
+    source.dispatchEvent(new Event('pointerenter'));
     await tick();
     expect(ace.classList.contains('active')).toBe(true);
     expect(source.classList.contains('active')).toBe(true);
+
+    ace.focus();
+    await tick();
+    expect(ace.getAttribute('aria-pressed')).toBe(source.getAttribute('aria-pressed'));
   });
 
   it('S7 fails closed when the selected proof line is absent from its evidence chunk', async () => {
