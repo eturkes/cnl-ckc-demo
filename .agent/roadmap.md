@@ -95,8 +95,8 @@ units below:
 
 Sizing model, fixed for M2: `cal = raw × 1.77`, `raw` = whole-unit bottom-up estimate. The
 1.77 multiplier IS the empirical correction for understated harvest, so no separate harvest
-floor is added on top — stacking one double-counts. One-window aim 200K; a unit over it
-splits at its named seam. u2 is the `data`-tier calibration probe: no M1 analog exists, so it
+floor is added on top — stacking one double-counts. One-window aim 200K, a 240K-window
+figure; a unit over it splits at its named seam. u2 is the `data`-tier calibration probe: no M1 analog exists, so it
 ships uncalibrated and re-sizes the tier from its own measurement.
 
 - **u1 — provenance model and parsers** · kernel · `oracle` `prod` · est 90K → 159K · COMPLETE (expedited)
@@ -187,6 +187,12 @@ X20, X24. No `high` severity row is open.
 
 Gauge band: unit `main=` ran 77–96% of 240K, `mate=` 37–76%. Review sessions ran
 77–96%. Sizing calibration multiplier 1.77.
+
+Window note, binding on PLANNING: every gauge recorded here, in `.agent/archive/` and in
+`.agent/contracts/` is against the retired 240K window; the window is now 1M and MAIN's is
+collapse-managed. Carry the absolute K figures forward as the sizing analogs — the
+percentages measure a window that no longer exists, and the 1.77 multiplier stays valid
+because it is a ratio of two K figures.
 
 Full record → `.agent/archive/m1.md`. Judgment ledger → `.agent/archive/review-m1.md`.
 Reviewer reports → `.agent/review-m1/`. Unit contracts and fixed check sets →

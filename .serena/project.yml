@@ -107,11 +107,13 @@ ls_additional_workspace_folders: []
 #     - "**/bin/**"
 #     - "**/obj/**"
 # Note: global ignored_paths from serena_config.yml are also applied additively.
-# Committed, non-gitignored paths whose read cost exceeds their value. Gitignored caches
-# (node_modules/, dist/, .serena/cache/) are already excluded by the gitignore flag
-# above and are listed in .claude/settings.json permissions.deny instead. Every deny rule
-# must match a real path: a coverage/ pair was carried for output no script produces, and
-# both halves come back together when a --coverage run is configured (M1 review X12).
+# Narrows Serena alone and never gates Read/Bash: committed data files + LSP-hostile paths
+# (a language server that never answers documentSymbol burns its full request timeout every
+# indexing pass). Gitignored trees (node_modules, dist/, .vite/, kb/generated, .serena/cache/)
+# are already excluded by the gitignore flag above. Read cost control elsewhere = .gitignore
+# + Read's line cap + the read guard (project CLAUDE.md). Every entry must match a real path:
+# a coverage/ pair was carried for output no script produces, and both halves come back
+# together when a --coverage run is configured (M1 review X12).
 ignored_paths: ['pnpm-lock.yaml', 'kb/*.tar.gz']
 
 # whether the project is in read-only mode

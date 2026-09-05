@@ -355,18 +355,17 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   flush after every row. In M2 planning a bare "flush now" moved nobody; the cost
   directive carried every lagging teammate to complete inside one poll. Send it at the
   FIRST lagging poll — the brief's batch size is what it corrects.
+- Every surviving teammate tip stays in BRANCH form: these predate the
+  `archive/m<m>u<u>-<role>` tag convention, and every committed citation — memory,
+  contracts, ledger, reviewer reports — names `wt/<name>`. A Close-order branch sweep
+  covers its own wave's roster alone and must leave them alone; renaming them would
+  invalidate records instead of preserving them.
 - Probe branches survive their worktrees: `wt/res-m1-1` (`36cc56f`, swipl-wasm
   load/worker/terms/trace/perf/test/errors/deploy probes), `wt/res-m1-2`
   (`5863141`, cytoscape layout/perf/test, axe, contrast, combobox probes),
   `wt/res-m2-2` (`0a48b79`, every meta-interpreter, cap-completeness, oracle,
   clause-identity and budget probe behind `Live proof derivation (M2 planning)`)
   and `wt/res-m2-3` (`24d027e`, asset-shape, PDF-viewer and ladder-UI probes).
-
-## Read-exclusion set
-
-Synced pair: `.claude/settings.json` `permissions.deny` (full set) +
-`.serena/project.yml` `ignored_paths` (committed, non-gitignored only).
-Gitignored caches go to `permissions.deny` alone. Grows with the tree.
 
 ## Serena
 
