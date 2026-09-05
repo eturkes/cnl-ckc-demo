@@ -9,8 +9,12 @@ Agreement between MAIN and a reviewer = **independent confirmation** (council
 rule). Where verdicts differ in severity, the higher stands — each is
 evidence-backed and the lower one saw less.
 
-Reviewer reports → `.agent/review-expedited/`. Reviewer branches `wt/rev-*` are
-retained as citable evidence; `wt/rev-claim-1` carries replay test `b9d8d77`.
+Reviewer reports → `.agent/review-expedited/`. Every reviewer's probes are
+committed on its own branch, retained as citable evidence, each tip clean at
+harvest: `wt/rev-arch-1` `d0584cb`, `wt/rev-sem-1` `f2644a3`, `wt/rev-sem-2`
+`379072e`, `wt/rev-claim-1` `b9d8d77`. The probes are intentionally RED against
+`main` — they encode the acceptance checks that close their rows, so each one
+turns green exactly when its defect is fixed.
 
 ## Verdict summary
 
@@ -24,30 +28,34 @@ retained as citable evidence; `wt/rev-claim-1` carries replay test `b9d8d77`.
 The contract's authority-1 line — *"the answers must reflect real Prolog
 execution, never hard-coding"* — is **breached**. S1 and S3 are the load-bearing
 rows: the shipped answer is computed at build time and stored as a fact, and the
-displayed proof is a build-time record replayed, not a derivation. Both are
-independently confirmed by MAIN and `rev-sem-1` through separate probes.
+displayed proof is a build-time record replayed, not a derivation. **Three
+independent probes agree** — MAIN's `probe-kb-independence`, `rev-sem-1`'s
+`tests/review-answer-proof-binding.test.ts`, and `rev-arch-1`'s
+`tests/review-register-schema-binding.test.ts`, the last raised unprompted from an
+architecture lens against a contract row it was not assigned. All three retract
+every `guideline_*` clause and observe the answer *and* the proof unchanged.
 
 ## A — architecture (`rev-arch-1`)
 
 | row | verdict | finding | evidence |
 | --- | --- | --- | --- |
-| A1 | fail(med) | Cached builds trust manifest-authorized bytes instead of re-deriving from the verified bag. | `tools/kb/build.mjs:69`; `review-probes/a1-cache.test.mjs` |
+| A1 | fail(med) | Cached builds trust manifest-authorized bytes instead of re-deriving from the verified bag. | `tools/kb/build.mjs:69`; `tools/review-probes/a1-cache.test.mjs` |
 | A2 | pass | Seven declared topic/source sets re-derive from the verified bag; a missing selected ACE source aborts the build. | `tools/kb/clinical.mjs:18`; `tests/questions-live.test.ts` |
-| A3 | fail(high) | The byte-equivalence guard runs **before** grouping and term emission, so changed answer modality still builds. A3 requires the guard to bind what the answer *says*. | `tools/kb/clinical.mjs:261,325`; `review-probes/a3-answer-equivalence.test.mjs` |
-| A4 | fail(med) | Import graph is acyclic, but `.svelte` components still select proof documents and join semantic lines — semantics in the component layer. | `src/provenance/ProvenanceLadder.svelte:25`; `review-probes/a4-component-semantics.test.mjs` |
+| A3 | fail(high) | The byte-equivalence guard runs **before** grouping and term emission, so changed answer modality still builds. A3 requires the guard to bind what the answer *says*. | `tools/kb/clinical.mjs:261,325`; `tools/review-probes/a3-answer-equivalence.test.mjs` |
+| A4 | fail(med) | Import graph is acyclic, but `.svelte` components still select proof documents and join semantic lines — semantics in the component layer. | `src/provenance/ProvenanceLadder.svelte:25`; `tools/review-probes/a4-component-semantics.test.mjs` |
 | A5 | fail(med) | A 3,138,829 B worker boots before user activation (A5 caps pre-activation load at 1 MB); memory retained the pre-range 14-file inventory. | `src/demo/DemoController.svelte.ts:119`; `pnpm browser:check` |
 | A6 | fail(med) | Engine-native terms are decoded, but both worker consumers trust TypeScript-cast messages with no runtime validation at the consumer. | `src/engine/client.ts:118`; `tests/review-a6-worker-validation.test.ts` |
 | A7 | pass | Two forced builds produced identical hashes for all 343 recorded assets across every generated class. | `pnpm kb:reproduce` |
 | A8 | fail(high) | Not fail-closed: malformed alignment survives asset parsing, and a query emitting stderr still returns a successful solution. | `src/provenance/model.ts:85`; `src/engine/session.ts:307`; `tests/review-a8-fail-closed.test.ts` |
-| A9+ | fail(med) | The QLF fallback and the clause index add 4.08 MB of generated work with no runtime or shipped consumer — the worker references only the PVM and neither asset enters `dist`. | `src/engine/worker.ts:7`; `review-probes/a9-dead-assets.test.mjs` |
-| A10+ | fail(low) | Overlapping build APIs derive the full provenance model three times instead of sharing one immutable result. | `tools/kb/build.mjs:61`; `review-probes/a10-duplicate-derivation.test.mjs` |
-| A11+ | fail(med) | Pages deploys after the deterministic gate but bypasses `kb:reproduce` and the real-browser release checks — the two checks that back the byte-identity and browser claims. | `.github/workflows/pages.yml:27`; `review-probes/a11-release-workflow.test.mjs` |
+| A9+ | fail(med) | The QLF fallback and the clause index add 4.08 MB of generated work with no runtime or shipped consumer — the worker references only the PVM and neither asset enters `dist`. | `src/engine/worker.ts:7`; `tools/review-probes/a9-dead-assets.test.mjs` |
+| A10+ | fail(low) | Overlapping build APIs derive the full provenance model three times instead of sharing one immutable result. | `tools/kb/build.mjs:61`; `tools/review-probes/a10-duplicate-derivation.test.mjs` |
+| A11+ | fail(med) | Pages deploys after the deterministic gate but bypasses `kb:reproduce` and the real-browser release checks — the two checks that back the byte-identity and browser claims. | `.github/workflows/pages.yml:27`; `tools/review-probes/a11-release-workflow.test.mjs` |
 
 ## S — semantic behavior (MAIN, `rev-sem-1`, `rev-sem-2`)
 
 | row | verdict | source | finding | evidence |
 | --- | --- | --- | --- | --- |
-| S1 | fail(high) | MAIN + `rev-sem-1` | **The answer never consults the KB.** `tools/kb/clinical.mjs` parses `ace/*.ace` at BUILD time, emits finished `clinical_advice/3` facts, and `paths.mjs:payloadSource` appends them to the image; the runtime goal is a fact lookup. Retracting every clause of all seven `guideline_*` predicates (`guideline_entity/4` → 0 clauses) leaves the rendered answer **byte-identical**. | `probe-kb-independence`; `tests/review-answer-proof-binding.test.ts:67`; `tools/kb/clinical.mjs:1-12,440-470`; `tools/kb/paths.mjs:28-38` |
+| S1 | fail(high) | MAIN + `rev-sem-1` + `rev-arch-1` | **The answer never consults the KB.** `tools/kb/clinical.mjs` parses `ace/*.ace` at BUILD time, emits finished `clinical_advice/3` facts, and `paths.mjs:payloadSource` appends them to the image; the runtime goal is a fact lookup. Retracting every clause of all seven `guideline_*` predicates (`guideline_entity/4` → 0 clauses) leaves the rendered answer **byte-identical**. | `probe-kb-independence`; `tests/review-answer-proof-binding.test.ts:67`; `tests/review-register-schema-binding.test.ts`; `tools/kb/clinical.mjs:481`; `tools/kb/paths.mjs:28-38` |
 | S2 | fail(high) | MAIN + `rev-sem-1` + `rev-sem-2` | **Polarity and modality are dropped, producing the clinical inverse.** `cdc2022-opioid-rec01` s3 reads *"If an opioid-benefit does **not** outweigh an opioid-risk then every clinician should **not** consider an opioid-therapy for an acute-pain"*; the shipped `answerSubgraph` highlight is `outweigh→opioid benefit`, `outweigh→opioid risk`, `outweigh —condition supports→ consider`, `consider→clinician`, `consider→opioid therapy`, `consider —for→ acute pain`. Both negations gone. Answer TEXT preserves them, so the two surfaces contradict each other. `rev-sem-1` independently found the same loss on the proof and compiled-clause surfaces. | `probe-answer-graph`; `tests/graph-semantics.review.test.ts:18`; `tests/review-answer-proof-binding.test.ts:96`; `src/graph/model.ts:isConceptRelationship` |
 | S2b+ | fail(med) | MAIN | Census, not a one-off: 156 negation contexts and 857 `should` contexts exist as `operator-context` nodes; the concept predicate excludes every one — `operator` edges and non-`condition supports` `implies` edges are filtered, and `operator-context` is absent from `CONCEPT_NODE_KINDS`. | `probe-negation.mjs`; `src/graph/model.ts:CONCEPT_NODE_KINDS` |
 | S3 | fail(high) | MAIN + `rev-sem-1` | **The proof is a build-time record, not a derivation.** `derive(clinical_advice(Q,S,A),_,P,proved) :- !, ... advice_nodes(Sites,P)` cuts before any resolution and emits `node(line(L),H,[])` from `site/2` entries computed at build time. Shipped question 1 yields 3 steps, all `guideline_operator/3`, all 0 children. `resolve/3` is never reached by any shipped question. Every displayed proof survives removal of the clauses it claims participated. | `tools/kb/proof.mjs:31-39`; `probe-proof-steps`; `tests/review-answer-proof-binding.test.ts:80` |
@@ -86,7 +94,7 @@ independently confirmed by MAIN and `rev-sem-1` through separate probes.
 | C4u5 | fail(med) | `rev-claim-1` | u5 `Accept:` partly unmet — selection re-proves once and stale completion is suppressed, but only 1/6 required state classes receives a DOM-plus-axe check. | `tests/demo-proof-controller.test.ts:104-168`; `tests/provenance-ladder.dom.test.ts:64-145` |
 | C4u6 | pass | `rev-claim-1` | u6 `Accept:` holds — code-point text round-trips exactly, pointer and keyboard activate the same paired group, and both projection and `unreviewed` disclosures render adjacent to the passage. | `tests/review-claim-replay.dom.test.ts`; `src/provenance/ProvenanceLadder.svelte:218-243` |
 | C4u7 | pass | `rev-claim-1` | u7 `Accept:` holds — the real nested-host browser run observed no PDF or passage request before activation, both after, the physical-page fragment, and zero nested 404 / page errors. | `pnpm browser:check` (rc=0; eight 320px states) |
-| C5 | fail(med) | MAIN + `rev-claim-1` | Recorded measurements drifted. Roadmap 343 assets, 2,901/20,964 graph and 293/25 tests match. `.agent/memory.md` is stale at PVM 437,132→444,283 B, QLF 2,168,708→2,199,577 B, Horn 9,053→9,804, catalog 6→7, and `dist` 14 files / ~3.77 MB → 355 files / 21,874,052 B (343 manifest assets). Memory's own rule requires re-deriving the file count and asset-class list whenever a unit ships a new class. | `jq '{catalog,provenance,graph,assets}' kb/generated/kb-manifest.json`; `du -sb dist`; `.agent/memory.md:120,237,243,420,524` |
+| C5 | fail(med) → **fixed** `93cda83` | MAIN + `rev-claim-1` | Recorded measurements drifted. Roadmap 343 assets, 2,901/20,964 graph and 293/25 tests matched; `.agent/memory.md` was stale at PVM 437,132→444,283 B, QLF 2,168,708→2,199,577 B, Horn 9,053→9,804, catalog 6→7, and `dist` 14 files / ~3.77 MB → 355 files / 21,874,052 B (343 manifest assets). Every replacement figure was re-derived by MAIN, not copied from a report. Two memory claims that the same range had falsified were corrected with them: the `queries/answers/*.pl` oracle entry (retired, C2) and the anti-hard-coding recipe entry (weakened, C3). The root cause — no mechanical owner for these figures — stays open in `.agent/polish.md`. | `jq '.assets\|length' kb/generated/kb-manifest.json`; `du -sb dist`; `stat -c %s kb/generated/kb.pvm` |
 | C6 | fail(low) | MAIN + `rev-claim-1` | Commit subjects miss `<scope>: <cause> → <fix>`. MAIN counts 4/10 (`refine answer presentation`, `fix: make answer graph concept-first`, `fix: focus graph on cited answer evidence`, `feat: derive concise clinical answers from Prolog clauses` — the last also asserts a derivation that does not happen); `rev-claim-1` counts 5/10 evaluated. Both agree the convention is breached; the count differs by one borderline subject. | `git log --format='%h %s' 5ed81a3^..a944fca` |
 | C7 | fail(high) | MAIN + `rev-claim-1` | **Claim scope exceeds evidence scope in shipped copy.** `ProvenanceLadder.svelte:152` — "The engine re-ran the selected source contribution through its bounded proof"; `:113` — "N source clauses re-proved this part of the answer live"; `copy.ts` lede — "Every answer is proved live in the browser"; `README.md:7` — "The shipped answers are produced at run time." All four are false under S1/S3. Byte-identity and browser claims do rest on matching runs; smoke reuses the producer as its own oracle; visual inspection has no rerunnable evidence. | `src/provenance/ProvenanceLadder.svelte:109,113,152-153`; `src/demo/copy.ts:25-27`; `src/demo/AnswerPanel.svelte:70`; `README.md:7`; `tools/kb/proof.mjs:31-37`; `tools/smoke.mjs:29-52` |
 
@@ -100,6 +108,12 @@ independently confirmed by MAIN and `rev-sem-1` through separate probes.
 - **Recorded measurements have no mechanical owner** (C5's root cause). The prose
   rule to re-derive them existed and was not followed. Deferred to
   `.agent/polish.md`; all three answer-path options need it either way.
+- **`rev-arch-1` raised S1 unprompted** as its own register item `R-S1`, from an
+  architecture lens, against a row it was not assigned and without sight of MAIN's
+  or `rev-sem-1`'s findings. Its acceptance check is the same one all three
+  probes encode: deleting support must change both the projected answer and the
+  line-keyed proof. Recorded here because the convergence is itself evidence —
+  three lenses reached S1 by three different routes.
 - **No finding was raised against the accepted surface.** Visual design, layout,
   colour, type, spacing, motion, component composition, affordance placement,
   disclosure/interaction structure and the chat-style answer presentation were
@@ -121,10 +135,12 @@ then move it back out. Each needs `kb/generated` built (`pnpm kb:build`).
 | `.scratch/probe-negation.mjs` | census: 156 negation contexts, 857 `should` contexts, all dropped by the concept predicate |
 
 Reviewer probes are committed on their own branches: `wt/rev-arch-1`
-(`review-probes/a*.test.mjs`, `tests/review-a6-*`, `tests/review-a8-*`),
-`wt/rev-sem-1` (`tests/review-answer-proof-binding.test.ts`), `wt/rev-sem-2`
+(`tools/review-probes/a*.test.mjs`, `tests/review-a6-*`, `tests/review-a8-*`,
+`tests/review-register-schema-binding.test.ts`), `wt/rev-sem-1`
+(`tests/review-answer-proof-binding.test.ts`), `wt/rev-sem-2`
 (`tests/graph-semantics.review.test.ts`), `wt/rev-claim-1`
-(`tests/review-claim-replay.dom.test.ts`, commit `b9d8d77`).
+(`tests/review-claim-replay.dom.test.ts`). Recover any of them with
+`git show wt/<name>:<path>`; the worktrees themselves are removed.
 
 Port target at remediation: `probe-kb-independence` is the anti-hard-coding gate
 C3 says is missing. It is red today, so it stays out of `pnpm gate` until the
