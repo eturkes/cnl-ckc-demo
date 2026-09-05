@@ -13,6 +13,20 @@ import {
 const PATH = fileURLToPath(new URL('../kb/generated/graph/semantic-graph.json', import.meta.url));
 const sourceText = readFileSync(PATH, 'utf8');
 const graph = new SemanticGraphModel(parseSemanticGraph(JSON.parse(sourceText)));
+const ANSWER_DOCUMENTS = [
+  'cdc2022-opioid-rec01',
+  'cdc2022-opioid-rec02',
+  'cdc2022-opioid-rec03',
+  'cdc2022-opioid-rec04',
+  'cdc2022-opioid-rec05',
+  'cdc2022-opioid-rec06',
+  'cdc2022-opioid-rec07',
+  'cdc2022-opioid-rec08',
+  'cdc2022-opioid-rec09',
+  'cdc2022-opioid-rec10',
+  'cdc2022-opioid-rec11',
+  'cdc2022-opioid-rec12',
+] as const;
 
 const visibleSemantics = (document: string, sentence: number, line: number): readonly string[] => {
   const view = graph.answerSubgraph({ document, sentences: [sentence], lines: [line] });
@@ -101,5 +115,26 @@ describe('semantic graph source fidelity review', () => {
     if (support === undefined) throw new Error('missing positive condition-support edge');
 
     expect(graphRelationLabel(support, support.target)).toBe('supported by condition');
+  });
+
+  it('keeps every prepared answer highlight inside its cited source contribution', () => {
+    for (const document of ANSWER_DOCUMENTS) {
+      const documentEdges = graph.data.edges.filter((edge) => edge.document === document);
+      const sentences = [
+        ...new Set(documentEdges.flatMap(({ sentence }) => (sentence === null ? [] : [sentence]))),
+      ];
+      const firstLine = documentEdges[0]?.line;
+      if (firstLine === undefined) throw new Error(`missing graph edges for ${document}`);
+      const view = graph.answerSubgraph({ document, sentences, lines: [firstLine] });
+      if (view === undefined) throw new Error(`missing answer graph for ${document}`);
+
+      for (const id of view.highlight.edges) {
+        const edge = graph.edge(id);
+        expect(edge?.document, `${document}/${id}`).toBe(document);
+        expect(edge?.sentence === null || sentences.includes(edge.sentence), `${document}/${id}`).toBe(
+          true,
+        );
+      }
+    }
   });
 });
