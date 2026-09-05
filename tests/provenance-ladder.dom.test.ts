@@ -131,6 +131,23 @@ describe('proof-to-source provenance ladder', () => {
     expect(source.classList.contains('active')).toBe(true);
   });
 
+  it('S7 fails closed when the selected proof line is absent from its evidence chunk', async () => {
+    const fetcher = vi.fn(async () =>
+      Promise.resolve(new Response(JSON.stringify({ ...EVIDENCE_FIXTURE, clauses: [] }))),
+    );
+    vi.stubGlobal('fetch', fetcher);
+    const root = render(ready);
+    const details = root.querySelector('details.ladder');
+    if (!(details instanceof HTMLDetailsElement)) throw new Error('evidence ladder missing');
+    details.open = true;
+    details.dispatchEvent(new Event('toggle'));
+    await vi.waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+    await tick();
+
+    expect(root.querySelector('[role="alert"]')).not.toBeNull();
+    expect(root.textContent).not.toContain(EVIDENCE_FIXTURE.source.text);
+  });
+
   it('renders explicit non-content states without requesting document evidence', async () => {
     const fetcher = vi.fn();
     vi.stubGlobal('fetch', fetcher);
