@@ -106,9 +106,10 @@ export const answerGoal = (mechanism, c, cap = 4) =>
       ? `m5_all(${c.heads},${cap},${c.assumptions},_)`
       : scopedGoal(mechanism, c, allGoals(c));
 
-export const bounded = (engine, goal, depth = 100, inferences = 100000) =>
+export const bounded = (engine, goal, depth = 100, inferences = 100000, after = '') =>
   once(
     engine,
     `(catch(call_with_inference_limit(call_with_depth_limit(once((${goal})),${depth},Depth),${inferences},Inf),error(resource_error(stack),_),Inf=stack) -> ` +
-      `(Inf==inference_limit_exceeded -> State=inferences ; Inf==stack -> State=stack ; Depth==depth_limit_exceeded -> State=depth ; State=proved) ; State=failed).`,
+      `(Inf==inference_limit_exceeded -> State=inferences ; Inf==stack -> State=stack ; Depth==depth_limit_exceeded -> State=depth ; State=proved) ; State=failed)` +
+      (after === '' ? '.' : `,(State==proved -> (${after}) ; true).`),
   );
