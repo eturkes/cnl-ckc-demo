@@ -3,10 +3,15 @@ import { fileURLToPath, URL } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { SemanticGraphModel, parseSemanticGraph } from '../src/graph/model.js';
+import {
+  GraphDataError,
+  SemanticGraphModel,
+  parseSemanticGraph,
+} from '../src/graph/model.js';
 
 const PATH = fileURLToPath(new URL('../kb/generated/graph/semantic-graph.json', import.meta.url));
-const graph = new SemanticGraphModel(parseSemanticGraph(JSON.parse(readFileSync(PATH, 'utf8'))));
+const sourceText = readFileSync(PATH, 'utf8');
+const graph = new SemanticGraphModel(parseSemanticGraph(JSON.parse(sourceText)));
 
 const visibleSemantics = (document: string, sentence: number, line: number): readonly string[] => {
   const view = graph.answerSubgraph({ document, sentences: [sentence], lines: [line] });
@@ -66,5 +71,16 @@ describe('semantic graph source fidelity review', () => {
     );
 
     expect(inverted).toBeUndefined();
+  });
+
+  it('rejects an argument edge whose source is not an event', () => {
+    const malformed = JSON.parse(sourceText) as {
+      edges: { id: string; source: string }[];
+    };
+    malformed.edges = malformed.edges.map((edge) =>
+      edge.id === 'edge:513:0' ? { ...edge, source: 'document:cdc2022-opioid-rec01' } : edge,
+    );
+
+    expect(() => parseSemanticGraph(malformed)).toThrow(GraphDataError);
   });
 });
