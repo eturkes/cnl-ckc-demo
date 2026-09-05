@@ -1,0 +1,4045 @@
+[
+  {
+    "id": "when-to-use-opioids",
+    "answers": [
+      {
+        "canonical": "clinical_answer('cdc2022-opioid-rec01',[rule([],\"Every clinician\",should,[action(positive,maximize,\"a nonopioid-therapy\",[modifier(for,\"an acute-pain\")])]),rule([\"an opioid-benefit does not outweigh an opioid-risk\"],\"every clinician\",should,[action(negative,consider,\"an opioid-therapy\",[modifier(for,\"an acute-pain\")])]),rule([],\"Every clinician\",should,[action(positive,discuss,\"a realistic-benefit\",[modifier(with,\"a patient\"),modifier(before,\"an opioid-prescription\")]),action(positive,discuss,\"a known-risk\",[modifier(with,\"a patient\"),modifier(before,\"an opioid-prescription\")])])],\"Nonopioid therapies are at least as effective as opioids for many common types of acute pain. Clinicians should maximize use of nonpharmacologic and nonopioid pharmacologic therapies as appropriate for the specific condition and patient and only consider opioid therapy for acute pain if benefits are anticipated to outweigh risks to the patient. Before prescribing opioid therapy for acute pain, clinicians should discuss with patients the realistic benefits and known risks of opioid therapy (recommendation category: B; evidence type: 3).\")",
+        "term": {
+          "kind": "compound",
+          "functor": "clinical_answer",
+          "args": [
+            {
+              "kind": "atom",
+              "value": "cdc2022-opioid-rec01"
+            },
+            {
+              "kind": "list",
+              "items": [
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "Every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "maximize"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a nonopioid-therapy"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "for"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "an acute-pain"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "string",
+                          "value": "an opioid-benefit does not outweigh an opioid-risk"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "string",
+                      "value": "every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "negative"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "consider"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an opioid-therapy"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "for"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "an acute-pain"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "Every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "discuss"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a realistic-benefit"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "with"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a patient"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "before"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "an opioid-prescription"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "discuss"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a known-risk"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "with"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a patient"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "before"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "an opioid-prescription"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "string",
+              "value": "Nonopioid therapies are at least as effective as opioids for many common types of acute pain. Clinicians should maximize use of nonpharmacologic and nonopioid pharmacologic therapies as appropriate for the specific condition and patient and only consider opioid therapy for acute pain if benefits are anticipated to outweigh risks to the patient. Before prescribing opioid therapy for acute pain, clinicians should discuss with patients the realistic benefits and known risks of opioid therapy (recommendation category: B; evidence type: 3)."
+            }
+          ]
+        },
+        "presentation": {
+          "text": "Clinicians should maximize nonopioid therapy for acute pain. If opioid benefit does not outweigh opioid risk, clinicians should not consider opioid therapy for acute pain. Clinicians should discuss realistic benefit with a patient before opioid prescription and discuss known risk with a patient before opioid prescription.",
+          "items": [
+            "Clinicians should maximize nonopioid therapy for acute pain.",
+            "If opioid benefit does not outweigh opioid risk, clinicians should not consider opioid therapy for acute pain.",
+            "Clinicians should discuss realistic benefit with a patient before opioid prescription and discuss known risk with a patient before opioid prescription."
+          ],
+          "sourcePassage": "Nonopioid therapies are at least as effective as opioids for many common types of acute pain. Clinicians should maximize use of nonpharmacologic and nonopioid pharmacologic therapies as appropriate for the specific condition and patient and only consider opioid therapy for acute pain if benefits are anticipated to outweigh risks to the patient. Before prescribing opioid therapy for acute pain, clinicians should discuss with patients the realistic benefits and known risks of opioid therapy (recommendation category: B; evidence type: 3).",
+          "document": "cdc2022-opioid-rec01",
+          "structured": true
+        }
+      },
+      {
+        "canonical": "clinical_answer('cdc2022-opioid-rec02',[rule([],\"Every clinician\",should,[action(positive,maximize,\"a nonopioid-therapy\",[modifier(for,\"a subacute-pain\")]),action(positive,maximize,\"a nonopioid-therapy\",[modifier(for,\"a chronic-pain\")])]),rule([\"an opioid-benefit does not outweigh an opioid-risk\"],\"every clinician\",should,[action(negative,consider,\"an opioid-therapy\",[])]),rule([],\"Every clinician\",should,[action(positive,discuss,\"a realistic-benefit\",[modifier(with,\"a patient\"),modifier(before,\"an initiation\")])]),rule([],\"Every clinician\",should,[action(positive,discuss,\"a known-risk\",[modifier(with,\"a patient\"),modifier(before,\"an initiation\")])]),rule([],\"Every clinician\",should,[action(positive,establish,\"a pain-goal\",[modifier(with,\"a patient\")])]),rule([],\"Every clinician\",should,[action(positive,establish,\"a function-goal\",[modifier(with,\"a patient\")])]),rule([\"an opioid-benefit does not outweigh an opioid-risk\"],\"every clinician\",should,[action(positive,consider,\"a discontinuation\",[])])],\"Nonopioid therapies are preferred for subacute and chronic pain. Clinicians should maximize use of nonpharmacologic and nonopioid pharmacologic therapies as appropriate for the specific condition and patient and only consider initiating opioid therapy if expected benefits for pain and function are anticipated to outweigh risks to the patient. Before starting opioid therapy for subacute or chronic pain, clinicians should discuss with patients the realistic benefits and known risks of opioid therapy, should work with patients to establish treatment goals for pain and function, and should consider how opioid therapy will be discontinued if benefits do not outweigh risks (recommendation category: A; evidence type: 2).\")",
+        "term": {
+          "kind": "compound",
+          "functor": "clinical_answer",
+          "args": [
+            {
+              "kind": "atom",
+              "value": "cdc2022-opioid-rec02"
+            },
+            {
+              "kind": "list",
+              "items": [
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "Every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "maximize"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a nonopioid-therapy"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "for"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a subacute-pain"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "maximize"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a nonopioid-therapy"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "for"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a chronic-pain"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "string",
+                          "value": "an opioid-benefit does not outweigh an opioid-risk"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "string",
+                      "value": "every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "negative"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "consider"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an opioid-therapy"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "Every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "discuss"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a realistic-benefit"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "with"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a patient"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "before"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "an initiation"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "Every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "discuss"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a known-risk"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "with"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a patient"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "before"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "an initiation"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "Every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "establish"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a pain-goal"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "with"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a patient"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "Every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "establish"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a function-goal"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "with"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a patient"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "string",
+                          "value": "an opioid-benefit does not outweigh an opioid-risk"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "string",
+                      "value": "every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "consider"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a discontinuation"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "string",
+              "value": "Nonopioid therapies are preferred for subacute and chronic pain. Clinicians should maximize use of nonpharmacologic and nonopioid pharmacologic therapies as appropriate for the specific condition and patient and only consider initiating opioid therapy if expected benefits for pain and function are anticipated to outweigh risks to the patient. Before starting opioid therapy for subacute or chronic pain, clinicians should discuss with patients the realistic benefits and known risks of opioid therapy, should work with patients to establish treatment goals for pain and function, and should consider how opioid therapy will be discontinued if benefits do not outweigh risks (recommendation category: A; evidence type: 2)."
+            }
+          ]
+        },
+        "presentation": {
+          "text": "Clinicians should maximize nonopioid therapy for subacute pain and maximize nonopioid therapy for chronic pain. If opioid benefit does not outweigh opioid risk, clinicians should not consider opioid therapy. Clinicians should discuss realistic benefit with a patient before an initiation. Clinicians should discuss known risk with a patient before an initiation. Clinicians should establish pain goal with a patient. Clinicians should establish function goal with a patient. If opioid benefit does not outweigh opioid risk, clinicians should consider a discontinuation.",
+          "items": [
+            "Clinicians should maximize nonopioid therapy for subacute pain and maximize nonopioid therapy for chronic pain.",
+            "If opioid benefit does not outweigh opioid risk, clinicians should not consider opioid therapy.",
+            "Clinicians should discuss realistic benefit with a patient before an initiation.",
+            "Clinicians should discuss known risk with a patient before an initiation.",
+            "Clinicians should establish pain goal with a patient.",
+            "Clinicians should establish function goal with a patient.",
+            "If opioid benefit does not outweigh opioid risk, clinicians should consider a discontinuation."
+          ],
+          "sourcePassage": "Nonopioid therapies are preferred for subacute and chronic pain. Clinicians should maximize use of nonpharmacologic and nonopioid pharmacologic therapies as appropriate for the specific condition and patient and only consider initiating opioid therapy if expected benefits for pain and function are anticipated to outweigh risks to the patient. Before starting opioid therapy for subacute or chronic pain, clinicians should discuss with patients the realistic benefits and known risks of opioid therapy, should work with patients to establish treatment goals for pain and function, and should consider how opioid therapy will be discontinued if benefits do not outweigh risks (recommendation category: A; evidence type: 2).",
+          "document": "cdc2022-opioid-rec02",
+          "structured": true
+        }
+      }
+    ],
+    "points": [
+      {
+        "text": "Clinicians should maximize nonopioid therapy for acute pain.",
+        "sources": [
+          0
+        ]
+      },
+      {
+        "text": "If opioid benefit does not outweigh opioid risk, clinicians should not consider opioid therapy for acute pain.",
+        "sources": [
+          0
+        ]
+      },
+      {
+        "text": "Clinicians should discuss realistic benefit with a patient before opioid prescription and discuss known risk with a patient before opioid prescription.",
+        "sources": [
+          0
+        ]
+      },
+      {
+        "text": "Clinicians should maximize nonopioid therapy for subacute pain and maximize nonopioid therapy for chronic pain.",
+        "sources": [
+          1
+        ]
+      },
+      {
+        "text": "If opioid benefit does not outweigh opioid risk, clinicians should not consider opioid therapy.",
+        "sources": [
+          1
+        ]
+      },
+      {
+        "text": "Clinicians should discuss realistic benefit with a patient before an initiation.",
+        "sources": [
+          1
+        ]
+      },
+      {
+        "text": "Clinicians should discuss known risk with a patient before an initiation.",
+        "sources": [
+          1
+        ]
+      },
+      {
+        "text": "Clinicians should establish pain goal with a patient.",
+        "sources": [
+          1
+        ]
+      },
+      {
+        "text": "Clinicians should establish function goal with a patient.",
+        "sources": [
+          1
+        ]
+      },
+      {
+        "text": "If opioid benefit does not outweigh opioid risk, clinicians should consider a discontinuation.",
+        "sources": [
+          1
+        ]
+      }
+    ]
+  },
+  {
+    "id": "starting-opioid-therapy",
+    "answers": [
+      {
+        "canonical": "clinical_answer('cdc2022-opioid-rec03',[rule([\"a clinician starts an opioid-therapy for an acute-pain\",\"a clinician starts an opioid-therapy for a subacute-pain\",\"a clinician starts an opioid-therapy for a chronic-pain\"],\"the clinician\",should,[action(positive,prescribe,\"an immediate-release-opioid\",[]),action(positive,avoid,\"an extended-release-opioid\",[]),action(positive,avoid,\"a long-acting-opioid\",[])])],\"When starting opioid therapy for acute, subacute, or chronic pain, clinicians should prescribe immediate-release opioids instead of extended-release and long-acting (ER/LA) opioids (recommendation category: A; evidence type: 4).\")",
+        "term": {
+          "kind": "compound",
+          "functor": "clinical_answer",
+          "args": [
+            {
+              "kind": "atom",
+              "value": "cdc2022-opioid-rec03"
+            },
+            {
+              "kind": "list",
+              "items": [
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "string",
+                          "value": "a clinician starts an opioid-therapy for an acute-pain"
+                        },
+                        {
+                          "kind": "string",
+                          "value": "a clinician starts an opioid-therapy for a subacute-pain"
+                        },
+                        {
+                          "kind": "string",
+                          "value": "a clinician starts an opioid-therapy for a chronic-pain"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "string",
+                      "value": "the clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "prescribe"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an immediate-release-opioid"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "avoid"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an extended-release-opioid"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "avoid"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a long-acting-opioid"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "string",
+              "value": "When starting opioid therapy for acute, subacute, or chronic pain, clinicians should prescribe immediate-release opioids instead of extended-release and long-acting (ER/LA) opioids (recommendation category: A; evidence type: 4)."
+            }
+          ]
+        },
+        "presentation": {
+          "text": "When any applies — a clinician starts opioid therapy for acute pain, a clinician starts opioid therapy for subacute pain, or a clinician starts opioid therapy for chronic pain — the clinician should prescribe immediate release opioid, avoid extended release opioid, and avoid long acting opioid.",
+          "items": [
+            "When any applies — a clinician starts opioid therapy for acute pain, a clinician starts opioid therapy for subacute pain, or a clinician starts opioid therapy for chronic pain — the clinician should prescribe immediate release opioid, avoid extended release opioid, and avoid long acting opioid."
+          ],
+          "sourcePassage": "When starting opioid therapy for acute, subacute, or chronic pain, clinicians should prescribe immediate-release opioids instead of extended-release and long-acting (ER/LA) opioids (recommendation category: A; evidence type: 4).",
+          "document": "cdc2022-opioid-rec03",
+          "structured": true
+        }
+      },
+      {
+        "canonical": "clinical_answer('cdc2022-opioid-rec04',[rule([\"a clinician starts an opioid-therapy for an opioid-naive-patient that has an acute-pain\",\"a clinician starts an opioid-therapy for an opioid-naive-patient that has a subacute-pain\",\"a clinician starts an opioid-therapy for an opioid-naive-patient that has a chronic-pain\"],\"the clinician\",should,[action(positive,prescribe,\"a lowest-effective-dosage\",[])]),rule([\"a clinician continues an opioid-therapy for a subacute-pain and the clinician prescribes an opioid at a dosage\",\"a clinician continues an opioid-therapy for a chronic-pain and the clinician prescribes an opioid at a dosage\"],\"the clinician\",should,[action(positive,heed,\"a caution\",[])]),rule([\"a clinician continues an opioid-therapy for a subacute-pain and the clinician considers a dosage-increase\",\"a clinician continues an opioid-therapy for a chronic-pain and the clinician considers a dosage-increase\"],\"the clinician\",should,[action(positive,evaluate,\"an individual-benefit\",[]),action(positive,evaluate,\"an individual-risk\",[])]),rule([\"a clinician continues an opioid-therapy for a subacute-pain\",\"a clinician continues an opioid-therapy for a chronic-pain\"],\"the clinician\",should,[action(positive,avoid,\"an increase\",[modifier(above,\"a diminishing-return-level\")])])],\"When opioids are initiated for opioid-naïve patients with acute, subacute, or chronic pain, clinicians should prescribe the lowest effective dosage. If opioids are continued for subacute or chronic pain, clinicians should use caution when prescribing opioids at any dosage, should carefully evaluate individual benefits and risks when considering increasing dosage, and should avoid increasing dosage above levels likely to yield diminishing returns in benefits relative to risks to patients (recommendation category: A; evidence type: 3).\")",
+        "term": {
+          "kind": "compound",
+          "functor": "clinical_answer",
+          "args": [
+            {
+              "kind": "atom",
+              "value": "cdc2022-opioid-rec04"
+            },
+            {
+              "kind": "list",
+              "items": [
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "string",
+                          "value": "a clinician starts an opioid-therapy for an opioid-naive-patient that has an acute-pain"
+                        },
+                        {
+                          "kind": "string",
+                          "value": "a clinician starts an opioid-therapy for an opioid-naive-patient that has a subacute-pain"
+                        },
+                        {
+                          "kind": "string",
+                          "value": "a clinician starts an opioid-therapy for an opioid-naive-patient that has a chronic-pain"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "string",
+                      "value": "the clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "prescribe"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a lowest-effective-dosage"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "string",
+                          "value": "a clinician continues an opioid-therapy for a subacute-pain and the clinician prescribes an opioid at a dosage"
+                        },
+                        {
+                          "kind": "string",
+                          "value": "a clinician continues an opioid-therapy for a chronic-pain and the clinician prescribes an opioid at a dosage"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "string",
+                      "value": "the clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "heed"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a caution"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "string",
+                          "value": "a clinician continues an opioid-therapy for a subacute-pain and the clinician considers a dosage-increase"
+                        },
+                        {
+                          "kind": "string",
+                          "value": "a clinician continues an opioid-therapy for a chronic-pain and the clinician considers a dosage-increase"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "string",
+                      "value": "the clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "evaluate"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an individual-benefit"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "evaluate"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an individual-risk"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "string",
+                          "value": "a clinician continues an opioid-therapy for a subacute-pain"
+                        },
+                        {
+                          "kind": "string",
+                          "value": "a clinician continues an opioid-therapy for a chronic-pain"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "string",
+                      "value": "the clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "avoid"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an increase"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "above"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a diminishing-return-level"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "string",
+              "value": "When opioids are initiated for opioid-naïve patients with acute, subacute, or chronic pain, clinicians should prescribe the lowest effective dosage. If opioids are continued for subacute or chronic pain, clinicians should use caution when prescribing opioids at any dosage, should carefully evaluate individual benefits and risks when considering increasing dosage, and should avoid increasing dosage above levels likely to yield diminishing returns in benefits relative to risks to patients (recommendation category: A; evidence type: 3)."
+            }
+          ]
+        },
+        "presentation": {
+          "text": "When any applies — a clinician starts opioid therapy for opioid naive patient that has acute pain, a clinician starts opioid therapy for opioid naive patient that has subacute pain, or a clinician starts opioid therapy for opioid naive patient that has chronic pain — the clinician should prescribe lowest effective dosage. When any applies — a clinician continues opioid therapy for subacute pain and the clinician prescribes an opioid at a dosage or a clinician continues opioid therapy for chronic pain and the clinician prescribes an opioid at a dosage — the clinician should heed a caution. When any applies — a clinician continues opioid therapy for subacute pain and the clinician considers dosage increase or a clinician continues opioid therapy for chronic pain and the clinician considers dosage increase — the clinician should evaluate individual benefit and evaluate individual risk. When any applies — a clinician continues opioid therapy for subacute pain or a clinician continues opioid therapy for chronic pain — the clinician should avoid an increase above diminishing return level.",
+          "items": [
+            "When any applies — a clinician starts opioid therapy for opioid naive patient that has acute pain, a clinician starts opioid therapy for opioid naive patient that has subacute pain, or a clinician starts opioid therapy for opioid naive patient that has chronic pain — the clinician should prescribe lowest effective dosage.",
+            "When any applies — a clinician continues opioid therapy for subacute pain and the clinician prescribes an opioid at a dosage or a clinician continues opioid therapy for chronic pain and the clinician prescribes an opioid at a dosage — the clinician should heed a caution.",
+            "When any applies — a clinician continues opioid therapy for subacute pain and the clinician considers dosage increase or a clinician continues opioid therapy for chronic pain and the clinician considers dosage increase — the clinician should evaluate individual benefit and evaluate individual risk.",
+            "When any applies — a clinician continues opioid therapy for subacute pain or a clinician continues opioid therapy for chronic pain — the clinician should avoid an increase above diminishing return level."
+          ],
+          "sourcePassage": "When opioids are initiated for opioid-naïve patients with acute, subacute, or chronic pain, clinicians should prescribe the lowest effective dosage. If opioids are continued for subacute or chronic pain, clinicians should use caution when prescribing opioids at any dosage, should carefully evaluate individual benefits and risks when considering increasing dosage, and should avoid increasing dosage above levels likely to yield diminishing returns in benefits relative to risks to patients (recommendation category: A; evidence type: 3).",
+          "document": "cdc2022-opioid-rec04",
+          "structured": true
+        }
+      }
+    ],
+    "points": [
+      {
+        "text": "When any applies — a clinician starts opioid therapy for acute pain, a clinician starts opioid therapy for subacute pain, or a clinician starts opioid therapy for chronic pain — the clinician should prescribe immediate release opioid, avoid extended release opioid, and avoid long acting opioid.",
+        "sources": [
+          0
+        ]
+      },
+      {
+        "text": "When any applies — a clinician starts opioid therapy for opioid naive patient that has acute pain, a clinician starts opioid therapy for opioid naive patient that has subacute pain, or a clinician starts opioid therapy for opioid naive patient that has chronic pain — the clinician should prescribe lowest effective dosage.",
+        "sources": [
+          1
+        ]
+      },
+      {
+        "text": "When any applies — a clinician continues opioid therapy for subacute pain and the clinician prescribes an opioid at a dosage or a clinician continues opioid therapy for chronic pain and the clinician prescribes an opioid at a dosage — the clinician should heed a caution.",
+        "sources": [
+          1
+        ]
+      },
+      {
+        "text": "When any applies — a clinician continues opioid therapy for subacute pain and the clinician considers dosage increase or a clinician continues opioid therapy for chronic pain and the clinician considers dosage increase — the clinician should evaluate individual benefit and evaluate individual risk.",
+        "sources": [
+          1
+        ]
+      },
+      {
+        "text": "When any applies — a clinician continues opioid therapy for subacute pain or a clinician continues opioid therapy for chronic pain — the clinician should avoid an increase above diminishing return level.",
+        "sources": [
+          1
+        ]
+      }
+    ]
+  },
+  {
+    "id": "acute-pain-prescription-duration",
+    "answers": [
+      {
+        "canonical": "clinical_answer('cdc2022-opioid-rec06',[rule([\"an opioid is needed for an acute-pain\"],\"every clinician\",should,[action(positive,limit,\"an opioid-quantity\",[modifier(for,\"an expected-severe-pain-duration\")])])],\"When opioids are needed for acute pain, clinicians should prescribe no greater quantity than needed for the expected duration of pain severe enough to require opioids (recommendation category: A; evidence type: 4).\")",
+        "term": {
+          "kind": "compound",
+          "functor": "clinical_answer",
+          "args": [
+            {
+              "kind": "atom",
+              "value": "cdc2022-opioid-rec06"
+            },
+            {
+              "kind": "list",
+              "items": [
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "string",
+                          "value": "an opioid is needed for an acute-pain"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "string",
+                      "value": "every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "limit"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an opioid-quantity"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "for"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "an expected-severe-pain-duration"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "string",
+              "value": "When opioids are needed for acute pain, clinicians should prescribe no greater quantity than needed for the expected duration of pain severe enough to require opioids (recommendation category: A; evidence type: 4)."
+            }
+          ]
+        },
+        "presentation": {
+          "text": "If an opioid is needed for acute pain, clinicians should limit opioid quantity for expected severe pain duration.",
+          "items": [
+            "If an opioid is needed for acute pain, clinicians should limit opioid quantity for expected severe pain duration."
+          ],
+          "sourcePassage": "When opioids are needed for acute pain, clinicians should prescribe no greater quantity than needed for the expected duration of pain severe enough to require opioids (recommendation category: A; evidence type: 4).",
+          "document": "cdc2022-opioid-rec06",
+          "structured": true
+        }
+      }
+    ],
+    "points": [
+      {
+        "text": "If an opioid is needed for acute pain, clinicians should limit opioid quantity for expected severe pain duration.",
+        "sources": [
+          0
+        ]
+      }
+    ]
+  },
+  {
+    "id": "opioid-follow-up",
+    "answers": [
+      {
+        "canonical": "clinical_answer('cdc2022-opioid-rec07',[rule([],\"Every clinician\",should,[action(positive,evaluate,\"an opioid-benefit\",[modifier(with,\"a patient\"),modifier(after,\"1 week\"),modifier(before,\"4 weeks\"),modifier(after,\"a therapy-start\"),modifier(for,\"a subacute-pain\")]),action(positive,evaluate,\"an opioid-risk\",[modifier(with,\"a patient\"),modifier(after,\"1 week\"),modifier(before,\"4 weeks\"),modifier(after,\"a therapy-start\"),modifier(for,\"a subacute-pain\")])]),rule([],\"Every clinician\",should,[action(positive,evaluate,\"an opioid-benefit\",[modifier(with,\"a patient\"),modifier(after,\"1 week\"),modifier(before,\"4 weeks\"),modifier(after,\"a therapy-start\"),modifier(for,\"a chronic-pain\")]),action(positive,evaluate,\"an opioid-risk\",[modifier(with,\"a patient\"),modifier(after,\"1 week\"),modifier(before,\"4 weeks\"),modifier(after,\"a therapy-start\"),modifier(for,\"a chronic-pain\")])]),rule([],\"Every clinician\",should,[action(positive,evaluate,\"an opioid-benefit\",[modifier(with,\"a patient\"),modifier(after,\"1 week\"),modifier(before,\"4 weeks\"),modifier(after,\"a dosage-escalation\")]),action(positive,evaluate,\"an opioid-risk\",[modifier(with,\"a patient\"),modifier(after,\"1 week\"),modifier(before,\"4 weeks\"),modifier(after,\"a dosage-escalation\")])]),rule([],\"Every clinician\",should,[action(positive,reevaluate,\"an opioid-benefit\",[modifier(with,\"a patient\"),modifier(during,\"a regular-follow-up\")]),action(positive,reevaluate,\"an opioid-risk\",[modifier(with,\"a patient\"),modifier(during,\"a regular-follow-up\")])])],\"Clinicians should evaluate benefits and risks with patients within 1–4 weeks of starting opioid therapy for subacute or chronic pain or of dosage escalation. Clinicians should regularly reevaluate benefits and risks of continued opioid therapy with patients (recommendation category: A; evidence type: 4).\")",
+        "term": {
+          "kind": "compound",
+          "functor": "clinical_answer",
+          "args": [
+            {
+              "kind": "atom",
+              "value": "cdc2022-opioid-rec07"
+            },
+            {
+              "kind": "list",
+              "items": [
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "Every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "evaluate"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an opioid-benefit"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "with"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a patient"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "after"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "1 week"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "before"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "4 weeks"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "after"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a therapy-start"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "for"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a subacute-pain"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "evaluate"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an opioid-risk"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "with"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a patient"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "after"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "1 week"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "before"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "4 weeks"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "after"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a therapy-start"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "for"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a subacute-pain"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "Every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "evaluate"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an opioid-benefit"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "with"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a patient"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "after"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "1 week"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "before"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "4 weeks"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "after"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a therapy-start"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "for"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a chronic-pain"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "evaluate"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an opioid-risk"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "with"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a patient"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "after"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "1 week"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "before"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "4 weeks"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "after"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a therapy-start"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "for"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a chronic-pain"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "Every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "evaluate"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an opioid-benefit"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "with"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a patient"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "after"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "1 week"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "before"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "4 weeks"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "after"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a dosage-escalation"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "evaluate"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an opioid-risk"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "with"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a patient"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "after"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "1 week"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "before"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "4 weeks"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "after"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a dosage-escalation"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "Every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "reevaluate"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an opioid-benefit"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "with"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a patient"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "during"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a regular-follow-up"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "reevaluate"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an opioid-risk"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "with"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a patient"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "during"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a regular-follow-up"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "string",
+              "value": "Clinicians should evaluate benefits and risks with patients within 1–4 weeks of starting opioid therapy for subacute or chronic pain or of dosage escalation. Clinicians should regularly reevaluate benefits and risks of continued opioid therapy with patients (recommendation category: A; evidence type: 4)."
+            }
+          ]
+        },
+        "presentation": {
+          "text": "Clinicians should evaluate opioid benefit with a patient after 1 week before 4 weeks after therapy start for subacute pain and evaluate opioid risk with a patient after 1 week before 4 weeks after therapy start for subacute pain. Clinicians should evaluate opioid benefit with a patient after 1 week before 4 weeks after therapy start for chronic pain and evaluate opioid risk with a patient after 1 week before 4 weeks after therapy start for chronic pain. Clinicians should evaluate opioid benefit with a patient after 1 week before 4 weeks after dosage escalation and evaluate opioid risk with a patient after 1 week before 4 weeks after dosage escalation. Clinicians should reevaluate opioid benefit with a patient during regular follow up and reevaluate opioid risk with a patient during regular follow up.",
+          "items": [
+            "Clinicians should evaluate opioid benefit with a patient after 1 week before 4 weeks after therapy start for subacute pain and evaluate opioid risk with a patient after 1 week before 4 weeks after therapy start for subacute pain.",
+            "Clinicians should evaluate opioid benefit with a patient after 1 week before 4 weeks after therapy start for chronic pain and evaluate opioid risk with a patient after 1 week before 4 weeks after therapy start for chronic pain.",
+            "Clinicians should evaluate opioid benefit with a patient after 1 week before 4 weeks after dosage escalation and evaluate opioid risk with a patient after 1 week before 4 weeks after dosage escalation.",
+            "Clinicians should reevaluate opioid benefit with a patient during regular follow up and reevaluate opioid risk with a patient during regular follow up."
+          ],
+          "sourcePassage": "Clinicians should evaluate benefits and risks with patients within 1–4 weeks of starting opioid therapy for subacute or chronic pain or of dosage escalation. Clinicians should regularly reevaluate benefits and risks of continued opioid therapy with patients (recommendation category: A; evidence type: 4).",
+          "document": "cdc2022-opioid-rec07",
+          "structured": true
+        }
+      }
+    ],
+    "points": [
+      {
+        "text": "Clinicians should evaluate opioid benefit with a patient after 1 week before 4 weeks after therapy start for subacute pain and evaluate opioid risk with a patient after 1 week before 4 weeks after therapy start for subacute pain.",
+        "sources": [
+          0
+        ]
+      },
+      {
+        "text": "Clinicians should evaluate opioid benefit with a patient after 1 week before 4 weeks after therapy start for chronic pain and evaluate opioid risk with a patient after 1 week before 4 weeks after therapy start for chronic pain.",
+        "sources": [
+          0
+        ]
+      },
+      {
+        "text": "Clinicians should evaluate opioid benefit with a patient after 1 week before 4 weeks after dosage escalation and evaluate opioid risk with a patient after 1 week before 4 weeks after dosage escalation.",
+        "sources": [
+          0
+        ]
+      },
+      {
+        "text": "Clinicians should reevaluate opioid benefit with a patient during regular follow up and reevaluate opioid risk with a patient during regular follow up.",
+        "sources": [
+          0
+        ]
+      }
+    ]
+  },
+  {
+    "id": "opioid-safety",
+    "answers": [
+      {
+        "canonical": "clinical_answer('cdc2022-opioid-rec08',[rule([],\"Every clinician\",should,[action(positive,evaluate,\"a risk\",[modifier(for,\"an opioid-related-harm\"),modifier(before,\"an opioid-initiation\")])]),rule([],\"Every clinician\",should,[action(positive,evaluate,\"a risk\",[modifier(for,\"an opioid-related-harm\"),modifier(during,\"a periodic-continuation-review\")])]),rule([],\"Every clinician\",should,[action(positive,discuss,\"a risk\",[modifier(for,\"an opioid-related-harm\"),modifier(with,\"a patient\")])]),rule([],\"Every clinician\",should,[action(positive,incorporate,\"a risk-mitigation-strategy\",[modifier(in,\"a management-plan\"),modifier(with,\"a patient\")]),action(positive,offer,\"a naloxone-dose\",[])])],\"Before starting and periodically during continuation of opioid therapy, clinicians should evaluate risk for opioid-related harms and discuss risk with patients. Clinicians should work with patients to incorporate into the management plan strategies to mitigate risk, including offering naloxone (recommendation category: A; evidence type: 4).\")",
+        "term": {
+          "kind": "compound",
+          "functor": "clinical_answer",
+          "args": [
+            {
+              "kind": "atom",
+              "value": "cdc2022-opioid-rec08"
+            },
+            {
+              "kind": "list",
+              "items": [
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "Every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "evaluate"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a risk"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "for"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "an opioid-related-harm"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "before"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "an opioid-initiation"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "Every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "evaluate"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a risk"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "for"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "an opioid-related-harm"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "during"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a periodic-continuation-review"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "Every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "discuss"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a risk"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "for"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "an opioid-related-harm"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "with"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a patient"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "Every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "incorporate"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a risk-mitigation-strategy"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "in"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a management-plan"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "with"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a patient"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "offer"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a naloxone-dose"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "string",
+              "value": "Before starting and periodically during continuation of opioid therapy, clinicians should evaluate risk for opioid-related harms and discuss risk with patients. Clinicians should work with patients to incorporate into the management plan strategies to mitigate risk, including offering naloxone (recommendation category: A; evidence type: 4)."
+            }
+          ]
+        },
+        "presentation": {
+          "text": "Clinicians should evaluate a risk for opioid related harm before opioid initiation. Clinicians should evaluate a risk for opioid related harm during periodic continuation review. Clinicians should discuss a risk for opioid related harm with a patient. Clinicians should incorporate risk mitigation strategy in management plan with a patient and offer naloxone dose.",
+          "items": [
+            "Clinicians should evaluate a risk for opioid related harm before opioid initiation.",
+            "Clinicians should evaluate a risk for opioid related harm during periodic continuation review.",
+            "Clinicians should discuss a risk for opioid related harm with a patient.",
+            "Clinicians should incorporate risk mitigation strategy in management plan with a patient and offer naloxone dose."
+          ],
+          "sourcePassage": "Before starting and periodically during continuation of opioid therapy, clinicians should evaluate risk for opioid-related harms and discuss risk with patients. Clinicians should work with patients to incorporate into the management plan strategies to mitigate risk, including offering naloxone (recommendation category: A; evidence type: 4).",
+          "document": "cdc2022-opioid-rec08",
+          "structured": true
+        }
+      },
+      {
+        "canonical": "clinical_answer('cdc2022-opioid-rec09',[rule([\"a clinician prescribes an initial-opioid-therapy for an acute-pain\",\"a clinician prescribes an initial-opioid-therapy for a subacute-pain\",\"a clinician prescribes an initial-opioid-therapy for a chronic-pain\"],\"the clinician\",should,[action(positive,review,\"a controlled-substance-prescription-history\",[modifier(with,\"a state-PDMP-record\")])]),rule([],\"Every clinician\",should,[action(positive,review,\"a controlled-substance-prescription-history\",[modifier(with,\"a state-PDMP-record\"),modifier(during,\"a chronic-opioid-therapy\")])]),rule([],\"Every clinician\",should,[action(positive,assess,\"an opioid-dosage\",[modifier(for,\"a high-overdose-risk\")]),action(positive,assess,\"a medication-combination\",[modifier(for,\"a high-overdose-risk\")])])],\"When prescribing initial opioid therapy for acute, subacute, or chronic pain, and periodically during opioid therapy for chronic pain, clinicians should review the patient’s history of controlled substance prescriptions using state prescription drug monitoring program (PDMP) data to determine whether the patient is receiving opioid dosages or combinations that put the patient at high risk for overdose (recommendation category: B; evidence type: 4).\")",
+        "term": {
+          "kind": "compound",
+          "functor": "clinical_answer",
+          "args": [
+            {
+              "kind": "atom",
+              "value": "cdc2022-opioid-rec09"
+            },
+            {
+              "kind": "list",
+              "items": [
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "string",
+                          "value": "a clinician prescribes an initial-opioid-therapy for an acute-pain"
+                        },
+                        {
+                          "kind": "string",
+                          "value": "a clinician prescribes an initial-opioid-therapy for a subacute-pain"
+                        },
+                        {
+                          "kind": "string",
+                          "value": "a clinician prescribes an initial-opioid-therapy for a chronic-pain"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "string",
+                      "value": "the clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "review"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a controlled-substance-prescription-history"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "with"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a state-PDMP-record"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "Every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "review"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a controlled-substance-prescription-history"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "with"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a state-PDMP-record"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "during"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a chronic-opioid-therapy"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "Every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "assess"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an opioid-dosage"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "for"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a high-overdose-risk"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "assess"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a medication-combination"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "for"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a high-overdose-risk"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "string",
+              "value": "When prescribing initial opioid therapy for acute, subacute, or chronic pain, and periodically during opioid therapy for chronic pain, clinicians should review the patient’s history of controlled substance prescriptions using state prescription drug monitoring program (PDMP) data to determine whether the patient is receiving opioid dosages or combinations that put the patient at high risk for overdose (recommendation category: B; evidence type: 4)."
+            }
+          ]
+        },
+        "presentation": {
+          "text": "When any applies — a clinician prescribes initial opioid therapy for acute pain, a clinician prescribes initial opioid therapy for subacute pain, or a clinician prescribes initial opioid therapy for chronic pain — the clinician should review controlled substance prescription history with state PDMP record. Clinicians should review controlled substance prescription history with state PDMP record during chronic opioid therapy. Clinicians should assess opioid dosage for high overdose risk and assess medication combination for high overdose risk.",
+          "items": [
+            "When any applies — a clinician prescribes initial opioid therapy for acute pain, a clinician prescribes initial opioid therapy for subacute pain, or a clinician prescribes initial opioid therapy for chronic pain — the clinician should review controlled substance prescription history with state PDMP record.",
+            "Clinicians should review controlled substance prescription history with state PDMP record during chronic opioid therapy.",
+            "Clinicians should assess opioid dosage for high overdose risk and assess medication combination for high overdose risk."
+          ],
+          "sourcePassage": "When prescribing initial opioid therapy for acute, subacute, or chronic pain, and periodically during opioid therapy for chronic pain, clinicians should review the patient’s history of controlled substance prescriptions using state prescription drug monitoring program (PDMP) data to determine whether the patient is receiving opioid dosages or combinations that put the patient at high risk for overdose (recommendation category: B; evidence type: 4).",
+          "document": "cdc2022-opioid-rec09",
+          "structured": true
+        }
+      },
+      {
+        "canonical": "clinical_answer('cdc2022-opioid-rec10',[rule([\"a clinician prescribes an opioid for a subacute-pain\",\"a clinician prescribes an opioid for a chronic-pain\"],\"the clinician\",should,[action(positive,consider,\"a testing-benefit\",[]),action(positive,consider,\"a testing-risk\",[])]),rule([],\"A toxicology-testing\",can,[action(positive,assess,\"a prescribed-medication\",[]),action(positive,assess,\"a prescribed-controlled-substance\",[]),action(positive,assess,\"a nonprescribed-controlled-substance\",[])])],\"When prescribing opioids for subacute or chronic pain, clinicians should consider the benefits and risks of toxicology testing to assess for prescribed medications as well as other prescribed and nonprescribed controlled substances (recommendation category: B; evidence type: 4).\")",
+        "term": {
+          "kind": "compound",
+          "functor": "clinical_answer",
+          "args": [
+            {
+              "kind": "atom",
+              "value": "cdc2022-opioid-rec10"
+            },
+            {
+              "kind": "list",
+              "items": [
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "string",
+                          "value": "a clinician prescribes an opioid for a subacute-pain"
+                        },
+                        {
+                          "kind": "string",
+                          "value": "a clinician prescribes an opioid for a chronic-pain"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "string",
+                      "value": "the clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "consider"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a testing-benefit"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "consider"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a testing-risk"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "A toxicology-testing"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "can"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "assess"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a prescribed-medication"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "assess"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a prescribed-controlled-substance"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "assess"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a nonprescribed-controlled-substance"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "string",
+              "value": "When prescribing opioids for subacute or chronic pain, clinicians should consider the benefits and risks of toxicology testing to assess for prescribed medications as well as other prescribed and nonprescribed controlled substances (recommendation category: B; evidence type: 4)."
+            }
+          ]
+        },
+        "presentation": {
+          "text": "When any applies — a clinician prescribes an opioid for subacute pain or a clinician prescribes an opioid for chronic pain — the clinician should consider testing benefit and consider testing risk. A toxicology testing can assess prescribed medication, assess prescribed controlled substance, and assess nonprescribed controlled substance.",
+          "items": [
+            "When any applies — a clinician prescribes an opioid for subacute pain or a clinician prescribes an opioid for chronic pain — the clinician should consider testing benefit and consider testing risk.",
+            "A toxicology testing can assess prescribed medication, assess prescribed controlled substance, and assess nonprescribed controlled substance."
+          ],
+          "sourcePassage": "When prescribing opioids for subacute or chronic pain, clinicians should consider the benefits and risks of toxicology testing to assess for prescribed medications as well as other prescribed and nonprescribed controlled substances (recommendation category: B; evidence type: 4).",
+          "document": "cdc2022-opioid-rec10",
+          "structured": true
+        }
+      },
+      {
+        "canonical": "clinical_answer('cdc2022-opioid-rec11',[rule([\"a clinician prescribes an opioid-pain-medication with a benzodiazepine\"],\"the clinician\",should,[action(positive,heed,\"a particular-caution\",[])]),rule([\"a clinician prescribes an opioid with a central-nervous-system-depressant\"],\"the clinician\",should,[action(positive,weigh,\"a benefit\",[modifier(against,\"a risk\")])])],\"Clinicians should use particular caution when prescribing opioid pain medication and benzodiazepines concurrently and consider whether benefits outweigh risks of concurrent prescribing of opioids and other central nervous system depressants (recommendation category: B; evidence type: 3).\")",
+        "term": {
+          "kind": "compound",
+          "functor": "clinical_answer",
+          "args": [
+            {
+              "kind": "atom",
+              "value": "cdc2022-opioid-rec11"
+            },
+            {
+              "kind": "list",
+              "items": [
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "string",
+                          "value": "a clinician prescribes an opioid-pain-medication with a benzodiazepine"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "string",
+                      "value": "the clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "heed"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a particular-caution"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "string",
+                          "value": "a clinician prescribes an opioid with a central-nervous-system-depressant"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "string",
+                      "value": "the clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "weigh"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a benefit"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "against"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a risk"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "string",
+              "value": "Clinicians should use particular caution when prescribing opioid pain medication and benzodiazepines concurrently and consider whether benefits outweigh risks of concurrent prescribing of opioids and other central nervous system depressants (recommendation category: B; evidence type: 3)."
+            }
+          ]
+        },
+        "presentation": {
+          "text": "If a clinician prescribes opioid pain medication with a benzodiazepine, the clinician should heed particular caution. If a clinician prescribes an opioid with central nervous system depressant, the clinician should weigh a benefit against a risk.",
+          "items": [
+            "If a clinician prescribes opioid pain medication with a benzodiazepine, the clinician should heed particular caution.",
+            "If a clinician prescribes an opioid with central nervous system depressant, the clinician should weigh a benefit against a risk."
+          ],
+          "sourcePassage": "Clinicians should use particular caution when prescribing opioid pain medication and benzodiazepines concurrently and consider whether benefits outweigh risks of concurrent prescribing of opioids and other central nervous system depressants (recommendation category: B; evidence type: 3).",
+          "document": "cdc2022-opioid-rec11",
+          "structured": true
+        }
+      }
+    ],
+    "points": [
+      {
+        "text": "Clinicians should evaluate a risk for opioid related harm before opioid initiation.",
+        "sources": [
+          0
+        ]
+      },
+      {
+        "text": "Clinicians should evaluate a risk for opioid related harm during periodic continuation review.",
+        "sources": [
+          0
+        ]
+      },
+      {
+        "text": "Clinicians should discuss a risk for opioid related harm with a patient.",
+        "sources": [
+          0
+        ]
+      },
+      {
+        "text": "Clinicians should incorporate risk mitigation strategy in management plan with a patient and offer naloxone dose.",
+        "sources": [
+          0
+        ]
+      },
+      {
+        "text": "When any applies — a clinician prescribes initial opioid therapy for acute pain, a clinician prescribes initial opioid therapy for subacute pain, or a clinician prescribes initial opioid therapy for chronic pain — the clinician should review controlled substance prescription history with state PDMP record.",
+        "sources": [
+          1
+        ]
+      },
+      {
+        "text": "Clinicians should review controlled substance prescription history with state PDMP record during chronic opioid therapy.",
+        "sources": [
+          1
+        ]
+      },
+      {
+        "text": "Clinicians should assess opioid dosage for high overdose risk and assess medication combination for high overdose risk.",
+        "sources": [
+          1
+        ]
+      },
+      {
+        "text": "When any applies — a clinician prescribes an opioid for subacute pain or a clinician prescribes an opioid for chronic pain — the clinician should consider testing benefit and consider testing risk.",
+        "sources": [
+          2
+        ]
+      },
+      {
+        "text": "A toxicology testing can assess prescribed medication, assess prescribed controlled substance, and assess nonprescribed controlled substance.",
+        "sources": [
+          2
+        ]
+      },
+      {
+        "text": "If a clinician prescribes opioid pain medication with a benzodiazepine, the clinician should heed particular caution.",
+        "sources": [
+          3
+        ]
+      },
+      {
+        "text": "If a clinician prescribes an opioid with central nervous system depressant, the clinician should weigh a benefit against a risk.",
+        "sources": [
+          3
+        ]
+      }
+    ]
+  },
+  {
+    "id": "continuing-or-tapering-opioids",
+    "answers": [
+      {
+        "canonical": "clinical_answer('cdc2022-opioid-rec05',[rule([\"a clinician changes an opioid-dosage for a patient that receives an opioid-therapy\"],\"the clinician\",should,[action(positive,weigh,\"a benefit\",[modifier(against,\"a risk\")]),action(positive,heed,\"a caution\",[])]),rule([\"a benefit outweighs a risk\"],\"every clinician\",should,[action(positive,work,\"\",[modifier(with,\"a patient\")]),action(positive,optimize,\"a nonopioid-therapy\",[]),action(positive,continue,\"an opioid-therapy\",[])]),rule([\"a benefit does not outweigh a risk\"],\"every clinician\",should,[action(positive,optimize,\"a different-therapy\",[]),action(positive,work,\"\",[modifier(with,\"a patient\")]),action(positive,use,\"a gradual-taper\",[]),action(positive,discontinue,\"an opioid\",[])]),rule([],\"Every clinician that does not provably detect a life-threatening-warning\",should,[action(positive,avoid,\"an abrupt-discontinuation\",[]),action(positive,avoid,\"a rapid-dosage-reduction\",[modifier(from,\"a higher-dosage\")])])],\"For patients already receiving opioid therapy, clinicians should carefully weigh benefits and risks and exercise care when changing opioid dosage. If benefits outweigh risks of continued opioid therapy, clinicians should work closely with patients to optimize nonopioid therapies while continuing opioid therapy. If benefits do not outweigh risks of continued opioid therapy, clinicians should optimize other therapies and work closely with patients to gradually taper to lower dosages or, if warranted based on the individual circumstances of the patient, appropriately taper and discontinue opioids. Unless there are indications of a life-threatening issue such as warning signs of impending overdose (e.g., confusion, sedation, or slurred speech), opioid therapy should not be discontinued abruptly, and clinicians should not rapidly reduce opioid dosages from higher dosages (recommendation category: B; evidence type: 4).\")",
+        "term": {
+          "kind": "compound",
+          "functor": "clinical_answer",
+          "args": [
+            {
+              "kind": "atom",
+              "value": "cdc2022-opioid-rec05"
+            },
+            {
+              "kind": "list",
+              "items": [
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "string",
+                          "value": "a clinician changes an opioid-dosage for a patient that receives an opioid-therapy"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "string",
+                      "value": "the clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "weigh"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a benefit"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "against"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a risk"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "heed"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a caution"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "string",
+                          "value": "a benefit outweighs a risk"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "string",
+                      "value": "every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "work"
+                            },
+                            {
+                              "kind": "string",
+                              "value": ""
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "with"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a patient"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "optimize"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a nonopioid-therapy"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "continue"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an opioid-therapy"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "string",
+                          "value": "a benefit does not outweigh a risk"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "string",
+                      "value": "every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "optimize"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a different-therapy"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "work"
+                            },
+                            {
+                              "kind": "string",
+                              "value": ""
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "with"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a patient"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "use"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a gradual-taper"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "discontinue"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an opioid"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "Every clinician that does not provably detect a life-threatening-warning"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "avoid"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an abrupt-discontinuation"
+                            },
+                            {
+                              "kind": "list",
+                              "items": []
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "avoid"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a rapid-dosage-reduction"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "from"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a higher-dosage"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "string",
+              "value": "For patients already receiving opioid therapy, clinicians should carefully weigh benefits and risks and exercise care when changing opioid dosage. If benefits outweigh risks of continued opioid therapy, clinicians should work closely with patients to optimize nonopioid therapies while continuing opioid therapy. If benefits do not outweigh risks of continued opioid therapy, clinicians should optimize other therapies and work closely with patients to gradually taper to lower dosages or, if warranted based on the individual circumstances of the patient, appropriately taper and discontinue opioids. Unless there are indications of a life-threatening issue such as warning signs of impending overdose (e.g., confusion, sedation, or slurred speech), opioid therapy should not be discontinued abruptly, and clinicians should not rapidly reduce opioid dosages from higher dosages (recommendation category: B; evidence type: 4)."
+            }
+          ]
+        },
+        "presentation": {
+          "text": "If a clinician changes opioid dosage for a patient that receives opioid therapy, the clinician should weigh a benefit against a risk and heed a caution. If a benefit outweighs a risk, clinicians should work with a patient, optimize nonopioid therapy, and continue opioid therapy. If a benefit does not outweigh a risk, clinicians should optimize different therapy, work with a patient, use gradual taper, and discontinue an opioid. Clinicians who do not provably detect life threatening warning should avoid abrupt discontinuation and avoid rapid dosage reduction from higher dosage.",
+          "items": [
+            "If a clinician changes opioid dosage for a patient that receives opioid therapy, the clinician should weigh a benefit against a risk and heed a caution.",
+            "If a benefit outweighs a risk, clinicians should work with a patient, optimize nonopioid therapy, and continue opioid therapy.",
+            "If a benefit does not outweigh a risk, clinicians should optimize different therapy, work with a patient, use gradual taper, and discontinue an opioid.",
+            "Clinicians who do not provably detect life threatening warning should avoid abrupt discontinuation and avoid rapid dosage reduction from higher dosage."
+          ],
+          "sourcePassage": "For patients already receiving opioid therapy, clinicians should carefully weigh benefits and risks and exercise care when changing opioid dosage. If benefits outweigh risks of continued opioid therapy, clinicians should work closely with patients to optimize nonopioid therapies while continuing opioid therapy. If benefits do not outweigh risks of continued opioid therapy, clinicians should optimize other therapies and work closely with patients to gradually taper to lower dosages or, if warranted based on the individual circumstances of the patient, appropriately taper and discontinue opioids. Unless there are indications of a life-threatening issue such as warning signs of impending overdose (e.g., confusion, sedation, or slurred speech), opioid therapy should not be discontinued abruptly, and clinicians should not rapidly reduce opioid dosages from higher dosages (recommendation category: B; evidence type: 4).",
+          "document": "cdc2022-opioid-rec05",
+          "structured": true
+        }
+      }
+    ],
+    "points": [
+      {
+        "text": "If a clinician changes opioid dosage for a patient that receives opioid therapy, the clinician should weigh a benefit against a risk and heed a caution.",
+        "sources": [
+          0
+        ]
+      },
+      {
+        "text": "If a benefit outweighs a risk, clinicians should work with a patient, optimize nonopioid therapy, and continue opioid therapy.",
+        "sources": [
+          0
+        ]
+      },
+      {
+        "text": "If a benefit does not outweigh a risk, clinicians should optimize different therapy, work with a patient, use gradual taper, and discontinue an opioid.",
+        "sources": [
+          0
+        ]
+      },
+      {
+        "text": "Clinicians who do not provably detect life threatening warning should avoid abrupt discontinuation and avoid rapid dosage reduction from higher dosage.",
+        "sources": [
+          0
+        ]
+      }
+    ]
+  },
+  {
+    "id": "opioid-use-disorder-treatment",
+    "answers": [
+      {
+        "canonical": "clinical_answer('cdc2022-opioid-rec12',[rule([],\"Every clinician\",should,[action(positive,offer,\"an evidence-based-medication-treatment\",[modifier(for,\"a patient who has an opioid-use-disorder\")])]),rule([],\"A medication-free-detoxification\",fact,[action(negative,is,\"a recommended-treatment\",[modifier(for,\"an opioid-use-disorder\")])]),rule([],\"Every medication-free-detoxification\",fact,[action(positive,increases,\"a risk\",[modifier(for,\"a drug-use-resumption\")]),action(positive,increases,\"a risk\",[modifier(for,\"an overdose\")]),action(positive,increases,\"a risk\",[modifier(for,\"an overdose-death\")])])],\"Clinicians should offer or arrange treatment with evidence-based medications to treat patients with opioid use disorder. Detoxification on its own, without medications for opioid use disorder, is not recommended for opioid use disorder because of increased risks for resuming drug use, overdose, and overdose death (recommendation category: A; evidence type: 1).\")",
+        "term": {
+          "kind": "compound",
+          "functor": "clinical_answer",
+          "args": [
+            {
+              "kind": "atom",
+              "value": "cdc2022-opioid-rec12"
+            },
+            {
+              "kind": "list",
+              "items": [
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "Every clinician"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "should"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "offer"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "an evidence-based-medication-treatment"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "for"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a patient who has an opioid-use-disorder"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "A medication-free-detoxification"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "fact"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "negative"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "is"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a recommended-treatment"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "for"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "an opioid-use-disorder"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "compound",
+                  "functor": "rule",
+                  "args": [
+                    {
+                      "kind": "list",
+                      "items": []
+                    },
+                    {
+                      "kind": "string",
+                      "value": "Every medication-free-detoxification"
+                    },
+                    {
+                      "kind": "atom",
+                      "value": "fact"
+                    },
+                    {
+                      "kind": "list",
+                      "items": [
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "increases"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a risk"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "for"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "a drug-use-resumption"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "increases"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a risk"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "for"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "an overdose"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "kind": "compound",
+                          "functor": "action",
+                          "args": [
+                            {
+                              "kind": "atom",
+                              "value": "positive"
+                            },
+                            {
+                              "kind": "atom",
+                              "value": "increases"
+                            },
+                            {
+                              "kind": "string",
+                              "value": "a risk"
+                            },
+                            {
+                              "kind": "list",
+                              "items": [
+                                {
+                                  "kind": "compound",
+                                  "functor": "modifier",
+                                  "args": [
+                                    {
+                                      "kind": "atom",
+                                      "value": "for"
+                                    },
+                                    {
+                                      "kind": "string",
+                                      "value": "an overdose-death"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "string",
+              "value": "Clinicians should offer or arrange treatment with evidence-based medications to treat patients with opioid use disorder. Detoxification on its own, without medications for opioid use disorder, is not recommended for opioid use disorder because of increased risks for resuming drug use, overdose, and overdose death (recommendation category: A; evidence type: 1)."
+            }
+          ]
+        },
+        "presentation": {
+          "text": "Clinicians should offer evidence based medication treatment for a patient who has opioid use disorder. A medication free detoxification is not recommended treatment for opioid use disorder. Every medication free detoxification increases a risk for drug use resumption, increases a risk for an overdose, and increases a risk for overdose death.",
+          "items": [
+            "Clinicians should offer evidence based medication treatment for a patient who has opioid use disorder.",
+            "A medication free detoxification is not recommended treatment for opioid use disorder.",
+            "Every medication free detoxification increases a risk for drug use resumption, increases a risk for an overdose, and increases a risk for overdose death."
+          ],
+          "sourcePassage": "Clinicians should offer or arrange treatment with evidence-based medications to treat patients with opioid use disorder. Detoxification on its own, without medications for opioid use disorder, is not recommended for opioid use disorder because of increased risks for resuming drug use, overdose, and overdose death (recommendation category: A; evidence type: 1).",
+          "document": "cdc2022-opioid-rec12",
+          "structured": true
+        }
+      }
+    ],
+    "points": [
+      {
+        "text": "Clinicians should offer evidence based medication treatment for a patient who has opioid use disorder.",
+        "sources": [
+          0
+        ]
+      },
+      {
+        "text": "A medication free detoxification is not recommended treatment for opioid use disorder.",
+        "sources": [
+          0
+        ]
+      },
+      {
+        "text": "Every medication free detoxification increases a risk for drug use resumption, increases a risk for an overdose, and increases a risk for overdose death.",
+        "sources": [
+          0
+        ]
+      }
+    ]
+  }
+]
