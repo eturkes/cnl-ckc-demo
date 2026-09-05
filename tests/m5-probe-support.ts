@@ -9,7 +9,8 @@ import type { PlSolution } from '../src/engine/protocol.js';
 import { verifyBag } from '../tools/kb/bag.mjs';
 
 export const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
-export const readGenerated = (name: string): Buffer => readFileSync(join(ROOT, 'kb/generated', name));
+export const readGenerated = (name: string): Buffer =>
+  readFileSync(join(ROOT, 'kb/generated', name));
 export const bagFiles = (): Map<string, Uint8Array> => {
   const kb = join(ROOT, 'kb');
   const archive = readdirSync(kb).find((name) => name.endsWith('.tar.gz'));

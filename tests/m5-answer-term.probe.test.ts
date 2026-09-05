@@ -33,11 +33,15 @@ it('ans.term: captures every live canonical term and shipped string', async () =
     expect(targets).toEqual(JSON.parse(readFileSync(fixture, 'utf8')));
   }
   if (process.env.M5_DUMP === '1') console.log(JSON.stringify(targets));
-  console.log(JSON.stringify(targets.map(({ id, answers, points }) => ({
-    id,
-    terms: answers.length,
-    rules: answers.reduce((n, { presentation }) => n + (presentation?.items.length ?? 0), 0),
-    points: points.length,
-    bytes: Buffer.byteLength(points.map(({ text }) => text).join('\n')),
-  }))));
+  console.log(
+    JSON.stringify(
+      targets.map(({ id, answers, points }) => ({
+        id,
+        terms: answers.length,
+        rules: answers.reduce((n, { presentation }) => n + (presentation?.items.length ?? 0), 0),
+        points: points.length,
+        bytes: Buffer.byteLength(points.map(({ text }) => text).join('\n')),
+      })),
+    ),
+  );
 }, 120_000);
