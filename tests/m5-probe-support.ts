@@ -18,7 +18,7 @@ export const bagFiles = (): Map<string, Uint8Array> => {
 };
 
 const require = createRequire(import.meta.url);
-export const boot = async (): Promise<EngineSession> => {
+export const boot = async (image?: Uint8Array): Promise<EngineSession> => {
   const manifest = JSON.parse(readGenerated('kb-manifest.json').toString('utf8')) as {
     contract: { schemaVersion: number; documents: number };
   };
@@ -35,7 +35,7 @@ export const boot = async (): Promise<EngineSession> => {
     expected: manifest.contract,
     drain: () => diagnostics.splice(0),
   });
-  await session.boot(new Uint8Array(readGenerated('kb.pvm')));
+  await session.boot(image ?? new Uint8Array(readGenerated('kb.pvm')));
   return session;
 };
 
