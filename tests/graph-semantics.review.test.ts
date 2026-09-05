@@ -31,4 +31,14 @@ describe('semantic graph source fidelity review', () => {
     expect(semantics.some((label) => /\bmay\b/iu.test(label))).toBe(true);
     expect(semantics.some((label) => /\b30\b/u.test(label))).toBe(true);
   });
+
+  it('does not count attributes as concepts or actions', () => {
+    const conceptsAndActions = graph.data.nodes.filter(
+      (node) =>
+        (node.kind === 'entity' || node.kind === 'event') &&
+        graph.conceptIncident(node.id).length > 0,
+    );
+
+    expect(graph.conceptNodeCount).toBe(conceptsAndActions.length);
+  });
 });
