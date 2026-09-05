@@ -131,9 +131,10 @@ describe('semantic graph source fidelity review', () => {
 
       for (const id of view.highlight.edges) {
         const edge = graph.edge(id);
-        expect(edge?.document, `${document}/${id}`).toBe(document);
+        if (edge === undefined) throw new Error(`missing highlighted edge ${id}`);
+        expect(edge.document, `${document}/${id}`).toBe(document);
         expect(
-          edge?.sentence === null || sentences.includes(edge.sentence),
+          edge.sentence === null || sentences.includes(edge.sentence),
           `${document}/${id}`,
         ).toBe(true);
       }
