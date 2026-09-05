@@ -93,7 +93,7 @@ try {
         'edge:514:0': 'then should not consider · target: an',
         'edge:515:0': 'then should not consider · for: an'
       };
-      const source = 'If an opioid benefit does not outweigh an opioid risk, every clinician should not consider opioid therapy for acute pain.';
+      const source = 'If an opioid benefit does not outweigh an opioid risk, every clinician should not consider an opioid therapy for an acute pain.';
       const baseStyle = cy.style().json();
       for (const rule of baseStyle) {
         const css = rule.style ?? rule.css;
