@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,6 +10,8 @@ import type { PlSolution } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
 import { QUESTION_CATALOG } from '../src/questions/catalog.js';
 import { serializeAnswer } from '../src/questions/serialize.js';
+import { verifyBag } from '../tools/kb/bag.mjs';
+import { payloadSource } from '../tools/kb/paths.mjs';
 
 const require = createRequire(import.meta.url);
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -17,6 +19,20 @@ const GENERATED = join(ROOT, 'kb', 'generated');
 const image = new Uint8Array(readFileSync(join(GENERATED, 'kb.pvm')));
 const manifest = JSON.parse(readFileSync(join(GENERATED, 'kb-manifest.json'), 'utf8')) as {
   contract: { schemaVersion: number; documents: number };
+};
+const archive = readdirSync(join(ROOT, 'kb')).find((name) => name.endsWith('.tar.gz'));
+if (archive === undefined) throw new Error('vendored bag is missing');
+const bagFiles = verifyBag(readFileSync(join(ROOT, 'kb', archive))).files;
+const combinedLines = payloadSource(bagFiles).source.split('\n');
+const aceSentence = (document: string, sentence: number): string => {
+  const path = [...bagFiles.keys()].find((name) => name.endsWith(`/ace/${document}.ace`));
+  if (path === undefined) throw new Error(`${document}: ACE source is missing`);
+  const value = Buffer.from(bagFiles.get(path) as Uint8Array)
+    .toString('utf8')
+    .trimEnd()
+    .split('\n')[sentence - 1];
+  if (value === undefined) throw new Error(`${document}: sentence ${String(sentence)} is missing`);
+  return value;
 };
 const diagnostics: string[] = [];
 const loadImage: ImageLoader = async (bytes) => {
@@ -75,6 +91,42 @@ describe('expedited semantic binding review', () => {
 
     const after = serializeAnswer(entry, await solve());
     expect(after).not.toBe(before);
+  });
+
+  it('S2 keeps a negated recommendation modal in its proof and clause surfaces', async () => {
+    const document = 'cdc2022-opioid-rec01';
+    const sentence = 3;
+    expect(aceSentence(document, sentence)).toContain('should not consider');
+
+    const proofSession = new EngineSession({ loadImage, expected: manifest.contract });
+    await proofSession.boot(image);
+    const entry = QUESTION_CATALOG['when-to-use-opioids'];
+    const solved = await proofSession.solve(entry.goal, BUDGET_MAX);
+    if (solved.kind !== 'solutions') throw new Error(`expected solutions, got ${solved.kind}`);
+    const selected = solved.solutions.find((solution) => {
+      const answer = solution.bindings.Answer;
+      return (
+        answer?.kind === 'compound' &&
+        answer.functor === 'clinical_answer' &&
+        answer.args[0]?.kind === 'atom' &&
+        answer.args[0].value === document
+      );
+    });
+    if (selected === undefined) throw new Error(`${document}: answer is missing`);
+    const proof = await proofSession.prove(
+      { goal: entry.goal, selected: selected.display },
+      BUDGET_MAX,
+    );
+    if (proof.kind !== 'proof') throw new Error(`expected a proof, got ${proof.kind}`);
+    const step = proof.steps.find(
+      (candidate) => candidate.document === document && candidate.sentence === sentence,
+    );
+    if (step === undefined)
+      throw new Error(`${document}: sentence ${String(sentence)} has no step`);
+    const clause = combinedLines[step.line - 1];
+    if (clause === undefined) throw new Error(`${document}: proof line is absent`);
+
+    expect(`${step.head}\n${clause}`).toMatch(/\bshould\b[\s\S]*\bnot\b[\s\S]*\bconsider\b/u);
   });
 
   it('S3 rejects a stored proof after its named clauses are removed', async () => {
