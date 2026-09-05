@@ -76,4 +76,39 @@ describe('expedited semantic binding review', () => {
     const after = serializeAnswer(entry, await solve());
     expect(after).not.toBe(before);
   });
+
+  it('S3 rejects a stored proof after its named clauses are removed', async () => {
+    const proofSession = new EngineSession({
+      loadImage,
+      drain: () => diagnostics.splice(0),
+      expected: manifest.contract,
+    });
+    await proofSession.boot(image);
+    const entry = QUESTION_CATALOG['when-to-use-opioids'];
+    const solved = await proofSession.solve(entry.goal, BUDGET_MAX);
+    if (solved.kind !== 'solutions' || solved.solutions[0] === undefined) {
+      throw new Error(`expected a selected answer, got ${solved.kind}`);
+    }
+    const input = { goal: entry.goal, selected: solved.solutions[0].display };
+    const before = await proofSession.prove(input, BUDGET_MAX);
+    if (before.kind !== 'proof' || before.steps[0] === undefined) {
+      throw new Error(`expected a proof, got ${before.kind}`);
+    }
+
+    const loaded = await proofSession.handle(
+      { id: 'erase-proof-clauses', kind: 'consult', source: eraseGuidelineSemantics },
+      image,
+    );
+    expect(loaded).toMatchObject({ kind: 'consulted' });
+    const first = before.steps[0];
+    expect(
+      await proofSession.solve(
+        `clause((${first.head}),_,Ref),clause_property(Ref,line_count(${String(first.line)})).`,
+        BUDGET_MAX,
+      ),
+    ).toEqual({ kind: 'failure' });
+
+    const after = await proofSession.prove(input, BUDGET_MAX);
+    expect(after).not.toEqual(before);
+  });
 });
