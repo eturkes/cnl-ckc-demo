@@ -10,6 +10,26 @@ import { createServer } from 'vite';
 
 import { launch } from './browser.mjs';
 
+/**
+ * @typedef {{
+ *   goto(url: string, options: object): Promise<unknown>,
+ *   waitForSelector(selector: string, options: object): Promise<unknown>,
+ *   evaluate(source: string): Promise<unknown>,
+ *   locator(selector: string): { screenshot(options: { path: string }): Promise<unknown> },
+ *   close(): Promise<void>,
+ *   on: {
+ *     (event: 'pageerror', handler: (error: Error) => void): void;
+ *     (event: 'response', handler: (response: { status(): number, url(): string }) => void): void;
+ *   }
+ * }} ProbePage
+ * @typedef {{ id: string, dataLabel: string, drawnLabel: string, lineStyle: string,
+ *   arrow: string, width: string, fontSize: string, textWidth: number, textHeight: number }} LabelBox
+ * @typedef {{ mode: string, nodes: number, edges: number, nodePositionsUnchanged: boolean,
+ *   beforeFit: number, afterFit: number, htmlRowHeight: number, htmlLabelWidth: number,
+ *   htmlLabelText: string, documentWidth: number, viewportWidth: number,
+ *   boxes: LabelBox[], png: string }} RenderMetric
+ */
+
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const OUT = join(ROOT, '.scratch/polarity-render');
 mkdirSync(OUT, { recursive: true });
@@ -57,10 +77,11 @@ const server = await createServer({
   ],
 });
 let browser;
+/** @param {Uint8Array} bytes */
 const digest = (bytes) => createHash('sha256').update(bytes).digest('hex');
 try {
   await server.listen();
-  const address = server.httpServer.address();
+  const address = server.httpServer?.address();
   assert(address && typeof address === 'object');
   browser = await launch((message) => {
     throw new Error(message);
@@ -70,7 +91,10 @@ try {
     { width: 1280, height: 900 },
     { width: 320, height: 720 },
   ]) {
-    const page = await browser.newPage({ viewport });
+    const page = /** @type {ProbePage} */ (
+      /** @type {unknown} */ (await browser.newPage({ viewport }))
+    );
+    /** @type {string[]} */
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     page.on('response', (response) => {
@@ -122,9 +146,10 @@ try {
       'ordinary-data-words',
       'ordinary-words',
     ];
+    /** @type {(RenderMetric & { pngSha256: string })[]} */
     const measures = [];
     for (const mode of modes) {
-      const metric =
+      const metric = /** @type {RenderMetric} */ (
         await page.evaluate(`(async () => {\n        const mode = ${JSON.stringify(mode)};
         const p = window.polarityProbe;
         const {cy} = p;
@@ -185,7 +210,8 @@ try {
           boxes,
           png: cy.png({ output: 'base64', bg: getComputedStyle(document.querySelector('.canvas-frame')).backgroundColor, scale: 1 })
         };
-      })()`);
+      })()`)
+      );
       const { png, ...rest } = metric;
       const image = Buffer.from(png, 'base64');
       const file = `${viewport.width}-${mode}.png`;
@@ -196,24 +222,18 @@ try {
           .locator('.html-graph')
           .screenshot({ path: join(OUT, `${viewport.width}-${mode}-html.png`) });
     }
-    assert.equal(
-      measures[0].pngSha256,
-      measures[1].pngSha256,
-      'inert edge fields must not change pixels',
-    );
-    assert.equal(
-      measures[0].pngSha256,
-      measures[2].pngSha256,
-      'an unstyled class must not change pixels',
-    );
-    assert.equal(
-      measures[7].pngSha256,
-      measures[8].pngSha256,
-      'unlabelled edges must ignore changed data labels',
-    );
+    /** @param {number} index */
+    const imageAt = (index) => {
+      const row = measures[index];
+      assert(row, `missing measurement ${index}`);
+      return row.pngSha256;
+    };
+    assert.equal(imageAt(0), imageAt(1), 'inert edge fields must not change pixels');
+    assert.equal(imageAt(0), imageAt(2), 'an unstyled class must not change pixels');
+    assert.equal(imageAt(7), imageAt(8), 'unlabelled edges must ignore changed data labels');
     assert.notEqual(
-      measures[8].pngSha256,
-      measures[9].pngSha256,
+      imageAt(8),
+      imageAt(9),
       'a label selector must expose ordinary-edge qualifiers',
     );
     assert(
