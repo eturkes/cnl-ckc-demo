@@ -23,4 +23,12 @@ describe('semantic graph source fidelity review', () => {
     expect(semantics.some((label) => /\bshould\b/iu.test(label))).toBe(true);
     expect(semantics.some((label) => /\b(?:not|negative|negated)\b/iu.test(label))).toBe(true);
   });
+
+  it('keeps modal force and numeric scope visible for a qualified action', () => {
+    // ACE: An opioid-continuation may initiate a long-term-opioid-therapy after 30 days.
+    const semantics = visibleSemantics('cdc2022-opioid-rec02-imp21', 1, 1795);
+
+    expect(semantics.some((label) => /\bmay\b/iu.test(label))).toBe(true);
+    expect(semantics.some((label) => /\b30\b/u.test(label))).toBe(true);
+  });
 });
