@@ -80,7 +80,7 @@ it('chk.gate: removing all semantic clauses removes every shipped answer', async
   for (const id of QUESTION_IDS) {
     const after = await solve(session, QUESTION_CATALOG[id].goal);
     observed.push({ id, after: after.length, unchanged: text(id, after) === text(id, baseline.get(id) as PlSolution[]) });
-    expect.soft(after, `${id}:a wiped KB must produce no recommendation`).toEqual([]);
+    expect.soft(after, `${id}:a wiped KB must produce no recommendation`).toHaveLength(0);
   }
   console.log(JSON.stringify({ observed, elapsedMs: performance.now() - started }));
 }, 120_000);
