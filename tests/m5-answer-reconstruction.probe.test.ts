@@ -82,15 +82,24 @@ it('ans.identity: source-preserving runtime construction equals all shipped term
 
 it('ans.derive: a real schema join constructs the first recommendation, not an answer lookup', async () => {
   const session = await boot();
+  const lexical = clauses.get('cdc2022-opioid-rec01')?.[0];
+  const selectedAction = lexical?.actions[0];
+  const selectedModifier = selectedAction?.modifiers[0];
+  if (lexical === undefined || selectedAction === undefined || selectedModifier === undefined) throw new Error('source lexical slots missing');
+  const noun = (text: string): string => text.replace(/^(?:a|an) /u, '');
   session.consult(`
-    m5_np('nonopioid-therapy',"a nonopioid-therapy").
-    m5_np('acute-pain',"an acute-pain").
-    m5_derive(Doc,S,rule([],"Every clinician",Mode,[action(positive,Verb,Obj,[modifier(Prep,Value)])])) :-
+    m5_np(${atom(noun(selectedAction.object))},${str(selectedAction.object)}).
+    m5_np(${atom(noun(selectedModifier.value))},${str(selectedModifier.value)}).
+    m5_subject(clinician,${str(lexical.subject)}).
+    m5_derive(Doc,S,rule([],Subject,Mode,[action(positive,Verb,Obj,[modifier(Prep,Value)])])) :-
       Ctx = '$guideline_id'(context,Doc,S,_,_),
       guideline_operator(actual,Ctx,Mode), guideline_event(Ctx,Event,Verb),
+      guideline_arg(Ctx,Event,1,Actor), guideline_entity(actual,Actor,Role,countable),
+      m5_subject(Role,Subject),
       guideline_arg(Ctx,Event,2,Object), guideline_entity(Ctx,Object,Noun,countable),
+      guideline_cardinality(Ctx,Object,na,eq,1),
       guideline_pp(Ctx,Event,Prep,Entity), guideline_entity(Ctx,Entity,Label,countable),
-      m5_np(Noun,Obj), m5_np(Label,Value).
+      guideline_cardinality(Ctx,Entity,na,eq,1), m5_np(Noun,Obj), m5_np(Label,Value).
   `);
   expect(await solve(session, "m5_derive('cdc2022-opioid-rec01',2,Rule)")).toEqual([]);
   await solve(session, `dynamic(guideline_entity/4), dynamic(guideline_cardinality/5),
