@@ -44,93 +44,185 @@ trusting any claim in the expedited block below.
 - **M4 — integration + release** — COMPLETE (expedited 2026-09-04). Cross-pillar linking
   (answer↔trace↔graph), dark theme + full visual system, CSP/static-host
   decision + release proof, performance/responsive/a11y hardening.
-- **M5 — semantic integrity** — PLANNING. Owns the expedited remediation: the
+- **M5 — semantic integrity** — IN-PROGRESS, six units. Owns the expedited remediation: the
   answer derives by real inference, the proof is a real derivation, the graph
   carries polarity, and a mechanical check binds each claim. Section below.
 
-## M5 — semantic integrity — PLANNING
+## M5 — semantic integrity — IN-PROGRESS
 
 Goal: **every surface asserts what the source asserts, and a rerunnable check
 binds it.** M5 exists because the expedited range shipped surfaces whose meaning
 no check decides — `pnpm gate` is green while the answer bypasses the KB.
 
-Scope = user ruling, the non-negotiable plus the graph. Nine named ledger rows:
-S1, S3, S3b+, S3c+, S2, S5, C2, C3, C7. Seven more close as a consequence,
-because u4's acceptance check cannot pass while they stand — S2b+, S11+, S12+,
-S14+, S15+, S17+, S18+ — so they are how the fix gets graded, not extra work.
-Seventeen rows stay **accepted-open** in `.agent/review-expedited.md` with their
-acceptance checks, and S9 and C4u3 close only partly; the ledger's Rulings
-section is the authority on which is which. A fix that lands an open row for free
-may take it, but no unit carries one as scope.
+Scope = nine ruled ledger rows (S1, S3, S3b+, S3c+, S2, S5, C2, C3, C7) + seven
+closing as a consequence (S2b+, S11+, S12+, S14+, S15+, S17+, S18+) + **user-added
+renderer/graph-look scope**. Seventeen rows stay accepted-open in
+`.agent/review-expedited.md`; S9 + C4u3 close only partly; the ledger's Rulings
+section is the authority. A fix landing an open row for free may take it; no unit
+carries one as scope.
 
-Visual design and interaction structure are **accepted and out of scope** —
-M5 changes what the surfaces mean, never how they look. A change that forces a
-visual difference stops and asks.
+### Rulings binding the units
 
-Three user rulings bind the units:
-
+**User:**
 - **Answer path = real inference.** Each question compiles its clinical context
   into explicit premises and derives the recommendation through the `guideline_*`
-  clauses. This is not a workaround: a guideline is universally quantified over
-  clinicians, and the `actual` world holds no clinician instance, so
-  `guideline_operator(actual,C,should)` failing on the bare KB is correct.
-  Supplying the instance is how a universal gets applied. Feasibility is measured
-  — one asserted clinician entity plus cardinality makes `should` operators,
-  `maximize` events (7), `nonopioid-therapy` entities (3) and the full
-  operator→event→arg→entity join all derive.
+  clauses. A guideline is universally quantified over clinicians and the `actual`
+  world holds no clinician instance, so `guideline_operator(actual,C,should)`
+  failing on the bare KB is CORRECT — supplying the instance applies the universal.
 - **Graph = polarity as edge state.** Keep the concept-first projection; carry
-  negation and modality on the edges. No operator-context node returns.
-- **M2/M3/M4 keep their markers.** M5 owns the remediation; those milestones are
-  not reopened.
+  negation + modality on edges; no `operator-context` node returns.
+- **M2/M3/M4 keep their COMPLETE markers.** M5 owns the remediation.
+- **Renderer swap is M5 scope** (new). Cytoscape → vis-network, driven by map
+  legibility + interactivity. Spike runs FIRST inside u4; `src/graph/canvas.ts` =
+  split seam. Measured: Cytoscape appears nowhere outside `canvas.ts` (rc 1;
+  positive control 24 hits in `canvas.ts`); `model.ts` has zero imports; seam =
+  `mountGraphCanvas`/`GraphCanvas`; renderer surface 6,265 B of 91,893 B = 6.8%;
+  39/1070 canvas-coupled lines in `SemanticGraph.svelte`.
+- **The graph's look is in scope for change** (new). This **RETIRES u4's original
+  fourth acceptance clause** — "the concept-first look is unchanged" — for the
+  graph alone. Clauses 1-3 survive intact and u5 carries them. Every other
+  accepted surface (answer panel, ladder, combobox, theme, type, copy layout)
+  stays accepted; a change forcing a visual difference there stops and asks.
 
-- **u1 — inference answer path** · kernel · `oracle` · est raw 95K → cal 168K
-  Replace the build-time `clinical_advice/3` table with a runtime derivation:
-  each catalog question compiles its context into premises, and the answer
-  derives through the compiled guideline clauses. `parseAdviceSentence`'s
-  byte-faithful rendering is PRESERVED — it passed review, and the accepted
-  answer wording must not move. Accept: retracting any clause the answer cites
-  changes the answer; the bare KB yields no recommendation; every shipped answer
-  string is byte-identical to today's, or the difference is shown and ruled on.
-  Closes S1.
-- **u2 — genuine proof** · kernel · `oracle` · est raw 70K → cal 124K
-  Remove the `derive(clinical_advice(...))` cut so `resolve/3` runs for shipped
-  questions. Accept: every displayed step names a clause that participated; its
-  rendered head equals the compiled clause at that line, variables and all; the
-  cited site is the clause carrying the content, not the sentence's first
-  compiled clause; retracting a cited clause changes the proof. Closes S3, S3b+,
-  S3c+, and S2 on the proof and clause surfaces. Depends u1.
-- **u3 — binding checks** · kernel · `oracle` · est raw 60K → cal 106K
-  Restore the `queries/answers/*.pl` byte oracle over all four exported ids and
-  `catalog.mjs`'s `EXPORTED` guard; rewrite the overlay to perturb `guideline_*`
-  and require BOTH the projected answer and its line-keyed proof to change; port
-  `probe-kb-independence` into `pnpm gate` as the binding regression test.
-  Accept: each check is red at `a944fca` and green after u1/u2; the gate fails if
-  any one is removed. Closes C2, C3. Depends u1, u2.
-- **u4 — polarity-carrying graph** · kernel · est raw 85K → cal 150K
-  Negation and modality become edge state on the concept projection; the answer
-  highlight follows the polarity-correct path. Accept: every edge shown asserts a
-  relation the KB asserts with the same scope; no sentence renders as a claim the
-  source denies; the census of 156 negation and 857 `should` contexts is
-  represented, not dropped; the concept-first look is unchanged. Closes S2 on
-  both graph views, S5. Independent of u1–u3.
-- **u5 — claim alignment** · docs · est raw 30K → cal 53K
-  Rewrite every claim to match what now happens: `ProvenanceLadder.svelte:109,
-  113,152-153`, `copy.ts:25-27`, `AnswerPanel.svelte:70`, `README.md:7`, and this
-  roadmap's expedited block. Accept: each surviving claim names a command that
-  re-derives it. Closes C7. Depends u1–u4 — it can only state what is true once
-  it is true.
+**MAIN:**
+- **Premise display** = deduplicated labelled premise steps inside the EXISTING
+  proof rungs, not a new ladder step type. 3,882 assumption leaves measured ⇒
+  volume needs dedup. Assumptions carry explicit hypothetical origin, no source line.
+- **u3 RED exception.** The four-export byte oracle is GREEN at base and is
+  credited RED-under-dependency-removal alone. Measured twice: it passes at
+  `cbe0ae2`, and `src`/`tools`/`tests` trees are SHA-identical at `a944fca`
+  (`2c66f4c…`/`68ea119…`/`6e8e700…`). It guards the compiled KB, which S1 never
+  broke. Manufacturing a false RED is the expedited range's own failure mode.
+- **Ordering.** MAIN ruled semantics-before-renderer, `plan-m5` held the reverse,
+  MAIN conceded, `planrev-m5` confirmed the concession independently. u5 keeps the
+  acceptance conjunction undecomposed; renderer-first avoids a disposable Cytoscape
+  adaptation and surfaces unmeasured renderer risk early; u4 is parallel to u1-u3,
+  so the non-negotiable answer/proof track is unaffected either way.
 
-Sizing model carried from M2: `cal = raw × 1.77`, the measured
-actual/estimate correction. Total ≈ 601K cal. PLANNING owns the design rulings,
-unit waves and seams; the `Accept:` clauses above are fixed and come from the
-ledger's acceptance checks, so they are not PLANNING's to relax.
+### Units
 
-Reviewer probes are the starting oracles — each is RED today and turns green
-exactly when its row closes: `wt/rev-sem-1` `tests/review-answer-proof-binding.test.ts`
-(u1, u2), `wt/rev-arch-1` `tests/review-register-schema-binding.test.ts` (u1),
-`wt/rev-sem-2` `tests/graph-semantics.review.test.ts` (u4), `wt/rev-claim-1`
-`tests/review-claim-replay.dom.test.ts` (u3). Recover with
-`git show wt/<name>:<path>`.
+Two tracks converging: `u1→u2→u3` (answer/proof) runs parallel to `u4→u5` (graph);
+both feed u6. Preconditions in `dep.order` resolve before WORK-UNIT dispatch.
+
+- **u1 — inference-bound answer assembly** · kernel · `oracle` `prod` · est 190K → 336K
+  Source-fragment/antecedent compiler + query-local cap-2 assumption evaluator +
+  runtime `clinical_answer` assembly. `parseAdviceSentence`, the renderer and the
+  aligned-passage metadata are UNCHANGED — they passed review.
+  Accept: all 48 cases / 12 source answers derive through the complete 686 content
+  sites; removing any cited clause changes the answer; premises-withheld and
+  schema-erased controls yield no full catalog recommendation; all 7 shipped
+  strings, 12 canonical terms **and raw contribution order** stay byte-identical,
+  or the exact diff is shown and ruled on. Closes S1.
+- **u2 — genuine typed proof + premise display** · kernel · `oracle` · est 155K → 274K
+  Remove the fabricated `clinical_advice` proof dispatch; replay u1's evaluator;
+  typed clause/assumption/NAF branches; raw source-head join; deduplicated premise
+  steps in existing rungs. Removing the cut ALONE yields 0/7 proofs — `resolve/3`
+  whitelists only the nine `guideline_*` predicates and `session.ts:441` hard-codes
+  interpreter depth 1.
+  Accept: every displayed step participated and names the content-bearing clause;
+  its head matches that compiled line including variables; every cited-clause
+  removal changes the proof; assumptions show hypothetical origin and no source
+  line; limit/cancel/error stay distinct; clause-only focus binds all 12
+  contributions. Closes S3, S3b+, S3c+, and S2 on proof + clause surfaces. Depends u1.
+- **u3 — binding gates + retired-check dispositions** · kernel · `oracle` · est 125K → 221K
+  Four-export diagnostic lane, `EXPORTED` preflight, `guideline_*` answer+proof
+  perturbation, both negative controls, exhaustive site campaign, required-check
+  execution inventory, C2 disposition record, independent browser answer lane.
+  Accept: clinical binding checks RED at `a944fca` and GREEN after u1/u2; legacy
+  bytes GREEN at base and RED under dependency removal; export-set mutants fail;
+  deleting or skipping any required check fails `pnpm gate`; missing image, failed
+  consult or nonterminal solve fails closed; every retired class is restored or
+  carries a specific rationale; the browser oracle uses independent expected bytes.
+  Closes C2, C3. Depends u1, u2.
+- **u4 — vis-network renderer + legibility contract** · kernel · est 170K → 301K
+  Spike first, inside the unit; replace `canvas.ts` behind a renderer-neutral
+  edge-view contract; retain lazy HTML fallback + graph interactions; commit a
+  replayable browser probe. Closes no semantic ledger row — it spends the new
+  user scope explicitly.
+  Spike must settle, all UNVERIFIED: automatic parallel-edge separation (docs show
+  only manual `curvedCW`/`curvedCCW`/`roundness`); label visibility under
+  `drawThreshold`, measured at the SAME fit zoom as the Cytoscape baseline
+  (5.03 px desktop / 2.19 px mobile) or it is not a comparison; `selectNodes`
+  isolation from the proof highlight via `highlightEdges: false`; per-edge dashes;
+  bundle delta with six peers resolved; and a three-arm layout comparison —
+  vis physics, an alternate Cytoscape layout, tuned fcose — because
+  `cytoscape-fcose` 2.2.0 (2023-01-17, untyped) is the stale dependency, not
+  Cytoscape core (3.34.2, 2026-08-25, zero deps).
+  Accept: spike measures all 12 contribution views, worst bounded view and an
+  opposite-scope parallel fixture at 320/1280 px light/dark; displayed labels and
+  dashes preserve input edge meaning; selected focus is legible; distinct edges
+  stay distinguishable; selection never fabricates proof highlight; lazy loading,
+  resize, drag/zoom, recenter, stale mount, teardown and failure fallback pass;
+  unrelated UI is unchanged. **No independent legibility oracle exists — MAIN
+  retains that judgment.** Independent of u1-u3.
+- **u5 — source-scoped graph producer + projection** · kernel · `oracle` `prod` · est 235K → 416K
+  Versioned edge→scope records from the clause AST; correct outer endpoints and
+  conjunctive support; scope-aware grouping, bounded paths, highlights,
+  direction-correct shared wording + dashes, truthful hidden-count partition.
+  Storage seam = referenced scope records (+5,438,529 B raw / +182,583 B gzip over
+  an 8,184,964 / 286,015 B baseline); inline fields cost +44.4 MB and are rejected.
+  Accept: every shown edge preserves the source relation and its ordered
+  modal/negative/conditional/quantitative scope in BOTH canvas and HTML; no
+  sentence reads as its inverse; all 156 negation / 857 `should` contexts and all
+  1,263 operators stay represented with no operator-context node in the concept
+  view; the full 5,796 scoped occurrences reconcile; all 12 genuine-proof
+  highlights stay cited; the six in-scope review reds go GREEN and S19+ stays
+  GREEN. **Plus (planrev `lens.gate`): u5 reruns u4's real-renderer probe on final
+  scoped outputs, with lost-label and merged-parallel negative controls** — the
+  DOM suite mocks the canvas, so changed label data can otherwise stay invisible.
+  Closes S2 on both graph views, S5, and the seven consequence rows. Depends u2, u4.
+- **u6 — claim alignment + milestone closure** · docs · est 85K → 150K
+  Align the nine known shipped claims plus changed README/roadmap/memory claims;
+  fill the committed claim→command registry; record C2 dispositions and
+  accepted-open boundaries without broad remediation. The sweep found 9 claim
+  strings, not the ledger's 4 — add `README.md:15,20,22`,
+  `ProvenanceLadder.svelte:103` and `service.ts:1` to the known list.
+  Accept: every surviving M5 claim names a committed-state command that re-derives
+  it; source quotation, hypothetical premise, derived clause and legacy ABI
+  evidence stay distinct; browser and visual claims cite their own rerunnable
+  checks; copy/consistency checks pass; accepted non-graph presentation and the
+  M2-M4 COMPLETE markers are unchanged. Closes C7. Depends u3, u5.
+
+### Sizing
+
+Model = `M = H + 1.77·I`, additive (M1's archive: the multiplier applies to
+implementation, the harvest term adds). `I` = 190/155/125/170/235/85K summing to
+960K; `H` = 90/85/65/80/100/70K = 490K; calibrated `C` = 1,699.20K; forecast
+closes `M` = 426/359/286/381/516/220K, total 2,189.20K with `H` counted once.
+Largest close 515.95K against a **900K all-in aim** on the 1M collapse-managed
+window, 100K reserve. Six work sessions; no unit needs a size split, and
+`split.seams` names each unit's boundary if one overruns.
+
+Every M1 percentage measures a RETIRED 240K window — only absolute K transfers.
+M1 close analogs: u1 226K, u2 224K, u4 228K, u5 209K, u6 133K, u7 229K. The
+`docs` multiplier is **provisional, not measured**: u7 cost 229K against a 60K
+`docs` estimate, so u6's 220.45K all-in is credible only by that precedent.
+
+MILESTONE-REVIEW projection: 5 kernel × M1's mean 30.5 rows ≈ 153, + 24
+cross-cutting + ~60 M5-only claim replays ≈ **237 rows over 2 sessions** at the
+900K aim. The 60-claim allowance is a forecast, not a census; two sessions is a
+budget, not a termination condition.
+
+### Evidence
+
+Wave-1 probes are committed and citable: `wt/res-m5-1` `27eff5d` (inference
+mechanism matrix, 686-site binding, budgets), `wt/res-m5-2` `1542794` (answer byte
+identity, fragment site/body gating, restored oracles), `wt/res-m5-3` `cd52e8a`
+(polarity representation, real-browser renders, suppression refutation). Reviewer
+probes from the expedited evaluation remain the starting oracles: `wt/rev-sem-1`
+`tests/review-answer-proof-binding.test.ts` (u1, u2), `wt/rev-arch-1`
+`tests/review-register-schema-binding.test.ts` (u1), `wt/rev-sem-2`
+`tests/graph-semantics.review.test.ts` (u5 — 8 red / 1 green, of which the S9
+headline and S13+ reds are accepted-open and NOT u5 scope), `wt/rev-claim-1`
+`tests/review-claim-replay.dom.test.ts` (u3). Recover with `git show wt/<name>:<path>`.
+
+Planning wave: `map-m5-1` (+ successor `map-m5-1-2`), `map-m5-2`, `res-m5-1`,
+`res-m5-2`, `res-m5-3`, `plan-m5`, `planrev-m5` — 75 report rows, all validating
+rc 0. `planrev-m5` graded 10 pass / 3 fail; all three fixes are folded above
+(`lens.polarity` clause-4 retirement, `lens.gate` u5 probe rerun, `lens.claude`
+detail inlined rather than referenced). Cost: MAIN reached 41% 408K/1M at
+arbitration; teammate high-water `mate=16% 160K` (`map-m5-2`), seven teammates
+across three waves.
 
 ## Expedited completion — M2 through M4
 
@@ -146,7 +238,7 @@ verified, but they are not represented as formally adjudicated.
   sentences, coverage, code-point-aligned passages, projection/review
   disclosures, and a lazy physical PDF page.
 - **M3:** the deterministic full graph contains 2,901 typed nodes and 20,964
-  typed edges, including 9,804 Horn implications. Rule-body entity/action
+  typed edges, including 9,804 implication edges — 9,053 rule-context implications plus 751 synthesized event-support shortcuts, a split the single figure hid. Rule-body entity/action
   relationships preserve the clinical conditions behind recommendations. Cytoscape/fCoSE, graph data,
   and layout work begin only after explicit activation; native HTML navigation
   remains available if the canvas fails.

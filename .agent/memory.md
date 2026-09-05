@@ -236,7 +236,9 @@ ESLint applies type-aware rules to it (`.mjs` escapes the `**/*.js` →
   event clause sites vs **232** derivable. Runtime predicate calls expose only
   the derivable minority — the full graph needs static `clause/2` extraction.
 - Explicit edge schemas = 7: `entity/4`, `cardinality/5`, `event/3`, `arg/4`,
-  `pp/4`, `property/4`, `operator/3`, plus 9,804 Horn body→head edges.
+  `pp/4`, `property/4`, `operator/3`, plus 9,804 `implies` edges. That single
+  figure hides two mechanisms: **9,053 rule-context implications + 751 synthesized
+  event-support shortcuts**. The 751 are S12+'s defect site (`graph.mjs:398`).
 - Corpus load, measured: 337-file consult **2806ms** · concatenated source
   3299ms · `load_string` 3578ms · QLF **213ms** + 724ms boot · **saved PVM
   335ms** boot+load (against a 437,132 B image; `kb:reproduce` runs two forced
@@ -572,7 +574,12 @@ and survives `/resume`; a new session clears it.
   absent from `CONCEPT_NODE_KINDS` (`src/graph/model.ts`). Census = 156 negation
   and 857 `should` contexts, every one excluded. A negated recommendation
   therefore renders as its clinical inverse while the answer text keeps the
-  negation. The M3 roadmap line forbids exactly this ("Event and operator-context
+  negation. Full modal census = 156 `-`, 857 `should`, 156 `may`, 85 `can`,
+  9 `must` = 1,263 operator contexts, all hidden. **100% of the surviving
+  projection is scope-stripped**: all 5,796 retained edge occurrences and all
+  2,381 groups belong to a scope-bearing source unit, so there is no small subset
+  to repair. Projection = 1,288 nodes / 2,381 grouped edges from 2,901 / 20,964;
+  the filter drops 15,168 occurrences and dedup removes another 3,415. The M3 roadmap line forbids exactly this ("Event and operator-context
   nodes stay"); `a944fca` implemented the collapse and edited the roadmap's
   expedited block to describe it as hiding "parser/modality scaffolding".
 - M5 rulings, binding on PLANNING (full record → `.agent/review-expedited.md`
@@ -589,3 +596,61 @@ and survives `/resume`; a new session clears it.
   and the `actual` world contains no clinician instance. Supplying one as a
   premise is how a universal gets applied, not a workaround. This is the whole
   basis of M5 u1; do not re-derive it as a KB defect.
+
+## Graph renderer seam (M5 planning)
+
+- **Cytoscape is isolated behind one adapter.** `/usr/bin/rg -i 'cytoscape|fcose|\bcy\b'`
+  returns rc 1 over `src/graph/model.ts`, `SemanticGraph.svelte`, `index.ts` and
+  `tools/kb/graph.mjs`; positive control finds 24 hits in `canvas.ts`. `model.ts`
+  has ZERO imports — it is a pure module. The whole seam is one line,
+  `import { mountGraphCanvas, type GraphCanvas } from './canvas.js'`. Renderer
+  surface = 6,265 B of 91,893 B graph surface = **6.8%**; 39 of 1,070 lines in
+  `SemanticGraph.svelte` are canvas-coupled. M1's `res-m1-2` recommended exactly
+  this adapter shape, and that is why a renderer swap is cheap.
+- The semantic oracles survive a renderer swap: `graph-semantics.review.test.ts`
+  asserts `model.ts` output, and `semantic-graph.dom.test.ts` MOCKS `canvas.js`.
+  So a DOM suite passing proves nothing about rendered labels — u5 must rerun a
+  real-browser probe on final scoped output.
+- **The stale dependency is the layout engine, not the renderer.**
+  `cytoscape-fcose` 2.2.0 last released 2023-01-17 and ships no types (hence
+  `src/graph/cytoscape-fcose.d.ts`). `cytoscape` 3.34.2 released 2026-08-25, MIT,
+  zero dependencies. Poor map legibility is therefore as likely a layout problem
+  as a renderer problem — any renderer evaluation must include a tuned-fcose and
+  an alternate-Cytoscape-layout arm or it is not a comparison.
+- `vis-network` 10.1.2 (2026-08-19, Apache-2.0 OR MIT) ships its own types and
+  zero runtime deps but SIX peers: `@egjs/hammerjs`, `component-emitter`,
+  `keycharm`, `uuid`, `vis-data`, `vis-util`. Three capabilities are **unverified**
+  and are mandatory spike checks: automatic parallel-edge separation (docs expose
+  only manual `curvedCW`/`curvedCCW`/`roundness`); label visibility under
+  `drawThreshold`; and `selectNodes` defaulting to `highlightEdges`, which collides
+  with the proof highlight. Any legibility claim must be measured at the SAME fit
+  zoom as the Cytoscape baseline — 5.03 px desktop / 2.19 px mobile — or it is not
+  a comparison.
+
+## M5 planning wave
+
+- Inference mechanism matrix, measured over 48 scenarios / 686 content sites:
+  goal literals 3/48; `assertz` after `dynamic` 44/48; compiled-table bridge 44/48
+  AND it permanently exposes 45 fake `actual` clinicians; `asserta`, snapshot+
+  `asserta`, and query-local assumption MI all 48/48. **Assumption MI at cap 2
+  wins**: no writes, every one of 686 cited clauses independently controls answer
+  and proof, both negative controls pass 72/72, worst sampled synchronous step
+  122.235 ms. It emits 3,882 assumption leaves and today's decoder rejects them —
+  a typed premise branch is required. Cap 1 is insufficient: it misses rec05 s5's
+  NAF and rec12 s4's `actual`-fact dependency.
+- Removing the `derive(clinical_advice(...))` cut ALONE yields 0/7 proofs even at
+  cap 20 — `resolve/3` whitelists only the nine `guideline_*` predicates and
+  `session.ts:441` hard-codes interpreter depth 1 independent of `budget.depth`.
+- Answer byte identity is achievable: all 7 topic strings and 12 canonical terms
+  reproduce with 0 diffs from source-derived fragments gated on genuine clause
+  execution at exact `/prolog.pl` lines. The exact passage is aligned ENGLISH
+  prose from the provenance model, not ACE; keeping it costs 1,531 B on the PVM.
+- `tools/kb/clinical.mjs:325` is `groupTerm`, NOT a second byte guard. The single
+  fail-closed rebuild-equality guard is at :261-266. Ledger row A3 cites both.
+- Full base for retired-check recovery = `0239b406a8d2d975b1bab5f4c9e7da4b663b4b37`
+  (`5ed81a3~1`).
+- `.scratch/validate-report.py` now admits `-` in the Units table's `flags` and
+  `depends` columns only; every other column still rejects it. Verified both ways.
+- Planning probe branches, worktrees removed: `wt/res-m5-1` `27eff5d`,
+  `wt/res-m5-2` `1542794`, `wt/res-m5-3` `cd52e8a`. `wt/map-m5-1`, `wt/map-m5-2`,
+  `wt/plan-m5`, `wt/planrev-m5` held no commits and were deleted.

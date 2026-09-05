@@ -12,9 +12,11 @@ evidence-backed and the lower one saw less.
 Reviewer reports → `.agent/review-expedited/`. Every reviewer's probes are
 committed on its own branch, retained as citable evidence, each tip clean at
 harvest: `wt/rev-arch-1` `d0584cb`, `wt/rev-sem-1` `f2644a3`, `wt/rev-sem-2`
-`379072e`, `wt/rev-claim-1` `b9d8d77`. The probes are intentionally RED against
-`main` — they encode the acceptance checks that close their rows, so each one
-turns green exactly when its defect is fixed.
+`379072e`, `wt/rev-claim-1` `b9d8d77`. The reviewer probes are intentionally RED against
+`main` — they encode the acceptance checks that close their rows, so each turns
+green when its defect is fixed. **Measured during M5 planning, not uniform:**
+`rev-sem-2`'s suite is 8 red / 1 green, and two of those reds (S9 headline, S13+)
+test accepted-open rows, so requiring all nine green would widen M5's scope.
 
 ## Verdict summary
 
@@ -144,10 +146,14 @@ Reviewer probes are committed on their own branches: `wt/rev-arch-1`
 (`tests/review-claim-replay.dom.test.ts`). Recover any of them with
 `git show wt/<name>:<path>`; the worktrees themselves are removed.
 
-Port target: `probe-kb-independence` is the anti-hard-coding gate C3 says is
-missing. It is red today, so it stays out of `pnpm gate` until M5 u1/u2 fix the
-answer path, then **M5 u3 lands it as the binding regression test**.
-`rev-sem-2`'s `tests/graph-semantics.review.test.ts` is the same shape for M5 u4.
+Port target: `probe-kb-independence` shows the defect C3 names, but **it is NOT a
+red test and never was** — its only assertion is `expect(true).toBe(true)` at
+line 104, so it is a diagnostic that prints `IDENTICAL = true`. Its targeted first
+wipe at line 76 also calls `sub_term/2`, which the closed WASM image does not
+provide, so only the broad `retractall` wipe runs. Measured independently by MAIN
+and `res-m5-2` during M5 planning. **M5 u3 therefore AUTHORS the binding
+assertion rather than relocating an existing red one.** `rev-sem-2`'s
+`tests/graph-semantics.review.test.ts` is genuinely red and is M5 u5's oracle.
 
 ## Rulings — closed
 
