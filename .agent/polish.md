@@ -206,3 +206,20 @@ evidence gap under a durable claim, `low` = a feature or a tidy-up.
   asking a question that reaches them. Accept: a document-first view lists every document's
   coverage rows and opens each one's passage and page through the same resolver the ladder
   uses, adding no eager asset fetch to the answer path. `pri` low.
+- **Recorded measurements have no mechanical owner** — `.agent/memory.md` carries
+  exact figures (PVM/QLF bytes, Horn edge count, catalog entries, `dist` file
+  count and byte total, manifest asset count) behind a prose rule that says to
+  re-derive them whenever a unit ships a new class. Every one of them drifted
+  silently through M2-M4 (expedited review C5), because prose does not run.
+  Accept: one script re-derives each recorded figure from a built `kb/generated`
+  plus `dist`, compares it to the value parsed out of `.agent/memory.md`, and
+  exits nonzero on any mismatch; it names the memory line for each mismatch, and
+  it runs in `pnpm gate` only if a build is already present, otherwise beside
+  `kb:reproduce`. `pri` med.
+- **Two tests time out under parallel execution** — `pnpm test` passed 291/293
+  with two 5-second timeouts (`V11 has zero axe`, `fails kb:asset-check on a
+  static import`); both pass when rerun in isolation, so the suite is
+  order/parallelism sensitive rather than broken. A flaky gate step erodes every
+  claim the gate carries. Accept: the two tests pass 20 consecutive full-suite
+  runs at the committed worker count, with the shared resource they contend on
+  named in the fix. `pri` med.

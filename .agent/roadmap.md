@@ -17,14 +17,29 @@ non-negotiable = answers trace to genuine Prolog solutions.
 
 ## Milestones
 
+M2/M3/M4 were adjudicated after the fact against `.agent/contracts/expedited.md`;
+the ledger is `.agent/review-expedited.md` (43 rows, 11 pass / 32 fail). Their
+COMPLETE markers are **unadjudicated build state, not a review verdict**, and are
+held unchanged pending three open user decisions listed at the ledger foot. Read
+the ledger before trusting any claim in the expedited block below.
+
 - **M1 — live question→answer spine** — REVIEWED, summary below, record in
   `.agent/archive/m1.md`.
 - **M2 — provenance ladder** — COMPLETE (expedited 2026-09-04; formal session
   workflow and milestone review intentionally skipped), summary below.
+  Evaluated: 0/4 committed trace oracles run; the ladder's proof rungs replay a
+  build-time record (S3); a missing proof-line clause continues into unbound
+  evidence (S7).
 - **M3 — semantic entity graph** — COMPLETE (expedited 2026-09-04). Static `clause/2` extraction over
   the seven explicit edge schemas plus Horn-clause implication edges; fCoSE
   layout; neighborhood-first navigation; accessible non-canvas subgraph view.
   Event and operator-context nodes stay; noun→noun collapse is forbidden.
+  **This constraint is breached.** `a944fca` collapsed the concept view to
+  entity/event/value nodes and edited the expedited block below to describe the
+  result as hiding "parser/modality scaffolding". 156 negation and 857 `should`
+  operator-contexts are dropped, so a negated recommendation renders as its
+  clinical inverse (S2, S5, S12+, S14+, S15+, all high). Resolving the
+  contradiction is open decision 2.
 - **M4 — integration + release** — COMPLETE (expedited 2026-09-04). Cross-pillar linking
   (answer↔trace↔graph), dark theme + full visual system, CSP/static-host
   decision + release proof, performance/responsive/a11y hardening.
@@ -34,10 +49,13 @@ The user requested a same-session deliverable and explicitly waived the normal
 session and review workflow. These milestones are implemented and mechanically
 verified, but they are not represented as formally adjudicated.
 
-- **M2:** selected answers are re-proved through a bounded interpreter compiled
-  into the PVM. The UI joins proof lines to exact clauses, ACE sentences,
-  coverage, code-point-aligned passages, projection/review disclosures, and a
-  lazy physical PDF page.
+- **M2:** ~~selected answers are re-proved through a bounded interpreter compiled
+  into the PVM~~ — **adjudicated false (S1/S3).** The interpreter is compiled in,
+  but `proof.mjs` cuts every shipped `clinical_advice/3` goal before resolution
+  and emits leaves from build-time `site/2` records, so `resolve/3` is never
+  reached by any shipped question. The UI joins proof lines to exact clauses, ACE
+  sentences, coverage, code-point-aligned passages, projection/review
+  disclosures, and a lazy physical PDF page.
 - **M3:** the deterministic full graph contains 2,901 typed nodes and 20,964
   typed edges, including 9,804 Horn implications. Rule-body entity/action
   relationships preserve the clinical conditions behind recommendations. Cytoscape/fCoSE, graph data,
@@ -63,6 +81,21 @@ vendored bag. Real-browser checks pass for development and nested production
 hosting, lazy evidence/graph/PDF loading, eight 320px interaction states, and
 cooperative cancellation. Desktop, mobile, expanded-evidence, and dark-graph
 screens received direct visual inspection.
+
+**What that proof does not decide (C1/C2/C7).** Every command above replays and
+its result stands. None of them binds meaning: the gate is green while the answer
+bypasses the KB entirely, because the range retired the `queries/answers/*.pl`
+byte oracle and `catalog.mjs`'s `EXPORTED` guard without record, and weakened the
+anti-hard-coding overlay to assert a `clinical_advice/3` fact — the very predicate
+the goal queries. `pnpm smoke` reuses the producer as its own oracle. The visual
+inspection has no rerunnable artifact. Four shipped copy claims are false under
+S1/S3: `ProvenanceLadder.svelte:113,152`, `copy.ts` lede, `README.md:7`.
+
+Answer RENDERING passes independently: `parseAdviceSentence` rebuilds every
+accepted sentence byte-for-byte or fails the build, and `advice.ts` preserves
+condition, modality and negation. The defect is the absent derivation, not the
+wording — the accepted visual design and interaction structure are untouched by
+every open option.
 
 ## M2 — COMPLETE (expedited)
 
