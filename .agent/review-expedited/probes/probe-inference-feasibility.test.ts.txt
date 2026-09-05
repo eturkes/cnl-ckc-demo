@@ -1,0 +1,80 @@
+// TEMPORARY feasibility probe — not committed.
+// Can the compiled KB actually DERIVE a recommendation, given a hypothetical actor?
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { describe, expect, it } from 'vitest';
+
+import { BUDGET_MAX } from '../src/engine/budget.js';
+import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
+
+const require = createRequire(import.meta.url);
+const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
+const GENERATED = join(ROOT, 'kb', 'generated');
+const read = (n: string): Buffer => readFileSync(join(GENERATED, n));
+const manifest = JSON.parse(read('kb-manifest.json').toString('utf8')) as {
+  contract: { schemaVersion: number; documents: number };
+};
+const diagnostics: string[] = [];
+const loadImage: ImageLoader = async (image) => {
+  const f = require('swipl-wasm/dist/loadImageDefault.js') as
+    | ((i: Uint8Array) => (o?: Record<string, unknown>) => Promise<Engine>)
+    | { default: (i: Uint8Array) => (o?: Record<string, unknown>) => Promise<Engine> };
+  const load = typeof f === 'function' ? f : f.default;
+  return load(image)({ printErr: (line: string) => diagnostics.push(line) });
+};
+
+describe('probe4', () => {
+  it(
+    'derives recommendations from a hypothetical clinical context',
+    async () => {
+      const session = new EngineSession({
+        loadImage,
+        expected: manifest.contract,
+        drain: () => diagnostics.splice(0),
+      });
+      await session.boot(new Uint8Array(read('kb.pvm')));
+
+      const count = async (label: string, goal: string): Promise<void> => {
+        const r = await session.solve(goal, { ...BUDGET_MAX, answerCap: 20 });
+        console.log(
+          `${label}: ${r.kind}` +
+            (r.kind === 'solutions' || r.kind === 'limit'
+              ? ` n=${r.solutions.length} first=${JSON.stringify(r.solutions[0]?.display ?? {}).slice(0, 240)}`
+              : ''),
+        );
+      };
+
+      console.log('--- BASELINE (exported KB, no hypothetical context) ---');
+      await count('actual clinician entity', 'guideline_entity(actual,X,clinician,countable).');
+      await count('any derivable event', 'guideline_event(C,E,V).');
+      await count('maximize event', 'guideline_event(C,E,maximize).');
+      await count('any should operator', 'guideline_operator(actual,C,should).');
+
+      console.log('\n--- WITH A HYPOTHETICAL CLINICIAN ASSERTED ---');
+      session.consult(
+        [
+          ':- dynamic(guideline_entity/4).',
+          ':- dynamic(guideline_cardinality/5).',
+          "guideline_entity(actual,'$q'(clinician),clinician,countable).",
+          "guideline_cardinality(actual,'$q'(clinician),na,eq,1).",
+          '',
+        ].join('\n'),
+      );
+      await count('should operator', 'guideline_operator(actual,C,should).');
+      await count('maximize event', 'guideline_event(C,E,maximize).');
+      await count(
+        'nonopioid-therapy entity',
+        "guideline_entity(C,R,'nonopioid-therapy',countable).",
+      );
+      await count(
+        'full recommendation join',
+        "guideline_operator(actual,Ctx,should), guideline_event(Ctx,Ev,Verb), guideline_arg(Ctx,Ev,2,Obj), guideline_entity(Ctx,Obj,Noun,_).",
+      );
+      expect(true).toBe(true);
+    },
+    300_000,
+  );
+});

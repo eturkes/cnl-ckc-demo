@@ -122,17 +122,19 @@ every `guideline_*` clause and observe the answer *and* the proof unchanged.
 
 ## Probe regeneration
 
-MAIN's probes live scratch-local as `.txt` so the gate never collects them. Rerun:
-copy into `tests/`, drop the `.txt`, `npx vitest run --project node tests/<f>.test.ts`,
-then move it back out. Each needs `kb/generated` built (`pnpm kb:build`).
+MAIN's probes are committed at `.agent/review-expedited/probes/`, each suffixed
+`.txt` so no runner collects them. Rerun: copy into `tests/`, drop the `.txt`,
+`npx vitest run --project node tests/<f>.test.ts`, then move it back out.
+`probe-negation.mjs.txt` runs as `node` from the repo root. Each needs
+`kb/generated` built (`pnpm kb:build`).
 
 | probe | proves |
 | --- | --- |
-| `.scratch/probe-kb-independence.test.ts.txt` | answer is byte-identical after every `guideline_*` clause is retracted |
-| `.scratch/probe-proof-steps.test.ts.txt` | shipped proof steps: 3 nodes, 0 children, mangled heads, operator-only sites |
-| `.scratch/probe-answer-graph.test.ts.txt` | `answerSubgraph` output for the negated recommendation |
-| `.scratch/probe-inference-feasibility.test.ts.txt` | bare KB proves no recommendation; one asserted clinician makes the full join derive |
-| `.scratch/probe-negation.mjs` | census: 156 negation contexts, 857 `should` contexts, all dropped by the concept predicate |
+| `probes/probe-kb-independence.test.ts.txt` | answer is byte-identical after every `guideline_*` clause is retracted |
+| `probes/probe-proof-steps.test.ts.txt` | shipped proof steps: 3 nodes, 0 children, mangled heads, operator-only sites |
+| `probes/probe-answer-graph.test.ts.txt` | `answerSubgraph` output for the negated recommendation |
+| `probes/probe-inference-feasibility.test.ts.txt` | bare KB proves no recommendation; one asserted clinician makes the full join derive |
+| `probes/probe-negation.mjs.txt` | census: 156 negation contexts, 857 `should` contexts, all dropped by the concept predicate |
 
 Reviewer probes are committed on their own branches: `wt/rev-arch-1`
 (`tools/review-probes/a*.test.mjs`, `tests/review-a6-*`, `tests/review-a8-*`,

@@ -1,0 +1,73 @@
+// TEMPORARY evaluation probe — not committed.
+import { readFileSync, readdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { describe, expect, it } from 'vitest';
+
+import { BUDGET_MAX } from '../src/engine/budget.js';
+import { PROOF_BUDGET_MAX } from '../src/engine/protocol.js';
+import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
+import { QUESTION_CATALOG, QUESTION_IDS } from '../src/questions/catalog.js';
+import { verifyBag } from '../tools/kb/bag.mjs';
+import { payloadSource } from '../tools/kb/paths.mjs';
+
+const require = createRequire(import.meta.url);
+const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
+const GENERATED = join(ROOT, 'kb', 'generated');
+const read = (n: string): Buffer => readFileSync(join(GENERATED, n));
+const manifest = JSON.parse(read('kb-manifest.json').toString('utf8')) as {
+  contract: { schemaVersion: number; documents: number };
+};
+
+const loadImage: ImageLoader = async (image) => {
+  const f = require('swipl-wasm/dist/loadImageDefault.js') as
+    | ((i: Uint8Array) => (o?: Record<string, unknown>) => Promise<Engine>)
+    | { default: (i: Uint8Array) => (o?: Record<string, unknown>) => Promise<Engine> };
+  const load = typeof f === 'function' ? f : f.default;
+  return load(image)({});
+};
+
+describe('probe2', () => {
+  it(
+    'shows what a shipped proof step actually contains',
+    async () => {
+      const session = new EngineSession({ loadImage, expected: manifest.contract });
+      await session.boot(new Uint8Array(read('kb.pvm')));
+      const archive = readdirSync(join(ROOT, 'kb')).find((n) => n.endsWith('.tar.gz')) as string;
+      const { files } = verifyBag(readFileSync(join(ROOT, 'kb', archive)));
+      const lines = payloadSource(files).source.split('\n');
+
+      const entry = QUESTION_CATALOG[QUESTION_IDS[0]];
+      console.log('GOAL =', entry.goal);
+      const solved = await session.solve(entry.goal, BUDGET_MAX);
+      if (solved.kind !== 'solutions') throw new Error(solved.kind);
+      const first = solved.solutions[0]!;
+      const proof = await session.prove({ goal: entry.goal, selected: first.display }, PROOF_BUDGET_MAX);
+      console.log('proof kind =', proof.kind);
+      if (proof.kind !== 'proof') return;
+      console.log('top-level steps =', proof.steps.length);
+      for (const s of proof.steps) {
+        console.log(`\nstep line=${s.line} predicate=${s.predicate} children=${s.children.length}`);
+        console.log(`  proof head : ${s.head.slice(0, 190)}`);
+        console.log(`  payload    : ${(lines[s.line - 1] ?? '').slice(0, 190)}`);
+      }
+
+      // Does the general derivation path ever run for a shipped question?
+      const viaResolve = await session.solve(
+        "findall(L,(clause(guideline_entity(A,B,C,D),Body,R),clause_property(R,line_count(L))),Ls),length(Ls,N).",
+        BUDGET_MAX,
+      );
+      console.log('\nresolve reachable clause count:', viaResolve.kind === 'solutions' ? viaResolve.solutions[0]?.display.N : viaResolve.kind);
+
+      // Is clinical_advice/3 dynamic in the shipped image?
+      const dyn = await session.solve('predicate_property(clinical_advice(_,_,_),dynamic).', BUDGET_MAX);
+      console.log('clinical_advice/3 dynamic =', dyn.kind);
+      const nclauses = await session.solve('findall(1,clinical_advice(_,_,_),L),length(L,N).', BUDGET_MAX);
+      console.log('clinical_advice/3 facts =', nclauses.kind === 'solutions' ? nclauses.solutions[0]?.display.N : nclauses.kind);
+      expect(true).toBe(true);
+    },
+    180_000,
+  );
+});
