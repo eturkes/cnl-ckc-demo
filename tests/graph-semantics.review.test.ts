@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
   GraphDataError,
   SemanticGraphModel,
+  graphRelationLabel,
   parseSemanticGraph,
 } from '../src/graph/model.js';
 
@@ -92,5 +93,13 @@ describe('semantic graph source fidelity review', () => {
     });
 
     expect(view?.highlight.edges).not.toContain('edge:512:12');
+  });
+
+  it('reverses a directed relation label when HTML navigation starts at its target', () => {
+    // ACE: If a benefit outweighs a risk then every clinician should ... continue an opioid-therapy.
+    const support = graph.edge('edge:4501:11');
+    if (support === undefined) throw new Error('missing positive condition-support edge');
+
+    expect(graphRelationLabel(support, support.target)).toBe('supported by condition');
   });
 });
