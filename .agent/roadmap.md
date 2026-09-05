@@ -44,11 +44,12 @@ trusting any claim in the expedited block below.
 - **M4 — integration + release** — COMPLETE (expedited 2026-09-04). Cross-pillar linking
   (answer↔trace↔graph), dark theme + full visual system, CSP/static-host
   decision + release proof, performance/responsive/a11y hardening.
-- **M5 — semantic integrity** — IN-PROGRESS, six units. Owns the expedited remediation: the
-  answer derives by real inference, the proof is a real derivation, the graph
-  carries polarity, and a mechanical check binds each claim. Section below.
+- **M5 — semantic integrity** — IN-PROGRESS · **RESIZE**, six units sized to the retired
+  1M window. Owns the expedited remediation: the answer derives by real inference, the
+  proof is a real derivation, the graph carries polarity, and a mechanical check binds
+  each claim. Section below.
 
-## M5 — semantic integrity — IN-PROGRESS
+## M5 — semantic integrity — IN-PROGRESS · RESIZE
 
 Goal: **every surface asserts what the source asserts, and a rerunnable check
 binds it.** M5 exists because the expedited range shipped surfaces whose meaning
@@ -102,7 +103,9 @@ carries one as scope.
 ### Units
 
 Two tracks converging: `u1→u2→u3` (answer/proof) runs parallel to `u4→u5` (graph);
-both feed u6. Preconditions in `dep.order` resolve before WORK-UNIT dispatch.
+both feed u6, and each unit's `Depends` line is the precondition WORK-UNIT resolves
+before dispatch. Each unit records the `Split seam` a split lands on: a split moves a
+file or contract boundary, never coverage.
 
 - **u1 — inference-bound answer assembly** · kernel · `oracle` `prod` · est 190K → 336K
   Source-fragment/antecedent compiler + query-local cap-2 assumption evaluator +
@@ -113,6 +116,7 @@ both feed u6. Preconditions in `dep.order` resolve before WORK-UNIT dispatch.
   schema-erased controls yield no full catalog recommendation; all 7 shipped
   strings, 12 canonical terms **and raw contribution order** stay byte-identical,
   or the exact diff is shown and ruled on. Closes S1.
+  Split seam: `tools/kb/clinical.mjs` source fragments ↔ `tools/kb/proof.mjs` evaluator.
 - **u2 — genuine typed proof + premise display** · kernel · `oracle` · est 155K → 274K
   Remove the fabricated `clinical_advice` proof dispatch; replay u1's evaluator;
   typed clause/assumption/NAF branches; raw source-head join; deduplicated premise
@@ -124,6 +128,7 @@ both feed u6. Preconditions in `dep.order` resolve before WORK-UNIT dispatch.
   removal changes the proof; assumptions show hypothetical origin and no source
   line; limit/cancel/error stay distinct; clause-only focus binds all 12
   contributions. Closes S3, S3b+, S3c+, and S2 on proof + clause surfaces. Depends u1.
+  Split seam: `src/engine/protocol.ts` typed proof ↔ `ProvenanceLadder.svelte`.
 - **u3 — binding gates + retired-check dispositions** · kernel · `oracle` · est 125K → 221K
   Four-export diagnostic lane, `EXPORTED` preflight, `guideline_*` answer+proof
   perturbation, both negative controls, exhaustive site campaign, required-check
@@ -134,6 +139,7 @@ both feed u6. Preconditions in `dep.order` resolve before WORK-UNIT dispatch.
   consult or nonterminal solve fails closed; every retired class is restored or
   carries a specific rationale; the browser oracle uses independent expected bytes.
   Closes C2, C3. Depends u1, u2.
+  Split seam: `catalog.mjs` legacy lane ↔ binding-test inventory.
 - **u4 — vis-network renderer + legibility contract** · kernel · est 170K → 301K
   Spike first, inside the unit; replace `canvas.ts` behind a renderer-neutral
   edge-view contract; retain lazy HTML fallback + graph interactions; commit a
@@ -155,6 +161,7 @@ both feed u6. Preconditions in `dep.order` resolve before WORK-UNIT dispatch.
   resize, drag/zoom, recenter, stale mount, teardown and failure fallback pass;
   unrelated UI is unchanged. **No independent legibility oracle exists — MAIN
   retains that judgment.** Independent of u1-u3.
+  Split seam: `canvas.ts` adapter ↔ `SemanticGraph.svelte` browser integration.
 - **u5 — source-scoped graph producer + projection** · kernel · `oracle` `prod` · est 235K → 416K
   Versioned edge→scope records from the clause AST; correct outer endpoints and
   conjunctive support; scope-aware grouping, bounded paths, highlights,
@@ -171,6 +178,8 @@ both feed u6. Preconditions in `dep.order` resolve before WORK-UNIT dispatch.
   scoped outputs, with lost-label and merged-parallel negative controls** — the
   DOM suite mocks the canvas, so changed label data can otherwise stay invisible.
   Closes S2 on both graph views, S5, and the seven consequence rows. Depends u2, u4.
+  Split seam: `graph.mjs` scoped records ↔ `model.ts` projection — a split carries the scope
+  parser and its version with the producer contract, ahead of any projection work.
 - **u6 — claim alignment + milestone closure** · docs · est 85K → 150K
   Align the nine known shipped claims plus changed README/roadmap/memory claims;
   fill the committed claim→command registry; record C2 dispositions and
@@ -182,26 +191,34 @@ both feed u6. Preconditions in `dep.order` resolve before WORK-UNIT dispatch.
   evidence stay distinct; browser and visual claims cite their own rerunnable
   checks; copy/consistency checks pass; accepted non-graph presentation and the
   M2-M4 COMPLETE markers are unchanged. Closes C7. Depends u3, u5.
+  Split seam: shipped copy/README ↔ the `.agent` claim registry.
 
 ### Sizing
 
 Model = `M = H + 1.77·I`, additive (M1's archive: the multiplier applies to
 implementation, the harvest term adds). `I` = 190/155/125/170/235/85K summing to
 960K; `H` = 90/85/65/80/100/70K = 490K; calibrated `C` = 1,699.20K; forecast
-closes `M` = 426/359/286/381/516/220K, total 2,189.20K with `H` counted once.
-Largest close 515.95K against a **900K all-in aim** on the 1M collapse-managed
-window, 100K reserve. Six work sessions; no unit needs a size split, and
-`split.seams` names each unit's boundary if one overruns.
+closes `M` = 426.30/359.35/286.25/380.90/515.95/220.45K, total 2,189.20K with `H`
+counted once.
 
-Every M1 percentage measures a RETIRED 240K window — only absolute K transfers.
+**This split is sized to a retired window — hence the RESIZE marker.** It was drawn
+against a 900K all-in aim on the 1M window; the live aim is 223K (window note under
+M1). u1-u5 all exceed it; u6 sits 2.55K inside it on the provisional `docs` multiplier
+below, so its margin is nominal rather than measured. The next `/session-roadmap` run
+is the PLANNING re-size pass: re-split u1-u5 at the seam recorded with each unit
+above, scope, rulings, tiers and dependency order unchanged, no wave dispatch. `I`,
+`H` and the 1.77 multiplier are K figures and survive the window change; only the
+unit boundaries move.
+
 M1 close analogs: u1 226K, u2 224K, u4 228K, u5 209K, u6 133K, u7 229K. The
 `docs` multiplier is **provisional, not measured**: u7 cost 229K against a 60K
 `docs` estimate, so u6's 220.45K all-in is credible only by that precedent.
 
 MILESTONE-REVIEW projection: 5 kernel × M1's mean 30.5 rows ≈ 153, + 24
-cross-cutting + ~60 M5-only claim replays ≈ **237 rows over 2 sessions** at the
-900K aim. The 60-claim allowance is a forecast, not a census; two sessions is a
-budget, not a termination condition.
+cross-cutting + ~60 M5-only claim replays ≈ **237 rows**, ~4 sessions at M1's
+measured 61.7 rows/session. The re-size pass raises the kernel unit count and
+re-projects this. The 60-claim allowance is a forecast, not a census; the session
+count is a budget, not a termination condition.
 
 ### Evidence
 
@@ -313,7 +330,7 @@ units below:
 Sizing model, fixed for M2: `cal = raw × 1.77`, `raw` = whole-unit bottom-up estimate. The
 1.77 multiplier IS the empirical correction for understated harvest, so no separate harvest
 floor is added on top — stacking one double-counts. One-window aim 200K, a 240K-window
-figure; a unit over it splits at its named seam. u2 is the `data`-tier calibration probe: no M1 analog exists, so it
+figure — the live aim is 223K, window note under M1; a unit over it splits at its named seam. u2 is the `data`-tier calibration probe: no M1 analog exists, so it
 ships uncalibrated and re-sizes the tier from its own measurement.
 
 - **u1 — provenance model and parsers** · kernel · `oracle` `prod` · est 90K → 159K · COMPLETE (expedited)
@@ -405,11 +422,12 @@ X20, X24. No `high` severity row is open.
 Gauge band: unit `main=` ran 77–96% of 240K, `mate=` 37–76%. Review sessions ran
 77–96%. Sizing calibration multiplier 1.77.
 
-Window note, binding on PLANNING: every gauge recorded here, in `.agent/archive/` and in
-`.agent/contracts/` is against the retired 240K window; the window is now 1M and MAIN's is
-collapse-managed. Carry the absolute K figures forward as the sizing analogs — the
-percentages measure a window that no longer exists, and the 1.77 multiplier stays valid
-because it is a ratio of two K figures.
+Window note, binding on PLANNING: recorded gauges span three regimes — M1 here, in
+`.agent/archive/` and in `.agent/contracts/` = 240K; M5 planning = 1M; live = **273K,
+harness-managed with auto-compaction, one-window aim 223K, reserve 50K** (global
+`CLAUDE.md`). Carry the absolute K figures forward as the sizing analogs — every recorded
+percentage measures a window that no longer exists, and the 1.77 multiplier survives both
+retirements because it is a ratio of two K figures.
 
 Full record → `.agent/archive/m1.md`. Judgment ledger → `.agent/archive/review-m1.md`.
 Reviewer reports → `.agent/review-m1/`. Unit contracts and fixed check sets →
