@@ -29,12 +29,23 @@ const factory = require('swipl-wasm/dist/loadImageDefault.js') as
 const load = typeof factory === 'function' ? factory : factory.default;
 const diagnostics: string[] = [];
 let engine: Engine;
+let mutableEngine: Engine;
+
+const SCHEMA_PREDICATES = [
+  ['guideline_entity', 4],
+  ['guideline_cardinality', 5],
+  ['guideline_event', 3],
+  ['guideline_arg', 4],
+  ['guideline_operator', 3],
+  ['guideline_pp', 4],
+  ['guideline_property', 4],
+] as const;
 
 const atom = (value: string): string => `'${value.replaceAll("'", "''")}'`;
 
 /** One deterministic solution, or a thrown Prolog error. */
-export const row = (goal: string): Record<string, unknown> => {
-  const result = engine.prolog.query(goal).once();
+export const row = (goal: string, target: Engine = engine): Record<string, unknown> => {
+  const result = target.prolog.query(goal).once();
   if (result === null || typeof result !== 'object' || Array.isArray(result)) {
     throw new Error(`query returned no bindings: ${goal}`);
   }
@@ -47,20 +58,31 @@ export const row = (goal: string): Record<string, unknown> => {
  * A bare success/failure cannot tell exhaustion from refutation, and P3/P8 both turn
  * on that difference.
  */
-export const bounded = (goal: string, after = ''): Record<string, unknown> =>
+export const bounded = (
+  goal: string,
+  after = '',
+  target: Engine = engine,
+): Record<string, unknown> =>
   row(
     `(catch(call_with_inference_limit(call_with_depth_limit(once((${goal})),100,Depth),100000,Inf),` +
       `error(resource_error(stack),_),Inf=stack) -> ` +
       `(Inf==inference_limit_exceeded -> State=inferences ; Inf==stack -> State=stack ; ` +
       `Depth==depth_limit_exceeded -> State=depth ; State=proved) ; State=failed)` +
       (after === '' ? '.' : `,(State==proved -> (${after}) ; true).`),
+    target,
   );
 
 beforeAll(async () => {
-  engine = await load(new Uint8Array(readFileSync(join(ROOT, 'kb/generated/kb.pvm'))))({
+  const image = new Uint8Array(readFileSync(join(ROOT, 'kb/generated/kb.pvm')));
+  const options = {
     print: () => {},
     printErr: (line: unknown) => diagnostics.push(String(line)),
-  });
+  };
+  engine = await load(image)(options);
+  mutableEngine = await load(image)(options);
+  for (const [name, arity] of SCHEMA_PREDICATES) {
+    row(`dynamic(${name}/${String(arity)}).`, mutableEngine);
+  }
 }, 120_000);
 
 describe('clinical assumption evaluator', () => {
@@ -127,12 +149,101 @@ describe('clinical assumption evaluator', () => {
   });
 
   it('P3 derives all 48 sentences at cap 2 and exactly 47 at cap 1', () => {
-    expect.fail('unencoded');
+    expect(String(row('clinical_depth(D).').D)).toBe('2');
+
+    const states = new Map<number, Map<string, string>>();
+    for (const cap of [1, 2, 3]) {
+      states.set(
+        cap,
+        new Map(
+          gateRecords.map((gate) => [
+            `${gate.document}:${String(gate.sentence)}`,
+            String(
+              bounded(
+                `clinical_derive(${atom(gate.document)},${String(gate.sentence)},${String(cap)},_,_)`,
+              ).State,
+            ),
+          ]),
+        ),
+      );
+    }
+
+    expect([...states.get(1)!.entries()].filter(([, state]) => state !== 'proved')).toEqual([
+      ['cdc2022-opioid-rec05:5', 'failed'],
+    ]);
+    expect([...states.get(2)!.values()].filter((state) => state !== 'proved')).toEqual([]);
+    expect([...states.get(3)!.values()].filter((state) => state !== 'proved')).toEqual([]);
+
+    const documents = [...new Set(gateRecords.map(({ document }) => document))];
+    expect(documents).toHaveLength(12);
+    for (const document of documents) {
+      const keys = gateRecords
+        .filter((gate) => gate.document === document)
+        .map((gate) => `${gate.document}:${String(gate.sentence)}`);
+      expect(
+        keys.every((key) => states.get(2)!.get(key) === 'proved'),
+        document,
+      ).toBe(true);
+    }
+
+    const defaultFailures = gateRecords.filter(
+      (gate) =>
+        String(
+          bounded(`clinical_derive(${atom(gate.document)},${String(gate.sentence)},_,_)`).State,
+        ) !== 'proved',
+    );
+    expect(defaultFailures).toEqual([]);
   });
 
-  it('P4 fails the derivation for every one of the 686 cited clauses erased alone', () => {
-    expect.fail('unencoded');
-  });
+  it(
+    'P4 fails the derivation for every one of the 686 cited clauses erased alone',
+    () => {
+      let erased = 0;
+      for (const gate of gateRecords) {
+        const document = atom(gate.document);
+        for (const [index, line] of gate.lines.entries()) {
+          const head = gate.heads[index];
+          if (head === undefined) {
+            throw new Error(`${gate.document}:${String(gate.sentence)}:${String(line)} head missing`);
+          }
+          const result = bounded(
+            `snapshot((clause((${head}),_,Ref),clause_property(Ref,file('/prolog.pl')),` +
+              `clause_property(Ref,line_count(${String(line)})),erase(Ref),` +
+              `(clinical_derive(${document},${String(gate.sentence)},Rule,Proof)->Derived=yes;Derived=no),` +
+              `(var(Rule)->RuleState=unbound;RuleState=bound),` +
+              `(var(Proof)->ProofState=unbound;ProofState=bound)))`,
+            '',
+            mutableEngine,
+          );
+          expect(
+            result,
+            `${gate.document}:${String(gate.sentence)}:${String(line)}`,
+          ).toMatchObject({
+            State: 'proved',
+            Derived: 'no',
+            RuleState: 'unbound',
+            ProofState: 'unbound',
+          });
+          erased += 1;
+        }
+      }
+      expect(erased).toBe(686);
+
+      for (const gate of gateRecords) {
+        expect(
+          String(
+            bounded(
+              `clinical_derive(${atom(gate.document)},${String(gate.sentence)},_,_)`,
+              '',
+              mutableEngine,
+            ).State,
+          ),
+          `${gate.document}:${String(gate.sentence)} rollback`,
+        ).toBe('proved');
+      }
+    },
+    120_000,
+  );
 
   it('P5 yields no full document recommendation under either negative control', () => {
     expect.fail('unencoded');
