@@ -10,8 +10,10 @@ import { join } from 'node:path';
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
+import { PROOF_BUDGET_MAX } from '../src/engine/protocol.js';
 import type { Engine } from '../src/engine/session.js';
 import { QUESTION_CATALOG, QUESTION_IDS } from '../src/questions/catalog.js';
+import { PROOF_SOURCE } from '../tools/kb/proof.mjs';
 import {
   gateRecords,
   orderedHash,
@@ -30,6 +32,7 @@ const load = typeof factory === 'function' ? factory : factory.default;
 const diagnostics: string[] = [];
 let engine: Engine;
 let mutableEngine: Engine;
+let initialSchema: string[];
 
 const SCHEMA_PREDICATES = [
   ['guideline_entity', 4],
@@ -72,6 +75,17 @@ export const bounded = (
     target,
   );
 
+const schemaState = (target: Engine): string[] =>
+  SCHEMA_PREDICATES.map(([name, arity]) => {
+    const call = `${name}(${Array.from({ length: arity }, () => '_').join(',')})`;
+    const result = row(
+      `predicate_property(${call},number_of_clauses(N)),` +
+        `(predicate_property(${call},'dynamic')->Kind='dynamic';Kind='static').`,
+      target,
+    );
+    return `${name}/${String(arity)}:${String(result.Kind)}:${String(result.N)}`;
+  });
+
 beforeAll(async () => {
   const image = new Uint8Array(readFileSync(join(ROOT, 'kb/generated/kb.pvm')));
   const options = {
@@ -79,6 +93,7 @@ beforeAll(async () => {
     printErr: (line: unknown) => diagnostics.push(String(line)),
   };
   engine = await load(image)(options);
+  initialSchema = schemaState(engine);
   mutableEngine = await load(image)(options);
   for (const [name, arity] of SCHEMA_PREDICATES) {
     row(`dynamic(${name}/${String(arity)}).`, mutableEngine);
@@ -127,8 +142,7 @@ describe('clinical assumption evaluator', () => {
     expect(
       orderedHash(
         gateRecords.map(
-          ({ document, sentence, lines }) =>
-            `${document}:${String(sentence)}:${lines.join(',')}`,
+          ({ document, sentence, lines }) => `${document}:${String(sentence)}:${lines.join(',')}`,
         ),
       ),
     ).toBe('4a9aa7427273');
@@ -195,55 +209,48 @@ describe('clinical assumption evaluator', () => {
     expect(defaultFailures).toEqual([]);
   });
 
-  it(
-    'P4 fails the derivation for every one of the 686 cited clauses erased alone',
-    () => {
-      let erased = 0;
-      for (const gate of gateRecords) {
-        const document = atom(gate.document);
-        for (const [index, line] of gate.lines.entries()) {
-          const head = gate.heads[index];
-          if (head === undefined) {
-            throw new Error(`${gate.document}:${String(gate.sentence)}:${String(line)} head missing`);
-          }
-          const result = bounded(
-            `snapshot((clause((${head}),_,Ref),clause_property(Ref,file('/prolog.pl')),` +
-              `clause_property(Ref,line_count(${String(line)})),erase(Ref),` +
-              `(clinical_derive(${document},${String(gate.sentence)},Rule,Proof)->Derived=yes;Derived=no),` +
-              `(var(Rule)->RuleState=unbound;RuleState=bound),` +
-              `(var(Proof)->ProofState=unbound;ProofState=bound)))`,
+  it('P4 fails the derivation for every one of the 686 cited clauses erased alone', () => {
+    let erased = 0;
+    for (const gate of gateRecords) {
+      const document = atom(gate.document);
+      for (const [index, line] of gate.lines.entries()) {
+        const head = gate.heads[index];
+        if (head === undefined) {
+          throw new Error(`${gate.document}:${String(gate.sentence)}:${String(line)} head missing`);
+        }
+        const result = bounded(
+          `snapshot((clause((${head}),_,Ref),clause_property(Ref,file('/prolog.pl')),` +
+            `clause_property(Ref,line_count(${String(line)})),erase(Ref),` +
+            `(clinical_derive(${document},${String(gate.sentence)},Rule,Proof)->Derived=yes;Derived=no),` +
+            `(var(Rule)->RuleState=unbound;RuleState=bound),` +
+            `(var(Proof)->ProofState=unbound;ProofState=bound)))`,
+          '',
+          mutableEngine,
+        );
+        expect(result, `${gate.document}:${String(gate.sentence)}:${String(line)}`).toMatchObject({
+          State: 'proved',
+          Derived: 'no',
+          RuleState: 'unbound',
+          ProofState: 'unbound',
+        });
+        erased += 1;
+      }
+    }
+    expect(erased).toBe(686);
+
+    for (const gate of gateRecords) {
+      expect(
+        String(
+          bounded(
+            `clinical_derive(${atom(gate.document)},${String(gate.sentence)},_,_)`,
             '',
             mutableEngine,
-          );
-          expect(
-            result,
-            `${gate.document}:${String(gate.sentence)}:${String(line)}`,
-          ).toMatchObject({
-            State: 'proved',
-            Derived: 'no',
-            RuleState: 'unbound',
-            ProofState: 'unbound',
-          });
-          erased += 1;
-        }
-      }
-      expect(erased).toBe(686);
-
-      for (const gate of gateRecords) {
-        expect(
-          String(
-            bounded(
-              `clinical_derive(${atom(gate.document)},${String(gate.sentence)},_,_)`,
-              '',
-              mutableEngine,
-            ).State,
-          ),
-          `${gate.document}:${String(gate.sentence)} rollback`,
-        ).toBe('proved');
-      }
-    },
-    120_000,
-  );
+          ).State,
+        ),
+        `${gate.document}:${String(gate.sentence)} rollback`,
+      ).toBe('proved');
+    }
+  }, 120_000);
 
   it('P5 yields no full document recommendation under either negative control', () => {
     const withheld = new Map(
@@ -257,9 +264,9 @@ describe('clinical assumption evaluator', () => {
         ),
       ]),
     );
-    expect([...withheld.entries()].filter(([, state]) => state === 'proved').map(([key]) => key)).toEqual(
-      ['cdc2022-opioid-rec10:4', 'cdc2022-opioid-rec12:3'],
-    );
+    expect(
+      [...withheld.entries()].filter(([, state]) => state === 'proved').map(([key]) => key),
+    ).toEqual(['cdc2022-opioid-rec10:4', 'cdc2022-opioid-rec12:3']);
 
     const documents = [...new Set(gateRecords.map(({ document }) => document))];
     expect(
@@ -330,17 +337,71 @@ describe('clinical assumption evaluator', () => {
         .filter((gate) => gate.document === document)
         .flatMap(({ lines: gateLines }) => gateLines)
         .sort((left, right) => left - right);
-      expect([...lines].sort((left, right) => left - right), document).toEqual(expected);
+      expect(
+        [...lines].sort((left, right) => left - right),
+        document,
+      ).toEqual(expected);
     }
   });
 
   it('P7 mutates no world state and leaves every schema predicate static', () => {
-    expect.fail('unencoded');
+    expect(PROOF_SOURCE).not.toMatch(
+      /\b(?:assertz|asserta|retract|retractall|erase|dynamic)\s*(?:\(|\/)\s*/u,
+    );
+    expect(initialSchema).toHaveLength(SCHEMA_PREDICATES.length);
+    expect(initialSchema.every((state) => state.includes(':static:'))).toBe(true);
+    expect(schemaState(engine)).toEqual(initialSchema);
+
+    const attemptedWrite = row(
+      `snapshot(catch((assertz(guideline_entity(m5_u2_probe,m5_u2_probe,m5_u2_probe,m5_u2_probe)),` +
+        `Result=written),E,(E=error(permission_error(modify,static_procedure,_),_)` +
+        `->Result=permission;(term_string(E,Error,[quoted(true)]),Result=other)))).`,
+    );
+    expect(attemptedWrite, String(attemptedWrite.Error)).toMatchObject({ Result: 'permission' });
+    expect(schemaState(engine)).toEqual(initialSchema);
   });
 
   it('P8 keeps every derivation inside the reviewed proof budget', () => {
-    expect.fail('unencoded');
-  });
+    expect(PROOF_BUDGET_MAX).toMatchObject({
+      depth: 100,
+      inferences: 100_000,
+      wallClockMs: 1000,
+    });
+    const capTwo = new Map<string, string>();
+    let worst = { key: '', milliseconds: 0 };
+
+    for (const cap of [1, 2, 3]) {
+      for (const gate of gateRecords) {
+        const key = `${gate.document}:${String(gate.sentence)}@${String(cap)}`;
+        const started = performance.now();
+        const state = String(
+          bounded(
+            `clinical_derive(${atom(gate.document)},${String(gate.sentence)},${String(cap)},_,_)`,
+          ).State,
+        );
+        const milliseconds = performance.now() - started;
+        expect(milliseconds, key).toBeLessThan(PROOF_BUDGET_MAX.wallClockMs);
+        expect(['proved', 'failed'], key).toContain(state);
+        if (cap === 2) capTwo.set(`${gate.document}:${String(gate.sentence)}`, state);
+        if (milliseconds > worst.milliseconds) worst = { key, milliseconds };
+      }
+    }
+
+    expect(worst.milliseconds, worst.key).toBeLessThan(PROOF_BUDGET_MAX.wallClockMs);
+    expect(
+      [
+        'cdc2022-opioid-rec01:3',
+        'cdc2022-opioid-rec02:3',
+        'cdc2022-opioid-rec02:8',
+        'cdc2022-opioid-rec05:4',
+      ].map((key) => [key, capTwo.get(key)]),
+    ).toEqual([
+      ['cdc2022-opioid-rec01:3', 'proved'],
+      ['cdc2022-opioid-rec02:3', 'proved'],
+      ['cdc2022-opioid-rec02:8', 'proved'],
+      ['cdc2022-opioid-rec05:4', 'proved'],
+    ]);
+  }, 60_000);
 
   it('emits no engine diagnostic', () => {
     expect(diagnostics).toEqual([]);
