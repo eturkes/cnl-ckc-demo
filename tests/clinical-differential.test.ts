@@ -34,4 +34,24 @@ describe('clinical compiler differential', () => {
     expect(differential.D2.divergences, evidence(differential.D2.divergences)).toEqual([]);
     expect(differential.D2).toMatchObject({ expectedPremises: 346, actualPremises: 346 });
   });
+
+  it('D3: keeps one rule and its unifying gate per sentence', () => {
+    expect(differential.D3.divergences, evidence(differential.D3.divergences)).toEqual([]);
+    expect(differential.D3).toMatchObject({
+      expectedRules: 48,
+      actualRules: 48,
+      expectedGates: 48,
+      actualGates: 48,
+    });
+  });
+
+  it('D4: reassembles sentence rules into the shipped grouped terms', () => {
+    expect(differential.D4.divergences, evidence(differential.D4.divergences)).toEqual([]);
+    expect(differential.D4).toMatchObject({
+      expectedDocuments: 12,
+      actualDocuments: 12,
+      expectedGroups: 38,
+      actualGroups: 38,
+    });
+  });
 });

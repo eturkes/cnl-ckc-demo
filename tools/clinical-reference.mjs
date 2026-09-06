@@ -39,9 +39,13 @@ const DOCUMENT_ORDER = Object.freeze([
 /** @typedef {{ version: 1, documentOrder: string[], recordOrder: string[], records: Record<string, ReferenceRecord>, groups: Record<string, string[]> }} ReferenceCorpus */
 /** @typedef {{ key: string, document: string, sentence: string, lines: number[], heads: string[], ruleVariable: string }} ActualGate */
 /** @typedef {{ key: string, document: string, sentence: string, ordinal: number, literal: string }} ActualPremise */
-/** @typedef {{ gates: ActualGate[], premises: ActualPremise[], malformedGates: string[], malformedPremises: string[] }} ActualRecords */
+/** @typedef {{ key: string, document: string, sentence: string, fragment: string }} ActualRule */
+/** @typedef {{ key: string, document: string, groups: string }} ActualAdvice */
+/** @typedef {{ gates: ActualGate[], premises: ActualPremise[], rules: ActualRule[], advice: ActualAdvice[], malformedGates: string[], malformedPremises: string[], malformedRules: string[], malformedAdvice: string[] }} ActualRecords */
 /** @typedef {{ divergences: string[], expectedRecords: number, actualRecords: number, expectedSites: number, actualSites: number }} SiteDiff */
 /** @typedef {{ divergences: string[], expectedPremises: number, actualPremises: number }} PremiseDiff */
+/** @typedef {{ divergences: string[], expectedRules: number, actualRules: number, expectedGates: number, actualGates: number }} RuleDiff */
+/** @typedef {{ divergences: string[], expectedDocuments: number, actualDocuments: number, expectedGroups: number, actualGroups: number }} ReassemblyDiff */
 
 /** @returns {Map<string, Uint8Array>} */
 const bagFiles = () => {
@@ -565,16 +569,49 @@ const parsePremise = (source) => {
   };
 };
 
+/** @param {string} source @returns {ActualRule} */
+const parseRule = (source) => {
+  const args = callArguments(source, 'clinical_rule');
+  if (args.length !== 3) throw new Error(`clinical_rule arity=${String(args.length)}`);
+  const document = args[0] ?? '';
+  const sentence = args[1] ?? '';
+  natural(sentence);
+  const fragment = args[2] ?? '';
+  if (callArguments(fragment, 'rule').length !== 4)
+    throw new Error(`invalid rule fragment ${fragment}`);
+  return { key: `${document}::${sentence}`, document, sentence, fragment };
+};
+
+/** @param {string} source @returns {ActualAdvice} */
+const parseAdvice = (source) => {
+  const args = callArguments(source, 'clinical_advice');
+  if (args.length !== 3) throw new Error(`clinical_advice arity=${String(args.length)}`);
+  const answer = callArguments(args[2] ?? '', 'clinical_answer');
+  if (answer.length !== 3) throw new Error(`clinical_answer arity=${String(answer.length)}`);
+  const document = answer[0] ?? '';
+  const groups = answer[1] ?? '';
+  listItems(groups);
+  return { key: document, document, groups };
+};
+
 /** @param {string} source @returns {ActualRecords} */
 const actualRecords = (source) => {
   /** @type {ActualGate[]} */
   const gates = [];
   /** @type {ActualPremise[]} */
   const premises = [];
+  /** @type {ActualRule[]} */
+  const rules = [];
+  /** @type {ActualAdvice[]} */
+  const advice = [];
   /** @type {string[]} */
   const malformedGates = [];
   /** @type {string[]} */
   const malformedPremises = [];
+  /** @type {string[]} */
+  const malformedRules = [];
+  /** @type {string[]} */
+  const malformedAdvice = [];
   for (const raw of statements(source)) {
     const statement = compact(raw);
     if (statement.startsWith('clinical_gate(')) {
@@ -589,9 +626,30 @@ const actualRecords = (source) => {
       } catch (error) {
         malformedPremises.push(error instanceof Error ? error.message : String(error));
       }
+    } else if (statement.startsWith('clinical_rule(')) {
+      try {
+        rules.push(parseRule(statement));
+      } catch (error) {
+        malformedRules.push(error instanceof Error ? error.message : String(error));
+      }
+    } else if (statement.startsWith('clinical_advice(')) {
+      try {
+        advice.push(parseAdvice(statement));
+      } catch (error) {
+        malformedAdvice.push(error instanceof Error ? error.message : String(error));
+      }
     }
   }
-  return { gates, premises, malformedGates, malformedPremises };
+  return {
+    gates,
+    premises,
+    rules,
+    advice,
+    malformedGates,
+    malformedPremises,
+    malformedRules,
+    malformedAdvice,
+  };
 };
 
 /** @param {ReferenceRecord} record */
@@ -787,6 +845,172 @@ const comparePremises = (corpus, actual) => {
   };
 };
 
+/** @param {string} document @param {number | string} sentence */
+const ruleKey = (document, sentence) => `${document}::${String(sentence)}`;
+
+/** @param {ReferenceCorpus} corpus @param {ActualRecords} actual @returns {RuleDiff} */
+const compareRules = (corpus, actual) => {
+  const divergences = [
+    ...actual.malformedRules.map((message) => `rule malformed: ${message}`),
+    ...actual.malformedGates.map((message) => `gate malformed: ${message}`),
+  ];
+  const rules = keyed(actual.rules, 'rule', divergences);
+  /** @type {Map<string, ActualGate>} */
+  const gates = new Map();
+  for (const gate of actual.gates) {
+    const key = ruleKey(gate.document, gate.sentence);
+    if (gates.has(key)) divergences.push(`gate: duplicate ${key}`);
+    else gates.set(key, gate);
+  }
+  const expectedOrder = corpus.recordOrder.map((key) => {
+    const record = /** @type {ReferenceRecord} */ (corpus.records[key]);
+    return ruleKey(encodedAtom(record.document), record.sentence);
+  });
+  compareOrdered(
+    expectedOrder,
+    actual.rules.map(({ key }) => key),
+    'clinical_rule order',
+    divergences,
+  );
+  compareOrdered(
+    expectedOrder,
+    actual.gates.map(({ document, sentence }) => ruleKey(document, sentence)),
+    'clinical_gate order',
+    divergences,
+  );
+  const expectedKeys = new Set(expectedOrder);
+  for (const key of corpus.recordOrder) {
+    const record = /** @type {ReferenceRecord} */ (corpus.records[key]);
+    const expectedKey = ruleKey(encodedAtom(record.document), record.sentence);
+    const rule = rules.get(expectedKey);
+    if (rule === undefined) divergences.push(`rule missing: ${key}`);
+    else if (rule.fragment !== record.fragment) {
+      divergences.push(`${key} fragment: expected=${record.fragment} actual=${rule.fragment}`);
+    }
+    if (!gates.has(expectedKey)) divergences.push(`rule gate missing: ${key}`);
+  }
+  for (const rule of actual.rules) {
+    if (!expectedKeys.has(rule.key)) divergences.push(`rule unexpected: ${rule.key}`);
+  }
+  for (const gate of actual.gates) {
+    const key = ruleKey(gate.document, gate.sentence);
+    if (!expectedKeys.has(key)) divergences.push(`gate unexpected: ${key}`);
+  }
+  return {
+    divergences,
+    expectedRules: corpus.recordOrder.length,
+    actualRules: actual.rules.length,
+    expectedGates: corpus.recordOrder.length,
+    actualGates: actual.gates.length,
+  };
+};
+
+/** @param {ActualRule[]} rules @param {string} document @param {string[]} divergences */
+const reassemble = (rules, document, divergences) => {
+  /** @type {Array<{ conditions: string[], tail: string[], unconditional: boolean }>} */
+  const groups = [];
+  /** @type {Map<string, { conditions: string[], tail: string[], unconditional: boolean }>} */
+  const byConsequence = new Map();
+  for (const rule of rules) {
+    const args = callArguments(rule.fragment, 'rule');
+    if (args.length !== 4) {
+      divergences.push(`${document}: malformed rule fragment ${rule.fragment}`);
+      continue;
+    }
+    const conditions = listItems(args[0] ?? '');
+    if (conditions.length > 1) {
+      divergences.push(
+        `${document}: sentence fragment carries ${String(conditions.length)} conditions`,
+      );
+    }
+    const tail = args.slice(1);
+    const key = JSON.stringify(tail);
+    let group = byConsequence.get(key);
+    if (group === undefined) {
+      group = { conditions: [], tail, unconditional: false };
+      byConsequence.set(key, group);
+      groups.push(group);
+    }
+    if (conditions.length === 0) {
+      if (group.unconditional || group.conditions.length > 0) {
+        divergences.push(`${document}: duplicate or mixed unconditional consequence ${key}`);
+      }
+      group.unconditional = true;
+    } else {
+      if (group.unconditional)
+        divergences.push(`${document}: conditional/unconditional collision ${key}`);
+      for (const condition of conditions) {
+        if (group.conditions.includes(condition)) {
+          divergences.push(`${document}: duplicate condition ${condition}`);
+        }
+        group.conditions.push(condition);
+      }
+    }
+  }
+  return groups.map(({ conditions, tail }) => `rule([${conditions.join(',')}],${tail.join(',')})`);
+};
+
+/** @param {ReferenceCorpus} corpus @param {ActualRecords} actual @returns {ReassemblyDiff} */
+const compareReassembly = (corpus, actual) => {
+  const divergences = [
+    ...actual.malformedRules.map((message) => `rule malformed: ${message}`),
+    ...actual.malformedAdvice.map((message) => `advice malformed: ${message}`),
+  ];
+  const advice = keyed(actual.advice, 'advice', divergences);
+  const expectedDocuments = corpus.documentOrder.map(encodedAtom);
+  compareOrdered(
+    expectedDocuments,
+    actual.advice.map(({ document }) => document),
+    'clinical_advice order',
+    divergences,
+  );
+  const expectedSet = new Set(expectedDocuments);
+  let actualGroups = 0;
+  for (const document of corpus.documentOrder) {
+    const encoded = encodedAtom(document);
+    const assembled = reassemble(
+      actual.rules.filter((rule) => rule.document === encoded),
+      document,
+      divergences,
+    );
+    actualGroups += assembled.length;
+    const expected = corpus.groups[document] ?? [];
+    compareOrdered(expected, assembled, `${document} independent groups`, divergences);
+    const shipped = advice.get(encoded);
+    if (shipped === undefined) {
+      divergences.push(`clinical_answer missing: ${document}`);
+      continue;
+    }
+    const expectedList = `[${expected.join(',')}]`;
+    const assembledList = `[${assembled.join(',')}]`;
+    if (shipped.groups !== expectedList) {
+      divergences.push(
+        `${document} shipped groups: expected=${expectedList} actual=${shipped.groups}`,
+      );
+    }
+    if (shipped.groups !== assembledList) {
+      divergences.push(
+        `${document} reassembly: expected=${shipped.groups} actual=${assembledList}`,
+      );
+    }
+  }
+  for (const item of actual.advice) {
+    if (!expectedSet.has(item.document))
+      divergences.push(`clinical_answer unexpected: ${item.document}`);
+  }
+  for (const rule of actual.rules) {
+    if (!expectedSet.has(rule.document))
+      divergences.push(`reassembly rule unexpected: ${rule.key}`);
+  }
+  return {
+    divergences,
+    expectedDocuments: corpus.documentOrder.length,
+    actualDocuments: actual.advice.length,
+    expectedGroups: Object.values(corpus.groups).reduce((sum, groups) => sum + groups.length, 0),
+    actualGroups,
+  };
+};
+
 /** Compare the independently derived source model with the generated helper.
  * @param {ReferenceCorpus} corpus @param {string} helper */
 export const clinicalDifferential = (corpus, helper) => {
@@ -794,6 +1018,8 @@ export const clinicalDifferential = (corpus, helper) => {
   return {
     D1: compareSites(corpus, actual),
     D2: comparePremises(corpus, actual),
+    D3: compareRules(corpus, actual),
+    D4: compareReassembly(corpus, actual),
   };
 };
 
