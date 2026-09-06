@@ -5,13 +5,106 @@
 
 import { describe, expect, it } from 'vitest';
 
+import { CLINICAL_QUESTIONS } from '../tools/kb/clinical.mjs';
+import {
+  aceSentenceKeys,
+  artifacts,
+  gateRecords,
+  helperLines,
+  keyOf,
+  orderedHash,
+  scanContentSites,
+  sha12,
+} from './clinical-test-support.js';
+
 const unimplemented = (): never => {
   throw new Error('unimplemented');
 };
 
 describe('clinical records', () => {
-  it('T1 byte identity: 7 questions, 12 canonical terms, raw contribution order', unimplemented);
-  it('T3 total site coverage: 686 lines, equality both ways, ACE↔PL bijection', unimplemented);
+  it('T1 byte identity: 7 questions, 12 canonical terms, raw contribution order', () => {
+    const strings = CLINICAL_QUESTIONS.map(({ question }) => question);
+    const order = CLINICAL_QUESTIONS.flatMap(({ sources }) =>
+      sources.map(({ document }) => document),
+    );
+    const terms = CLINICAL_QUESTIONS.flatMap(({ id }) => artifacts.answers.get(id) ?? []);
+    const advice = helperLines.filter((line) => line.startsWith('clinical_advice('));
+    const sources = helperLines.filter((line) => line.startsWith('clinical_advice_source('));
+
+    expect({
+      strings: orderedHash(strings),
+      order: orderedHash(order),
+      terms: orderedHash(terms),
+    }).toEqual({
+      strings: 'dacbfac1c8b4',
+      order: 'ba17af72c3d2',
+      terms: '59a516ba9989',
+    });
+    expect(order).toEqual([
+      'cdc2022-opioid-rec01',
+      'cdc2022-opioid-rec02',
+      'cdc2022-opioid-rec03',
+      'cdc2022-opioid-rec04',
+      'cdc2022-opioid-rec06',
+      'cdc2022-opioid-rec07',
+      'cdc2022-opioid-rec08',
+      'cdc2022-opioid-rec09',
+      'cdc2022-opioid-rec10',
+      'cdc2022-opioid-rec11',
+      'cdc2022-opioid-rec05',
+      'cdc2022-opioid-rec12',
+    ]);
+    expect({
+      advice: orderedHash(advice),
+      sources: orderedHash(sources),
+      records: sha12(JSON.stringify(artifacts.records)),
+      names: sha12(JSON.stringify(artifacts.names)),
+    }).toEqual({
+      advice: 'c82743a860ab',
+      sources: '2bc7ca83227a',
+      records: '23898631ca0a',
+      names: '1d112e138ee5',
+    });
+    expect({
+      advice: advice.length,
+      sources: sources.length,
+      rules: helperLines.filter((line) => line.startsWith('clinical_rule(')).length,
+      premises: helperLines.filter((line) => line.startsWith('clinical_premise(')).length,
+      gates: gateRecords.length,
+    }).toEqual({ advice: 12, sources: 12, rules: 48, premises: 346, gates: 48 });
+  });
+  it('T3 total site coverage: 686 lines, equality both ways, ACE↔PL bijection', () => {
+    const expectedCases = scanContentSites();
+    const expected = new Map(
+      expectedCases.map(({ document, sentence, sites }) => [
+        keyOf(document, sentence),
+        sites.map(({ line }) => line),
+      ]),
+    );
+    const actual = new Map(
+      gateRecords.map(({ document, sentence, lines }) => [keyOf(document, sentence), lines]),
+    );
+    const expectedLines = [...expected.values()].flat();
+    const actualLines = gateRecords.flatMap(({ lines }) => lines);
+
+    expect(expectedCases).toHaveLength(48);
+    expect(expectedCases.every(({ sites }) => sites.length > 0)).toBe(true);
+    expect(aceSentenceKeys().sort()).toEqual([...expected.keys()].sort());
+    expect(gateRecords).toHaveLength(48);
+    expect(actual.size).toBe(48);
+    expect([...actual.keys()].sort()).toEqual([...expected.keys()].sort());
+    for (const [key, lines] of expected) {
+      expect(actual.get(key), key).toEqual(lines);
+      expect(lines, `${key}: payload order`).toEqual(
+        [...lines].sort((left, right) => left - right),
+      );
+    }
+    expect(actualLines).toHaveLength(686);
+    expect(new Set(actualLines).size).toBe(686);
+    expect(actualLines.sort((left, right) => left - right)).toEqual(
+      expectedLines.sort((left, right) => left - right),
+    );
+  });
   it('T4 site vector equals the reference recipe: keyed {line,head,body}', unimplemented);
   it('T5 one antecedent per sentence, multi-body input throws P5 exactly', unimplemented);
   it('T6 premise decomposition: nested conjunction, NAF, duplicates, ground, true', unimplemented);
