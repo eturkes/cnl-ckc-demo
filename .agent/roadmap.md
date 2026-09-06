@@ -152,14 +152,38 @@ unit below names where it came from.
   sites are covered by an emitted fragment or antecedent. Depends —.
   Split seam: fragment rendering ↔ antecedent/premise compilation.
 - **u2 — query-local cap-2 assumption evaluator** · kernel · `oracle` · est 65K → 115.05K · all-in 175K · parent u1
-  Replace `tools/kb/proof.mjs`'s fabricated `clinical_advice` cut with a
-  query-local cap-2 assumption meta-interpreter, compiled into the image. It emits
-  3,882 assumption leaves and today's decoder rejects them, so a typed premise
-  branch is required. Cap 1 is insufficient — it misses rec05 s5's NAF and rec12
-  s4's `actual`-fact dependency.
-  Accept: removing any of the 686 cited clauses changes both the answer and the
-  proof; the premises-withheld and schema-erased controls each yield no full catalog
-  recommendation across all 72 cases; no `assertz` and no persistent world mutation.
+  **DONE** in one session. Contract, all rulings and the verdict table =
+  `.agent/contracts/m5u2.md`; reports = `.agent/review-m5u2/`.
+  `tools/kb/proof.mjs` gains a query-local assumption meta-interpreter: `derive/4` →
+  `derive/5` threading an assumption list, an `assumption(H)` leaf placed before the
+  depth cap and before `resolve/3`, `clinical_depth(2)`, and a `clinical_derive/4,5`
+  driver that reads u1's cited heads out of the STORED `clinical_gate/4` body and
+  releases `clinical_rule/3` only after the derivation succeeds.
+  Every acceptance predicate green under MAIN's rerun, and `orc-m5u2` reproduced every
+  figure from its own independent implementation with **0 divergences**: cap 2 derives
+  **48/48** sentences and **12/12** documents; erasing any one of the **686** cited
+  clauses fails its sentence (**686/686, 0 survivors**, 5.3 s) with all 48 re-deriving
+  after rollback; premises-withheld yields **0 of 12** documents and schema-erased
+  **0 of 48** sentences; **3,930** assumption leaves over 346 unique premises, none
+  carrying a source line; every proof's line set is exactly its gate's list. No write
+  path ships and a direct `assertz` is still refused. Worst step 11.8 ms against the
+  1000 ms proof envelope; cost pvm +277 B, qlf +547 B.
+  Gate identity met: 9 cases in `tests/clinical-inference.test.ts`, **5/9 RED at base
+  `e71486e`**, 9/9 GREEN at head — the 4 base-green are P1/P2/P7 invariance plus the
+  diagnostics guard, declared in advance rather than manufactured. Decisive `pnpm gate`
+  rc 0 from a clean `kb/generated`: **322 tests in 29 files**, 487 modules.
+  Three claim corrections, each measured twice: cap-1 insufficiency rests on
+  **`rec05:S5` alone** (all three `rec12` sentences derive at cap 1 — the two-sentence
+  claim was true of the probe's runtime grounding, which u1's build-time ground premises
+  replaced); the leaf count is **3,930**, not 3,882, for the same reason; and "all 72
+  cases" was the probe's 12 documents × 6 mechanisms, so u2's control census is 12
+  documents / 48 sentences.
+  Scope clarified: **the `clinical_advice` cut STAYS until u4** — removing it alone
+  yields 0/7 proofs, so the roadmap's "Replace" executes across u2+u4. u2 ships the
+  mechanism; u4 removes what it replaces.
+  Gauges: `harvest=72K` (attached state before the first tool call), `main=84% 229K/273K`
+  — 6K past the 223K aim, against a 175K estimate — `mate=39% 107K` (`orc-m5u2`),
+  2 teammates, no `map` wave. Sizing note below.
   Depends u1.
   Split seam: the assumption meta-interpreter ↔ the 686-site binding campaign.
 - **u3 — runtime `clinical_answer` assembly** · kernel · `oracle` · est 55K → 97.35K · all-in 155K · parent u1
@@ -581,4 +605,28 @@ has grown through M5 planning. Two consequences PLANNING must apply:
   re-split at their recorded seams or accept a two-session unit.
 - The cheapest real fix is shrinking the attached set. `.agent/roadmap.md` is 37 kB
   and `memory.md` 45 kB; the M2 expedited block and the M1 summary are both archivable
-  now. Doing that buys back more window than any re-split.
+  now. Doing that buys back more window than any re-split. **Still not done** — u2 had
+  no PLANNING dispatch to do it in, and no unit carries it. The next PLANNING or
+  MILESTONE-REVIEW session must, or every remaining unit pays the same floor. Prune
+  memory.md per bullet, not per section: its M1-unit headings carry live cross-cutting
+  facts (the closed-image builtin list under `Live proof derivation`, the M5 rulings
+  under `Presentation and framing (u7)`) beside genuinely closed detail.
+
+### Sizing correction 2 — measured at M5 u2 (binding on PLANNING)
+
+u2 closed at **229K against a 175K estimate**, and `M = H_a + 2·I` does not describe it.
+Actual writing was ~15K: forty lines of Prolog, a header comment, one suite repair. The
+budget went to `H_a` = 72K attached state, ~50K of MAIN's own spike + contract authoring,
+~40K wave dispatch and polling, and ~50K harvest + merge + suite debugging.
+
+**For a `kernel` unit whose design is settled by MAIN measurement, `I` is not the driver
+and the 2× multiplier overstates implementation while understating everything around it.**
+Two structural findings PLANNING should apply to u3-u7, which share u2's shape:
+- **A MAIN spike before the contract is worth its cost.** ~15K of spike measurement made
+  every acceptance predicate a known quantity, which is what let u2 skip the `map` wave,
+  fold `diff` into `orc`, and write a contract that survived the whole unit unamended.
+  Buy it first; it is cheaper than the wave it removes.
+- **Polling is not free and lagging teammates are the tail risk.** `test-m5u2` sat at 0/8
+  for four polls and finished only after a cost directive; that tail, not the work, is
+  what pushed u2 past the aim. Send the cost directive at the FIRST flat poll, as
+  `.agent/memory.md` already records — u2 waited for the third.

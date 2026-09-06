@@ -722,3 +722,52 @@ and survives `/resume`; a new session clears it.
   `tools/clinical-reference.mjs` as the independent producer (imports `verifyBag` +
   `parseAdviceSentence` and nothing else from the repo). RED credential = restore
   `git show 22053ef:tools/kb/clinical.mjs`, `pnpm kb:build`, rerun → 19/20 red.
+
+## M5 u2 — query-local assumption evaluator (DONE)
+
+- `tools/kb/proof.mjs` now carries `derive/5` (assumption list threaded through the
+  existing interpreter), `assumed/2`, `derive_all/4`, `gate_heads/2`,
+  `clinical_depth(2)`, `clinical_context/3` and `clinical_derive/4,5`. `mi/3` and
+  `mi_limited/2` keep arity and behaviour by passing `[]`, so the shipped proof RPC is
+  untouched. Full record → `.agent/contracts/m5u2.md`.
+- **`PROOF_SOURCE` is LAST in `payloadSource`** (payload → clinical helper → proof), so
+  no edit to it can move a content-site line or a `clinical_gate/4` line list. That is
+  what makes u2, u4 and any later proof-source work line-safe by construction.
+- **Read cited heads from the STORED gate body, never by calling the gate.**
+  `clinical_use/2` runs `call(Body)`, which demands the very premises the evaluator
+  supplies, so executing `clinical_gate/4` is circular. `clause(clinical_gate(D,S,_,_),Body,_)`
+  + a conjunction walk yields all ground heads without executing anything.
+- Measured on the shipped image, reproduced independently by `orc-m5u2` with 0
+  divergences: cap 2 → 48/48 sentences and 12/12 documents; cap 1 → 47/48, failing
+  **`cdc2022-opioid-rec05:5` alone**; cap 3 adds nothing. 686/686 single-site erasures
+  fail their sentence, 0 survivors, ~5 s, all 48 re-derive after `snapshot/1` rolls back.
+  Premises-withheld → 0/12 documents (2/48 sentences survive: `rec10:4`, `rec12:3`, u1's
+  two `true`-antecedent gates — **the control's grain is the DOCUMENT**). Schema-erased →
+  0/48. **3,930** assumption leaves over 346 unique premises. Worst step 11.8 ms of a
+  1000 ms envelope; pvm +277 B, qlf +547 B. The 4 gates u1 handed over as natively
+  unresolvable all terminate.
+- Superseded probe figures — do not carry forward: cap 1 does NOT also miss `rec12:S4`,
+  and the leaf count is 3,930, not 3,882. Both came from the probe's runtime
+  `m5_prepare` grounding, which u1's build-time ground premises replaced.
+- **The saved state is closed, and a test feels it too**: `sub_term/2`, `member/2` and
+  `maplist/2` are absent, so proof-tree traversal in a TEST must assert its own helpers
+  over the shipped `app/3` (`PROBE_CLAUSES` in `tests/clinical-inference.test.ts`).
+  Spell `forall(C,A)` as `\+ (C, \+ A)`. A base-image red hides this: the missing
+  evaluator raises first, so the case reads RED for the wrong reason and only turns up
+  at merge.
+- Three probe traps that each produce a VACUOUS PASS, all hit during u2:
+  `assertz((Head) :- Body)` parses as a `:-`/2 term rather than a clause; a failed query
+  makes `.once()` return `false`, so `String(missing.State)` reads `"undefined"` and the
+  row silently skips; and an `assertz` permission error never reaches JS as `$error` —
+  it prints to real stderr, outside the `printErr` drain, and the call returns normally.
+  Fixes: `assertz((Head :- Body))`, make the probe's `once` throw on a failed query and
+  count the rows it actually graded, and read a refusal from `catch/3` inside Prolog.
+- u2's suite = `tests/clinical-inference.test.ts`, 9 cases. RED credential = restore
+  `git show e71486e:tools/kb/proof.mjs`, `pnpm kb:build`, rerun → 5/9 red. The 4
+  base-green cases are invariance predicates (P1/P2/P7 + the diagnostics guard) and are
+  correct as green; manufacturing a red there is the expedited range's own failure mode.
+- Scratch probes (regenerable, not committed): `.scratch/m5u2/{spike,controls,verify,p7}.mjs`.
+  `verify.mjs` grades P1-P8 against the shipped `kb/generated/kb.pvm` in one run.
+- **`cat >>` on a file already in MAIN's context re-echoes the WHOLE file back into
+  context.** Appending to `.agent/contracts/m5u2.md` that way cost ~6K twice. Use the
+  `Edit` tool anchored on the file's last line instead; it echoes nothing.
