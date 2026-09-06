@@ -11,7 +11,14 @@ import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import type { Engine } from '../src/engine/session.js';
-import { ROOT } from './clinical-test-support.js';
+import { QUESTION_CATALOG, QUESTION_IDS } from '../src/questions/catalog.js';
+import {
+  gateRecords,
+  orderedHash,
+  ROOT,
+  scanContentSites,
+  sha12,
+} from './clinical-test-support.js';
 
 const require = createRequire(import.meta.url);
 const factory = require('swipl-wasm/dist/loadImageDefault.js') as
@@ -22,6 +29,8 @@ const factory = require('swipl-wasm/dist/loadImageDefault.js') as
 const load = typeof factory === 'function' ? factory : factory.default;
 const diagnostics: string[] = [];
 let engine: Engine;
+
+const atom = (value: string): string => `'${value.replaceAll("'", "''")}'`;
 
 /** One deterministic solution, or a thrown Prolog error. */
 export const row = (goal: string): Record<string, unknown> => {
@@ -56,11 +65,65 @@ beforeAll(async () => {
 
 describe('clinical assumption evaluator', () => {
   it('P1 leaves the shipped proof path unchanged', () => {
-    expect.fail('unencoded');
+    const shape = row(
+      `(current_predicate(mi/3)->Mi=yes;Mi=no),` +
+        `(current_predicate(mi_limited/2)->Limited=yes;Limited=no),` +
+        `(mi_limited(guideline_schema_version(1),0)->AtZero=yes;AtZero=no),` +
+        `(mi_limited(guideline_schema_version(1),1)->AtOne=yes;AtOne=no).`,
+    );
+    expect(shape).toMatchObject({ Mi: 'yes', Limited: 'yes', AtZero: 'yes', AtOne: 'no' });
+
+    const hashes = Object.fromEntries(
+      QUESTION_IDS.map((id) => {
+        const goal = QUESTION_CATALOG[id].goal;
+        const result = row(
+          `findall(T,(mi((${goal}),1,P),copy_term(((${goal}),P),C),numbervars(C,0,_),` +
+            `term_string(C,T,[quoted(true),numbervars(true)])),Ts),msort(Ts,S),` +
+            `atomic_list_concat(S,'\\n',Text).`,
+        );
+        return [id, sha12(String(result.Text))];
+      }),
+    );
+    expect(hashes).toEqual({
+      'when-to-use-opioids': '7a0ed798d5fd',
+      'starting-opioid-therapy': '1665049364d4',
+      'acute-pain-prescription-duration': '363fe73276f0',
+      'opioid-follow-up': 'b2c1697e4257',
+      'opioid-safety': 'c1d6d78491fc',
+      'continuing-or-tapering-opioids': '1ba2c32a728b',
+      'opioid-use-disorder-treatment': '575e5888e390',
+    });
   });
 
   it('P2 moves no content-site line and no gate line list', () => {
-    expect.fail('unencoded');
+    const siteLines = scanContentSites().flatMap(({ sites }) => sites.map(({ line }) => line));
+    expect(siteLines).toHaveLength(686);
+    expect(orderedHash(siteLines.map(String))).toBe('211e14164a47');
+
+    const gateLines = gateRecords.flatMap(({ lines }) => lines);
+    expect(gateRecords).toHaveLength(48);
+    expect(
+      orderedHash(
+        gateRecords.map(
+          ({ document, sentence, lines }) =>
+            `${document}:${String(sentence)}:${lines.join(',')}`,
+        ),
+      ),
+    ).toBe('4a9aa7427273');
+    expect([...gateLines].sort((left, right) => left - right)).toEqual(
+      [...siteLines].sort((left, right) => left - right),
+    );
+
+    for (const gate of gateRecords) {
+      const result = row(
+        `clause(clinical_gate(${atom(gate.document)},${String(gate.sentence)},_,Lines),_,_),` +
+          `atomic_list_concat(Lines,',',Text).`,
+      );
+      expect(
+        String(result.Text).split(',').filter(Boolean).map(Number),
+        `${gate.document}:${String(gate.sentence)}`,
+      ).toEqual(gate.lines);
+    }
   });
 
   it('P3 derives all 48 sentences at cap 2 and exactly 47 at cap 1', () => {
