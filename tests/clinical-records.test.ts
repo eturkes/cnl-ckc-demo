@@ -14,6 +14,8 @@ import {
   CLINICAL_QUESTIONS,
   parseAdviceSentence,
 } from '../tools/kb/clinical.mjs';
+import { payloadSource } from '../tools/kb/paths.mjs';
+import { buildImage, buildQlf } from '../tools/kb/produce.mjs';
 import { deriveProvenance } from '../tools/kb/provenance.mjs';
 import {
   aceSentenceKeys,
@@ -49,6 +51,43 @@ const skolemTokens = (terms: readonly string[]) =>
       sentence: Number(match[2]),
     })),
   );
+
+const baselineHelper = (): string => {
+  const advice = helperLines.filter((line) => line.startsWith('clinical_advice('));
+  const sources = helperLines.filter((line) => line.startsWith('clinical_advice_source('));
+  return (
+    `:- multifile(clinical_advice/3).\n` +
+    `:- dynamic(clinical_advice/3).\n` +
+    `:- discontiguous(clinical_advice_source/4).\n` +
+    `${advice.join('\n')}\n${sources.join('\n')}\n`
+  );
+};
+
+interface Derivation {
+  readonly baseSource: string;
+  readonly headSource: string;
+  readonly baseImage: Uint8Array;
+  readonly headImage: Uint8Array;
+  readonly baseQlf: Uint8Array;
+  readonly headQlf: Uint8Array;
+}
+
+const deriveOnce = async (): Promise<Derivation> => {
+  const headSource = payloadSource(bagFiles).source;
+  const frozen = baselineHelper();
+  const baseSource = headSource.replace(artifacts.helper, frozen);
+  const baseImage = (await buildImage(baseSource)).image;
+  const headImage = (await buildImage(headSource)).image;
+  const baseQlf = await buildQlf(baseSource);
+  const headQlf = await buildQlf(headSource);
+  return { baseSource, headSource, baseImage, headImage, baseQlf, headQlf };
+};
+
+let derivations: Promise<readonly [Derivation, Derivation]> | undefined;
+const repeatedDerivations = (): Promise<readonly [Derivation, Derivation]> => {
+  derivations ??= (async () => [await deriveOnce(), await deriveOnce()] as const)();
+  return derivations;
+};
 
 describe('clinical records', () => {
   it('T1 byte identity: 7 questions, 12 canonical terms, raw contribution order', () => {
@@ -436,9 +475,97 @@ describe('clinical records', () => {
       gates: gateRecords.length,
     }).toEqual({ rules: 48, gates: 48 });
   });
-  it('T10 lossless guard fails closed on a non-rebuildable sentence', unimplemented);
-  it('T11 determinism: two derivations and a reversed file map agree byte for byte', unimplemented);
-  it('T12 budget delta measured and reproducible, no ceiling', unimplemented);
+  it('T10 lossless guard fails closed on a non-rebuildable sentence', () => {
+    const valid = CLINICAL_QUESTIONS.flatMap(({ sources }) =>
+      sources.flatMap(({ document }) => {
+        const path = filePath(bagFiles, `/ace/${document}.ace`);
+        return Buffer.from(bagFiles.get(path) ?? [])
+          .toString('utf8')
+          .trimEnd()
+          .split('\n')
+          .slice(1)
+          .map((sentence, index) => parseAdviceSentence(sentence, index + 2));
+      }),
+    );
+    expect(valid).toHaveLength(48);
+    expect(() =>
+      parseAdviceSentence('If then every clinician should consider opioid-therapy.', 99),
+    ).toThrowError(/^controlled sentence 99 is not lossless\n  source: /u);
+    expect(gateRecords).toHaveLength(48);
+  });
+  it('T11 determinism: two derivations and a reversed file map agree byte for byte', async () => {
+    const first = clinicalArtifacts(bagFiles);
+    const second = clinicalArtifacts(bagFiles);
+    const reversed = clinicalArtifacts(new Map([...bagFiles].reverse()));
+    for (const prefix of ['clinical_rule(', 'clinical_premise(', 'clinical_gate(']) {
+      const rows = (helper: string) => helper.split('\n').filter((line) => line.startsWith(prefix));
+      expect(rows(second.helper), prefix).toEqual(rows(first.helper));
+      expect(rows(reversed.helper), prefix).toEqual(rows(first.helper));
+    }
+    const expectedOrder = [
+      'cdc2022-opioid-rec01',
+      'cdc2022-opioid-rec02',
+      'cdc2022-opioid-rec03',
+      'cdc2022-opioid-rec04',
+      'cdc2022-opioid-rec06',
+      'cdc2022-opioid-rec07',
+      'cdc2022-opioid-rec08',
+      'cdc2022-opioid-rec09',
+      'cdc2022-opioid-rec10',
+      'cdc2022-opioid-rec11',
+      'cdc2022-opioid-rec05',
+      'cdc2022-opioid-rec12',
+    ];
+    for (const prefix of ['clinical_rule(', 'clinical_premise(', 'clinical_gate(']) {
+      const order = [
+        ...new Set(
+          first.helper
+            .split('\n')
+            .filter((line) => line.startsWith(prefix))
+            .map((line) => /^clinical_[a-z]+\('([^']+)'/u.exec(line)?.[1] ?? ''),
+        ),
+      ];
+      expect(order, prefix).toEqual(expectedOrder);
+    }
+    for (const gate of parseGateRecords(first.helper)) {
+      expect(gate.lines, keyOf(gate.document, gate.sentence)).toEqual(
+        [...gate.lines].sort((left, right) => left - right),
+      );
+    }
+    const premiseGroups = new Map<string, number[]>();
+    for (const premise of parsePremiseRecords(first.helper)) {
+      const key = keyOf(premise.document, premise.sentence);
+      premiseGroups.set(key, [...(premiseGroups.get(key) ?? []), premise.ordinal]);
+    }
+    for (const [key, ordinals] of premiseGroups) {
+      expect(ordinals, key).toEqual(ordinals.map((_, index) => index));
+    }
+
+    const [left, right] = await repeatedDerivations();
+    expect(right.headSource).toBe(left.headSource);
+    expect(Buffer.from(right.headImage)).toEqual(Buffer.from(left.headImage));
+  }, 300_000);
+  it('T12 budget delta measured and reproducible, no ceiling', async () => {
+    const frozen = baselineHelper();
+    expect(Buffer.byteLength(frozen)).toBe(39_063);
+    expect(sha12(frozen)).toBe('4a40e521d277');
+    expect(gateRecords).toHaveLength(48);
+
+    const [first, second] = await repeatedDerivations();
+    const delta = (derivation: Derivation) => ({
+      payload: Buffer.byteLength(derivation.headSource) - Buffer.byteLength(derivation.baseSource),
+      pvm: derivation.headImage.byteLength - derivation.baseImage.byteLength,
+      qlf: derivation.headQlf.byteLength - derivation.baseQlf.byteLength,
+    });
+    const firstDelta = delta(first);
+    expect(delta(second)).toEqual(firstDelta);
+    expect(Object.values(firstDelta).every(Number.isInteger)).toBe(true);
+    expect(firstDelta.payload).not.toBe(0);
+    expect(Buffer.from(second.baseImage)).toEqual(Buffer.from(first.baseImage));
+    expect(Buffer.from(second.headImage)).toEqual(Buffer.from(first.headImage));
+    expect(Buffer.from(second.baseQlf)).toEqual(Buffer.from(first.baseQlf));
+    expect(Buffer.from(second.headQlf)).toEqual(Buffer.from(first.headQlf));
+  }, 300_000);
   it('T13 malformed payload fails closed across the pinned fault category', unimplemented);
   it('T14 ruled readings: record order, traversal order, ordinals, fresh anonymous', unimplemented);
 });
