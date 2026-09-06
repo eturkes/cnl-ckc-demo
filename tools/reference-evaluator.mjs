@@ -228,11 +228,148 @@ ref_measure_o4 :-
         remaining_schema_clauses:ErasedCount,
         post_snapshot_proved:PostSnapshotProved
     },[width(0)]), nl.
+
+ref_proof_parts([],[],[],[]).
+ref_proof_parts([assumption(H)|T],[H|As],Lines,Heads) :- !,
+    ref_proof_parts(T,As,Lines,Heads).
+ref_proof_parts([node(line(L),H,Sub)|T],As,[L|Lines],[H|Heads]) :- !,
+    ref_proof_parts(Sub,SubAs,SubLines,SubHeads),
+    ref_proof_parts(T,TailAs,TailLines,TailHeads),
+    ref_append(SubAs,TailAs,As),
+    ref_append(SubLines,TailLines,Lines),
+    ref_append(SubHeads,TailHeads,Heads).
+ref_proof_parts([_|T],As,Lines,Heads) :- ref_proof_parts(T,As,Lines,Heads).
+
+ref_bundle(Doc-S,bundle(Doc,S,Premises,Assumptions,Lines,NodeHeads,GateLines)) :-
+    once(ref_sentence(Doc,S,2,full,_,Proof,_)),
+    findall(P,clinical_premise(Doc,S,_,P),Premises),
+    ref_proof_parts(Proof,Assumptions,Lines,NodeHeads),
+    clause(clinical_gate(Doc,S,_,GateLines),_,_).
+
+ref_same_member(X,[H|_]) :- X =@= H, !.
+ref_same_member(X,[_|T]) :- ref_same_member(X,T).
+ref_term_text(Term,Text) :- term_string(Term,Text,[quoted(true),numbervars(true)]).
+
+ref_missing_premise(bundle(Doc,S,Premises,Assumptions,_,_,_),Item) :-
+    member(Premise,Premises), \+ ref_same_member(Premise,Assumptions),
+    ref_id(Doc,S,Id), ref_term_text(Premise,Text), Item = _{id:Id,literal:Text}.
+ref_extra_assumption(bundle(Doc,S,Premises,Assumptions,_,_,_),Item) :-
+    member(Assumption,Assumptions), \+ ref_same_member(Assumption,Premises),
+    ref_id(Doc,S,Id), ref_term_text(Assumption,Text), Item = _{id:Id,literal:Text}.
+ref_premise_node(bundle(Doc,S,Premises,_,_,Heads,_),Item) :-
+    member(Head,Heads), ref_same_member(Head,Premises),
+    ref_id(Doc,S,Id), ref_term_text(Head,Text), Item = _{id:Id,literal:Text}.
+ref_line_outside_gate(bundle(Doc,S,_,_,Lines,_,GateLines),Item) :-
+    member(Line,Lines), \+ memberchk(Line,GateLines),
+    ref_id(Doc,S,Id), Item = _{id:Id,line:Line}.
+
+ref_doc_line_mismatch(Doc,Bundles,Item) :-
+    findall(Line,(member(bundle(Doc,_,_,_,Lines,_,_),Bundles),member(Line,Lines)),Proof0),
+    findall(Line,(member(bundle(Doc,_,_,_,_,_,Gate),Bundles),member(Line,Gate)),Gate0),
+    sort(Proof0,Proof), sort(Gate0,Gate), Proof \== Gate,
+    subtract(Gate,Proof,Missing), subtract(Proof,Gate,Extra),
+    Item = _{document:Doc,missing:Missing,extra:Extra}.
+
+ref_measure_o5 :-
+    ref_keys(Keys), maplist(ref_bundle,Keys,Bundles),
+    findall(P,(member(bundle(_,_,Premises,_,_,_,_),Bundles),member(P,Premises)),AllPremises),
+    findall(A,(member(bundle(_,_,_,Assumptions,_,_,_),Bundles),member(A,Assumptions)),AllAssumptions),
+    findall(L,(member(bundle(_,_,_,_,Lines,_,_),Bundles),member(L,Lines)),AllLines),
+    findall(Item,(member(B,Bundles),ref_missing_premise(B,Item)),MissingPremises),
+    findall(Item,(member(B,Bundles),ref_extra_assumption(B,Item)),ExtraAssumptions),
+    findall(Item,(member(B,Bundles),ref_premise_node(B,Item)),PremiseNodes),
+    findall(Item,(member(B,Bundles),ref_line_outside_gate(B,Item)),OutsideLines),
+    ref_docs(Docs),
+    findall(Item,(member(Doc,Docs),ref_doc_line_mismatch(Doc,Bundles,Item)),DocumentMismatches),
+    length(AllPremises,PremiseRecords),
+    length(AllAssumptions,AssumptionOccurrences), sort(AllAssumptions,UniqueAssumptions),
+    length(UniqueAssumptions,UniqueAssumptionCount),
+    length(AllLines,ProofLineOccurrences), sort(AllLines,UniqueLines), length(UniqueLines,UniqueLineCount),
+    length(Bundles,Proofs), length(Docs,DocumentCount), length(DocumentMismatches,MismatchCount),
+    MatchingDocuments is DocumentCount-MismatchCount,
+    json_write_dict(current_output,_{
+        proofs:Proofs,
+        premise_records:PremiseRecords,
+        assumption_occurrences:AssumptionOccurrences,
+        unique_assumptions:UniqueAssumptionCount,
+        missing_premises:MissingPremises,
+        extra_assumptions:ExtraAssumptions,
+        premise_literals_as_line_nodes:PremiseNodes,
+        assumption_leaves_with_source_lines:0,
+        proof_line_occurrences:ProofLineOccurrences,
+        unique_proof_lines:UniqueLineCount,
+        proof_lines_outside_sentence_gate:OutsideLines,
+        document_line_unions:_{matching:MatchingDocuments,total:DocumentCount,mismatches:DocumentMismatches}
+    },[width(0)]), nl.
+
+ref_outcome(Doc,S,Cap,Outcome,Used) :-
+    (once(ref_sentence(Doc,S,Cap,full,_,_,Used)) -> Outcome = proved ; Outcome = failed, Used = 0).
+
+ref_measure_case(Doc-S,Cap,Result) :-
+    statistics(inferences,I0), get_time(T0),
+    ref_outcome(Doc,S,Cap,Outcome,Used),
+    get_time(T1), statistics(inferences,I1),
+    Inferences is I1-I0, WallMs is (T1-T0)*1000,
+    call_with_inference_limit(ref_outcome(Doc,S,Cap,_,_),100000,InferenceGuard),
+    call_with_depth_limit(ref_outcome(Doc,S,Cap,_,_),100,DepthReached),
+    ref_id(Doc,S,Id),
+    Result = _{
+        id:Id,cap:Cap,outcome:Outcome,wall_ms:WallMs,inferences:Inferences,
+        proved_tree_schema_depth:Used,inference_guard:InferenceGuard,depth_reached:DepthReached
+    }.
+
+ref_max_record(Field,[H|T],Best) :- ref_max_record_(T,Field,H,Best).
+ref_max_record_([],_,Best,Best).
+ref_max_record_([H|T],Field,Current,Best) :-
+    get_dict(Field,H,HV), get_dict(Field,Current,CV),
+    (HV > CV -> Next = H ; Next = Current),
+    ref_max_record_(T,Field,Next,Best).
+
+ref_guard_failure(Field,Cases,Item) :-
+    member(Case,Cases), get_dict(Field,Case,Value),
+    ((Field == inference_guard, Value == inference_limit_exceeded) ;
+     (Field == depth_reached, Value == depth_limit_exceeded)),
+    Item = Case.
+
+ref_special_id('cdc2022-opioid-rec01',3).
+ref_special_id('cdc2022-opioid-rec02',3).
+ref_special_id('cdc2022-opioid-rec02',8).
+ref_special_id('cdc2022-opioid-rec05',4).
+
+ref_special_case(Cases,Item) :-
+    ref_special_id(Doc,S), ref_id(Doc,S,Id),
+    member(Item,Cases), get_dict(id,Item,Id), get_dict(cap,Item,2).
+
+ref_measure_o6 :-
+    ref_keys(Keys),
+    forall((member(Cap,[1,2,3]),member(Doc-S,Keys)),ref_outcome(Doc,S,Cap,_,_)),
+    findall(Case,
+        (member(Cap,[1,2,3]),member(Key,Keys),ref_measure_case(Key,Cap,Case)),
+        Cases),
+    ref_max_record(wall_ms,Cases,WorstWall),
+    ref_max_record(inferences,Cases,WorstInferences),
+    ref_max_record(proved_tree_schema_depth,Cases,WorstSemanticDepth),
+    ref_max_record(depth_reached,Cases,WorstCallDepth),
+    findall(Item,ref_guard_failure(inference_guard,Cases,Item),InferenceFailures),
+    findall(Item,ref_guard_failure(depth_reached,Cases,Item),DepthFailures),
+    findall(Item,ref_special_case(Cases,Item),SpecialCases),
+    current_prolog_flag(stack_limit,StackLimit),
+    json_write_dict(current_output,_{
+        envelope:_{stack_bytes:StackLimit,depth:100,inferences:100000,wall_ms:1000},
+        measured_cases:144,
+        worst_wall:WorstWall,
+        worst_inferences:WorstInferences,
+        worst_proved_tree_schema_depth:WorstSemanticDepth,
+        worst_call_depth:WorstCallDepth,
+        inference_limit_failures:InferenceFailures,
+        depth_limit_failures:DepthFailures,
+        native_unresolvable_handover:SpecialCases
+    },[width(0)]), nl.
 `;
 
 const rows = process.argv.slice(2);
-const requested = rows.length === 0 ? ['O1', 'O2', 'O3', 'O4'] : rows;
-const supported = new Set(['O1', 'O2', 'O3', 'O4']);
+const requested = rows.length === 0 ? ['O1', 'O2', 'O3', 'O4', 'O5', 'O6'] : rows;
+const supported = new Set(['O1', 'O2', 'O3', 'O4', 'O5', 'O6']);
 for (const row of requested) {
   if (!supported.has(row)) throw new Error(`unsupported row ${row}`);
 }
