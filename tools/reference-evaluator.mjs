@@ -365,31 +365,285 @@ ref_measure_o6 :-
         depth_limit_failures:DepthFailures,
         native_unresolvable_handover:SpecialCases
     },[width(0)]), nl.
+
+ref_schema_template(guideline_arg,4,guideline_arg(_,_,_,_)).
+ref_schema_template(guideline_cardinality,5,guideline_cardinality(_,_,_,_,_)).
+ref_schema_template(guideline_document,3,guideline_document(_,_,_)).
+ref_schema_template(guideline_entity,4,guideline_entity(_,_,_,_)).
+ref_schema_template(guideline_event,3,guideline_event(_,_,_)).
+ref_schema_template(guideline_operator,3,guideline_operator(_,_,_)).
+ref_schema_template(guideline_pp,4,guideline_pp(_,_,_,_)).
+ref_schema_template(guideline_property,4,guideline_property(_,_,_,_)).
+ref_schema_template(guideline_schema_version,1,guideline_schema_version(_)).
+
+ref_schema_snapshot(Snapshot) :-
+    findall(schema{predicate:Name,arity:Arity,clauses:Count,dynamic:Dynamic},
+        (ref_schema_template(Name,Arity,Head),
+         findall(1,clause(Head,_,_),Clauses), length(Clauses,Count),
+         (predicate_property(Head,dynamic) -> Dynamic = true ; Dynamic = false)),
+        Snapshot).
+
+ref_static_count(Snapshot,Count) :-
+    findall(1,(member(Item,Snapshot),get_dict(dynamic,Item,false)),Static), length(Static,Count).
+
+ref_assert_probe(Status,ErrorText) :-
+    catch(
+        (assertz(guideline_schema_version(ref_probe)),
+         retractall(guideline_schema_version(ref_probe)),
+         Status = unexpected_success, ErrorText = ''),
+        Error,
+        (ref_term_text(Error,ErrorText),
+         (Error = error(permission_error(modify,static_procedure,_),_) ->
+             Status = permission_error
+         ;   Status = unexpected_error))).
+
+ref_measure_o7 :-
+    ref_schema_snapshot(Before), ref_static_count(Before,StaticBefore),
+    ref_count_proved(2,full,Derived),
+    ref_schema_snapshot(After), ref_static_count(After,StaticAfter),
+    (Before == After -> Unchanged = true ; Unchanged = false),
+    ref_assert_probe(AssertStatus,AssertError),
+    json_write_dict(current_output,_{
+        derived:Derived,
+        before:Before,
+        after:After,
+        snapshots_identical:Unchanged,
+        static_predicates_before:StaticBefore,
+        static_predicates_after:StaticAfter,
+        direct_assertz:_{status:AssertStatus,error:AssertError}
+    },[width(0)]), nl.
 `;
 
+const splitTopLevel = (text, delimiter) => {
+  const parts = [];
+  let start = 0;
+  let depth = 0;
+  let quoted = false;
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    if (quoted) {
+      if (char === '\\') {
+        index += 1;
+      } else if (char === "'" && text[index + 1] === "'") {
+        index += 1;
+      } else if (char === "'") {
+        quoted = false;
+      }
+      continue;
+    }
+    if (char === "'") {
+      quoted = true;
+      continue;
+    }
+    if (char === '(' || char === '[' || char === '{') depth += 1;
+    if (char === ')' || char === ']' || char === '}') depth -= 1;
+    if (depth === 0 && text.startsWith(delimiter, index)) {
+      parts.push(text.slice(start, index).trim());
+      index += delimiter.length - 1;
+      start = index + 1;
+    }
+  }
+  if (quoted || depth !== 0) throw new Error(`unbalanced Prolog term: ${text}`);
+  parts.push(text.slice(start).trim());
+  return parts;
+};
+
+const outerParenthesized = (text) => {
+  if (!text.startsWith('(') || !text.endsWith(')')) return false;
+  let depth = 0;
+  let quoted = false;
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    if (quoted) {
+      if (char === '\\') {
+        index += 1;
+      } else if (char === "'" && text[index + 1] === "'") {
+        index += 1;
+      } else if (char === "'") {
+        quoted = false;
+      }
+      continue;
+    }
+    if (char === "'") quoted = true;
+    else if (char === '(') depth += 1;
+    else if (char === ')' && --depth === 0) return index === text.length - 1;
+  }
+  return false;
+};
+
+const unwrap = (text) => {
+  let term = text.trim();
+  while (outerParenthesized(term)) term = term.slice(1, -1).trim();
+  return term;
+};
+
+const positiveLeaves = (body) => {
+  const term = unwrap(body);
+  if (term === 'true') return 0;
+  if (term.startsWith('\\+')) return 0;
+  for (const control of ['*->', '->', ';']) {
+    if (splitTopLevel(term, control).length > 1) {
+      throw new Error(`unsupported census control ${control}: ${term}`);
+    }
+  }
+  const conjuncts = splitTopLevel(term, ',');
+  if (conjuncts.length > 1) return conjuncts.reduce((sum, part) => sum + positiveLeaves(part), 0);
+  return 1;
+};
+
+const clauseBody = (line) => {
+  const clause = line.trim();
+  if (!clause.endsWith('.')) throw new Error(`unterminated Prolog clause: ${line}`);
+  const terms = splitTopLevel(clause.slice(0, -1), ':-');
+  if (terms.length === 1) return 'true';
+  if (terms.length === 2) return terms[1];
+  throw new Error(`multiple clause separators: ${line}`);
+};
+
+const independentCensus = (files, source) => {
+  const acePattern = /^data\/guidelines\/cdc-2022-opioid\/ace\/(cdc2022-opioid-rec\d{2})\.ace$/;
+  const selections = [...files.keys()]
+    .flatMap((name) => {
+      const match = acePattern.exec(name);
+      return match === null ? [] : [{ document: match[1], path: name }];
+    })
+    .sort((a, b) => a.document.localeCompare(b.document));
+  const selected = new Set(selections.map(({ document }) => document));
+  const contentKeys = new Set();
+  const sentenceCounts = new Map();
+  for (const { document, path } of selections) {
+    const sentences = Buffer.from(files.get(path)).toString('utf8').split(/\r?\n/u).filter(Boolean);
+    if (sentences.length < 2) throw new Error(`${document}: no content sentences`);
+    sentenceCounts.set(document, sentences.length - 1);
+    for (let index = 1; index < sentences.length; index += 1) {
+      contentKeys.add(`${document}:${String(index + 1)}`);
+    }
+  }
+
+  const sites = new Map();
+  let activeDocument = null;
+  let activeSentence = null;
+  let sawMarker = false;
+  let excludedPreambleSites = 0;
+  for (const [index, line] of source.split('\n').entries()) {
+    if (line.startsWith('% file:')) {
+      activeDocument = null;
+      activeSentence = null;
+      sawMarker = false;
+      const match = /\/pl\/(cdc2022-opioid-rec\d{2})\.pl$/u.exec(line.slice('% file:'.length));
+      if (match !== null && selected.has(match[1])) activeDocument = match[1];
+      continue;
+    }
+    if (activeDocument === null) continue;
+    const marker = /^% S(\d+):/u.exec(line);
+    if (marker !== null) {
+      sawMarker = true;
+      const sentence = Number(marker[1]);
+      activeSentence = sentence > 1 ? sentence : null;
+      continue;
+    }
+    if (!line.startsWith('guideline_')) continue;
+    if (!sawMarker) excludedPreambleSites += 1;
+    if (activeSentence === null) continue;
+    const key = `${activeDocument}:${String(activeSentence)}`;
+    const record = sites.get(key) ?? [];
+    record.push({ line: index + 1, body: clauseBody(line) });
+    sites.set(key, record);
+  }
+
+  const missingSentences = [...contentKeys].filter((key) => !sites.has(key));
+  const unexpectedSentences = [...sites.keys()].filter((key) => !contentKeys.has(key));
+  const antecedentViolations = [];
+  let contentSites = 0;
+  let premises = 0;
+  const perDocument = [];
+  for (const { document } of selections) {
+    let documentSites = 0;
+    let documentPremises = 0;
+    for (const key of contentKeys) {
+      if (!key.startsWith(`${document}:`)) continue;
+      const clauses = sites.get(key) ?? [];
+      contentSites += clauses.length;
+      documentSites += clauses.length;
+      const bodies = [...new Set(clauses.map(({ body }) => body))];
+      if (bodies.length !== 1) antecedentViolations.push({ key, bodies: bodies.length });
+      if (bodies.length === 1) {
+        const count = positiveLeaves(bodies[0]);
+        premises += count;
+        documentPremises += count;
+      }
+    }
+    perDocument.push({
+      document,
+      sentences: sentenceCounts.get(document),
+      sites: documentSites,
+      premises: documentPremises,
+    });
+  }
+
+  const measured = {
+    documents: selections.length,
+    content_sentences: contentKeys.size,
+    content_sites: contentSites,
+    premises,
+  };
+  const expected = { documents: 12, content_sentences: 48, content_sites: 686, premises: 346 };
+  const disagreements = Object.keys(expected).flatMap((key) =>
+    measured[key] === expected[key] ? [] : [{ field: key, expected: expected[key], measured: measured[key] }],
+  );
+  return {
+    selection_rule: 'base cdc2022-opioid-recNN ACE documents; implication files excluded',
+    selected_documents: selections.map(({ document }) => document),
+    measured,
+    u1_claim: expected,
+    disagreements,
+    per_document: perDocument,
+    missing_sentences: missingSentences,
+    unexpected_sentences: unexpectedSentences,
+    distinct_antecedent_violations: antecedentViolations,
+    excluded_file_preamble_sites: excludedPreambleSites,
+    record_predicates_consulted: [],
+  };
+};
+
 const rows = process.argv.slice(2);
-const requested = rows.length === 0 ? ['O1', 'O2', 'O3', 'O4', 'O5', 'O6'] : rows;
-const supported = new Set(['O1', 'O2', 'O3', 'O4', 'O5', 'O6']);
+const requested = rows.length === 0 ? ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8'] : rows;
+const supported = new Set(['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8']);
 for (const row of requested) {
   if (!supported.has(row)) throw new Error(`unsupported row ${row}`);
 }
 
 const bag = verifyBag(readFileSync(BAG));
 const documents = payloadDocuments(bag.files);
-const clinical = clinicalArtifacts(bag.files);
-const source = `${documents.source}\n${clinical.source}\n${REF_SOURCE}\n`;
+const prologRows = requested.filter((row) => row !== 'O8');
+const mutationCalls = ['assertz', 'asserta', 'retract', 'retractall', 'erase'].filter((name) =>
+  new RegExp(`\\b${name}\\s*\\(`, 'u').test(REF_SOURCE),
+);
+if (/(^|\n)\s*:-\s*dynamic\b/u.test(REF_SOURCE)) mutationCalls.push('dynamic');
 
-mkdirSync(SCRATCH, { recursive: true });
 try {
-  const image = await buildImage(source);
-  const staticPath = join(SCRATCH, 'prolog.pl');
-  const dynamicPath = join(SCRATCH, 'prolog-dynamic.pl');
-  const harnessPath = join(SCRATCH, 'harness.pl');
-  writeFileSync(staticPath, source);
-  writeFileSync(dynamicPath, `${source}\n${DYNAMIC_SOURCE}\n`);
-  writeFileSync(harnessPath, HARNESS_SOURCE);
+  let image = null;
+  let staticPath = '';
+  let dynamicPath = '';
+  let harnessPath = '';
+  if (prologRows.length > 0) {
+    const clinical = clinicalArtifacts(bag.files);
+    const source = `${documents.source}\n${clinical.source}\n${REF_SOURCE}\n`;
+    mkdirSync(SCRATCH, { recursive: true });
+    image = await buildImage(source);
+    staticPath = join(SCRATCH, 'prolog.pl');
+    dynamicPath = join(SCRATCH, 'prolog-dynamic.pl');
+    harnessPath = join(SCRATCH, 'harness.pl');
+    writeFileSync(staticPath, source);
+    writeFileSync(dynamicPath, `${source}\n${DYNAMIC_SOURCE}\n`);
+    writeFileSync(harnessPath, HARNESS_SOURCE);
+  }
 
   for (const row of requested) {
+    if (row === 'O8') {
+      console.log(`O8 ${JSON.stringify(independentCensus(bag.files, documents.source))}`);
+      continue;
+    }
     const goal = `ref_measure_${row.toLowerCase()}`;
     const prolog = row === 'O2' || row === 'O4' ? dynamicPath : staticPath;
     const run = spawnSync(
@@ -402,6 +656,7 @@ try {
     }
     const result = JSON.parse(run.stdout.trim());
     result.image_contract = image.contract;
+    if (row === 'O7') result.evaluator_mutation_calls = mutationCalls;
     console.log(`${row} ${JSON.stringify(result)}`);
   }
 } finally {
