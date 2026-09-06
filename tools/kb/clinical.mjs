@@ -378,10 +378,13 @@ const groundTerm = (source, variables, skolem) => {
       }
       const token = source.slice(index, end);
       if (/^[A-Z_]/u.test(token)) {
-        let replacement = variables.get(token);
+        // Every `_` is its own variable, so it never shares a replacement; a map keyed
+        // on the token text would fuse two independent slots into one equality.
+        const key = token === '_' ? `_ ${String(variables.size)}` : token;
+        let replacement = variables.get(key);
         if (replacement === undefined) {
           replacement = skolem(variables.size);
-          variables.set(token, replacement);
+          variables.set(key, replacement);
         }
         result += replacement;
       } else {
@@ -427,6 +430,33 @@ const conjuncts = (body) => {
 };
 
 /**
+ * A conjunct's top-level control operator, if it carries one. Only `,`, `\+` and
+ * `true` have an assumption semantics; a disjunction or an if-then assumed as though
+ * it were a literal would claim more than the source does, so the build rejects it.
+ *
+ * @param {string} goal @returns {string | undefined}
+ */
+const controlOperator = (goal) => {
+  let depth = 0;
+  for (let index = 0; index < goal.length; ) {
+    const char = goal[index];
+    if (char === "'") {
+      index = quotedEnd(goal, index);
+      continue;
+    }
+    if (char === '(') depth += 1;
+    else if (char === ')') depth -= 1;
+    else if (depth === 0) {
+      if (char === ';') return ';';
+      if (char === '*' && goal.startsWith('*->', index)) return '*->';
+      if (char === '-' && goal[index + 1] === '>') return '->';
+    }
+    index += 1;
+  }
+  return undefined;
+};
+
+/**
  * The premises a sentence's antecedent asks for. A guideline clause is universally
  * quantified over clinicians and the `actual` world holds no clinician instance, so
  * these are what APPLY the universal rather than working around a gap. A `\+` subgoal
@@ -442,7 +472,12 @@ const premiseGoals = (body) =>
         // A parenthesised conjunct is still a conjunction; the reference oracle
         // flattens recursively, so a single top-level split would under-report it.
         const inner = unwrap(goal);
-        return inner === undefined ? [goal] : premiseGoals(inner);
+        if (inner !== undefined) return premiseGoals(inner);
+        const control = controlOperator(goal);
+        if (control !== undefined) {
+          throw new Error(`clinical antecedent uses unsupported control form ${control}`);
+        }
+        return [goal];
       });
 
 /** Contents of a fully parenthesised term, else `undefined`. @param {string} goal @returns {string | undefined} */
@@ -498,6 +533,14 @@ const contentSites = (source, selected) => {
       continue;
     }
     if (current === undefined || !line.startsWith('guideline_')) continue;
+    // A CR survives the LF split and would ride into the emitted head, where the
+    // trailing-period slice leaves it inside the term instead of removing it.
+    if (line.includes('\r')) {
+      throw new Error(
+        `${current.document}:${String(current.sentence)}: compiled clause line ` +
+          `${String(offset + 1)} contains a carriage return`,
+      );
+    }
     const rule = line.indexOf(' :- ');
     current.clauses.push({
       line: offset + 1,
