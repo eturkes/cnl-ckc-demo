@@ -14,6 +14,7 @@ import {
   CLINICAL_QUESTIONS,
   parseAdviceSentence,
 } from '../tools/kb/clinical.mjs';
+import { payloadDocuments } from '../tools/kb/payload.mjs';
 import { payloadSource } from '../tools/kb/paths.mjs';
 import { buildImage, buildQlf } from '../tools/kb/produce.mjs';
 import { deriveProvenance } from '../tools/kb/provenance.mjs';
@@ -32,6 +33,7 @@ import {
   parseGateRecords,
   parsePremiseRecords,
   positiveGoals,
+  replaceFileText,
   replaceVariablesOutsideAtoms,
   ROOT,
   scanContentSites,
@@ -39,16 +41,13 @@ import {
   sha12,
 } from './clinical-test-support.js';
 
-const unimplemented = (): never => {
-  throw new Error('unimplemented');
-};
-
 const skolemTokens = (terms: readonly string[]) =>
   terms.flatMap((term) =>
     [...term.matchAll(/'\$clinical_hypothetical'\('([^']+)',(\d+),(\d+)\)/gu)].map((match) => ({
       whole: match[0],
       document: match[1] ?? '',
       sentence: Number(match[2]),
+      ordinal: Number(match[3]),
     })),
   );
 
@@ -566,6 +565,227 @@ describe('clinical records', () => {
     expect(Buffer.from(second.baseQlf)).toEqual(Buffer.from(first.baseQlf));
     expect(Buffer.from(second.headQlf)).toEqual(Buffer.from(first.headQlf));
   }, 300_000);
-  it('T13 malformed payload fails closed across the pinned fault category', unimplemented);
-  it('T14 ruled readings: record order, traversal order, ordinals, fresh anonymous', unimplemented);
+  it('T13 malformed payload fails closed across the pinned fault category', () => {
+    const message = (run: () => unknown): string => {
+      try {
+        run();
+      } catch (error) {
+        return error instanceof Error ? error.message : String(error);
+      }
+      return '<no error>';
+    };
+    const document = 'cdc2022-opioid-rec01';
+    const ace = `/ace/${document}.ace`;
+    const pl = `/pl/${document}.pl`;
+    const missingAce = new Map(bagFiles);
+    missingAce.delete(filePath(missingAce, ace));
+    const metadataOnly = replaceFileText(bagFiles, ace, (text) => `${text.split('\n')[0] ?? ''}\n`);
+    const emptyAce = replaceFileText(bagFiles, ace, (text) => text.replace('\n', '\n\n'));
+    const crAce = replaceFileText(bagFiles, ace, (text) => text.replace('\n', '\r\n'));
+    const zeroSite = replaceFileText(bagFiles, pl, (text) => text.replace(/^% S2:.*\n/mu, ''));
+    const unterminated = mutatePlSentence(bagFiles, document, 2, (line, index) => {
+      if (index !== 0) return line;
+      const boundary = line.indexOf(' :- ');
+      const body = boundary < 0 ? 'true' : line.slice(boundary + 4, -1);
+      return `guideline_entity(actual,'unterminated,clinician,countable) :- ${body}.`;
+    });
+    const multipleBodies = mutatePlSentence(bagFiles, document, 2, (line, index) =>
+      index === 0 ? `${line.split(' :- ')[0]}.` : line,
+    );
+
+    const faults: readonly [string, ReadonlyMap<string, Uint8Array>, RegExp][] = [
+      ['missing ACE', missingAce, /missing-file: .*\/ace\/|expected one ACE source, found 0/u],
+      ['metadata-only ACE', metadataOnly, /recommendation has no clinical clauses|alignment-span/u],
+      [
+        'empty ACE sentence',
+        emptyAce,
+        /clinical source contains an empty sentence|ace-empty-sentence/u,
+      ],
+      ['ACE CR', crAce, /clinical source must use LF|unsupported-control/u],
+      ['missing PL marker', zeroSite, /prolog-sentence|no .*sentence 2|sentence 2.*no /u],
+      ['unterminated atom', unterminated, /unterminated|prolog-[a-z-]+/u],
+      ['multiple antecedents', multipleBodies, /antecedent/u],
+    ];
+    for (const [name, files, expected] of faults) {
+      expect(
+        message(() => clinicalArtifacts(files)),
+        name,
+      ).toMatch(expected);
+    }
+    expect(gateRecords).toHaveLength(48);
+  });
+  it('T14 ruled readings: record order, traversal order, ordinals, fresh anonymous', async () => {
+    const errorMessage = (run: () => unknown): string => {
+      try {
+        run();
+      } catch (error) {
+        return error instanceof Error ? error.message : String(error);
+      }
+      return '<no error>';
+    };
+    const expectedOrder = [
+      'cdc2022-opioid-rec01',
+      'cdc2022-opioid-rec02',
+      'cdc2022-opioid-rec03',
+      'cdc2022-opioid-rec04',
+      'cdc2022-opioid-rec06',
+      'cdc2022-opioid-rec07',
+      'cdc2022-opioid-rec08',
+      'cdc2022-opioid-rec09',
+      'cdc2022-opioid-rec10',
+      'cdc2022-opioid-rec11',
+      'cdc2022-opioid-rec05',
+      'cdc2022-opioid-rec12',
+    ];
+    const gates = parseGateRecords();
+    const premises = parsePremiseRecords();
+    const cases = scanRawContentSites();
+    const lines = gates.flatMap((gate) => gate.lines);
+    expect({
+      rules: helperLines.filter((line) => line.startsWith('clinical_rule(')).length,
+      gates: gates.length,
+      sites: lines.length,
+      uniqueSites: new Set(lines).size,
+      clinicalSiteFacts: helperLines.filter((line) => line.startsWith('clinical_site(')).length,
+    }).toEqual({ rules: 48, gates: 48, sites: 686, uniqueSites: 686, clinicalSiteFacts: 0 });
+    expect(new Set(gates.map(({ document, sentence }) => keyOf(document, sentence))).size).toBe(48);
+    expect(
+      sha12(
+        JSON.stringify(
+          cases.flatMap(({ document, sentence, sites }) =>
+            sites.map(({ line, head, body }) => ({ document, sentence, line, head, body })),
+          ),
+        ),
+      ),
+    ).toBe('5eb476c05d18');
+
+    for (const prefix of ['clinical_rule(', 'clinical_premise(', 'clinical_gate(']) {
+      const order = [
+        ...new Set(
+          helperLines
+            .filter((line) => line.startsWith(prefix))
+            .map((line) => /^clinical_[a-z]+\('([^']+)'/u.exec(line)?.[1] ?? ''),
+        ),
+      ];
+      expect(order, prefix).toEqual(expectedOrder);
+    }
+
+    let document = '';
+    const markers: string[] = [];
+    for (const line of payloadDocuments(bagFiles).source.split('\n')) {
+      const file = /^% file:.*\/pl\/([^/]+)\.pl$/u.exec(line);
+      if (file !== null) {
+        document = file[1] ?? '';
+        continue;
+      }
+      if (new RegExp('^% S[1-9][0-9]*:', 'u').test(line) && expectedOrder.includes(document)) {
+        markers.push(line);
+      }
+    }
+    expect(markers).toHaveLength(60);
+    expect(markers.every((marker) => /^% S[1-9][0-9]*: \S/u.test(marker))).toBe(true);
+    expect(aceSentenceKeys().sort()).toEqual(
+      cases.map(({ document, sentence }) => keyOf(document, sentence)).sort(),
+    );
+
+    for (const source of cases) {
+      const key = keyOf(source.document, source.sentence);
+      const gate = gates.find(({ document, sentence }) => keyOf(document, sentence) === key);
+      const emitted = premises.filter(
+        ({ document, sentence }) => keyOf(document, sentence) === key,
+      );
+      expect(gate, key).toBeDefined();
+      if (gate === undefined) continue;
+      const bodies = [...new Set(source.sites.map(({ body }) => body))];
+      const terms = [...gate.heads, ...emitted.map(({ literal }) => literal)];
+      expect(canonicalGeneratedTerms(terms, source.document, source.sentence), key).toEqual(
+        canonicalSourceTerms([
+          ...source.sites.map(({ head }) => head),
+          ...positiveGoals(bodies[0] ?? ''),
+        ]),
+      );
+      expect(
+        emitted.map(({ ordinal }) => ordinal),
+        key,
+      ).toEqual(emitted.map((_, index) => index));
+      const opaqueOrdinals = [...new Set(skolemTokens(terms).map(({ ordinal }) => ordinal))].sort(
+        (left, right) => left - right,
+      );
+      expect(opaqueOrdinals, key).toEqual(opaqueOrdinals.map((_, index) => index));
+    }
+
+    const documentId = 'cdc2022-opioid-rec01';
+    const sentence = 2;
+    const withBody = (body: string) =>
+      mutatePlSentence(bagFiles, documentId, sentence, (line) => {
+        const boundary = line.indexOf(' :- ');
+        const head = boundary < 0 ? line.slice(0, -1) : line.slice(0, boundary);
+        return `${head} :- ${body}.`;
+      });
+    const anonymous = clinicalArtifacts(
+      withBody(
+        'guideline_entity(actual,_,clinician,countable),guideline_entity(actual,_,patient,countable)',
+      ),
+    );
+    const anonymousPremises = parsePremiseRecords(anonymous.helper).filter(
+      ({ document, sentence: actualSentence }) =>
+        document === documentId && actualSentence === sentence,
+    );
+    expect(anonymousPremises.map(({ ordinal }) => ordinal)).toEqual([0, 1]);
+    const anonymousIds = anonymousPremises.map(({ literal }) => {
+      const ids = new Set(skolemTokens([literal]).map(({ whole }) => whole));
+      expect(ids.size).toBe(1);
+      return [...ids][0];
+    });
+    expect(anonymousIds[0]).not.toBe(anonymousIds[1]);
+
+    const duplicate = clinicalArtifacts(
+      withBody('guideline_schema_version(1),guideline_schema_version(1)'),
+    );
+    expect(
+      parsePremiseRecords(duplicate.helper)
+        .filter(
+          ({ document, sentence: actualSentence }) =>
+            document === documentId && actualSentence === sentence,
+        )
+        .map(({ literal }) => literal),
+    ).toEqual(['guideline_schema_version(1)', 'guideline_schema_version(1)']);
+    expect(
+      parsePremiseRecords(clinicalArtifacts(withBody('true')).helper).filter(
+        ({ document, sentence: actualSentence }) =>
+          document === documentId && actualSentence === sentence,
+      ),
+    ).toEqual([]);
+
+    for (const [operator, body] of [
+      [';', '(guideline_schema_version(1);guideline_schema_version(1))'],
+      ['->', '(guideline_schema_version(1)->guideline_schema_version(1))'],
+      ['*->', '(guideline_schema_version(1)*->guideline_schema_version(1))'],
+    ] as const) {
+      expect(
+        errorMessage(() => clinicalArtifacts(withBody(body))),
+        operator,
+      ).toContain(`unsupported control form ${operator}`);
+    }
+    const cr = mutatePlSentence(bagFiles, documentId, sentence, (line, index) =>
+      index === 0 ? `${line}\r` : line,
+    );
+    expect(errorMessage(() => clinicalArtifacts(cr))).toMatch(/CR|carriage return|prolog-clause/u);
+    const multiple = mutatePlSentence(bagFiles, documentId, sentence, (line, index) =>
+      index === 0 ? `${line.split(' :- ')[0]}.` : line,
+    );
+
+    expect(Buffer.byteLength(baselineHelper())).toBe(39_063);
+    expect(sha12(baselineHelper())).toBe('4a40e521d277');
+    const [first, second] = await repeatedDerivations();
+    const deltas = (derivation: Derivation) => [
+      Buffer.byteLength(derivation.headSource) - Buffer.byteLength(derivation.baseSource),
+      derivation.headImage.byteLength - derivation.baseImage.byteLength,
+      derivation.headQlf.byteLength - derivation.baseQlf.byteLength,
+    ];
+    expect(deltas(second)).toEqual(deltas(first));
+    expect(errorMessage(() => clinicalArtifacts(multiple))).toBe(
+      'cdc2022-opioid-rec01:2: multiple antecedents',
+    );
+  }, 300_000);
 });

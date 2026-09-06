@@ -52,10 +52,6 @@ beforeAll(async () => {
   }
 }, 120_000);
 
-const unimplemented = (): never => {
-  throw new Error('unimplemented');
-};
-
 describe('clinical gate binding', () => {
   it('T2 each gate executes every line it names, under its own premises', () => {
     expect(gateRecords).toHaveLength(48);
@@ -95,8 +91,60 @@ describe('clinical gate binding', () => {
     expect(native).toHaveLength(46);
     expect(diagnostics).toEqual([]);
   }, 120_000);
-  it(
-    'T15 exact-site refutation: deletion fails, same-head reassertion stays failed',
-    unimplemented,
-  );
+  it('T15 exact-site refutation: deletion fails, same-head reassertion stays failed', () => {
+    const samples = [
+      ['cdc2022-opioid-rec01', 2, 9],
+      ['cdc2022-opioid-rec04', 2, 6],
+    ] as const;
+    for (const [documentId, sentence, siteCount] of samples) {
+      const gate = gateRecords.find(
+        ({ document, sentence: actualSentence }) =>
+          document === documentId && actualSentence === sentence,
+      );
+      expect(gate).toBeDefined();
+      if (gate === undefined) continue;
+      expect(gate.lines).toHaveLength(siteCount);
+      const document = atom(documentId);
+      const premises = `forall(clinical_premise(${document},${String(sentence)},_,P),assertz(P))`;
+      const baseline = row(
+        `catch(call_with_inference_limit(snapshot((${premises},(clinical_gate(${document},${String(sentence)},_,L)->R=yes;R=no))),200000,Why),E,(R=error,Why=E)).`,
+      );
+      expect(String(baseline.R), keyOf(documentId, sentence)).toBe('yes');
+      expect(String(baseline.L).split(',').filter(Boolean).map(Number)).toEqual(gate.lines);
+
+      for (const [index, line] of gate.lines.entries()) {
+        const head = gate.heads[index];
+        if (head === undefined)
+          throw new Error(`${documentId}:${String(sentence)}:${line} head missing`);
+        const deleted = row(
+          `catch(call_with_inference_limit(((snapshot((${premises},clause((${head}),_,Ref),clause_property(Ref,file('/prolog.pl')),clause_property(Ref,line_count(${String(line)})),erase(Ref),(clinical_gate(${document},${String(sentence)},_,_)->R=yes;R=no)))->Found=yes;Found=no)),200000,Why),E,(Found=error,R=error,Why=E)).`,
+        );
+        expect(String(deleted.Found), `${documentId}:${String(sentence)}:${String(line)}`).toBe(
+          'yes',
+        );
+        expect(String(deleted.R), `${documentId}:${String(sentence)}:${String(line)}`).toBe('no');
+      }
+
+      const relocateIndex = Math.max(
+        0,
+        gate.heads.findIndex((head) => head.startsWith('guideline_event(')),
+      );
+      const relocateLine = gate.lines[relocateIndex];
+      const relocateHead = gate.heads[relocateIndex];
+      if (relocateLine === undefined || relocateHead === undefined) {
+        throw new Error(`${documentId}:${String(sentence)} relocation site missing`);
+      }
+      const relocated = row(
+        `catch(call_with_inference_limit(((snapshot((${premises},clause((${relocateHead}),Body,Ref),clause_property(Ref,file('/prolog.pl')),clause_property(Ref,line_count(${String(relocateLine)})),erase(Ref),assertz(((${relocateHead}):-Body),NewRef),(\\+ clause_property(NewRef,line_count(${String(relocateLine)}))->Relocated=yes;Relocated=no),((${relocateHead})->Native=yes;Native=no),(clinical_gate(${document},${String(sentence)},_,_)->Gate=yes;Gate=no)))->Found=yes;Found=no)),200000,Why),E,(Found=error,term_string(E,Error,[quoted(true)]),Why=E)).`,
+      );
+      expect(String(relocated.Found), String(relocated.Error)).toBe('yes');
+      expect(relocated).toMatchObject({
+        Found: 'yes',
+        Relocated: 'yes',
+        Native: 'yes',
+        Gate: 'no',
+      });
+    }
+    expect(diagnostics).toEqual([]);
+  }, 120_000);
 });
