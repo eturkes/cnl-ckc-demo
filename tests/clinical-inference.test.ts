@@ -246,11 +246,92 @@ describe('clinical assumption evaluator', () => {
   );
 
   it('P5 yields no full document recommendation under either negative control', () => {
-    expect.fail('unencoded');
+    const withheld = new Map(
+      gateRecords.map((gate) => [
+        `${gate.document}:${String(gate.sentence)}`,
+        String(
+          bounded(
+            `clause(clinical_gate(${atom(gate.document)},${String(gate.sentence)},_,_),Body,_),` +
+              `gate_heads(Body,Heads),derive_all(Heads,2,[],_)`,
+          ).State,
+        ),
+      ]),
+    );
+    expect([...withheld.entries()].filter(([, state]) => state === 'proved').map(([key]) => key)).toEqual(
+      ['cdc2022-opioid-rec10:4', 'cdc2022-opioid-rec12:3'],
+    );
+
+    const documents = [...new Set(gateRecords.map(({ document }) => document))];
+    expect(
+      documents.filter((document) =>
+        gateRecords
+          .filter((gate) => gate.document === document)
+          .every((gate) => withheld.get(`${document}:${String(gate.sentence)}`) === 'proved'),
+      ),
+    ).toEqual([]);
+
+    const eraseSchema = SCHEMA_PREDICATES.map(
+      ([name, arity]) =>
+        `retractall(${name}(${Array.from({ length: arity }, () => '_').join(',')}))`,
+    ).join(',');
+    const documentList = `[${documents.map(atom).join(',')}]`;
+    const erased = bounded(
+      `snapshot((${eraseSchema},` +
+        `findall(D-S,(clause(clinical_gate(D,S,_,_),_,_),clinical_derive(D,S,_,_)),Rows),` +
+        `length(Rows,Sentences),` +
+        `findall(D,(member(D,${documentList}),` +
+        `forall(clause(clinical_gate(D,S,_,_),_,_),clinical_derive(D,S,_,_))),Complete),` +
+        `length(Complete,Documents)))`,
+      '',
+      mutableEngine,
+    );
+    expect(erased).toMatchObject({ State: 'proved', Sentences: 0, Documents: 0 });
   });
 
   it('P6 reports every hypothetical premise as a source-line-free assumption leaf', () => {
-    expect.fail('unencoded');
+    const documentLines = new Map<string, Set<number>>();
+    for (const gate of gateRecords) {
+      const document = atom(gate.document);
+      const result = bounded(
+        `clinical_derive(${document},${String(gate.sentence)},_,Proof)`,
+        `findall(L,sub_term(node(line(L),_,_),Proof),RawLines),sort(RawLines,Lines),` +
+          `atomic_list_concat(Lines,',',LineText),` +
+          `(forall(clinical_premise(${document},${String(gate.sentence)},_,A),` +
+          `sub_term(assumption(A),Proof))->AllPremises=yes;AllPremises=no),` +
+          `(forall(sub_term(assumption(A),Proof),` +
+          `clinical_premise(${document},${String(gate.sentence)},_,A))->OnlyPremises=yes;OnlyPremises=no),` +
+          `(forall(sub_term(assumption(A),Proof),ground(A))->Ground=yes;Ground=no),` +
+          `(\\+ (sub_term(assumption(A),Proof),sub_term(node(line(_),H,_),Proof),A==H)` +
+          `->NoSourceLine=yes;NoSourceLine=no)`,
+      );
+      expect(result, `${gate.document}:${String(gate.sentence)}`).toMatchObject({
+        State: 'proved',
+        AllPremises: 'yes',
+        OnlyPremises: 'yes',
+        Ground: 'yes',
+        NoSourceLine: 'yes',
+      });
+
+      const lines = String(result.LineText).split(',').filter(Boolean).map(Number);
+      expect(
+        lines.every((line) => gate.lines.includes(line)),
+        `${gate.document}:${String(gate.sentence)} foreign proof line`,
+      ).toBe(true);
+      let seen = documentLines.get(gate.document);
+      if (seen === undefined) {
+        seen = new Set<number>();
+        documentLines.set(gate.document, seen);
+      }
+      for (const line of lines) seen.add(line);
+    }
+
+    for (const [document, lines] of documentLines) {
+      const expected = gateRecords
+        .filter((gate) => gate.document === document)
+        .flatMap(({ lines: gateLines }) => gateLines)
+        .sort((left, right) => left - right);
+      expect([...lines].sort((left, right) => left - right), document).toEqual(expected);
+    }
   });
 
   it('P7 mutates no world state and leaves every schema predicate static', () => {
