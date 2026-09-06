@@ -4,7 +4,11 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { clinicalDifferential, referenceCorpus } from '../tools/clinical-reference.mjs';
+import {
+  clinicalDifferential,
+  referenceCorpus,
+  referenceSummary,
+} from '../tools/clinical-reference.mjs';
 import { verifyBag } from '../tools/kb/bag.mjs';
 import { clinicalArtifacts } from '../tools/kb/clinical.mjs';
 
@@ -13,6 +17,7 @@ const archives = readdirSync(join(ROOT, 'kb')).filter((name) => name.endsWith('.
 if (archives.length !== 1) throw new Error(`expected one KB bag, found ${String(archives.length)}`);
 const files = verifyBag(readFileSync(join(ROOT, 'kb', archives[0] as string))).files;
 const reference = referenceCorpus(files);
+const summary = referenceSummary(reference);
 const differential = clinicalDifferential(reference, clinicalArtifacts(files).source);
 const evidence = (divergences: string[]): string => divergences.slice(0, 20).join('\n');
 
@@ -52,6 +57,43 @@ describe('clinical compiler differential', () => {
       actualDocuments: 12,
       expectedGroups: 38,
       actualGroups: 38,
+    });
+  });
+
+  it('D8: reproduces the superseded oracle census', () => {
+    expect(summary).toMatchObject({
+      sites: 686,
+      sentences: 48,
+      premises: 346,
+      distinctAntecedents: 28,
+      groups: 38,
+      premiseShapes: {
+        'guideline_entity/4': 108,
+        'guideline_cardinality/5': 108,
+        'guideline_operator/3': 4,
+        'guideline_event/3': 34,
+        'guideline_arg/4': 68,
+        'guideline_pp/4': 23,
+        'guideline_property/4': 1,
+      },
+    });
+    expect(
+      Object.fromEntries(
+        Object.entries(summary.documents).map(([document, { sites }]) => [document, sites]),
+      ),
+    ).toEqual({
+      'cdc2022-opioid-rec01': 43,
+      'cdc2022-opioid-rec02': 73,
+      'cdc2022-opioid-rec03': 54,
+      'cdc2022-opioid-rec04': 72,
+      'cdc2022-opioid-rec06': 9,
+      'cdc2022-opioid-rec07': 144,
+      'cdc2022-opioid-rec08': 54,
+      'cdc2022-opioid-rec09': 57,
+      'cdc2022-opioid-rec10': 44,
+      'cdc2022-opioid-rec11': 15,
+      'cdc2022-opioid-rec05': 72,
+      'cdc2022-opioid-rec12': 49,
     });
   });
 });
