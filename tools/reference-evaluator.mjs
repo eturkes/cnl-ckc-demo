@@ -168,11 +168,71 @@ ref_measure_o2 :-
         wall_ms:WallMs,
         post_campaign_proved:PostCampaignProved
     },[width(0)]), nl.
+
+ref_docs(Docs) :- setof(Doc,S^Rule^clinical_rule(Doc,S,Rule),Docs).
+ref_doc_complete(Doc,Cap,Mode) :-
+    ref_keys(Keys),
+    forall(member(Doc-S,Keys),once(ref_sentence(Doc,S,Cap,Mode,_,_,_))).
+
+ref_count_documents(Cap,Mode,Count) :-
+    ref_docs(Docs),
+    findall(1,(member(Doc,Docs),ref_doc_complete(Doc,Cap,Mode)),Ones),
+    length(Ones,Count).
+
+ref_withheld_survivor(Doc-S,Item) :-
+    once(ref_sentence(Doc,S,2,none,_,Proof,_)),
+    findall(P,clinical_premise(Doc,S,_,P),Premises),
+    length(Premises,PremiseCount),
+    clause(clinical_gate(Doc,S,_,Lines),_,_),
+    length(Proof,ProofNodes),
+    ref_id(Doc,S,Id),
+    (PremiseCount =:= 0 -> Reason = true_antecedent ; Reason = unexpected),
+    Item = _{id:Id,premises:PremiseCount,gate_lines:Lines,proof_nodes:ProofNodes,reason:Reason}.
+
+ref_measure_o3 :-
+    ref_count_proved(2,none,Sentences),
+    ref_count_documents(2,none,Documents),
+    ref_keys(Keys),
+    findall(Item,(member(Key,Keys),ref_withheld_survivor(Key,Item)),Survivors),
+    json_write_dict(current_output,_{
+        sentence_grain:_{proved:Sentences,total:48},
+        document_grain:_{proved:Documents,total:12},
+        survivors:Survivors
+    },[width(0)]), nl.
+
+ref_clear_schema :-
+    retractall(guideline_arg(_,_,_,_)),
+    retractall(guideline_cardinality(_,_,_,_,_)),
+    retractall(guideline_document(_,_,_)),
+    retractall(guideline_entity(_,_,_,_)),
+    retractall(guideline_event(_,_,_)),
+    retractall(guideline_operator(_,_,_)),
+    retractall(guideline_pp(_,_,_,_)),
+    retractall(guideline_property(_,_,_,_)),
+    retractall(guideline_schema_version(_)).
+
+ref_schema_clause_count(Count) :-
+    findall(1,(ref_schema_goal(H),clause(H,_,_)),Clauses), length(Clauses,Count).
+
+ref_measure_o4 :-
+    snapshot((
+        ref_clear_schema,
+        ref_schema_clause_count(ErasedCount),
+        ref_count_proved(2,full,Sentences),
+        ref_count_documents(2,full,Documents)
+    )),
+    ref_count_proved(2,full,PostSnapshotProved),
+    json_write_dict(current_output,_{
+        sentence_grain:_{proved:Sentences,total:48},
+        document_grain:_{proved:Documents,total:12},
+        remaining_schema_clauses:ErasedCount,
+        post_snapshot_proved:PostSnapshotProved
+    },[width(0)]), nl.
 `;
 
 const rows = process.argv.slice(2);
-const requested = rows.length === 0 ? ['O1', 'O2'] : rows;
-const supported = new Set(['O1', 'O2']);
+const requested = rows.length === 0 ? ['O1', 'O2', 'O3', 'O4'] : rows;
+const supported = new Set(['O1', 'O2', 'O3', 'O4']);
 for (const row of requested) {
   if (!supported.has(row)) throw new Error(`unsupported row ${row}`);
 }
@@ -194,7 +254,7 @@ try {
 
   for (const row of requested) {
     const goal = `ref_measure_${row.toLowerCase()}`;
-    const prolog = row === 'O2' ? dynamicPath : staticPath;
+    const prolog = row === 'O2' || row === 'O4' ? dynamicPath : staticPath;
     const run = spawnSync(
       'swipl',
       ['--stack_limit=16m', '-q', '-f', prolog, '-s', harnessPath, '-g', goal, '-t', 'halt'],
