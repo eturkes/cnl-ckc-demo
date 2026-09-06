@@ -690,8 +690,35 @@ and survives `/resume`; a new session clears it.
 - A recursive `flatMap` in a `.mjs` build script infers `any[]` and fails
   `@typescript-eslint/no-unsafe-return` → give every recursive JSDoc'd helper an
   explicit `@returns`.
+- **48 fragments and 38 groups are one dataset at two granularities.** Reassembling the
+  48 per-sentence `clinical_rule/3` by consequent — conditions concatenated in sentence
+  order — reproduces all 38 shipped `clinical_answer` group terms byte for byte over 12
+  documents, 0 divergences (`node .scratch/m5u1/fragments.mjs`). u3's reassembly is
+  therefore derivable from u1's records alone.
+- Corpus census behind the D9-D11 guards, all measured 0 so no emitted byte moved: 0 bare
+  `_`, 0 `_Named`, 0 `;`/`->`/`*->` across the 28 distinct antecedents, 0 CR lines, 60/60
+  `% S<n>:` markers carrying text. `node .scratch/m5u1/t14.mjs`.
+- **An independent site enumerator must close the open sentence at a `% file:` boundary.**
+  Without that reset the preamble facts of each document (2 × 12) count as content sites
+  and the total reads 710 instead of 686 — the first census MAIN wrote had exactly that
+  bug, and the number looked plausible.
+- **Never run MAIN's decisive `pnpm gate` while teammates run their suites.** Three trees
+  testing at once starved the CPU into 5 spurious `Test timed out in 5000ms` failures
+  (`kb-reach` ×4, which spawns `kb:asset-check` subprocesses, and `demo-controller.dom`
+  V11's axe sweep). Nothing was wrong with the tree. Decisive rerun follows `TaskStop`.
+- A teammate's cwd is its worktree and MAIN's own cwd persists across Bash calls, so a
+  brief's report + validator paths must be ABSOLUTE; a relative `.scratch/agents/...`
+  resolves inside whichever tree the shell last entered, and the write simply fails.
 - The Edit tool can write a literal NUL byte where an escape sequence is intended,
   turning the file binary and silently breaking a Map key. `command grep` then reports
   `binary file matches`. Detect with Python `bytes.count(0)`; a shell-quoted NUL
   pattern collapses to an EMPTY rg pattern that matches every line and reads as a
   false positive.
+- **44 gates resolve natively, not 46** — 44 + the 4 inference-bounded gates (rec01:3,
+  rec02:3, rec02:8, rec05:4) = 48. Session 1 recorded 46, which cannot partition 48;
+  `test-m5u1-2` and `diff-m5u1` caught it on independent lenses.
+- u1's suite = `tests/clinical-records.test.ts` + `clinical-gate-live.test.ts` +
+  `clinical-differential.test.ts` over `clinical-test-support.ts`, with
+  `tools/clinical-reference.mjs` as the independent producer (imports `verifyBag` +
+  `parseAdviceSentence` and nothing else from the repo). RED credential = restore
+  `git show 22053ef:tools/kb/clinical.mjs`, `pnpm kb:build`, rerun → 19/20 red.

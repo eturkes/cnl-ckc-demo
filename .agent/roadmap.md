@@ -118,19 +118,30 @@ pre-resize six-unit split is recoverable at `83e42dd`; the `parent` tag on each
 unit below names where it came from.
 
 - **u1 — source-fragment/antecedent compiler** · kernel · `oracle` `prod` · est 70K → 123.90K · all-in 185K · parent u1
-  **OPEN — implementation landed, gate identity unmet.** Session 1 closed at context
-  reserve (`main=82% 223K/273K`, `mate=46% 126K` `orc-m5u1`, 3 teammates). Contract +
-  verdict table = `.agent/contracts/m5u1.md`. **P1-P10 all pass**: 48 gates / 686
-  sites / 686 unique / 346 premises emitted, every shipped byte identical
-  (`node .scratch/m5u1/p1.mjs` rc 0), `pnpm gate` rc 0, pvm +16,452 B. **Two
-  obligations remain and they are why the unit is not DONE:** u1's own red suite is
-  not in the primary tree (`test-m5u1` finished phase 1 only — 15/15 rows, T14 holds
-  ten unruled contract questions MAIN never batch-ruled), and no `diff` wave ran.
-  Next session: rule T14, dispatch phase 2 + `diff`, resolve the open 38-vs-48
-  fragment-count divergence with `wt/orc-m5u1` `25c0342`, then close.
-  Sizing note: the 185K estimate was sound for implementation — implementation itself
-  cost ~55K. The overrun is HARVEST: 68K of attached state before the first tool call,
-  against the model's flat 45K floor. See Sizing.
+  **DONE** over two sessions. Contract, all rulings and the verdict table =
+  `.agent/contracts/m5u1.md`; reports = `.agent/review-m5u1/`. Session 1 shipped the
+  producer (48 gates / 686 sites / 686 unique / 346 premises, every shipped byte
+  identical) and closed at reserve with gate identity unmet. Session 2 ruled T14's ten
+  contract readings, added the D9-D11 fail-closed guards, shipped the 15-row red suite
+  and the differential, and closed the unit.
+  Gate identity met: 20 cases across `tests/clinical-{records,gate-live,differential}`,
+  **19/20 RED at base `22053ef`**, 20/20 GREEN at head; `diff-m5u1` reported **0
+  divergences** on all 8 rows against an independent producer
+  (`tools/clinical-reference.mjs`). Decisive `pnpm gate` rc 0 from a clean
+  `kb/generated`: 398 files 0 errors 0 warnings, **313 tests in 28 files**.
+  Two claim corrections, each found on two independent lenses: native gates = **44**,
+  not 46 (44 + 4 bounded = 48 — session 1's figure was arithmetically impossible), and
+  P5 pins the production message `<doc>:<S>: <N> distinct antecedents, expected one`,
+  not the probe's `multiple antecedents`. The 38-vs-48 fragment divergence was NOT a
+  defect: the 48 per-sentence rules reassemble by consequent into the 38 shipped group
+  terms byte for byte, which also proves u3's reassembly derives from u1's records.
+  Gauges: session 1 `main=82% 223K/273K`, `mate=46% 126K`; session 2 `harvest=68K`
+  (attached state before the first tool call), `main=87% 238K/273K` — **15K past the
+  223K aim**, `mate=66% 181K` (`test-m5u1-2`), 2 teammates. Combined all-in ≈ 461K
+  against the 185K estimate; the split-driving term is harvest, not implementation.
+  Sizing note: implementation cost ~55K of session 1. Both overruns are HARVEST — 68K
+  of attached state before the first tool call, against the model's flat 45K floor.
+  See Sizing and the M1 Sizing correction.
   `tools/kb/clinical.mjs`: compile each question's clinical context into explicit
   premises, and each answer into source fragments/antecedents keyed to exact
   `/prolog.pl` clause lines. `parseAdviceSentence`, the renderer and the
