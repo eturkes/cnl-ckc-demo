@@ -3,9 +3,18 @@
 // SEED: every case fails until it encodes its ruled row from
 // `.agent/contracts/m5u1.md` (predicates P1-P10, design rulings D1-D11, T14 rulings).
 
+import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
-import { clinicalArtifacts, CLINICAL_QUESTIONS } from '../tools/kb/clinical.mjs';
+import {
+  clinicalArtifacts,
+  CLINICAL_QUESTIONS,
+  parseAdviceSentence,
+} from '../tools/kb/clinical.mjs';
+import { deriveProvenance } from '../tools/kb/provenance.mjs';
 import {
   aceSentenceKeys,
   artifacts,
@@ -13,6 +22,7 @@ import {
   canonicalGeneratedTerms,
   canonicalSourceTerms,
   gateRecords,
+  filePath,
   helperLines,
   keyOf,
   mutatePlSentence,
@@ -20,6 +30,8 @@ import {
   parseGateRecords,
   parsePremiseRecords,
   positiveGoals,
+  replaceVariablesOutsideAtoms,
+  ROOT,
   scanContentSites,
   scanRawContentSites,
   sha12,
@@ -28,6 +40,15 @@ import {
 const unimplemented = (): never => {
   throw new Error('unimplemented');
 };
+
+const skolemTokens = (terms: readonly string[]) =>
+  terms.flatMap((term) =>
+    [...term.matchAll(/'\$clinical_hypothetical'\('([^']+)',(\d+),(\d+)\)/gu)].map((match) => ({
+      whole: match[0],
+      document: match[1] ?? '',
+      sentence: Number(match[2]),
+    })),
+  );
 
 describe('clinical records', () => {
   it('T1 byte identity: 7 questions, 12 canonical terms, raw contribution order', () => {
@@ -229,9 +250,192 @@ describe('clinical records', () => {
       ).toEqual([]);
     }
   });
-  it('T7 skolem sharing: one map per (Doc,S), heads then premises, deterministic', unimplemented);
-  it('T8 tokenizing ground map: quoted atoms intact, no cross-sentence sharing', unimplemented);
-  it('T9 frozen surfaces: parsed clauses, canonical presentation, passage bytes', unimplemented);
+  it('T7 skolem sharing: one map per (Doc,S), heads then premises, deterministic', () => {
+    const first = clinicalArtifacts(bagFiles);
+    const second = clinicalArtifacts(bagFiles);
+    const reversed = clinicalArtifacts(new Map([...bagFiles].reverse()));
+    expect(second.helper).toBe(first.helper);
+    expect(reversed.helper).toBe(first.helper);
+
+    const premises = parsePremiseRecords(first.helper);
+    const gates = parseGateRecords(first.helper);
+    const sourceCases = scanContentSites();
+    const scopes = new Map<string, Set<string>>();
+    for (const gate of gates) {
+      const key = keyOf(gate.document, gate.sentence);
+      const emittedPremises = premises.filter(
+        ({ document, sentence }) => keyOf(document, sentence) === key,
+      );
+      const terms = [...gate.heads, ...emittedPremises.map(({ literal }) => literal)];
+      const skolems = skolemTokens(terms);
+      expect(
+        skolems.every(
+          ({ document, sentence }) => document === gate.document && sentence === gate.sentence,
+        ),
+        key,
+      ).toBe(true);
+      scopes.set(key, new Set(skolems.map(({ whole }) => whole)));
+
+      const source = sourceCases.find(
+        ({ document, sentence }) => keyOf(document, sentence) === key,
+      );
+      expect(source, key).toBeDefined();
+      if (source === undefined) continue;
+      const bodies = [...new Set(source.sites.map(({ body }) => body))];
+      expect(canonicalGeneratedTerms(terms, gate.document, gate.sentence), key).toEqual(
+        canonicalSourceTerms([
+          ...source.sites.map(({ head }) => head),
+          ...positiveGoals(bodies[0] ?? ''),
+        ]),
+      );
+    }
+
+    const scoped = [...scopes.entries()];
+    expect(scoped.flatMap(([, values]) => [...values]).length).toBeGreaterThan(0);
+    for (let left = 0; left < scoped.length; left += 1) {
+      for (let right = left + 1; right < scoped.length; right += 1) {
+        const [leftKey, leftValues] = scoped[left] ?? ['', new Set<string>()];
+        const [rightKey, rightValues] = scoped[right] ?? ['', new Set<string>()];
+        expect(
+          [...leftValues].filter((value) => rightValues.has(value)),
+          `${leftKey} vs ${rightKey}`,
+        ).toEqual([]);
+      }
+    }
+  });
+  it('T8 tokenizing ground map: quoted atoms intact, no cross-sentence sharing', () => {
+    const scopes = [
+      ['cdc2022-opioid-rec01', 2],
+      ['cdc2022-opioid-rec01', 3],
+      ['cdc2022-opioid-rec02', 2],
+    ] as const;
+    let mutant: ReadonlyMap<string, Uint8Array> = bagFiles;
+    for (const [document, sentence] of scopes) {
+      mutant = mutatePlSentence(mutant, document, sentence, (line) => {
+        const boundary = line.indexOf(' :- ');
+        const head = boundary < 0 ? line.slice(0, -1) : line.slice(0, boundary);
+        return `${replaceVariablesOutsideAtoms(head, 'Shared')} :- guideline_entity(actual,Shared,clinician,countable).`;
+      });
+    }
+
+    const emitted = clinicalArtifacts(mutant);
+    const gates = parseGateRecords(emitted.helper);
+    const premises = parsePremiseRecords(emitted.helper);
+    const source = scanContentSites(mutant);
+    const ids: Set<string>[] = [];
+    for (const [document, sentence] of scopes) {
+      const gate = gates.find(
+        (candidate) => candidate.document === document && candidate.sentence === sentence,
+      );
+      const premise = premises.filter(
+        (candidate) => candidate.document === document && candidate.sentence === sentence,
+      );
+      const sourceCase = source.find(
+        (candidate) => candidate.document === document && candidate.sentence === sentence,
+      );
+      expect(gate).toBeDefined();
+      expect(sourceCase).toBeDefined();
+      expect(premise).toHaveLength(1);
+      if (gate === undefined || sourceCase === undefined) continue;
+      const terms = [...gate.heads, ...premise.map(({ literal }) => literal)];
+      const scopeIds = new Set(skolemTokens(terms).map(({ whole }) => whole));
+      expect(scopeIds.size, keyOf(document, sentence)).toBe(1);
+      ids.push(scopeIds);
+      expect(canonicalGeneratedTerms(terms, document, sentence)).toEqual(
+        canonicalSourceTerms([
+          ...sourceCase.sites.map(({ head }) => head),
+          'guideline_entity(actual,Shared,clinician,countable)',
+        ]),
+      );
+    }
+    for (let left = 0; left < ids.length; left += 1) {
+      for (let right = left + 1; right < ids.length; right += 1) {
+        expect(
+          [...((ids[left] ?? new Set()) as Set<string>)].some((id) => ids[right]?.has(id)),
+        ).toBe(false);
+      }
+    }
+    const rec01s2 = gates.find(
+      ({ document, sentence }) => document === 'cdc2022-opioid-rec01' && sentence === 2,
+    );
+    expect(rec01s2?.heads.some((head) => head.includes("'acute-pain'"))).toBe(true);
+  });
+  it('T9 frozen surfaces: parsed clauses, canonical presentation, passage bytes', () => {
+    const baseClinical = execFileSync('git', ['show', '22053ef:tools/kb/clinical.mjs'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+    });
+    const currentClinical = readFileSync(join(ROOT, 'tools/kb/clinical.mjs'), 'utf8');
+    const span = (source: string, startNeedle: string, endNeedle: string): string => {
+      const start = source.indexOf(startNeedle);
+      const end = source.indexOf(endNeedle, start + startNeedle.length);
+      if (start < 0 || end < 0) throw new Error(`frozen span missing: ${startNeedle}`);
+      return source.slice(start, end);
+    };
+    const boundaries = [
+      ['clauseSource', 'const clauseSource =', '/**\n * Parse the tiny controlled-sentence'],
+      ['parseAdviceSentence', 'export const parseAdviceSentence =', '/** Group only identical'],
+      ['groupClauses', 'const groupClauses =', '/** @param {AdviceModifier}'],
+      ['modifierTerm', 'const modifierTerm =', '/** @param {AdviceAction}'],
+      ['actionTerm', 'const actionTerm =', '/** @param {AdviceGroup}'],
+      ['groupTerm', 'const groupTerm =', '/** @param {string} document'],
+      ['answerTerm', 'const answerTerm =', ';\n'],
+    ] as const;
+    const hashes = (source: string) =>
+      Object.fromEntries(
+        boundaries.map(([name, start, end]) => [name, sha12(span(source, start, end))]),
+      );
+    expect(hashes(currentClinical)).toEqual(hashes(baseClinical));
+
+    for (const path of [
+      'src/questions/advice.ts',
+      'src/questions/serialize.ts',
+      'src/questions/humanize.ts',
+      'tools/kb/provenance.mjs',
+    ]) {
+      expect(readFileSync(join(ROOT, path), 'utf8'), path).toBe(
+        execFileSync('git', ['show', `22053ef:${path}`], { cwd: ROOT, encoding: 'utf8' }),
+      );
+    }
+
+    const parsed = CLINICAL_QUESTIONS.flatMap(({ sources }) =>
+      sources.flatMap(({ document }) => {
+        const path = filePath(bagFiles, `/ace/${document}.ace`);
+        const sentences = Buffer.from(bagFiles.get(path) ?? [])
+          .toString('utf8')
+          .trimEnd()
+          .split('\n');
+        return sentences
+          .slice(1)
+          .map((sentence, index) => parseAdviceSentence(sentence, index + 2));
+      }),
+    );
+    const provenance = deriveProvenance(bagFiles);
+    const passages = new Map(
+      provenance.chunks.map(({ document, model }) => {
+        const text = (model as { source?: { text?: unknown } }).source?.text;
+        if (typeof text !== 'string') throw new Error(`${document}: source passage missing`);
+        return [document, text];
+      }),
+    );
+    const orderedPassages = CLINICAL_QUESTIONS.flatMap(({ sources }) =>
+      sources.map(({ document }) => passages.get(document) ?? ''),
+    );
+    const presentations = CLINICAL_QUESTIONS.flatMap(({ id }) => artifacts.answers.get(id) ?? []);
+    expect({
+      parsed: [parsed.length, sha12(JSON.stringify(parsed))],
+      presentations: [presentations.length, orderedHash(presentations)],
+      passages: [orderedPassages.length, sha12(JSON.stringify(orderedPassages))],
+    }).toEqual({
+      parsed: [48, 'a445b21c3d93'],
+      presentations: [12, '59a516ba9989'],
+      passages: [12, '1e11a0c96231'],
+    });
+    expect({
+      rules: helperLines.filter((line) => line.startsWith('clinical_rule(')).length,
+      gates: gateRecords.length,
+    }).toEqual({ rules: 48, gates: 48 });
+  });
   it('T10 lossless guard fails closed on a non-rebuildable sentence', unimplemented);
   it('T11 determinism: two derivations and a reversed file map agree byte for byte', unimplemented);
   it('T12 budget delta measured and reproducible, no ceiling', unimplemented);

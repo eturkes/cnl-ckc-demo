@@ -301,6 +301,30 @@ const canonicalVariables = (terms: readonly string[]): string[] => {
 export const canonicalSourceTerms = (terms: readonly string[]): string[] =>
   canonicalVariables(terms);
 
+export const replaceVariablesOutsideAtoms = (source: string, replacement: string): string => {
+  let result = '';
+  for (let index = 0; index < source.length;) {
+    const char = source[index] ?? '';
+    if (char === "'") {
+      const end = quotedAtomEnd(source, index);
+      result += source.slice(index, end);
+      index = end;
+      continue;
+    }
+    if (/[A-Za-z_]/u.test(char)) {
+      let end = index + 1;
+      while (end < source.length && /[A-Za-z0-9_]/u.test(source[end] ?? '')) end += 1;
+      const token = source.slice(index, end);
+      result += /^[A-Z_]/u.test(token) ? replacement : token;
+      index = end;
+      continue;
+    }
+    result += char;
+    index += 1;
+  }
+  return result;
+};
+
 export const canonicalGeneratedTerms = (
   terms: readonly string[],
   document: string,
