@@ -332,35 +332,43 @@ const answerTerm = (document, clauses, passage) =>
   `${quotedString(passage)})`;
 
 /**
- * Ground variables in a compiled clause head so it can travel as data inside a
- * helper fact. Quoted atoms are copied byte for byte; repeated variables map to
- * the same inert atom, preserving the head's equality relationships.
+ * Index just past the quoted atom opening at `start`, honouring `\` escapes and the
+ * doubled-quote form. Shared by every scanner that must not mistake an atom's
+ * contents for syntax — `'acute-pain'` is why a substring pass is unsound here.
  *
- * @param {string} source
+ * @param {string} source @param {number} start
  */
-const groundHead = (source) => {
-  /** @type {Map<string, string>} */
-  const variables = new Map();
-  let ordinal = 0;
+const quotedEnd = (source, start) => {
+  let index = start + 1;
+  while (index < source.length) {
+    if (source[index] === '\\') index += 2;
+    else if (source[index] === "'") {
+      if (source[index + 1] === "'") index += 2;
+      else return index + 1;
+    } else index += 1;
+  }
+  throw new Error('clinical source term contains an unterminated atom');
+};
+
+/**
+ * Ground variables in compiled clause text. Quoted atoms are copied byte for byte;
+ * repeated variables map to the same replacement, preserving equality relationships.
+ *
+ * The caller supplies the variable map so one map can span a sentence's heads AND its
+ * antecedent: sharing survives as a shared constant, which is what lets the records
+ * live in separate facts. A ground head still drives `clause/3` — it unifies against
+ * the stored head's variables — so one form serves both data and execution.
+ *
+ * @param {string} source @param {Map<string, string>} variables @param {(ordinal: number) => string} skolem
+ */
+const groundTerm = (source, variables, skolem) => {
   let result = '';
   for (let index = 0; index < source.length; ) {
     const char = /** @type {string} */ (source[index]);
     if (char === "'") {
-      const start = index;
-      index += 1;
-      let closed = false;
-      while (index < source.length && !closed) {
-        if (source[index] === '\\') index += 2;
-        else if (source[index] === "'") {
-          if (source[index + 1] === "'") index += 2;
-          else {
-            index += 1;
-            closed = true;
-          }
-        } else index += 1;
-      }
-      if (!closed) throw new Error('clinical source head contains an unterminated atom');
-      result += source.slice(start, index);
+      const end = quotedEnd(source, index);
+      result += source.slice(index, end);
+      index = end;
       continue;
     }
     if (/[A-Za-z_]/u.test(char)) {
@@ -372,9 +380,8 @@ const groundHead = (source) => {
       if (/^[A-Z_]/u.test(token)) {
         let replacement = variables.get(token);
         if (replacement === undefined) {
-          replacement = `'clinical_variable_${String(ordinal)}'`;
+          replacement = skolem(variables.size);
           variables.set(token, replacement);
-          ordinal += 1;
         }
         result += replacement;
       } else {
@@ -387,6 +394,118 @@ const groundHead = (source) => {
     index += 1;
   }
   return result;
+};
+
+/** Legacy single-site form: inert atoms, one map per head. @param {string} source */
+const groundHead = (source) =>
+  groundTerm(source, new Map(), (ordinal) => `'clinical_variable_${String(ordinal)}'`);
+
+/** Split a clause body on its top-level conjunctions. @param {string} body @returns {string[]} */
+const conjuncts = (body) => {
+  /** @type {string[]} */
+  const parts = [];
+  let depth = 0;
+  let start = 0;
+  let index = 0;
+  while (index < body.length) {
+    const char = body[index];
+    if (char === "'") index = quotedEnd(body, index);
+    else if (char === '(') {
+      depth += 1;
+      index += 1;
+    } else if (char === ')') {
+      depth -= 1;
+      index += 1;
+    } else if (char === ',' && depth === 0) {
+      parts.push(body.slice(start, index).trim());
+      index += 1;
+      start = index;
+    } else index += 1;
+  }
+  parts.push(body.slice(start).trim());
+  return parts.filter((part) => part !== '');
+};
+
+/**
+ * The premises a sentence's antecedent asks for. A guideline clause is universally
+ * quantified over clinicians and the `actual` world holds no clinician instance, so
+ * these are what APPLY the universal rather than working around a gap. A `\+` subgoal
+ * contributes none: its truth is not assumable.
+ *
+ * @param {string} body @returns {string[]}
+ */
+const premiseGoals = (body) =>
+  body === 'true'
+    ? []
+    : conjuncts(body).flatMap((goal) => {
+        if (goal.startsWith('\\+') || goal === 'true') return [];
+        // A parenthesised conjunct is still a conjunction; the reference oracle
+        // flattens recursively, so a single top-level split would under-report it.
+        const inner = unwrap(goal);
+        return inner === undefined ? [goal] : premiseGoals(inner);
+      });
+
+/** Contents of a fully parenthesised term, else `undefined`. @param {string} goal @returns {string | undefined} */
+const unwrap = (goal) => {
+  if (!goal.startsWith('(')) return undefined;
+  let depth = 0;
+  let index = 0;
+  while (index < goal.length) {
+    const char = goal[index];
+    if (char === "'") index = quotedEnd(goal, index);
+    else {
+      if (char === '(') depth += 1;
+      else if (char === ')') {
+        depth -= 1;
+        if (depth === 0) return index === goal.length - 1 ? goal.slice(1, -1).trim() : undefined;
+      }
+      index += 1;
+    }
+  }
+  return undefined;
+};
+
+/**
+ * Every content-bearing clause site per selected sentence, keyed `document\0sentence`.
+ *
+ * This differs from `sourceClauses` in exactly one way — it keeps EVERY `guideline_*`
+ * clause a sentence compiles to, not just the first — and that difference is the gap
+ * between 48 cited sites and the corpus's real 686.
+ *
+ * @param {string} source @param {Set<string>} selected
+ */
+const contentSites = (source, selected) => {
+  /** @type {Map<string, { document: string, sentence: number, clauses: Array<{ line: number, head: string, body: string }> }>} */
+  const cases = new Map();
+  let document = '';
+  /** @type {{ document: string, sentence: number, clauses: Array<{ line: number, head: string, body: string }> } | undefined} */
+  let current;
+  for (const [offset, line] of source.split('\n').entries()) {
+    const file = /^% file:.*\/pl\/([^/]+)\.pl$/u.exec(line);
+    if (file !== null) {
+      document = file[1] ?? '';
+      current = undefined;
+      continue;
+    }
+    const marker = /^% S([1-9][0-9]*):/u.exec(line);
+    if (marker !== null) {
+      const sentence = Number(marker[1]);
+      current = undefined;
+      if (selected.has(document) && sentence > 1) {
+        current = { document, sentence, clauses: [] };
+        cases.set(`${document}\u0000${String(sentence)}`, current);
+      }
+      continue;
+    }
+    if (current === undefined || !line.startsWith('guideline_')) continue;
+    const rule = line.indexOf(' :- ');
+    current.clauses.push({
+      line: offset + 1,
+      head: (rule < 0 ? line.slice(0, -1) : line.slice(0, rule)).trim(),
+      body: rule < 0 ? 'true' : line.slice(rule + 4, -1),
+    });
+  }
+  return cases;
 };
 
 /** @param {string} source */
@@ -445,6 +564,16 @@ export const clinicalArtifacts = (files) => {
   const sources = [];
   /** @type {Map<string, string[]>} */
   const answers = new Map();
+  /** @type {string[]} */
+  const gates = [];
+  /** @type {string[]} */
+  const fragments = [];
+  /** @type {string[]} */
+  const premises = [];
+  const contentIndex = contentSites(
+    documents.source,
+    new Set(CLINICAL_QUESTIONS.flatMap((q) => q.sources.map((s) => s.document))),
+  );
 
   const records = CLINICAL_QUESTIONS.map((question) => {
     if (ids.has(question.id)) throw new Error(`duplicate clinical question ${question.id}`);
@@ -472,6 +601,50 @@ export const clinicalArtifacts = (files) => {
         }
         return `site(${String(clause.line)},${clause.head})`;
       });
+      for (const clause of parsed) {
+        const record = contentIndex.get(`${selection.document}\u0000${String(clause.sentence)}`);
+        if (record === undefined || record.clauses.length === 0) {
+          throw new Error(
+            `${selection.document}: no content sites for sentence ${String(clause.sentence)}`,
+          );
+        }
+        const bodies = [...new Set(record.clauses.map(({ body }) => body))];
+        if (bodies.length !== 1) {
+          throw new Error(
+            `${selection.document}:${String(clause.sentence)}: ` +
+              `${String(bodies.length)} distinct antecedents, expected one`,
+          );
+        }
+        // One map across heads AND premises: the antecedent's variable sharing has to
+        // survive as a shared constant, or a premise stops applying to its own clause.
+        /** @type {Map<string, string>} */
+        const variables = new Map();
+        const skolem = (/** @type {number} */ ordinal) =>
+          `'$clinical_hypothetical'(${encodedAtom(selection.document)},` +
+          `${String(clause.sentence)},${String(ordinal)})`;
+        const grounded = record.clauses.map(({ line, head }) => ({
+          line,
+          head: groundTerm(head, variables, skolem),
+        }));
+        // Keyed by DOCUMENT, never by question: one question owns up to four documents
+        // and each restarts its sentence numbering, so a question key collides.
+        const key = `${encodedAtom(selection.document)},${String(clause.sentence)}`;
+        gates.push(
+          `clinical_gate(${key},Rule,[${grounded.map(({ line }) => String(line)).join(',')}]) :- ` +
+            `${grounded.map(({ line, head }) => `clinical_use(${String(line)},(${head}))`).join(',')},` +
+            `clinical_rule(${key},Rule).`,
+        );
+        fragments.push(
+          `clinical_rule(${key},${groupTerm(/** @type {AdviceGroup} */ (groupClauses([clause])[0]))}).`,
+        );
+        for (const [ordinal, goal] of premiseGoals(
+          /** @type {string} */ (bodies[0]),
+        ).entries()) {
+          premises.push(
+            `clinical_premise(${key},${String(ordinal)},(${groundTerm(goal, variables, skolem)})).`,
+          );
+        }
+      }
       const text = passages.get(selection.document);
       if (text === undefined) throw new Error(`${selection.document}: no aligned source passage`);
       const first = /** @type {AdviceClause} */ (parsed[0]);
@@ -497,6 +670,16 @@ export const clinicalArtifacts = (files) => {
     `:- multifile(clinical_advice/3).\n` +
     `:- dynamic(clinical_advice/3).\n` +
     `:- discontiguous(clinical_advice_source/4).\n` +
-    `${advice.join('\n')}\n${sources.join('\n')}\n`;
+    `:- discontiguous(clinical_gate/4).\n` +
+    `:- discontiguous(clinical_rule/3).\n` +
+    `:- discontiguous(clinical_premise/4).\n` +
+    // Exact-site gate: head, source file and line must all match before the clause's
+    // own body runs. Head/line alone would let a same-head clause asserted at another
+    // line satisfy the gate, which is the substitution the probe refuted.
+    `clinical_use(Line,Head) :- clause(Head,Body,Ref), ` +
+    `clause_property(Ref,file('/prolog.pl')), ` +
+    `clause_property(Ref,line_count(Line)), call(Body).\n` +
+    `${advice.join('\n')}\n${sources.join('\n')}\n` +
+    `${fragments.join('\n')}\n${premises.join('\n')}\n${gates.join('\n')}\n`;
   return { records, names: [...names].sort(), source: helper, helper, answers };
 };

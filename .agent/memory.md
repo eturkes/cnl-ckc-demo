@@ -654,3 +654,44 @@ and survives `/resume`; a new session clears it.
 - Planning probe branches, worktrees removed: `wt/res-m5-1` `27eff5d`,
   `wt/res-m5-2` `1542794`, `wt/res-m5-3` `cd52e8a`. `wt/map-m5-1`, `wt/map-m5-2`,
   `wt/plan-m5`, `wt/planrev-m5` held no commits and were deleted.
+
+## M5 u1 — source-fragment/antecedent compiler (partial)
+
+- `tools/kb/clinical.mjs` now emits, beside the untouched `clinical_advice/3` +
+  `clinical_advice_source/4`: `clinical_rule(Doc,S,Rule)` (48, one per selected
+  content sentence), `clinical_premise(Doc,S,N,Literal)` (346) and
+  `clinical_gate(Doc,S,Rule,[Lines])` (48, covering all **686** content sites),
+  over one `clinical_use(Line,Head)` exact-site helper.
+- **A build-time GROUND head still drives `clause/3`.** It unifies against the stored
+  head's variables, and `call(Body)` then demands exactly the grounded premises. So
+  one head form serves data AND execution — no raw/ground split is needed, and the
+  probes' runtime `term_variables`/`m5_ground` grounding is unnecessary. Heads and
+  premises share ONE skolem map per sentence (`'$clinical_hypothetical'(Doc,S,N)`),
+  which is what keeps a premise applying to its own clause.
+- Census, verified twice (MAIN + `orc-m5u1` independently): 12 documents, 48 content
+  sentences, 686 sites / 686 unique lines, 0 multi-antecedent violations, rec01:S2 = 9
+  sites. 46/48 antecedents non-`true`, 2 `true`, exactly 1 NAF (rec05:S5).
+- **Exactly 2 gates prove on the bare KB** — the two `true`-antecedent sentences. The
+  other 46 correctly fail until premises apply the universal.
+- **4 gates cannot be resolved NATIVELY**: rec01:3, rec02:3, rec02:8, rec05:4 exhaust
+  200,000 inferences with only their own premises asserted, on the corpus's recursive
+  rule-head chains. Not contamination — the control proves under the identical shape.
+  Terminating on these is u2's depth-cap obligation. `node .scratch/m5u1/bounded.mjs`.
+- Cost: helper 39,063 → 405,335 B, but **pvm only 444,283 → 460,735 B (+16,452)**;
+  qlf 2,199,577 → 2,329,449 B. The 366 kB of generated source compiles small.
+- `pnpm gate` rc 0 with all 293 pre-existing tests green — the new records regress
+  nothing.
+- Scratch probes (regenerable, not committed): `.scratch/m5u1/` holds `p1.mjs`,
+  `verify.mjs`, `gates.mjs`, `bounded.mjs`. **`p1.mjs` is the P1 oracle** — it
+  re-derives base `clinical.mjs` from git and runs BASE and HEAD in one process, so it
+  needs no stored baseline. `.scratch/m5u1/baseline.mjs` + `baseline.json` are
+  SUPERSEDED and their stored hashes are WRONG (they disagree with a recomputation
+  from their own arrays); ignore them.
+- A recursive `flatMap` in a `.mjs` build script infers `any[]` and fails
+  `@typescript-eslint/no-unsafe-return` → give every recursive JSDoc'd helper an
+  explicit `@returns`.
+- The Edit tool can write a literal NUL byte where an escape sequence is intended,
+  turning the file binary and silently breaking a Map key. `command grep` then reports
+  `binary file matches`. Detect with Python `bytes.count(0)`; a shell-quoted NUL
+  pattern collapses to an EMPTY rg pattern that matches every line and reads as a
+  false positive.

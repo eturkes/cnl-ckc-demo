@@ -118,6 +118,19 @@ pre-resize six-unit split is recoverable at `83e42dd`; the `parent` tag on each
 unit below names where it came from.
 
 - **u1 — source-fragment/antecedent compiler** · kernel · `oracle` `prod` · est 70K → 123.90K · all-in 185K · parent u1
+  **OPEN — implementation landed, gate identity unmet.** Session 1 closed at context
+  reserve (`main=82% 223K/273K`, `mate=46% 126K` `orc-m5u1`, 3 teammates). Contract +
+  verdict table = `.agent/contracts/m5u1.md`. **P1-P10 all pass**: 48 gates / 686
+  sites / 686 unique / 346 premises emitted, every shipped byte identical
+  (`node .scratch/m5u1/p1.mjs` rc 0), `pnpm gate` rc 0, pvm +16,452 B. **Two
+  obligations remain and they are why the unit is not DONE:** u1's own red suite is
+  not in the primary tree (`test-m5u1` finished phase 1 only — 15/15 rows, T14 holds
+  ten unruled contract questions MAIN never batch-ruled), and no `diff` wave ran.
+  Next session: rule T14, dispatch phase 2 + `diff`, resolve the open 38-vs-48
+  fragment-count divergence with `wt/orc-m5u1` `25c0342`, then close.
+  Sizing note: the 185K estimate was sound for implementation — implementation itself
+  cost ~55K. The overrun is HARVEST: 68K of attached state before the first tool call,
+  against the model's flat 45K floor. See Sizing.
   `tools/kb/clinical.mjs`: compile each question's clinical context into explicit
   premises, and each answer into source fragments/antecedents keyed to exact
   `/prolog.pl` clause lines. `parseAdviceSentence`, the renderer and the
@@ -540,3 +553,21 @@ section (archived with M5 at REVIEWED).
 Full record → `.agent/archive/m1.md`. Judgment ledger → `.agent/archive/review-m1.md`.
 Reviewer reports → `.agent/review-m1/`. Unit contracts and fixed check sets →
 `.agent/contracts/m1u*.md` and `.agent/contracts/m1*-rev-checkset.md`.
+
+### Sizing correction — measured at M5 u1 (binding on PLANNING)
+
+`M = 45 + 2·I` **understates the harvest floor for M5.** u1 measured `H` ≈ 168K
+against the model's 61K: the attached state alone (`roadmap.md` + `memory.md`) cost
+**68K before the session's first tool call**, and the wave's own harvest ran on top.
+Implementation was NOT the overrun — writing + verifying `clinical.mjs` cost ~55K
+against `1.77·I` = 124K, so the multiplier is if anything generous here.
+
+The floor is not size-independent at 45K any more; it tracks the attached set, which
+has grown through M5 planning. Two consequences PLANNING must apply:
+- Size the next M5 units as `M = H_a + 2·I` with **`H_a` ≈ 90K** (68K attached + a
+  ~22K wave-harvest floor), giving `I ≤ 66K` against the 223K aim. Units u2, u4, u5,
+  u11, u12 are all sized `I` = 65-80K and **at least u4/u11/u12 (I=80K) exceed it** —
+  re-split at their recorded seams or accept a two-session unit.
+- The cheapest real fix is shrinking the attached set. `.agent/roadmap.md` is 37 kB
+  and `memory.md` 45 kB; the M2 expedited block and the M1 summary are both archivable
+  now. Doing that buys back more window than any re-split.
