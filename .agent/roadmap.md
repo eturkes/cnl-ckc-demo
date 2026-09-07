@@ -10,7 +10,7 @@ built-in questions authored during development. KB enters by export only —
 never a path link to `../cnl-ckc`.
 
 Intent = `.agent/initial-prompt.md` (authoritative; this restatement is a
-convenience). Stack, gates + measured runtime facts = `.agent/memory.md`.
+convenience). Stack, gates + measured runtime facts = `.claude/rules/`.
 
 Demo-tier rigor: the intent explicitly waives `cnl-ckc`-level rigor. The one
 non-negotiable = answers trace to genuine Prolog solutions.
@@ -455,7 +455,7 @@ region → aligned source passage → guideline page; lazy PDF; projection-loss 
 `unreviewed`-label disclosure. Committed `queries/traces/*.pl` = oracles only.
 Sequence is serial; parallelism lives inside a unit's teammate wave.
 Every planning ruling and measurement that binds a unit is inlined here or in
-`.agent/memory.md`. The six wave reports
+`.claude/rules/`. The six wave reports
 (`.scratch/agents/{map-m2,res-m2-1,res-m2-2,res-m2-3,plan-m2,planrev-m2}.md`) are
 scratch-local browse context — absent, no unit loses an input.
 
@@ -544,7 +544,7 @@ doubled the session count — so **6 review sessions**, counted once, not double
 `data` consistency is adjudicated mechanically in-unit and does not enter the judgment ledger.
 
 Planning cost: `main=` reached 92% 220K/240K before arbitration; `mate=78% 187K/240K`
-(`res-m2-1`), six teammates across three waves. Wave lesson recorded in `.agent/memory.md`.
+(`res-m2-1`), six teammates across three waves. Wave lesson → `.claude/rules/waves.md`.
 
 ## M1 — REVIEWED
 
@@ -592,25 +592,25 @@ Reviewer reports → `.agent/review-m1/`. Unit contracts and fixed check sets �
 ### Sizing correction — measured at M5 u1 (binding on PLANNING)
 
 `M = 45 + 2·I` **understates the harvest floor for M5.** u1 measured `H` ≈ 168K
-against the model's 61K: the attached state alone (`roadmap.md` + `memory.md`) cost
-**68K before the session's first tool call**, and the wave's own harvest ran on top.
+against the model's 61K: the attached state alone cost **68K before the session's first
+tool call**, and the wave's own harvest ran on top.
 Implementation was NOT the overrun — writing + verifying `clinical.mjs` cost ~55K
 against `1.77·I` = 124K, so the multiplier is if anything generous here.
 
-The floor is not size-independent at 45K any more; it tracks the attached set, which
-has grown through M5 planning. Two consequences PLANNING must apply:
-- Size the next M5 units as `M = H_a + 2·I` with **`H_a` ≈ 90K** (68K attached + a
-  ~22K wave-harvest floor), giving `I ≤ 66K` against the 223K aim. Units u2, u4, u5,
-  u11, u12 are all sized `I` = 65-80K and **at least u4/u11/u12 (I=80K) exceed it** —
-  re-split at their recorded seams or accept a two-session unit.
-- The cheapest real fix is shrinking the attached set. `.agent/roadmap.md` is 37 kB
-  and `memory.md` 45 kB; the M2 expedited block and the M1 summary are both archivable
-  now. Doing that buys back more window than any re-split. **Still not done** — u2 had
-  no PLANNING dispatch to do it in, and no unit carries it. The next PLANNING or
-  MILESTONE-REVIEW session must, or every remaining unit pays the same floor. Prune
-  memory.md per bullet, not per section: its M1-unit headings carry live cross-cutting
-  facts (the closed-image builtin list under `Live proof derivation`, the M5 rulings
-  under `Presentation and framing (u7)`) beside genuinely closed detail.
+The floor is not size-independent at 45K any more; it tracks the attached set. Two
+consequences PLANNING must apply:
+- Size M5's remaining units as `M = H_a + 2·I`. `H_a` ≈ 90K when u1 and u2 measured it
+  (68K/72K attached + a ~22K wave-harvest floor), giving `I ≤ 66K` against the 223K aim.
+  Units u4, u5, u11, u12 are sized `I` = 75-80K and **exceed it** — re-split at their
+  recorded seams or accept a two-session unit.
+- **The attached set was cut 40% after u2**, which is the shrink this correction demanded:
+  the durable memory file (53,918 B) retired into `.claude/rules/`, of which 6,849 B stays
+  attached as the bare tier and 36,512 B moved to the lazy `paths:` tier that costs nothing
+  until a context touches a matching file. Attached bytes 115,472 → 69,046. That is
+  −46,426 B ≈ −15K tokens off every session's floor, so `H_a` ≈ 75K and `I ≤ 74K`
+  **by arithmetic, not by measurement** — the next unit measures `harvest=` and this line
+  is corrected from it. Still archivable: the M2 expedited block and the M1 summary in
+  this file.
 
 ### Sizing correction 2 — measured at M5 u2 (binding on PLANNING)
 
@@ -629,4 +629,4 @@ Two structural findings PLANNING should apply to u3-u7, which share u2's shape:
 - **Polling is not free and lagging teammates are the tail risk.** `test-m5u2` sat at 0/8
   for four polls and finished only after a cost directive; that tail, not the work, is
   what pushed u2 past the aim. Send the cost directive at the FIRST flat poll, as
-  `.agent/memory.md` already records — u2 waited for the third.
+  `.claude/rules/waves.md` records — u2 waited for the third.

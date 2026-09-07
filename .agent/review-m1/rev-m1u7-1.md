@@ -29,7 +29,7 @@ Grade: `python3 -P .scratch/validate-report.py .agent/review-m1/rev-m1u7-1.md --
 | U7-21 | pass: The declared nine-step gate ran from absent generated assets at rc 0; check reported 361 files, 0 errors, and 0 warnings. | `rm -rf kb/generated && pnpm gate`; `package.json` |
 | U7-22 | pass: The one authorized browser smoke opened the canonical disclosure and matched the rendered two-row answer to bytes read from the verified bag. | `pnpm smoke`; `tools/smoke.mjs:69-89,177-189` |
 | U7-23 | fail(low): The recorded fail verdict is sound, but its 41-error count is wrong—64 reproduce—and the polish entry has no required priority. | `.agent/contracts/m1u7.md:208`; `.agent/polish.md:76-82` |
-| U7-24 | fail(med): Four current measurements contradict durable u7 numbers: 81 copy strings, 361 checked files, 221 tests, and 3774068 dist bytes. | `.agent/roadmap.md:131-138`; `.agent/memory.md:214` |
+| U7-24 | fail(med): Four current measurements contradict durable u7 numbers: 81 copy strings, 361 checked files, 221 tests, and 3774068 dist bytes. | `.agent/roadmap.md:131-138`; `.claude/rules/ui.md` |
 | U7-25 | fail(low): Seven decisions hold, but D2 never defines its promised field token and D1 incorrectly says vendoring requires subsetting. | `.agent/contracts/m1u7.md:12-68`; `src/app.css:94-109` |
 | U7-26 | fail(med): File style is strong, but the gate leaves mechanically decidable font, licence, copy-reach, descriptor, and responsive invariants unowned. | `package.json`; `tools/copy-check.mjs:23-34`; `.agent/polish.md:83-86` |
 

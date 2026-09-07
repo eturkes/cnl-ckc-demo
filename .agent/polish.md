@@ -20,9 +20,10 @@ evidence gap under a durable claim, `low` = a feature or a tidy-up.
   Accept: a second visit boots with the network offline, and a changed KB input
   hash invalidates every stale PVM asset. `pri` low.
 - **Finish the u1 wave-1 reports** — `map-m1u1` (17/25 rows) and
-  `spike-m1u1-det` (9/12) were stopped at the reserve. Accept: both reports pass
-  `validate-report.py` with rc 0, or the open rows are re-derived and their
-  findings folded into memory. `pri` low.
+  `spike-m1u1-det` (9/12) were stopped at the reserve. Their sources
+  `.scratch/agents/{map-m1u1,spike-m1u1-det}.md` must survive until this closes. Accept: both
+  reports pass `validate-report.py` with rc 0, or the open rows are re-derived and their
+  findings folded into `.claude/rules/`. `pri` low.
 - **QLF fallback delivery path** — the fallback needs the 6.2 MB `swipl-bundle`,
   so a naive import would double the shipped engine. Accept: the fallback engine
   loads only when the saved state fails, and a production build that never takes
@@ -37,8 +38,9 @@ evidence gap under a durable claim, `low` = a feature or a tidy-up.
   without adding a per-binding engine call to the common path. `pri` low.
 - **Report validator splits on escaped pipes** — `.scratch/validate-report.py`
   `cells()` raw-splits on `|`, so a `\|` inside a finding shifts the evidence
-  column. Accept: a finding containing an escaped pipe grades identically to one
-  without, and the fix ships with the validator's port into the repo. `pri` med.
+  column. It must survive until this closes; its interface is in
+  `.claude/rules/waves.md`. Accept: a finding containing an escaped pipe grades identically
+  to one without, and the fix ships with the validator's port into the repo. `pri` med.
 - **u3 heap limit is unit-tested only** — `P2.7` is covered by `readOutcome` over a
   synthesized `resource_error(memory)`, not a live trip. Accept: a committed test drives
   real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate. `pri` med.
@@ -72,6 +74,8 @@ evidence gap under a durable claim, `low` = a feature or a tidy-up.
   so u7's 11-state evidence comes from an out-of-tree script. `pnpm browser:check`
   now measures five states at 320 px, which covers the narrow-viewport risk the
   walker was filed for; what stays unported is 375/1280 px and the other six states.
+  Regeneration until then: copy the 548-line script into `tools/` and run it; it drives a
+  real browser at 320/375/1280 px, writes PNGs to `.probe/` and JSON to stdout.
   Accept: `tools/visual-qa.mjs` passes `pnpm check` and `pnpm lint`, `pnpm visual-qa`
   exits 0, and its JSON reports `overflow=false` for every state at 320, 375 and
   1280 px. `pri` low.
@@ -96,9 +100,14 @@ evidence gap under a durable claim, `low` = a feature or a tidy-up.
   the control is exercised without deleting `dist/`. `pri` med.
 - **Mutation harness is scratch-local** — `.scratch/verify-fixes.py` is what proves the
   M1-review fix tests bind to their fixes (45 mutants, 45/45 RED), but it is gitignored,
-  so the claim does not rerun from committed state (M1 review session 2). Accept: a
-  committed mutation runner takes a mutant table, restores every file it touches, and a
-  documented command reproduces the full kill result from a clean checkout. `pri` med.
+  so the claim does not rerun from committed state. Each mutant restores one pre-fix
+  behaviour, reruns that fix's closing test and must print RED; a mutant whose closing check
+  is a GATE STEP passes its argv in place of the test-file name. Rerun =
+  `python3 -P .scratch/verify-fixes.py [<substring>]`; it restores every file it touches, and
+  two mutants once came back GREEN on real defects in the fix under test — **run it before
+  believing a fix**. It must survive until this closes. Accept: a committed mutation runner
+  takes a mutant table, restores every file it touches, and a documented command reproduces
+  the full kill result from a clean checkout. `pri` med.
 - **Humanizer label test asserts its own artifact** — `tests/questions-live.test.ts:294`
   matches `/^\S+ — sentence \d+, \w+ \d+$/u`, a grammar that exists only in
   `src/questions/humanize.ts`, so the expectation comes from the artifact under test.
@@ -163,12 +172,6 @@ evidence gap under a durable claim, `low` = a feature or a tidy-up.
   crosses a real worker boundary (M1 review X03). Accept: a table-driven case holds all 12
   discriminants, clones and deep-compares each, and a non-cloneable-field mutant in any row
   turns it red. `pri` med.
-- **Memory carries history and duplication** — `.agent/memory.md` retains rejected-option and
-  correction narrative, review-row origin stories, and restatements of package versions, the
-  gate script and volatile totals, all of which ride every session's attached state (M1
-  review X14). Accept: the file holds only constraints, non-obvious current facts and
-  runnable evidence; every rejected-option story, correction story and package/script
-  restatement is gone; closed-review narrative lives in `.agent/archive/`. `pri` med.
 - **Built-site browser prologue is duplicated** — `tools/smoke.mjs` and
   `tools/browser-check.mjs` each repeat the temp-root, `cp dist`, launch, `pageerror` and
   teardown sequence although `tools/browser.mjs` already owns `serve`, `launch` and
@@ -182,10 +185,12 @@ evidence gap under a durable claim, `low` = a feature or a tidy-up.
   current constraints with no row or history reference, and the adjacent why comments
   survive byte-for-byte. `pri` low.
 - **Browser and research evidence is branch-only** — five browser claims (R38, R39, R41,
-  R42, R45) rest on `tools/probe-u3.mjs` at `wt/rev-m1u3-4` `48008d3`, and two probes on
-  `res-m1-*` branches; deleting a branch makes seven claim families non-rerunnable from
-  committed state (M1 review X24). Accept: one typed browser harness in `tools/` covers all
-  five rows, and the `res-m1-*` probes are either ported with their commands or every
+  R42, R45) rest on `tools/probe-u3.mjs` at `wt/rev-m1u3-4` `48008d3` (derived from
+  `tools/smoke.mjs`; `node tools/probe-u3.mjs <ROW>` drives built output in a real browser
+  after copying it into `tools/`), and two probes on `res-m1-*` branches
+  (`.claude/rules/waves.md`); deleting a branch makes seven claim families non-rerunnable
+  from committed state (M1 review X24). Accept: one typed browser harness in `tools/` covers
+  all five rows, and the `res-m1-*` probes are either ported with their commands or every
   durable claim resting on them is pruned. `pri` med.
 
 - **Owned PDF viewer** — M2 u7 ships a native `<iframe>` at `#page=N`, so the viewer is a
@@ -206,16 +211,18 @@ evidence gap under a durable claim, `low` = a feature or a tidy-up.
   asking a question that reaches them. Accept: a document-first view lists every document's
   coverage rows and opens each one's passage and page through the same resolver the ladder
   uses, adding no eager asset fetch to the answer path. `pri` low.
-- **Recorded measurements have no mechanical owner** — `.agent/memory.md` carries
-  exact figures (PVM/QLF bytes, Horn edge count, catalog entries, `dist` file
-  count and byte total, manifest asset count) behind a prose rule that says to
-  re-derive them whenever a unit ships a new class. Every one of them drifted
-  silently through M2-M4 (expedited review C5), because prose does not run.
-  Accept: one script re-derives each recorded figure from a built `kb/generated`
-  plus `dist`, compares it to the value parsed out of `.agent/memory.md`, and
-  exits nonzero on any mismatch; it names the memory line for each mismatch, and
-  it runs in `pnpm gate` only if a build is already present, otherwise beside
-  `kb:reproduce`. `pri` med.
+- **Recorded measurements have no mechanical owner** — `.claude/rules/` carries exact
+  censuses (bag members, schema clause counts, derivable-solution counts, graph node/edge and
+  implication splits, modal-context counts, clause-line total, content sites/premises/
+  assumption leaves, manifest asset count) behind a prose rule that says to re-derive them
+  whenever a unit ships a new class. Every one of the pre-M5 figures drifted silently through
+  M2-M4 (expedited review C5), because prose does not run. Volatile totals were dropped in
+  the memory retirement and now carry their own command instead (`du -sb dist`,
+  `stat -c %s`, `jq '.assets|length'`), so this entry owns the stable censuses alone.
+  Accept: one script re-derives each recorded figure from a built `kb/generated` plus `dist`,
+  compares it to the value parsed out of the `.claude/rules/` file that states it, and exits
+  nonzero on any mismatch; it names the rules file and line for each mismatch, and it runs in
+  `pnpm gate` only if a build is already present, otherwise beside `kb:reproduce`. `pri` med.
 - **Two tests time out under parallel execution** — `pnpm test` passed 291/293
   with two 5-second timeouts (`V11 has zero axe`, `fails kb:asset-check on a
   static import`); both pass when rerun in isolation, so the suite is

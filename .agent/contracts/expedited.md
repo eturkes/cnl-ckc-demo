@@ -25,7 +25,7 @@ rule).
    noun→noun collapse is forbidden"*.
 3. `.agent/roadmap.md` M2 `u1`–`u7` `Accept:` clauses — already explicit, written
    by PLANNING before the range, never retracted.
-4. `.agent/memory.md` recorded measurements + rulings.
+4. `.claude/rules/` recorded measurements + rulings.
 5. Project `CLAUDE.md` Engineering + Authoring.
 
 Demo-tier rigor applies (intent waives `cnl-ckc`-level rigor) — it does **not**
@@ -51,7 +51,7 @@ waive 1 or 2.
 | A2 | Which questions exist is *declared* and mechanically bound to the bag: a bag whose content invalidates a declared question fails the build rather than silently changing the catalog. (M1 shipped this as `EXPORTED` in `catalog.mjs`.) |
 | A3 | A build step that computes what an answer *says* must prove its output equivalent to the source ACE, byte for byte, and fail the build otherwise. |
 | A4 | Layer direction holds: `engine` → `questions`/`provenance`/`graph` → `demo`/components. No cycles; no semantics in `.svelte` components; no component reaching into a build script. |
-| A5 | Payload growth is bounded, measured and lazy: no artifact above 1 MB loads before an explicit user activation, and every shipped artifact class is recorded in `.agent/memory.md`. |
+| A5 | Payload growth is bounded, measured and lazy: no artifact above 1 MB loads before an explicit user activation, and every shipped artifact class is recorded in `.claude/rules/`. |
 | A6 | Every worker-boundary value is structured-clone-safe and re-validated at the consumer; no engine-native value crosses it. |
 | A7 | Two forced builds are byte-identical across every generated asset class (`pnpm kb:reproduce`). |
 | A8 | Failure modes stay fail-closed: a malformed generated artifact, a missing chunk, or a diagnostic-emitting engine yields an explicit error state, never partial or neighbouring content. |
@@ -75,8 +75,8 @@ waive 1 or 2.
 
 | id | predicate |
 | --- | --- |
-| C1 | Every claim in `.agent/roadmap.md`, `.agent/memory.md`, `README.md` and shipped UI copy for this range re-derives from committed state by a named command. |
-| C2 | No check retired without record: every gate step, oracle and test class present at `5ed81a3~1` is present at `a944fca`, or its removal is recorded with rationale in `.agent/memory.md`. |
+| C1 | Every claim in `.agent/roadmap.md`, `.claude/rules/`, `README.md` and shipped UI copy for this range re-derives from committed state by a named command. |
+| C2 | No check retired without record: every gate step, oracle and test class present at `5ed81a3~1` is present at `a944fca`, or its removal is recorded with rationale in `.claude/rules/`. |
 | C3 | The non-negotiable carries a live mechanical binding at least as strong as M1's: inject a PID-unique clause into the **guideline schema predicates**, require the projected answer *and* its line-keyed proof to change, read no committed fixture. |
 | C4 | Each M2 `u1`–`u7` `Accept:` clause holds as written, or the roadmap records where it does not. One row per unit. |
 | C5 | Recorded measurements match re-derivation: manifest counts, graph stats, asset totals, test/file counts, `dist` size class list. |

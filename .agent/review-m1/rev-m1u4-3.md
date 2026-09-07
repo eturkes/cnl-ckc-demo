@@ -158,12 +158,12 @@ defined`. Both are failures, neither is a skip.
 
 ### c24
 
-Census of durable files u4 touched: ten code files in `823ed4f`, plus `.agent/memory.md`,
-`.agent/polish.md`, `.agent/roadmap.md` in `450163b` and `.agent/memory.md` again in `8762f96`.
+Census of durable files u4 touched: ten code files in `823ed4f`, plus the durable memory file,
+`.agent/polish.md`, `.agent/roadmap.md` in `450163b` and the memory file again in `8762f96`.
 
 | ledger rule | verdict |
 | --- | --- |
-| dense, symbol-forward, human-sparse | pass — `.agent/memory.md` "Question catalog and answers (u4)" is telegraphic and `→`/`=` notated; code comments carry no filler |
+| dense, symbol-forward, human-sparse | pass — the memory file's "Question catalog and answers (u4)" section is telegraphic and `→`/`=` notated; code comments carry no filler |
 | no provenance narrative | pass — a scan for dates and discovery verbs over all ten code files returns nothing (rc 1) |
 | positive future instructions | pass — the actionable strings are imperative and positive (`run pnpm kb:build`, `question catalog is missing ${id}; run pnpm kb:build`), condition before command |
 | ASD-STE100 for human-facing copy | pass by absence of surface — u4 ships no UI copy; question text comes from the bag. The one consumption-time surface is `kb:asset-check`'s CLI output, which is short, active and definite |

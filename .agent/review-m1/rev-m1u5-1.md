@@ -36,7 +36,7 @@ run one from the primary tree as `node --test <worktree-or-branch-checkout>/<pat
 
 | I26 | pass: 17 predicates are browser-safe by construction; 9 remain browser-suspect, with one real-Chromium probe specified to close the set | `src/questions/QuestionCombobox.svelte:42-175`; Details I26 |
 | I27 | pass: all five prescribed mutations turn the full DOM project red and every source mutation restores byte-identically before the next run | mutation rc=1 each: S7, K6, K9, B1, S5/S6; `tests/question-combobox.dom.test.ts:91-360` |
-| I28 | fail(low): component and Vitest config pass, but suite copy plus dead scratch and worktree provenance make three of five durable files fail the ledger | `tests/question-combobox.dom.test.ts:213,234`; `.agent/contracts/m1u5.md:10-12`; `.agent/memory.md:365-366` |
+| I28 | fail(low): component and Vitest config pass, but suite copy plus dead scratch and worktree provenance make three of five durable files fail the ledger | `tests/question-combobox.dom.test.ts:213,234`; `.agent/contracts/m1u5.md:10-12`; `.claude/rules/ui.md` |
 
 ## Details
 
@@ -134,7 +134,7 @@ This is a judgment-only finding; no mechanical RED test can decide the full auth
 | `tests/question-combobox.dom.test.ts` | fail | Two full generated questions duplicate catalog copy in comments, breaching the single-source and token-pruning rules. |
 | `vite.config.ts` | pass | Both comments explain deployment or worktree-cache constraints; the project split stays compact. |
 | `.agent/contracts/m1u5.md` | fail | `Source` names absent `.scratch/agents/map-m1u5.md` plus transient worktree/SHA provenance, so a clean checkout cannot follow its evidence trail. |
-| `.agent/memory.md` u5 bullets | fail | The bits-ui entry retains `wt/spike-m1u5-lib` and `dca4f87`; the durable dependency, DOM and timing facts do not need branch provenance. |
+| `.claude/rules/ui.md` u5 bullets | fail | The bits-ui entry retains `wt/spike-m1u5-lib` and `dca4f87`; the durable dependency, DOM and timing facts do not need branch provenance. |
 
 **Impact:** Future agents encounter a dead source pointer and spend context on historical branch
 coordinates. Generated copy can also drift from the suite commentary. Runtime behavior is intact.

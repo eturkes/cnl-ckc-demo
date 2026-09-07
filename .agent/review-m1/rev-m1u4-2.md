@@ -48,7 +48,7 @@ Two facts MAIN should rule on:
 
 - **The guard is unguarded.** Mutant `c05-guard-relaxed-to-atleast-one` (`hits !== 1` → `hits < 1`)
   and mutant `c05-authored-goal-unquoted-token` (quoted token → bare substring) both leave the whole
-  gate GREEN at 171/171. So the "token-exact, single-hit" property that `.agent/memory.md` states as
+  gate GREEN at 171/171. So the "token-exact, single-hit" property that `.claude/rules/kb-build.md` states as
   a durable claim has no committed check. Killing test would be a unit case over `catalogRecords`
   with a two-hit and a substring-hazard `AUTHORED` row; it is green on `9020e62`, so it ships as
   coverage, not as a red test.
@@ -138,7 +138,7 @@ The premise MAIN should correct: **`dynamic/1` is not what makes the overlay wor
 Consulting the same seven clauses with no `dynamic/1` preamble returns `{"kind":"consulted"}`, emits
 no diagnostics, and moves the result to 8 rows with the marker present — identical to the declared
 version. So the comment at `tests/questions-live.test.ts:277` ("Schema predicates ship static, so the
-overlay declares them dynamic first") and the matching `.agent/memory.md` line describe a constraint
+overlay declares them dynamic first") and the matching `.claude/rules/proof.md` line describe a constraint
 this build does not impose. The declarations are harmless belt-and-braces; the claim about why they
 are there is unfalsified. Acceptance check: rerun `.probes/zz-live2.test.ts.src` case `c18b` and
 confirm `consultWithoutDynamic` still reports `consulted` with `carriesMarker=true`, then either

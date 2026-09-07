@@ -6,7 +6,7 @@
 | A2 | pass: seven declared topic/source sets re-derive from the verified bag and a missing selected ACE source aborts | `tools/kb/clinical.mjs:18`; `pnpm test` (`questions-live.test.ts`) |
 | A3 | fail(high): the byte-equivalence guard precedes grouping and term emission, so changed answer modality still builds | `tools/kb/clinical.mjs:261`; `tools/kb/clinical.mjs:325`; `node tools/review-probes/a3-answer-equivalence.test.mjs` |
 | A4 | fail(med): import graph is acyclic, but Svelte components still select proof documents and join semantic lines | `src/provenance/ProvenanceLadder.svelte:25`; `node tools/review-probes/a4-component-semantics.test.mjs` |
-| A5 | fail(med): a 3,138,829-byte worker boots before user activation, and memory retains the pre-range 14-file inventory | `src/demo/DemoController.svelte.ts:119`; `.agent/memory.md:243`; `pnpm browser:check` |
+| A5 | fail(med): a 3,138,829-byte worker boots before user activation, and memory retains the pre-range 14-file inventory | `src/demo/DemoController.svelte.ts:119`; `.claude/rules/toolchain.md`; `pnpm browser:check` |
 | A6 | fail(med): engine-native terms are decoded, but both worker consumers trust TypeScript-cast messages without runtime validation | `src/engine/client.ts:118`; `pnpm exec vitest run tests/review-a6-worker-validation.test.ts --project node` |
 | A7 | pass: two forced builds produced identical hashes for all 343 recorded assets across every generated class | `pnpm kb:reproduce` |
 | A8 | fail(high): malformed alignment survives asset parsing, and query stderr still returns a successful solution | `src/provenance/model.ts:85`; `src/engine/session.ts:307`; `pnpm exec vitest run tests/review-a8-fail-closed.test.ts --project node` |
@@ -34,7 +34,7 @@ A static import walk found 31 source files, 62 relative edges, and zero cycles; 
 
 ### A5
 
-`pnpm browser:check` rebuilt a 21,874,052-byte `dist`: graph = 8,184,964 bytes and PDF = 1,418,584 bytes, both request-lazy; worker = 3,138,829 bytes and `DemoController` boots it in its constructor before any gesture. The second predicate also fails: memory still records the M1-era 14-file/≈3.77 MB build and omits the 337 provenance chunks, source PDF, semantic graph, and current total. Acceptance: `pnpm build && node tools/review-probes/a5-lazy-payload.test.mjs` exits 0 after user activation gates every >1 MB file; `.agent/memory.md` records the fresh class inventory and measurements.
+`pnpm browser:check` rebuilt a 21,874,052-byte `dist`: graph = 8,184,964 bytes and PDF = 1,418,584 bytes, both request-lazy; worker = 3,138,829 bytes and `DemoController` boots it in its constructor before any gesture. The second predicate also fails: memory still records the M1-era 14-file/≈3.77 MB build and omits the 337 provenance chunks, source PDF, semantic graph, and current total. Acceptance: `pnpm build && node tools/review-probes/a5-lazy-payload.test.mjs` exits 0 after user activation gates every >1 MB file; `.claude/rules/toolchain.md` records the fresh class inventory and measurements.
 
 ### A6
 
