@@ -117,7 +117,7 @@ export const LABELS = {
   navNotes: 'ノート',
   sourceMaterial: '原典資料',
   backToTop: 'ページの先頭へ戻る',
-  guidelineLabel: 'ガイドライン：',
+  guidelineLabel: 'ガイドライン:',
 
   themeToLight: 'ライトテーマを使う',
   themeToDark: 'ダークテーマを使う',

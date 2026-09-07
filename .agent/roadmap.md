@@ -51,9 +51,11 @@ trusting any claim in the expedited block below.
 - **Japanese interface** — SHIPPED, user-added scope, **off the M5 spine**. A header
   toggle switches the chrome between `en` and `ja`; ACE, Prolog, document ids and the
   guideline's own prose stay English by user ruling. Law = `.claude/rules/i18n.md`.
-  Verified by `copy:check` parity, `presentation:check` faces, `tests/i18n.dom.test.ts`
-  and a Japanese pass in `browser:check`. It touches no M5 unit: the KB, the engine and
-  every derivation are untouched, and the catalog is a rendering seam above them.
+  All four `release:check` legs pass on the merged tree — `gate`, `kb:reproduce`,
+  `smoke`, `browser:check` — the last measuring a Japanese 320 px state and the font
+  budget. It touches no M5 unit: the KB, the engine and every derivation are
+  untouched, and the catalog is a rendering seam above them. `dist/` grew by the two
+  Japanese faces alone, which `unicode-range` keeps off an English visitor.
 
 ## M5 — semantic integrity — IN-PROGRESS
 
