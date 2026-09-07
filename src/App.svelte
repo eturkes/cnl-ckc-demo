@@ -184,7 +184,8 @@
       />
       {#if graphSelection?.document !== undefined}
         <p class="graph-selection-note">
-          {t.LABELS.graphSelectedBefore} <code>{graphSelection.document}</code>{t.LABELS.graphSelectedAfter}
+          {t.LABELS.graphSelectedBefore} <code>{graphSelection.document}</code>{t.LABELS
+            .graphSelectedAfter}
           {#if proofDocuments.has(graphSelection.document)}
             <a href="#trace-heading">{t.LABELS.compareWithProof}</a>.
           {:else}
