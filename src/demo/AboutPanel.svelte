@@ -27,7 +27,7 @@
 
   <p class="warn">{t.INSTRUCTIONS.notClinical}</p>
   <p>
-    <strong>Guideline:</strong>
+    <strong>{t.LABELS.guidelineLabel}</strong>
     <a href={GUIDELINE.html} target="_blank" rel="noreferrer">{GUIDELINE.title}</a>
   </p>
   <p>{t.DESCRIPTIONS.purpose}</p>
