@@ -329,19 +329,20 @@
         <p class="kind">{t.LABELS.graphAnswerMap}</p>
         <p>
           {#if evidenceRoot !== undefined}
-            <strong>{t.TEXT.graphPrimaryIs(graphNodeLabel(evidenceRoot))}</strong>{' '}
+            <strong>{t.TEXT.graphPrimaryIs(graphNodeLabel(evidenceRoot))}</strong>
           {/if}
-          {t.TEXT.graphHighlightPaths(evidenceView.highlight.edges.length)}{' '}{t.DESCRIPTIONS
-            .graphMutedBranches}
+          {t.TEXT.graphHighlightPaths(evidenceView.highlight.edges.length)}
+          {t.DESCRIPTIONS.graphMutedBranches}
         </p>
         <details class="projection-note">
           <summary>{t.LABELS.graphDerivationSummary}</summary>
           <p>
-            {t.DESCRIPTIONS.graphDerivation}{' '}{t.TEXT.graphHighlightOriginBefore(
+            {t.DESCRIPTIONS.graphDerivation}
+            {t.TEXT.graphHighlightOriginBefore(evidenceView.sentences.length)}
+            <code>{evidenceView.document}</code>{t.TEXT.graphHighlightOriginAfter(
               evidenceView.sentences.length,
-            )} <code>{evidenceView.document}</code>{t.TEXT.graphHighlightOriginAfter(
-              evidenceView.sentences.length,
-            )}{' '}{t.TEXT.graphHiddenScaffolding(
+            )}
+            {t.TEXT.graphHiddenScaffolding(
               evidenceView.hiddenTechnicalNodes,
               evidenceView.hiddenTechnicalEdges,
             )}
@@ -386,8 +387,8 @@
                   </button>
                   {#if result.id !== selectedId}
                     <button class="path-action" type="button" onclick={() => findPath(result.id)}>
-                      {t.LABELS.graphPath}<span class="visually-hidden"
-                        >{' '}{t.TEXT.graphPathTo(graphNodeLabel(result))}</span
+                      {t.LABELS.graphPath}<span class="visually-hidden">
+                        {t.TEXT.graphPathTo(graphNodeLabel(result))}</span
                       >
                     </button>
                   {/if}
@@ -439,8 +440,8 @@
             subgraph.nodes.length,
             subgraph.edges.length,
             evidenceView.highlight.edges.length,
-          )}{#if subgraph.truncatedNodes || subgraph.truncatedEdges}{' '}{t.INSTRUCTIONS
-          .graphExpandHint}{/if}
+          )}{#if subgraph.truncatedNodes || subgraph.truncatedEdges}
+        {t.INSTRUCTIONS.graphExpandHint}{/if}
     </p>
 
     {#if path !== null}
