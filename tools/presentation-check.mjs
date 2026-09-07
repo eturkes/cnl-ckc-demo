@@ -19,26 +19,75 @@ import { join } from 'node:path';
 import { ROOT } from './kb/paths.mjs';
 
 const CSS = join(ROOT, 'src/app.css');
-const SCOPE = '@fontsource-variable';
 
 /**
- * The six subset files `dist/` is supposed to carry, one row per `@font-face`.
- * `family` is the name the rule declares — the packages' `Variable` suffix is
- * dropped deliberately, so a copy-paste of the package name is a regression.
+ * The subset files `dist/` is supposed to carry, one row per `@font-face`.
  *
- * @type {{pkg: string, subset: string, family: string}[]}
+ * `family` is the name the rule declares — the variable packages' `Variable`
+ * suffix is dropped deliberately, so a copy-paste of the package name is a
+ * regression. `scope` is per row because the Japanese face is a STATIC weight and
+ * ships from `@fontsource`, not `@fontsource-variable`; `marker` is the filename
+ * fragment that identifies the row, and it carries its own trailing separator so
+ * `-latin-ext-` can never be read as `-latin-`.
+ *
+ * @type {{scope: string, pkg: string, subset: string, marker: string, family: string}[]}
  */
+const VAR = '@fontsource-variable';
 const FACES = [
-  { pkg: 'atkinson-hyperlegible-next', subset: 'latin', family: 'Atkinson Hyperlegible Next' },
-  { pkg: 'atkinson-hyperlegible-next', subset: 'latin-ext', family: 'Atkinson Hyperlegible Next' },
-  { pkg: 'atkinson-hyperlegible-mono', subset: 'latin', family: 'Atkinson Hyperlegible Mono' },
-  { pkg: 'atkinson-hyperlegible-mono', subset: 'latin-ext', family: 'Atkinson Hyperlegible Mono' },
-  { pkg: 'literata', subset: 'latin', family: 'Literata' },
-  { pkg: 'literata', subset: 'latin-ext', family: 'Literata' },
+  {
+    scope: VAR,
+    pkg: 'atkinson-hyperlegible-next',
+    subset: 'latin',
+    marker: '-latin-wght-',
+    family: 'Atkinson Hyperlegible Next',
+  },
+  {
+    scope: VAR,
+    pkg: 'atkinson-hyperlegible-next',
+    subset: 'latin-ext',
+    marker: '-latin-ext-wght-',
+    family: 'Atkinson Hyperlegible Next',
+  },
+  {
+    scope: VAR,
+    pkg: 'atkinson-hyperlegible-mono',
+    subset: 'latin',
+    marker: '-latin-wght-',
+    family: 'Atkinson Hyperlegible Mono',
+  },
+  {
+    scope: VAR,
+    pkg: 'atkinson-hyperlegible-mono',
+    subset: 'latin-ext',
+    marker: '-latin-ext-wght-',
+    family: 'Atkinson Hyperlegible Mono',
+  },
+  { scope: VAR, pkg: 'literata', subset: 'latin', marker: '-latin-wght-', family: 'Literata' },
+  {
+    scope: VAR,
+    pkg: 'literata',
+    subset: 'latin-ext',
+    marker: '-latin-ext-wght-',
+    family: 'Literata',
+  },
+  {
+    scope: '@fontsource',
+    pkg: 'biz-udpgothic',
+    subset: 'japanese-400',
+    marker: '-japanese-400-normal.',
+    family: 'BIZ UDPGothic',
+  },
+  {
+    scope: '@fontsource',
+    pkg: 'biz-udpgothic',
+    subset: 'japanese-700',
+    marker: '-japanese-700-normal.',
+    family: 'BIZ UDPGothic',
+  },
 ];
 
 /** Shipped licence ↔ the package whose bytes it must reproduce. */
-const LICENCES = [...new Set(FACES.map((f) => f.pkg))];
+const LICENCES = [...new Map(FACES.map((f) => [f.pkg, f.scope])).entries()];
 
 /**
  * Selectors that render engine-authored text, which arrives as document ids,
@@ -97,8 +146,8 @@ const checkFaces = (failures, css) => {
     JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'))
   );
   const pins = /** @type {{dependencies?: Record<string, string>}} */ (parsed).dependencies ?? {};
-  for (const pkg of LICENCES) {
-    const pin = pins[`${SCOPE}/${pkg}`];
+  for (const [pkg, scope] of LICENCES) {
+    const pin = pins[`${scope}/${pkg}`];
     if (pin === undefined) failures.push(`${pkg}: not a dependency`);
     // A range would let a reinstall change the shipped glyphs without a diff.
     else if (!/^\d+\.\d+\.\d+$/.test(pin)) failures.push(`${pkg}: pinned to range ${pin}`);
@@ -118,20 +167,14 @@ const checkFaces = (failures, css) => {
       failures.push(`a @font-face declares no url(): ${String(family)}`);
       continue;
     }
-    const file = src.startsWith(`${SCOPE}/`) ? src : undefined;
-    if (file === undefined) {
-      failures.push(`${src}: not a ${SCOPE} file — fonts must self-host`);
-      continue;
-    }
     // The declared row is matched on the FILE name, so `-latin-ext-` cannot be
     // read as `-latin-`: the trailing separator is part of the marker.
-    const row = FACES.find(
-      (f) => src.startsWith(`${SCOPE}/${f.pkg}/`) && src.includes(`-${f.subset}-wght-`),
-    );
+    const row = FACES.find((f) => src.startsWith(`${f.scope}/${f.pkg}/`) && src.includes(f.marker));
     if (row === undefined) {
-      failures.push(`${src}: no declared face — only latin and latin-ext may ship`);
+      failures.push(`${src}: no declared face — only a declared subset may ship`);
       continue;
     }
+    const file = src;
     const key = `${row.pkg} ${row.subset}`;
     if (seen.has(key)) failures.push(`${key}: declared twice`);
     seen.add(key);
@@ -155,9 +198,9 @@ const checkFaces = (failures, css) => {
 
 /** @param {string[]} failures */
 const checkLicences = (failures) => {
-  for (const pkg of LICENCES) {
+  for (const [pkg, scope] of LICENCES) {
     const shipped = join(ROOT, 'public/licenses', `${pkg}.txt`);
-    const packaged = join(ROOT, 'node_modules', SCOPE, pkg, 'LICENSE');
+    const packaged = join(ROOT, 'node_modules', scope, pkg, 'LICENSE');
     try {
       if (!readFileSync(shipped).equals(readFileSync(packaged))) {
         failures.push(`${pkg}.txt differs from the licence ${pkg} ships`);

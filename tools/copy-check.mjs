@@ -1,11 +1,17 @@
 // `pnpm copy:check` — hold the demo's human-facing prose to the project's
-// register: 20 words per sentence for instructions, 25 for descriptions, and no
-// filler words.
+// register, and hold the Japanese catalog at parity with the English one.
+//
+// Two graders, because the two languages admit different decidable rules. English
+// grades on sentence length and banned filler. Japanese grades on PARITY alone:
+// every English key present, and every value actually rewritten. The word limits
+// do not port — Japanese has no word spaces, so `words()` would score every
+// sentence as one word and pass anything at all.
 //
 // The checker is static. There is no TypeScript runner in this repo, and adding
 // one to read two string records would cost more than parsing them does. It
 // therefore reads the literals out of the source, which also means it grades the
-// bytes that ship rather than a re-export of them.
+// bytes that ship rather than a re-export of them. Reading the source is also what
+// lets `TEXT`, whose entries are functions, be compared across locales at all.
 //
 // Usage: node tools/copy-check.mjs
 
@@ -17,23 +23,33 @@ import { ROOT } from './kb/paths.mjs';
 /** Words the project bans outright. */
 const FILLER = ['simply', 'robust', 'seamlessly', 'leverage'];
 
+const EN = 'src/i18n/en.ts';
+const JA = 'src/i18n/ja.ts';
+
 /**
- * Graded files. `copy.ts` splits its own buckets; `describe.ts` is every state's
- * reader-facing wording, which is prose by the same rule even though it lives
- * beside logic.
+ * Graded buckets, English only. `LABELS` and `TEXT` are chrome and interpolated
+ * prose; their limits almost never bind, and the reason to grade them is the
+ * banned-filler sweep.
  *
- * @type {{path: string, buckets: {name: string, limit: number}[]}[]}
+ * @type {{name: string, limit: number}[]}
  */
-const SOURCES = [
-  {
-    path: 'src/demo/copy.ts',
-    buckets: [
-      { name: 'INSTRUCTIONS', limit: 20 },
-      { name: 'DESCRIPTIONS', limit: 25 },
-    ],
-  },
-  { path: 'src/demo/describe.ts', buckets: [{ name: '*', limit: 25 }] },
+const BUCKETS = [
+  { name: 'INSTRUCTIONS', limit: 20 },
+  { name: 'DESCRIPTIONS', limit: 25 },
+  { name: 'LABELS', limit: 25 },
+  { name: 'TEXT', limit: 25 },
 ];
+
+/**
+ * Keys whose Japanese value is allowed to be byte-identical to its English one.
+ *
+ * The word limits do NOT port: Japanese has no word spaces, so `words()` would
+ * count every sentence as one and pass everything. Parity is what the gate can
+ * actually decide — every key present, and every value actually rewritten.
+ *
+ * @type {Set<string>}
+ */
+const UNTRANSLATED_OK = new Set();
 
 /**
  * String literals in a source region, with adjacent `'a' + 'b'` concatenations
@@ -52,8 +68,8 @@ const literals = (source) => {
     const text = [...group.matchAll(/'((?:[^'\\]|\\.)*)'/g)].map(([, s]) => s ?? '').join('');
     out.push({ key, text });
   }
-  // Standalone literals (`return 'No proof found.'`, template pieces) so
-  // `describe.ts` is graded whole rather than only where it uses object keys.
+  // Standalone literals, which is how `TEXT`'s arrow bodies and every template
+  // piece are reached — the entry pattern above sees quoted values alone.
   for (const [, text] of body.matchAll(/(?:^|[^\w'])(?:'|`)((?:[^'`\\\n]|\\.){12,})(?:'|`)/g)) {
     if (text !== undefined) out.push({ key: '<literal>', text });
   }
@@ -85,21 +101,78 @@ const words = (sentence) =>
     .split(/\s+/)
     .filter(Boolean).length;
 
+/**
+ * One bucket's source text, between its `export const` and its closing `as const`.
+ *
+ * @param {string} source @param {string} path @param {string} name @returns {string}
+ */
+const bucket = (source, path, name) => {
+  const start = source.indexOf(`export const ${name}`);
+  if (start < 0) throw new Error(`${path}: no exported ${name}`);
+  const end = source.indexOf('\n} as const;', start);
+  if (end < 0) throw new Error(`${path}: ${name} is not a closed record`);
+  return source.slice(start, end);
+};
+
+/**
+ * A bucket's entries as `key -> its own source slice`, split on the two-space
+ * indent that prettier gives every top-level key. Slicing the source rather than
+ * the string value is what lets `TEXT`, whose entries are functions, be compared
+ * across locales at all.
+ *
+ * @param {string} region @returns {Map<string, string>}
+ */
+const entries = (region) => {
+  /** @type {Map<string, string>} */
+  const out = new Map();
+  const starts = [...region.matchAll(/^ {2}(\w+):/gm)];
+  for (const [index, match] of starts.entries()) {
+    const key = match[1];
+    if (key === undefined || match.index === undefined) continue;
+    out.set(key, region.slice(match.index, starts[index + 1]?.index ?? region.length));
+  }
+  return out;
+};
+
+/**
+ * Every English key present in Japanese, and every Japanese value rewritten.
+ *
+ * @param {string[]} failures @returns {number} keys compared
+ */
+const checkParity = (failures) => {
+  const en = readFileSync(join(ROOT, EN), 'utf8');
+  const ja = readFileSync(join(ROOT, JA), 'utf8');
+  let compared = 0;
+  for (const { name } of BUCKETS) {
+    const source = entries(bucket(en, EN, name));
+    const target = entries(bucket(ja, JA, name));
+    for (const key of source.keys()) {
+      if (!target.has(key)) failures.push(`${JA} ${name}.${key}: missing`);
+    }
+    for (const key of target.keys()) {
+      if (!source.has(key)) failures.push(`${JA} ${name}.${key}: not a key of ${EN}`);
+    }
+    for (const [key, text] of source) {
+      const other = target.get(key);
+      if (other === undefined) continue;
+      compared += 1;
+      if (other === text && !UNTRANSLATED_OK.has(`${name}.${key}`)) {
+        failures.push(`${JA} ${name}.${key}: untranslated`);
+      }
+    }
+  }
+  return compared;
+};
+
 const main = () => {
   const failures = [];
   let graded = 0;
 
-  for (const { path, buckets } of SOURCES) {
-    const source = readFileSync(join(ROOT, path), 'utf8');
-    for (const { name, limit } of buckets) {
-      let region = source;
-      if (name !== '*') {
-        const start = source.indexOf(`export const ${name}`);
-        if (start < 0) throw new Error(`${path}: no exported ${name}`);
-        const end = source.indexOf('\n} as const;', start);
-        if (end < 0) throw new Error(`${path}: ${name} is not a closed record`);
-        region = source.slice(start, end);
-      }
+  {
+    const source = readFileSync(join(ROOT, EN), 'utf8');
+    for (const { name, limit } of BUCKETS) {
+      const path = EN;
+      const region = bucket(source, path, name);
       const found = literals(region);
       if (found.length === 0) throw new Error(`${path}: ${name} yielded no strings to grade`);
       for (const { key, text } of found) {
@@ -119,12 +192,14 @@ const main = () => {
     }
   }
 
+  const compared = checkParity(failures);
+
   if (failures.length > 0) {
     console.error(`copy: ${failures.length} failure(s)`);
     for (const line of failures) console.error(`  ${line}`);
     process.exit(1);
   }
-  console.log(`copy: ${graded} strings pass`);
+  console.log(`copy: ${graded} en strings pass, ${compared} ja keys at parity`);
 };
 
 main();
