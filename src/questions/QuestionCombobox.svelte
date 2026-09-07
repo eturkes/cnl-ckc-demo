@@ -6,6 +6,8 @@
   // edit" for a widget that accepts no text and raises a mobile keyboard. The
   // text-field look is CSS, so the later free-text intake swaps the host alone.
 
+  import { messages } from '../i18n/locale.svelte.js';
+
   import { QUESTION_CATALOG, QUESTION_IDS, type QuestionId } from './catalog.js';
 
   interface Props {
@@ -16,8 +18,7 @@
 
   let { selected, onSelect }: Props = $props();
 
-  const PROMPT = 'Choose a question';
-  const LABEL = 'Clinical question';
+  const t = $derived(messages.current);
   const LAST = QUESTION_IDS.length - 1;
   const LABELS = QUESTION_IDS.map((id) => QUESTION_CATALOG[id].question);
   // APG's own buffer window; a repeated single character cycles matches (D3).
@@ -182,7 +183,7 @@
 </script>
 
 <div class="intake" bind:this={root} onfocusout={onFocusOut}>
-  <span class="label" id={labelId}>{LABEL}</span>
+  <span class="label" id={labelId}>{t.LABELS.questionLabel}</span>
   <div class="control">
     <div
       class="box"
@@ -197,7 +198,7 @@
       onkeydown={onKeyDown}
       onclick={() => (open ? hide() : show())}
     >
-      {selected === null ? PROMPT : QUESTION_CATALOG[selected].question}
+      {selected === null ? t.LABELS.questionPrompt : QUESTION_CATALOG[selected].question}
     </div>
     <span class="caret" aria-hidden="true">▾</span>
     <!-- Keeping DOM focus on the combobox is what makes aria-activedescendant work,
