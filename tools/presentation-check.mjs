@@ -20,6 +20,8 @@ import { ROOT } from './kb/paths.mjs';
 
 const CSS = join(ROOT, 'src/app.css');
 
+const VAR = '@fontsource-variable';
+
 /**
  * The subset files `dist/` is supposed to carry, one row per `@font-face`.
  *
@@ -32,7 +34,6 @@ const CSS = join(ROOT, 'src/app.css');
  *
  * @type {{scope: string, pkg: string, subset: string, marker: string, family: string}[]}
  */
-const VAR = '@fontsource-variable';
 const FACES = [
   {
     scope: VAR,
