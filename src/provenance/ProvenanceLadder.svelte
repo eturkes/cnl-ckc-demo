@@ -168,7 +168,9 @@
         {:else if evidenceError !== ''}
           <li class="load-error">
             <p role="alert">{evidenceError}</p>
-            <button type="button" onclick={() => void loadEvidence()}>{t.LABELS.evidenceRetry}</button>
+            <button type="button" onclick={() => void loadEvidence()}
+              >{t.LABELS.evidenceRetry}</button
+            >
           </li>
         {:else if evidence !== undefined}
           <li>
@@ -245,14 +247,13 @@
             <h3>{t.LABELS.guidelinePage}</h3>
             <p>{t.TEXT.passagePage(evidence.region.page)}</p>
             <div class="page-actions">
-              <button type="button" onclick={() => (pageOpen = true)}>{t.LABELS.loadPageViewer}</button>
+              <button type="button" onclick={() => (pageOpen = true)}
+                >{t.LABELS.loadPageViewer}</button
+              >
               <a href={pageHref} target="_blank" rel="noreferrer">{t.LABELS.openPageTab}</a>
             </div>
             {#if pageOpen}
-              <iframe
-                src={pageHref}
-                title={t.TEXT.pageViewerTitle(evidence.region.page)}
-              ></iframe>
+              <iframe src={pageHref} title={t.TEXT.pageViewerTitle(evidence.region.page)}></iframe>
             {/if}
           </li>
         {/if}
