@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { DESCRIPTIONS } from './copy.js';
-  import { synthesizeAnswer, type AnswerRow } from './describe.js';
+  import { messages } from '../i18n/locale.svelte.js';
   import ProvenanceLadder from '../provenance/ProvenanceLadder.svelte';
   import type { GraphFocus, ProvenanceState } from '../provenance/model.js';
+
+  import { synthesizeAnswer, type AnswerRow } from './describe.js';
 
   interface Props {
     rows: AnswerRow[];
@@ -34,6 +35,7 @@
   const uid = $props.id();
   const headingId = `${uid}-heading`;
   const sourceHeadingId = `${uid}-source-heading`;
+  const t = $derived(messages.current);
   const points = $derived(synthesizeAnswer(rows));
   const resolvedIndex = $derived(
     selectedIndex >= 0 && selectedIndex < rows.length ? selectedIndex : 0,
@@ -48,7 +50,7 @@
 </script>
 
 <section class="answer-region" aria-labelledby={headingId} aria-busy={busy}>
-  <h2 id={headingId}>Answer</h2>
+  <h2 id={headingId}>{t.LABELS.answerHeading}</h2>
 
   {#if question === ''}
     {#if summary !== ''}
@@ -57,17 +59,17 @@
   {:else}
     {#key question}
       <div class="thread">
-        <article class="turn assistant-turn" aria-label="Deterministic answer">
+        <article class="turn assistant-turn" aria-label={t.LABELS.answerTurn}>
           <header class="assistant-header">
             <div>
-              <p class="turn-name">Clinical Knowledge Compiler</p>
-              <p class="answer-mode">Deterministic answer</p>
+              <p class="turn-name">{t.LABELS.answerAuthor}</p>
+              <p class="answer-mode">{t.LABELS.answerMode}</p>
             </div>
           </header>
 
           <div class="assistant-copy">
             {#if busy}
-              <p class="working">Proving the answer against the compiled guideline…</p>
+              <p class="working">{t.DESCRIPTIONS.workingAnswer}</p>
             {:else}
               {#if summary !== ''}
                 <p class="summary">{summary}</p>
@@ -81,7 +83,7 @@
                       {#each point.sources as source (source)}
                         <button
                           type="button"
-                          aria-label={`Inspect source ${String(source + 1)} for this statement`}
+                          aria-label={t.TEXT.inspectSource(source + 1)}
                           onclick={() => inspect(source)}>{source + 1}</button
                         >
                       {/each}
@@ -97,7 +99,7 @@
                         {#each point.sources as source (source)}
                           <button
                             type="button"
-                            aria-label={`Inspect source ${String(source + 1)} for this statement`}
+                            aria-label={t.TEXT.inspectSource(source + 1)}
                             onclick={() => inspect(source)}>{source + 1}</button
                           >
                         {/each}
@@ -111,31 +113,30 @@
             {#if !busy && (rows.length > 0 || serialized !== '')}
               <details class="explanation" bind:this={explanation}>
                 <summary>
-                  <span>{rows.length > 0 ? 'Sources and explanation' : 'Technical details'}</span>
+                  <span
+                    >{rows.length > 0
+                      ? t.LABELS.explanationSummary
+                      : t.LABELS.technicalSummary}</span
+                  >
                   {#if rows.length > 0}
-                    <span class="source-count"
-                      >{rows.length} {rows.length === 1 ? 'source' : 'sources'}</span
-                    >
+                    <span class="source-count">{t.TEXT.sourceCount(rows.length)}</span>
                   {/if}
                 </summary>
 
                 <div class="explanation-body">
                   {#if rows.length > 0}
-                    <p class="render-note">{DESCRIPTIONS.answerAssembly}</p>
-                    <p class="render-note">{DESCRIPTIONS.clauseRendering}</p>
+                    <p class="render-note">{t.DESCRIPTIONS.answerAssembly}</p>
+                    <p class="render-note">{t.DESCRIPTIONS.clauseRendering}</p>
 
                     {#if rows.length > 1}
-                      <div
-                        class="source-picker"
-                        role="group"
-                        aria-label="Select a source to inspect"
-                      >
+                      <div class="source-picker" role="group" aria-label={t.LABELS.sourcePicker}>
                         {#each rows as row, index (index)}
                           <button
                             type="button"
                             aria-pressed={index === resolvedIndex}
-                            aria-label={`Inspect source ${String(index + 1)}${row.document === undefined ? '' : `, ${row.document}`}`}
-                            onclick={() => onSelect(index)}>Source {index + 1}</button
+                            aria-label={t.TEXT.inspectSourceDocument(index + 1, row.document)}
+                            onclick={() => onSelect(index)}
+                            >{t.TEXT.sourceOrdinal(index + 1)}</button
                           >
                         {/each}
                       </div>
@@ -145,18 +146,18 @@
                       <section class="source-card" aria-labelledby={sourceHeadingId}>
                         <div class="source-heading">
                           <div>
-                            <p class="source-eyebrow">Selected evidence</p>
-                            <h3 id={sourceHeadingId}>Source {resolvedIndex + 1}</h3>
+                            <p class="source-eyebrow">{t.LABELS.selectedEvidence}</p>
+                            <h3 id={sourceHeadingId}>{t.TEXT.sourceOrdinal(resolvedIndex + 1)}</h3>
                           </div>
                           {#if selectedRow.document !== undefined}
                             <code class="document-id">{selectedRow.document}</code>
                           {/if}
                         </div>
                         {#if selectedRow.sourcePassage !== undefined}
-                          <p>{DESCRIPTIONS.sourcePassage}</p>
+                          <p>{t.DESCRIPTIONS.sourcePassage}</p>
                           <blockquote>{selectedRow.sourcePassage}</blockquote>
                         {:else}
-                          <p>{DESCRIPTIONS.sourceUnavailable}</p>
+                          <p>{t.DESCRIPTIONS.sourceUnavailable}</p>
                         {/if}
                       </section>
                     {/if}
@@ -164,8 +165,8 @@
 
                   {#if serialized !== ''}
                     <details class="canonical">
-                      <summary>{DESCRIPTIONS.prologSummary}</summary>
-                      <p>{DESCRIPTIONS.prolog}</p>
+                      <summary>{t.DESCRIPTIONS.prologSummary}</summary>
+                      <p>{t.DESCRIPTIONS.prolog}</p>
                       <code>{serialized}</code>
                     </details>
                   {/if}

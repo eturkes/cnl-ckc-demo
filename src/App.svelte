@@ -1,9 +1,11 @@
 <script lang="ts">
   import AboutPanel from './demo/AboutPanel.svelte';
   import AnswerPanel from './demo/AnswerPanel.svelte';
-  import { DESCRIPTIONS, GUIDELINE, INSTRUCTIONS } from './demo/copy.js';
+  import { GUIDELINE } from './demo/copy.js';
   import { DemoController, solutionsOf } from './demo/DemoController.svelte.js';
   import { answerRows, describeState, type AnswerRow } from './demo/describe.js';
+  import { messages } from './i18n/locale.svelte.js';
+  import LanguageToggle from './demo/LanguageToggle.svelte';
   import RunControls from './demo/RunControls.svelte';
   import ThemeToggle from './demo/ThemeToggle.svelte';
   import {
@@ -40,6 +42,7 @@
   // Everything below is derived in the script rather than the template: ESLint
   // types a `.svelte` import as `any`, so a member access on a narrowed value
   // inside markup reads as unsafe.
+  const t = $derived(messages.current);
   const viewState = $derived(demo.state);
   const description = $derived(describeState(viewState));
   const rows = $derived<AnswerRow[]>(
@@ -93,15 +96,16 @@
 <div class="site-shell">
   <header class="site-header">
     <div class="header-inner">
-      <a class="brand" href="#top" aria-label="CNL CKC demo home">
+      <a class="brand" href="#top" aria-label={t.LABELS.brandHome}>
         <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
         <span>CNL / CKC</span>
       </a>
-      <nav aria-label="Page">
-        <a href="#ask">Query</a>
-        <a href="#graph">Graph</a>
-        <a href="#about">Notes</a>
+      <nav aria-label={t.LABELS.navAria}>
+        <a href="#ask">{t.LABELS.navQuery}</a>
+        <a href="#graph">{t.LABELS.navGraph}</a>
+        <a href="#about">{t.LABELS.navNotes}</a>
       </nav>
+      <LanguageToggle />
       <ThemeToggle />
     </div>
   </header>
@@ -109,24 +113,24 @@
   <main id="top" data-engine={engine}>
     <section class="hero" aria-labelledby="page-title">
       <div class="hero-copy">
-        <p class="eyebrow">Controlled language · Prolog · WebAssembly</p>
-        <h1 id="page-title">{DESCRIPTIONS.wordmark}</h1>
-        <p class="lede">{DESCRIPTIONS.lede}</p>
+        <p class="eyebrow">{t.DESCRIPTIONS.heroEyebrow}</p>
+        <h1 id="page-title">{t.DESCRIPTIONS.wordmark}</h1>
+        <p class="lede">{t.DESCRIPTIONS.lede}</p>
       </div>
       <div class="source-note">
-        <span>Source material</span>
+        <span>{t.LABELS.sourceMaterial}</span>
         <a href={GUIDELINE.html} target="_blank" rel="noreferrer">{GUIDELINE.title}</a>
-        <p>Research prototype. Not clinical guidance.</p>
+        <p>{t.DESCRIPTIONS.prototypeNote}</p>
       </div>
     </section>
 
     <section id="ask" class="workbench" aria-labelledby="ask-heading">
       <header class="section-heading">
         <div>
-          <p class="eyebrow">Query</p>
-          <h2 id="ask-heading">Ask the compiled guideline</h2>
+          <p class="eyebrow">{t.LABELS.queryEyebrow}</p>
+          <h2 id="ask-heading">{t.LABELS.askHeading}</h2>
         </div>
-        <p>{INSTRUCTIONS.selectQuestion} {INSTRUCTIONS.runQuestion}</p>
+        <p>{t.INSTRUCTIONS.selectQuestion} {t.INSTRUCTIONS.runQuestion}</p>
       </header>
 
       <div class="query-area">
@@ -182,11 +186,12 @@
       />
       {#if graphSelection?.document !== undefined}
         <p class="graph-selection-note">
-          Selected from <code>{graphSelection.document}</code>.
+          {t.LABELS.graphSelectedBefore} <code>{graphSelection.document}</code>{t.LABELS
+            .graphSelectedAfter}
           {#if proofDocuments.has(graphSelection.document)}
-            <a href="#trace-heading">Compare with the current proof</a>.
+            <a href="#trace-heading">{t.LABELS.compareWithProof}</a>.
           {:else}
-            Run a prepared question above to compare the graph with a live proof.
+            {t.INSTRUCTIONS.graphCompareRun}
           {/if}
         </p>
       {/if}
@@ -203,10 +208,10 @@
        all three unconditionally. -->
   <footer>
     <div>
-      <p>{DESCRIPTIONS.attribution} {DESCRIPTIONS.freeAvailability}</p>
-      <p>{DESCRIPTIONS.nonendorsement}</p>
+      <p>{t.DESCRIPTIONS.attribution} {t.DESCRIPTIONS.freeAvailability}</p>
+      <p>{t.DESCRIPTIONS.nonendorsement}</p>
     </div>
-    <a href="#top">Back to top <span aria-hidden="true">↑</span></a>
+    <a href="#top">{t.LABELS.backToTop} <span aria-hidden="true">↑</span></a>
   </footer>
 </div>
 
@@ -226,8 +231,8 @@
 
   .header-inner {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    gap: clamp(1rem, 3vw, 2rem);
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
+    gap: clamp(0.5rem, 3vw, 2rem);
     align-items: center;
     width: min(100% - 3rem, 72rem);
     min-height: 3.75rem;
@@ -245,6 +250,7 @@
     font-weight: 700;
     letter-spacing: 0.08em;
     text-decoration: none;
+    white-space: nowrap;
   }
 
   .brand-mark {
@@ -450,7 +456,7 @@
 
   @media (max-width: 44rem) {
     .header-inner {
-      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-columns: minmax(0, 1fr) auto auto;
     }
 
     nav {

@@ -5,6 +5,8 @@
   // other: ARIA22 requires a live region to pre-exist its update, and a message
   // that reaches both `status` and `alert` is announced twice.
 
+  import { messages } from '../i18n/locale.svelte.js';
+
   interface Props {
     /** Polite live-region text. Empty renders the region with no message. */
     status: string;
@@ -20,6 +22,7 @@
 
   let { status, error, busy, canRun, showRetry, onRun, onCancel, onRetry }: Props = $props();
 
+  const t = $derived(messages.current);
   let runEl = $state<HTMLButtonElement>();
   let cancelEl = $state<HTMLButtonElement>();
   let retryEl = $state<HTMLButtonElement>();
@@ -41,13 +44,16 @@
 </script>
 
 <div class="controls">
-  <button class="run" bind:this={runEl} type="button" disabled={!canRun} onclick={onRun}>Run</button
+  <button class="run" bind:this={runEl} type="button" disabled={!canRun} onclick={onRun}
+    >{t.LABELS.run}</button
   >
   <button class="cancel" bind:this={cancelEl} type="button" disabled={!busy} onclick={onCancel}
-    >Cancel</button
+    >{t.LABELS.cancel}</button
   >
   {#if showRetry}
-    <button bind:this={retryEl} type="button" class="retry" onclick={onRetry}>Retry</button>
+    <button bind:this={retryEl} type="button" class="retry" onclick={onRetry}
+      >{t.LABELS.retry}</button
+    >
   {/if}
 </div>
 

@@ -17,6 +17,7 @@ import type {
   ProofInput,
   ProofOutcome,
 } from '../engine/protocol.js';
+import { messages } from '../i18n/locale.svelte.js';
 import type { ProvenanceState } from '../provenance/model.js';
 import { QUESTION_CATALOG, type QuestionId } from '../questions/catalog.js';
 import { serializeAnswer } from '../questions/serialize.js';
@@ -232,7 +233,8 @@ export class DemoController {
 
   async #trace(id: QuestionId, solution: number, selected: PlSolution): Promise<void> {
     if (this.#engine.prove === undefined) {
-      this.provenance = { kind: 'unavailable', message: 'Proof tracing is unavailable.' };
+      const { TEXT } = messages.current;
+      this.provenance = { kind: 'unavailable', message: TEXT.traceUnavailable() };
       return;
     }
     this.#proofController?.abort();

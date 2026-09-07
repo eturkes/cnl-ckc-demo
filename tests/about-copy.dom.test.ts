@@ -8,7 +8,7 @@ import { mount, unmount } from 'svelte';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import AboutPanel from '../src/demo/AboutPanel.svelte';
-import { DESCRIPTIONS, INSTRUCTIONS } from '../src/demo/copy.js';
+import { DESCRIPTIONS, INSTRUCTIONS } from '../src/i18n/en.js';
 
 let host: HTMLElement | undefined;
 

@@ -7,7 +7,9 @@
   // and nonendorsement stay in the always-visible footer and this panel carries
   // the rest.
 
-  import { DESCRIPTIONS, FONT_LICENCES, GUIDELINE, INSTRUCTIONS } from './copy.js';
+  import { messages } from '../i18n/locale.svelte.js';
+
+  import { FONT_LICENCES, GUIDELINE } from './copy.js';
 
   interface Props {
     /** Read from the booted engine; absent until it answers, and never a literal. */
@@ -16,31 +18,28 @@
 
   let { documents }: Props = $props();
 
-  const corpus = $derived(
-    documents === undefined
-      ? undefined
-      : DESCRIPTIONS.corpusSize.replace('{documents}', String(documents)),
-  );
+  const t = $derived(messages.current);
+  const corpus = $derived(documents === undefined ? undefined : t.TEXT.engineDocuments(documents));
 </script>
 
 <details class="about">
-  <summary>{DESCRIPTIONS.aboutSummary}</summary>
+  <summary>{t.DESCRIPTIONS.aboutSummary}</summary>
 
-  <p class="warn">{INSTRUCTIONS.notClinical}</p>
+  <p class="warn">{t.INSTRUCTIONS.notClinical}</p>
   <p>
-    <strong>Guideline:</strong>
+    <strong>{t.LABELS.guidelineLabel}</strong>
     <a href={GUIDELINE.html} target="_blank" rel="noreferrer">{GUIDELINE.title}</a>
   </p>
-  <p>{DESCRIPTIONS.purpose}</p>
-  <p>{DESCRIPTIONS.fixedCatalog}</p>
-  <p>{DESCRIPTIONS.projection}</p>
+  <p>{t.DESCRIPTIONS.purpose}</p>
+  <p>{t.DESCRIPTIONS.fixedCatalog}</p>
+  <p>{t.DESCRIPTIONS.projection}</p>
   {#if corpus}
     <p>{corpus}</p>
   {/if}
-  <p>{DESCRIPTIONS.unreviewed}</p>
+  <p>{t.DESCRIPTIONS.unreviewed}</p>
 
-  <h3>{DESCRIPTIONS.licenceSummary}</h3>
-  <p>{DESCRIPTIONS.fonts}</p>
+  <h3>{t.DESCRIPTIONS.licenceSummary}</h3>
+  <p>{t.DESCRIPTIONS.fonts}</p>
   <ul>
     {#each FONT_LICENCES as licence (licence.href)}
       <li><a href={licence.href}>{licence.family}</a></li>
