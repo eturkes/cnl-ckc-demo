@@ -25,16 +25,33 @@ const KEY = 'cnl-ckc-lang';
 let host: HTMLElement | undefined;
 let cleanup: (() => void) | undefined;
 
-const render = <P extends Record<string, unknown>>(
-  component: Parameters<typeof mount>[0],
-  props: P,
-): HTMLElement => {
+/**
+ * Both mounts are monomorphic on purpose. A generic over `Parameters<typeof mount>`
+ * erases the component's own prop type under `exactOptionalPropertyTypes`, and
+ * `svelte-check` then rejects every call site.
+ */
+const target = (): HTMLElement => {
   host = document.createElement('div');
   document.body.append(host);
-  const app = mount(component, { target: host, props });
+  return host;
+};
+
+/** Both header toggles take no props and render exactly one button. */
+const renderToggle = (component: typeof LanguageToggle): HTMLButtonElement => {
+  const app = mount(component, { target: target(), props: {} });
   flushSync();
   cleanup = () => void unmount(app);
-  return host;
+  const found = host?.querySelector('button');
+  if (found === null || found === undefined) throw new Error('no toggle button rendered');
+  return found;
+};
+
+/** The one translated surface read here; it takes the engine's document count. */
+const renderAbout = (documents: number): string => {
+  const app = mount(AboutPanel, { target: target(), props: { documents } });
+  flushSync();
+  cleanup = () => void unmount(app);
+  return host?.textContent ?? '';
 };
 
 /** Tear down the current mount early, so one case may render twice. */
@@ -43,12 +60,6 @@ const teardown = (): void => {
   cleanup = undefined;
   host?.remove();
   host = undefined;
-};
-
-const button = (root: HTMLElement): HTMLButtonElement => {
-  const found = root.querySelector('button');
-  if (found === null) throw new Error('no toggle button rendered');
-  return found;
 };
 
 const click = (control: HTMLButtonElement): void => {
@@ -71,14 +82,14 @@ afterEach(() => {
 
 describe('the language toggle', () => {
   it('opens in English and offers Japanese', () => {
-    const control = button(render(LanguageToggle, {}));
+    const control = renderToggle(LanguageToggle);
     expect(control.textContent).toContain(EN.LABELS.languageSwitch);
     expect(control.getAttribute('aria-pressed')).toBe('false');
     expect(document.documentElement.lang).toBe('en');
   });
 
   it('switches the interface, the lang attribute and the document title', () => {
-    const control = button(render(LanguageToggle, {}));
+    const control = renderToggle(LanguageToggle);
     click(control);
 
     expect(locale.current).toBe('ja');
@@ -90,7 +101,7 @@ describe('the language toggle', () => {
   });
 
   it('persists the choice and restores it on the next mount', () => {
-    const first = button(render(LanguageToggle, {}));
+    const first = renderToggle(LanguageToggle);
     click(first);
     expect(localStorage.getItem(KEY)).toBe('ja');
 
@@ -101,7 +112,7 @@ describe('the language toggle', () => {
     locale.set('en');
     localStorage.setItem(KEY, 'ja');
 
-    const second = button(render(LanguageToggle, {}));
+    const second = renderToggle(LanguageToggle);
     expect(locale.current).toBe('ja');
     expect(second.getAttribute('aria-pressed')).toBe('true');
   });
@@ -143,7 +154,7 @@ describe('every header toggle', () => {
     for (const [name, component] of toggles) {
       it(`names the ${name} toggle by what it displays, in ${which}, in both states`, () => {
         locale.set(which);
-        const control = button(render(component, {}));
+        const control = renderToggle(component);
         const namesWhatItShows = (): void => {
           const label = visibleLabel(control);
           expect(label).not.toBe('');
@@ -163,7 +174,7 @@ describe('every header toggle', () => {
 describe('a translated surface', () => {
   it('renders Japanese prose once the locale is Japanese', () => {
     locale.set('ja');
-    const text = render(AboutPanel, { documents: 337 }).textContent ?? '';
+    const text = renderAbout(337);
 
     expect(text).toContain(JA.DESCRIPTIONS.purpose);
     expect(text).toContain(JA.DESCRIPTIONS.unreviewed);
@@ -172,7 +183,7 @@ describe('a translated surface', () => {
   });
 
   it('renders the same surface in English by default', () => {
-    const text = render(AboutPanel, { documents: 337 }).textContent ?? '';
+    const text = renderAbout(337);
 
     expect(text).toContain(EN.DESCRIPTIONS.purpose);
     expect(text).not.toContain(JA.DESCRIPTIONS.purpose);
@@ -180,7 +191,7 @@ describe('a translated surface', () => {
 
   it('leaves payload in the language its source is written in', () => {
     locale.set('ja');
-    const text = render(AboutPanel, { documents: 337 }).textContent ?? '';
+    const text = renderAbout(337);
 
     // The guideline's own title and the four font family names are proper names.
     expect(text).toContain(GUIDELINE.title);
