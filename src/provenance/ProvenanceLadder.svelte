@@ -236,8 +236,8 @@
               <p><strong>{t.LABELS.projectionKept}</strong> {evidence.projection.kept}</p>
               <p><strong>{t.LABELS.projectionDropped}</strong> {evidence.projection.dropped}</p>
               <p>
-                <strong>{t.TEXT.reviewStatus(evidence.label)}</strong>{' '}{evidence.label ===
-                'unreviewed'
+                <strong>{t.TEXT.reviewStatus(evidence.label)}</strong>
+                {evidence.label === 'unreviewed'
                   ? t.DESCRIPTIONS.reviewUnreviewed
                   : t.DESCRIPTIONS.reviewRecorded}
               </p>
