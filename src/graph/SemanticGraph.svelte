@@ -3,6 +3,7 @@
 
   import graphAssetUrl from '@kb/graph/semantic-graph.json?url&no-inline';
 
+  import { messages } from '../i18n/locale.svelte.js';
   import { mountGraphCanvas, type GraphCanvas } from './canvas.js';
   import {
     DEFAULT_ANSWER_GRAPH_LIMIT,
@@ -42,6 +43,7 @@
     onSelect = () => undefined,
   }: Props = $props();
 
+  const t = $derived(messages.current);
   const uid = $props.id();
   const headingId = `${uid}-heading`;
   const searchId = `${uid}-search`;
@@ -137,8 +139,8 @@
     path = found ?? null;
     pathStatus =
       found === undefined
-        ? 'No connecting path was found.'
-        : `Shortest path: ${String(Math.max(0, found.nodes.length - 1))} relationships.`;
+        ? t.LABELS.graphNoPath
+        : t.TEXT.graphPathLength(Math.max(0, found.nodes.length - 1));
   };
 
   const expand = (): void => {
@@ -224,9 +226,9 @@
           choose(id, true, evidenceView !== null);
         });
       } catch (cause) {
-        canvasError = `The visual graph is unavailable. Use the complete HTML navigation below. ${
-          cause instanceof Error ? cause.message : String(cause)
-        }`;
+        canvasError = t.TEXT.graphCanvasUnavailable(
+          cause instanceof Error ? cause.message : String(cause),
+        );
       }
       if (focusAfterLoad) {
         focusAfterLoad = false;
@@ -235,7 +237,7 @@
     } catch (cause) {
       if (destroyed || active.signal.aborted) return;
       phase = 'error';
-      loadError = `The semantic graph did not load. ${cause instanceof Error ? cause.message : String(cause)}`;
+      loadError = t.TEXT.graphLoadFailed(cause instanceof Error ? cause.message : String(cause));
     } finally {
       if (request === active) request = undefined;
     }
@@ -291,73 +293,71 @@
 <section class="graph-shell" aria-labelledby={headingId} tabindex="-1">
   <header>
     <div>
-      <p class="eyebrow">Graph</p>
-      <h2 id={headingId}>Semantic knowledge graph</h2>
+      <p class="eyebrow">{t.LABELS.graphEyebrow}</p>
+      <h2 id={headingId}>{t.LABELS.graphHeading}</h2>
     </div>
     {#if phase === 'ready' && model !== null}
       <p class="counts">
-        {model.conceptNodeCount.toLocaleString()} concepts/actions ·
-        {model.conceptEdgeCount.toLocaleString()} semantic links
+        {t.TEXT.graphCounts(model.conceptNodeCount, model.conceptEdgeCount)}
       </p>
     {/if}
   </header>
 
   {#if phase === 'inactive'}
     <div class="activation">
-      <p>
-        Explore clinical concepts and actions connected across the compiled knowledge base. The map
-        starts with opioid therapy; answer links add the exact proof path as a highlight.
-      </p>
-      <button class="primary" type="button" onclick={() => void activate()}>Explore graph</button>
-      <p class="load-note">
-        The graph data and layout engine load only after you select this control.
-      </p>
+      <p>{t.DESCRIPTIONS.graphIntro}</p>
+      <button class="primary" type="button" onclick={() => void activate()}
+        >{t.LABELS.graphExplore}</button
+      >
+      <p class="load-note">{t.DESCRIPTIONS.graphLoadNote}</p>
     </div>
   {:else if phase === 'loading'}
     <div class="pending" role="status">
       <span class="pulse" aria-hidden="true"></span>
-      Loading the semantic graph.
+      {t.LABELS.graphLoading}
     </div>
   {:else if phase === 'error'}
     <div class="load-failure" role="alert">
       <p>{loadError}</p>
-      <button class="primary" type="button" onclick={() => void activate()}>Try again</button>
+      <button class="primary" type="button" onclick={() => void activate()}
+        >{t.LABELS.graphTryAgain}</button
+      >
     </div>
   {:else if model !== null && selected !== undefined}
     {#if evidenceView !== null}
       <div class="evidence-focus" tabindex="-1" bind:this={focusNotice}>
-        <p class="kind">Answer map</p>
+        <p class="kind">{t.LABELS.graphAnswerMap}</p>
         <p>
           {#if evidenceRoot !== undefined}
-            <strong>{graphNodeLabel(evidenceRoot)} is the primary concept.</strong>
+            <strong>{t.TEXT.graphPrimaryIs(graphNodeLabel(evidenceRoot))}</strong>
           {/if}
-          Orange paths are the {evidenceView.highlight.edges.length}
-          {evidenceView.highlight.edges.length === 1 ? 'relationship' : 'relationships'} proved by this
-          answer contribution. Muted branches show how the concept connects elsewhere in the knowledge
-          base.
+          {t.TEXT.graphHighlightPaths(evidenceView.highlight.edges.length)}
+          {t.DESCRIPTIONS.graphMutedBranches}
         </p>
         <details class="projection-note">
-          <summary>How this map was derived</summary>
+          <summary>{t.LABELS.graphDerivationSummary}</summary>
           <p>
-            The primary concept is ranked mechanically from terms and semantic roles in the question
-            and deterministic answer. The highlight comes from
-            {evidenceView.sentences.length}
-            {evidenceView.sentences.length === 1 ? 'controlled sentence' : 'controlled sentences'}
-            in <code>{evidenceView.document}</code>. {evidenceView.hiddenTechnicalNodes} parser or provenance
-            nodes and {evidenceView.hiddenTechnicalEdges} lower-level relationships are hidden here and
-            remain inspectable in the proof view.
+            {t.DESCRIPTIONS.graphDerivation}
+            {t.TEXT.graphHighlightOriginBefore(evidenceView.sentences.length)}
+            <code>{evidenceView.document}</code>{t.TEXT.graphHighlightOriginAfter(
+              evidenceView.sentences.length,
+            )}
+            {t.TEXT.graphHiddenScaffolding(
+              evidenceView.hiddenTechnicalNodes,
+              evidenceView.hiddenTechnicalEdges,
+            )}
           </p>
         </details>
       </div>
     {/if}
 
     <div class="toolbar">
-      <label for={searchId}>Find a concept or action</label>
+      <label for={searchId}>{t.LABELS.graphSearchLabel}</label>
       <div class="search-row">
         <input
           id={searchId}
           type="search"
-          placeholder="Search clinical concepts and actions"
+          placeholder={t.LABELS.graphSearchPlaceholder}
           autocomplete="off"
           bind:value={query}
           aria-describedby={searchHelpId}
@@ -367,18 +367,16 @@
           onclick={() =>
             canvas?.recenter(evidenceView === null ? (selectedId ?? undefined) : undefined)}
         >
-          {evidenceView === null ? 'Recenter' : 'Fit answer map'}
+          {evidenceView === null ? t.LABELS.graphRecenter : t.LABELS.graphFitAnswer}
         </button>
-        <button type="button" disabled={!canExpand} onclick={expand}>Expand</button>
+        <button type="button" disabled={!canExpand} onclick={expand}>{t.LABELS.graphExpand}</button>
       </div>
-      <p id={searchHelpId} class="help">
-        Select a result to move the map. Select Path to show the shortest semantic connection.
-      </p>
+      <p id={searchHelpId} class="help">{t.INSTRUCTIONS.graphSearchHelp}</p>
 
       {#if query.trim() !== ''}
-        <div class="search-results" aria-label="Graph search results">
+        <div class="search-results" aria-label={t.LABELS.graphSearchResults}>
           {#if searchResults.length === 0}
-            <p>No matching nodes.</p>
+            <p>{t.LABELS.graphNoMatches}</p>
           {:else}
             <ul>
               {#each searchResults as result (result.id)}
@@ -389,8 +387,9 @@
                   </button>
                   {#if result.id !== selectedId}
                     <button class="path-action" type="button" onclick={() => findPath(result.id)}>
-                      Path
-                      <span class="visually-hidden"> to {graphNodeLabel(result)}</span>
+                      {t.LABELS.graphPath}<span class="visually-hidden">
+                        {t.TEXT.graphPathTo(graphNodeLabel(result))}</span
+                      >
                     </button>
                   {/if}
                 </li>
@@ -404,19 +403,16 @@
     <div class="selection-card" tabindex="-1" bind:this={selectionCard}>
       <div>
         <p class="kind">
-          {evidenceView?.root === selected.id ? 'Primary concept' : graphNodeKindLabel(selected)}
+          {evidenceView?.root === selected.id
+            ? t.LABELS.graphPrimaryConcept
+            : graphNodeKindLabel(selected)}
         </p>
         <h3>{graphNodeLabel(selected)}</h3>
-        <p class="identifier">
-          {relationPool.length} direct semantic
-          {relationPool.length === 1 ? 'relationship' : 'relationships'}
-        </p>
+        <p class="identifier">{t.TEXT.graphDirectRelations(relationPool.length)}</p>
       </div>
       {#if selected.document !== undefined}
         <p class="location">
-          {selected.document}{selected.sentence === undefined
-            ? ''
-            : ` · sentence ${String(selected.sentence)}`}
+          {t.TEXT.graphNodeLocation(selected.document, selected.sentence)}
         </p>
       {/if}
     </div>
@@ -424,11 +420,13 @@
     <div class="canvas-frame">
       <div class="canvas" bind:this={canvasHost} aria-hidden="true"></div>
       <div class="legend" aria-hidden="true">
-        <span class="primary-focus">Primary focus</span>
-        <span class="entity">Concept</span>
-        <span class="event">Action</span>
-        <span class="value">Attribute</span>
-        {#if evidenceView !== null}<span class="answer-path">Current answer</span>{/if}
+        <span class="primary-focus">{t.LABELS.graphLegendFocus}</span>
+        <span class="entity">{t.LABELS.graphLegendConcept}</span>
+        <span class="event">{t.LABELS.graphLegendAction}</span>
+        <span class="value">{t.LABELS.graphLegendAttribute}</span>
+        {#if evidenceView !== null}
+          <span class="answer-path">{t.LABELS.graphLegendAnswer}</span>
+        {/if}
       </div>
     </div>
     {#if canvasError !== ''}
@@ -436,25 +434,26 @@
     {/if}
 
     <p class="view-status" role="status">
-      Showing {subgraph.nodes.length.toLocaleString()} concepts/actions and
-      {subgraph.edges.length.toLocaleString()} semantic relationships{evidenceView === null
-        ? ` at depth ${String(depth)}`
-        : `, with ${String(evidenceView.highlight.edges.length)} highlighted for the current answer`}.
-      {#if subgraph.truncatedNodes || subgraph.truncatedEdges}
-        The view is capped for readability. Select Expand to reveal more.
-      {/if}
+      {evidenceView === null
+        ? t.TEXT.graphViewDepth(subgraph.nodes.length, subgraph.edges.length, depth)
+        : t.TEXT.graphViewAnswer(
+            subgraph.nodes.length,
+            subgraph.edges.length,
+            evidenceView.highlight.edges.length,
+          )}{#if subgraph.truncatedNodes || subgraph.truncatedEdges}
+        {t.INSTRUCTIONS.graphExpandHint}{/if}
     </p>
 
     {#if path !== null}
       <section class="path-panel" aria-labelledby={pathHeadingId}>
         <div class="panel-heading">
-          <h3 id={pathHeadingId}>Shortest path</h3>
+          <h3 id={pathHeadingId}>{t.LABELS.graphShortestPath}</h3>
           <button
             type="button"
             onclick={() => {
               path = null;
               pathStatus = '';
-            }}>Clear</button
+            }}>{t.LABELS.graphClear}</button
           >
         </div>
         <p>{pathStatus}</p>
@@ -477,13 +476,13 @@
     <section class="html-graph" aria-labelledby={htmlHeadingId}>
       <div class="panel-heading">
         <div>
-          <p class="eyebrow">Accessible graph view</p>
-          <h3 id={htmlHeadingId}>Relationships from {graphNodeLabel(selected)}</h3>
+          <p class="eyebrow">{t.LABELS.graphAccessibleView}</p>
+          <h3 id={htmlHeadingId}>{t.TEXT.graphRelationsFrom(graphNodeLabel(selected))}</h3>
         </div>
       </div>
 
       {#if relations.length === 0}
-        <p>This node has no relationships.</p>
+        <p>{t.LABELS.graphNoRelationships}</p>
       {:else}
         <ul class="relations">
           {#each relations as relation (relation.id)}
@@ -501,14 +500,13 @@
         </ul>
         {#if relationPool.length > relations.length}
           <p class="help">
-            Showing the first {relations.length} of {relationPool.length} direct relationships. Use search
-            to reach any node.
+            {t.TEXT.graphRelationsTruncated(relations.length, relationPool.length)}
           </p>
         {/if}
       {/if}
 
       <details>
-        <summary>Nodes in this visual neighborhood</summary>
+        <summary>{t.LABELS.graphNodeIndex}</summary>
         <ul class="node-index">
           {#each subgraph.nodes as node (node.id)}
             <li>
