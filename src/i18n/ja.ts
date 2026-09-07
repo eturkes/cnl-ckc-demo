@@ -117,6 +117,7 @@ export const LABELS = {
   navNotes: 'ノート',
   sourceMaterial: '原典資料',
   backToTop: 'ページの先頭へ戻る',
+  guidelineLabel: 'ガイドライン：',
 
   themeToLight: 'ライトテーマを使う',
   themeToDark: 'ダークテーマを使う',
@@ -124,7 +125,9 @@ export const LABELS = {
   themeDark: 'ダーク',
 
   languageSwitch: 'English',
-  languageSwitchAria: 'このデモを英語で表示する',
+  // WCAG 2.5.3: the accessible name must contain the visible label, so this reads
+  // `English`, not `英語` — the label is ASCII in both locales by design.
+  languageSwitchAria: 'このデモを English で表示する',
 
   queryEyebrow: 'クエリ',
   askHeading: 'コンパイル済みガイドラインに問い合わせる',

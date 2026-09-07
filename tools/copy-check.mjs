@@ -164,6 +164,35 @@ const checkParity = (failures) => {
   return compared;
 };
 
+/**
+ * `index.html` ships the English title and description, and `locale.svelte.ts`
+ * re-authors both from the catalog on every switch. Two sources for one string is a
+ * drift seam nothing else can see: the shell would keep serving a title the app
+ * replaces on mount, so no rendered assertion would ever disagree with it.
+ *
+ * @param {string[]} failures @returns {number} shell strings compared
+ */
+const checkShell = (failures) => {
+  const catalog = new Map(
+    literals(bucket(readFileSync(join(ROOT, EN), 'utf8'), EN, 'DESCRIPTIONS'))
+      .filter(({ key }) => key !== '<literal>')
+      .map(({ key, text }) => [key, text]),
+  );
+  const html = readFileSync(join(ROOT, 'index.html'), 'utf8');
+  /** @type {[string, string | undefined][]} */
+  const shell = [
+    ['documentTitle', /<title>([^<]*)<\/title>/.exec(html)?.[1]],
+    ['documentDescription', /name="description"\s+content="([^"]*)"/.exec(html)?.[1]],
+  ];
+  for (const [key, shipped] of shell) {
+    if (shipped === undefined) failures.push(`index.html: no ${key}`);
+    else if (shipped.trim() !== catalog.get(key)) {
+      failures.push(`index.html ${key} differs from ${EN} DESCRIPTIONS.${key}`);
+    }
+  }
+  return shell.length;
+};
+
 const main = () => {
   const failures = [];
   let graded = 0;
@@ -193,13 +222,17 @@ const main = () => {
   }
 
   const compared = checkParity(failures);
+  const shell = checkShell(failures);
 
   if (failures.length > 0) {
     console.error(`copy: ${failures.length} failure(s)`);
     for (const line of failures) console.error(`  ${line}`);
     process.exit(1);
   }
-  console.log(`copy: ${graded} en strings pass, ${compared} ja keys at parity`);
+  console.log(
+    `copy: ${graded} en strings pass, ${compared} ja keys at parity, ` +
+      `${shell} shell strings match index.html`,
+  );
 };
 
 main();

@@ -24,6 +24,11 @@ unicode-range subset — literata alone is 1883680 B across 58 files. `src/app.c
 hand-authors `@font-face` against the six latin/latin-ext woff2 files: **176732 B**, pinned by
 `presentation:check`, with family names dropping the packages' `Variable` suffix.
 
+Japanese adds two static faces from `@fontsource/biz-udpgothic` — sizing, the rejected
+alternatives and the ASCII-label rule are in `.claude/rules/i18n.md`. Both are `@font-face`
+rows in the same hand-authored block, so `presentation:check` grades **8** faces against a
+per-row `scope`, and every font stack ends `'BIZ UDPGothic', sans-serif` after its latin face.
+
 Vite resolves a bare package specifier inside CSS `url()`, so the font rules need no relative
 path into `node_modules`.
 
@@ -40,10 +45,14 @@ than rounding, and it fails when a colour token appears in no pair.
 
 ## Copy
 
-`tools/copy-check.mjs` is static — there is no TS runner here. It grades `src/demo/copy.ts`
-(`INSTRUCTIONS` ≤20 words/sentence, `DESCRIPTIONS` ≤25) and `src/demo/describe.ts`. A period
-between digits is not a sentence boundary, so `License 1.1.` is one sentence; the sentinel is
-`U+E000` because a control character trips ESLint `no-control-regex`.
+**Every human-facing string lives in `src/i18n/`** — `src/demo/copy.ts` retains invariant data
+alone. The locale seam, its consumer pattern and the payload boundary are in
+`.claude/rules/i18n.md`.
+
+`tools/copy-check.mjs` is static — there is no TS runner here. It grades `src/i18n/en.ts`
+(`INSTRUCTIONS` ≤20 words/sentence, the other three buckets ≤25) and holds `ja.ts` at key
+parity. A period between digits is not a sentence boundary, so `License 1.1.` is one sentence;
+the sentinel is `U+E000` because a control character trips ESLint `no-control-regex`.
 
 **The six question strings are payload, not copy.** They are generated from the compiled
 goals, and rewriting one would make the displayed question differ from the question that runs.
