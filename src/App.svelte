@@ -5,6 +5,7 @@
   import { DemoController, solutionsOf } from './demo/DemoController.svelte.js';
   import { answerRows, describeState, type AnswerRow } from './demo/describe.js';
   import { messages } from './i18n/locale.svelte.js';
+  import LanguageToggle from './demo/LanguageToggle.svelte';
   import RunControls from './demo/RunControls.svelte';
   import ThemeToggle from './demo/ThemeToggle.svelte';
   import {
@@ -104,6 +105,7 @@
         <a href="#graph">{t.LABELS.navGraph}</a>
         <a href="#about">{t.LABELS.navNotes}</a>
       </nav>
+      <LanguageToggle />
       <ThemeToggle />
     </div>
   </header>
@@ -229,8 +231,8 @@
 
   .header-inner {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    gap: clamp(1rem, 3vw, 2rem);
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
+    gap: clamp(0.5rem, 3vw, 2rem);
     align-items: center;
     width: min(100% - 3rem, 72rem);
     min-height: 3.75rem;
@@ -248,6 +250,7 @@
     font-weight: 700;
     letter-spacing: 0.08em;
     text-decoration: none;
+    white-space: nowrap;
   }
 
   .brand-mark {
@@ -453,7 +456,7 @@
 
   @media (max-width: 44rem) {
     .header-inner {
-      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-columns: minmax(0, 1fr) auto auto;
     }
 
     nav {
