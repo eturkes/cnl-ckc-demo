@@ -129,17 +129,14 @@
                     <p class="render-note">{t.DESCRIPTIONS.clauseRendering}</p>
 
                     {#if rows.length > 1}
-                      <div
-                        class="source-picker"
-                        role="group"
-                        aria-label={t.LABELS.sourcePicker}
-                      >
+                      <div class="source-picker" role="group" aria-label={t.LABELS.sourcePicker}>
                         {#each rows as row, index (index)}
                           <button
                             type="button"
                             aria-pressed={index === resolvedIndex}
                             aria-label={t.TEXT.inspectSourceDocument(index + 1, row.document)}
-                            onclick={() => onSelect(index)}>{t.TEXT.sourceOrdinal(index + 1)}</button
+                            onclick={() => onSelect(index)}
+                            >{t.TEXT.sourceOrdinal(index + 1)}</button
                           >
                         {/each}
                       </div>
