@@ -19,9 +19,7 @@
   let { documents }: Props = $props();
 
   const t = $derived(messages.current);
-  const corpus = $derived(
-    documents === undefined ? undefined : t.TEXT.engineDocuments(documents),
-  );
+  const corpus = $derived(documents === undefined ? undefined : t.TEXT.engineDocuments(documents));
 </script>
 
 <details class="about">
