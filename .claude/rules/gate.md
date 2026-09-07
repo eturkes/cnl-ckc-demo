@@ -17,6 +17,9 @@ Step semantics a reader cannot get from the script name:
   `.ask` call-site arity, exactly one `swipl-wasm` importer (`src/engine/worker.ts` — the
   pattern must admit a BARE side-effect import, which a `from`-anchored one missed), the
   undeclared-API allowlist, and a `terms.ts` export-surface pin.
+- `copy:check` (`tools/copy-check.mjs`) runs two graders over `src/i18n/`: English on sentence
+  length and banned filler, Japanese on key parity alone. Why the limits do not port, and what
+  may stay untranslated, are in `.claude/rules/i18n.md`.
 - `presentation:check` (`tools/presentation-check.mjs`) grades three DECLARED tables against
   source alone — no build, no browser: `@font-face` rows, shipped OFL texts against each
   package `LICENSE`, and the selectors rendering engine-authored text. Rule bodies match
@@ -30,7 +33,7 @@ committed state:
 |---|---|
 | `pnpm kb:reproduce` | byte-reproducibility of pvm + qlf + catalog across two forced builds |
 | `pnpm smoke` | built output answers in a real browser against bag bytes read at run time |
-| `pnpm browser:check` | 337 documents on dev + built output, five 320 px interaction states, browser cancel delivery |
+| `pnpm browser:check` | 337 documents on dev + built output, every 320 px interaction state incl. Japanese, that `unicode-range` keeps the Japanese face off an English page, browser cancel delivery |
 
 `pnpm release:check` = `gate && kb:reproduce && smoke && browser:check`.
 

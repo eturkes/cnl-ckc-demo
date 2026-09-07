@@ -131,6 +131,8 @@ export const LABELS = {
   navNotes: 'Notes',
   sourceMaterial: 'Source material',
   backToTop: 'Back to top',
+  /** Introduces the guideline's own title, which is payload and stays English. */
+  guidelineLabel: 'Guideline:',
 
   themeToLight: 'Use the light theme',
   themeToDark: 'Use the dark theme',

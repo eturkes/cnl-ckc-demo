@@ -24,6 +24,9 @@ The shipped answers are produced at run time. They are not stored UI fixtures.
   graph but are hidden from the primary ontology view.
 - Light and dark themes, responsive layouts, local fonts, and relative asset
   paths for nested static hosting.
+- An English and Japanese interface. The header toggle switches the interface
+  language. The knowledge base does not translate: questions, controlled sentences,
+  Prolog answers, document identifiers, and the guideline text stay in English.
 
 ## Important limits
 

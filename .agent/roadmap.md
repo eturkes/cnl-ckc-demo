@@ -48,6 +48,12 @@ trusting any claim in the expedited block below.
   window. Owns the expedited remediation: the answer derives by real inference, the
   proof is a real derivation, the graph carries polarity, and a mechanical check binds
   each claim. Section below.
+- **Japanese interface** — SHIPPED, user-added scope, **off the M5 spine**. A header
+  toggle switches the chrome between `en` and `ja`; ACE, Prolog, document ids and the
+  guideline's own prose stay English by user ruling. Law = `.claude/rules/i18n.md`.
+  Verified by `copy:check` parity, `presentation:check` faces, `tests/i18n.dom.test.ts`
+  and a Japanese pass in `browser:check`. It touches no M5 unit: the KB, the engine and
+  every derivation are untouched, and the catalog is a rendering seam above them.
 
 ## M5 — semantic integrity — IN-PROGRESS
 

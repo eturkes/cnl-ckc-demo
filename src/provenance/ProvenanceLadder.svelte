@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { messages } from '../i18n/locale.svelte.js';
   import { guidelinePdfUrl, loadEvidenceDocument } from './assets.js';
   import {
     alignedSegments,
@@ -14,6 +15,8 @@
   }
 
   let { state: provenanceState, onGraphFocus = () => undefined }: Props = $props();
+
+  const t = $derived(messages.current);
 
   let evidence = $state<EvidenceDocument>();
   let evidenceError = $state('');
@@ -94,23 +97,24 @@
   };
 
   const describe = (value: ProvenanceState): string => {
+    const { TEXT } = messages.current;
     switch (value.kind) {
       case 'idle':
-        return 'Select a citation to trace that part of the answer.';
+        return TEXT.traceIdle();
       case 'loading':
-        return 'Re-proving the selected source contribution.';
+        return TEXT.traceLoading();
       case 'failure':
-        return 'The selected source contribution could not be re-proved.';
+        return TEXT.traceFailure();
       case 'limit':
-        return `The proof trace stopped at the ${value.limit} limit.`;
+        return TEXT.traceLimit(value.limit);
       case 'cancelled':
-        return 'The proof trace was cancelled.';
+        return TEXT.traceCancelled();
       case 'unavailable':
-        return value.message;
+        return TEXT.traceUnavailable();
       case 'error':
-        return `The proof trace failed (${value.error.code}). ${value.error.message}`;
+        return TEXT.traceError(value.error.code, value.error.message);
       case 'ready':
-        return `${String(flattenProof(value.steps).length)} source clauses re-proved this part of the answer live.`;
+        return TEXT.traceReady(flattenProof(value.steps).length);
       default: {
         const exhaustive: never = value;
         return exhaustive;
@@ -122,8 +126,8 @@
 <section class="trace" aria-labelledby="trace-heading">
   <div class="title-row">
     <div>
-      <p class="eyebrow">Evidence</p>
-      <h2 id="trace-heading">Proof to source</h2>
+      <p class="eyebrow">{t.LABELS.evidenceEyebrow}</p>
+      <h2 id="trace-heading">{t.LABELS.evidenceHeading}</h2>
     </div>
     {#if documentId !== undefined}
       <button
@@ -135,7 +139,7 @@
             ...(sentences[0] === undefined ? {} : { sentence: sentences[0], sentences }),
             ...(proofSourceLines.length === 0 ? {} : { lines: proofSourceLines }),
           });
-        }}>Find in graph <span aria-hidden="true">↗</span></button
+        }}>{t.LABELS.findInGraph} <span aria-hidden="true">↗</span></button
       >
     {/if}
   </div>
@@ -144,43 +148,40 @@
 
   {#if provenanceState.kind === 'ready' && documentId !== undefined}
     <details class="ladder" ontoggle={opened}>
-      <summary>Explore the six evidence steps</summary>
+      <summary>{t.LABELS.ladderSummary}</summary>
       <ol>
         <li>
-          <h3>Live Prolog proof</h3>
-          <p>
-            The engine re-ran the selected source contribution through its bounded proof
-            interpreter.
-          </p>
+          <h3>{t.LABELS.liveProof}</h3>
+          <p>{t.DESCRIPTIONS.proofStepOrigin}</p>
           <details class="technical">
-            <summary>{steps.length} proof {steps.length === 1 ? 'step' : 'steps'}</summary>
+            <summary>{t.TEXT.proofStepCount(steps.length)}</summary>
             <ul class="proof-steps">
               {#each steps as step, index (`${step.line}-${index}`)}
-                <li><code>{step.head}</code> <span>line {step.line}</span></li>
+                <li><code>{step.head}</code> <span>{t.TEXT.proofStepLine(step.line)}</span></li>
               {/each}
             </ul>
           </details>
         </li>
 
         {#if evidenceLoading}
-          <li class="pending" aria-live="polite">Loading the selected document evidence.</li>
+          <li class="pending" aria-live="polite">{t.LABELS.evidenceLoading}</li>
         {:else if evidenceError !== ''}
           <li class="load-error">
             <p role="alert">{evidenceError}</p>
-            <button type="button" onclick={() => void loadEvidence()}>Retry evidence</button>
+            <button type="button" onclick={() => void loadEvidence()}
+              >{t.LABELS.evidenceRetry}</button
+            >
           </li>
         {:else if evidence !== undefined}
           <li>
-            <h3>Compiled clause</h3>
-            <p>
-              {clauses.length} exact {clauses.length === 1 ? 'clause' : 'clauses'} joined by source line.
-            </p>
+            <h3>{t.LABELS.compiledClause}</h3>
+            <p>{t.TEXT.clauseJoin(clauses.length)}</p>
             {#each clauses as clause (clause.line)}
               <code class="clause">{clause.text}</code>
             {/each}
           </li>
           <li>
-            <h3>Controlled sentence</h3>
+            <h3>{t.LABELS.controlledSentence}</h3>
             <p class="aligned-copy" data-side="ace">
               {#each aceSegments as segment, index (`ace-${index}`)}
                 {#if segment.kind === 'aligned'}
@@ -188,7 +189,7 @@
                     type="button"
                     class:active={selectedGroup === segment.group}
                     aria-pressed={selectedGroup === segment.group}
-                    aria-label={`Align controlled phrase: ${segment.text}`}
+                    aria-label={t.TEXT.alignAce(segment.text)}
                     onfocus={() => (selectedGroup = segment.group)}
                     onpointerenter={() => (selectedGroup = segment.group)}
                     onclick={() => (selectedGroup = segment.group)}>{segment.text}</button
@@ -198,24 +199,24 @@
             </p>
           </li>
           <li>
-            <h3>Coverage region</h3>
+            <h3>{t.LABELS.coverageRegion}</h3>
             <dl>
               <div>
-                <dt>Region</dt>
+                <dt>{t.LABELS.region}</dt>
                 <dd>{evidence.region.id}</dd>
               </div>
               <div>
-                <dt>Section</dt>
+                <dt>{t.LABELS.section}</dt>
                 <dd>{evidence.region.section}</dd>
               </div>
               <div>
-                <dt>Physical page</dt>
+                <dt>{t.LABELS.physicalPage}</dt>
                 <dd>{evidence.region.page}</dd>
               </div>
             </dl>
           </li>
           <li>
-            <h3>Aligned source passage</h3>
+            <h3>{t.LABELS.alignedPassage}</h3>
             <blockquote class="aligned-copy" data-side="source">
               {#each sourceSegments as segment, index (`source-${index}`)}
                 {#if segment.kind === 'aligned'}
@@ -223,7 +224,7 @@
                     type="button"
                     class:active={selectedGroup === segment.group}
                     aria-pressed={selectedGroup === segment.group}
-                    aria-label={`Align source phrase: ${segment.text}`}
+                    aria-label={t.TEXT.alignSource(segment.text)}
                     onfocus={() => (selectedGroup = segment.group)}
                     onpointerenter={() => (selectedGroup = segment.group)}
                     onclick={() => (selectedGroup = segment.group)}>{segment.text}</button
@@ -232,28 +233,27 @@
               {/each}
             </blockquote>
             <div class="disclosures">
-              <p><strong>Projection kept:</strong> {evidence.projection.kept}</p>
-              <p><strong>Projection changed or omitted:</strong> {evidence.projection.dropped}</p>
+              <p><strong>{t.LABELS.projectionKept}</strong> {evidence.projection.kept}</p>
+              <p><strong>{t.LABELS.projectionDropped}</strong> {evidence.projection.dropped}</p>
               <p>
-                <strong>Review status: {evidence.label}.</strong>
+                <strong>{t.TEXT.reviewStatus(evidence.label)}</strong>
                 {evidence.label === 'unreviewed'
-                  ? ' No human adjudication is recorded for this compiled document.'
-                  : ' This is the review label recorded by the knowledge-base export.'}
+                  ? t.DESCRIPTIONS.reviewUnreviewed
+                  : t.DESCRIPTIONS.reviewRecorded}
               </p>
             </div>
           </li>
           <li>
-            <h3>Guideline page</h3>
-            <p>The passage maps to physical PDF page {evidence.region.page}.</p>
+            <h3>{t.LABELS.guidelinePage}</h3>
+            <p>{t.TEXT.passagePage(evidence.region.page)}</p>
             <div class="page-actions">
-              <button type="button" onclick={() => (pageOpen = true)}>Load page viewer</button>
-              <a href={pageHref} target="_blank" rel="noreferrer">Open page in a new tab</a>
+              <button type="button" onclick={() => (pageOpen = true)}
+                >{t.LABELS.loadPageViewer}</button
+              >
+              <a href={pageHref} target="_blank" rel="noreferrer">{t.LABELS.openPageTab}</a>
             </div>
             {#if pageOpen}
-              <iframe
-                src={pageHref}
-                title={`CDC guideline, physical page ${String(evidence.region.page)}`}
-              ></iframe>
+              <iframe src={pageHref} title={t.TEXT.pageViewerTitle(evidence.region.page)}></iframe>
             {/if}
           </li>
         {/if}

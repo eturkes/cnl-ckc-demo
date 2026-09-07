@@ -1,6 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
+  import { messages } from '../i18n/locale.svelte.js';
+
+  const t = $derived(messages.current);
+
   let dark = $state(false);
 
   const apply = (next: boolean, remember: boolean): void => {
@@ -23,13 +27,13 @@
 <button
   type="button"
   aria-pressed={dark}
-  aria-label={dark ? 'Use the light theme' : 'Use the dark theme'}
+  aria-label={dark ? t.LABELS.themeToLight : t.LABELS.themeToDark}
   onclick={() => {
     apply(!dark, true);
   }}
 >
   <span aria-hidden="true">{dark ? '☀' : '☾'}</span>
-  <span>{dark ? 'Light' : 'Dark'}</span>
+  <span>{dark ? t.LABELS.themeLight : t.LABELS.themeDark}</span>
 </button>
 
 <style>

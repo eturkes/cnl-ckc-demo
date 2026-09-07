@@ -6,9 +6,43 @@
  * to an English corpus. These rules name the latin and latin-ext files
  * directly, so `dist/` carries six woff2 files instead of forty.
  *
- * Family names drop the packages' `Variable` suffix. Both families are OFL 1.1
+ * Family names drop the packages' `Variable` suffix. Every family is OFL 1.1
  * with no Reserved Font Name, so the real family name is the one to use.
+ *
+ * BIZ UDPGothic covers Japanese, which none of the latin faces carry a glyph for.
+ * It is a Universal Design gothic, so it matches Atkinson Hyperlegible's reason for
+ * being here rather than only its coverage gap. It ships as two STATIC weights
+ * (1319288 B + 1335452 B) instead of one variable file, and both are shipped
+ * because this UI leans on weight — 600 to 700 on headings, buttons and eyebrows —
+ * and synthetic bold smears CJK strokes at 0.78rem, which is the exact legibility
+ * the face was chosen for. `unicode-range` keeps both out of an English visitor's
+ * download entirely, which is also why the language control reads `Japanese` in
+ * ASCII rather than 日本語.
  */
+
+@font-face {
+  font-family: 'BIZ UDPGothic';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('@fontsource/biz-udpgothic/files/biz-udpgothic-japanese-400-normal.woff2')
+    format('woff2');
+  unicode-range:
+    U+2E80-2EFF, U+3000-303F, U+3040-309F, U+30A0-30FF, U+3190-319F, U+31F0-31FF, U+3200-32FF,
+    U+3300-33FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF;
+}
+
+@font-face {
+  font-family: 'BIZ UDPGothic';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('@fontsource/biz-udpgothic/files/biz-udpgothic-japanese-700-normal.woff2')
+    format('woff2');
+  unicode-range:
+    U+2E80-2EFF, U+3000-303F, U+3040-309F, U+30A0-30FF, U+3190-319F, U+31F0-31FF, U+3200-32FF,
+    U+3300-33FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF;
+}
 
 @font-face {
   font-family: 'Atkinson Hyperlegible Next';
@@ -102,9 +136,14 @@
   --warn: #873b19;
   --focus-ring: #171b21;
 
-  --font-ui: 'Atkinson Hyperlegible Next', ui-sans-serif, 'Segoe UI', system-ui, sans-serif;
-  --font-prose: 'Literata', 'Iowan Old Style', Palatino, Georgia, serif;
-  --font-code: 'Atkinson Hyperlegible Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  /* BIZ UDPGothic sits after each latin face, never before: its `unicode-range`
+     already excludes latin, and stack order is what keeps latin rendering in the
+     face that was chosen for it. */
+  --font-ui:
+    'Atkinson Hyperlegible Next', 'BIZ UDPGothic', ui-sans-serif, 'Segoe UI', system-ui, sans-serif;
+  --font-prose: 'Literata', 'BIZ UDPGothic', 'Iowan Old Style', Palatino, Georgia, serif;
+  --font-code:
+    'Atkinson Hyperlegible Mono', 'BIZ UDPGothic', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
   color-scheme: light;
 }

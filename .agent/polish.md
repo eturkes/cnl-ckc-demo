@@ -4,6 +4,26 @@ Off-spine improvements. Each entry carries the acceptance check that closes it a
 a `pri` — `high` = a defect reachable in the shipped product, `med` = a gate or
 evidence gap under a durable claim, `low` = a feature or a tidy-up.
 
+- **The Japanese face ships whole** — 2,654,740 B across two static weights, because a
+  monolithic subset is the only delivery with zero tofu risk and no new build step. A
+  build-time subset over the glyphs `ja.ts` actually uses measures ≈25 KB. Accept: the
+  shipped woff2 carries exactly the code points reachable from `src/i18n/ja.ts` plus a
+  declared safety set; `presentation:check` regrades it from the catalog, so a glyph added
+  to `ja.ts` without a rebuild fails the gate; `browser:check`'s Japanese pass still finds
+  every face `loaded`. `pri` low.
+- **`smoke` and `browser:check` steer by English accessible name** — `Explore graph`,
+  `Load page viewer`, `Run` and `/reports (\d+) compiled documents/` are read straight out
+  of the rendered English UI, so a reworded English string breaks a browser check with a
+  45 s timeout rather than a diff. Neither tool can drive the Japanese UI at all except
+  through the one toggle click `browser:check` now makes. Accept: both tools select by a
+  locale-independent handle, the About count is read from an attribute rather than parsed
+  out of a sentence, and `browser:check` runs its narrow sweep in both locales. `pri` med.
+- **Japanese copy has no register grader** — `copy:check` decides parity alone; the ≤20/≤25
+  word limits cannot port to a language without word spaces, so nothing mechanical holds
+  `ja.ts` to です・ます or to a length. Accept: a Japanese-side rule set the gate can decide
+  — a per-sentence character ceiling, a fixed-terminology table drawn from
+  `.claude/rules/i18n.md`, and one sentence-final-form check — with a positive control per
+  rule. `pri` low.
 - **README setup path has no mechanical owner** — the ordered install/build path is a
   durable human-facing claim verified once by hand (M1 review X23) and re-stales on any
   `package.json`, lockfile or `tools/kb/` change. Accept: one script clones HEAD into a

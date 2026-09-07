@@ -23,6 +23,7 @@ import { readdirSync } from 'node:fs';
  * @typedef {object} Page
  * @property {(url: string, options?: object) => Promise<unknown>} goto
  * @property {(selector: string, options?: object) => Promise<unknown>} waitForSelector
+ * @property {(fn: string, arg?: unknown, options?: object) => Promise<unknown>} waitForFunction
  * @property {(selector: string) => Locator} locator
  * @property {(role: string, options?: object) => Locator} getByRole
  * @property {(event: string, handler: (value: Error) => void) => void} on

@@ -116,6 +116,9 @@ const OVERFLOW_PROBE = `(() => {
   return { limit, scrollWidth: root.scrollWidth, worst };
 })()`;
 
+/** States measured, counted rather than written down: adding one must not restate it. */
+let narrowStates = 0;
+
 /**
  * Fail unless the page fits its viewport in the given interaction state.
  *
@@ -124,6 +127,7 @@ const OVERFLOW_PROBE = `(() => {
  * @returns {Promise<void>}
  */
 const fitsNarrow = async (page, state) => {
+  narrowStates += 1;
   const seen =
     /** @type {{limit: number, scrollWidth: number, worst?: {right: number, at: string}}} */ (
       await page.evaluate(OVERFLOW_PROBE)
@@ -139,6 +143,29 @@ const fitsNarrow = async (page, state) => {
     );
   }
 };
+
+/**
+ * The Japanese subset, hashed by the build. It must be absent from the request log
+ * while the page is English and present once the page is Japanese.
+ */
+const JAPANESE_FACE = /biz-udpgothic-japanese-\d+-normal[^/]*\.woff2$/u;
+
+/**
+ * The two Japanese `@font-face` rows and how many the browser has actually fetched.
+ * `unicode-range` is the whole font budget — 2.6 MB that an English visitor must
+ * never pay — and `document.fonts` is where that is decidable, because a declared
+ * face stays `unloaded` until a glyph inside its range needs rendering.
+ */
+const FACE_PROBE = `(async () => {
+  await document.fonts.ready;
+  const faces = [...document.fonts].filter((face) => face.family === 'BIZ UDPGothic');
+  return { declared: faces.length, loaded: faces.filter((face) => face.status === 'loaded').length };
+})()`;
+
+/** Waiting on the face, not on the click: the fetch starts when layout needs a glyph. */
+const FACE_LOADED = `[...document.fonts].some(
+  (face) => face.family === 'BIZ UDPGothic' && face.status === 'loaded',
+)`;
 
 /** Drives a real module worker in the page; a string keeps it out of Node's scope. */
 const CANCEL_PROBE = `(async () => {
@@ -285,6 +312,29 @@ try {
   await narrowPage.locator('details.about summary').click();
   await fitsNarrow(narrowPage, 'about open');
 
+  // The Japanese interface, measured where jsdom cannot reach: a language with no
+  // word spaces, at the narrowest viewport, with every disclosure already open —
+  // the widest this page ever gets. The seam itself is a unit test's job.
+  const before = /** @type {{declared: number, loaded: number}} */ (
+    await narrowPage.evaluate(FACE_PROBE)
+  );
+  if (before.declared !== 2) fail(`${String(before.declared)} Japanese faces declared, expected 2`);
+  if (before.loaded !== 0 || log.some((entry) => JAPANESE_FACE.test(entry.path))) {
+    fail('an English page fetched the Japanese face; its unicode-range no longer gates it');
+  }
+  await narrowPage.getByRole('button', { name: 'Show this demo in Japanese' }).click();
+  await narrowPage.waitForSelector('html[lang="ja"]', { timeout: TIMEOUT });
+  await narrowPage.waitForFunction(FACE_LOADED, undefined, { timeout: TIMEOUT });
+  if (!log.some((entry) => JAPANESE_FACE.test(entry.path))) {
+    fail('Japanese rendered without the Japanese face; the interface is in fallback glyphs');
+  }
+  await fitsNarrow(narrowPage, 'japanese, every disclosure open');
+  // Payload never translates, and the canonical answer is the claim the demo makes.
+  const canonical = (await narrowPage.locator('.canonical code').textContent()) ?? '';
+  if (!/[a-z_]+\(/u.test(canonical)) {
+    fail(`the Japanese page altered the canonical Prolog answer: ${canonical.slice(0, 80)}`);
+  }
+
   // R40 — cancel delivery between solutions, in a real browser.
   const probe = /** @type {Record<string, unknown>} */ (await devPage.evaluate(CANCEL_PROBE));
   if (typeof probe.error === 'string') fail(`cancel probe: ${probe.error}`);
@@ -308,7 +358,8 @@ try {
 
   console.log(
     `browser-check: ok — dev ${dev.url} and built ${builtUrl} both report ${String(documents)} ` +
-      `documents; graph and evidence stay lazy; eight states fit ${String(NARROW)}px; ` +
+      `documents; graph and evidence stay lazy; ${String(narrowStates)} states fit ` +
+      `${String(NARROW)}px, the last of them Japanese; ` +
       `cancel delivered after ${String(solutions)} ` +
       `of up to ${String(probe.cap)} solutions in ${Number(probe.elapsed).toFixed(0)} ms, ` +
       `engine still ${String(probe.after)}`,
