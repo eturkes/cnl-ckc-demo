@@ -7,6 +7,7 @@
 // cancelled run would be unable to tell an honest empty result from a stopped one.
 
 import type { LimitKind, PlSolution } from '../engine/protocol.js';
+import { messages } from '../i18n/locale.svelte.js';
 import { QUESTION_CATALOG, type CatalogEntry, type QuestionId } from '../questions/catalog.js';
 import { presentAnswerTerm } from '../questions/humanize.js';
 import type { AnswerResult } from '../questions/service.js';
@@ -52,16 +53,14 @@ export interface AnswerPoint {
   sources: number[];
 }
 
-const LIMIT_TEXT: Record<LimitKind, string> = {
-  stack: 'the stack limit',
-  depth: 'the depth limit',
-  inference: 'the inference limit',
-  'wall-clock': 'the time limit',
-  'answer-cap': 'the answer limit',
-  heap: 'the memory limit',
-};
-
-const count = (n: number, noun: string): string => `${n} ${noun}${n === 1 ? '' : 's'}`;
+const LIMIT_TEXT = {
+  stack: 'limitStack',
+  depth: 'limitDepth',
+  inference: 'limitInference',
+  'wall-clock': 'limitWallClock',
+  'answer-cap': 'limitAnswerCap',
+  heap: 'limitHeap',
+} as const satisfies Record<LimitKind, keyof (typeof messages.current)['TEXT']>;
 
 /** An existence question projects no columns, so it answers yes or no, never rows. */
 const isExistential = (entry: CatalogEntry): boolean => entry.projection.length === 0;
@@ -69,38 +68,42 @@ const isExistential = (entry: CatalogEntry): boolean => entry.projection.length 
 const blank: StateDescription = { status: '', error: '', busy: false, summary: '' };
 
 const describeResult = (entry: CatalogEntry, result: AnswerResult): StateDescription => {
+  const { TEXT } = messages.current;
   switch (result.kind) {
     case 'answer':
       return isExistential(entry)
-        ? { ...blank, status: 'Answer: yes.', summary: 'Yes. The knowledge base proves it.' }
+        ? { ...blank, status: TEXT.answerYes(), summary: TEXT.answerYesSummary() }
         : {
             ...blank,
-            status: 'Answer ready.',
+            status: TEXT.answerReady(),
           };
     case 'failure':
       return isExistential(entry)
-        ? { ...blank, status: 'Answer: no.', summary: 'No. The knowledge base found no proof.' }
-        : { ...blank, status: 'No proof found.', summary: 'No proof found. The result is empty.' };
+        ? { ...blank, status: TEXT.answerNo(), summary: TEXT.answerNoSummary() }
+        : { ...blank, status: TEXT.noProof(), summary: TEXT.noProofSummary() };
     case 'limit': {
-      const partial = count(result.solutions.length, 'partial answer');
-      const text = `The run stopped at ${LIMIT_TEXT[result.limit]} (${result.limit}) with ${partial}.`;
+      const text = TEXT.runStopped(
+        TEXT[LIMIT_TEXT[result.limit]](),
+        result.limit,
+        result.solutions.length,
+      );
       return { ...blank, status: text, summary: text };
     }
     case 'cancelled': {
-      const text = `Cancelled with ${count(result.solutions.length, 'partial answer')}.`;
+      const text = TEXT.runCancelled(result.solutions.length);
       return { ...blank, status: text, summary: text };
     }
     case 'error':
       return {
         ...blank,
-        error: `The run failed (${result.error.code}). ${result.error.message}`,
-        summary: 'The run failed.',
+        error: TEXT.runFailed(result.error.code, result.error.message),
+        summary: TEXT.runFailedSummary(),
       };
     case 'rejected':
       return {
         ...blank,
-        error: 'That question is not in the catalog, so it was never run.',
-        summary: 'The question was rejected.',
+        error: TEXT.questionRejected(),
+        summary: TEXT.questionRejectedSummary(),
       };
     default: {
       const exhaustive: never = result;
@@ -110,33 +113,32 @@ const describeResult = (entry: CatalogEntry, result: AnswerResult): StateDescrip
 };
 
 export const describeState = (state: DemoState): StateDescription => {
+  const { TEXT } = messages.current;
   switch (state.kind) {
     case 'booting':
       // Not `busy`: booting is not a run, so Cancel stays disabled and the answer
       // region is idle rather than mid-replacement.
-      return { ...blank, status: 'Starting the Prolog engine.', summary: 'No answer yet.' };
+      return { ...blank, status: TEXT.engineStarting(), summary: TEXT.noAnswerYet() };
     case 'boot-error':
       return {
         ...blank,
-        error: `The Prolog engine did not start. ${state.error.message}`,
-        summary: 'The engine is unavailable. Select Retry to start it again.',
+        error: TEXT.engineFailed(state.error.message),
+        summary: TEXT.engineFailedSummary(),
       };
     case 'idle':
       return {
         ...blank,
-        status:
-          `Knowledge base ready: ${count(state.contract.documents, 'compiled document')} ` +
-          `at schema ${state.contract.schemaVersion}. Pick a question and run it.`,
-        summary: 'No answer yet.',
+        status: TEXT.engineReady(state.contract.documents, String(state.contract.schemaVersion)),
+        summary: TEXT.noAnswerYet(),
       };
     case 'running':
       return {
         ...blank,
-        status: `Running ${QUESTION_CATALOG[state.id].question}`,
+        status: TEXT.runningQuestion(QUESTION_CATALOG[state.id].question),
         busy: true,
       };
     case 'cancelling':
-      return { ...blank, status: 'Cancelling the run.', busy: true };
+      return { ...blank, status: TEXT.cancellingRun(), busy: true };
     case 'settled':
       return describeResult(QUESTION_CATALOG[state.id], state.result);
     default: {
