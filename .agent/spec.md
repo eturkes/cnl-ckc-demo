@@ -76,15 +76,17 @@ u3→u7 (answer/proof) ∥ u8→u13 (graph) → u14→u15. Full `Accept:` + `Dep
   oracles byte for byte; erasing the one `category-A-recommendation` entity line reddens
   category-A alone. Forced `kb:build` → byte-identical pvm/qlf/manifest. Design →
   `.claude/rules/kb-build.md`, whose stale `## Question catalog` text this replaces.
-- **u7 binding-check inventory** — contract + 12 predicates + the C2 disposition table →
-  `.agent/contracts/m5u7.md`. **E1-E3, E6-E8 DONE**: `tests/clinical-binding.test.ts` perturbs
-  `guideline_*` three ways (additive overlay adds a solution to the live export statement;
-  one erased cited clause drops exactly its document and its proof; a one-line source shift
-  moves all 686 proof lines by +1 and leaves every answer identical), and
-  `tools/binding-check.mjs` runs the suite once and requires 29 named cases across 10 suites —
-  it REPLACES `pnpm test` in the gate. Controls rc 1: suite deleted, case renamed, case
-  skipped. `kb:export-check` shrank to the `EXPORTED` preflight. Left: E9 independent browser
-  answer lane, E11 RED-at-`a944fca` replay.
+- **u7 binding-check inventory** — **DONE**. `.agent/contracts/m5u7.md`, 12 predicates + the
+  C2 disposition (all five classes restored, none by rationale).
+  `tests/clinical-binding.test.ts` perturbs `guideline_*` three compiled ways: an additive
+  overlay adds one solution to the live export statement; one erased cited clause drops
+  exactly its document and its proof; a one-line source shift moves every proof line by +1 and
+  leaves all 12 answers identical. `tools/binding-check.mjs` runs the suite once and requires
+  29 named cases across 10 suites — it REPLACES `pnpm test` in the gate; controls rc 1 for a
+  deleted suite, a renamed case and a skipped one. `tools/answer-oracle.mjs` gives `smoke` and
+  `browser:check` one bag-derived expectation, and `browser:check` now grades the rendered
+  canonical answer byte for byte in BOTH locales. `pnpm binding:replay` shows the erasure is
+  invisible at `a944fca` and drops one document now.
 - **u8 renderer spike + ruling** — parallel-edge separation, labels at the Cytoscape fit zoom
   (5.03 / 2.19 px), `selectNodes` isolation, dashes, bundle delta, three-arm layout. Accept: a
   measured verdict per capability; renderer + edge-view contract committed.

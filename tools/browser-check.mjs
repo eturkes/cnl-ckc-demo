@@ -17,6 +17,7 @@ import { cp, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { expectedAnswer, questionOf } from './answer-oracle.mjs';
 import { failWith, launch, serve } from './browser.mjs';
 import { loadManifest, ROOT } from './kb/paths.mjs';
 
@@ -142,6 +143,34 @@ const fitsNarrow = async (page, state) => {
       `${NARROW}px ${state}: ${seen.worst.at} reaches ${Math.round(seen.worst.right)}px past ${seen.limit}px`,
     );
   }
+};
+
+/**
+ * Fail unless the rendered canonical answer is byte-equal to the bag-derived expectation.
+ *
+ * `pnpm smoke` grades one question at one viewport in English. This grades whatever the page
+ * itself selected, at the narrowest viewport, in both locales — the pair is what decides that
+ * translating the interface leaves the engine's own answer untouched.
+ *
+ * @param {import('./browser.mjs').Page} page
+ * @param {string} leg
+ * @param {string} expected
+ * @returns {Promise<void>}
+ */
+const canonicalMatches = async (page, leg, expected) => {
+  const rendered = ((await page.locator('.canonical code').textContent()) ?? '').trim();
+  if (rendered === expected) return;
+  // The answer runs to kilobytes, so name the first divergent byte and show a window around
+  // it rather than printing two walls of Prolog and leaving the reader to diff them.
+  let at = 0;
+  while (at < expected.length && expected[at] === rendered[at]) at += 1;
+  /** @type {(text: string) => string} */
+  const window = (text) => `…${text.slice(Math.max(0, at - 40), at + 60)}…`;
+  fail(
+    `${leg}: rendered answer differs from the bag at byte ${String(at)} ` +
+      `(bag ${String(expected.length)} B, dom ${String(rendered.length)} B)\n` +
+      `  bag: ${window(expected)}\n  dom: ${window(rendered)}`,
+  );
 };
 
 /**
@@ -271,7 +300,12 @@ try {
   await fitsNarrow(narrowPage, 'idle');
   await narrowPage.locator('[role="combobox"]').click();
   await fitsNarrow(narrowPage, 'listbox open');
-  await narrowPage.locator('[role="option"]:first-of-type').click();
+  // E9 — the oracle follows the page's own selection, so the option's id is read before the
+  // click closes the listbox rather than the question being written down here.
+  const firstOption = narrowPage.locator('[role="option"]:first-of-type');
+  const question = questionOf(await firstOption.getAttribute('id'), fail);
+  const expectedCanonical = expectedAnswer(question, fail);
+  await firstOption.click();
   await narrowPage.getByRole('button', { name: 'Run' }).click();
   // Engine-authored text is the whole risk, so measure once it is on screen.
   await narrowPage.waitForSelector('section[aria-labelledby] .answer-point', {
@@ -282,6 +316,7 @@ try {
   await fitsNarrow(narrowPage, 'sources open');
   await narrowPage.locator('.canonical summary').click();
   await fitsNarrow(narrowPage, 'canonical form open');
+  await canonicalMatches(narrowPage, `english ${question}`, expectedCanonical.serialized);
   await narrowPage.waitForSelector('details.ladder > summary', { timeout: TIMEOUT });
   if (log.some((entry) => /assets\/cdc[^/]+\.json$/u.test(entry.path))) {
     fail('provenance evidence loaded before its disclosure opened');
@@ -330,10 +365,7 @@ try {
   }
   await fitsNarrow(narrowPage, 'japanese, every disclosure open');
   // Payload never translates, and the canonical answer is the claim the demo makes.
-  const canonical = (await narrowPage.locator('.canonical code').textContent()) ?? '';
-  if (!/[a-z_]+\(/u.test(canonical)) {
-    fail(`the Japanese page altered the canonical Prolog answer: ${canonical.slice(0, 80)}`);
-  }
+  await canonicalMatches(narrowPage, `japanese ${question}`, expectedCanonical.serialized);
 
   // R40 — cancel delivery between solutions, in a real browser.
   const probe = /** @type {Record<string, unknown>} */ (await devPage.evaluate(CANCEL_PROBE));
@@ -360,7 +392,8 @@ try {
     `browser-check: ok — dev ${dev.url} and built ${builtUrl} both report ${String(documents)} ` +
       `documents; graph and evidence stay lazy; ${String(narrowStates)} states fit ` +
       `${String(NARROW)}px, the last of them Japanese; ` +
-      `cancel delivered after ${String(solutions)} ` +
+      `${question} rendered the bag's ${String(expectedCanonical.rows)}-row canonical answer ` +
+      `byte for byte in both locales; cancel delivered after ${String(solutions)} ` +
       `of up to ${String(probe.cap)} solutions in ${Number(probe.elapsed).toFixed(0)} ms, ` +
       `engine still ${String(probe.after)}`,
   );

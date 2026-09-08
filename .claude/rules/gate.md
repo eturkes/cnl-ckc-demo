@@ -59,7 +59,20 @@ committed state:
 |---|---|
 | `pnpm kb:reproduce` | byte-reproducibility of pvm + qlf + catalog across two forced builds |
 | `pnpm smoke` | built output answers in a real browser against bag bytes read at run time |
-| `pnpm browser:check` | 337 documents on dev + built output, every 320 px interaction state incl. Japanese, that `unicode-range` keeps the Japanese face off an English page, browser cancel delivery |
+| `pnpm browser:check` | 337 documents on dev + built output, every 320 px interaction state incl. Japanese, that `unicode-range` keeps the Japanese face off an English page, browser cancel delivery, and the rendered canonical answer byte-equal to `tools/answer-oracle.mjs` in BOTH locales |
+| `pnpm binding:replay` | that `clinical-binding` E2 is load-bearing: the same erasure is invisible at `a944fca` and drops exactly one document now |
+
+`tools/answer-oracle.mjs` is the browser lanes' shared expectation — `clinicalArtifacts` answer
+terms assembled in JavaScript from the bag, never scraped from the page and never a fixture
+the page also loads. Its own credibility is second-hand and stays that way on purpose:
+`clinical-differential` D4 grades it against an independent reassembly, `clinical-answer-live`
+A2 against the live derivation.
+
+`binding:replay` reads git history, so it needs a full clone; that is why it stays out of
+`release:check` and out of CI. It varies the answer-path producer alone — `payloadSource` from
+the ref under test, the bag, the image build and the loader from the working tree — and exits
+1 unless the archived arm is red and the working arm green. Control: `pnpm binding:replay HEAD`
+exits 1, both arms green.
 
 `pnpm release:check` = `gate && kb:reproduce && smoke && browser:check`.
 

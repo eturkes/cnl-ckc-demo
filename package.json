@@ -11,6 +11,8 @@
   },
   "scripts": {
     "audit:check": "pnpm audit --audit-level=moderate",
+    "binding:check": "node tools/binding-check.mjs",
+    "binding:replay": "node tools/binding-replay.mjs",
     "browser:check": "node tools/browser-check.mjs",
     "build": "vite build",
     "check": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
@@ -31,7 +33,6 @@
     "release:check": "pnpm gate && pnpm kb:reproduce && pnpm smoke && pnpm browser:check",
     "secret:check": "node tools/secret-check.mjs",
     "smoke": "node tools/smoke.mjs",
-    "binding:check": "node tools/binding-check.mjs",
     "test": "vitest run"
   },
   "dependencies": {

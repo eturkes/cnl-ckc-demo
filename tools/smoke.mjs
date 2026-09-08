@@ -10,14 +10,12 @@
 // the check cannot drift from the knowledge base it claims to reproduce.
 
 import { execFileSync } from 'node:child_process';
-import { readdirSync, readFileSync } from 'node:fs';
 import { cp, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { expectedAnswer } from './answer-oracle.mjs';
 import { failWith, launch, serve } from './browser.mjs';
-import { verifyBag } from './kb/bag.mjs';
-import { clinicalArtifacts } from './kb/clinical.mjs';
 import { ROOT } from './kb/paths.mjs';
 
 const QUESTION = 'when-to-use-opioids';
@@ -26,29 +24,10 @@ const NESTED = 'some/nested';
 /** @type {(message: string) => never} */
 const fail = failWith('smoke');
 
-/**
- * Canonical answer expected from the structured clinical terms derived from the bag.
- *
- * @param {string} id
- * @returns {{ serialized: string, rows: number }}
- */
-const expectedAnswer = (id) => {
-  const kb = join(ROOT, 'kb');
-  const archive = readdirSync(kb).find((name) => name.endsWith('.tar.gz'));
-  if (archive === undefined) fail('no bag archive in kb/');
-  const { files } = verifyBag(readFileSync(join(kb, archive)));
-  const terms = clinicalArtifacts(files).answers.get(id);
-  if (terms === undefined || terms.length === 0) {
-    fail(`clinical catalog has no answer terms for ${id}`);
-  }
-  const rows = [...terms].sort().map((term) => `sol([${term}])`);
-  return { serialized: `solutions([${rows.join(',')}])`, rows: terms.length };
-};
-
 // Never trust a leftover dist tree: this check proves the current source.
 execFileSync('pnpm', ['build'], { cwd: ROOT, stdio: 'inherit' });
 
-const expected = expectedAnswer(QUESTION);
+const expected = expectedAnswer(QUESTION, fail);
 const root = await mkdtemp(join(tmpdir(), 'cnl-ckc-smoke-'));
 /** @type {import('./browser.mjs').LogEntry[]} */
 const log = [];
