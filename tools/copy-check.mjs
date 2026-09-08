@@ -61,8 +61,13 @@ const literals = (source) => {
   const out = [];
   // Import specifiers are paths, not prose.
   const body = source.replace(/^\s*import[^;]*;/gm, '');
+  // The concatenation tail is `(?:\s*\+)?\s*`, not `\s*\+?\s*`: the latter splits a run of
+  // whitespace two ways per iteration, which backtracks polynomially on a non-match. What
+  // remains is star height, which the rule reads structurally; every iteration is anchored
+  // on a quote, so no two of them can match the same span.
   const entry =
-    /(?:^|\n)\s*(?:\/\*\*[\s\S]*?\*\/\s*)?([\w]+):\s*((?:'(?:[^'\\]|\\.)*'\s*\+?\s*)+)/g;
+    // eslint-disable-next-line security/detect-unsafe-regex
+    /(?:^|\n)\s*(?:\/\*\*[\s\S]*?\*\/\s*)?([\w]+):\s*((?:'(?:[^'\\]|\\.)*'(?:\s*\+)?\s*)+)/g;
   for (const [, key, group] of body.matchAll(entry)) {
     if (key === undefined || group === undefined) continue;
     const text = [...group.matchAll(/'((?:[^'\\]|\\.)*)'/g)].map(([, s]) => s ?? '').join('');

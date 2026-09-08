@@ -250,3 +250,30 @@ evidence gap under a durable claim, `low` = a feature or a tidy-up.
   claim the gate carries. Accept: the two tests pass 20 consecutive full-suite
   runs at the committed worker count, with the shared resource they contend on
   named in the fix. `pri` med.
+
+## Deferred-row index — the 21 rows `.agent/spec.md` points here for
+
+One line per row, defect and acceptance check. Full text is above in this file.
+
+| defect | accept |
+| --- | --- |
+| **high** A WASM abort strands the worker | abort = own terminal state, worker recreated, next query reports 337 docs |
+| Browser tools steer by English accessible names | locale-independent handles, count from an attribute, both locales |
+| README install path is hand-verified | a script clones HEAD, runs only the README commands, asserts rc 0 + counts |
+| A QLF fallback import doubles the engine | it loads only on saved-state failure; an untaken fallback ships no bytes |
+| `wt/test-m1u2` + `wt/test-m1u4` suites never ran here | both run in-tree, each case red for a contract reason or green |
+| Heap limit + hard kill are proven in Node alone | a browser run exhausts the heap + kills a hostile goal, reporting 337 docs |
+| The byte claim binds the `solutions([...])` substring alone | the whole envelope ships, or the contract says why not |
+| Boot is terminal on failure, unbounded on silence | a failed or hung boot settles bounded as one alert with a retry |
+| The axe sweep predates the About panel + `<details>` | a dom test runs `axe.run` with each disclosure open + closed |
+| `copy:check` grades two files by path | its file set derives from the source tree; a 30-word sentence anywhere fails |
+| Wordmark, forbidden claims, descriptor + fallback stacks rest on one reading | each decided by a committed check |
+| The inference budget re-arms per solution | a goal whose total exceeds budget reaches `limit:'inference'`, or the bound is contracted |
+| `pnpm smoke` stays rc 0 on a stale `dist/` | it fails on a `dist/` stale against the KB input hash, `dist/` intact |
+| `verify-fixes.py` (45/45 RED) + `validate-report.py` are gitignored | both port in; an escaped pipe grades the same; one command replays the kills |
+| The answer-oracle scan skips `kb/generated` | the literal planted in a generated file gives `kb:asset-check` rc 1; restoring rc 0 |
+| One of twelve protocol arms is clone-tested | all 12 discriminants clone + deep-compare; a mutant reddens it |
+| Five browser claims + two probes live only on `wt/` branches | one typed `tools/` harness covers all five; probes port or claims prune |
+| The `.claude/rules/` censuses have no mechanical owner | one script re-derives each from `kb/generated` + `dist`, naming mismatches |
+| Two tests time out under parallel execution | both pass 20 consecutive full-suite runs at the committed worker count |
+| 9 of u5's 26 combobox predicates rest on jsdom stubs | a Chromium test drives real input, reads the AX tree, runs axe |

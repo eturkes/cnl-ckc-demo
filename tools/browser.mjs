@@ -79,8 +79,10 @@ export const resolveGlobal = (pkg, fail) => {
 export const launch = async (fail) => {
   // The launcher resolves out of the pnpm global store at run time and ships no
   // types, so this import is the one place `any` legitimately enters these files.
+  // The specifier is a store path this process resolved itself, and this file never ships.
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const launcher = /** @type {{ ChromiumFish: (options?: object) => Promise<Browser> }} */ (
+    // eslint-disable-next-line no-unsanitized/method
     await import(`${resolveGlobal('chromiumfish', fail)}/dist/index.js`)
   );
   return launcher.ChromiumFish({ headless: true });

@@ -24,6 +24,11 @@ paths:
 - jsdom is capped at `^29.1.1`, exact only in the lockfile. jsdom 30 pulls undici 8, which
   assigns `webidl.util.markAsUncloneable` from `node:worker_threads`; Node 20 does not export
   it, so the vitest fork dies before any test runs.
+- `secretlint` and every `@secretlint/*` package are capped at `^12`. Version 13 declares
+  `engines.node >= 22`; this project runs Node 20 (`engines`, and the CI `setup-node` pin).
+  Lifting the cap means moving the whole runtime, which also lifts the jsdom cap above.
+- Each cap here must also appear in `.github/dependabot.yml`'s `ignore` list, or the weekly
+  run reopens the same gate-breaking PR.
 - ESLint config needs `@types/node`, and svelte parsing needs `extraFileExtensions`.
 - Prettier reformats `.claude/` and `.agent/` tool-owned files if unscoped →
   `.prettierignore` restricts it to first-party source. Keep that scoping.

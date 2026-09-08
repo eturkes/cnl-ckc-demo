@@ -1,0 +1,32 @@
+name: Security scan
+
+# `pages.yml` already runs the whole gate, scanners included, on every push to main. This
+# workflow exists for the schedule: an advisory published against an unchanged tree has to
+# redden something, and nothing pushes on the day it lands.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20.19.0
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      # Dependency advisories, live against the registry feed.
+      - run: pnpm audit:check
+      # Secret scan over the tree, with its own detector-liveness control.
+      - run: pnpm secret:check
+      # Static analysis: eslint-plugin-security, no-unsanitized, svelte/no-at-html-tags.
+      - run: pnpm lint

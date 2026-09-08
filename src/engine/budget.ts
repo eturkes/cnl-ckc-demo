@@ -32,6 +32,8 @@ const RESERVED = ['BudgetDepth_', 'BudgetInference_', 'BudgetResource_'] as cons
 
 // Word-boundary match over the raw goal text. It can only over-reject — a reserved
 // name inside a quoted atom trips it too — and over-rejection is the safe direction.
+// The pattern interpolates `RESERVED` alone, which is a module-level `as const`.
+// eslint-disable-next-line security/detect-non-literal-regexp
 const RESERVED_PATTERN = new RegExp(`\\b(?:${RESERVED.join('|')})`);
 
 /** `resource_error(What)` terms this build produces, mapped to their own limit states. */
