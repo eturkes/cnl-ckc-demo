@@ -53,8 +53,11 @@ renderer. Removing the `clinical_advice` cut spans u3+u4 — alone it yields 0/7
 
 u3→u7 (answer/proof) ∥ u8→u13 (graph) → u14→u15. Full `Accept:` + `Depends` → archive.
 
-- **u3 runtime assembly** — answers derive through u2's evaluator, not the build-time fact.
-  Accept: 48 cases / 12 answers derive over all 686 sites, bytes identical.
+- **u3 runtime assembly** — IMPLEMENTATION LANDED, acceptance suite pending. Contract +
+  9 predicates → `.agent/contracts/m5u3.md`. `clinical_advice/3` = 1 static derivation rule
+  over `clinical_derive/4`; 0 answer facts ship. Measured live: 12/12 answer terms and 12/12
+  source ids identical to u1's oracle, 401 ms for all 12, `assertz` → `permission_error`.
+  Remaining: commit A1/A2/A5 as live cases + A6 premise-erasure control.
 - **u4 typed proof** — replay u2's evaluator behind typed clause/assumption/NAF branches.
   Accept: every step participated and names its clause line; each cited-clause removal changes
   the proof.

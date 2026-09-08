@@ -584,10 +584,16 @@ const parseRule = (source) => {
   return { key: `${document}::${sentence}`, document, sentence, fragment };
 };
 
-/** @param {string} source @returns {ActualAdvice} */
+/**
+ * Read the shipped answer term off `clinical_advice_source/4`. u3 turned
+ * `clinical_advice/3` into a derivation rule, so the emitted answer term now travels with
+ * the site list. u4 removes this record; the reassembly differential then re-anchors on a
+ * live derivation instead of an emitted term.
+ * @param {string} source @returns {ActualAdvice}
+ */
 const parseAdvice = (source) => {
-  const args = callArguments(source, 'clinical_advice');
-  if (args.length !== 3) throw new Error(`clinical_advice arity=${String(args.length)}`);
+  const args = callArguments(source, 'clinical_advice_source');
+  if (args.length !== 4) throw new Error(`clinical_advice_source arity=${String(args.length)}`);
   const answer = callArguments(args[2] ?? '', 'clinical_answer');
   if (answer.length !== 3) throw new Error(`clinical_answer arity=${String(answer.length)}`);
   const document = answer[0] ?? '';
@@ -634,7 +640,7 @@ const actualRecords = (source) => {
       } catch (error) {
         malformedRules.push(error instanceof Error ? error.message : String(error));
       }
-    } else if (statement.startsWith('clinical_advice(')) {
+    } else if (statement.startsWith('clinical_advice_source(')) {
       try {
         advice.push(parseAdvice(statement));
       } catch (error) {

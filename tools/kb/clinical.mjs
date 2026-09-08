@@ -602,7 +602,9 @@ export const clinicalArtifacts = (files) => {
   /** @type {Set<string>} */
   const names = new Set();
   /** @type {string[]} */
-  const advice = [];
+  const selections = [];
+  /** @type {string[]} */
+  const passageFacts = [];
   /** @type {string[]} */
   const sources = [];
   /** @type {Map<string, string[]>} */
@@ -691,10 +693,15 @@ export const clinicalArtifacts = (files) => {
       const text = passages.get(selection.document);
       if (text === undefined) throw new Error(`${selection.document}: no aligned source passage`);
       const first = /** @type {AdviceClause} */ (parsed[0]);
-      const sourceId = `'$guideline_id'(product,${encodedAtom(selection.document)},${String(first.sentence)},ref(1),[])`;
+      const doc = encodedAtom(selection.document);
+      const sourceId = `'$guideline_id'(product,${doc},${String(first.sentence)},ref(1),[])`;
+      // The statement stays computed as the ORACLE the runtime derivation is graded
+      // against. It is no longer emitted as a `clinical_advice/3` fact — that lookup was
+      // the whole of S1.
       const statement = answerTerm(selection.document, parsed, text);
       statements.push(statement);
-      advice.push(`clinical_advice(${qid},${sourceId},${statement}).`);
+      selections.push(`clinical_source(${qid},${doc},${String(first.sentence)}).`);
+      passageFacts.push(`clinical_passage(${doc},${quotedString(text)}).`);
       sources.push(
         `clinical_advice_source(${qid},${sourceId},${statement},[${sites.join(',')}]).`,
       );
@@ -710,8 +717,6 @@ export const clinicalArtifacts = (files) => {
   });
 
   const helper =
-    `:- multifile(clinical_advice/3).\n` +
-    `:- dynamic(clinical_advice/3).\n` +
     `:- discontiguous(clinical_advice_source/4).\n` +
     `:- discontiguous(clinical_gate/4).\n` +
     `:- discontiguous(clinical_rule/3).\n` +
@@ -722,7 +727,29 @@ export const clinicalArtifacts = (files) => {
     `clinical_use(Line,Head) :- clause(Head,Body,Ref), ` +
     `clause_property(Ref,file('/prolog.pl')), ` +
     `clause_property(Ref,line_count(Line)), call(Body).\n` +
-    `${advice.join('\n')}\n${sources.join('\n')}\n` +
+    // The demo's one answer. `clinical_advice/3` carries NO facts and is NOT dynamic, so
+    // there is nothing to look up and nothing an `assertz` can fabricate: every solution
+    // runs `clinical_derive/4`, which reads its cited heads out of the stored
+    // `clinical_gate/4` body and binds `Rule` only after the derivation succeeds.
+    // `clinical_derive/4` and `app/3` are defined in the proof source appended after this
+    // block; one consult defines the whole file before any query runs.
+    `clinical_advice(Q,'$guideline_id'(product,Doc,First,ref(1),[]),` +
+    `clinical_answer(Doc,Groups,Passage)) :- ` +
+    `clinical_source(Q,Doc,First), clinical_passage(Doc,Passage), ` +
+    `findall(R,clinical_derive(Doc,_,R,_),Rules), clinical_groups(Rules,Groups).\n` +
+    // Reassemble the per-sentence rules into group terms exactly as `groupClauses` does:
+    // merge identical consequents, concatenate their conditions in sentence order, and
+    // keep first-appearance group order. `clinical_derive/4` enumerates a document's
+    // gates in emission order, which is sentence order.
+    `clinical_groups([],[]).\n` +
+    `clinical_groups([rule(C,Su,M,A)|T],[rule(Cs,Su,M,A)|R]) :- ` +
+    `clinical_merge(Su,M,A,T,Rest,Tail), app(C,Tail,Cs), clinical_groups(Rest,R).\n` +
+    `clinical_merge(_,_,_,[],[],[]) :- !.\n` +
+    `clinical_merge(Su,M,A,[rule(C,Su1,M1,A1)|T],Rest,Cs) :- ` +
+    `Su1 == Su, M1 == M, A1 == A, !, ` +
+    `clinical_merge(Su,M,A,T,Rest,Cs1), app(C,Cs1,Cs).\n` +
+    `clinical_merge(Su,M,A,[H|T],[H|Rest],Cs) :- clinical_merge(Su,M,A,T,Rest,Cs).\n` +
+    `${selections.join('\n')}\n${passageFacts.join('\n')}\n${sources.join('\n')}\n` +
     `${fragments.join('\n')}\n${premises.join('\n')}\n${gates.join('\n')}\n`;
   return { records, names: [...names].sort(), source: helper, helper, answers };
 };

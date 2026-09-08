@@ -254,8 +254,13 @@ describe('live clinical answers', () => {
   });
 
   it(
-    'tracks an injected clinical-advice fact rather than a UI fixture',
+    'refuses an injected clinical-advice fact: the answer predicate is static',
     async () => {
+      // This case used to assert the opposite — that injecting a `clinical_advice/3` fact
+      // changed the answer. That is the vacuous binding `.claude/rules/proof.md` names: an
+      // overlay on the very predicate the goal queries stays green while the answer bypasses
+      // the KB. u3 made `clinical_advice/3` a static derivation rule, so the injection is
+      // refused and no fact can stand in for a derivation.
       const id = QUESTION_IDS[0];
       const marker = `probe-${String(process.pid)}-overlay`;
       const entry = QUESTION_CATALOG[id];
@@ -270,11 +275,11 @@ describe('live clinical answers', () => {
         },
         new Uint8Array(readGenerated('kb.pvm')),
       );
-      expect(loaded, JSON.stringify(loaded)).toMatchObject({ kind: 'consulted' });
-
-      const after = serializeAnswer(entry, await run(id));
-      expect(after).not.toBe(before);
-      expect(after).toContain(marker);
+      expect(loaded, JSON.stringify(loaded)).toMatchObject({ kind: 'error' });
+      expect(JSON.stringify(loaded)).toContain('Redefined static procedure clinical_advice/3');
+      // The refusal is fail-closed: the session discards the engine rather than continuing
+      // on one that a load already touched, so the marker cannot reach any later answer.
+      await expect(run(id)).rejects.toThrow(/engine discarded/u);
     },
     BOOT_TIMEOUT,
   );
