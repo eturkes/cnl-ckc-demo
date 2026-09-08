@@ -53,37 +53,38 @@ renderer.
 
 u3→u7 (answer/proof) ∥ u8→u13 (graph) → u14→u15. Full `Accept:` + `Depends` → archive.
 
-- **u3 runtime assembly** — **DONE**. Contract + 10 predicates → `.agent/contracts/m5u3.md`;
-  suite = `tests/clinical-answer-live.test.ts`, 5 cases. `clinical_advice/3` = 1 static
-  derivation rule over `clinical_derive/4`; 0 answer facts ship. 12/12 answer terms + source
-  ids `==` u1's oracle, 401 ms for all 12, `assertz` → `permission_error`. A6 found A10:
-  `findall/3` alone shipped a truncated answer, so the rule now counts gates and demands an
-  equal derivation count — answers are all-or-nothing.
-- **u4 typed proof** — **DONE**. Contract + 10 predicates → `.agent/contracts/m5u4.md`; suite
-  = `tests/clinical-proof-live.test.ts`, 7 cases through the production RPC.
+- **u3 runtime assembly** — **DONE**. `.agent/contracts/m5u3.md`; suite =
+  `tests/clinical-answer-live.test.ts`, 5 cases. `clinical_advice/3` = 1 static derivation
+  rule over `clinical_derive/4`, 0 answer facts. 12/12 answer terms + source ids `==` u1's
+  oracle. A6 found A10: `findall/3` alone shipped a truncated answer, so the rule counts
+  gates and demands an equal derivation count — answers are all-or-nothing.
+- **u4 typed proof** — **DONE**. `.agent/contracts/m5u4.md`; suite =
+  `tests/clinical-proof-live.test.ts`, 7 cases through the production RPC.
   `clinical_advice/3` projects `/4`, whose 4th arg is the proof, so answer and proof are one
-  derivation; `clinical_advice_source/4` + `advice_nodes/2` are gone. `ProofStep` = a
-  clause/assumption/negation union. Census → `.claude/rules/proof.md`: 686 clause nodes =
-  the cited-site set exactly, 3,930 assumptions carrying no line, 15 NAF, 430 ms for all 12.
-- **u5 premise display** — **DONE**. Contract + 10 predicates + the 12-document census →
-  `.agent/contracts/m5u5.md`; suite = 3 cases in `tests/provenance-ladder.dom.test.ts`. Dedup
-  is per PROOF: 3,930 leaves → the document's own 4–131 premises, shown once inside the
-  existing `Live Prolog proof` rung with a hypothetical badge and no line. The one NAF goal
-  gets its own badge. Graph focus and the clause list stay clause-only; the `<ol>` still has
-  six rungs. `presentation:check` now grades the ladder's two engine-text selectors.
-- **u6 legacy export lane** — **DONE**. Contract + 9 predicates → `.agent/contracts/m5u6.md`;
-  lane = `tools/kb/exports.mjs` + gate step `kb:export-check` + 4 cases in
+  derivation; `clinical_advice_source/4` + `advice_nodes/2` are gone. `ProofStep` =
+  clause|assumption|negation. Census → `.claude/rules/proof.md`.
+- **u5 premise display** — **DONE**. `.agent/contracts/m5u5.md` (census included); suite =
+  3 cases in `tests/provenance-ladder.dom.test.ts`. Dedup is per PROOF: 3,930 leaves → the
+  document's own 4–131 premises, shown inside the existing `Live Prolog proof` rung with a
+  hypothetical badge and no line; the one NAF goal gets its own badge. Graph focus and the
+  clause list stay clause-only; the `<ol>` still has six rungs.
+- **u6 legacy export lane** — **DONE**. `.agent/contracts/m5u6.md`; lane =
+  `tools/kb/exports.mjs` + preflight step `kb:export-check` + 4 cases in
   `tests/legacy-export-lane.test.ts`. `EXPORTED` declares the 4 ids and refuses a divergent
   bag by name. The live `writeq` of the WHOLE `'$guideline_answers'` envelope —
   `query_sha256` recomputed as the query file's own digest — matches all four committed
-  oracles byte for byte. Erasing the one `category-A-recommendation` entity line drops that
-  document from the category-A statement and leaves the other three matching; deleting the
-  suite, renaming a case or skipping one fails the step. Forced `kb:build` → byte-identical
-  pvm/qlf/manifest. Design → `.claude/rules/kb-build.md`, whose stale `## Question catalog`
-  text this replaces.
-- **u7 binding-check inventory** — `guideline_*` perturbation, the 686-site campaign, negative
-  controls, a browser answer lane. Accept: RED before u1-u5, GREEN after, and skipping a
-  required check fails `pnpm gate`.
+  oracles byte for byte; erasing the one `category-A-recommendation` entity line reddens
+  category-A alone. Forced `kb:build` → byte-identical pvm/qlf/manifest. Design →
+  `.claude/rules/kb-build.md`, whose stale `## Question catalog` text this replaces.
+- **u7 binding-check inventory** — contract + 12 predicates + the C2 disposition table →
+  `.agent/contracts/m5u7.md`. **E1-E3, E6-E8 DONE**: `tests/clinical-binding.test.ts` perturbs
+  `guideline_*` three ways (additive overlay adds a solution to the live export statement;
+  one erased cited clause drops exactly its document and its proof; a one-line source shift
+  moves all 686 proof lines by +1 and leaves every answer identical), and
+  `tools/binding-check.mjs` runs the suite once and requires 29 named cases across 10 suites —
+  it REPLACES `pnpm test` in the gate. Controls rc 1: suite deleted, case renamed, case
+  skipped. `kb:export-check` shrank to the `EXPORTED` preflight. Left: E9 independent browser
+  answer lane, E11 RED-at-`a944fca` replay.
 - **u8 renderer spike + ruling** — parallel-edge separation, labels at the Cytoscape fit zoom
   (5.03 / 2.19 px), `selectNodes` isolation, dashes, bundle delta, three-arm layout. Accept: a
   measured verdict per capability; renderer + edge-view contract committed.

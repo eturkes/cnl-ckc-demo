@@ -25,9 +25,8 @@ export const EXPORTED = Object.freeze([
   'recommendation-exists',
 ]);
 
-/** The suite holding the byte oracle, and the case ids `kb:export-check` requires to pass. */
+/** The suite holding the byte oracle. `binding:check` requires each of its cases to pass. */
 export const LANE_SUITE = 'tests/legacy-export-lane.test.ts';
-export const LANE_CASES = Object.freeze(['D1', 'D2', 'D3', 'D5']);
 
 const QUERY_PATH = /^data\/guidelines\/[^/]+\/queries\/pl\/([^/]+)\.pl$/u;
 /**

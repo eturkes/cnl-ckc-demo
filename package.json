@@ -20,7 +20,7 @@
     "engine:check": "node tools/engine-check.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "gate": "pnpm audit:check && pnpm secret:check && pnpm kb:build && pnpm kb:asset-check && pnpm kb:export-check && pnpm engine:check && pnpm copy:check && pnpm contrast:check && pnpm presentation:check && pnpm format:check && pnpm lint && pnpm check && pnpm test && pnpm build",
+    "gate": "pnpm audit:check && pnpm secret:check && pnpm kb:build && pnpm kb:asset-check && pnpm kb:export-check && pnpm engine:check && pnpm copy:check && pnpm contrast:check && pnpm presentation:check && pnpm format:check && pnpm lint && pnpm check && pnpm binding:check && pnpm build",
     "kb:asset-check": "node tools/kb/check.mjs",
     "kb:export-check": "node tools/kb/export-check.mjs",
     "kb:build": "node tools/kb/build.mjs",
@@ -31,6 +31,7 @@
     "release:check": "pnpm gate && pnpm kb:reproduce && pnpm smoke && pnpm browser:check",
     "secret:check": "node tools/secret-check.mjs",
     "smoke": "node tools/smoke.mjs",
+    "binding:check": "node tools/binding-check.mjs",
     "test": "vitest run"
   },
   "dependencies": {

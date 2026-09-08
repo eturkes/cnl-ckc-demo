@@ -129,9 +129,9 @@ upstream export exactly. It is a diagnostic lane, separate from the catalog abov
   order as their `'[|]'/2` chain; `[]` orders as an atom. Live `findall` order already equals
   committed order on this corpus, so the sort buys order-independence, not this data.
 - The byte comparison lives in `tests/legacy-export-lane.test.ts` because `kb:asset-check`
-  bans `queries/answers` reach over `tools/`. `kb:export-check` runs that suite and requires
-  case ids `D1 D2 D3 D5` to have PASSED, so deleting the file, renaming a case or skipping
-  one fails the gate.
+  bans `queries/answers` reach over `tools/` — a comment merely spelling the path reddens the
+  scan. `pnpm binding:check` names all four of its cases in the required inventory, so
+  deleting the file, renaming a case or skipping one fails the gate.
 - The lane is GREEN at base and its whole credit is going RED when the payload stops
   supporting an export: erasing the single `category-A-recommendation` entity line drops that
   document from the category-A statement while the other three exports still match.
