@@ -733,10 +733,16 @@ export const clinicalArtifacts = (files) => {
     // `clinical_gate/4` body and binds `Rule` only after the derivation succeeds.
     // `clinical_derive/4` and `app/3` are defined in the proof source appended after this
     // block; one consult defines the whole file before any query runs.
+    // An answer is ALL-OR-NOTHING. `findall/3` alone collects whatever happens to derive,
+    // so one unproven sentence would ship a silently truncated answer that still reads as
+    // complete. Counting the document's gates and demanding the same number of derivations
+    // is what makes a missing premise or an erased cited clause remove the whole answer.
     `clinical_advice(Q,'$guideline_id'(product,Doc,First,ref(1),[]),` +
     `clinical_answer(Doc,Groups,Passage)) :- ` +
     `clinical_source(Q,Doc,First), clinical_passage(Doc,Passage), ` +
-    `findall(R,clinical_derive(Doc,_,R,_),Rules), clinical_groups(Rules,Groups).\n` +
+    `findall(S,clause(clinical_gate(Doc,S,_,_),_,_),Sentences), length(Sentences,N), ` +
+    `findall(R,clinical_derive(Doc,_,R,_),Rules), length(Rules,N), ` +
+    `clinical_groups(Rules,Groups).\n` +
     // Reassemble the per-sentence rules into group terms exactly as `groupClauses` does:
     // merge identical consequents, concatenate their conditions in sentence order, and
     // keep first-appearance group order. `clinical_derive/4` enumerates a document's

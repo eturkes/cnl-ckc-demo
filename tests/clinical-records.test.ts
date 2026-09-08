@@ -158,7 +158,7 @@ describe('clinical records', () => {
       records: sha12(JSON.stringify(artifacts.records)),
       names: sha12(JSON.stringify(artifacts.names)),
     }).toEqual({
-      advice: 'a4cdd59c7d1a',
+      advice: '9e37fda416a7',
       selections: '8ca30f2c6f1d',
       passages: 'a8ff3e7a31e5',
       sources: '2bc7ca83227a',

@@ -53,11 +53,12 @@ renderer. Removing the `clinical_advice` cut spans u3+u4 — alone it yields 0/7
 
 u3→u7 (answer/proof) ∥ u8→u13 (graph) → u14→u15. Full `Accept:` + `Depends` → archive.
 
-- **u3 runtime assembly** — IMPLEMENTATION LANDED, acceptance suite pending. Contract +
-  9 predicates → `.agent/contracts/m5u3.md`. `clinical_advice/3` = 1 static derivation rule
-  over `clinical_derive/4`; 0 answer facts ship. Measured live: 12/12 answer terms and 12/12
-  source ids identical to u1's oracle, 401 ms for all 12, `assertz` → `permission_error`.
-  Remaining: commit A1/A2/A5 as live cases + A6 premise-erasure control.
+- **u3 runtime assembly** — **DONE**. Contract + 10 predicates → `.agent/contracts/m5u3.md`;
+  suite = `tests/clinical-answer-live.test.ts`, 5 cases. `clinical_advice/3` = 1 static
+  derivation rule over `clinical_derive/4`; 0 answer facts ship. 12/12 answer terms + source
+  ids `==` u1's oracle, 401 ms for all 12, `assertz` → `permission_error`. A6 found A10:
+  `findall/3` alone shipped a truncated answer, so the rule now counts gates and demands an
+  equal derivation count — answers are all-or-nothing.
 - **u4 typed proof** — replay u2's evaluator behind typed clause/assumption/NAF branches.
   Accept: every step participated and names its clause line; each cited-clause removal changes
   the proof.
