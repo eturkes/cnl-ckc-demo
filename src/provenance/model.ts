@@ -210,3 +210,21 @@ export const flattenProof = (steps: readonly ProofStep[]): ProofStep[] => {
 /** The source-bearing steps alone — the only arm that names a compiled line. */
 export const proofClauses = (steps: readonly ProofStep[]): ProofClause[] =>
   flattenProof(steps).filter((step): step is ProofClause => step.kind === 'clause');
+
+/**
+ * The distinct literals the derivation was granted, in first-appearance order.
+ *
+ * Dedup is per PROOF, not per clause: one premise applies to its whole sentence and is
+ * re-assumed under every clause that sentence cites, so the raw leaves repeat an order of
+ * magnitude more often than they differ — 3,930 leaves over 346 distinct literals.
+ */
+export const proofAssumptions = (steps: readonly ProofStep[]): string[] => [
+  ...new Set(
+    flattenProof(steps).flatMap((step) => (step.kind === 'assumption' ? [step.head] : [])),
+  ),
+];
+
+/** The distinct goals proved absent, in first-appearance order. */
+export const proofNegations = (steps: readonly ProofStep[]): string[] => [
+  ...new Set(flattenProof(steps).flatMap((step) => (step.kind === 'negation' ? [step.goal] : []))),
+];

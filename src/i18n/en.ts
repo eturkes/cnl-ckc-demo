@@ -72,6 +72,13 @@ export const DESCRIPTIONS = {
 
   proofStepOrigin:
     'The engine re-ran the selected source contribution through its bounded proof interpreter.',
+  proofPremiseOrigin:
+    'A guideline clause applies to every clinician. Each premise below supplies the clinical ' +
+    'context that the question describes. The knowledge base does not state a premise, so a ' +
+    'premise has no source line.',
+  proofNegationOrigin:
+    'The engine searched the knowledge base for this goal and derived nothing. The clause ' +
+    'needs that absence, so the proof records it.',
 
   reviewUnreviewed: 'No human adjudication is recorded for this compiled document.',
   reviewRecorded: 'This is the review label recorded by the knowledge-base export.',
@@ -164,6 +171,8 @@ export const LABELS = {
   findInGraph: 'Find in graph',
   ladderSummary: 'Explore the six evidence steps',
   liveProof: 'Live Prolog proof',
+  proofAssumed: 'assumed, not stated',
+  proofAbsent: 'proved absent',
   evidenceLoading: 'Loading the selected document evidence.',
   evidenceRetry: 'Retry evidence',
   compiledClause: 'Compiled clause',
@@ -277,6 +286,8 @@ export const TEXT = {
     `${plural(steps, 'source clause')} re-proved this part of the answer live.`,
 
   proofStepCount: (n: number) => plural(n, 'proof step'),
+  proofPremiseCount: (n: number) => plural(n, 'assumed premise'),
+  proofNegationCount: (n: number) => plural(n, 'goal proved absent'),
   proofStepLine: (line: number) => `line ${String(line)}`,
   clauseJoin: (n: number) => `${plural(n, 'exact clause')} joined by source line.`,
   alignAce: (phrase: string) => `Align controlled phrase: ${phrase}`,

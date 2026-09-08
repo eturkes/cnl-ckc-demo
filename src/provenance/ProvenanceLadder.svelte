@@ -3,7 +3,9 @@
   import { guidelinePdfUrl, loadEvidenceDocument } from './assets.js';
   import {
     alignedSegments,
+    proofAssumptions,
     proofClauses,
+    proofNegations,
     type EvidenceDocument,
     type GraphFocus,
     type ProvenanceState,
@@ -30,6 +32,14 @@
   // assumption and negation arms carry no line by construction.
   const steps = $derived(
     provenanceState.kind === 'ready' ? proofClauses(provenanceState.steps) : [],
+  );
+  // Granted, not quoted: these two arms carry no compiled line by construction, so they
+  // stay out of every line-keyed derivation below and out of the graph focus payload.
+  const premises = $derived(
+    provenanceState.kind === 'ready' ? proofAssumptions(provenanceState.steps) : [],
+  );
+  const negations = $derived(
+    provenanceState.kind === 'ready' ? proofNegations(provenanceState.steps) : [],
   );
   const documentId = $derived(steps.find((step) => step.document !== undefined)?.document);
   const documentSteps = $derived(
@@ -164,6 +174,28 @@
               {/each}
             </ul>
           </details>
+          {#if premises.length > 0}
+            <details class="technical">
+              <summary>{t.TEXT.proofPremiseCount(premises.length)}</summary>
+              <p>{t.DESCRIPTIONS.proofPremiseOrigin}</p>
+              <ul class="proof-steps premises">
+                {#each premises as premise (premise)}
+                  <li><code>{premise}</code> <span>{t.LABELS.proofAssumed}</span></li>
+                {/each}
+              </ul>
+            </details>
+          {/if}
+          {#if negations.length > 0}
+            <details class="technical">
+              <summary>{t.TEXT.proofNegationCount(negations.length)}</summary>
+              <p>{t.DESCRIPTIONS.proofNegationOrigin}</p>
+              <ul class="proof-steps premises">
+                {#each negations as negation (negation)}
+                  <li><code>{negation}</code> <span>{t.LABELS.proofAbsent}</span></li>
+                {/each}
+              </ul>
+            </details>
+          {/if}
         </li>
 
         {#if evidenceLoading}
@@ -400,6 +432,14 @@
   .proof-steps span {
     color: var(--text-muted);
     font-size: 0.72rem;
+  }
+
+  .premises li {
+    overflow-wrap: anywhere;
+  }
+
+  .premises span {
+    color: var(--warn);
   }
 
   code {

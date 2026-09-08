@@ -104,6 +104,10 @@ const CONTAINMENT = [
     file: 'src/demo/AnswerPanel.svelte',
     selectors: ['.answer-point', '.document-id', '.source-card blockquote', '.canonical code'],
   },
+  {
+    file: 'src/provenance/ProvenanceLadder.svelte',
+    selectors: ['.proof-steps li', '.premises li'],
+  },
 ];
 
 /** Values that actually break an unbreakable token; `normal` and `initial` do not. */

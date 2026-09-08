@@ -65,8 +65,12 @@ u3→u7 (answer/proof) ∥ u8→u13 (graph) → u14→u15. Full `Accept:` + `Dep
   derivation; `clinical_advice_source/4` + `advice_nodes/2` are gone. `ProofStep` = a
   clause/assumption/negation union. Census → `.claude/rules/proof.md`: 686 clause nodes =
   the cited-site set exactly, 3,930 assumptions carrying no line, 15 NAF, 430 ms for all 12.
-- **u5 premise display** — deduplicated premise steps inside the existing rungs. Accept:
-  assumptions show hypothetical origin without a source line; ladder layout unchanged.
+- **u5 premise display** — **DONE**. Contract + 10 predicates + the 12-document census →
+  `.agent/contracts/m5u5.md`; suite = 3 cases in `tests/provenance-ladder.dom.test.ts`. Dedup
+  is per PROOF: 3,930 leaves → the document's own 4–131 premises, shown once inside the
+  existing `Live Prolog proof` rung with a hypothetical badge and no line. The one NAF goal
+  gets its own badge. Graph focus and the clause list stay clause-only; the `<ol>` still has
+  six rungs. `presentation:check` now grades the ladder's two engine-text selectors.
 - **u6 legacy export lane** — four-export lane, `EXPORTED` preflight, `queries/answers/` byte
   oracle. Accept: GREEN at base, RED under dependency removal, deleting the lane fails the gate.
 - **u7 binding-check inventory** — `guideline_*` perturbation, the 686-site campaign, negative
