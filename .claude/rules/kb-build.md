@@ -4,6 +4,7 @@ paths:
   - "tools/kb/**"
   - "src/kb/**"
   - "tests/kb-*.ts"
+  - "tests/legacy-export-lane.test.ts"
 ---
 
 # Knowledge-base pipeline
@@ -87,37 +88,59 @@ Clause counts: version 337, document 337, entity 1834, cardinality 1834, event 1
 
 ## Question catalog
 
-- The catalog is **GENERATED, not transcribed**: `tools/kb/catalog.mjs` parses the bag's
-  `queries/pl/*.pl` in memory during `kb:build` and emits
-  `kb/generated/question-catalog.json`; `kb:asset-check` re-derives it and fails on any
-  mismatch. The rejected alternative — repo-source goals policed by a bag-divergence gate
-  step — measured 1036.812 ms against a 0.631 ms median.
-- `catalog.mjs` declares the four exported query ids in `EXPORTED` and refuses any bag whose
-  exported set differs. Goal text stays derived; **which questions exist is declared**,
-  because an extra or renamed query file otherwise enlarges the catalog with both catalog
-  gate steps agreeing with themselves. A bag exporting a different question set must edit
-  that list.
+- The catalog is **GENERATED, not transcribed**: `tools/kb/catalog.mjs` re-exports
+  `clinicalArtifacts`, so `kb:build` emits `kb/generated/question-catalog.json` —
+  `{catalogVersion: 3, entries}`, 7 entries of `id question goal projection provenance` —
+  from the bag alone; `kb:asset-check` re-derives it and fails on any mismatch. The rejected
+  alternative — repo-source goals policed by a bag-divergence gate step — measured
+  1036.812 ms against a 0.631 ms median.
+- The shipped catalog is the **clinical** one. `CLINICAL_QUESTIONS` owns the curated topics
+  and every answer statement and source coordinate is re-read from the bag on each build; its
+  goals run `clinical_advice/3`. Nothing on the catalog path reads the bag's `queries/` tree
+  — that tree belongs to the legacy export lane below.
 - Query goals reach the engine from the catalog, never from the image.
+- `MANIFEST_VERSION` is 5. Bumping it is what stops a cached manifest from lacking a block a
+  new build writes.
+
+## Legacy export lane
+
+`pnpm kb:export-check` (`tools/kb/export-check.mjs`) proves the compiled KB still answers the
+upstream export exactly. It is a diagnostic lane, separate from the catalog above.
+
+- `tools/kb/exports.mjs` declares the four exported query ids in `EXPORTED` and refuses any
+  bag whose exported set differs, naming every offender. Goal TEXT stays derived from the
+  bag; **which questions exist is declared**, because an extra or renamed query file
+  otherwise enlarges the lane with a check that agrees with itself.
+- `queries/` is **not in the PVM** — `payloadSource`'s payload pattern admits
+  `data/guidelines/*/pl/*.pl` alone — so the lane reads goal text out of the verified bag at
+  run time and runs it against the shipped image. A forced `kb:build` after the lane shipped
+  returns byte-identical pvm, qlf and manifest.
 - Goal grammar: `'$guideline_query_projection'(goal(G),answers(As))`, `G` in canonical prefix
   `','/2` form. `answer(Var,noun(N,countable)|wh(what))` names a projected column;
   `answers([])` = existence question → `yes`/`no`, not an empty row set.
-- Repo-authored goals derive from an exported analog by ONE **token-exact single-hit atom
-  substitution**. Substring replace is unsafe: the corpus carries `'category-B-decision'`,
-  `'evidence-type-2-recommendation'` and `'evidence-type-4-recommendation'`.
-- Live solution counts, all six catalog questions: category-A 7, dosage-reduction 2,
-  evidence-type-1 1, recommendation-exists 12 (renders `yes`), category-B 5,
-  evidence-type-3 3.
-- Sort = SWI standard order over decoded `PlTerm`, never a byte sort of rendered text. The
-  two diverge on mixed shapes (`10` precedes `'2'` numerically, follows it lexically). Lists
-  order as their `'[|]'/2` chain; `[]` orders as an atom. Live yield order already equals
+- The comparison covers the WHOLE `'$guideline_answers'` envelope, not its solution list
+  alone: `query_sha256` is the sha256 of the query file itself, so the identity the oracle
+  records is recomputed from the bag rather than copied out of the oracle. The live term is
+  rendered by `writeq` inside the image; all four match byte for byte.
+- Live yield: category-A 7 solutions, dosage-reduction 2, evidence-type-1 1,
+  recommendation-exists `yes`.
+- Sort = SWI standard order over decoded terms, never a byte sort of rendered text. The two
+  diverge on mixed shapes (`10` precedes `'2'` numerically, follows it lexically). Lists
+  order as their `'[|]'/2` chain; `[]` orders as an atom. Live `findall` order already equals
   committed order on this corpus, so the sort buys order-independence, not this data.
-- `MANIFEST_VERSION` 2 adds the `catalog` block; the bump is what stops a cached manifest
-  from lacking it.
+- The byte comparison lives in `tests/legacy-export-lane.test.ts` because `kb:asset-check`
+  bans `queries/answers` reach over `tools/`. `kb:export-check` runs that suite and requires
+  case ids `D1 D2 D3 D5` to have PASSED, so deleting the file, renaming a case or skipping
+  one fails the gate.
+- The lane is GREEN at base and its whole credit is going RED when the payload stops
+  supporting an export: erasing the single `category-A-recommendation` entity line drops that
+  document from the category-A statement while the other three exports still match.
 
 ## Oracles and reach
 
 - Committed `queries/answers/*.pl` and `queries/traces/*.pl` are **regression oracles only,
-  never response data**. Live WASM byte-matches all four committed answers.
+  never response data**. The export lane byte-matches all four committed answers on every
+  gate run.
 - Forbidden-reach check = a byte scan over `src`, `tools`, `vite.config.ts`, `index.html` in
   `kb:asset-check`. ESLint cannot do it: core `no-restricted-imports` visits import and
   export declarations only, so `import()` and `fs.readFile` escape it. `tests/` is out of

@@ -71,8 +71,16 @@ u3→u7 (answer/proof) ∥ u8→u13 (graph) → u14→u15. Full `Accept:` + `Dep
   existing `Live Prolog proof` rung with a hypothetical badge and no line. The one NAF goal
   gets its own badge. Graph focus and the clause list stay clause-only; the `<ol>` still has
   six rungs. `presentation:check` now grades the ladder's two engine-text selectors.
-- **u6 legacy export lane** — four-export lane, `EXPORTED` preflight, `queries/answers/` byte
-  oracle. Accept: GREEN at base, RED under dependency removal, deleting the lane fails the gate.
+- **u6 legacy export lane** — **DONE**. Contract + 9 predicates → `.agent/contracts/m5u6.md`;
+  lane = `tools/kb/exports.mjs` + gate step `kb:export-check` + 4 cases in
+  `tests/legacy-export-lane.test.ts`. `EXPORTED` declares the 4 ids and refuses a divergent
+  bag by name. The live `writeq` of the WHOLE `'$guideline_answers'` envelope —
+  `query_sha256` recomputed as the query file's own digest — matches all four committed
+  oracles byte for byte. Erasing the one `category-A-recommendation` entity line drops that
+  document from the category-A statement and leaves the other three matching; deleting the
+  suite, renaming a case or skipping one fails the step. Forced `kb:build` → byte-identical
+  pvm/qlf/manifest. Design → `.claude/rules/kb-build.md`, whose stale `## Question catalog`
+  text this replaces.
 - **u7 binding-check inventory** — `guideline_*` perturbation, the 686-site campaign, negative
   controls, a browser answer lane. Accept: RED before u1-u5, GREEN after, and skipping a
   required check fails `pnpm gate`.

@@ -2,8 +2,9 @@
 
 `pnpm gate` = one `&&` chain in `package.json`; every step fails closed:
 
-`audit:check → secret:check → kb:build → kb:asset-check → engine:check → copy:check →
-contrast:check → presentation:check → format:check → lint → check → test → build`
+`audit:check → secret:check → kb:build → kb:asset-check → kb:export-check → engine:check →
+copy:check → contrast:check → presentation:check → format:check → lint → check → test →
+build`
 
 `package.json` is authoritative if that list ever diverges from it. The chain's per-run counts
 (checked files, tests, modules, copy strings, contrast pairs) move on almost every commit →
@@ -29,6 +30,11 @@ Step semantics a reader cannot get from the script name:
   remaining exception is one inline disable carrying its reason.
 - `kb:build` subsumes the retired `kb:verify` — it proves the vendored bag against its
   `.sha256` sidecar before parsing, in memory, never extracting.
+- `kb:export-check` (`tools/kb/export-check.mjs`) is the legacy export lane. It preflights the
+  bag's exported query set itself, then runs `tests/legacy-export-lane.test.ts` under vitest
+  and requires each declared case id to have PASSED — the byte oracle it grades reads
+  `queries/answers/`, which `kb:asset-check` bans over `tools/`, so the comparison must live
+  in `tests/` and this step is what keeps it load-bearing. Design → `.claude/rules/kb-build.md`.
 - `engine:check` (`tools/engine-check.mjs`) decides budget-required signatures, `.query`/
   `.ask` call-site arity, exactly one `swipl-wasm` importer (`src/engine/worker.ts` — the
   pattern must admit a BARE side-effect import, which a `from`-anchored one missed), the
