@@ -3,7 +3,7 @@
   import { guidelinePdfUrl, loadEvidenceDocument } from './assets.js';
   import {
     alignedSegments,
-    flattenProof,
+    proofClauses,
     type EvidenceDocument,
     type GraphFocus,
     type ProvenanceState,
@@ -25,8 +25,11 @@
   let pageOpen = $state(false);
   let activeRequest: AbortController | undefined;
 
+  // The ladder rungs are the SOURCE-BEARING steps: only a resolved clause names a
+  // compiled line, and only a compiled line joins to the guideline evidence. The
+  // assumption and negation arms carry no line by construction.
   const steps = $derived(
-    provenanceState.kind === 'ready' ? flattenProof(provenanceState.steps) : [],
+    provenanceState.kind === 'ready' ? proofClauses(provenanceState.steps) : [],
   );
   const documentId = $derived(steps.find((step) => step.document !== undefined)?.document);
   const documentSteps = $derived(
@@ -114,7 +117,7 @@
       case 'error':
         return TEXT.traceError(value.error.code, value.error.message);
       case 'ready':
-        return TEXT.traceReady(flattenProof(value.steps).length);
+        return TEXT.traceReady(proofClauses(value.steps).length);
       default: {
         const exhaustive: never = value;
         return exhaustive;

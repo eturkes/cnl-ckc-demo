@@ -584,15 +584,37 @@ export class EngineSession {
     return result.bindings;
   }
 
-  /** Decode the MI's nested node/3 list into a structured-clone-safe tree. */
+  /**
+   * Decode the MI's proof list into a structured-clone-safe tree.
+   *
+   * The interpreter discharges a goal three ways and each arrives as its own
+   * functor: `node/3` resolved against a compiled clause, `assumption/1` was
+   * granted as a query-local premise, `naf/1` was proved absent. Every arm is
+   * decoded — dropping one would under-report what the derivation actually used.
+   */
   #proofSteps(engine: Engine, term: PlTerm): ProofStep[] {
     if (term.kind !== 'list') throw new DecodeError('proof tree is not a list');
     const display = createEncoder(engine.prolog);
     const steps: ProofStep[] = [];
     for (const item of term.items) {
-      // Negation-as-failure is interpreter bookkeeping, not a source clause.
-      if (item.kind === 'compound' && item.functor === 'naf' && item.args.length === 1) continue;
-      if (item.kind !== 'compound' || item.functor !== 'node' || item.args.length !== 3) {
+      if (item.kind !== 'compound') throw new DecodeError('proof tree contains an invalid node');
+      if (item.functor === 'assumption' && item.args.length === 1) {
+        const head = item.args[0];
+        if (head?.kind !== 'compound') throw new DecodeError('assumption carries an invalid head');
+        steps.push({
+          kind: 'assumption',
+          head: this.#display(engine, display(head)),
+          predicate: `${head.functor}/${head.args.length}`,
+        });
+        continue;
+      }
+      if (item.functor === 'naf' && item.args.length === 1) {
+        const goal = item.args[0];
+        if (goal === undefined) throw new DecodeError('negation carries no goal');
+        steps.push({ kind: 'negation', goal: this.#display(engine, display(goal)) });
+        continue;
+      }
+      if (item.functor !== 'node' || item.args.length !== 3) {
         throw new DecodeError('proof tree contains an invalid node');
       }
       const lineTerm = item.args[0];
@@ -609,6 +631,7 @@ export class EngineSession {
       }
       const provenance = sourceId(head);
       steps.push({
+        kind: 'clause',
         line: asSafeLine(lineTerm.args[0]),
         head: this.#display(engine, display(head)),
         predicate: `${head.functor}/${head.args.length}`,

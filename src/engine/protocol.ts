@@ -89,8 +89,13 @@ export interface PlSolution {
 export type ProofInput =
   { goal: string; selected: Readonly<Record<string, string>> } | { constrainedGoal: string };
 
-/** A source-bearing clause in the live proof tree. */
-export interface ProofStep {
+/**
+ * A source-bearing clause in the live proof tree: the interpreter resolved this
+ * head against the clause compiled at `line`, and `children` prove that clause's
+ * body.
+ */
+export interface ProofClause {
+  kind: 'clause';
   /** One-based line in the deterministic combined `/prolog.pl` build input. */
   line: number;
   /** Canonical text rendered by the engine from the resolved clause head. */
@@ -102,6 +107,36 @@ export interface ProofStep {
   sentence?: number;
   children: ProofStep[];
 }
+
+/**
+ * A query-local hypothetical the derivation was granted rather than proved.
+ *
+ * It carries NO line on purpose: nothing in the knowledge base asserts it. A
+ * guideline clause is universally quantified over clinicians and the `actual`
+ * world holds no clinician instance, so applying that universal means supplying
+ * the instance as a premise. Giving one a source line would claim the KB states
+ * it.
+ */
+export interface ProofAssumption {
+  kind: 'assumption';
+  /** Canonical text of the assumed literal. */
+  head: string;
+  predicate: string;
+}
+
+/** Negation as failure: the interpreter proved the goal does NOT derive. */
+export interface ProofNegation {
+  kind: 'negation';
+  /** Canonical text of the goal that failed to derive. */
+  goal: string;
+}
+
+/**
+ * One entry of the live proof tree. The three arms are the three ways the
+ * interpreter discharges a goal, and they are kept distinct so a reader never has
+ * to tell a quoted clause from a hypothesis by looking at its text.
+ */
+export type ProofStep = ProofClause | ProofAssumption | ProofNegation;
 
 /** Every terminal result of a selected-solution proof request. */
 export type ProofOutcome =

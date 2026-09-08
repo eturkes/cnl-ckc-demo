@@ -585,16 +585,17 @@ const parseRule = (source) => {
 };
 
 /**
- * Read the shipped answer term off `clinical_advice_source/4`. u3 turned
- * `clinical_advice/3` into a derivation rule, so the emitted answer term now travels with
- * the site list. u4 removes this record; the reassembly differential then re-anchors on a
- * live derivation instead of an emitted term.
- * @param {string} source @returns {ActualAdvice}
+ * Read one answer term off the build-time oracle.
+ *
+ * u3 made `clinical_advice/3` a derivation rule and u4 retired
+ * `clinical_advice_source/4`, so no answer term is emitted into the helper any more. The
+ * caller passes the producer's own `answerTerm` output instead, and the live leg is
+ * committed separately: `clinical-answer-live` A2 proves the derived answer `==` that
+ * oracle for all twelve, so independent reassembly ≡ oracle ≡ live derivation composes.
+ * @param {string} statement @returns {ActualAdvice}
  */
-const parseAdvice = (source) => {
-  const args = callArguments(source, 'clinical_advice_source');
-  if (args.length !== 4) throw new Error(`clinical_advice_source arity=${String(args.length)}`);
-  const answer = callArguments(args[2] ?? '', 'clinical_answer');
+const parseAdvice = (statement) => {
+  const answer = callArguments(compact(statement), 'clinical_answer');
   if (answer.length !== 3) throw new Error(`clinical_answer arity=${String(answer.length)}`);
   const document = answer[0] ?? '';
   const groups = answer[1] ?? '';
@@ -602,8 +603,8 @@ const parseAdvice = (source) => {
   return { key: document, document, groups };
 };
 
-/** @param {string} source @returns {ActualRecords} */
-const actualRecords = (source) => {
+/** @param {string} source @param {readonly string[]} answerTerms @returns {ActualRecords} */
+const actualRecords = (source, answerTerms) => {
   /** @type {ActualGate[]} */
   const gates = [];
   /** @type {ActualPremise[]} */
@@ -640,12 +641,13 @@ const actualRecords = (source) => {
       } catch (error) {
         malformedRules.push(error instanceof Error ? error.message : String(error));
       }
-    } else if (statement.startsWith('clinical_advice_source(')) {
-      try {
-        advice.push(parseAdvice(statement));
-      } catch (error) {
-        malformedAdvice.push(error instanceof Error ? error.message : String(error));
-      }
+    }
+  }
+  for (const term of answerTerms) {
+    try {
+      advice.push(parseAdvice(term));
+    } catch (error) {
+      malformedAdvice.push(error instanceof Error ? error.message : String(error));
     }
   }
   return {
@@ -1020,9 +1022,11 @@ const compareReassembly = (corpus, actual) => {
 };
 
 /** Compare the independently derived source model with the generated helper.
- * @param {ReferenceCorpus} corpus @param {string} helper */
-export const clinicalDifferential = (corpus, helper) => {
-  const actual = actualRecords(helper);
+ * @param {ReferenceCorpus} corpus @param {string} helper
+ * @param {readonly string[]} answerTerms the producer's `answerTerm` output, in contribution
+ * order — the helper no longer emits one. */
+export const clinicalDifferential = (corpus, helper, answerTerms) => {
+  const actual = actualRecords(helper, answerTerms);
   return {
     D1: compareSites(corpus, actual),
     D2: comparePremises(corpus, actual),

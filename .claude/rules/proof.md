@@ -74,7 +74,7 @@ the live meta-interpreter.
 
 ## Source-fragment / antecedent records (`clinical.mjs`)
 
-Emitted beside `clinical_advice/3` + `clinical_advice_source/4`: `clinical_rule(Doc,S,Rule)`
+Emitted beside `clinical_advice/3,4`: `clinical_rule(Doc,S,Rule)`
 (48, one per selected content sentence), `clinical_premise(Doc,S,N,Literal)` (346), and
 `clinical_gate(Doc,S,Rule,[Lines])` (48, covering all **686** content sites), over one
 `clinical_use(Line,Head)` exact-site helper.
@@ -128,6 +128,27 @@ the shipped proof RPC is untouched. No write path ships; a direct `assertz` is s
 - Negative controls: premises-withheld → **0 of 12 documents** (2 of 48 sentences survive —
   the two `true`-antecedent gates — so **the control's grain is the DOCUMENT**);
   schema-erased → 0 of 48 sentences.
+
+## The clinical answer and its proof are ONE clause
+
+`clinical_advice/3` projects `clinical_advice/4`, whose fourth argument is the proof; the
+interpreter's arm is `derive(clinical_advice(Q,S,A),_,_,P,proved) :- !, clinical_advice(Q,S,A,P)`.
+Answer and proof therefore come from the same derivation and cannot drift. Nothing
+precomputed is left for a proof request to read back — `clinical_advice_source/4` and
+`advice_nodes/2` are gone.
+
+- The arm sits before the depth cap and cuts, so the outer `mi/3` depth of 1 still reaches
+  it; `clinical_depth(2)` governs inside.
+- Measured over the shipped image: **686 clause nodes** — exactly the cited-site census, all
+  at top level with their bodies as children — **3,930 assumption leaves** and **15 NAF
+  marks**, all 15 in `rec05`. Per document 9–144 clause nodes and 76–1,026 assumptions.
+  All 12 proofs cost 430 ms total, 7–72 ms each, against a 1,000 ms budget.
+- **A constrained proof goal must bind INSIDE the answer argument**
+  (`clinical_advice('q',_,clinical_answer('doc',_,_))`). A trailing `Answer = …` conjunct
+  fails: `resolve/3` whitelists the nine `guideline_*` predicates alone, so the interpreter
+  has no clause for `=`/2 and the conjunction dies before the proof is reached.
+- A wrong answer term yields `failure`, not a proof: the arm cuts, `clinical_advice/4` fails,
+  and no fallback can fabricate one.
 
 ## Binding a test to real execution
 

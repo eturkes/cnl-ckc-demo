@@ -399,10 +399,6 @@ const groundTerm = (source, variables, skolem) => {
   return result;
 };
 
-/** Legacy single-site form: inert atoms, one map per head. @param {string} source */
-const groundHead = (source) =>
-  groundTerm(source, new Map(), (ordinal) => `'clinical_variable_${String(ordinal)}'`);
-
 /** Split a clause body on its top-level conjunctions. @param {string} body @returns {string[]} */
 const conjuncts = (body) => {
   /** @type {string[]} */
@@ -503,9 +499,8 @@ const unwrap = (goal) => {
 /**
  * Every content-bearing clause site per selected sentence, keyed `document\0sentence`.
  *
- * This differs from `sourceClauses` in exactly one way — it keeps EVERY `guideline_*`
- * clause a sentence compiles to, not just the first — and that difference is the gap
- * between 48 cited sites and the corpus's real 686.
+ * It keeps EVERY `guideline_*` clause a sentence compiles to, not just the first: 686
+ * sites over 48 sentences, and the whole set is what a derivation must cite.
  *
  * @param {string} source @param {Set<string>} selected
  */
@@ -551,41 +546,12 @@ const contentSites = (source, selected) => {
   return cases;
 };
 
-/** @param {string} source */
-const sourceClauses = (source) => {
-  /** @type {Map<string, { line: number, head: string }>} */
-  const bySentence = new Map();
-  let document = '';
-  let sentence = 0;
-  for (const [offset, line] of source.split('\n').entries()) {
-    const file = /^% file:.*\/pl\/([^/]+)\.pl$/u.exec(line);
-    if (file !== null) {
-      document = file[1] ?? '';
-      sentence = 0;
-      continue;
-    }
-    const marker = /^% S([1-9][0-9]*):/u.exec(line);
-    if (marker !== null) {
-      sentence = Number(marker[1]);
-      continue;
-    }
-    if (document === '' || sentence === 0 || !line.startsWith('guideline_')) continue;
-    const key = `${document}\u0000${String(sentence)}`;
-    if (bySentence.has(key)) continue;
-    const rule = line.indexOf(' :- ');
-    const head = (rule < 0 ? line.slice(0, -1) : line.slice(0, rule)).trim();
-    bySentence.set(key, { line: offset + 1, head: groundHead(head) });
-  }
-  return bySentence;
-};
-
 /**
  * @param {Map<string, Uint8Array>} files
  * @returns {{ records: Array<{ id: string, question: string, goal: string, projection: Array<{ variable: string, descriptor: string }>, provenance: 'bag-derived' }>, names: string[], source: string, helper: string, answers: Map<string, string[]> }}
  */
 export const clinicalArtifacts = (files) => {
   const documents = payloadDocuments(files);
-  const clauses = sourceClauses(documents.source);
   const provenance = deriveProvenance(files);
   /** @type {Map<string, string>} */
   const passages = new Map();
@@ -605,8 +571,6 @@ export const clinicalArtifacts = (files) => {
   const selections = [];
   /** @type {string[]} */
   const passageFacts = [];
-  /** @type {string[]} */
-  const sources = [];
   /** @type {Map<string, string[]>} */
   const answers = new Map();
   /** @type {string[]} */
@@ -637,15 +601,6 @@ export const clinicalArtifacts = (files) => {
         throw new Error(`${selection.document}: recommendation has no clinical clauses`);
       }
       const parsed = content.map((sentence, index) => parseAdviceSentence(sentence, index + 2));
-      const sites = parsed.map(({ sentence }) => {
-        const clause = clauses.get(`${selection.document}\u0000${String(sentence)}`);
-        if (clause === undefined) {
-          throw new Error(
-            `${selection.document}: no compiled clause for sentence ${String(sentence)}`,
-          );
-        }
-        return `site(${String(clause.line)},${clause.head})`;
-      });
       for (const clause of parsed) {
         const record = contentIndex.get(`${selection.document}\u0000${String(clause.sentence)}`);
         if (record === undefined || record.clauses.length === 0) {
@@ -694,7 +649,6 @@ export const clinicalArtifacts = (files) => {
       if (text === undefined) throw new Error(`${selection.document}: no aligned source passage`);
       const first = /** @type {AdviceClause} */ (parsed[0]);
       const doc = encodedAtom(selection.document);
-      const sourceId = `'$guideline_id'(product,${doc},${String(first.sentence)},ref(1),[])`;
       // The statement stays computed as the ORACLE the runtime derivation is graded
       // against. It is no longer emitted as a `clinical_advice/3` fact — that lookup was
       // the whole of S1.
@@ -702,9 +656,6 @@ export const clinicalArtifacts = (files) => {
       statements.push(statement);
       selections.push(`clinical_source(${qid},${doc},${String(first.sentence)}).`);
       passageFacts.push(`clinical_passage(${doc},${quotedString(text)}).`);
-      sources.push(
-        `clinical_advice_source(${qid},${sourceId},${statement},[${sites.join(',')}]).`,
-      );
     }
     answers.set(question.id, statements);
     return {
@@ -717,7 +668,6 @@ export const clinicalArtifacts = (files) => {
   });
 
   const helper =
-    `:- discontiguous(clinical_advice_source/4).\n` +
     `:- discontiguous(clinical_gate/4).\n` +
     `:- discontiguous(clinical_rule/3).\n` +
     `:- discontiguous(clinical_premise/4).\n` +
@@ -737,12 +687,21 @@ export const clinicalArtifacts = (files) => {
     // so one unproven sentence would ship a silently truncated answer that still reads as
     // complete. Counting the document's gates and demanding the same number of derivations
     // is what makes a missing premise or an erased cited clause remove the whole answer.
+    // ONE clause carries the answer AND its proof: `/3` is a projection of `/4`, so the
+    // shown derivation cannot drift from the answer it explains. Nothing precomputed
+    // remains for a proof request to read back.
+    `clinical_advice(Q,Source,Answer) :- clinical_advice(Q,Source,Answer,_).\n` +
     `clinical_advice(Q,'$guideline_id'(product,Doc,First,ref(1),[]),` +
-    `clinical_answer(Doc,Groups,Passage)) :- ` +
+    `clinical_answer(Doc,Groups,Passage),Proof) :- ` +
     `clinical_source(Q,Doc,First), clinical_passage(Doc,Passage), ` +
     `findall(S,clause(clinical_gate(Doc,S,_,_),_,_),Sentences), length(Sentences,N), ` +
-    `findall(R,clinical_derive(Doc,_,R,_),Rules), length(Rules,N), ` +
-    `clinical_groups(Rules,Groups).\n` +
+    `findall(R-P,clinical_derive(Doc,_,R,P),Derived), length(Derived,N), ` +
+    `clinical_split(Derived,Rules,Proofs), clinical_groups(Rules,Groups), ` +
+    `clinical_join(Proofs,Proof).\n` +
+    `clinical_split([],[],[]).\n` +
+    `clinical_split([R-P|T],[R|Rs],[P|Ps]) :- clinical_split(T,Rs,Ps).\n` +
+    `clinical_join([],[]).\n` +
+    `clinical_join([P|T],J) :- clinical_join(T,J0), app(P,J0,J).\n` +
     // Reassemble the per-sentence rules into group terms exactly as `groupClauses` does:
     // merge identical consequents, concatenate their conditions in sentence order, and
     // keep first-appearance group order. `clinical_derive/4` enumerates a document's
@@ -755,7 +714,7 @@ export const clinicalArtifacts = (files) => {
     `Su1 == Su, M1 == M, A1 == A, !, ` +
     `clinical_merge(Su,M,A,T,Rest,Cs1), app(C,Cs1,Cs).\n` +
     `clinical_merge(Su,M,A,[H|T],[H|Rest],Cs) :- clinical_merge(Su,M,A,T,Rest,Cs).\n` +
-    `${selections.join('\n')}\n${passageFacts.join('\n')}\n${sources.join('\n')}\n` +
+    `${selections.join('\n')}\n${passageFacts.join('\n')}\n` +
     `${fragments.join('\n')}\n${premises.join('\n')}\n${gates.join('\n')}\n`;
   return { records, names: [...names].sort(), source: helper, helper, answers };
 };

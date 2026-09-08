@@ -26,6 +26,7 @@ const ready: ProvenanceState = {
   solution: 0,
   steps: [
     {
+      kind: 'clause',
       line: 77,
       head: 'guideline_property(example,dose)',
       predicate: 'guideline_property/5',

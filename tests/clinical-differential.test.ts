@@ -10,7 +10,7 @@ import {
   referenceSummary,
 } from '../tools/clinical-reference.mjs';
 import { verifyBag } from '../tools/kb/bag.mjs';
-import { clinicalArtifacts } from '../tools/kb/clinical.mjs';
+import { CLINICAL_QUESTIONS, clinicalArtifacts } from '../tools/kb/clinical.mjs';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const archives = readdirSync(join(ROOT, 'kb')).filter((name) => name.endsWith('.tar.gz'));
@@ -18,7 +18,12 @@ if (archives.length !== 1) throw new Error(`expected one KB bag, found ${String(
 const files = verifyBag(readFileSync(join(ROOT, 'kb', archives[0] as string))).files;
 const reference = referenceCorpus(files);
 const summary = referenceSummary(reference);
-const differential = clinicalDifferential(reference, clinicalArtifacts(files).source);
+const artifacts = clinicalArtifacts(files);
+// u4 retired `clinical_advice_source/4`, so the shipped answer term is no longer in the
+// helper text. D4 grades the independent reassembly against the producer's own oracle;
+// `clinical-answer-live` A2 grades that oracle against the live derivation.
+const answerTerms = CLINICAL_QUESTIONS.flatMap(({ id }) => artifacts.answers.get(id) ?? []);
+const differential = clinicalDifferential(reference, artifacts.source, answerTerms);
 const evidence = (divergences: string[]): string => divergences.slice(0, 20).join('\n');
 
 describe('clinical compiler differential', () => {

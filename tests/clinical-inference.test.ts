@@ -126,7 +126,7 @@ beforeAll(async () => {
 }, 120_000);
 
 describe('clinical assumption evaluator', () => {
-  it('P1 leaves the shipped proof path unchanged', () => {
+  it('P1 pins the shipped proof path', () => {
     const shape = row(
       `(current_predicate(mi/3)->Mi=yes;Mi=no),` +
         `(current_predicate(mi_limited/2)->Limited=yes;Limited=no),` +
@@ -146,14 +146,17 @@ describe('clinical assumption evaluator', () => {
         return [id, sha12(String(result.Text))];
       }),
     );
+    // Re-anchored at u4, which replaced the fabricated `clinical_advice` arm — flat nodes
+    // with empty child lists read off a precomputed site list — with the live derivation.
+    // The hashes are what catch any later drift in the rendered proof.
     expect(hashes).toEqual({
-      'when-to-use-opioids': '7a0ed798d5fd',
-      'starting-opioid-therapy': '1665049364d4',
-      'acute-pain-prescription-duration': '363fe73276f0',
-      'opioid-follow-up': 'b2c1697e4257',
-      'opioid-safety': 'c1d6d78491fc',
-      'continuing-or-tapering-opioids': '1ba2c32a728b',
-      'opioid-use-disorder-treatment': '575e5888e390',
+      'when-to-use-opioids': 'e712cd499669',
+      'starting-opioid-therapy': 'f124bb2959f5',
+      'acute-pain-prescription-duration': '841dd969f62a',
+      'opioid-follow-up': '47a79b4437c5',
+      'opioid-safety': '8fcd62be1144',
+      'continuing-or-tapering-opioids': '922e572b52ac',
+      'opioid-use-disorder-treatment': '29a98e558e16',
     });
   });
 

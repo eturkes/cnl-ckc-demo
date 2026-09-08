@@ -20,6 +20,11 @@
 // which demands the very premises the evaluator supplies. `clinical_derive/5`
 // binds `Rule` only after `derive_all/4` succeeds, so the fragment data is gated
 // on a real derivation rather than looked up.
+//
+// The `clinical_advice/3` arm hands its proof straight to `clinical_advice/4`,
+// the same clause that assembles the answer. One derivation therefore produces
+// both, so the displayed proof cannot drift from the answer it explains, and no
+// precomputed statement or site list is left in the image for it to read back.
 
 export const PROOF_SOURCE = String.raw`schema_goal(guideline_arg(_,_,_,_)).
 schema_goal(guideline_cardinality(_,_,_,_,_)).
@@ -45,15 +50,13 @@ has(X,[H|_]) :- X == H, !.
 has(X,[_|T]) :- has(X,T).
 naf_status(S,proved) :- \+ has(proved,S), \+ has(limit,S), !.
 naf_status(S,limit) :- \+ has(proved,S), has(limit,S), !.
-advice_nodes([],[]).
-advice_nodes([site(L,H)|T],[node(line(L),H,[])|R]) :- advice_nodes(T,R).
 assumed(H,[A|_]) :- H = A.
 assumed(H,[_|T]) :- assumed(H,T).
 derive(true,_,_,[],proved) :- !.
 derive(M:A,D,As,P,S) :- !, (M == user -> derive(A,D,As,P,S) ; P=[], S=limit).
 derive((A,B),D,As,P,S) :- !, derive_conjunction(A,B,D,As,P,S).
 derive(\+ A,D,As,[naf(A)],S) :- !, findall(R,derive(A,D,As,_,R),Rs), naf_status(Rs,S).
-derive(clinical_advice(Q,Source,Answer),_,_,P,proved) :- !, clinical_advice(Q,Source,Answer), clinical_advice_source(Q,Source,Answer,Sites), advice_nodes(Sites,P).
+derive(clinical_advice(Q,Source,Answer),_,_,P,proved) :- !, clinical_advice(Q,Source,Answer,P).
 derive(H,_,As,[assumption(H)],proved) :- assumed(H,As), !.
 derive(H,0,_,[],limit) :- schema_goal(H), !.
 derive(H,D,As,[node(line(L),H,Sub)],S) :- D > 0, D1 is D-1, resolve(H,B,L), derive(B,D1,As,Sub,S).

@@ -75,11 +75,17 @@ describe('runtime clinical answers', () => {
     expect(graded).toBe(12);
   });
 
-  it('A4 the payload carries no clinical_advice fact, only the derivation rule', () => {
+  it('A4 the payload carries no clinical_advice fact, only the derivation rules', () => {
+    // u4 split the rule: `/3` projects `/4`, and `/4` binds the proof the ladder shows. Two
+    // clauses, both rules, still zero facts and nothing precomputed to look up.
     const clauses = helperLines.filter((line) => line.startsWith('clinical_advice('));
-    expect(clauses).toHaveLength(1);
-    expect(clauses[0]).toContain(':- clinical_source(');
-    expect(clauses[0]).toContain('findall(R,clinical_derive(Doc,_,R,_),Rules)');
+    expect(clauses).toHaveLength(2);
+    expect(clauses[0]).toBe(
+      'clinical_advice(Q,Source,Answer) :- clinical_advice(Q,Source,Answer,_).',
+    );
+    expect(clauses[1]).toContain(':- clinical_source(');
+    expect(clauses[1]).toContain('findall(R-P,clinical_derive(Doc,_,R,P),Derived)');
+    expect(helperLines.filter((line) => line.startsWith('clinical_advice_source('))).toEqual([]);
   });
 
   it('A5 clinical_advice/3 is static, so no assertz can fabricate an answer', () => {

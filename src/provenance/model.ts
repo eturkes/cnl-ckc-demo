@@ -1,4 +1,4 @@
-import type { EngineError, LimitKind, ProofStep } from '../engine/protocol.js';
+import type { EngineError, LimitKind, ProofClause, ProofStep } from '../engine/protocol.js';
 
 export type ReviewLabel = 'approved' | 'rejected' | 'contested' | 'stale' | 'unreviewed';
 export type ClauseKind = 'fact' | 'rule';
@@ -201,8 +201,12 @@ export const flattenProof = (steps: readonly ProofStep[]): ProofStep[] => {
   const flat: ProofStep[] = [];
   const visit = (step: ProofStep): void => {
     flat.push(step);
-    for (const child of step.children) visit(child);
+    if (step.kind === 'clause') for (const child of step.children) visit(child);
   };
   for (const step of steps) visit(step);
   return flat;
 };
+
+/** The source-bearing steps alone — the only arm that names a compiled line. */
+export const proofClauses = (steps: readonly ProofStep[]): ProofClause[] =>
+  flattenProof(steps).filter((step): step is ProofClause => step.kind === 'clause');

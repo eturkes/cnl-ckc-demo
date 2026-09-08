@@ -13,7 +13,7 @@
     type GraphFocus as SemanticGraphFocus,
     type SemanticGraphNode,
   } from './graph/index.js';
-  import { flattenProof, type GraphFocus as ProvenanceGraphFocus } from './provenance/model.js';
+  import { proofClauses, type GraphFocus as ProvenanceGraphFocus } from './provenance/model.js';
   import { QUESTION_CATALOG, type QuestionId } from './questions/catalog.js';
   import QuestionCombobox from './questions/QuestionCombobox.svelte';
 
@@ -70,7 +70,7 @@
   const proofDocuments = $derived(
     new Set(
       demo.provenance.kind === 'ready'
-        ? flattenProof(demo.provenance.steps).flatMap((step) =>
+        ? proofClauses(demo.provenance.steps).flatMap((step) =>
             step.document === undefined ? [] : [step.document],
           )
         : [],

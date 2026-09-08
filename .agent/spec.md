@@ -45,7 +45,7 @@ step type (3,930 leaves / 346 premises), carrying hypothetical origin and no sou
 u6's oracle is GREEN at base, credited RED-under-dependency-removal alone — it guards the
 compiled KB, which the answer-path defect never broke. u11 grades records and u12 the
 projection model, but the shown-edge conjunction is graded whole by u13 against the FINAL
-renderer. Removing the `clinical_advice` cut spans u3+u4 — alone it yields 0/7 proofs.
+renderer.
 
 # Deferred
 
@@ -59,9 +59,12 @@ u3→u7 (answer/proof) ∥ u8→u13 (graph) → u14→u15. Full `Accept:` + `Dep
   ids `==` u1's oracle, 401 ms for all 12, `assertz` → `permission_error`. A6 found A10:
   `findall/3` alone shipped a truncated answer, so the rule now counts gates and demands an
   equal derivation count — answers are all-or-nothing.
-- **u4 typed proof** — replay u2's evaluator behind typed clause/assumption/NAF branches.
-  Accept: every step participated and names its clause line; each cited-clause removal changes
-  the proof.
+- **u4 typed proof** — **DONE**. Contract + 10 predicates → `.agent/contracts/m5u4.md`; suite
+  = `tests/clinical-proof-live.test.ts`, 7 cases through the production RPC.
+  `clinical_advice/3` projects `/4`, whose 4th arg is the proof, so answer and proof are one
+  derivation; `clinical_advice_source/4` + `advice_nodes/2` are gone. `ProofStep` = a
+  clause/assumption/negation union. Census → `.claude/rules/proof.md`: 686 clause nodes =
+  the cited-site set exactly, 3,930 assumptions carrying no line, 15 NAF, 430 ms for all 12.
 - **u5 premise display** — deduplicated premise steps inside the existing rungs. Accept:
   assumptions show hypothetical origin without a source line; ladder layout unchanged.
 - **u6 legacy export lane** — four-export lane, `EXPORTED` preflight, `queries/answers/` byte

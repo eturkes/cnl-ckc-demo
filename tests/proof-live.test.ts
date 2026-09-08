@@ -18,6 +18,7 @@ import {
   type BudgetSpec,
   type EngineRequest,
   type PlSolution,
+  type ProofClause,
   type ProofStep,
 } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
@@ -71,7 +72,10 @@ const selectionOf = (
 };
 
 const flatten = (steps: readonly ProofStep[]): ProofStep[] =>
-  steps.flatMap((step) => [step, ...flatten(step.children)]);
+  steps.flatMap((step) => (step.kind === 'clause' ? [step, ...flatten(step.children)] : [step]));
+
+const clauses = (steps: readonly ProofStep[]): ProofClause[] =>
+  flatten(steps).filter((step): step is ProofClause => step.kind === 'clause');
 
 let image: Uint8Array;
 let session: EngineSession;
@@ -117,7 +121,7 @@ describe('compiled proof interpreter', () => {
         const result = await session.prove({ goal: entry.goal, selected }, proofBudget);
         expect(result.kind).toBe('proof');
         if (result.kind !== 'proof') continue;
-        const steps = flatten(result.steps);
+        const steps = clauses(result.steps);
         expect(steps.length).toBeGreaterThan(0);
         expect(steps.some((step) => step.document !== undefined)).toBe(true);
         for (const step of steps) {
@@ -125,6 +129,14 @@ describe('compiled proof interpreter', () => {
           expect(step.head).toMatch(/^guideline_/u);
           const predicate = step.predicate.split('/')[0] as string;
           expect(combinedLines[step.line - 1]).toMatch(new RegExp(`^${predicate}\\(`, 'u'));
+        }
+        // A hypothetical premise must never carry a source line: nothing in the KB
+        // asserts it, and a line would claim the guideline states it.
+        const assumptions = flatten(result.steps).filter((step) => step.kind === 'assumption');
+        expect(assumptions.length).toBeGreaterThan(0);
+        for (const step of assumptions) {
+          expect(step).not.toHaveProperty('line');
+          expect(step.head).toMatch(/^guideline_/u);
         }
       }
     },
@@ -148,7 +160,7 @@ describe('selected constraint and typed RPC', () => {
       if (source?.kind !== 'compound' || source.args[2]?.kind !== 'integer') {
         throw new Error('selected clinical answer has no source sentence');
       }
-      expect(flatten(result.steps).map((step) => step.sentence)).toContain(
+      expect(clauses(result.steps).map((step) => step.sentence)).toContain(
         Number(source.args[2].value),
       );
 

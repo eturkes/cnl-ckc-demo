@@ -122,7 +122,8 @@ describe('question catalog', () => {
     const derived = catalogRecords(bagFiles);
     expect(derived.records).toEqual(QUESTION_IDS.map((id) => QUESTION_CATALOG[id]));
     expect(derived.names.length).toBeGreaterThan(0);
-    expect(derived.source).toContain('clinical_advice_source(');
+    expect(derived.source).toContain('clinical_advice(Q,Source,Answer) :- clinical_advice(');
+    expect(derived.source).not.toContain('clinical_advice_source(');
   });
 
   it('refuses a bag missing a selected controlled source', () => {

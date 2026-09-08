@@ -53,9 +53,10 @@ const skolemTokens = (terms: readonly string[]) =>
 
 /**
  * The pre-u1 helper: `clinical_advice/3` as twelve facts, dynamic, with no fragment records.
- * u3 retired those facts, so the differential base is rebuilt from the parts that still
- * ship — the source ids on `clinical_source/3` and the build-time answer oracle. T12 pins
- * the reconstruction's size and hash, which is what proves it byte-exact.
+ * u3 retired those facts and u4 retired `clinical_advice_source/4`, so the differential base
+ * is rebuilt from the parts that still ship — the source ids on `clinical_source/3` and the
+ * build-time answer oracle. T12 pins the reconstruction's size and hash, which is what proves
+ * it byte-exact.
  */
 const baselineHelper = (): string => {
   const firstSentence = new Map(
@@ -78,12 +79,10 @@ const baselineHelper = (): string => {
       );
     });
   });
-  const sources = helperLines.filter((line) => line.startsWith('clinical_advice_source('));
   return (
     `:- multifile(clinical_advice/3).\n` +
     `:- dynamic(clinical_advice/3).\n` +
-    `:- discontiguous(clinical_advice_source/4).\n` +
-    `${advice.join('\n')}\n${sources.join('\n')}\n`
+    `${advice.join('\n')}\n`
   );
 };
 
@@ -120,12 +119,15 @@ describe('clinical records', () => {
       sources.map(({ document }) => document),
     );
     const terms = CLINICAL_QUESTIONS.flatMap(({ id }) => artifacts.answers.get(id) ?? []);
-    // u3: `clinical_advice/3` is one derivation rule. The twelve raw contributions that
-    // used to be its facts are now `clinical_source/3`, in the same order.
+    // u3: `clinical_advice/3` is a derivation rule. The twelve raw contributions that used
+    // to be its facts are now `clinical_source/3`, in the same order. u4 split it in two —
+    // `/3` projects `/4`, which carries the proof — and retired `clinical_advice_source/4`,
+    // the last precomputed answer statement in the image.
     const advice = helperLines.filter((line) => line.startsWith('clinical_advice('));
     const selections = helperLines.filter((line) => line.startsWith('clinical_source('));
     const passages = helperLines.filter((line) => line.startsWith('clinical_passage('));
     const sources = helperLines.filter((line) => line.startsWith('clinical_advice_source('));
+    expect(sources).toEqual([]);
 
     expect({
       strings: orderedHash(strings),
@@ -154,14 +156,12 @@ describe('clinical records', () => {
       advice: orderedHash(advice),
       selections: orderedHash(selections),
       passages: orderedHash(passages),
-      sources: orderedHash(sources),
       records: sha12(JSON.stringify(artifacts.records)),
       names: sha12(JSON.stringify(artifacts.names)),
     }).toEqual({
-      advice: '9e37fda416a7',
+      advice: 'eafc1f7f65b0',
       selections: '8ca30f2c6f1d',
       passages: 'a8ff3e7a31e5',
-      sources: '2bc7ca83227a',
       records: '23898631ca0a',
       names: '1d112e138ee5',
     });
@@ -169,15 +169,13 @@ describe('clinical records', () => {
       advice: advice.length,
       selections: selections.length,
       passages: passages.length,
-      sources: sources.length,
       rules: helperLines.filter((line) => line.startsWith('clinical_rule(')).length,
       premises: helperLines.filter((line) => line.startsWith('clinical_premise(')).length,
       gates: gateRecords.length,
     }).toEqual({
-      advice: 1,
+      advice: 2,
       selections: 12,
       passages: 12,
-      sources: 12,
       rules: 48,
       premises: 346,
       gates: 48,
@@ -587,8 +585,8 @@ describe('clinical records', () => {
   }, 300_000);
   it('T12 budget delta measured and reproducible, no ceiling', async () => {
     const frozen = baselineHelper();
-    expect(Buffer.byteLength(frozen)).toBe(39_063);
-    expect(sha12(frozen)).toBe('4a40e521d277');
+    expect(Buffer.byteLength(frozen)).toBe(15_480);
+    expect(sha12(frozen)).toBe('7a8bb9e7cc6d');
     expect(gateRecords).toHaveLength(48);
 
     const [first, second] = await repeatedDerivations();
@@ -816,8 +814,8 @@ describe('clinical records', () => {
       index === 0 ? `${line.split(' :- ')[0]}.` : line,
     );
 
-    expect(Buffer.byteLength(baselineHelper())).toBe(39_063);
-    expect(sha12(baselineHelper())).toBe('4a40e521d277');
+    expect(Buffer.byteLength(baselineHelper())).toBe(15_480);
+    expect(sha12(baselineHelper())).toBe('7a8bb9e7cc6d');
     const [first, second] = await repeatedDerivations();
     const deltas = (derivation: Derivation) => [
       Buffer.byteLength(derivation.headSource) - Buffer.byteLength(derivation.baseSource),
