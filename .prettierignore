@@ -1,7 +1,6 @@
 # Prettier owns first-party source only. Everything below is authored, vendored or tool-owned.
 .agent/
 .claude/
-.serena/
 CLAUDE.md
 LICENSE
 kb/

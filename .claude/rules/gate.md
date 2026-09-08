@@ -44,4 +44,4 @@ wrong with the tree. The decisive rerun follows `TaskStop`.
 
 A gate backing a durable claim must rerun from committed state. A scratch-local validator is
 a temporary encoding → record its regeneration path beside the gate invocation here, and
-schedule the port in `.agent/polish.md`.
+schedule the port as a `.agent/spec.md` `Deferred` row.

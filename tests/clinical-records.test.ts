@@ -1,7 +1,7 @@
 // M5 u1 red suite — the compiled fragment/premise/gate records.
 //
 // SEED: every case fails until it encodes its ruled row from
-// `.agent/contracts/m5u1.md` (predicates P1-P10, design rulings D1-D11, T14 rulings).
+// `.agent/archive/contracts/m5u1.md` (predicates P1-P10, design rulings D1-D11, T14 rulings).
 
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';

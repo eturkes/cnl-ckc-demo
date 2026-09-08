@@ -1,7 +1,7 @@
 // M5 u2 red suite — the query-local cap-2 assumption evaluator, against the real image.
 //
 // SEED: every case fails until it encodes its ruled predicate from
-// `.agent/contracts/m5u2.md`. One case per predicate P1-P8; P9/P10 are MAIN's own
+// `.agent/archive/contracts/m5u2.md`. One case per predicate P1-P8; P9/P10 are MAIN's own
 // measurements and carry no case here.
 
 import { readFileSync } from 'node:fs';

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// Predicate suite for `.agent/contracts/m1u5.md`. Test names carry the contract's
+// Predicate suite for `.agent/archive/contracts/m1u5.md`. Test names carry the contract's
 // predicate ids, so a failure names the breached predicate.
 
 import axe from 'axe-core';

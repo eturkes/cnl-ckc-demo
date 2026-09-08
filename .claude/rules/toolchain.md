@@ -25,7 +25,7 @@ paths:
   assigns `webidl.util.markAsUncloneable` from `node:worker_threads`; Node 20 does not export
   it, so the vitest fork dies before any test runs.
 - ESLint config needs `@types/node`, and svelte parsing needs `extraFileExtensions`.
-- Prettier reformats `.claude/` and `.serena/` tool-owned files if unscoped →
+- Prettier reformats `.claude/` and `.agent/` tool-owned files if unscoped →
   `.prettierignore` restricts it to first-party source. Keep that scoping.
 
 ## Build scripts

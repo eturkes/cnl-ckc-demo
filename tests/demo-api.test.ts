@@ -1,4 +1,4 @@
-// The controller's public surface is a contract, not an accident: `.agent/contracts/m1u6.md`
+// The controller's public surface is a contract, not an accident: `.agent/archive/contracts/m1u6.md`
 // fixes it so a diff-blind suite compiles against it. TypeScript cannot fail a build
 // on an EXTRA export, so the shape is asserted from the AST instead.
 
