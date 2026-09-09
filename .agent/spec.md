@@ -51,7 +51,7 @@ renderer.
 
 # Deferred
 
-Queue = `.agent/deferred.md` — 45 rows, acceptance check each, plus the accepted-open review
+Queue = `.agent/deferred.md` — 47 rows, acceptance check each, plus the accepted-open review
 ids, whose checks stay in `.agent/archive/review-expedited.md`. The defects are user-ruled
 into MAINTAIN and the gate's open firing-input row sits beside them; nothing there blocks the
 spine below.
@@ -67,13 +67,17 @@ u11→u13 finish the graph; u14→u15 then close the phase over both spines. Ful
   inside +182,583 B gzip.
 - **u12 scope-aware projection** — `model.ts` grouping, bounded paths, highlights, dashes.
   Accept: every projected edge preserves the relation + its ordered scope;
-  `graph-semantics.review.test.ts`'s six in-scope reds go GREEN.
+  `tests/graph-semantics.review.test.ts` (branch `wt/rev-sem-2`, absent from the primary
+  tree) merges in and its six in-scope reds go GREEN.
 - **u13 scoped views + probe rerun** — scope rendered in canvas AND fallback; u10's component
   sweep rerun on final output. Accept: every shown edge preserves relation + ordered scope in
   BOTH views, graded whole.
-- **u14 claim alignment** — the nine false strings (`ProvenanceLadder.svelte:103,113,152`,
-  `copy.ts` lede, `README.md:7,15,20,22`, `service.ts:1`). Accept: quotation, hypothetical
-  premise + derived clause read as distinct; copy checks pass.
+- **u14 claim alignment** — the false strings, on the surfaces that hold them now: the
+  `lede` + trace/proof `TEXT` entries in `src/i18n/en.ts` AND their `ja.ts` twins (i18n took
+  the copy out of `ProvenanceLadder.svelte`, and `copy.ts` is licence data), plus
+  `README.md:8,15,20,22` and `service.ts:1`. u14 re-derives the exact set from the live
+  catalogs. Accept: quotation, hypothetical premise + derived clause read as distinct in both
+  locales; copy checks pass.
 - **u15 claim→command registry** — fill the registry, record dispositions. Accept: every
   claim names a committed-state command that re-derives it.
 

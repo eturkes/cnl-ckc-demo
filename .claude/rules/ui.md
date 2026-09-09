@@ -20,8 +20,8 @@ paths:
 Self-hosted from `@fontsource-variable/{atkinson-hyperlegible-next,atkinson-hyperlegible-mono,
 literata}` (OFL 1.1, no Reserved Font Name, zero transitive deps). Their CSS entrypoints are
 **axis-scoped** (`wght.css`, `opsz.css`), never subset-scoped, so importing one emits every
-unicode-range subset — literata alone is 1883680 B across 58 files. `src/app.css` therefore
-hand-authors `@font-face` against the six latin/latin-ext woff2 files: **176732 B**, pinned by
+unicode-range subset it carries — literata ships 1848120 B across 42 files. `src/app.css`
+therefore hand-authors `@font-face` against the eight latin/latin-ext woff2 files: **176732 B**, pinned by
 `presentation:check`, with family names dropping the packages' `Variable` suffix.
 
 Japanese adds two static faces from `@fontsource/biz-udpgothic` — sizing, the rejected
@@ -37,8 +37,8 @@ path into `node_modules`.
 Role tokens: `--surface`, `--surface-raised`, `--surface-sunken`, `--text`, `--text-muted`,
 `--border`, `--action`, `--action-text`, `--warn`, `--focus-ring`, plus the graph palette
 `--graph-{label,document,entity,event,operator,value,edge,path}`. Every token must appear in
-a declared contrast pair. `--border` must be at least `#8f8270` to clear 3:1 against
-`--surface`.
+a declared contrast pair. `--border` must clear 3:1 against `--surface` in both themes;
+`contrast:check` owns that ruling, so read the ratio from the check rather than the hex.
 
 `tools/contrast.mjs` grades a DECLARED pair table, not the DOM — jsdom has no canvas, so
 axe-core reports every `color-contrast` result as `incomplete`. It floors the ratio rather
@@ -60,7 +60,7 @@ alone. The locale seam, its consumer pattern and the payload boundary are in
 parity. A period between digits is not a sentence boundary, so `License 1.1.` is one sentence;
 the sentinel is `U+E000` because a control character trips ESLint `no-control-regex`.
 
-**The six question strings are payload, not copy.** They are generated from the compiled
+**The seven question strings are payload, not copy.** They are generated from the compiled
 goals, and rewriting one would make the displayed question differ from the question that runs.
 The copy validator does not grade them.
 
@@ -110,7 +110,7 @@ is why attribution and nonendorsement cannot live inside the About disclosure.
 
 ## Smoke
 
-`pnpm smoke` builds if `dist/` is missing, copies `dist` under a nested path, serves it with a
+`pnpm smoke` always runs `pnpm build`, copies `dist` under a nested path, serves it with a
 request log, drives chromiumfish, and compares the rendered canonical text against the answer
 read out of the vendored bag **at run time** through `verifyBag`.
 

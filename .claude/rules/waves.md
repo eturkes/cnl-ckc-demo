@@ -14,8 +14,8 @@ are this repo's deltas.
 
 ## Worktrees
 
-- One worktree per teammate at `.scratch/worktrees/<name>`; MAIN alone writes the primary
-  tree.
+- A wave that writes code takes one worktree per teammate at `.scratch/worktrees/<name>`. An
+  analysis-only wave takes none and reports into `.scratch/agents/`.
 - Toolchain env = symlink the primary `node_modules` into the worktree. `.gitignore`
   therefore spells `node_modules` and `kb/generated` **without a trailing slash** — the slash
   form matches directories only and leaves the symlink untracked.
@@ -31,14 +31,17 @@ are this repo's deltas.
 
 ## Dispatch
 
-- **The unit's dispatch line rides its commit body as a `dispatch:` trailer** — roles + scope
-  (`dispatch: map-controls — firing-input census; MAIN authors the controls`) or
-  `dispatch: solo — <reason>`. It is the only durable record of who did the work:
-  `.scratch/agents/` is gitignored and a `wt/<name>` branch outlives the roster that named it,
-  so `git log --grep='^dispatch:'` is the census surface.
-- **Brief paths must be ABSOLUTE.** A teammate's cwd is its worktree and MAIN's own cwd
-  persists across Bash calls, so a relative `.scratch/agents/…` resolves inside whichever
-  tree the shell last entered and the write silently fails.
+- **Every commit carries a `dispatch:` trailer in its body**, not units alone — roles + scope
+  (`dispatch: map-controls — firing-input census; MAIN authors the controls`), or
+  `dispatch: solo — <licence>` naming one of the six closed licences. It is the only durable
+  record of who did the work: `.scratch/agents/` is gitignored and a `wt/<name>` branch
+  outlives the roster that named it, so `git log --grep='^dispatch:'` is the census surface.
+  Trailers start at `2592828`; every commit from there on carries one.
+- **A path outside the teammate's own tree must be ABSOLUTE in the brief** — reports, roster
+  and every other `.scratch/` target. Global names files repo-relative, which resolves inside
+  the worktree, while `.scratch/` sits in the primary tree; MAIN's own cwd also persists
+  across Bash calls, so the relative form resolves against whichever tree the shell last
+  entered and the write silently fails.
 - Lagging teammate → send a **cost** directive at the FIRST flat poll, not a flush directive:
   cap each finding at ~250 chars, ship no detail sections, run one measurement pass per row,
   flush after every row. A bare "flush now" moved nobody; the cost directive carried every
@@ -51,7 +54,10 @@ are this repo's deltas.
 
 `.scratch/validate-report.py` grades wave reports: `--units N`, `--verdict`. Rows are
 `| id | finding | evidence |`, and `--verdict` folds the verdict into the finding cell, which
-must open `pass:` or `fail(low|med|high):`. Grading needs a sibling `<stem>.ids`. A seeded
+must open `pass:` or `fail(low|med|high):`. The `evidence` cell is where the global evidence
+bar lands — a red test, or the disputed bytes in `/usr/bin/rg -Fn` form plus `file:line` — so
+harvest rematches a row without opening its detail section. Grading needs a sibling
+`<stem>.ids`. A seeded
 all-`unknown` skeleton exits 1 — that is what makes it a deliverable-first counter. The Units
 table admits `-` in the `flags` and `depends` columns only; every other column rejects it.
 Scratch-local encoding → port scheduled as a `.agent/deferred.md` row.

@@ -8,18 +8,23 @@ paths:
 
 # Upstream sync
 
-`CLAUDE.md` is a template copied in from outside the repo. A refresh overwrites the whole
-file, so anything the repo needs it to say must survive that overwrite explicitly.
+`CLAUDE.md` is a template copied in from `~/agents/claude/CLAUDE.project.md`. A refresh
+overwrites the whole file, so anything the repo needs it to say must survive that overwrite
+explicitly. `cmp ~/agents/claude/CLAUDE.project.md CLAUDE.md` proves the copy landed whole,
+and `git -C ~/agents log -- claude/CLAUDE.project.md` says what each refresh moved and why.
 
 - **The `@.agent/spec.md` import on line 1 is repo-owned.** The template does carry it, but a
   refresh from an older copy drops it and the attached state disappears silently — no error,
   no empty file, just a session that starts without `Intent`, `Decisions` or `Deferred`.
   Restore it before any other work.
 - **`.claude/rules/` is the refresh-safe carrier.** Nothing durable belongs in `CLAUDE.md`
-  itself. Bare files (`gate`, `stack`, `waves`, `upstream-sync`) load at session start;
-  `paths:` files load on first touch of a matching file.
+  itself. Bare files (`gate`, `stack`, `waves`) load at session start; `paths:` files —
+  this one included — load on first touch of a matching file.
 - After a refresh, read `git diff HEAD -- CLAUDE.md` before committing. Removed lines are the
-  question: template law that moved, or repo law that needs a rule file.
+  question: repo law that needs a rule file, or template law that moved to the global
+  `CLAUDE.md`. The second obligates a `.claude/rules/` pass — a project file that restated
+  the moved text now duplicates it, and one that carried an exception to it now reads as a
+  contradiction. Project docs cite the global bullet and add bindings only.
 
 ## State files
 

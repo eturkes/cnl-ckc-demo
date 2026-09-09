@@ -91,7 +91,7 @@ committed state:
 | `pnpm kb:reproduce` | byte-reproducibility of pvm + qlf + catalog across two forced builds |
 | `pnpm smoke` | built output answers in a real browser against bag bytes read at run time |
 | `pnpm browser:check` | 337 documents on dev + built output, every 320 px interaction state incl. Japanese, that `unicode-range` keeps the Japanese face off an English page, browser cancel delivery, and the rendered canonical answer byte-equal to `tools/answer-oracle.mjs` in BOTH locales |
-| `pnpm graph:check` | the renderer-neutral edge-view contract R1-R7 (`.agent/contracts/m5u8.md`) against the SHIPPED `mountGraphCanvas`, over 14 fixtures x 2 viewports, plus C1-C11 (`m5u10.md`) against the SHIPPED `SemanticGraph.svelte` over 2 devices x 2 views + both fallbacks |
+| `pnpm graph:check` | the renderer-neutral edge-view contract R1-R7 (`.agent/contracts/m5u8.md`) against the SHIPPED `mountGraphCanvas`, over 14 fixtures x 2 viewports, plus C1-C12 (`m5u10.md`) against the SHIPPED `SemanticGraph.svelte` over 2 devices x 2 views + both fallbacks |
 | `pnpm binding:replay` | that `clinical-binding` E2 is load-bearing: the same erasure is invisible at `a944fca` and drops exactly one document now |
 
 `tools/answer-oracle.mjs` is the browser lanes' shared expectation — `clinicalArtifacts` answer
@@ -140,8 +140,10 @@ pair that fires `tap`.
   pull request. The schedule is the point: a new advisory has to redden something on a day
   nobody pushes.
 - `.github/dependabot.yml` — weekly npm + github-actions updates. Its `ignore` list mirrors
-  the version constraints in `.claude/rules/toolchain.md`; adding a constraint there means
-  adding it here, or Dependabot reopens the PR that breaks the gate every week.
+  every version CAP in `.claude/rules/toolchain.md`; adding a cap there means adding it here,
+  or Dependabot reopens the PR that breaks the gate every week. The exact pin stays
+  unignored on purpose: Dependabot opens the `swipl-wasm` PR, and the gate plus the
+  undeclared-API re-verification decide it.
 
 **Never run MAIN's decisive `pnpm gate` while teammates run suites.** Three trees testing at
 once starve the CPU into spurious `Test timed out in 5000ms` failures — `kb-reach`, which

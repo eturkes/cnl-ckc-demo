@@ -46,7 +46,7 @@ the gate executes the scripts for real. Consequences for new `.mjs`:
 - A recursive `flatMap` infers `any[]` and fails `@typescript-eslint/no-unsafe-return` →
   give every recursive JSDoc'd helper an explicit `@returns`.
 - The chromiumfish launcher resolves from the pnpm global store and ships no types, so
-  `tools/smoke.mjs` carries one `no-unsafe-assignment` disable. A JSDoc cast does not clear
+  `tools/browser.mjs` carries one `no-unsafe-assignment` disable. A JSDoc cast does not clear
   it — the awaited dynamic import is still `any`.
 
 ESLint types a `.svelte` import as `any`, so a member access on a narrowed value inside a

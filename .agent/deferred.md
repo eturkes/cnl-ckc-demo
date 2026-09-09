@@ -258,6 +258,15 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   so each reports a count it has never proved it can refuse. Accept: each reddens on a
   mutation its own lane runs — a pvm-stripped `dist` copy, a renamed woff2 — and joins that
   table with the control that fired. `pri` med.
+- **The `## Index` under-counts the queue** — it promises one line per `high` + `med` row,
+  and 25 such rows reduce to 22 index lines, so some queue items share a line or have none.
+  Accept: one command derives the index from the queue rows, and a `high`/`med` row added
+  without its line fails; the regenerated index round-trips to the same row set. `pri` low.
+- **The `dispatch:` trailer has no mechanical owner** — it is the only durable record of who
+  did each piece of work, and nothing refuses a commit that omits it. Accept: one command
+  reads `2592828..HEAD`, fails on any commit whose body has no
+  `dispatch:` line, and passes on the history as it stands; a commit added without the
+  trailer reddens it. `pri` low.
 
 ## Index — one line per `high` + `med` row
 
