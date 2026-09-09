@@ -46,6 +46,34 @@ export const expectedAnswer = (id, fail) => {
   return { serialized: `solutions([${rows.join(',')}])`, rows: rows.length };
 };
 
+/** `clinical_answer('<document>',[…],"…")` — the cited document is the leading quoted atom. */
+const ANSWER_DOCUMENT = /^clinical_answer\('([^']+)'/u;
+
+/**
+ * The documents each catalog question's answer cites, in answer order.
+ *
+ * Derived from the same bag terms as `expectedAnswer`, so the contribution set stays a
+ * reading of the knowledge base rather than a list somebody keeps in step by hand.
+ *
+ * @param {(message: string) => never} fail
+ * @returns {Map<string, string[]>} question id → cited document ids
+ */
+export const answerDocuments = (fail) => {
+  const artifacts = clinicalArtifacts(vendoredBag(fail));
+  /** @type {Map<string, string[]>} */
+  const out = new Map();
+  for (const [id, terms] of artifacts.answers) {
+    const documents = terms.map((term) => {
+      const document = ANSWER_DOCUMENT.exec(term)?.[1];
+      if (document === undefined)
+        fail(`${id}: answer term cites no document: ${term.slice(0, 60)}`);
+      return /** @type {string} */ (document);
+    });
+    out.set(id, documents);
+  }
+  return out;
+};
+
 /**
  * The question id a rendered combobox option stands for.
  *

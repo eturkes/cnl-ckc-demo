@@ -28,6 +28,7 @@ import { readdirSync } from 'node:fs';
  * @property {(role: string, options?: object) => Locator} getByRole
  * @property {(event: string, handler: (value: Error) => void) => void} on
  * @property {(fn: string, arg?: unknown) => Promise<unknown>} evaluate
+ * @property {(options: { path: string }) => Promise<unknown>} screenshot
  *
  * @typedef {object} Browser
  * @property {(options?: object) => Promise<Page>} newPage

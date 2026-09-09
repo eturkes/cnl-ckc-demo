@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>graph renderer probe</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      /* The shipped `.graph-shell .canvas` box is what the driver sizes the viewport to, so
+         the stage fills the viewport and every fit zoom here is the product's own. */
+      #stage {
+        width: 100%;
+        height: 100vh;
+        background: #ffffff;
+      }
+      body[data-theme='dark'] #stage {
+        background: #181d23;
+      }
+    </style>
+  </head>
+  <body data-theme="light">
+    <div id="stage"></div>
+    <script type="module" src="./probe.ts"></script>
+  </body>
+</html>

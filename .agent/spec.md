@@ -83,12 +83,16 @@ u3→u7 (answer/proof) ∥ u8→u13 (graph) → u14→u15. Full `Accept:` + `Dep
 - **u8** `m5u8.md`, 11 predicates. Four arms × 14 fixtures × 2 viewports at the measured
   CANVAS box (1152×558 / 296×384 — device-size numbers overstate by ~1.4×). vis-network
   rejected; edge-view contract R1–R7 is what u9–u13 decide against.
+- **u9** `m5u9.md`, 10 predicates · `pnpm graph:check` mounts the SHIPPED `mountGraphCanvas`
+  in a real browser over 14 fixtures × 2 viewports; four controls redden it. Bezier, wrapped
+  labels outlined in the node's own colour, `autounselectify`, an 11 px fit floor, and ONE
+  fcose layout with the subject pinned — the `concentric` branch every answer view took cost
+  156 crossings against fcose's 56, so u8's spike never measured the shipped surface.
 
 **Open:**
-- **u9 renderer restyle** — `canvas.ts` to u8's contract: bezier, tuned fcose, wrapped labels,
-  zoom floor. Accept: R1–R7 hold on every u8 fixture; selection never fabricates highlight.
-- **u10 graph integration** — `SemanticGraph.svelte`, keeping the lazy HTML fallback. Accept:
-  every interaction and the failure fallback pass under a committed browser probe.
+- **u10 graph integration** — `SemanticGraph.svelte` on u9's adapter, keeping the lazy HTML
+  fallback and passing the theme through the mount (polish register). Accept: every
+  interaction, the theme toggle and the failure fallback pass under `pnpm graph:check`.
 - **u11 scoped edge records** — `tools/kb/graph.mjs` emits versioned edge→scope records from
   the clause AST. Accept: 156 negation / 857 `should` contexts + 1,263 operators represented
   inside +182,583 B gzip.

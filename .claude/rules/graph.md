@@ -53,8 +53,33 @@ ellipsis-truncate.
 **A passing DOM suite proves nothing about rendered labels.**
 `tests/graph-semantics.review.test.ts` asserts `model.ts` output and
 `tests/semantic-graph.dom.test.ts` MOCKS `canvas.js`, so both survive a renderer swap intact
-— and changed label data can stay invisible to them. Rendered output needs a real-browser
-probe.
+— and changed label data can stay invisible to them. Rendered output is graded by
+`pnpm graph:check` alone (`.claude/rules/gate.md`), which mounts the shipped adapter in a real
+browser.
+
+## Rendering law (measured, u9)
+
+- **One layout for every view: fcose with the answer's subject pinned at the origin.** The
+  `concentric` branch that used to run whenever a proof highlight existed cost 156 crossings
+  and 1.88 canvas heights of panning per answer view against 56 and 1.22; pinning keeps its
+  whole reading for free.
+- **Spacing scales with node count**, interpolated between the model's own
+  `DEFAULT_ANSWER_GRAPH_LIMIT` and `DEFAULT_NEIGHBOR_LIMIT`. Neither endpoint wins at both
+  sizes and the interpolation beats both. fcose stays stochastic, so overlap and crossing
+  counts drift run to run — never pin one.
+- **`nodeDimensionsIncludeLabels` is mandatory.** Labels overflow their node box by design, so
+  a layout blind to them packs readable nodes into unreadable text.
+- **A node label carries a 2 px outline in the node's own colour.** The overflow is otherwise
+  near-white text on a near-white canvas: `nonopioid therapy` rendered as `onopioid thera`,
+  losing a character at each end, and no counter can see it because the renderer does draw the
+  whole string.
+- **`autounselectify: true`.** Cytoscape's built-in stylesheet paints anything `:selected`
+  `#0169D9`, so a tap repainted a plain edge in the proof highlight's own register. Selection
+  state is the app's alone, carried by the `.selected` and `.path` classes.
+- The canvas hardcodes light-theme hex and does not follow the theme tokens. It reads
+  acceptably dark; making it follow them means passing the theme through `mountGraphCanvas`,
+  which R6 pins.
+- The graph carries **0 self-edges of 20,964**, so `canvas.ts` filters none.
 
 ## Data shape
 

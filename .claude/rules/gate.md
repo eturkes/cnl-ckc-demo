@@ -60,6 +60,7 @@ committed state:
 | `pnpm kb:reproduce` | byte-reproducibility of pvm + qlf + catalog across two forced builds |
 | `pnpm smoke` | built output answers in a real browser against bag bytes read at run time |
 | `pnpm browser:check` | 337 documents on dev + built output, every 320 px interaction state incl. Japanese, that `unicode-range` keeps the Japanese face off an English page, browser cancel delivery, and the rendered canonical answer byte-equal to `tools/answer-oracle.mjs` in BOTH locales |
+| `pnpm graph:check` | the renderer-neutral edge-view contract R1-R7 (`.agent/contracts/m5u8.md`) against the SHIPPED `mountGraphCanvas`, over 14 fixtures x 2 viewports |
 | `pnpm binding:replay` | that `clinical-binding` E2 is load-bearing: the same erasure is invisible at `a944fca` and drops exactly one document now |
 
 `tools/answer-oracle.mjs` is the browser lanes' shared expectation — `clinicalArtifacts` answer
@@ -74,7 +75,14 @@ the ref under test, the bag, the image build and the loader from the working tre
 1 unless the archived arm is red and the working arm green. Control: `pnpm binding:replay HEAD`
 exits 1, both arms green.
 
-`pnpm release:check` = `gate && kb:reproduce && smoke && browser:check`.
+`graph:check` mounts the shipped adapter and reads Cytoscape back off `container._cyreg.cy`;
+the contract is renderer-neutral, its probe cannot be. Fixtures are derived, never committed —
+cited documents from the bag through `answerDocuments`, sentences and lines from each
+provenance chunk. Its summary counts are themselves required non-zero, so a campaign that
+graded nothing fails instead of reporting green. Screenshots for a judgement pass:
+`node tools/graph-check.mjs --shots <dir> --report <file>`.
+
+`pnpm release:check` = `gate && kb:reproduce && smoke && browser:check && graph:check`.
 
 ## CI
 

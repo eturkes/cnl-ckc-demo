@@ -22,5 +22,12 @@
     "noImplicitOverride": true,
     "exactOptionalPropertyTypes": true
   },
-  "include": ["src/**/*.ts", "src/**/*.svelte", "tests/**/*.ts", "tools/**/*.mjs", "vite.config.ts"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.svelte",
+    "tests/**/*.ts",
+    "tools/**/*.mjs",
+    "tools/**/*.ts",
+    "vite.config.ts"
+  ]
 }
