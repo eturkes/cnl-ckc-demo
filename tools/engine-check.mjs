@@ -7,11 +7,19 @@
 // contrast-check and kb:asset-check all look elsewhere.
 //
 // Fails closed: a check that cannot find its subject is an error, never a pass.
-// Negative control: perturb any pinned surface below and this exits 1 naming it.
+//
+// Positive controls: `CONTROLS` perturbs one pinned surface per predicate, and a clean run
+// re-runs this command once per row and requires each to exit 1 naming that predicate. The
+// perturbation rides the file reader, so the control drives the whole check — sources
+// discovered, files read, predicate graded, process exit — the way `tools/secret-check.mjs`
+// drives secretlint on a planted token.
 
+import { spawnSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
+import { requireFiring } from './control.mjs';
 import { ROOT } from './kb/paths.mjs';
 
 const SRC = join(ROOT, 'src');
@@ -45,6 +53,46 @@ const TERMS_EXPORTS = [
   'createEncoder',
 ];
 
+/**
+ * One perturbed pinned surface per predicate, keyed by the predicate it must redden.
+ *
+ * @type {{name: string, file: string, apply: (text: string) => string, expect: string}[]}
+ */
+const CONTROLS = [
+  {
+    name: 'P6.2',
+    file: 'src/engine/client.ts',
+    apply: (text) =>
+      text.replace('goal: string, budget: BudgetSpec, signal', 'goal: string, signal'),
+    expect: 'P6.2 EngineClient.query no longer requires a budget',
+  },
+  {
+    name: 'P6.3',
+    file: 'src/engine/session.ts',
+    apply: (text) => `import 'swipl-wasm';\n${text}`,
+    expect: 'P6.3 swipl-wasm must be imported by',
+  },
+  {
+    name: 'P6.4',
+    file: 'src/engine/terms.ts',
+    apply: (text) =>
+      text.replace(
+        /interface PrologConstructors([^{]*)\{/,
+        'interface PrologConstructors$1{\n  zzControl(): void;',
+      ),
+    expect: 'P6.4 undeclared Prolog members are',
+  },
+  {
+    name: 'P6.5',
+    file: 'src/engine/terms.ts',
+    apply: (text) => `${text}\nexport function zzControl() {}\n`,
+    expect: 'P6.5 src/engine/terms.ts exports',
+  },
+];
+
+/** The control this process is running under, if any. */
+const CONTROL = CONTROLS.find(({ name }) => name === process.env['ENGINE_CHECK_CONTROL']);
+
 /** @type {string[]} */
 const problems = [];
 
@@ -67,8 +115,11 @@ const sources = (dir) =>
     return /\.(ts|svelte)$/.test(entry.name) ? [path] : [];
   });
 
-const read = (/** @type {string} */ path) => readFileSync(path, 'utf8');
 const rel = (/** @type {string} */ path) => relative(ROOT, path);
+const read = (/** @type {string} */ path) => {
+  const text = readFileSync(path, 'utf8');
+  return CONTROL !== undefined && rel(path) === CONTROL.file ? CONTROL.apply(text) : text;
+};
 
 /**
  * Count top-level arguments in the call opening at `open`, which indexes its `(`.
@@ -204,7 +255,30 @@ if (problems.length > 0) {
   for (const problem of problems) console.error(`engine-check: ${problem}`);
   process.exit(1);
 }
+
+// A control run has said all it can say: it reports the clean tree and its parent grades the
+// exit status. Only the outer run proves the four predicates can still fail.
+if (CONTROL === undefined) {
+  for (const { name, file, expect } of CONTROLS) {
+    requireFiring(
+      'engine-check',
+      { mutation: `${name} perturbed in ${file}`, expect: [expect] },
+      () => {
+        const run = spawnSync(process.execPath, [fileURLToPath(import.meta.url)], {
+          cwd: ROOT,
+          encoding: 'utf8',
+          env: { ...process.env, ENGINE_CHECK_CONTROL: name },
+        });
+        // Exit 0 under a perturbed surface means the predicate stopped deciding: report
+        // nothing, so the expectation cannot be met.
+        return run.status === 0 ? [] : [`${run.stdout}${run.stderr}`];
+      },
+    );
+  }
+}
+
 console.log(
   `engine-check: ${String(files.length)} sources, P6.2-P6.5 hold ` +
-    `(swipl-wasm owned by ${ENGINE_OWNER}, ${String(termsExports.length)} pinned terms exports)`,
+    `(swipl-wasm owned by ${ENGINE_OWNER}, ${String(termsExports.length)} pinned terms exports), ` +
+    `${String(CONTROLS.length)} controls fired`,
 );

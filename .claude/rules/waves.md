@@ -31,6 +31,11 @@ are this repo's deltas.
 
 ## Dispatch
 
+- **The unit's dispatch line rides its commit body as a `dispatch:` trailer** — roles + scope
+  (`dispatch: map-controls — firing-input census; MAIN authors the controls`) or
+  `dispatch: solo — <reason>`. It is the only durable record of who did the work:
+  `.scratch/agents/` is gitignored and a `wt/<name>` branch outlives the roster that named it,
+  so `git log --grep='^dispatch:'` is the census surface.
 - **Brief paths must be ABSOLUTE.** A teammate's cwd is its worktree and MAIN's own cwd
   persists across Bash calls, so a relative `.scratch/agents/…` resolves inside whichever
   tree the shell last entered and the write silently fails.

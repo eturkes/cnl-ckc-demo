@@ -18,6 +18,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { requireFiring } from './control.mjs';
 import { ROOT } from './kb/paths.mjs';
 
 /** Words the project bans outright. */
@@ -142,11 +143,9 @@ const entries = (region) => {
 /**
  * Every English key present in Japanese, and every Japanese value rewritten.
  *
- * @param {string[]} failures @returns {number} keys compared
+ * @param {string[]} failures @param {string} en @param {string} ja @returns {number} keys compared
  */
-const checkParity = (failures) => {
-  const en = readFileSync(join(ROOT, EN), 'utf8');
-  const ja = readFileSync(join(ROOT, JA), 'utf8');
+const checkParity = (failures, en, ja) => {
   let compared = 0;
   for (const { name } of BUCKETS) {
     const source = entries(bucket(en, EN, name));
@@ -175,15 +174,15 @@ const checkParity = (failures) => {
  * drift seam nothing else can see: the shell would keep serving a title the app
  * replaces on mount, so no rendered assertion would ever disagree with it.
  *
- * @param {string[]} failures @returns {number} shell strings compared
+ * @param {string[]} failures @param {string} en @param {string} html
+ * @returns {number} shell strings compared
  */
-const checkShell = (failures) => {
+const checkShell = (failures, en, html) => {
   const catalog = new Map(
-    literals(bucket(readFileSync(join(ROOT, EN), 'utf8'), EN, 'DESCRIPTIONS'))
+    literals(bucket(en, EN, 'DESCRIPTIONS'))
       .filter(({ key }) => key !== '<literal>')
       .map(({ key, text }) => [key, text]),
   );
-  const html = readFileSync(join(ROOT, 'index.html'), 'utf8');
   /** @type {[string, string | undefined][]} */
   const shell = [
     ['documentTitle', /<title>([^<]*)<\/title>/.exec(html)?.[1]],
@@ -198,36 +197,89 @@ const checkShell = (failures) => {
   return shell.length;
 };
 
-const main = () => {
+/**
+ * The English register: one failure per over-long sentence and per banned word.
+ *
+ * `buckets` and `filler` are parameters so the control can grade the SHIPPED strings against a
+ * deliberately impossible register — a limit no sentence clears, a word every page carries —
+ * which proves the whole path from bucket location to comparison without writing a broken
+ * string into `en.ts`.
+ *
+ * @param {string} source @param {{name: string, limit: number}[]} buckets
+ * @param {string[]} filler @returns {{failures: string[], graded: number}}
+ */
+const gradeEnglish = (source, buckets, filler) => {
+  /** @type {string[]} */
   const failures = [];
   let graded = 0;
-
-  {
-    const source = readFileSync(join(ROOT, EN), 'utf8');
-    for (const { name, limit } of BUCKETS) {
-      const path = EN;
-      const region = bucket(source, path, name);
-      const found = literals(region);
-      if (found.length === 0) throw new Error(`${path}: ${name} yielded no strings to grade`);
-      for (const { key, text } of found) {
-        graded += 1;
-        for (const sentence of sentences(text)) {
-          const n = words(sentence);
-          if (n > limit) {
-            failures.push(`${path} ${name}.${key}: ${n} words, limit ${limit} — "${sentence}"`);
-          }
+  for (const { name, limit } of buckets) {
+    const region = bucket(source, EN, name);
+    const found = literals(region);
+    if (found.length === 0) throw new Error(`${EN}: ${name} yielded no strings to grade`);
+    for (const { key, text } of found) {
+      graded += 1;
+      for (const sentence of sentences(text)) {
+        const n = words(sentence);
+        if (n > limit) {
+          failures.push(`${EN} ${name}.${key}: ${n} words, limit ${limit} — "${sentence}"`);
         }
-        for (const word of FILLER) {
-          if (new RegExp(`\\b${word}\\b`, 'i').test(text)) {
-            failures.push(`${path} ${name}.${key}: banned word "${word}"`);
-          }
+      }
+      for (const word of filler) {
+        if (new RegExp(`\\b${word}\\b`, 'i').test(text)) {
+          failures.push(`${EN} ${name}.${key}: banned word "${word}"`);
         }
       }
     }
   }
+  return { failures, graded };
+};
 
-  const compared = checkParity(failures);
-  const shell = checkShell(failures);
+const main = () => {
+  const en = readFileSync(join(ROOT, EN), 'utf8');
+  const ja = readFileSync(join(ROOT, JA), 'utf8');
+  const html = readFileSync(join(ROOT, 'index.html'), 'utf8');
+
+  // One control per grader, each breaking the input this grader reads. `en` standing in for
+  // `ja` is the parity mutation: every value is then byte-identical to its English source.
+  const controls = [
+    requireFiring(
+      'copy',
+      {
+        mutation: 'the shipped English graded at limit 0 against a filler list holding "the"',
+        expect: [', limit 0 — ', 'banned word "the"'],
+      },
+      () =>
+        gradeEnglish(
+          en,
+          BUCKETS.map(({ name }) => ({ name, limit: 0 })),
+          ['the'],
+        ).failures,
+    ),
+    requireFiring(
+      'copy',
+      { mutation: 'en.ts read as the Japanese catalog', expect: [': untranslated'] },
+      () => {
+        /** @type {string[]} */
+        const found = [];
+        checkParity(found, en, en);
+        return found;
+      },
+    ),
+    requireFiring(
+      'copy',
+      { mutation: 'the shell title prefixed', expect: ['documentTitle differs from'] },
+      () => {
+        /** @type {string[]} */
+        const found = [];
+        checkShell(found, en, html.replace('<title>', '<title>zz '));
+        return found;
+      },
+    ),
+  ];
+
+  const { failures, graded } = gradeEnglish(en, BUCKETS, FILLER);
+  const compared = checkParity(failures, en, ja);
+  const shell = checkShell(failures, en, html);
 
   if (failures.length > 0) {
     console.error(`copy: ${failures.length} failure(s)`);
@@ -236,7 +288,7 @@ const main = () => {
   }
   console.log(
     `copy: ${graded} en strings pass, ${compared} ja keys at parity, ` +
-      `${shell} shell strings match index.html`,
+      `${shell} shell strings match index.html, ${controls.length} controls fired`,
   );
 };
 

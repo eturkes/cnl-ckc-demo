@@ -16,6 +16,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { requireFiring } from './control.mjs';
 import { ROOT } from './kb/paths.mjs';
 
 const CSS = join(ROOT, 'src/app.css');
@@ -87,8 +88,18 @@ const FACES = [
   },
 ];
 
-/** Shipped licence ↔ the package whose bytes it must reproduce. */
-const LICENCES = [...new Map(FACES.map((f) => [f.pkg, f.scope])).entries()];
+/**
+ * Shipped licence ↔ the package whose bytes it must reproduce. `shipped` is the file stem
+ * under `public/licenses/`, separate from `pkg` so the control can point a row at another
+ * package's text and prove the byte comparison still fires.
+ *
+ * @type {{pkg: string, scope: string, shipped: string}[]}
+ */
+const LICENCES = [...new Map(FACES.map((f) => [f.pkg, f.scope])).entries()].map(([pkg, scope]) => ({
+  pkg,
+  scope,
+  shipped: pkg,
+}));
 
 /**
  * Selectors that render engine-authored text, which arrives as document ids,
@@ -151,7 +162,7 @@ const checkFaces = (failures, css) => {
     JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'))
   );
   const pins = /** @type {{dependencies?: Record<string, string>}} */ (parsed).dependencies ?? {};
-  for (const [pkg, scope] of LICENCES) {
+  for (const { pkg, scope } of LICENCES) {
     const pin = pins[`${scope}/${pkg}`];
     if (pin === undefined) failures.push(`${pkg}: not a dependency`);
     // A range would let a reinstall change the shipped glyphs without a diff.
@@ -204,14 +215,14 @@ const checkFaces = (failures, css) => {
   if (remote !== null) failures.push(`remote url in app.css: ${remote[0]}`);
 };
 
-/** @param {string[]} failures */
-const checkLicences = (failures) => {
-  for (const [pkg, scope] of LICENCES) {
-    const shipped = join(ROOT, 'public/licenses', `${pkg}.txt`);
+/** @param {string[]} failures @param {typeof LICENCES} rows */
+const checkLicences = (failures, rows) => {
+  for (const { pkg, scope, shipped } of rows) {
+    const ours = join(ROOT, 'public/licenses', `${shipped}.txt`);
     const packaged = join(ROOT, 'node_modules', scope, pkg, 'LICENSE');
     try {
-      if (!readFileSync(shipped).equals(readFileSync(packaged))) {
-        failures.push(`${pkg}.txt differs from the licence ${pkg} ships`);
+      if (!readFileSync(ours).equals(readFileSync(packaged))) {
+        failures.push(`${shipped}.txt differs from the licence ${pkg} ships`);
       }
     } catch (cause) {
       failures.push(`${pkg}: ${cause instanceof Error ? cause.message : String(cause)}`);
@@ -219,10 +230,14 @@ const checkLicences = (failures) => {
   }
 };
 
-/** @param {string[]} failures */
-const checkContainment = (failures) => {
+/**
+ * @param {string[]} failures
+ * @param {(style: string) => string} [transform] applied to each component's `<style>` block,
+ *   so the control can grade the real selectors against a stripped declaration
+ */
+const checkContainment = (failures, transform = (style) => style) => {
   for (const { file, selectors } of CONTAINMENT) {
-    const parsed = rules(styleOf(file));
+    const parsed = rules(transform(styleOf(file)));
     for (const selector of selectors) {
       const matched = parsed.filter(([prelude]) => selectorsOf(prelude).includes(selector));
       if (matched.length === 0) {
@@ -237,12 +252,59 @@ const checkContainment = (failures) => {
   }
 };
 
+/** @param {(found: string[]) => void} grade @returns {() => string[]} */
+const collect = (grade) => () => {
+  /** @type {string[]} */
+  const found = [];
+  grade(found);
+  return found;
+};
+
 const main = () => {
   const css = readFileSync(CSS, 'utf8');
+
+  // One control per declared table, each breaking the input that table grades.
+  const controls = [
+    requireFiring(
+      'presentation',
+      {
+        mutation: 'one @font-face rule renamed out of app.css',
+        expect: ['@font-face rules, expected 8'],
+      },
+      collect((found) => checkFaces(found, css.replace('@font-face', 'zz-font-face'))),
+    ),
+    requireFiring(
+      'presentation',
+      {
+        mutation: 'each shipped licence compared against the next package',
+        expect: ['differs from the licence'],
+      },
+      collect((found) =>
+        checkLicences(
+          found,
+          LICENCES.map((row, index) => ({
+            ...row,
+            shipped: (LICENCES[(index + 1) % LICENCES.length] ?? row).pkg,
+          })),
+        ),
+      ),
+    ),
+    requireFiring(
+      'presentation',
+      {
+        mutation: 'overflow-wrap stripped from every component style',
+        expect: ['has no overflow-wrap'],
+      },
+      collect((found) =>
+        checkContainment(found, (style) => style.replace(/overflow-wrap[^;]*;/g, '')),
+      ),
+    ),
+  ];
+
   /** @type {string[]} */
   const failures = [];
   checkFaces(failures, css);
-  checkLicences(failures);
+  checkLicences(failures, LICENCES);
   checkContainment(failures);
 
   if (failures.length > 0) {
@@ -253,7 +315,7 @@ const main = () => {
   const contained = CONTAINMENT.reduce((n, { selectors }) => n + selectors.length, 0);
   console.log(
     `presentation: ${FACES.length} faces pinned and installed, ${LICENCES.length} licences ` +
-      `byte-equal, ${contained} text surfaces contained`,
+      `byte-equal, ${contained} text surfaces contained, ${controls.length} controls fired`,
   );
 };
 

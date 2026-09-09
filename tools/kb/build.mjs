@@ -6,6 +6,7 @@
 import { mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 
+import { requireFiring } from '../control.mjs';
 import { sha256, verifyBag } from './bag.mjs';
 import { catalogJson, catalogRecords } from './catalog.mjs';
 import { deriveSemanticGraph, GRAPH_SCHEMA_VERSION } from './graph.mjs';
@@ -18,16 +19,26 @@ import { GENERATED_DIR, MANIFEST_PATH, ROOT, loadManifest, payloadSource } from 
 
 const MANIFEST_VERSION = 5;
 
-/** Locate the single vendored bag and prove it against its committed sidecar. */
-const readVerifiedBag = () => {
+/**
+ * Locate the single vendored bag and prove it against its committed sidecar.
+ *
+ * `perturb` is the control seam. This comparison is the only thing between a tampered bag and
+ * a build, and it passes silently either way, so a clean run re-runs it against a sidecar
+ * carrying one changed digit.
+ *
+ * @param {(sidecar: string) => string} [perturb]
+ */
+const readVerifiedBag = (perturb = (sidecar) => sidecar) => {
   const kbDir = join(ROOT, 'kb');
   const archives = readdirSync(kbDir).filter((name) => name.endsWith('.tar.gz'));
   if (archives.length !== 1) throw new Error(`expected exactly one bag in kb/, found ${archives.length}`);
   const bag = /** @type {string} */ (archives[0]);
   const bytes = readFileSync(join(kbDir, bag));
-  const sidecar = readFileSync(join(kbDir, `${bag}.sha256`), 'utf8').trim().split(/\s+/)[0];
+  const sidecar = perturb(
+    readFileSync(join(kbDir, `${bag}.sha256`), 'utf8').trim().split(/\s+/)[0] ?? '',
+  );
   const digest = sha256(bytes);
-  if (digest !== sidecar) throw new Error(`bag digest ${digest} does not match sidecar ${String(sidecar)}`);
+  if (digest !== sidecar) throw new Error(`bag digest ${digest} does not match sidecar ${sidecar}`);
   return { bag, digest, ...verifyBag(bytes) };
 };
 
@@ -57,6 +68,14 @@ const writeGenerated = (path, bytes) => {
 
 const main = async () => {
   const force = process.argv.includes('--force');
+  const control = requireFiring(
+    'kb:build',
+    { mutation: 'one digit changed in the bag sidecar', expect: ['does not match sidecar'] },
+    () => {
+      readVerifiedBag((sidecar) => `${sidecar.slice(1)}${sidecar.startsWith('0') ? '1' : '0'}`);
+      return [];
+    },
+  );
   const { bag, digest, files, payload, tags } = readVerifiedBag();
   const { source, names } = payloadSource(files);
   const inputDigest = sha256(Buffer.from(source, 'utf8'));
@@ -77,7 +96,9 @@ const main = async () => {
     cached.catalog.sha256 === sha256(catalogBytes) &&
     assetsIntact(cached)
   ) {
-    process.stdout.write(`kb:build cached — ${names.length} files, input ${inputDigest.slice(0, 12)}\n`);
+    process.stdout.write(
+      `kb:build cached — ${names.length} files, input ${inputDigest.slice(0, 12)}, control: ${control}\n`,
+    );
     return;
   }
 
@@ -166,7 +187,7 @@ const main = async () => {
       `catalog ${catalog.records.length} entries from ${catalog.names.length} controlled sources, ` +
       `provenance ${provenance.stats.documents} documents/${provenance.stats.clauses} clauses, ` +
       `graph ${graph.model.stats.nodes} nodes/${graph.model.stats.edges} edges, ` +
-      `schema ${contract.schemaVersion}, ${contract.documents} documents\n`,
+      `schema ${contract.schemaVersion}, ${contract.documents} documents, control: ${control}\n`,
   );
 };
 

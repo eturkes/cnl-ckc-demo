@@ -18,17 +18,21 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { requireFiring } from './control.mjs';
 import { LANE_SUITE } from './kb/exports.mjs';
 import { ROOT } from './kb/paths.mjs';
 
 /** @typedef {{ fullName: string, status: string }} CaseResult */
 /** @typedef {{ name: string, assertionResults: CaseResult[] }} SuiteResult */
+/** @typedef {{ suite: string, why: string, cases: string[] }} Requirement */
 
 /**
  * The required binding checks, by suite and EXACT case name.
  *
  * `why` is the register: it says which part of the non-negotiable the row holds up, so a
  * later unit can tell a load-bearing case from a convenient one.
+ *
+ * @type {readonly Requirement[]}
  */
 const REQUIRED = Object.freeze([
   {
@@ -92,6 +96,18 @@ const REQUIRED = Object.freeze([
     ],
   },
   {
+    suite: 'tests/kb-reach.test.ts',
+    why: 'kb:asset-check ships the planted input that reddens it, and a deleted control leaves a dead scan reading like a clean tree',
+    cases: [
+      'forbidden answer-oracle reach passes with no control in place',
+      'forbidden answer-oracle reach fails kb:asset-check on a static import',
+      'forbidden answer-oracle reach fails kb:asset-check on a dynamic import',
+      'forbidden answer-oracle reach fails kb:asset-check on a filesystem read',
+      'JSON serialization ban over src/ fails kb:asset-check on a serializing call',
+      'catalog question text ban over src/ and tests/ fails kb:asset-check on a copied question sentence',
+    ],
+  },
+  {
     suite: 'tests/kb-live.test.ts',
     why: 'fail closed on a missing or partial image',
     cases: [
@@ -122,14 +138,65 @@ const REQUIRED = Object.freeze([
 
 const VITEST = join(ROOT, 'node_modules', 'vitest', 'vitest.mjs');
 
+/**
+ * Grade an inventory against one suite run. Taking the inventory as a parameter is what lets
+ * the control feed the same loop a requirement the run cannot satisfy.
+ *
+ * @param {readonly Requirement[]} required @param {SuiteResult[]} suites
+ * @returns {{failures: string[], graded: number}}
+ */
+const gradeInventory = (required, suites) => {
+  /** @type {string[]} */
+  const failures = [];
+  let graded = 0;
+  for (const { suite, why, cases } of required) {
+    const ran = suites.filter((file) => file.name.endsWith(suite));
+    if (ran.length === 0) {
+      failures.push(`${suite}: never ran — ${why}`);
+      continue;
+    }
+    const results = ran.flatMap((file) => file.assertionResults);
+    for (const name of cases) {
+      const matched = results.filter((entry) => entry.fullName === name);
+      const only = matched[0];
+      if (matched.length !== 1 || only === undefined) {
+        failures.push(
+          `${suite}: "${name}" names ${String(matched.length)} cases, expected exactly 1`,
+        );
+      } else if (only.status !== 'passed') failures.push(`${suite}: "${name}" ${only.status}`);
+      else graded += 1;
+    }
+  }
+  return { failures, graded };
+};
+
 /** @type {string[]} */
 const failures = [];
 /** @param {string} message */
 const fail = (message) => failures.push(message);
 
+/**
+ * Reported inside the run, not after it: the scratch cleanup runs in a `finally`, and a
+ * value assigned there for a later read is what `no-useless-assignment` refuses.
+ *
+ * @param {number} graded @param {number} controls
+ */
+const report = (graded, controls) => {
+  if (failures.length > 0) {
+    process.stderr.write(
+      `binding:check failed —\n${failures.map((line) => `  ${line}`).join('\n')}\n`,
+    );
+    process.exitCode = 1;
+  } else {
+    process.stdout.write(
+      `binding:check ok — ${String(graded)} required binding cases passed ` +
+        `across ${String(REQUIRED.length)} suites, ${String(controls)} controls fired\n`,
+    );
+  }
+};
+
 const scratch = mkdtempSync(join(tmpdir(), 'binding-check-'));
-const report = join(scratch, 'suite.json');
-let graded = 0;
+const reportPath = join(scratch, 'suite.json');
 try {
   const run = spawnSync(
     process.execPath,
@@ -138,7 +205,7 @@ try {
       'run',
       '--reporter=default',
       '--reporter=json',
-      `--outputFile.json=${report}`,
+      `--outputFile.json=${reportPath}`,
       ...process.argv.slice(2),
     ],
     { cwd: ROOT, stdio: 'inherit' },
@@ -150,40 +217,39 @@ try {
   try {
     // Same `JSON.parse` discipline as `loadManifest`: through `unknown`, so the shape claim
     // is an explicit cast rather than an `any` lint would refuse.
-    const parsed = /** @type {unknown} */ (JSON.parse(readFileSync(report, 'utf8')));
+    const parsed = /** @type {unknown} */ (JSON.parse(readFileSync(reportPath, 'utf8')));
     suites = /** @type {{ testResults: SuiteResult[] }} */ (parsed).testResults;
   } catch {
     fail('the suite produced no readable report');
   }
 
-  for (const { suite, why, cases } of REQUIRED) {
-    const ran = suites.filter((file) => file.name.endsWith(suite));
-    if (ran.length === 0) {
-      fail(`${suite}: never ran — ${why}`);
-      continue;
-    }
-    const results = ran.flatMap((file) => file.assertionResults);
-    for (const name of cases) {
-      const matched = results.filter((entry) => entry.fullName === name);
-      const only = matched[0];
-      if (matched.length !== 1 || only === undefined) {
-        fail(`${suite}: "${name}" names ${String(matched.length)} cases, expected exactly 1`);
-      } else if (only.status !== 'passed') fail(`${suite}: "${name}" ${only.status}`);
-      else graded += 1;
-    }
-  }
+  const inventory = gradeInventory(REQUIRED, suites);
+  for (const line of inventory.failures) fail(line);
+
+  // Controls: the two ways an inventory row stops binding anything. A rename leaves the case
+  // undefined; a deleted or renamed file leaves the suite unrun. Both are graded against the
+  // gate's OWN suite run, so neither costs a second vitest.
+  const controls = [
+    requireFiring(
+      'binding:check',
+      {
+        mutation: 'a required case no suite defines',
+        expect: ['names 0 cases, expected exactly 1'],
+      },
+      () =>
+        gradeInventory([{ suite: LANE_SUITE, why: 'control', cases: ['zz control case'] }], suites)
+          .failures,
+    ),
+    requireFiring(
+      'binding:check',
+      { mutation: 'a required suite the run never loaded', expect: ['never ran'] },
+      () =>
+        gradeInventory([{ suite: 'tests/zz-control.test.ts', why: 'control', cases: [] }], suites)
+          .failures,
+    ),
+  ].length;
+
+  report(inventory.graded, controls);
 } finally {
   rmSync(scratch, { recursive: true, force: true });
-}
-
-if (failures.length > 0) {
-  process.stderr.write(
-    `binding:check failed —\n${failures.map((line) => `  ${line}`).join('\n')}\n`,
-  );
-  process.exitCode = 1;
-} else {
-  process.stdout.write(
-    `binding:check ok — ${String(graded)} required binding cases passed ` +
-      `across ${String(REQUIRED.length)} suites\n`,
-  );
 }

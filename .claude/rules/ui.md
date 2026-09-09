@@ -118,7 +118,9 @@ read out of the vendored bag **at run time** through `verifyBag`.
   `${uid}-option-${questionId}` and render in `QUESTION_IDS` order.
 - It must open the canonical-answer disclosure before reading it — a `<details>` body is not
   visible, so a visibility wait times out at 45 s.
-- Negative control: removing BOTH `kb/generated/kb.pvm` and `dist/` gives rc 1, thrown by the
-  `pnpm build` step. Removing the pvm alone leaves rc 0, because the smoke rebuilds only when
-  `dist/` is missing and otherwise serves the stale hashed asset — so that control proves the
-  build path, never a `waitForSelector` timeout.
+- Negative control, run by hand and NOT shipped: removing BOTH `kb/generated/kb.pvm` and
+  `dist/` gives rc 1, thrown by the `pnpm build` step. Removing the pvm alone leaves rc 0,
+  because the smoke rebuilds only when `dist/` is missing and otherwise serves the stale hashed
+  asset — so that control proves the build path, never a `waitForSelector` timeout. The firing
+  input this lane owes is a served `dist` copy stripped of the hashed pvm; it is a
+  `.agent/spec.md` `Deferred` row.

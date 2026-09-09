@@ -12,6 +12,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { requireFiring } from './control.mjs';
 import { ROOT } from './kb/paths.mjs';
 
 const CSS = join(ROOT, 'src/app.css');
@@ -128,24 +129,14 @@ const contrast = (a, b) => {
   return (hi + 0.05) / (lo + 0.05);
 };
 
-const main = () => {
-  const css = readFileSync(CSS, 'utf8');
-  const light = tokenBlock(css, /:root\s*\{([^}]*)\}/, ':root');
-  const darkOverrides = tokenBlock(
-    css,
-    /:root\[data-theme=['"]dark['"]\]\s*\{([^}]*)\}/,
-    'dark theme',
-  );
-  const dark = new Map(light);
-  for (const [name, value] of darkOverrides) dark.set(name, value);
-  if (PAIRS.length === 0) throw new Error('the pair table is empty');
-
+/**
+ * Every declared pair, graded in each theme it is given.
+ *
+ * @param {[string, Map<string, string>][]} themes @returns {string[]}
+ */
+const gradePairs = (themes) => {
+  /** @type {string[]} */
   const failures = [];
-  /** @type {[string, Map<string, string>][]} */
-  const themes = [
-    ['light', light],
-    ['dark', dark],
-  ];
   for (const [theme, tokens] of themes) {
     for (const { fg, bg, min, where } of PAIRS) {
       const [fgValue, bgValue] = [tokens.get(fg), tokens.get(bg)];
@@ -158,6 +149,36 @@ const main = () => {
       }
     }
   }
+  return failures;
+};
+
+const main = () => {
+  const css = readFileSync(CSS, 'utf8');
+  const light = tokenBlock(css, /:root\s*\{([^}]*)\}/, ':root');
+  const darkOverrides = tokenBlock(
+    css,
+    /:root\[data-theme=['"]dark['"]\]\s*\{([^}]*)\}/,
+    'dark theme',
+  );
+  const dark = new Map(light);
+  for (const [name, value] of darkOverrides) dark.set(name, value);
+  if (PAIRS.length === 0) throw new Error('the pair table is empty');
+
+  // Control: the shipped tokens with one foreground collapsed onto its own background. It
+  // grades 1:1, so a run that reports no failure here has stopped grading the real palette.
+  const collapsed = new Map(light).set('--text', light.get('--surface') ?? '');
+  const control = requireFiring(
+    'contrast',
+    { mutation: '--text collapsed onto --surface', expect: ['light: --text on --surface = 1:1'] },
+    () => gradePairs([['light', collapsed]]),
+  );
+
+  /** @type {[string, Map<string, string>][]} */
+  const themes = [
+    ['light', light],
+    ['dark', dark],
+  ];
+  const failures = gradePairs(themes);
 
   const unused = [...light.keys()].filter(
     (name) => !name.startsWith('--font-') && !PAIRS.some((p) => p.fg === name || p.bg === name),
@@ -169,7 +190,7 @@ const main = () => {
     for (const line of failures) console.error(`  ${line}`);
     process.exit(1);
   }
-  console.log(`contrast: ${String(PAIRS.length * 2)} light/dark pairs pass`);
+  console.log(`contrast: ${String(PAIRS.length * 2)} light/dark pairs pass, control: ${control}`);
 };
 
 main();

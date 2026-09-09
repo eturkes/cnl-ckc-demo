@@ -16,10 +16,9 @@ Step semantics a reader cannot get from the script name:
   feed. **User ruling: no allowlist.** An advisory published against an unchanged tree
   reddens the gate, and the fix is the upgrade or an explicit user ruling — never a
   suppression file. It needs network; that is the accepted cost of a live feed.
-- `secret:check` (`tools/secret-check.mjs`) runs secretlint twice: once on a planted control
-  token in a temp dir, which must exit 1, and once over the tree, which must exit 0. The
-  control is what keeps a silently-dead detector from reading as a clean tree. The control
-  literal is assembled from fragments so it cannot match itself in the tree pass.
+- `secret:check` (`tools/secret-check.mjs`) runs secretlint twice: the planted control below,
+  then the tree, which must exit 0. The control literal is assembled from fragments so it
+  cannot match itself in the tree pass.
 - `lint` carries the static-analysis layer and runs at `--max-warnings=0`, so a security
   finding fails the gate rather than scrolling past. ESLint is the only analyzer in the stack
   that parses `.svelte`, which is why the sink rules live there rather than in a separate
@@ -51,6 +50,37 @@ Step semantics a reader cannot get from the script name:
   package `LICENSE`, and the selectors rendering engine-authored text. Rule bodies match
   brace-free ⇒ only leaf rules match and `@media` never matches alone; CSS comments strip
   first, so a documented rule carries its comment in its selector list.
+
+## Firing inputs
+
+**Every purpose-built check ships the input that makes it fail.** A check that cannot fail and
+a clean tree emit the same green, so a step may not report a count until it has proved it can
+still refuse one. `tools/control.mjs` is the shared seam: `requireFiring(check, {mutation,
+expect}, grade)` runs the check's OWN grader over a deliberately broken copy of its REAL input,
+requires the refusal to NAME what was broken, and exits 1 when the broken copy grades clean.
+Breaking the real input rather than grading a synthetic fixture is what also catches the check
+that silently stopped reading — an empty glob, a renamed region, a declared table that parsed
+to nothing. Each step's success line ends with the control that fired, so a green run says so.
+
+| step | broken input | how it runs |
+|---|---|---|
+| `secret:check` | a token-shaped literal planted in a temp dir | secretlint spawned on it, must exit 1, before the tree pass |
+| `kb:build` | one digit changed in the bag `.sha256` sidecar | `readVerifiedBag(perturb)` re-run in process, before the real verify |
+| `kb:asset-check` | five planted `src/zz-forbidden-reach-control.ts` inputs — an oracle reached by static import, `import()` and `fs` read, a serializing call, a copied question sentence | `tests/kb-reach.test.ts` spawns the real checker per form and requires nonzero with the offending path named; `binding:check` names all six cases, the clean baseline included |
+| `kb:export-check` | one declared query dropped from the verified bag | `exportedQueries` re-run on the short map, must refuse by name |
+| `engine:check` | one perturbed pinned surface per predicate: the budget parameter dropped from `EngineClient.query`, a bare `swipl-wasm` import added outside the worker, a member added to `PrologConstructors`, an export added to `terms.ts` | the command re-runs itself once per row under `ENGINE_CHECK_CONTROL`; the perturbation rides the file reader, so each control drives the whole check and must exit 1 naming its predicate |
+| `copy:check` | the shipped English graded at limit 0 against a filler list holding `the`; `en.ts` read as the Japanese catalog; the shell `<title>` prefixed | one per grader, in process, over the real catalogs |
+| `contrast:check` | `--text` collapsed onto `--surface` | the pair loop re-run on the perturbed token map, must report `1:1` |
+| `presentation:check` | one `@font-face` renamed out of `app.css`; each shipped licence compared against the next package's; `overflow-wrap` stripped from every component style | one per declared table, in process |
+| `binding:check` | a required case no suite defines; a required suite the run never loaded | the inventory loop re-run over the gate's OWN suite report, so neither costs a second vitest |
+| `kb:reproduce` | one asset digest changed in the second manifest | the equality seam re-run on the perturbed clone |
+| `graph:check` | one edge's `line-style` set to `dashed` in the mounted graph | `dashControl` requires a 0 → 1 → 0 reading off the live renderer |
+| `binding:replay` | `pnpm binding:replay HEAD` | both differential arms go green, so the command exits 1 instead of accepting archived-red/current-green |
+
+`audit:check`, `format:check`, `lint`, `check` and `build` are configured third-party
+checkers, not purpose-built ones, and are absent from that table by rule rather than by
+omission. `pnpm smoke` and `pnpm browser:check` are the two open rows —
+`.agent/spec.md` `Deferred` carries them with their acceptance checks.
 
 Out of the chain — each needs a real browser or two forced builds, and each reruns from
 committed state:

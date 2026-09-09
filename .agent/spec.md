@@ -76,8 +76,8 @@ u3→u7 (answer/proof) ∥ u8→u13 (graph) → u14→u15. Full `Accept:` + `Dep
 - **u7** `m5u7.md`, 12 predicates + the C2 disposition (five classes restored, none by
   rationale). `clinical-binding` perturbs `guideline_*` three compiled ways: an additive
   overlay, one erased cited clause (drops exactly its document + proof), a one-line shift
-  (+1 on every proof line, 12 answers identical). `tools/binding-check.mjs` requires 29 named
-  cases across 10 suites and REPLACES `pnpm test` in the gate. `tools/answer-oracle.mjs` gives
+  (+1 on every proof line, 12 answers identical). `tools/binding-check.mjs` requires 35 named
+  cases across 11 suites and REPLACES `pnpm test` in the gate. `tools/answer-oracle.mjs` gives
   `smoke` + `browser:check` one bag-derived expectation, graded byte for byte in BOTH locales.
   `pnpm binding:replay` shows the erasure invisible at `a944fca`, dropping one document now.
 - **u8** `m5u8.md`, 11 predicates. Four arms × 14 fixtures × 2 viewports at the measured
@@ -115,9 +115,13 @@ u3→u7 (answer/proof) ∥ u8→u13 (graph) → u14→u15. Full `Accept:` + `Dep
 ## Defects
 
 20 rows, each with its acceptance check, indexed in `.agent/archive/polish.md` beside
-20 further `low` rows. User-ruled: all of them carry into MAINTAIN as requests. The one
-graded **high** — a WASM abort strands the worker; accept when abort is its own terminal
-state, the worker is recreated, and the next query reports 337 documents.
+20 further `low` rows. User-ruled: all carry into MAINTAIN. The **high** one — a WASM abort
+strands the worker; accept when abort is its own terminal state, the worker is recreated,
+and the next query reports 337 documents.
+
+**Gate controls** — `smoke` + `browser:check` ship no firing input (gate.md `Firing
+inputs`). Accept: each reddens on a mutation its own lane runs — a pvm-stripped `dist`
+copy, a renamed woff2 — and joins that table.
 
 ## Accepted-open
 
