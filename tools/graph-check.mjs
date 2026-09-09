@@ -29,6 +29,16 @@ const VIEWPORTS = [
   { name: 'desktop', width: 1152, height: 558 },
   { name: 'mobile', width: 296, height: 384 },
 ];
+/**
+ * The DEVICES whose canvas boxes `VIEWPORTS` are.
+ *
+ * `app.html` mounts the whole component, which computes its own box from the page container,
+ * so there the device size is the input and the box an output. `.agent/contracts/m5u10.md`.
+ */
+const DEVICES = [
+  { name: 'desktop', width: 1280, height: 900 },
+  { name: 'mobile', width: 320, height: 720 },
+];
 /** `canvas.ts` floors the fit here; a settled label may never come out below it. */
 const MIN_LABEL_PX = 11;
 /** Files that must not name the renderer, and the pattern that would say they do. */
@@ -121,6 +131,139 @@ const require_ = (ok, rule, detail) => {
   if (!ok) violations.push(`${rule}: ${detail}`);
 };
 
+/**
+ * C1-C7 over one component reading.
+ *
+ * A pure grader, because the C2/C6 firing input below re-runs the SAME function over a sweep
+ * whose selection callback was detached and requires it to refuse — a grader reached only
+ * through the live campaign could not be fired at all.
+ *
+ * @param {import('./graph-probe/app.svelte.js').InteractionReading} row
+ * @param {string} at
+ * @returns {string[]}
+ */
+const gradeInteractions = (row, at) => {
+  /** @type {string[]} */
+  const out = [];
+  /** @param {boolean} ok @param {string} rule @param {string} detail */
+  const req = (ok, rule, detail) => {
+    if (!ok) out.push(`${rule}: ${at}: ${detail}`);
+  };
+  const n = (/** @type {number} */ value) => String(value);
+
+  req(row.cyNodes > 0 && row.cyEdges > 0, 'C1', `the renderer drew ${n(row.cyNodes)} nodes`);
+  req(row.counts !== '', 'C1', 'the ready header reported no counts');
+  req(
+    row.answerView === (row.view === 'answer'),
+    'C1',
+    `an answer focus reads ${String(row.answerView)} in the ${row.view} view`,
+  );
+
+  req(
+    row.missResults === 0 && row.missReported,
+    'C2',
+    `"${row.missQuery}" returned ${n(row.missResults)} results`,
+  );
+  req(row.searchResults > 0, 'C2', `"${row.searchQuery}" matched nothing`);
+  req(
+    row.searchCard === row.searchChosen,
+    'C2',
+    `chose ${row.searchChosen}, card ${row.searchCard}`,
+  );
+  req(row.searchEmitted !== '', 'C2', 'a chosen search result emitted no selection');
+  req(
+    row.searchCanvasSelected === row.searchChosen,
+    'C2',
+    `chose ${row.searchChosen}, canvas selects ${row.searchCanvasSelected}`,
+  );
+
+  req(
+    row.pathSteps >= 2,
+    'C3',
+    `the panel listed ${n(row.pathSteps)} steps for "${row.pathQuery}"`,
+  );
+  req(
+    row.pathCanvasNodes === row.pathSteps,
+    'C3',
+    `${n(row.pathCanvasNodes)} highlighted nodes for ${n(row.pathSteps)} listed steps`,
+  );
+  req(
+    row.pathCanvasEdges === row.pathSteps - 1,
+    'C3',
+    `${n(row.pathCanvasEdges)} highlighted edges for ${n(row.pathSteps)} listed steps`,
+  );
+  req(row.pathStatus !== '', 'C3', 'the path panel announced nothing');
+  req(
+    row.clearedPanel && row.clearedCanvasPath === 0,
+    'C3',
+    `Clear left ${n(row.clearedCanvasPath)} highlighted elements`,
+  );
+
+  const counts = row.expandRounds.map((round) => round.nodes);
+  req(row.expandRounds.length > 0, 'C4', 'no expand round ran');
+  req(
+    counts.every((value, index) => index === 0 || value >= (counts[index - 1] ?? 0)),
+    'C4',
+    `expanding lowered the drawn node count: ${counts.map(n).join(' → ')}`,
+  );
+  req(
+    row.expandRounds.at(-1)?.enabled === false,
+    'C4',
+    `expand stayed enabled after ${n(row.expandRounds.length)} rounds`,
+  );
+
+  req(
+    Math.abs(row.zoomPerturbed - row.zoomFitted) > 0.01,
+    'C5',
+    'the probe could not move the viewport off the fit, so recentering had nothing to undo',
+  );
+  req(row.recenterMoved, 'C5', `recentering left the viewport at ${row.zoomPerturbed.toFixed(3)}`);
+  req(
+    row.recenterRelaidOut === 0,
+    'C5',
+    `recentering moved ${n(row.recenterRelaidOut)} nodes, so it re-ran the layout`,
+  );
+  if (row.view === 'concept') {
+    req(row.recenterSelectedOnScreen, 'C5', 'recentering left the selection off the canvas');
+  } else {
+    req(
+      Math.abs(row.zoomRecentered - row.zoomFitted) < 0.01,
+      'C5',
+      `fitting the answer read ${row.zoomRecentered.toFixed(3)} against a fit of ${row.zoomFitted.toFixed(3)}`,
+    );
+  }
+
+  req(row.tapCard === row.tapNode, 'C6', `tapped ${row.tapNode}, card reads ${row.tapCard}`);
+  req(
+    row.tapCanvasSelected === row.tapNode,
+    'C6',
+    `tapped ${row.tapNode}, canvas selects ${row.tapCanvasSelected}`,
+  );
+  req(row.tapEmitted !== '', 'C6', 'a canvas tap emitted no selection');
+
+  req(
+    row.indexEntries === row.indexCanvasNodes,
+    'C7',
+    `the index lists ${n(row.indexEntries)} of the canvas's ${n(row.indexCanvasNodes)} nodes`,
+  );
+  req(
+    row.indexCurrent === row.indexCard,
+    'C7',
+    `aria-current ${row.indexCurrent}, card ${row.indexCard}`,
+  );
+  req(
+    row.indexChosenCard === row.indexChosen,
+    'C7',
+    `chose ${row.indexChosen}, card reads ${row.indexChosenCard}`,
+  );
+  req(
+    row.indexChosenCanvas === row.indexChosen,
+    'C7',
+    `chose ${row.indexChosen}, canvas selects ${row.indexChosenCanvas}`,
+  );
+  return out;
+};
+
 // R6 is decidable without a browser: the seam is a source census.
 for (const file of SEAM) {
   const source = readFileSync(join(ROOT, file), 'utf8');
@@ -152,6 +295,10 @@ const dev = await devServer();
 let browser;
 /** @type {Record<string, unknown>[]} */
 const readings = [];
+/** @type {(import('./graph-probe/app.svelte.js').InteractionReading & { device: string })[]} */
+const components = [];
+/** @type {Record<string, unknown>[]} */
+const fallbacks = [];
 try {
   browser = await launch(fail);
   for (const viewport of VIEWPORTS) {
@@ -239,12 +386,83 @@ try {
       `${viewport.name}: per-edge dashing reads ${String(dash.before)}/${String(dash.during)}/${String(dash.after)}`,
     );
   }
+
+  // The component half. `index.html` above mounts the adapter; `app.html` mounts the shipped
+  // `SemanticGraph.svelte` over the same asset, which is the only place the component's state
+  // and the renderer's output can be read against each other. `.agent/contracts/m5u10.md`.
+  const answerFocus = tokens[0] ?? fail('the bag yielded no answer focus');
+  for (const device of DEVICES) {
+    const page = await browser.newPage({
+      viewport: { width: device.width, height: device.height },
+    });
+    page.on('pageerror', (/** @type {Error} */ error) => fail(`app probe raised ${error.message}`));
+    await page.goto(`${dev.url}app.html`, { waitUntil: 'load', timeout: TIMEOUT });
+    /** @param {string} call @returns {Promise<unknown>} */
+    const run = (call) => page.evaluate(`window.componentProbe.${call}`);
+
+    /** @type {{ view: 'concept' | 'answer', focus: unknown }[]} */
+    const sweeps = [
+      { view: 'concept', focus: null },
+      { view: 'answer', focus: answerFocus },
+    ];
+    for (const { view, focus } of sweeps) {
+      const row = /** @type {import('./graph-probe/app.svelte.js').InteractionReading} */ (
+        await run(`interactions(${JSON.stringify(view)}, ${JSON.stringify(focus)})`)
+      );
+      for (const violation of gradeInteractions(row, `${device.name}/${view}`)) {
+        violations.push(violation);
+      }
+      components.push({ device: device.name, ...row });
+      if (shots !== undefined) {
+        await page.screenshot({ path: join(shots, `component-${view}-${device.name}.png`) });
+      }
+    }
+
+    // Firing input for every grader above: the same sweep with the component's selection
+    // callback detached. C2 and C6 are the two predicates only the callback can satisfy, so a
+    // grader that stopped reading passes this and a working one refuses it by name.
+    const control = /** @type {import('./graph-probe/app.svelte.js').InteractionReading} */ (
+      await run('interactions("concept", null, {"emit":false})')
+    );
+    const refused = gradeInteractions(control, `${device.name}/control`);
+    require_(
+      refused.some((line) => line.startsWith('C2:')) &&
+        refused.some((line) => line.startsWith('C6:')),
+      'control',
+      `${device.name}: a detached selection callback drew ${String(refused.length)} refusals, none naming C2 and C6`,
+    );
+
+    const load = /** @type {import('./graph-probe/app.svelte.js').LoadFallbackReading} */ (
+      await run('loadFallback()')
+    );
+    const at = device.name;
+    require_(load.retryPresent, 'C9', `${at}: a failed load offered no retry control`);
+    require_(load.namesCause, 'C9', `${at}: the alert named no cause — ${load.alert}`);
+    require_(load.recovered !== '', 'C9', `${at}: retrying never reached the ready header`);
+    require_(load.rendererAfterRetry, 'C9', `${at}: retrying reached ready with no renderer`);
+
+    const palette = /** @type {import('./graph-probe/app.svelte.js').PaletteFallbackReading} */ (
+      await run('paletteFallback()')
+    );
+    require_(palette.counts !== '', 'C10', `${at}: the model itself failed to load`);
+    require_(!palette.renderer, 'C10', `${at}: a refused palette still mounted a renderer`);
+    require_(
+      palette.unnamedTokens.length === 0,
+      'C10',
+      `${at}: the notice names none of ${palette.unnamedTokens.join(', ')}`,
+    );
+    require_(palette.relations > 0, 'C10', `${at}: the HTML relation view lists nothing`);
+    require_(palette.nodeIndex > 0, 'C10', `${at}: the HTML node index lists nothing`);
+    fallbacks.push({ device: device.name, ...load, ...palette });
+  }
 } finally {
   await browser?.close();
   dev.stop();
 }
 
-if (report !== undefined) writeFileSync(report, `${JSON.stringify(readings, null, 1)}\n`);
+if (report !== undefined) {
+  writeFileSync(report, `${JSON.stringify({ readings, components, fallbacks }, null, 1)}\n`);
+}
 
 const number = (/** @type {string} */ key) =>
   readings.map((row) => Number(row[key])).sort((a, b) => a - b);
@@ -262,6 +480,24 @@ require_(
   'R7',
   `${String(total('labelsMeasured'))} of ${String(total('nodes'))} labels reached the renderer`,
 );
+require_(
+  components.length === DEVICES.length * 2,
+  'C11',
+  `${String(components.length)} component sweeps for ${String(DEVICES.length)} devices x 2 views`,
+);
+require_(
+  fallbacks.length === DEVICES.length,
+  'C11',
+  `${String(fallbacks.length)} fallback sweeps for ${String(DEVICES.length)} devices`,
+);
+// Expanding is allowed to add nothing on a view that was never truncated, so the guarantee
+// that the control does anything at all is a campaign-level count.
+const expanded = components.filter(
+  (row) => (row.expandRounds.at(-1)?.nodes ?? 0) > (row.expandRounds[0]?.nodes ?? 0),
+).length;
+const taps = components.filter((row) => row.tapEmitted !== '').length;
+require_(expanded > 0, 'C4', 'no view raised its drawn node count on expand');
+require_(taps > 0, 'C6', 'no canvas tap reached the selection callback');
 
 if (violations.length > 0) {
   for (const violation of violations) console.error(`graph-check: ${violation}`);
@@ -275,4 +511,12 @@ console.log(
     `labels ${(number('labelPx')[0] ?? 0).toFixed(2)}-${(number('labelPx').at(-1) ?? 0).toFixed(2)} px ` +
     `over a ${String(MIN_LABEL_PX)} px floor, worst view ${String(number('labelOverlaps').at(-1) ?? 0)} ` +
     `label overlaps, median ${median(number('settleMs')).toFixed(0)} ms to settle`,
+);
+console.log(
+  `graph-check: C1-C11 hold over ${String(components.length)} component sweeps and ` +
+    `${String(fallbacks.length)} fallback sweeps — ` +
+    `${String(components.reduce((sum, row) => sum + row.cyNodes, 0))} nodes drawn from the ` +
+    `component's own state, ${String(expanded)} views expanded, ${String(taps)} canvas taps ` +
+    `delivered, both fallbacks kept the HTML relation view, ` +
+    `control: a detached selection callback refused by C2 + C6`,
 );

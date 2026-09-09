@@ -39,3 +39,13 @@ suite each.
   labels outlined in the node's own colour, `autounselectify`, an 11 px fit floor, and ONE
   fcose layout with the subject pinned — the `concentric` branch every answer view took cost
   156 crossings against fcose's 56, so u8's spike never measured the shipped surface.
+- **u10** `m5u10.md`, 3 shipped + 12 predicates · `graph:check` gained a SECOND page.
+  `tools/graph-probe/app.html` + `app.svelte.ts` mount the whole `SemanticGraph.svelte` over
+  the real asset and grade every interaction on BOTH sides of the adapter seam — search, path,
+  expand, recenter, canvas tap, node index, in the concept and the answer branch, at
+  1280×900 and 320×720, plus a refused `graphUrl` and a `--graph-*` palette set to `initial`.
+  The device size is the input here and the canvas box an output, the reverse of `index.html`.
+  Runes because C9 changes `graphUrl` between the failure and the retry. A synthetic tap needs
+  a DESCENDANT target inside the layout viewport — `eventInContainer` discards the rest, and
+  pointer events reach nothing. Firing inputs: a detached selection callback refused by C2 +
+  C6 in the run itself; `subgraph.nodes.slice(1)` in the node index reddened C7 8×, reverted.

@@ -21,6 +21,8 @@ import {
   type SemanticGraphNode,
 } from '../../src/graph/model.js';
 
+import { cyOf as cyIn, type CyElement, type CyLike, type CyNode, type Point } from './cy.js';
+
 // The app's own faces. Cytoscape measures label width with `measureText`, so a probe running
 // on a fallback face wraps at different points than the product does.
 import '../../src/app.css';
@@ -29,61 +31,6 @@ interface Fixture {
   subgraph: GraphSubgraph;
   selectedId: string;
   path: GraphPath | null;
-}
-
-interface Point {
-  x: number;
-  y: number;
-}
-
-/** Cytoscape registers itself on its container; the adapter exposes no instance by design. */
-interface CyRegistered extends HTMLElement {
-  _cyreg?: { cy?: CyLike };
-}
-
-/** The slice of Cytoscape this probe reads. Declared here so the probe owns no `any`. */
-interface CyLike {
-  zoom(): number;
-  nodes(): CyCollection<CyNode>;
-  edges(): CyCollection<CyEdge>;
-  elements(): CyCollection<CyElement>;
-  $(selector: string): { length: number };
-  one(event: string, handler: () => void): void;
-}
-
-interface CyCollection<T> {
-  readonly [index: number]: T | undefined;
-  length: number;
-  map<R>(fn: (element: T) => R): R[];
-  filter(fn: (element: T) => boolean): CyCollection<T>;
-  forEach(fn: (element: T) => void): void;
-  select(): void;
-}
-
-interface CyElement {
-  id(): string;
-  hasClass(name: string): boolean;
-  style(name: string): string;
-  style(name: string, value: string): void;
-  emit(event: string): void;
-}
-
-interface CyNode extends CyElement {
-  data(name: string): string;
-  renderedBoundingBox(options?: { includeLabels?: boolean }): {
-    x1: number;
-    x2: number;
-    y1: number;
-    y2: number;
-  };
-  renderedPosition(): Point;
-  _private: { rscratch: { labelWrapCachedLines?: string[] } };
-}
-
-interface CyEdge extends CyElement {
-  source(): CyNode;
-  target(): CyNode;
-  renderedMidpoint(): Point;
 }
 
 const stage = document.querySelector('#stage') as HTMLElement;
@@ -140,11 +87,7 @@ const parallelFixture = (): Fixture => {
   };
 };
 
-const cyOf = (): CyLike => {
-  const registered = (stage as CyRegistered)._cyreg?.cy;
-  if (registered === undefined) throw new Error('canvas mounted no cytoscape instance');
-  return registered;
-};
+const cyOf = (): CyLike => cyIn(stage);
 
 const frame = (): Promise<void> =>
   new Promise((resolve) => {

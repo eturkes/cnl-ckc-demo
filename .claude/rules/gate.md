@@ -75,6 +75,7 @@ to nothing. Each step's success line ends with the control that fired, so a gree
 | `binding:check` | a required case no suite defines; a required suite the run never loaded | the inventory loop re-run over the gate's OWN suite report, so neither costs a second vitest |
 | `kb:reproduce` | one asset digest changed in the second manifest | the equality seam re-run on the perturbed clone |
 | `graph:check` | one edge's `line-style` set to `dashed` in the mounted graph | `dashControl` requires a 0 → 1 → 0 reading off the live renderer |
+| `graph:check` component half | the component's selection callback detached; a `graphUrl` the server does not serve; every `--graph-*` token set to `initial` on the mount host | the interaction sweep re-runs under the detached callback and `gradeInteractions` must refuse it by naming C2 and C6; the other two are the product's own failure paths, graded as C9 and C10 |
 | `binding:replay` | `pnpm binding:replay HEAD` | both differential arms go green, so the command exits 1 instead of accepting archived-red/current-green |
 
 `audit:check`, `format:check`, `lint`, `check` and `build` are configured third-party
@@ -90,7 +91,7 @@ committed state:
 | `pnpm kb:reproduce` | byte-reproducibility of pvm + qlf + catalog across two forced builds |
 | `pnpm smoke` | built output answers in a real browser against bag bytes read at run time |
 | `pnpm browser:check` | 337 documents on dev + built output, every 320 px interaction state incl. Japanese, that `unicode-range` keeps the Japanese face off an English page, browser cancel delivery, and the rendered canonical answer byte-equal to `tools/answer-oracle.mjs` in BOTH locales |
-| `pnpm graph:check` | the renderer-neutral edge-view contract R1-R7 (`.agent/contracts/m5u8.md`) against the SHIPPED `mountGraphCanvas`, over 14 fixtures x 2 viewports |
+| `pnpm graph:check` | the renderer-neutral edge-view contract R1-R7 (`.agent/contracts/m5u8.md`) against the SHIPPED `mountGraphCanvas`, over 14 fixtures x 2 viewports, plus C1-C11 (`m5u10.md`) against the SHIPPED `SemanticGraph.svelte` over 2 devices x 2 views + both fallbacks |
 | `pnpm binding:replay` | that `clinical-binding` E2 is load-bearing: the same erasure is invisible at `a944fca` and drops exactly one document now |
 
 `tools/answer-oracle.mjs` is the browser lanes' shared expectation — `clinicalArtifacts` answer
@@ -110,7 +111,24 @@ the contract is renderer-neutral, its probe cannot be. Fixtures are derived, nev
 cited documents from the bag through `answerDocuments`, sentences and lines from each
 provenance chunk. Its summary counts are themselves required non-zero, so a campaign that
 graded nothing fails instead of reporting green. Screenshots for a judgement pass:
-`node tools/graph-check.mjs --shots <dir> --report <file>`.
+`node tools/graph-check.mjs --shots <dir> --report <file>`; the report is
+`{readings, components, fallbacks}`.
+
+It drives TWO pages off one dev server. `tools/graph-probe/index.html` mounts the ADAPTER, and
+sizes the viewport to the measured `.graph-shell .canvas` box. `app.html` mounts the whole
+`SemanticGraph.svelte`, and sizes the viewport to the DEVICE, because the component computes
+its own box from the page container copied there out of `src/App.svelte`. The component half is
+the only grader of the seam between component state and rendered output:
+`tests/semantic-graph.dom.test.ts` mocks `canvas.js` away, so a stub there cannot say whether
+the path the panel lists is the path the canvas highlights. Runes live in `app.svelte.ts`
+because C9 has to change `graphUrl` between a failed load and the retry click.
+
+**A synthetic tap must be dispatched on a DESCENDANT of the canvas host, at a point inside the
+layout viewport.** Cytoscape's `eventInContainer` discards any event whose `target` is the
+container itself, and any whose client point falls outside the container rect — so the probe
+scrolls the canvas into view, resolves the layer with `elementFromPoint`, and pans the victim
+node under that point first. Pointer events reach nothing; `mousedown` + `mouseup` are the
+pair that fires `tap`.
 
 `pnpm release:check` = `gate && kb:reproduce && smoke && browser:check && graph:check`.
 

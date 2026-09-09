@@ -1,11 +1,20 @@
+import { fileURLToPath, URL } from 'node:url';
+
+import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
 
-// Root is this directory. The 8 MB graph asset is served statically so the dev transform
-// never parses it, and `fs.allow` reaches back to `src/graph/` — the probe mounts the SHIPPED
-// adapter, never a copy of it.
+/** @param {string} path */
+const here = (path) => fileURLToPath(new URL(path, import.meta.url));
+
+// Root is this directory: `index.html` mounts the adapter, `app.html` the whole component.
+// The 8 MB graph asset is served statically so the dev transform never parses it, `fs.allow`
+// reaches back to `src/` — both probes mount the SHIPPED modules, never a copy — and `@kb`
+// mirrors the product alias, which `SemanticGraph.svelte` resolves its default asset URL from.
 export default defineConfig({
-  root: new URL('.', import.meta.url).pathname,
-  publicDir: new URL('../../kb/generated/graph', import.meta.url).pathname,
-  cacheDir: new URL('../../.vite/graph-probe', import.meta.url).pathname,
-  server: { fs: { allow: [new URL('../../', import.meta.url).pathname] } },
+  plugins: [svelte()],
+  root: here('.'),
+  publicDir: here('../../kb/generated/graph'),
+  cacheDir: here('../../.vite/graph-probe'),
+  resolve: { alias: { '@kb': here('../../kb/generated') } },
+  server: { fs: { allow: [here('../../')] } },
 });

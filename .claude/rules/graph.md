@@ -57,6 +57,14 @@ ellipsis-truncate.
 `pnpm graph:check` alone (`.claude/rules/gate.md`), which mounts the shipped adapter in a real
 browser.
 
+**The component's own interactions are graded there too, not in jsdom.** `graph:check`'s
+`app.html` page mounts `SemanticGraph.svelte` whole and reads every interaction on BOTH sides
+of the adapter seam — search, path, expand, recenter, canvas tap and node index, in the concept
+AND the answer branch, at 1280x900 and 320x720, plus the two failure paths (a `graphUrl` the
+server refuses, and a `--graph-*` palette set to `initial`). The mocked suite can only see that
+`update` was called; it cannot see that the panel's path is the canvas's path.
+`.agent/contracts/m5u10.md` C1-C12.
+
 ## Rendering law (measured, u9)
 
 - **One layout for every view: fcose with the answer's subject pinned at the origin.** The

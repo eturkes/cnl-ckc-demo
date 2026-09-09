@@ -58,26 +58,19 @@ spine below.
 
 ## Units — the remaining IMPLEMENT path
 
-u10→u13 finish the graph; u14→u15 then close the phase over both spines. Full `Accept:` +
-`Depends` → archive; u3–u9 closed, contract each in `.agent/contracts/`, close summaries in
+u11→u13 finish the graph; u14→u15 then close the phase over both spines. Full `Accept:` +
+`Depends` → archive; u3–u10 closed, contract each in `.agent/contracts/`, close summaries in
 `.agent/archive/units-m5.md`.
 
-- **u10 graph integration** — theme half SHIPPED (canvas reads `--graph-*` tokens;
-  `graph:check` gained `palette` + `theme`; law → `.claude/rules/graph.md`). REMAINING: mount
-  `SemanticGraph.svelte` in the probe harness (`app.html` + `app.ts`, svelte plugin + `@kb`
-  alias in the probe vite config) and grade search, path, expand, recenter, canvas tap and node
-  index, plus both fallbacks — a bad `graphUrl` (load alert + retry) and a palette set to
-  `initial` before mount (`canvasError`, HTML relations intact). Accept: every interaction and
-  both fallbacks pass under `pnpm graph:check`.
 - **u11 scoped edge records** — `tools/kb/graph.mjs` emits versioned edge→scope records from
   the clause AST. Accept: 156 negation / 857 `should` contexts + 1,263 operators represented
   inside +182,583 B gzip.
 - **u12 scope-aware projection** — `model.ts` grouping, bounded paths, highlights, dashes.
   Accept: every projected edge preserves the relation + its ordered scope;
   `graph-semantics.review.test.ts`'s six in-scope reds go GREEN.
-- **u13 scoped views + probe rerun** — scope rendered in canvas AND fallback; u10's probe
-  rerun on final output. Accept: every shown edge preserves relation + ordered scope in BOTH
-  views, graded whole.
+- **u13 scoped views + probe rerun** — scope rendered in canvas AND fallback; u10's component
+  sweep rerun on final output. Accept: every shown edge preserves relation + ordered scope in
+  BOTH views, graded whole.
 - **u14 claim alignment** — the nine false strings (`ProvenanceLadder.svelte:103,113,152`,
   `copy.ts` lede, `README.md:7,15,20,22`, `service.ts:1`). Accept: quotation, hypothetical
   premise + derived clause read as distinct; copy checks pass.
@@ -86,4 +79,4 @@ u10→u13 finish the graph; u14→u15 then close the phase over both spines. Ful
 
 # Phase
 
-IMPLEMENT, at u10. Judgment review → `.agent/review.md`, adjudicated before the phase closes.
+IMPLEMENT, at u11. Judgment review → `.agent/review.md`, adjudicated before the phase closes.

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="graph component probe" />
+    <title>graph component probe</title>
+    <style>
+      /* The product's own page container, copied from `src/App.svelte`'s `main`. The component
+         computes its canvas box from it — 1152x558 inside a 1280x900 device, 296x384 inside
+         320x720 — so a stage of any other width grades a box the product never renders. That
+         is also why the driver sizes the viewport to the DEVICE here, where `index.html`
+         beside this file sizes it to the measured canvas box instead. */
+      #stage {
+        width: min(100% - 3rem, 72rem);
+        margin: 0 auto;
+      }
+
+      @media (max-width: 24rem) {
+        #stage {
+          width: min(100% - 1.5rem, 72rem);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <script type="module" src="./app.svelte.ts"></script>
+  </body>
+</html>
