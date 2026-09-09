@@ -54,7 +54,7 @@ are this repo's deltas.
 must open `pass:` or `fail(low|med|high):`. Grading needs a sibling `<stem>.ids`. A seeded
 all-`unknown` skeleton exits 1 — that is what makes it a deliverable-first counter. The Units
 table admits `-` in the `flags` and `depends` columns only; every other column rejects it.
-Scratch-local encoding → port scheduled as a `.agent/spec.md` `Deferred` row.
+Scratch-local encoding → port scheduled as a `.agent/deferred.md` row.
 
 `.agent/review.md` is hand-maintained after its first shape; the committed ledger is the
 source, and a generator is re-derived only for a bulk reshape.

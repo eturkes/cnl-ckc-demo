@@ -123,4 +123,4 @@ read out of the vendored bag **at run time** through `verifyBag`.
   because the smoke rebuilds only when `dist/` is missing and otherwise serves the stale hashed
   asset — so that control proves the build path, never a `waitForSelector` timeout. The firing
   input this lane owes is a served `dist` copy stripped of the hashed pvm; it is a
-  `.agent/spec.md` `Deferred` row.
+  `.agent/deferred.md` row.

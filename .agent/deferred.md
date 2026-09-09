@@ -1,8 +1,11 @@
-# polish register
+# Deferral queue
 
-Off-spine improvements. Each entry carries the acceptance check that closes it and
-a `pri` — `high` = a defect reachable in the shipped product, `med` = a gate or
-evidence gap under a durable claim, `low` = a feature or a tidy-up.
+The queue `.agent/spec.md` `Deferred` points at: off-spine improvements, held out of the
+attached state because a queue only grows. Each entry carries the acceptance check that
+closes it and a `pri` — `high` = a defect reachable in the shipped product, `med` = a gate or
+evidence gap under a durable claim, `low` = a feature or a tidy-up. A row closes on its own
+acceptance check and leaves in that commit; the index at the foot collapses the `high` +
+`med` set to one line each.
 
 - **The Japanese face ships whole** — 2,654,740 B across two static weights, because a
   monolithic subset is the only delivery with zero tofu risk and no new build step. A
@@ -250,10 +253,15 @@ evidence gap under a durable claim, `low` = a feature or a tidy-up.
   claim the gate carries. Accept: the two tests pass 20 consecutive full-suite
   runs at the committed worker count, with the shared resource they contend on
   named in the fix. `pri` med.
+- **`smoke` + `browser:check` ship no firing input** — both are browser lanes outside
+  `pnpm gate`, and `.claude/rules/gate.md` `Firing inputs` carries them as its two open rows,
+  so each reports a count it has never proved it can refuse. Accept: each reddens on a
+  mutation its own lane runs — a pvm-stripped `dist` copy, a renamed woff2 — and joins that
+  table with the control that fired. `pri` med.
 
-## Deferred-row index — the 20 rows `.agent/spec.md` points here for
+## Index — one line per `high` + `med` row
 
-One line per row, defect and acceptance check. Full text is above in this file.
+Defect and acceptance check. Full text is above in this file; the `low` rows are prose only.
 
 | defect | accept |
 | --- | --- |
@@ -277,3 +285,11 @@ One line per row, defect and acceptance check. Full text is above in this file.
 | The `.claude/rules/` censuses have no mechanical owner | one script re-derives each from `kb/generated` + `dist`, naming mismatches |
 | Two tests time out under parallel execution | both pass 20 consecutive full-suite runs at the committed worker count |
 | 9 of u5's 26 combobox predicates rest on jsdom stubs | a Chromium test drives real input, reads the AX tree, runs axe |
+| `smoke` + `browser:check` ship no firing input | each reddens on a mutation its own lane runs, and joins gate.md `Firing inputs` |
+
+## Accepted-open
+
+Review rows ruled open rather than fixed. Each carries its acceptance check in
+`.agent/archive/review-expedited.md`; none is current scope.
+
+A1 A3 A4 A5 A6 A8 A9+ A10+ A11+ · S7 S9 S13+ · C1 C4u1 C4u4 C4u5 C6.

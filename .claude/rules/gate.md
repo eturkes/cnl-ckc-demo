@@ -80,7 +80,7 @@ to nothing. Each step's success line ends with the control that fired, so a gree
 `audit:check`, `format:check`, `lint`, `check` and `build` are configured third-party
 checkers, not purpose-built ones, and are absent from that table by rule rather than by
 omission. `pnpm smoke` and `pnpm browser:check` are the two open rows —
-`.agent/spec.md` `Deferred` carries them with their acceptance checks.
+`.agent/deferred.md` carries them as one row with its acceptance check.
 
 Out of the chain — each needs a real browser or two forced builds, and each reruns from
 committed state:
@@ -132,4 +132,4 @@ wrong with the tree. The decisive rerun follows `TaskStop`.
 
 A gate backing a durable claim must rerun from committed state. A scratch-local validator is
 a temporary encoding → record its regeneration path beside the gate invocation here, and
-schedule the port as a `.agent/spec.md` `Deferred` row.
+schedule the port as a `.agent/deferred.md` row.

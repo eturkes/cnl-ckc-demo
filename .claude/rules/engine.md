@@ -90,7 +90,7 @@ failures before it was wired.
   but must be recreated. In a browser it does not: a runaway `assertz` aborts the WASM runtime
   after ~12 s and reaches the client as `{code:'prolog', message:'Aborted(). Build with
   -sASSERTIONS for more info.'}`, never `limit:'heap'`, so the heap-triggered recreation never
-  runs there. Open `Deferred` row in `.agent/spec.md`.
+  runs there. Open `pri high` row in `.agent/deferred.md`.
 - `EngineClient.query` awaits that recreation on `limit:'heap'`, so a caller never sees a heap
   outcome before its replacement engine re-verified the contract. The wall-clock deadline
   fires its reset instead, because there the caller is already settled.

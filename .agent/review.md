@@ -9,7 +9,7 @@ Wave mechanics → `.claude/rules/waves.md`.
 Rows carry `| id | verdict | source | finding | evidence |`; a verdict opens `pass:` or
 `fail(low|med|high):`. A ruling holds until new evidence reverses it. Findings bind to the
 unit's acceptance contract in `.agent/contracts/`; anything outside it reports as a register
-entry and becomes a `.agent/spec.md` `Deferred` row or expires with the report.
+entry and becomes a `.agent/deferred.md` row or expires with the report.
 
 The expedited-surface ledger this one succeeds — 46 rows, 11 pass / 35 fail, and the four
 user rulings that opened the current unit set — is `.agent/archive/review-expedited.md`. The
