@@ -76,9 +76,25 @@ browser.
 - **`autounselectify: true`.** Cytoscape's built-in stylesheet paints anything `:selected`
   `#0169D9`, so a tap repainted a plain edge in the proof highlight's own register. Selection
   state is the app's alone, carried by the `.selected` and `.path` classes.
-- The canvas hardcodes light-theme hex and does not follow the theme tokens. It reads
-  acceptably dark; making it follow them means passing the theme through `mountGraphCanvas`,
-  which R6 pins.
+- **The canvas resolves every colour from an `src/app.css` token** (`--graph-*`, plus
+  `--action` for the selected node and `--surface-sunken`/`--surface-raised` for the canvas and
+  the proof-label pill), read with `getComputedStyle` on the container at mount and again from
+  a `MutationObserver` on `<html data-theme>`. Nothing on a canvas inherits, so reading is the
+  only way a token reaches it — and this keeps R6's `(container, onSelect)` signature intact,
+  which a theme parameter would have broken. A missing token is a mount failure, not a black
+  node: `SemanticGraph.svelte` then shows the HTML relation view.
+  - `tools/contrast.mjs` grades all of them in BOTH themes, and `graph:check`'s `palette` rule
+    grades the rendered value against the token, so a hardcoded hex reddens even though the
+    static table still passes.
+  - The dark theme **inverts the node** — light fill, dark label — because the selected node is
+    filled `--action`, which is light there. Mid-dark fills would leave that one node reading
+    backwards against every other.
+  - Base edges are **opaque**: `--graph-edge` clears 3:1 against the canvas as a colour, and a
+    faded stroke does not. De-emphasis lives in `.context` alone.
+  - The node border carries `--surface-sunken` — it is a GAP, not a line, keeping one node's
+    fill off its neighbour's label outline.
+  - The legend swatches in `SemanticGraph.svelte` read the same tokens, so legend and canvas
+    cannot drift.
 - The graph carries **0 self-edges of 20,964**, so `canvas.ts` filters none.
 
 ## Data shape

@@ -35,13 +35,19 @@ path into `node_modules`.
 ## Colour
 
 Role tokens: `--surface`, `--surface-raised`, `--surface-sunken`, `--text`, `--text-muted`,
-`--border`, `--action`, `--action-text`, `--warn`, `--focus-ring`. Every token must appear in
+`--border`, `--action`, `--action-text`, `--warn`, `--focus-ring`, plus the graph palette
+`--graph-{label,document,entity,event,operator,value,edge,path}`. Every token must appear in
 a declared contrast pair. `--border` must be at least `#8f8270` to clear 3:1 against
 `--surface`.
 
 `tools/contrast.mjs` grades a DECLARED pair table, not the DOM — jsdom has no canvas, so
 axe-core reports every `color-contrast` result as `incomplete`. It floors the ratio rather
 than rounding, and it fails when a colour token appears in no pair.
+
+The graph canvas draws its own text, so a node label takes NORMAL against its fill while the
+fill takes LARGE against the canvas. A pair graded here is only the graph's if the renderer
+paints that value — `graph:check`'s `palette` rule is what decides that half
+(`.claude/rules/graph.md`).
 
 ## Copy
 

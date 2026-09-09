@@ -227,6 +227,78 @@ const crossings = (segments: [Point, Point][]): number => {
  * comparison. A node the renderer has not measured yet reports its own data, which keeps a
  * culled node from reading as truncated; `labelsMeasured` is what says how much R7 covered.
  */
+/** `#rgb`, `#rrggbb` and the `rgb(...)` Cytoscape reports back, as one comparable triple. */
+const triple = (value: string): string => {
+  const hex = /^#([\da-f]{3}|[\da-f]{6})$/iu.exec(value.trim())?.[1];
+  if (hex !== undefined) {
+    const digits = hex.length === 3 ? hex.replace(/./gu, (d) => d + d) : hex;
+    return [0, 1, 2].map((i) => Number.parseInt(digits.slice(i * 2, i * 2 + 2), 16)).join(',');
+  }
+  // Cytoscape reports `rgb(r,g,b)` with integer channels, so integers are the whole grammar.
+  const channels = value.match(/\d+/gu);
+  if (channels === null) throw new Error(`unreadable colour ${value}`);
+  return channels.slice(0, 3).join(',');
+};
+
+/**
+ * Every canvas colour against the `src/app.css` token it must equal.
+ *
+ * This is what makes the graph the same surface as the page: `tools/contrast.mjs` decides the
+ * ratios of the token pairs in both themes, and a ratio it decided is only the graph's if the
+ * renderer actually paints that value. A hardcoded hex passes the static grader and reddens
+ * here.
+ */
+const paletteMismatches = (cy: CyLike): string[] => {
+  const token = (name: string): string => {
+    const value = getComputedStyle(stage).getPropertyValue(name).trim();
+    if (value === '') throw new Error(`token ${name} is undefined on the stage`);
+    return value;
+  };
+  const plain = cy.nodes().filter((node) => !node.hasClass('path') && !node.hasClass('selected'));
+  const kindToken = new Map([
+    ['document', '--graph-document'],
+    ['entity', '--graph-entity'],
+    ['event', '--graph-event'],
+    ['operator-context', '--graph-operator'],
+    ['value', '--graph-value'],
+  ]);
+  const out: string[] = [];
+  const check = (
+    where: string,
+    element: CyElement | undefined,
+    property: string,
+    name: string,
+  ): void => {
+    if (element === undefined) return;
+    const actual = element.style(property);
+    if (triple(actual) !== triple(token(name)))
+      out.push(`${where} ${property} is ${actual}, not ${name} ${token(name)}`);
+  };
+  for (const [kind, name] of kindToken) {
+    const node = plain.filter((candidate) => candidate.data('kind') === kind)[0];
+    check(`${kind} node`, node, 'background-color', name);
+    check(`${kind} node`, node, 'text-outline-color', name);
+    check(`${kind} node`, node, 'color', '--graph-label');
+    check(`${kind} node`, node, 'border-color', '--surface-sunken');
+  }
+  check(
+    'plain edge',
+    cy.edges().filter((edge) => !edge.hasClass('path'))[0],
+    'line-color',
+    '--graph-edge',
+  );
+  const pathNode = cy.nodes().filter((node) => node.hasClass('path') && !node.hasClass('selected'));
+  check('path node', pathNode[0], 'background-color', '--graph-path');
+  const pathEdge = cy.edges().filter((edge) => edge.hasClass('path'));
+  check('path edge', pathEdge[0], 'line-color', '--graph-path');
+  check('path edge', pathEdge[0], 'color', '--graph-path');
+  check('path edge', pathEdge[0], 'text-background-color', '--surface-raised');
+  const selected = cy.nodes().filter((node) => node.hasClass('selected'));
+  check('selected node', selected[0], 'background-color', '--action');
+  check('selected node', selected[0], 'border-color', '--graph-path');
+  return out;
+};
+
 const shownLabel = (node: CyNode): string =>
   (node._private.rscratch.labelWrapCachedLines ?? [node.data('label')])
     .join(' ')
@@ -257,6 +329,9 @@ export interface Reading {
   truncatedLabels: string[];
   labelsMeasured: number;
   wrapModes: string[];
+  /** u10 — rendered colour against the `src/app.css` token it must equal, per theme */
+  theme: 'light' | 'dark';
+  paletteMismatches: string[];
   /** context */
   labelOverlaps: number;
   crossings: number;
@@ -272,7 +347,9 @@ const api = {
   async render(view: string, theme: 'light' | 'dark'): Promise<Reading> {
     const fixture = fixtures.get(view);
     if (fixture === undefined) throw new Error(`unknown fixture ${view}`);
-    document.body.dataset.theme = theme;
+    // `src/app.css` binds the dark palette on `:root[data-theme]`, and `canvas.ts` re-reads it
+    // from a `MutationObserver` on that attribute. Setting it anywhere else styles nothing.
+    document.documentElement.dataset.theme = theme;
     selections = [];
     const started = performance.now();
     const settled = new Promise<void>((resolve) => {
@@ -371,12 +448,49 @@ const api = {
       truncatedLabels,
       labelsMeasured,
       wrapModes,
+      theme,
+      paletteMismatches: paletteMismatches(cy),
       labelOverlaps,
       crossings: crossings(segments),
       panWidths: (extent.x2 - extent.x1) / stage.clientWidth,
       panHeights: (extent.y2 - extent.y1) / stage.clientHeight,
       settleMs,
     };
+  },
+  /**
+   * u10: the theme toggle restyles a MOUNTED graph.
+   *
+   * Colours have to change, the palette has to stay consistent in the new theme, and no node
+   * may move — a remount would re-run the layout, which is what a reader would notice.
+   */
+  async themeFlip(): Promise<{
+    before: string;
+    after: string;
+    restored: string;
+    moved: number;
+    mismatches: number;
+  }> {
+    const cy = cyOf();
+    const probe = cy.nodes()[0];
+    if (probe === undefined) throw new Error('fixture has no node to read');
+    const root = document.documentElement;
+    const started = root.dataset.theme === 'dark' ? 'dark' : 'light';
+    const positions = cy.nodes().map((node) => node.renderedPosition());
+    const before = probe.style('background-color');
+    root.dataset.theme = started === 'dark' ? 'light' : 'dark';
+    await frame();
+    const after = probe.style('background-color');
+    const mismatches = paletteMismatches(cy).length;
+    root.dataset.theme = started;
+    await frame();
+    const moved = cy
+      .nodes()
+      .map((node) => node.renderedPosition())
+      .filter((point, index) => {
+        const was = positions[index];
+        return was === undefined || Math.hypot(was.x - point.x, was.y - point.y) > 0.5;
+      }).length;
+    return { before, after, restored: probe.style('background-color'), moved, mismatches };
   },
   /**
    * R4 positive control: `line-style` is a per-edge property the renderer honours.

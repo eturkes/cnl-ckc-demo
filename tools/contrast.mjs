@@ -47,6 +47,30 @@ const PAIRS = [
   { fg: '--focus-ring', bg: '--surface', min: LARGE, where: 'focus indicator on the page' },
   { fg: '--focus-ring', bg: '--surface-raised', min: LARGE, where: 'focus indicator on a field' },
   { fg: '--action-text', bg: '--action', min: LARGE, where: 'selected option text on its fill' },
+  // The graph canvas. A node label is small bold text on its own fill, so it takes NORMAL;
+  // the fill itself is a graphical object on the canvas and takes LARGE. Both themes are
+  // graded, which is what holds the dark palette to the same bar as the light one.
+  { fg: '--graph-label', bg: '--graph-document', min: NORMAL, where: 'label on a source node' },
+  { fg: '--graph-label', bg: '--graph-entity', min: NORMAL, where: 'label on a concept node' },
+  { fg: '--graph-label', bg: '--graph-event', min: NORMAL, where: 'label on an action node' },
+  { fg: '--graph-label', bg: '--graph-operator', min: NORMAL, where: 'label on a modality node' },
+  { fg: '--graph-label', bg: '--graph-value', min: NORMAL, where: 'label on an attribute node' },
+  { fg: '--graph-label', bg: '--graph-path', min: NORMAL, where: 'label on a proof-path node' },
+  { fg: '--graph-label', bg: '--action', min: NORMAL, where: 'label on the selected node' },
+  { fg: '--graph-document', bg: '--surface-sunken', min: LARGE, where: 'source node on canvas' },
+  { fg: '--graph-entity', bg: '--surface-sunken', min: LARGE, where: 'concept node on canvas' },
+  { fg: '--graph-event', bg: '--surface-sunken', min: LARGE, where: 'action node on canvas' },
+  { fg: '--graph-operator', bg: '--surface-sunken', min: LARGE, where: 'modality node on canvas' },
+  { fg: '--graph-value', bg: '--surface-sunken', min: LARGE, where: 'attribute node on canvas' },
+  { fg: '--graph-path', bg: '--surface-sunken', min: LARGE, where: 'the proof path on canvas' },
+  { fg: '--graph-edge', bg: '--surface-sunken', min: LARGE, where: 'relation strokes on canvas' },
+  { fg: '--action', bg: '--surface-sunken', min: LARGE, where: 'the selected node on canvas' },
+  {
+    fg: '--graph-path',
+    bg: '--surface-raised',
+    min: NORMAL,
+    where: 'proof edge label on its pill',
+  },
 ];
 
 /**

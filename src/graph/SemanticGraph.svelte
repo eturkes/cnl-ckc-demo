@@ -876,28 +876,30 @@
     content: '';
   }
 
+  /* Each swatch reads the same token `canvas.ts` paints the node with, so the legend cannot
+     drift from the canvas and both follow the theme. */
   .legend .primary-focus::before {
     box-sizing: border-box;
-    border: 2px solid #b34a21;
+    border: 2px solid var(--graph-path);
     border-radius: 50%;
-    background: #174f9e;
+    background: var(--action);
   }
 
   .legend .entity::before {
-    background: #176b68;
+    background: var(--graph-entity);
   }
 
   .legend .event::before {
-    background: #956019;
+    background: var(--graph-event);
   }
 
   .legend .value::before {
-    background: #5d6871;
+    background: var(--graph-value);
   }
 
   .legend .answer-path::before {
     height: 0.18rem;
-    background: #b34a21;
+    background: var(--graph-path);
   }
 
   .canvas-error,

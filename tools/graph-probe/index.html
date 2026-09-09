@@ -10,14 +10,13 @@
         height: 100%;
       }
       /* The shipped `.graph-shell .canvas` box is what the driver sizes the viewport to, so
-         the stage fills the viewport and every fit zoom here is the product's own. */
+         the stage fills the viewport and every fit zoom here is the product's own. The fill is
+         the product's own too — `.canvas-frame` is `--surface-sunken`, and the canvas reads
+         that token for its node borders. */
       #stage {
         width: 100%;
         height: 100vh;
-        background: #ffffff;
-      }
-      body[data-theme='dark'] #stage {
-        background: #181d23;
+        background: var(--surface-sunken);
       }
     </style>
   </head>

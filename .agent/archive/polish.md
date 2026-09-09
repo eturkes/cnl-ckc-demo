@@ -251,18 +251,7 @@ evidence gap under a durable claim, `low` = a feature or a tidy-up.
   runs at the committed worker count, with the shared resource they contend on
   named in the fix. `pri` med.
 
-- **The graph canvas hardcodes light-theme hex** — `src/graph/canvas.ts` names every colour
-  as a literal (`#fffdf8` labels, five node fills, `#b34a21` proof path, `#174f9e` selection)
-  while every other surface draws the theme tokens in `src/app.css`. Under the dark theme the
-  canvas still reads — node fills and white labels gain contrast against the darker page, and
-  the edge-label pill stays legible — but it is the one surface the toggle does not reach.
-  Following the tokens means passing the theme into `mountGraphCanvas`, whose signature
-  `.agent/contracts/m5u8.md` R6 pins, so it lands with u10's integration. Accept: every canvas
-  colour resolves from a token read at mount, a theme change restyles the mounted graph
-  without a remount, `pnpm graph:check` grades a settled label's contrast in BOTH themes, and
-  R6's seam census still passes. `pri` med.
-
-## Deferred-row index — the 21 rows `.agent/spec.md` points here for
+## Deferred-row index — the 20 rows `.agent/spec.md` points here for
 
 One line per row, defect and acceptance check. Full text is above in this file.
 
@@ -288,4 +277,3 @@ One line per row, defect and acceptance check. Full text is above in this file.
 | The `.claude/rules/` censuses have no mechanical owner | one script re-derives each from `kb/generated` + `dist`, naming mismatches |
 | Two tests time out under parallel execution | both pass 20 consecutive full-suite runs at the committed worker count |
 | 9 of u5's 26 combobox predicates rest on jsdom stubs | a Chromium test drives real input, reads the AX tree, runs axe |
-| The graph canvas hardcodes light-theme hex | colours resolve from tokens at mount, a toggle restyles without a remount, both themes graded |

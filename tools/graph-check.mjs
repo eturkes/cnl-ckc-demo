@@ -204,12 +204,32 @@ try {
         'R7',
         `${at}: the renderer measured no label, so nothing was graded`,
       );
+      require_(row.paletteMismatches.length === 0, 'palette', `${at}: ${row.paletteMismatches[0]}`);
       readings.push({ viewport: viewport.name, ...row });
       if (shots === undefined) continue;
       await page.screenshot({
         path: join(shots, `${view.replace(/[^a-z0-9-]+/giu, '_')}-${viewport.name}.png`),
       });
     }
+    const flip =
+      /** @type {{ before: string, after: string, restored: string, moved: number, mismatches: number }} */ (
+        await page.evaluate('window.graphProbe.themeFlip()')
+      );
+    require_(
+      flip.after !== flip.before && flip.restored === flip.before,
+      'theme',
+      `${viewport.name}: a theme flip read ${flip.before} → ${flip.after} → ${flip.restored}`,
+    );
+    require_(
+      flip.mismatches === 0,
+      'theme',
+      `${viewport.name}: ${String(flip.mismatches)} colours off-token in the flipped theme`,
+    );
+    require_(
+      flip.moved === 0,
+      'theme',
+      `${viewport.name}: a theme flip moved ${String(flip.moved)} nodes, so it remounted`,
+    );
     const dash = /** @type {{ before: number, during: number, after: number }} */ (
       await page.evaluate('window.graphProbe.dashControl()')
     );
@@ -249,7 +269,7 @@ if (violations.length > 0) {
 }
 
 console.log(
-  `graph-check: R1-R7 hold over ${String(readings.length)} rendered views — ` +
+  `graph-check: R1-R7 and the palette hold over ${String(readings.length)} rendered views — ` +
     `${String(total('parallelSeparated'))}/${String(total('parallelPairs'))} parallel pairs separated, ` +
     `${String(total('labelsMeasured'))} node labels drawn whole, ` +
     `labels ${(number('labelPx')[0] ?? 0).toFixed(2)}-${(number('labelPx').at(-1) ?? 0).toFixed(2)} px ` +

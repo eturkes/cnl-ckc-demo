@@ -90,9 +90,13 @@ u3→u7 (answer/proof) ∥ u8→u13 (graph) → u14→u15. Full `Accept:` + `Dep
   156 crossings against fcose's 56, so u8's spike never measured the shipped surface.
 
 **Open:**
-- **u10 graph integration** — `SemanticGraph.svelte` on u9's adapter, keeping the lazy HTML
-  fallback and passing the theme through the mount (polish register). Accept: every
-  interaction, the theme toggle and the failure fallback pass under `pnpm graph:check`.
+- **u10 graph integration** — theme half SHIPPED (canvas reads `--graph-*` tokens;
+  `graph:check` gained `palette` + `theme`; law → `.claude/rules/graph.md`). REMAINING: mount
+  `SemanticGraph.svelte` in the probe harness (`app.html` + `app.ts`, svelte plugin + `@kb`
+  alias in the probe vite config) and grade search, path, expand, recenter, canvas tap and node
+  index, plus both fallbacks — a bad `graphUrl` (load alert + retry) and a palette set to
+  `initial` before mount (`canvasError`, HTML relations intact). Accept: every interaction and
+  both fallbacks pass under `pnpm graph:check`.
 - **u11 scoped edge records** — `tools/kb/graph.mjs` emits versioned edge→scope records from
   the clause AST. Accept: 156 negation / 857 `should` contexts + 1,263 operators represented
   inside +182,583 B gzip.
@@ -110,7 +114,7 @@ u3→u7 (answer/proof) ∥ u8→u13 (graph) → u14→u15. Full `Accept:` + `Dep
 
 ## Defects
 
-21 rows, each with its acceptance check, indexed in `.agent/archive/polish.md` beside
+20 rows, each with its acceptance check, indexed in `.agent/archive/polish.md` beside
 20 further `low` rows. User-ruled: all of them carry into MAINTAIN as requests. The one
 graded **high** — a WASM abort strands the worker; accept when abort is its own terminal
 state, the worker is recreated, and the next query reports 337 documents.

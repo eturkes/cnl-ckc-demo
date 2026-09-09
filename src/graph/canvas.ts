@@ -16,14 +16,54 @@ export interface GraphCanvas {
   destroy(): void;
 }
 
+/**
+ * Every colour the canvas paints, named as an `src/app.css` token.
+ *
+ * The graph is drawn on a `<canvas>`, so a token reaches it only by being read — nothing here
+ * inherits. Reading them per mount and again on each theme change is what makes the canvas
+ * the same surface as the rest of the page; `tools/contrast.mjs` grades every one of these in
+ * BOTH themes, so a colour chosen here is a colour the gate has decided.
+ */
+const PALETTE = [
+  '--graph-label',
+  '--graph-document',
+  '--graph-entity',
+  '--graph-event',
+  '--graph-operator',
+  '--graph-value',
+  '--graph-edge',
+  '--graph-path',
+  '--action',
+  '--surface-sunken',
+  '--surface-raised',
+] as const;
+
+type Palette = Record<(typeof PALETTE)[number], string>;
+
+/**
+ * A missing token is a mount failure, never a black node: `SemanticGraph.svelte` catches it
+ * and keeps the HTML relation view, which carries the same relations in text.
+ */
+const paletteOf = (container: HTMLElement): Palette => {
+  const computed = getComputedStyle(container);
+  const missing: string[] = [];
+  const entries = PALETTE.map((token) => {
+    const value = computed.getPropertyValue(token).trim();
+    if (value === '') missing.push(token);
+    return [token, value] as const;
+  });
+  if (missing.length > 0) throw new Error(`graph palette is undefined: ${missing.join(', ')}`);
+  return Object.fromEntries(entries) as Palette;
+};
+
 const NODE_STYLE: Readonly<
-  Record<SemanticGraphNodeKind, { shape: cytoscape.Css.NodeShape; color: string }>
+  Record<SemanticGraphNodeKind, { shape: cytoscape.Css.NodeShape; token: keyof Palette }>
 > = {
-  document: { shape: 'round-rectangle', color: '#245c73' },
-  entity: { shape: 'ellipse', color: '#176b68' },
-  event: { shape: 'diamond', color: '#956019' },
-  'operator-context': { shape: 'hexagon', color: '#75558a' },
-  value: { shape: 'round-tag', color: '#5d6871' },
+  document: { shape: 'round-rectangle', token: '--graph-document' },
+  entity: { shape: 'ellipse', token: '--graph-entity' },
+  event: { shape: 'diamond', token: '--graph-event' },
+  'operator-context': { shape: 'hexagon', token: '--graph-operator' },
+  value: { shape: 'round-tag', token: '--graph-value' },
 };
 
 /** Base node label size. The fit floor below is expressed against it. */
@@ -89,14 +129,16 @@ const elementsOf = (
   ];
 };
 
-const stylesheet = (): cytoscape.StylesheetJson => [
+const stylesheet = (palette: Palette): cytoscape.StylesheetJson => [
   {
     selector: 'node',
     style: {
       label: 'data(label)',
-      color: '#fffdf8',
-      'background-color': '#176b68',
-      'border-color': '#fffdf8',
+      color: palette['--graph-label'],
+      'background-color': palette['--graph-entity'],
+      // The border is a GAP, not a line: it carries the canvas colour out around the node so
+      // one node's fill never touches its neighbour's label outline.
+      'border-color': palette['--surface-sunken'],
       'border-width': 1,
       'font-family': 'Atkinson Hyperlegible Next, sans-serif',
       'font-size': LABEL_PX,
@@ -109,7 +151,7 @@ const stylesheet = (): cytoscape.StylesheetJson => [
       // character at each end with nothing on screen to say so. The outline carries the
       // node's own colour out under the overflow, so the whole term stays legible.
       'text-outline-width': 2,
-      'text-outline-color': '#176b68',
+      'text-outline-color': palette['--graph-entity'],
       'text-outline-opacity': 1,
       // Wrap, never `ellipsis`: at 96 px the ellipsis rendered `category B recommendation` as
       // `gory B reco`, and a truncated concept name is unreadable as a map. `m5u8.md` R7.
@@ -123,22 +165,24 @@ const stylesheet = (): cytoscape.StylesheetJson => [
     selector: `node[kind = "${kind}"]`,
     style: {
       shape: style.shape,
-      'background-color': style.color,
-      'text-outline-color': style.color,
+      'background-color': palette[style.token],
+      'text-outline-color': palette[style.token],
     },
   })),
   {
     selector: 'edge',
     style: {
       width: 1,
-      'line-color': '#7f8b98',
-      'target-arrow-color': '#7f8b98',
+      'line-color': palette['--graph-edge'],
+      'target-arrow-color': palette['--graph-edge'],
       'target-arrow-shape': 'triangle',
       // Bezier is what separates parallel edges — Cytoscape offsets each control point by the
       // edge's index within its node pair. `straight` collapsed all of them onto one line and
       // rendered opposite-polarity relations as a single stroke. `m5u8.md` R1.
       'curve-style': 'bezier',
-      opacity: 0.38,
+      // Opaque, because `--graph-edge` clears 3:1 against the canvas as a colour and a
+      // faded stroke does not. `.context` below is where de-emphasis lives.
+      opacity: 1,
     },
   },
   {
@@ -156,10 +200,10 @@ const stylesheet = (): cytoscape.StylesheetJson => [
   {
     selector: '.path',
     style: {
-      'background-color': '#b34a21',
-      'line-color': '#b34a21',
-      'target-arrow-color': '#b34a21',
-      'text-outline-color': '#b34a21',
+      'background-color': palette['--graph-path'],
+      'line-color': palette['--graph-path'],
+      'target-arrow-color': palette['--graph-path'],
+      'text-outline-color': palette['--graph-path'],
       opacity: 1,
       width: 3,
       'z-index': 8,
@@ -178,11 +222,11 @@ const stylesheet = (): cytoscape.StylesheetJson => [
     selector: 'edge.path',
     style: {
       label: 'data(label)',
-      color: '#6f2b13',
+      color: palette['--graph-path'],
       'font-family': 'Atkinson Hyperlegible Next, sans-serif',
       'font-size': 9,
       'font-weight': 700,
-      'text-background-color': '#fffdf8',
+      'text-background-color': palette['--surface-raised'],
       'text-background-opacity': 0.9,
       'text-background-padding': '2px',
       'text-rotation': 'autorotate',
@@ -191,9 +235,9 @@ const stylesheet = (): cytoscape.StylesheetJson => [
   {
     selector: 'node.selected',
     style: {
-      'background-color': '#174f9e',
-      'border-color': '#d05a2a',
-      'text-outline-color': '#174f9e',
+      'background-color': palette['--action'],
+      'border-color': palette['--graph-path'],
+      'text-outline-color': palette['--action'],
       'border-width': 5,
       'font-size': 13,
       height: 48,
@@ -218,7 +262,7 @@ export const mountGraphCanvas = async (
   const cy = cytoscapeFactory({
     container,
     elements: [],
-    style: stylesheet(),
+    style: stylesheet(paletteOf(container)),
     minZoom: 0.2,
     maxZoom: 3,
     // Cytoscape's built-in stylesheet paints anything `:selected` #0169D9, and a tap selects
@@ -235,6 +279,16 @@ export const mountGraphCanvas = async (
     cy.resize();
   });
   resize.observe(container);
+
+  // The theme toggle rebinds the tokens on `<html>`, and nothing on a canvas inherits, so the
+  // palette is re-read and the stylesheet replaced in place. Positions, zoom and selection all
+  // survive, which is what keeps a toggle from re-running the layout.
+  const theme = new MutationObserver(() => {
+    cy.style()
+      .fromJson(stylesheet(paletteOf(container)))
+      .update();
+  });
+  theme.observe(document.documentElement, { attributeFilter: ['data-theme'] });
 
   /** Fit `eles`, then hold the floor by panning `focus` into view instead of shrinking. */
   const fitFloored = (
@@ -302,6 +356,7 @@ export const mountGraphCanvas = async (
     },
     destroy() {
       resize.disconnect();
+      theme.disconnect();
       cy.destroy();
     },
   };

@@ -136,6 +136,20 @@
   --warn: #873b19;
   --focus-ring: #171b21;
 
+  /* The graph is painted on a `<canvas>`, so `src/graph/canvas.ts` resolves these
+   * through `getComputedStyle` on its container instead of inheriting them. The
+   * selected node is filled `--action` and the canvas is `--surface-sunken`, so
+   * those two carry the graph as well and need no graph-specific twin.
+   */
+  --graph-label: #ffffff;
+  --graph-document: #245c73;
+  --graph-entity: #176b68;
+  --graph-event: #956019;
+  --graph-operator: #75558a;
+  --graph-value: #5d6871;
+  --graph-edge: #78838f;
+  --graph-path: #b34a21;
+
   /* BIZ UDPGothic sits after each latin face, never before: its `unicode-range`
      already excludes latin, and stack order is what keeps latin rendering in the
      face that was chosen for it. */
@@ -159,6 +173,19 @@
   --action-text: #102443;
   --warn: #efa47e;
   --focus-ring: #f2f4f7;
+
+  /* The node inverts here — light fill, dark label — because the selected node is
+   * filled `--action`, which is itself light in this theme. Mid-dark fills would
+   * leave that one node reading backwards against every other.
+   */
+  --graph-label: #101820;
+  --graph-document: #4996b5;
+  --graph-entity: #309b97;
+  --graph-event: #bb8031;
+  --graph-operator: #9c84ac;
+  --graph-value: #848e96;
+  --graph-edge: #5c6672;
+  --graph-path: #cf7552;
 
   color-scheme: dark;
 }
