@@ -29,8 +29,10 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   failing on the bare KB is CORRECT. Domain law → `.claude/rules/proof.md`.
 - **Graph polarity = edge state.** Concept-first projection stays; negation + modality ride
   the edges; no `operator-context` node returns to the concept view.
-- **Renderer swap is in scope** — Cytoscape → vis-network on map legibility, spike first (u8).
-  Seam = `src/graph/canvas.ts`, 6.8% of the graph surface, one import; `model.ts` has none.
+- **Renderer stays Cytoscape** — u8 measured vis-network at half the label size, labels
+  suppressed on the densest view, 12 s of layout there; every legibility defect is a Cytoscape
+  style property. Fit clamps to a zoom FLOOR (pan below it) and node labels WRAP, never
+  ellipsis. Ruling + edge-view contract → `.claude/rules/graph.md`, `.agent/contracts/m5u8.md`.
 - **The graph's look is open to change.** Every other accepted surface — answer panel, ladder,
   combobox, theme, type, copy layout — stays accepted; a change forcing a visual difference
   there stops and asks.
@@ -53,45 +55,38 @@ renderer.
 
 u3→u7 (answer/proof) ∥ u8→u13 (graph) → u14→u15. Full `Accept:` + `Depends` → archive.
 
-- **u3 runtime assembly** — **DONE**. `.agent/contracts/m5u3.md`; suite =
-  `tests/clinical-answer-live.test.ts`, 5 cases. `clinical_advice/3` = 1 static derivation
-  rule over `clinical_derive/4`, 0 answer facts. 12/12 answer terms + source ids `==` u1's
-  oracle. A6 found A10: `findall/3` alone shipped a truncated answer, so the rule counts
-  gates and demands an equal derivation count — answers are all-or-nothing.
-- **u4 typed proof** — **DONE**. `.agent/contracts/m5u4.md`; suite =
-  `tests/clinical-proof-live.test.ts`, 7 cases through the production RPC.
-  `clinical_advice/3` projects `/4`, whose 4th arg is the proof, so answer and proof are one
-  derivation; `clinical_advice_source/4` + `advice_nodes/2` are gone. `ProofStep` =
-  clause|assumption|negation. Census → `.claude/rules/proof.md`.
-- **u5 premise display** — **DONE**. `.agent/contracts/m5u5.md` (census included); suite =
-  3 cases in `tests/provenance-ladder.dom.test.ts`. Dedup is per PROOF: 3,930 leaves → the
-  document's own 4–131 premises, shown inside the existing `Live Prolog proof` rung with a
-  hypothetical badge and no line; the one NAF goal gets its own badge. Graph focus and the
-  clause list stay clause-only; the `<ol>` still has six rungs.
-- **u6 legacy export lane** — **DONE**. `.agent/contracts/m5u6.md`; lane =
-  `tools/kb/exports.mjs` + preflight step `kb:export-check` + 4 cases in
-  `tests/legacy-export-lane.test.ts`. `EXPORTED` declares the 4 ids and refuses a divergent
-  bag by name. The live `writeq` of the WHOLE `'$guideline_answers'` envelope —
-  `query_sha256` recomputed as the query file's own digest — matches all four committed
-  oracles byte for byte; erasing the one `category-A-recommendation` entity line reddens
-  category-A alone. Forced `kb:build` → byte-identical pvm/qlf/manifest. Design →
-  `.claude/rules/kb-build.md`, whose stale `## Question catalog` text this replaces.
-- **u7 binding-check inventory** — **DONE**. `.agent/contracts/m5u7.md`, 12 predicates + the
-  C2 disposition (all five classes restored, none by rationale).
-  `tests/clinical-binding.test.ts` perturbs `guideline_*` three compiled ways: an additive
-  overlay adds one solution to the live export statement; one erased cited clause drops
-  exactly its document and its proof; a one-line source shift moves every proof line by +1 and
-  leaves all 12 answers identical. `tools/binding-check.mjs` runs the suite once and requires
-  29 named cases across 10 suites — it REPLACES `pnpm test` in the gate; controls rc 1 for a
-  deleted suite, a renamed case and a skipped one. `tools/answer-oracle.mjs` gives `smoke` and
-  `browser:check` one bag-derived expectation, and `browser:check` now grades the rendered
-  canonical answer byte for byte in BOTH locales. `pnpm binding:replay` shows the erasure is
-  invisible at `a944fca` and drops one document now.
-- **u8 renderer spike + ruling** — parallel-edge separation, labels at the Cytoscape fit zoom
-  (5.03 / 2.19 px), `selectNodes` isolation, dashes, bundle delta, three-arm layout. Accept: a
-  measured verdict per capability; renderer + edge-view contract committed.
-- **u9 renderer adapter** — replace `canvas.ts` behind u8's contract. Accept: distinct edges
-  stay distinguishable and selection never fabricates proof highlight.
+**DONE** — contract + suite each; detail → `.agent/contracts/`, `.claude/rules/`.
+
+- **u3** `m5u3.md` · `clinical-answer-live` 5 cases. `clinical_advice/3` = 1 static derivation
+  rule over `clinical_derive/4`, 0 answer facts; 12/12 terms + source ids `==` u1's oracle.
+  `findall/3` alone shipped a truncated answer → the rule counts gates and demands an equal
+  derivation count, so answers are all-or-nothing (A10).
+- **u4** `m5u4.md` · `clinical-proof-live` 7 cases through the production RPC.
+  `clinical_advice/3` projects `/4`, whose 4th arg is the proof ⇒ answer and proof are ONE
+  derivation; `clinical_advice_source/4` + `advice_nodes/2` gone. `ProofStep` =
+  clause|assumption|negation.
+- **u5** `m5u5.md` · 3 cases in `provenance-ladder.dom`. Dedup is per PROOF: 3,930 leaves →
+  the document's own 4–131 premises, inside the existing `Live Prolog proof` rung with a
+  hypothetical badge and no line; the one NAF goal gets its own. Six rungs unchanged.
+- **u6** `m5u6.md` · `tools/kb/exports.mjs` + `kb:export-check` + 4 cases in
+  `legacy-export-lane`. `EXPORTED` declares the 4 ids and refuses a divergent bag by name; the
+  live `writeq` of the WHOLE `'$guideline_answers'` envelope matches all four committed
+  oracles byte for byte; erasing one `category-A-recommendation` entity line reddens
+  category-A alone.
+- **u7** `m5u7.md`, 12 predicates + the C2 disposition (five classes restored, none by
+  rationale). `clinical-binding` perturbs `guideline_*` three compiled ways: an additive
+  overlay, one erased cited clause (drops exactly its document + proof), a one-line shift
+  (+1 on every proof line, 12 answers identical). `tools/binding-check.mjs` requires 29 named
+  cases across 10 suites and REPLACES `pnpm test` in the gate. `tools/answer-oracle.mjs` gives
+  `smoke` + `browser:check` one bag-derived expectation, graded byte for byte in BOTH locales.
+  `pnpm binding:replay` shows the erasure invisible at `a944fca`, dropping one document now.
+- **u8** `m5u8.md`, 11 predicates. Four arms × 14 fixtures × 2 viewports at the measured
+  CANVAS box (1152×558 / 296×384 — device-size numbers overstate by ~1.4×). vis-network
+  rejected; edge-view contract R1–R7 is what u9–u13 decide against.
+
+**Open:**
+- **u9 renderer restyle** — `canvas.ts` to u8's contract: bezier, tuned fcose, wrapped labels,
+  zoom floor. Accept: R1–R7 hold on every u8 fixture; selection never fabricates highlight.
 - **u10 graph integration** — `SemanticGraph.svelte`, keeping the lazy HTML fallback. Accept:
   every interaction and the failure fallback pass under a committed browser probe.
 - **u11 scoped edge records** — `tools/kb/graph.mjs` emits versioned edge→scope records from

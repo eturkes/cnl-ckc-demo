@@ -26,16 +26,29 @@ canvas-coupled. Keep that adapter shape — it is what makes a renderer swap che
 
 **The stale dependency is the layout engine, not the renderer.** `cytoscape-fcose` 2.2.0 ships
 no types (hence `src/graph/cytoscape-fcose.d.ts`); `cytoscape` core is current, MIT, zero
-dependencies. Poor map legibility is therefore as likely a layout problem as a renderer
-problem → any renderer evaluation must carry a tuned-fcose arm and an alternate-Cytoscape
--layout arm, or it is not a comparison. Any legibility claim must be measured at the SAME fit
-zoom as the Cytoscape baseline — **5.03 px desktop / 2.19 px mobile**.
+dependencies.
 
-`vis-network` ships its own types and zero runtime deps but SIX peers (`@egjs/hammerjs`,
-`component-emitter`, `keycharm`, `uuid`, `vis-data`, `vis-util`). Three capabilities stay
-UNVERIFIED and are mandatory spike checks: automatic parallel-edge separation (docs expose
-only manual `curvedCW`/`curvedCCW`/`roundness`); label visibility under `drawThreshold`; and
-`selectNodes` defaulting to `highlightEdges`, which collides with the proof highlight.
+**Renderer ruling (user, binding): Cytoscape stays; `vis-network` is rejected.** The u8 spike
+measured it at half the label size at both viewports, with labels suppressed outright on the
+densest view by `scaling.label.drawThreshold` and 10.2–12.3 s of layout there against
+Cytoscape's 146–224 ms. Every legibility defect the swap was proposed to cure is Cytoscape-
+side: `curve-style: 'straight'` separates 0 of 9 parallel pairs where `'bezier'` separates
+9 of 9, and `text-max-width: 96px` ellipsis renders `category-B-recommendation` as
+`gory B reco`. Measurements, the five capability verdicts and the renderer-neutral edge-view
+contract R1–R7 are in `.agent/contracts/m5u8.md`; **that contract is what u9–u13 decide
+against.** Do not re-open the renderer question without new measurement.
+
+**Measure at the CANVAS box, never the device size.** `.graph-shell .canvas` is **1152×558**
+inside a 1280×900 viewport and **296×384** inside 320×720. Any legibility number taken at the
+device size overstates it by ~1.34–1.42×; the retired `5.03 px / 2.19 px` baseline was
+measured that way and is void. `labelPx = 10 × zoom` exactly — the base node `font-size` is 10.
+
+**Fit is clamped to a zoom floor (user, binding), so fit-zoom label size is no longer a
+layout-selection metric.** Below the floor the graph pans instead of shrinking. What decides
+a layout is overlaps, crossings and layout cost — where tuned fcose (`quality:'proof'`,
+nodeRepulsion 24000, idealEdgeLength 150, nodeSeparation 180) beats the shipped params 32 vs
+103 overlaps on the bounded worst case at equal cost. Node labels **wrap**; they must never
+ellipsis-truncate.
 
 **A passing DOM suite proves nothing about rendered labels.**
 `tests/graph-semantics.review.test.ts` asserts `model.ts` output and
