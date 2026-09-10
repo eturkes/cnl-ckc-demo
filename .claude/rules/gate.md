@@ -10,6 +10,13 @@ binding:check → build`
 (checked files, tests, modules, copy strings, contrast pairs) move on almost every commit →
 **rerun the gate rather than quoting a total**; a durable exact total re-stales itself.
 
+**`pnpm gate` green is not `release:check` green.** A report of a gate-only run names
+`kb:reproduce`, `smoke`, `browser:check` and `graph:check` as not-run, by name — the four
+`release:check` adds — and `binding:replay`, which is out of both. A step that a diff cannot
+reach is still reported that way (`a0d43e2` names `pnpm gate` itself not-run, with the reason
+each step misses the edited files). `none` is the sentinel when nothing was skipped, which is
+what keeps an omitted category distinguishable from an empty one.
+
 Step semantics a reader cannot get from the script name:
 
 - `audit:check` = `pnpm audit --audit-level=moderate`, live against the registry advisory
@@ -61,6 +68,12 @@ requires the refusal to NAME what was broken, and exits 1 when the broken copy g
 Breaking the real input rather than grading a synthetic fixture is what also catches the check
 that silently stopped reading — an empty glob, a renamed region, a declared table that parsed
 to nothing. Each step's success line ends with the control that fired, so a green run says so.
+
+**The row a grader change edits in the table below is that change's record of the ORIGINAL
+grader's firing.** That is how the approval clause lands here: this repo's graders are the
+declared tables, allowlists and pinned surfaces those rows name, so widening an allowlist,
+raising a timeout or dropping a declared row belongs in its own approved unit, never as a side
+effect of the unit whose grader it loosens.
 
 | step | broken input | how it runs |
 |---|---|---|

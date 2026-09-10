@@ -152,6 +152,11 @@ precomputed is left for a proof request to read back — `clinical_advice_source
 
 ## Binding a test to real execution
 
+`CLAUDE.md` `Engineering` verification integrity in domain form, and the one surface where the
+demo-tier waiver does not reach it (`.claude/rules/stack.md`). A returned fixture value is a
+weak check elsewhere and the non-negotiable itself breaking here, which is why this surface
+gets an overlay probe rather than an assertion.
+
 Anti-hard-coding recipe: vitest node project, one non-parallel worker, real saved image,
 inject a PID-unique overlay clause, assert the answer changes, import no answer fixture.
 

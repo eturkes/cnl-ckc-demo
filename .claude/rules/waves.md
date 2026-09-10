@@ -37,6 +37,17 @@ are this repo's deltas.
   record of who did the work: `.scratch/agents/` is gitignored and a `wt/<name>` branch
   outlives the roster that named it, so `git log --grep='^dispatch:'` is the census surface.
   Trailers start at `2592828`; every commit from there on carries one.
+- **A check ships with its red witness in the unit's acceptance row, cited from the commit
+  body.** The form is already in the tree: `19/20 RED at base `22053ef``, `5/9 RED at base
+  `e71486e``, each beside the command that reproduces it — `git show <sha>:<producer> >
+  <producer> && pnpm kb:build && npx vitest run <suite>`
+  (`.agent/archive/contracts/m5u1.md:232`, `m5u2.md:216`). A base-GREEN case is declared in
+  that same row with its reason, never manufactured. Two shapes satisfy the revision half
+  without a `git show`: a witness that stays inside the run, where the run IS the revision
+  (`engine:check` under `ENGINE_CHECK_CONTROL`), and a differential that names its own arms
+  (`pnpm binding:replay HEAD`). The residue this closes is the hand run written down —
+  `8280034`'s `C7 8 times by hand, reverted` names no revision and no command, so nobody can
+  read it back. The contract is the citable record; `.scratch/` is gitignored.
 - **A path outside the teammate's own tree must be ABSOLUTE in the brief** — reports, roster
   and every other `.scratch/` target. Global names files repo-relative, which resolves inside
   the worktree, while `.scratch/` sits in the primary tree; MAIN's own cwd also persists

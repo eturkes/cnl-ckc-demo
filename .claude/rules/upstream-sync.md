@@ -20,11 +20,14 @@ and `git -C ~/agents log -- claude/CLAUDE.project.md` says what each refresh mov
 - **`.claude/rules/` is the refresh-safe carrier.** Nothing durable belongs in `CLAUDE.md`
   itself. Bare files (`gate`, `stack`, `waves`) load at session start; `paths:` files —
   this one included — load on first touch of a matching file.
-- After a refresh, read `git diff HEAD -- CLAUDE.md` before committing. Removed lines are the
-  question: repo law that needs a rule file, or template law that moved to the global
-  `CLAUDE.md`. The second obligates a `.claude/rules/` pass — a project file that restated
-  the moved text now duplicates it, and one that carried an exception to it now reads as a
-  contradiction. Project docs cite the global bullet and add bindings only.
+- After a refresh, read `git diff HEAD -- CLAUDE.md` before committing. **Both directions
+  obligate a `.claude/rules/` pass**, and the added-line direction obligates a census too.
+  A REMOVED line is repo law that needs a rule file, or template law that moved to the global
+  `CLAUDE.md`: a project file that restated the moved text now duplicates it, and one that
+  carried an exception to it now reads as a contradiction. An ADDED line is an obligation the
+  tree has never been measured against — a rule file that permits what it now forbids
+  contradicts it, the practice it names needs a binding here, and the corpus needs a sweep for
+  where it already breaks. Project docs cite the bullet and add bindings only.
 
 ## State files
 

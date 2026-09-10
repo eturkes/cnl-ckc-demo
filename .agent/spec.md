@@ -38,6 +38,11 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   there stops and asks.
 - **The expedited surfaces get redeveloped in place.** The reviewed spine + the shipped
   Japanese interface stay.
+- **The demo-tier waiver reaches verification integrity.** Off the answer path a thin check,
+  or one that cannot refuse a wrong input, is a demo-tier choice rather than a defect;
+  `CLAUDE.md` `Engineering` verification integrity binds where the answer path runs, and there
+  it binds whole. Strengthening a check elsewhere is scheduled work — u10c is the first such
+  unit. Report honesty is unwaived. Binding → `.claude/rules/stack.md`.
 - **Security lane.** Live `pnpm audit` in the gate, no allowlist; secretlint pinned `^12` so
   Node stays 20; static analysis = ESLint security rules only, no CodeQL/Semgrep; the
   `Deferred` defects stay deferred into MAINTAIN. Wiring → `.claude/rules/gate.md`.
@@ -51,16 +56,40 @@ renderer.
 
 # Deferred
 
-Queue = `.agent/deferred.md` — 47 rows, acceptance check each, plus the accepted-open review
+Queue = `.agent/deferred.md` — 48 rows, acceptance check each, plus the accepted-open review
 ids, whose checks stay in `.agent/archive/review-expedited.md`. The defects are user-ruled
 into MAINTAIN and the gate's open firing-input row sits beside them; nothing there blocks the
-spine below.
+spine below. The verification-integrity census raised four rows and the user promoted three
+into the spine below, leaving one queued.
 
 ## Units — the remaining IMPLEMENT path
 
-u11→u13 finish the graph; u14→u15 then close the phase over both spines. Full `Accept:` +
-`Depends` → archive; u3–u10 closed, contract each in `.agent/contracts/`, close summaries in
-`.agent/archive/units-m5.md`.
+u10b→u10c clear the verification-integrity census first; u11→u13 then finish the graph, and
+u14→u15 close the phase over both spines. Full `Accept:` + `Depends` → archive; u3–u10 closed,
+contract each in `.agent/contracts/`, close summaries in `.agent/archive/units-m5.md`.
+
+**From u11 on, every unit contract carries its red witness** — `N/M RED at base <sha>` plus
+the command that reproduces it, the form `.agent/archive/contracts/m5u1.md:232` and
+`m5u2.md:216` already use. Today 1 of 8 live contracts and 7 of 103 commit bodies name a
+revision. Form + the two shapes that satisfy it without a `git show` →
+`.claude/rules/waves.md`.
+
+- **u10b terminal state for a rejected `ask()`** — `DemoController.svelte.ts:224-226` retires
+  the active run and rethrows, leaving `{ kind: 'running' }` set at `:201`, while
+  `App.svelte:151` `void demo.run()` discards the rejection; `EngineClient.query` throws on a
+  disposed client (`client.ts:114`). The UI stays busy and Cancel becomes a no-op. Accept: a
+  rejected `ask()` settles into a terminal state a dom case reads, that case RED on the
+  unfixed revision with its revision + command in the contract.
+- **u10c empty-table guards + the two unowned check thresholds** — five declared tables grade
+  nothing when empty and the step still prints its count: `binding-check.mjs:37` `REQUIRED`,
+  `engine-check.mjs:61` `CONTROLS` (`:283` prints `${CONTROLS.length} controls fired`),
+  `copy-check.mjs:25` `FILLER`, `secret-check.mjs:54`'s `['**/*']` tree glob,
+  `kb/check.mjs:60`'s `return []` for a missing `SCAN_ROOTS` entry. Each existing firing input
+  builds its OWN synthetic table, so none proves the real one non-empty;
+  `engine-check.mjs:151` `check(files.length > 0, …)` is the pattern. Accept: emptying each of
+  the five gives rc 1 naming the table, the guards join `gate.md` `Firing inputs`, and
+  `tools/kb/clinical.mjs:102` `PREPOSITIONS` + `graph-probe/probe.ts:134` `SEPARATION_PX` each
+  name an owner whose search returns rc 0.
 
 - **u11 scoped edge records** — `tools/kb/graph.mjs` emits versioned edge→scope records from
   the clause AST. Accept: 156 negation / 857 `should` contexts + 1,263 operators represented

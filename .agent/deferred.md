@@ -267,6 +267,15 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   reads `2592828..HEAD`, fails on any commit whose body has no
   `dispatch:` line, and passes on the history as it stands; a commit added without the
   trailer reddens it. `pri` low.
+- **Twelve shipped bounds have no owner** — a legitimate change updates the constant instead
+  of being refused. Worst first: `src/graph/SemanticGraph.svelte:106`
+  `relationPool.slice(0, 60)`, which truncates a node's relation list with no indication, then
+  `model.ts:3,4,6,465,496`, `SemanticGraph.svelte:111,153`, `canvas.ts:267`,
+  `QuestionCombobox.svelte:25`, `client.ts:40,50`, `session.ts:108`,
+  `DemoController.svelte.ts:34`. Owner search rc=1 each; `DEFAULT_NEIGHBOR_LIMIT` control
+  rc=0. The graph subset is u11→u13 scope and lands there. Accept: each names an owner in
+  `.claude/rules/` or `.agent/contracts/` whose search returns rc 0, and the 60-relation cap
+  either surfaces its truncation or is contract-owned. `pri` med.
 
 ## Index — one line per `high` + `med` row
 
@@ -295,6 +304,7 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | Two tests time out under parallel execution | both pass 20 consecutive full-suite runs at the committed worker count |
 | 9 of u5's 26 combobox predicates rest on jsdom stubs | a Chromium test drives real input, reads the AX tree, runs axe |
 | `smoke` + `browser:check` ship no firing input | each reddens on a mutation its own lane runs, and joins gate.md `Firing inputs` |
+| Twelve shipped bounds have no owner | each names an owner whose search returns rc 0; the 60-relation cap surfaces truncation or is contract-owned |
 
 ## Accepted-open
 
