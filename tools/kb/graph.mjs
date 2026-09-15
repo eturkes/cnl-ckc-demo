@@ -251,6 +251,9 @@ const countRecord = (counts) => Object.fromEntries([...counts].sort(([left], [ri
  */
 export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(files)) => {
   const scopes = deriveScopeRecords(parsedClauses);
+  const scopeIndexes = new Map(
+    scopes.map((scope, index) => [scopeKey(scope.document, scope.sentence, scope.reference), index]),
+  );
   /** @type {Map<string, GraphNode>} */
   const nodes = new Map();
   /** @type {GraphEdge[]} */
@@ -297,7 +300,11 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
     /** @type {string} */ target,
     /** @type {string} */ label,
     /** @type {string} */ predicate = clause.predicate,
+    /** @type {{ args: string[] }} */ scopeCall = clause.head,
   ) => {
+    const scope = scopeIndexes.get(
+      scopeKey(clause.document, clause.sentence, scopeCall.args[0] ?? ''),
+    );
     const edge = {
       id: `edge:${clause.line}:${ordinal}`,
       kind,
@@ -308,6 +315,7 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
       sentence: clause.sentence,
       line: clause.line,
       predicate,
+      ...(scope === undefined ? {} : { scope }),
     };
     edges.push(edge);
     increment(edgeKinds, kind);
@@ -409,9 +417,26 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
           );
           if (emittedConditions.has(key)) return;
           emittedConditions.add(key);
-          emit(clause, index + 2, kind, source, target, label, call.name);
+          emit(clause, index + 2, kind, source, target, label, call.name, call);
         };
-        if (call.name === 'guideline_arg' || call.name === 'guideline_pp') {
+        if (call.name === 'guideline_operator') {
+          const source = resolveReference(
+            nodes,
+            globalReferences,
+            localReferences,
+            clause.document,
+            clause.sentence,
+            call.args[0] ?? '',
+          );
+          const target = declareCallNode(
+            nodes,
+            call,
+            clause.document,
+            clause.sentence,
+            localReferences,
+          );
+          if (target !== null) condition('operator', source, target, termLabel(call.args[2] ?? ''));
+        } else if (call.name === 'guideline_arg' || call.name === 'guideline_pp') {
           const source = resolveReference(
             nodes,
             globalReferences,
@@ -488,6 +513,7 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
             headNode,
             'condition supports',
             'guideline_condition',
+            call,
           );
         }
       }
