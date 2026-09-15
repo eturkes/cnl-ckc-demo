@@ -20,6 +20,8 @@ export const GRAPH_ASSET_PATH = 'graph/semantic-graph.json';
  *   label: string, document: string, sentence: number | null, line: number,
  *   predicate: string, scope?: number }} GraphEdge
  * @typedef {'-' | 'should' | 'may' | 'can' | 'must'} ScopeOperator
+ * @typedef {{ outer: string, operator: ScopeOperator, document: string,
+ *   sentence: number | null, reference: string }} ScopeDefinition
  * @typedef {{ id: string, chain: string[], operator: ScopeOperator,
  *   document: string, sentence: number | null, reference: string }} ScopeRecord
  * @typedef {import('./provenance.mjs').ClauseSite} ClauseSite
@@ -68,39 +70,71 @@ const scopeKey = (document, sentence, reference) =>
 const scopeId = (document, sentence, reference) =>
   `scope:${encoded(document)}:${sentence ?? 0}:${encoded(reference.trim())}`;
 
+const PROLOG_VARIABLE = /^[A-Z_][A-Za-z0-9_]*$/u;
+const CONTEXT_SENTENCE = /,([1-9][0-9]*),box/u;
+
+/** @param {ScopeDefinition} definition */
+const parentScopeKey = ({ outer, document, sentence }) => {
+  if (outer === 'actual' || PROLOG_VARIABLE.test(outer)) return undefined;
+  const embedded = CONTEXT_SENTENCE.exec(outer)?.[1];
+  return scopeKey(document, embedded === undefined ? sentence : Number(embedded), outer);
+};
+
 /**
- * Dedupe every operator call by the compiler's context identity. Head and body
- * occurrences are both semantic input: body-only variables carry negated scopes.
+ * Dedupe every operator call by the compiler's context identity and resolve its
+ * ordered outer chain. Head and body occurrences both carry semantic scope.
  *
  * @param {ClauseSite[]} parsedClauses
  * @returns {ScopeRecord[]}
  */
 export const deriveScopeRecords = (parsedClauses) => {
-  /** @type {Map<string, ScopeRecord>} */
-  const records = new Map();
+  /** @type {Map<string, ScopeDefinition>} */
+  const definitions = new Map();
   for (const clause of parsedClauses) {
     for (const call of [clause.head, ...clause.body]) {
       if (call.name !== 'guideline_operator') continue;
-      const outer = call.args[0]?.trim() ?? '';
-      const reference = call.args[1]?.trim() ?? '';
-      const operator = /** @type {ScopeOperator} */ (termLabel(call.args[2] ?? ''));
-      const record = {
-        id: scopeId(clause.document, clause.sentence, reference),
-        chain: [outer],
-        operator,
+      const definition = {
+        outer: call.args[0]?.trim() ?? '',
+        operator: /** @type {ScopeOperator} */ (termLabel(call.args[2] ?? '')),
         document: clause.document,
         sentence: clause.sentence,
-        reference,
+        reference: call.args[1]?.trim() ?? '',
       };
-      const key = scopeKey(clause.document, clause.sentence, reference);
-      const previous = records.get(key);
-      if (previous !== undefined && JSON.stringify(previous) !== JSON.stringify(record)) {
+      const key = scopeKey(definition.document, definition.sentence, definition.reference);
+      const previous = definitions.get(key);
+      if (previous !== undefined && JSON.stringify(previous) !== JSON.stringify(definition)) {
         throw new Error(`graph scope collision at line ${String(clause.line)}`);
       }
-      records.set(key, record);
+      definitions.set(key, definition);
     }
   }
-  return [...records.values()].sort((left, right) => left.id.localeCompare(right.id));
+
+  /**
+   * @param {ScopeDefinition} definition
+   * @param {Set<string>} [seen]
+   * @returns {string[]}
+   */
+  const chainFor = (definition, seen = new Set()) => {
+    const key = scopeKey(definition.document, definition.sentence, definition.reference);
+    if (seen.has(key)) throw new Error(`graph scope cycle for ${definition.reference}`);
+    const next = new Set(seen).add(key);
+    const parentKey = parentScopeKey(definition);
+    const parent = parentKey === undefined ? undefined : definitions.get(parentKey);
+    return parent === undefined
+      ? [definition.outer]
+      : [...chainFor(parent, next), definition.outer];
+  };
+
+  return [...definitions.values()]
+    .map((definition) => ({
+      id: scopeId(definition.document, definition.sentence, definition.reference),
+      chain: chainFor(definition),
+      operator: definition.operator,
+      document: definition.document,
+      sentence: definition.sentence,
+      reference: definition.reference,
+    }))
+    .sort((left, right) => left.id.localeCompare(right.id));
 };
 
 /**
