@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
+import { gzipSync } from 'node:zlib';
 
 import { describe, expect, it } from 'vitest';
 
@@ -54,5 +55,10 @@ describe('generated semantic graph scopes', () => {
       'operator-context',
       'value',
     ]);
+  });
+
+  it('keeps default zlib gzip size within the scoped graph budget', () => {
+    const compressed = gzipSync(readFileSync(GRAPH_PATH));
+    expect(compressed.byteLength).toBeLessThanOrEqual(508_572);
   });
 });
