@@ -18,7 +18,10 @@ export const GRAPH_ASSET_PATH = 'graph/semantic-graph.json';
  *   document?: string, sentence?: number }} GraphNode
  * @typedef {{ id: string, kind: GraphEdgeKind, source: string, target: string,
  *   label: string, document: string, sentence: number | null, line: number,
- *   predicate: string }} GraphEdge
+ *   predicate: string, scope?: number }} GraphEdge
+ * @typedef {'-' | 'should' | 'may' | 'can' | 'must'} ScopeOperator
+ * @typedef {{ id: string, chain: string[], operator: ScopeOperator,
+ *   document: string, sentence: number | null, reference: string }} ScopeRecord
  * @typedef {import('./provenance.mjs').ClauseSite} ClauseSite
  */
 
@@ -56,6 +59,49 @@ const addNode = (nodes, node) => {
 
 /** @param {string} document @param {string} reference */
 const referenceKey = (document, reference) => `${document}\u0000${reference.trim()}`;
+
+/** @param {string} document @param {number | null} sentence @param {string} reference */
+const scopeKey = (document, sentence, reference) =>
+  JSON.stringify([document, sentence, reference.trim()]);
+
+/** @param {string} document @param {number | null} sentence @param {string} reference */
+const scopeId = (document, sentence, reference) =>
+  `scope:${encoded(document)}:${sentence ?? 0}:${encoded(reference.trim())}`;
+
+/**
+ * Dedupe every operator call by the compiler's context identity. Head and body
+ * occurrences are both semantic input: body-only variables carry negated scopes.
+ *
+ * @param {ClauseSite[]} parsedClauses
+ * @returns {ScopeRecord[]}
+ */
+export const deriveScopeRecords = (parsedClauses) => {
+  /** @type {Map<string, ScopeRecord>} */
+  const records = new Map();
+  for (const clause of parsedClauses) {
+    for (const call of [clause.head, ...clause.body]) {
+      if (call.name !== 'guideline_operator') continue;
+      const outer = call.args[0]?.trim() ?? '';
+      const reference = call.args[1]?.trim() ?? '';
+      const operator = /** @type {ScopeOperator} */ (termLabel(call.args[2] ?? ''));
+      const record = {
+        id: scopeId(clause.document, clause.sentence, reference),
+        chain: [outer],
+        operator,
+        document: clause.document,
+        sentence: clause.sentence,
+        reference,
+      };
+      const key = scopeKey(clause.document, clause.sentence, reference);
+      const previous = records.get(key);
+      if (previous !== undefined && JSON.stringify(previous) !== JSON.stringify(record)) {
+        throw new Error(`graph scope collision at line ${String(clause.line)}`);
+      }
+      records.set(key, record);
+    }
+  }
+  return [...records.values()].sort((left, right) => left.id.localeCompare(right.id));
+};
 
 /**
  * Return the semantic node asserted by an entity, event, or operator call and
@@ -170,6 +216,7 @@ const countRecord = (counts) => Object.fromEntries([...counts].sort(([left], [ri
  * @param {ClauseSite[]} [parsedClauses]
  */
 export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(files)) => {
+  const scopes = deriveScopeRecords(parsedClauses);
   /** @type {Map<string, GraphNode>} */
   const nodes = new Map();
   /** @type {GraphEdge[]} */
@@ -438,6 +485,7 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
     schemaVersion: GRAPH_SCHEMA_VERSION,
     nodes: sortedNodes,
     edges: sortedEdges,
+    scopes,
     stats: {
       documents: documents.length,
       clauses: parsedClauses.length,
