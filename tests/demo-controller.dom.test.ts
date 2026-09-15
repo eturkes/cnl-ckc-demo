@@ -592,8 +592,20 @@ describe('rejected run lifecycle', () => {
     }
   });
 
-  it('P3 leaves the answer region unbusy with Cancel disabled and Retry offered', () => {
-    expect.fail('unimplemented');
+  it('P3 leaves the answer region unbusy with Cancel disabled and Retry offered', async () => {
+    controller.select(ID);
+    setState({ kind: 'idle', contract: CONTRACT });
+
+    const completion = controller.run().catch(() => undefined);
+    const call = engine.asks[0];
+    if (call === undefined) throw new Error('the first ask was not dispatched');
+    call.outcome.reject(new Error('ask-rejection-p3'));
+    await completion;
+    flushSync();
+
+    expect(answerRegion().getAttribute('aria-busy')).toBe('false');
+    expect(buttonNamed(/^cancel\b/iu).disabled).toBe(true);
+    expect(buttonNamed(/^retry\b/iu).disabled).toBe(false);
   });
 
   it('P4 announces the failure with the shipped runFailed copy', () => {
