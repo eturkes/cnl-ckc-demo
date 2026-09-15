@@ -691,7 +691,25 @@ describe('rejected run lifecycle', () => {
     expect(answerRegion().getAttribute('aria-busy')).toBe('true');
   });
 
-  it('P7 keeps cancel inert once a rejected run has settled', () => {
-    expect.fail('unimplemented');
+  it('P7 keeps cancel inert once a rejected run has settled', async () => {
+    const reason = 'ask-rejection-p7';
+    controller.select(ID);
+    setState({ kind: 'idle', contract: CONTRACT });
+
+    const completion = controller.run().catch(() => undefined);
+    const call = engine.asks[0];
+    if (call === undefined) throw new Error('the first ask was not dispatched');
+    call.outcome.reject(reason);
+    await completion;
+    await controller.cancel();
+    flushSync();
+
+    expect(controller.state).toEqual({
+      kind: 'settled',
+      id: ID,
+      result: { kind: 'error', id: ID, error: { code: 'worker', message: reason } },
+    });
+    expect(answerRegion().getAttribute('aria-busy')).toBe('false');
+    expect(buttonNamed(/^cancel\b/iu).disabled).toBe(true);
   });
 });
