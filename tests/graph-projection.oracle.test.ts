@@ -53,6 +53,7 @@ interface OracleEdge {
   label: string;
   document: string;
   sentence: number | null;
+  line: number;
   scope?: number;
 }
 
@@ -128,13 +129,16 @@ const conceptEdges = (asset: OracleAsset): readonly OracleEdge[] => {
   );
 };
 
+const KEY_FIELD_SEPARATOR = String.fromCodePoint(0x1f);
+const KEY_SCOPE_SEPARATOR = String.fromCodePoint(0x1e);
+
 const relationKey = (edge: OracleEdge): string =>
-  [edge.kind, edge.source, edge.target, edge.label].join('');
+  [edge.kind, edge.source, edge.target, edge.label].join(KEY_FIELD_SEPARATOR);
 
 const projectionKey = (
   edge: OracleEdge,
   orderedScope: (edge: OracleEdge) => readonly string[],
-): string => `${relationKey(edge)}${JSON.stringify(orderedScope(edge))}`;
+): string => `${relationKey(edge)}${KEY_SCOPE_SEPARATOR}${JSON.stringify(orderedScope(edge))}`;
 
 const projectedRepresentatives = (model: SemanticGraphModel): readonly OracleEdge[] => {
   const byId = new Map<string, OracleEdge>();
@@ -494,6 +498,121 @@ describe('scope projection differential oracle', () => {
       expect(resolveScope(nested)).toEqual(['-', 'should']);
       expect(forbiddenEndpoints).toEqual([]);
       expect(shippedForbidden).toEqual([]);
+    });
+  });
+
+  describe('P6 silent-drop census', () => {
+    it('partitions all 20,964 edges across the five relationship rejection branches', () => {
+      const asset = readOracleAsset();
+      const nodes = new Map(asset.nodes.map((node) => [node.id, node]));
+      const counts = {
+        cardinality: 0,
+        operator: 0,
+        nonSupportImplication: 0,
+        nonConceptSource: 0,
+        nonConceptTarget: 0,
+        retained: 0,
+      };
+      for (const edge of asset.edges) {
+        if (edge.kind === 'cardinality') counts.cardinality += 1;
+        else if (edge.kind === 'operator') counts.operator += 1;
+        else if (edge.kind === 'implies' && edge.label !== 'condition supports') {
+          counts.nonSupportImplication += 1;
+        } else if (!CONCEPT_KINDS.has(nodes.get(edge.source)?.kind ?? '')) {
+          counts.nonConceptSource += 1;
+        } else if (!CONCEPT_KINDS.has(nodes.get(edge.target)?.kind ?? '')) {
+          counts.nonConceptTarget += 1;
+        } else counts.retained += 1;
+      }
+
+      expect(counts).toEqual({
+        cardinality: 1_834,
+        operator: 1_193,
+        nonSupportImplication: 9_053,
+        nonConceptSource: 3_088,
+        nonConceptTarget: 0,
+        retained: 5_796,
+      });
+      expect(Object.values(counts).reduce((sum, count) => sum + count, 0)).toBe(20_964);
+    });
+
+    it('finds 660 occurrences misrepresented across 234 scope-distinct variants', () => {
+      const asset = readOracleAsset();
+      const resolveScope = orderedScopeResolver(asset);
+      const groups = new Map<string, OracleEdge[]>();
+      for (const edge of conceptEdges(asset)) {
+        const group = groups.get(relationKey(edge)) ?? [];
+        group.push(edge);
+        groups.set(relationKey(edge), group);
+      }
+      let affectedGroups = 0;
+      let extraScopeVariants = 0;
+      let misrepresentedOccurrences = 0;
+      let sameScopeDedup = 0;
+      for (const group of groups.values()) {
+        group.sort((left, right) => left.line - right.line || left.id.localeCompare(right.id));
+        const variants = new Map<string, OracleEdge[]>();
+        for (const edge of group) {
+          const key = JSON.stringify(resolveScope(edge));
+          const variant = variants.get(key) ?? [];
+          variant.push(edge);
+          variants.set(key, variant);
+        }
+        sameScopeDedup += group.length - variants.size;
+        if (variants.size < 2) continue;
+        affectedGroups += 1;
+        extraScopeVariants += variants.size - 1;
+        const representative = group[0];
+        if (representative === undefined) throw new Error('projection group is empty');
+        const representedScope = JSON.stringify(resolveScope(representative));
+        for (const [scope, edges] of variants) {
+          if (scope !== representedScope) misrepresentedOccurrences += edges.length;
+        }
+      }
+
+      expect({
+        qualifyingOccurrences: conceptEdges(asset).length,
+        legacyGroups: groups.size,
+        totalLegacyDedup: conceptEdges(asset).length - groups.size,
+        scopeAwareGroups: groups.size + extraScopeVariants,
+        affectedGroups,
+        extraScopeVariants,
+        misrepresentedOccurrences,
+        sameScopeDedup,
+      }).toEqual({
+        qualifyingOccurrences: 5_796,
+        legacyGroups: 2_381,
+        totalLegacyDedup: 3_415,
+        scopeAwareGroups: 2_615,
+        affectedGroups: 173,
+        extraScopeVariants: 234,
+        misrepresentedOccurrences: 660,
+        sameScopeDedup: 3_181,
+      });
+    });
+
+    it('refuses a role-invalid edge instead of accepting then filtering it', () => {
+      const asset = structuredClone(readOracleAsset()) as OracleAsset & {
+        edges: OracleEdge[];
+      };
+      edgeById(asset, 'edge:513:0').source = 'document:cdc2022-opioid-rec01';
+      let parsed: ReturnType<typeof parseSemanticGraph> | undefined;
+      try {
+        parsed = parseSemanticGraph(asset);
+      } catch (error) {
+        if (!(error instanceof GraphDataError)) throw error;
+      }
+      const projected =
+        parsed === undefined
+          ? false
+          : projectedRepresentatives(new SemanticGraphModel(parsed)).some(
+              (edge) => edge.id === 'edge:513:0',
+            );
+
+      expect({ accepted: parsed !== undefined, projected }).toEqual({
+        accepted: false,
+        projected: false,
+      });
     });
   });
 });
