@@ -315,8 +315,15 @@ describe('demo controller transition oracle', () => {
     hanging.dispose();
   });
 
-  it('O2 model and controller agree on the state a rejected ask leaves behind', () => {
-    expect.fail('unimplemented');
+  it('O2 model and controller agree on the state a rejected ask leaves behind', async () => {
+    const driven = new Differential();
+    driven.expectState();
+    await driven.boot({ kind: 'booted', contract: CONTRACT });
+    driven.select(QUESTION_IDS[0]);
+    const run = driven.run();
+
+    await driven.reject(run, new Error('ask rejection sentinel'));
+    expect(await driven.completion(run)).toEqual({ kind: 'fulfilled' });
   });
 
   it('O3 model and controller agree on a run started after a rejected run', () => {
