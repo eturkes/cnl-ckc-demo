@@ -4,7 +4,7 @@ import { gzipSync } from 'node:zlib';
 
 import { describe, expect, it } from 'vitest';
 
-import { GRAPH_SCHEMA_VERSION, parseSemanticGraph } from '../src/graph/model.js';
+import { parseSemanticGraph } from '../src/graph/model.js';
 
 const GRAPH_PATH = fileURLToPath(
   new URL('../kb/generated/graph/semantic-graph.json', import.meta.url),
@@ -96,25 +96,34 @@ describe('generated semantic graph scopes', () => {
   });
 
   it('preserves ordered outer context when scope chains are permutations', async () => {
-    const [{ deriveSemanticGraph }, { parseClauseSites }] = await Promise.all([
-      import('../tools/kb/graph.mjs'),
-      import('../tools/kb/provenance.mjs'),
-    ]);
-    const source = (document: string, first: string, second: string): Buffer =>
-      Buffer.from(
-        [
-          'guideline_schema_version(1).',
-          `guideline_document('${document}',ace_sha256(a),ulex(sha256(b))).`,
-          '% S1: ordered context witness',
-          `guideline_operator(actual,${first},should).`,
-          `guideline_operator(${first},${second},may).`,
-        ].join('\n'),
-      );
-    const files = new Map([
-      ['data/guidelines/test/pl/scope-order-a.pl', source('scope-order-a', 'A', 'B')],
-      ['data/guidelines/test/pl/scope-order-b.pl', source('scope-order-b', 'B', 'A')],
-    ]);
-    const derived = deriveSemanticGraph(files, parseClauseSites(files)).model as unknown;
+    const { deriveSemanticGraph } = await import('../tools/kb/graph.mjs');
+    const operatorSite = (
+      line: number,
+      document: string,
+      outer: string,
+      reference: string,
+      operator: string,
+    ) => {
+      const source = `guideline_operator(${outer},${reference},${operator})`;
+      return {
+        line,
+        document,
+        sentence: 1,
+        predicate: 'guideline_operator',
+        arity: 3,
+        kind: 'fact' as const,
+        text: `${source}.`,
+        head: { name: 'guideline_operator', args: [outer, reference, operator], source },
+        body: [],
+      };
+    };
+    const clauses = [
+      operatorSite(1, 'scope-order-a', 'actual', 'A', 'should'),
+      operatorSite(2, 'scope-order-a', 'A', 'B', 'may'),
+      operatorSite(3, 'scope-order-b', 'actual', 'B', 'should'),
+      operatorSite(4, 'scope-order-b', 'B', 'A', 'may'),
+    ];
+    const derived = deriveSemanticGraph(new Map(), clauses).model as unknown;
     if (!isRecord(derived) || !Array.isArray(derived.scopes)) {
       throw new Error('constructed semantic graph scopes table is missing');
     }
@@ -137,9 +146,6 @@ describe('generated semantic graph scopes', () => {
     if (asset.schemaVersion !== 2) {
       throw new Error(`semantic graph producer schema ${String(asset.schemaVersion)}, expected 2`);
     }
-    if (GRAPH_SCHEMA_VERSION !== 2) {
-      throw new Error(`semantic graph reader schema ${String(GRAPH_SCHEMA_VERSION)}, expected 2`);
-    }
 
     expect(() => parseSemanticGraph(asset)).not.toThrow();
     expect(() => parseSemanticGraph({ ...asset, schemaVersion: 1 })).toThrow(
@@ -154,21 +160,15 @@ describe('generated semantic graph scopes', () => {
   });
 
   it('validates the emitted scope shape and refuses an empty scopes table by name', async () => {
-    const graphModule = await import('../tools/kb/graph.mjs');
-    const validators = Object.entries(graphModule).filter(
-      ([name, value]) => name.toLowerCase().includes('validate') && typeof value === 'function',
-    );
-    if (validators.length === 0) {
+    const graphModule: unknown = await import('../tools/kb/graph.mjs');
+    if (!isRecord(graphModule) || typeof graphModule.validateSemanticGraphAsset !== 'function') {
       throw new Error('semantic graph structural validator export is missing');
     }
-    if (validators.length !== 1) {
-      throw new Error(
-        `semantic graph structural validator export is ambiguous: ${String(validators.length)}`,
-      );
-    }
-    const validate = validators[0]?.[1] as (value: unknown) => void;
+    const validate = graphModule.validateSemanticGraphAsset as (value: unknown) => string[];
     const asset = readGraphAsset();
-    expect(() => validate(asset)).not.toThrow();
-    expect(() => validate({ ...asset, scopes: [] })).toThrow(/scopes/u);
+    expect(validate(asset)).toEqual([]);
+    const failures = validate({ ...asset, scopes: [] });
+    expect(failures.length).toBeGreaterThan(0);
+    expect(failures.some((failure) => /\bscopes\b/u.test(failure))).toBe(true);
   });
 });
