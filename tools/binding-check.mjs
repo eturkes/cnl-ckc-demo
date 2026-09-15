@@ -276,15 +276,15 @@ try {
     fail('the suite produced no readable report');
   }
 
-  const inventory = gradeInventory(REQUIRED, suites);
+  const inventory = gradeTable(REQUIRED, 'REQUIRED', suites);
   for (const line of inventory.failures) fail(line);
 
   const lifecycle = gradeTable(LIFECYCLE, 'LIFECYCLE', suites);
   for (const line of lifecycle.failures) fail(line);
 
-  // Controls: the two ways an inventory row stops binding anything. A rename leaves the case
-  // undefined; a deleted or renamed file leaves the suite unrun. Both are graded against the
-  // gate's OWN suite run, so neither costs a second vitest.
+  // Controls: the ways a declared inventory stops binding anything. A rename leaves the case
+  // undefined; a deleted or renamed file leaves the suite unrun; an empty table grades no case.
+  // Every control uses the gate's OWN suite run, so none costs a second vitest.
   const controls = [
     requireFiring(
       'binding:check',
@@ -302,6 +302,11 @@ try {
       () =>
         gradeInventory([{ suite: 'tests/zz-control.test.ts', why: 'control', cases: [] }], suites)
           .failures,
+    ),
+    requireFiring(
+      'binding:check',
+      { mutation: 'the REQUIRED table emptied', expect: ['REQUIRED table is empty'] },
+      () => gradeTable([], 'REQUIRED', suites).failures,
     ),
     requireFiring(
       'binding:check',
