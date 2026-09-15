@@ -36,6 +36,7 @@ const deferred = <T>(): Deferred<T> => {
 };
 
 type AskCall = {
+  id: unknown;
   outcome: Deferred<AnswerResult>;
 };
 
@@ -47,9 +48,9 @@ class ViewEngine implements DemoEngine {
     return this.bootOutcome.promise;
   }
 
-  ask(): Promise<AnswerResult> {
+  ask(id: unknown): Promise<AnswerResult> {
     const outcome = deferred<AnswerResult>();
-    this.asks.push({ outcome });
+    this.asks.push({ id, outcome });
     return outcome.promise;
   }
 
@@ -631,8 +632,33 @@ describe('rejected run lifecycle', () => {
     expect(summary.closest('[aria-hidden="true"]')).toBeNull();
   });
 
-  it('P5 lets the next run dispatch its own ask after a rejection', () => {
-    expect.fail('unimplemented');
+  it('P5 lets the next run dispatch its own ask after a rejection', async () => {
+    const next = QUESTION_IDS[1];
+    if (next === undefined) throw new Error('the successor question fixture is missing');
+    controller.select(ID);
+    setState({ kind: 'idle', contract: CONTRACT });
+
+    const firstCompletion = controller.run().catch(() => undefined);
+    const firstCall = engine.asks[0];
+    if (firstCall === undefined) throw new Error('the first ask was not dispatched');
+
+    controller.select(next);
+    const secondCompletion = controller.run();
+    void secondCompletion.catch(() => undefined);
+    firstCall.outcome.reject(new Error('ask-rejection-p5'));
+    await firstCompletion;
+    await Promise.resolve();
+
+    expect(engine.asks).toHaveLength(2);
+    const secondCall = engine.asks[1];
+    if (secondCall === undefined) throw new Error('the successor ask was not dispatched');
+    expect(secondCall.id).toBe(next);
+    const result = answer(next, 1, 'successor');
+    secondCall.outcome.resolve(result);
+    await secondCompletion;
+    flushSync();
+
+    expect(controller.state).toEqual({ kind: 'settled', id: next, result });
   });
 
   it('P6 ignores a superseded run rejection and keeps the live state', () => {
