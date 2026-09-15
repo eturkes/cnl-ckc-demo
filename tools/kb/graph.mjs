@@ -70,12 +70,11 @@ const scopeKey = (document, sentence, reference) =>
 const scopeId = (document, sentence, reference) =>
   `scope:${encoded(document)}:${sentence ?? 0}:${encoded(reference.trim())}`;
 
-const PROLOG_VARIABLE = /^[A-Z_][A-Za-z0-9_]*$/u;
 const CONTEXT_SENTENCE = /,([1-9][0-9]*),box/u;
 
 /** @param {ScopeDefinition} definition */
 const parentScopeKey = ({ outer, document, sentence }) => {
-  if (outer === 'actual' || PROLOG_VARIABLE.test(outer)) return undefined;
+  if (outer === 'actual') return undefined;
   const embedded = CONTEXT_SENTENCE.exec(outer)?.[1];
   return scopeKey(document, embedded === undefined ? sentence : Number(embedded), outer);
 };
@@ -87,7 +86,7 @@ const parentScopeKey = ({ outer, document, sentence }) => {
  * @param {ClauseSite[]} parsedClauses
  * @returns {ScopeRecord[]}
  */
-export const deriveScopeRecords = (parsedClauses) => {
+const deriveScopeRecords = (parsedClauses) => {
   /** @type {Map<string, ScopeDefinition>} */
   const definitions = new Map();
   for (const clause of parsedClauses) {
@@ -120,9 +119,8 @@ export const deriveScopeRecords = (parsedClauses) => {
     const next = new Set(seen).add(key);
     const parentKey = parentScopeKey(definition);
     const parent = parentKey === undefined ? undefined : definitions.get(parentKey);
-    return parent === undefined
-      ? [definition.outer]
-      : [...chainFor(parent, next), definition.outer];
+    const outer = parent === undefined ? [definition.outer] : chainFor(parent, next);
+    return [...outer, definition.reference];
   };
 
   return [...definitions.values()]
@@ -149,7 +147,7 @@ const isRecord = (value) => typeof value === 'object' && value !== null && !Arra
  * @param {unknown} value
  * @returns {string[]}
  */
-export const gradeSemanticGraphScopes = (value) => {
+export const validateSemanticGraphAsset = (value) => {
   if (!isRecord(value)) return ['semantic graph must be an object for scopes validation'];
   const scopes = value.scopes;
   if (!Array.isArray(scopes)) return ['scopes must be an array'];
@@ -406,11 +404,10 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
     /** @type {string} */ target,
     /** @type {string} */ label,
     /** @type {string} */ predicate = clause.predicate,
-    /** @type {{ args: string[] }} */ scopeCall = clause.head,
+    /** @type {{ name: string, args: string[] }} */ scopeCall = clause.head,
   ) => {
-    const scope = scopeIndexes.get(
-      scopeKey(clause.document, clause.sentence, scopeCall.args[0] ?? ''),
-    );
+    const reference = scopeCall.args[scopeCall.name === 'guideline_operator' ? 1 : 0] ?? '';
+    const scope = scopeIndexes.get(scopeKey(clause.document, clause.sentence, reference));
     const edge = {
       id: `edge:${clause.line}:${ordinal}`,
       kind,

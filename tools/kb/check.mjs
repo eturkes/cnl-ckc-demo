@@ -11,7 +11,7 @@ import { sha256, verifyBag } from './bag.mjs';
 import { catalogJson, catalogRecords } from './catalog.mjs';
 import {
   deriveSemanticGraph,
-  gradeSemanticGraphScopes,
+  validateSemanticGraphAsset,
   GRAPH_SCHEMA_VERSION,
 } from './graph.mjs';
 import { deriveProvenance, PROVENANCE_SCHEMA_VERSION } from './provenance.mjs';
@@ -156,7 +156,7 @@ if (manifest === undefined) {
 
       const provenance = deriveProvenance(files);
       const graph = deriveSemanticGraph(files, provenance.clauses);
-      const scopeFailures = gradeSemanticGraphScopes(graph.model);
+      const scopeFailures = validateSemanticGraphAsset(graph.model);
       for (const problem of scopeFailures) fail(`semantic graph: ${problem}`);
       if (scopeFailures.length === 0) {
         requireFiring(
@@ -165,7 +165,7 @@ if (manifest === undefined) {
             mutation: 'the real scopes table emptied',
             expect: ['scopes table is empty', 'grades no record'],
           },
-          () => gradeSemanticGraphScopes({ ...graph.model, scopes: graph.model.scopes.slice(0, 0) }),
+          () => validateSemanticGraphAsset({ ...graph.model, scopes: graph.model.scopes.slice(0, 0) }),
         );
         scopeControlsFired = 1;
         scopeRecordsValidated = graph.model.scopes.length;
