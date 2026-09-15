@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import App from '../src/App.svelte';
 import type { BootOutcome } from '../src/engine/client.js';
 import type { EngineContract, EngineError, LimitKind, PlSolution } from '../src/engine/protocol.js';
+import { messages } from '../src/i18n/locale.svelte.js';
 import { QUESTION_IDS, type QuestionId } from '../src/questions/catalog.js';
 import type { AnswerResult } from '../src/questions/service.js';
 import {
@@ -608,8 +609,26 @@ describe('rejected run lifecycle', () => {
     expect(buttonNamed(/^retry\b/iu).disabled).toBe(false);
   });
 
-  it('P4 announces the failure with the shipped runFailed copy', () => {
-    expect.fail('unimplemented');
+  it('P4 announces the failure with the shipped runFailed copy', async () => {
+    const reason = 'ask-rejection-p4';
+    controller.select(ID);
+    setState({ kind: 'idle', contract: CONTRACT });
+
+    const completion = controller.run().catch(() => undefined);
+    const call = engine.asks[0];
+    if (call === undefined) throw new Error('the first ask was not dispatched');
+    call.outcome.reject(new Error(reason));
+    await completion;
+    flushSync();
+
+    const { TEXT } = messages.current;
+    const alert = role('alert');
+    expect(text(alert)).toBe(TEXT.runFailed('worker', reason));
+    expect(alert.closest('[aria-hidden="true"]')).toBeNull();
+    const summary = answerRegion().querySelector<HTMLElement>('.summary');
+    if (summary === null) throw new Error('the answer failure summary is missing');
+    expect(text(summary)).toBe(TEXT.runFailedSummary());
+    expect(summary.closest('[aria-hidden="true"]')).toBeNull();
   });
 
   it('P5 lets the next run dispatch its own ask after a rejection', () => {
