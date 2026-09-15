@@ -95,6 +95,43 @@ describe('generated semantic graph scopes', () => {
     }
   });
 
+  it('preserves ordered outer context when scope chains are permutations', async () => {
+    const [{ deriveSemanticGraph }, { parseClauseSites }] = await Promise.all([
+      import('../tools/kb/graph.mjs'),
+      import('../tools/kb/provenance.mjs'),
+    ]);
+    const source = (document: string, first: string, second: string): Buffer =>
+      Buffer.from(
+        [
+          'guideline_schema_version(1).',
+          `guideline_document('${document}',ace_sha256(a),ulex(sha256(b))).`,
+          '% S1: ordered context witness',
+          `guideline_operator(actual,${first},should).`,
+          `guideline_operator(${first},${second},may).`,
+        ].join('\n'),
+      );
+    const files = new Map([
+      ['data/guidelines/test/pl/scope-order-a.pl', source('scope-order-a', 'A', 'B')],
+      ['data/guidelines/test/pl/scope-order-b.pl', source('scope-order-b', 'B', 'A')],
+    ]);
+    const derived = deriveSemanticGraph(files, parseClauseSites(files)).model as unknown;
+    if (!isRecord(derived) || !Array.isArray(derived.scopes)) {
+      throw new Error('constructed semantic graph scopes table is missing');
+    }
+
+    const nested = derived.scopes.filter(
+      (scope): scope is Record<string, unknown> => isRecord(scope) && scope.operator === 'may',
+    );
+    expect(nested).toHaveLength(2);
+    expect(nested.map(({ chain }) => chain)).toEqual(
+      expect.arrayContaining([
+        ['actual', 'A', 'B'],
+        ['actual', 'B', 'A'],
+      ]),
+    );
+    expect(new Set(nested.map(({ id }) => id)).size).toBe(2);
+  });
+
   it('bumps producer and reader together and makes a v1 reader refuse v2 by name', () => {
     const asset = readGraphAsset();
     if (asset.schemaVersion !== 2) {
