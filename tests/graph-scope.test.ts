@@ -61,4 +61,35 @@ describe('generated semantic graph scopes', () => {
     const compressed = gzipSync(readFileSync(GRAPH_PATH));
     expect(compressed.byteLength).toBeLessThanOrEqual(508_572);
   });
+
+  it('links every operator edge and every scope record in both directions', () => {
+    const asset = readGraphAsset();
+    if (!Array.isArray(asset.edges)) throw new Error('semantic graph edges table is missing');
+
+    const referenced = new Set<number>();
+    for (const [index, edge] of asset.edges.entries()) {
+      if (!isRecord(edge)) throw new Error(`edges[${String(index)}] must be an object`);
+      const scope = edge.scope;
+      if (edge.kind === 'operator' && !Number.isSafeInteger(scope)) {
+        throw new Error(`operator edge ${String(edge.id)} must reference exactly one scope index`);
+      }
+      if (scope === undefined) continue;
+      if (!Number.isSafeInteger(scope) || Number(scope) < 0) {
+        throw new Error(`edges[${String(index)}].scope must be a non-negative safe integer`);
+      }
+      referenced.add(Number(scope));
+    }
+
+    if (!Array.isArray(asset.scopes)) {
+      throw new Error('semantic graph scopes table is missing for edge linkage');
+    }
+    for (const scope of referenced) {
+      if (scope >= asset.scopes.length) {
+        throw new Error(`edge scope index ${String(scope)} is outside the scopes table`);
+      }
+    }
+    for (const index of asset.scopes.keys()) {
+      if (!referenced.has(index)) throw new Error(`scopes[${String(index)}] is orphaned`);
+    }
+  });
 });
