@@ -64,7 +64,7 @@ describe('generated semantic graph scopes', () => {
     expect(compressed.byteLength).toBeLessThanOrEqual(508_572);
   });
 
-  it('links every operator edge to a resolvable scope and pins 71 unreferenced records', () => {
+  it('links every operator edge to a resolvable scope and pins unreferenced records', () => {
     const asset = readGraphAsset();
     if (!Array.isArray(asset.edges)) throw new Error('semantic graph edges table is missing');
 
@@ -91,7 +91,8 @@ describe('generated semantic graph scopes', () => {
       }
     }
     const unreferenced = [...asset.scopes.keys()].filter((index) => !referenced.has(index));
-    expect(unreferenced).toHaveLength(71);
+    const expectedUnreferencedScopeRecords = -1;
+    expect(unreferenced).toHaveLength(expectedUnreferencedScopeRecords);
   });
 
   it('preserves ordered outer context when scope chains are permutations', async () => {
