@@ -450,7 +450,7 @@ describe('clinical records', () => {
       return source.slice(start, end);
     };
     const boundaries = [
-      ['clauseSource', 'const clauseSource =', '/**\n * Parse the tiny controlled-sentence'],
+      ['clinicalGrammar', 'const PREPOSITIONS =', '/**\n * Parse the tiny controlled-sentence'],
       ['parseAdviceSentence', 'export const parseAdviceSentence =', '/** Group only identical'],
       ['groupClauses', 'const groupClauses =', '/** @param {AdviceModifier}'],
       ['modifierTerm', 'const modifierTerm =', '/** @param {AdviceAction}'],
