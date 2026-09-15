@@ -1,4 +1,4 @@
-export const GRAPH_SCHEMA_VERSION = 1;
+export const GRAPH_SCHEMA_VERSION = 2;
 export const DEFAULT_NEIGHBOR_LIMIT = 80;
 export const MAX_NEIGHBOR_LIMIT = 240;
 export const DEFAULT_EDGE_LIMIT = 480;

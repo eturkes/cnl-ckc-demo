@@ -43,6 +43,13 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   `CLAUDE.md` `Engineering` verification integrity binds where the answer path runs, and there
   it binds whole. Strengthening a check elsewhere is scheduled work — u10c is the first such
   unit. Report honesty is unwaived. Binding → `.claude/rules/stack.md`.
+- **Orphan operator contexts stay orphaned.** 71 operator-context nodes carry no edge — 64
+  negation, 7 `can`, i.e. 41% of the corpus's 156 negation contexts — the body-level scopes
+  whose identity binds at query time. u11 measured them and could close the gap with 71 added
+  body edges; the ruling is to leave the shipped edge population untouched at 20,964 total /
+  1,193 operator. u11's S3 is therefore ONE-WAY: every operator-bearing edge resolves to
+  exactly one scope record, an unreferenced record is legal, and the unreferenced count is
+  pinned so it cannot drift. Queued in `.agent/deferred.md`.
 - **Security lane.** Live `pnpm audit` in the gate, no allowlist; secretlint pinned `^12` so
   Node stays 20; static analysis = ESLint security rules only, no CodeQL/Semgrep; the
   `Deferred` defects stay deferred into MAINTAIN. Wiring → `.claude/rules/gate.md`.
@@ -64,7 +71,7 @@ renderer.
 
 # Deferred
 
-Queue = `.agent/deferred.md` — 49 rows, acceptance check each, plus the accepted-open review
+Queue = `.agent/deferred.md` — 50 rows, acceptance check each, plus the accepted-open review
 ids, whose checks stay in `.agent/archive/review-expedited.md`. The defects are user-ruled
 into MAINTAIN and the gate's open firing-input row sits beside them; nothing there blocks the
 spine below. The verification-integrity census raised four rows, three of which closed as u10b + u10c;
@@ -72,9 +79,10 @@ the fourth stays queued, now beside the `graph:check` hang u10c measured.
 
 ## Units — the remaining IMPLEMENT path
 
-The verification-integrity census is cleared; u11→u13 finish the graph, and
-u14→u15 close the phase over both spines. Full `Accept:` + `Depends` → archive; u3–u10c
-closed, contract each in `.agent/contracts/`, close summaries in `.agent/archive/units-m5.md`.
+The verification-integrity census is cleared and u11 shipped the scope records; u12→u13 finish
+the graph, and u14→u15 close the phase over both spines. Full `Accept:` + `Depends` → archive;
+u3–u11 closed, contract each in `.agent/contracts/`, close summaries in
+`.agent/archive/units-m5.md`.
 
 **From u11 on, every unit contract carries its red witness** — `N/M RED at base <sha>` plus
 the command that reproduces it, the form `.agent/archive/contracts/m5u1.md:232` and
@@ -82,11 +90,10 @@ the command that reproduces it, the form `.agent/archive/contracts/m5u1.md:232` 
 revision. Form + the two shapes that satisfy it without a `git show` →
 `.claude/rules/waves.md`.
 
-- **u11 scoped edge records** — `tools/kb/graph.mjs` emits versioned edge→scope records from
-  the clause AST. Accept: 156 negation / 857 `should` contexts + 1,263 operators represented
-  inside +182,583 B gzip.
-- **u12 scope-aware projection** — `model.ts` grouping, bounded paths, highlights, dashes.
-  Accept: every projected edge preserves the relation + its ordered scope;
+- **u12 scope-aware projection** — `model.ts` grouping, bounded paths, highlights, dashes,
+  reading u11's `scopes` table (schema 2, 1,263 records, `edge.scope` index). `model.ts`
+  still DROPS both fields — teaching `parseSemanticGraph` to parse them is this unit's first
+  move. Accept: every projected edge preserves the relation + its ordered scope;
   `tests/graph-semantics.review.test.ts` (branch `wt/rev-sem-2`, absent from the primary
   tree) merges in and its six in-scope reds go GREEN.
 - **u13 scoped views + probe rerun** — scope rendered in canvas AND fallback; u10's component
@@ -103,4 +110,6 @@ revision. Form + the two shapes that satisfy it without a `git show` →
 
 # Phase
 
-IMPLEMENT, at u11. Judgment review → `.agent/review.md`, adjudicated before the phase closes.
+IMPLEMENT, at u12. Judgment review → `.agent/review.md`, adjudicated before the phase closes
+against the fixed 32-row check set in `.agent/contracts/review-implement.md`, which reads the
+SHIPPED SURFACE at close rather than a commit range (user ruling).

@@ -94,6 +94,7 @@ const main = async () => {
     cached.source.sha256 === digest &&
     cached.toolchain.swiplWasm === swiplWasm &&
     cached.catalog.sha256 === sha256(catalogBytes) &&
+    cached.graph.schemaVersion === GRAPH_SCHEMA_VERSION &&
     assetsIntact(cached)
   ) {
     process.stdout.write(

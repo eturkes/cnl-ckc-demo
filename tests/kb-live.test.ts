@@ -12,6 +12,10 @@ import { verifyImage, verifyQlf } from '../tools/kb/produce.mjs';
 /** The corpus size and schema the milestone contract fixes. */
 const DOCUMENTS = 337;
 const SCHEMA_VERSION = 1;
+// The graph asset versions independently of the engine contract and the provenance index;
+// u11 carried it to 2 while those stayed at 1. One shared constant hid that they are three
+// schemas, so a bump to any one of them reddened an assertion about the other two.
+const GRAPH_SCHEMA_VERSION = 2;
 const BOOT_TIMEOUT = 120_000;
 
 const manifest = loadManifest();
@@ -41,7 +45,7 @@ describe('generated runtime payload', () => {
       schemaVersion: SCHEMA_VERSION,
       documents: DOCUMENTS,
     });
-    expect(manifest?.graph).toMatchObject({ schemaVersion: SCHEMA_VERSION });
+    expect(manifest?.graph).toMatchObject({ schemaVersion: GRAPH_SCHEMA_VERSION });
     expect(manifest?.source.bagitVersion).toBe('1.0');
   });
 

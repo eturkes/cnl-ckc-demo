@@ -284,6 +284,18 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   its own with rc 0 inside its own budget, and a planted non-terminating page still fails it
   by name rather than by wall clock. `pri` med.
 
+- **71 operator contexts have no edge in the shipped graph** — 64 negation (`-`) and 7 `can`,
+  i.e. 41% of the corpus's 156 negation contexts, sit as operator-context nodes nothing
+  connects. They are the body-level scopes like `guideline_operator(actual, C, -)` whose
+  identity binds at query time, with entities asserted inside `C`. u11 measured them and
+  emitted 71 covering body edges; **the user ruled leave them orphaned**, so the edge
+  population stays at 20,964 total / 1,193 operator and u11's S3 relaxed to one-way linkage
+  with the unreferenced-record count pinned. The cost is that a projection can draw a direct
+  edge past a negation the KB asserts, which is what `wt/rev-sem-2`'s hidden-negation reds
+  describe. Accept: either the 71 contexts carry an edge and `tests/kb-derived-assets.test.ts`
+  records the moved counts with the original firing, or a committed check proves no shown path
+  can skip a negation context that has no edge. `pri` med.
+
 ## Index — one line per `high` + `med` row
 
 Defect and acceptance check. Full text is above in this file; the `low` rows are prose only.
@@ -313,6 +325,7 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | `smoke` + `browser:check` ship no firing input | each reddens on a mutation its own lane runs, and joins gate.md `Firing inputs` |
 | `graph:check` prints green then never exits | it exits on its own rc 0; a planted non-terminating page fails by name |
 | Ten shipped bounds have no owner | each names an owner whose search returns rc 0; the 60-relation cap surfaces truncation or is contract-owned |
+| 71 operator contexts have no edge, 64 of them negation | the 71 carry edges with the moved counts recorded, or a check proves no shown path skips an edgeless negation context |
 
 ## Accepted-open
 

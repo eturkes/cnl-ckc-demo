@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  GRAPH_SCHEMA_VERSION,
   GraphDataError,
   SemanticGraphModel,
   graphFocusKey,
@@ -22,7 +23,9 @@ describe('semantic graph boundary', () => {
   });
 
   it.each([
-    ['schema drift', { ...GRAPH_FIXTURE, schemaVersion: 2 }],
+    // Derived, never a literal: this row spelled `2` while the reader pinned 1, so u11's bump
+    // to 2 turned the drift case into the CURRENT version and it silently stopped refusing.
+    ['schema drift', { ...GRAPH_FIXTURE, schemaVersion: GRAPH_SCHEMA_VERSION + 1 }],
     [
       'duplicate node',
       { ...GRAPH_FIXTURE, nodes: [...GRAPH_FIXTURE.nodes, GRAPH_FIXTURE.nodes[0]] },

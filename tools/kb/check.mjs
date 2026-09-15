@@ -9,7 +9,11 @@ import { join, relative } from 'node:path';
 import { requireFiring } from '../control.mjs';
 import { sha256, verifyBag } from './bag.mjs';
 import { catalogJson, catalogRecords } from './catalog.mjs';
-import { deriveSemanticGraph, GRAPH_SCHEMA_VERSION } from './graph.mjs';
+import {
+  deriveSemanticGraph,
+  validateSemanticGraphAsset,
+  GRAPH_SCHEMA_VERSION,
+} from './graph.mjs';
 import { deriveProvenance, PROVENANCE_SCHEMA_VERSION } from './provenance.mjs';
 import { GENERATED_DIR, ROOT, loadManifest, payloadSource } from './paths.mjs';
 
@@ -111,6 +115,8 @@ if (scanFailures.length === 0) {
   );
   controlsFired = 1;
 }
+let scopeControlsFired = 0;
+let scopeRecordsValidated = 0;
 
 const manifest = loadManifest();
 if (manifest === undefined) {
@@ -150,6 +156,20 @@ if (manifest === undefined) {
 
       const provenance = deriveProvenance(files);
       const graph = deriveSemanticGraph(files, provenance.clauses);
+      const scopeFailures = validateSemanticGraphAsset(graph.model);
+      for (const problem of scopeFailures) fail(`semantic graph: ${problem}`);
+      if (scopeFailures.length === 0) {
+        requireFiring(
+          'kb:asset-check',
+          {
+            mutation: 'the real scopes table emptied',
+            expect: ['scopes table is empty', 'grades no record'],
+          },
+          () => validateSemanticGraphAsset({ ...graph.model, scopes: graph.model.scopes.slice(0, 0) }),
+        );
+        scopeControlsFired = 1;
+        scopeRecordsValidated = graph.model.scopes.length;
+      }
       if (
         manifest.provenance.schemaVersion !== PROVENANCE_SCHEMA_VERSION ||
         manifest.provenance.documents !== provenance.stats.documents ||
@@ -272,6 +292,8 @@ if (failures.length > 0) {
       `answer-oracle scan clean over ${PRODUCTION_ROOTS.length} roots, ` +
       `JSON-serialization scan clean over ${SERIALIZE_ROOTS.length} root, ` +
       `${questions.length} question sentences absent from ${QUESTION_ROOTS.length} roots, ` +
-      `${String(controlsFired)} SCAN_ROOTS control fired\n`,
+      `${String(controlsFired)} SCAN_ROOTS control fired, ` +
+      `${String(scopeRecordsValidated)} graph scopes verified, ` +
+      `${String(scopeControlsFired)} scopes control fired\n`,
   );
 }

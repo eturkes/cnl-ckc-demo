@@ -7,7 +7,7 @@
 
 import { atomText, generatedJson, parseClauseSites } from './provenance.mjs';
 
-export const GRAPH_SCHEMA_VERSION = 1;
+export const GRAPH_SCHEMA_VERSION = 2;
 export const GRAPH_ASSET_PATH = 'graph/semantic-graph.json';
 
 /**
@@ -18,7 +18,12 @@ export const GRAPH_ASSET_PATH = 'graph/semantic-graph.json';
  *   document?: string, sentence?: number }} GraphNode
  * @typedef {{ id: string, kind: GraphEdgeKind, source: string, target: string,
  *   label: string, document: string, sentence: number | null, line: number,
- *   predicate: string }} GraphEdge
+ *   predicate: string, scope?: number }} GraphEdge
+ * @typedef {'-' | 'should' | 'may' | 'can' | 'must'} ScopeOperator
+ * @typedef {{ outer: string, operator: ScopeOperator, document: string,
+ *   sentence: number | null, reference: string }} ScopeDefinition
+ * @typedef {{ id: string, chain: string[], operator: ScopeOperator,
+ *   document: string, sentence: number | null, reference: string }} ScopeRecord
  * @typedef {import('./provenance.mjs').ClauseSite} ClauseSite
  */
 
@@ -56,6 +61,185 @@ const addNode = (nodes, node) => {
 
 /** @param {string} document @param {string} reference */
 const referenceKey = (document, reference) => `${document}\u0000${reference.trim()}`;
+
+/** @param {string} document @param {number | null} sentence @param {string} reference */
+const scopeKey = (document, sentence, reference) =>
+  JSON.stringify([document, sentence, reference.trim()]);
+
+/** @param {string} document @param {number | null} sentence @param {string} reference */
+const scopeId = (document, sentence, reference) =>
+  `scope:${encoded(document)}:${sentence ?? 0}:${encoded(reference.trim())}`;
+
+const CONTEXT_SENTENCE = /,([1-9][0-9]*),box/u;
+
+/** @param {ScopeDefinition} definition */
+const parentScopeKey = ({ outer, document, sentence }) => {
+  if (outer === 'actual') return undefined;
+  const embedded = CONTEXT_SENTENCE.exec(outer)?.[1];
+  return scopeKey(document, embedded === undefined ? sentence : Number(embedded), outer);
+};
+
+/**
+ * Dedupe every operator call by the compiler's context identity and resolve its
+ * ordered outer chain. Head and body occurrences both carry semantic scope.
+ *
+ * @param {ClauseSite[]} parsedClauses
+ * @returns {ScopeRecord[]}
+ */
+const deriveScopeRecords = (parsedClauses) => {
+  /** @type {Map<string, ScopeDefinition>} */
+  const definitions = new Map();
+  for (const clause of parsedClauses) {
+    for (const call of [clause.head, ...clause.body]) {
+      if (call.name !== 'guideline_operator') continue;
+      const definition = {
+        outer: call.args[0]?.trim() ?? '',
+        operator: /** @type {ScopeOperator} */ (termLabel(call.args[2] ?? '')),
+        document: clause.document,
+        sentence: clause.sentence,
+        reference: call.args[1]?.trim() ?? '',
+      };
+      const key = scopeKey(definition.document, definition.sentence, definition.reference);
+      const previous = definitions.get(key);
+      if (previous !== undefined && JSON.stringify(previous) !== JSON.stringify(definition)) {
+        throw new Error(`graph scope collision at line ${String(clause.line)}`);
+      }
+      definitions.set(key, definition);
+    }
+  }
+
+  /**
+   * @param {ScopeDefinition} definition
+   * @param {Set<string>} [seen]
+   * @returns {string[]}
+   */
+  const chainFor = (definition, seen = new Set()) => {
+    const key = scopeKey(definition.document, definition.sentence, definition.reference);
+    if (seen.has(key)) throw new Error(`graph scope cycle for ${definition.reference}`);
+    const next = new Set(seen).add(key);
+    const parentKey = parentScopeKey(definition);
+    const parent = parentKey === undefined ? undefined : definitions.get(parentKey);
+    const outer = parent === undefined ? [definition.outer] : chainFor(parent, next);
+    return [...outer, definition.reference];
+  };
+
+  return [...definitions.values()]
+    .map((definition) => ({
+      id: scopeId(definition.document, definition.sentence, definition.reference),
+      chain: chainFor(definition),
+      operator: definition.operator,
+      document: definition.document,
+      sentence: definition.sentence,
+      reference: definition.reference,
+    }))
+    .sort((left, right) => left.id.localeCompare(right.id));
+};
+
+const SCOPE_OPERATORS = /** @type {const} */ (['-', 'should', 'may', 'can', 'must']);
+const SCOPE_FIELDS = ['chain', 'document', 'id', 'operator', 'reference', 'sentence'];
+
+/** @param {unknown} value @returns {value is Record<string, unknown>} */
+const isRecord = (value) => typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/**
+ * Grade the serialized scope table and every numeric edge reference into it.
+ *
+ * @param {unknown} value
+ * @returns {string[]}
+ */
+export const validateSemanticGraphAsset = (value) => {
+  if (!isRecord(value)) return ['semantic graph must be an object for scopes validation'];
+  const scopes = value.scopes;
+  if (!Array.isArray(scopes)) return ['scopes must be an array'];
+  if (scopes.length === 0) {
+    return ['scopes table is empty, so graph scope validation grades no record'];
+  }
+
+  /** @type {string[]} */
+  const failures = [];
+  const ids = new Set();
+  const operatorCounts = new Map(SCOPE_OPERATORS.map((operator) => [operator, 0]));
+  let previousId;
+  for (const [index, scope] of scopes.entries()) {
+    const at = `scopes[${String(index)}]`;
+    if (!isRecord(scope)) {
+      failures.push(`${at} must be an object`);
+      continue;
+    }
+    const fields = Object.keys(scope).sort();
+    if (fields.join(',') !== SCOPE_FIELDS.join(',')) {
+      failures.push(`${at} fields ${fields.join(',')}, expected ${SCOPE_FIELDS.join(',')}`);
+    }
+    const { id, chain, operator, document, sentence, reference } = scope;
+    if (typeof id !== 'string' || id.trim() === '') failures.push(`${at}.id must be non-empty text`);
+    else {
+      if (ids.has(id)) failures.push(`${at}.id duplicates ${id}`);
+      ids.add(id);
+      if (previousId !== undefined && id.localeCompare(previousId) < 0) {
+        failures.push(`${at}.id is not sorted`);
+      }
+      previousId = id;
+    }
+    if (
+      !Array.isArray(chain) ||
+      chain.length === 0 ||
+      chain.some((entry) => typeof entry !== 'string' || entry.trim() === '')
+    ) {
+      failures.push(`${at}.chain must be a non-empty text array`);
+    }
+    if (!SCOPE_OPERATORS.includes(/** @type {ScopeOperator} */ (operator))) {
+      failures.push(`${at}.operator has unknown value ${String(operator)}`);
+    } else {
+      const known = /** @type {ScopeOperator} */ (operator);
+      operatorCounts.set(known, (operatorCounts.get(known) ?? 0) + 1);
+    }
+    if (typeof document !== 'string' || document.trim() === '') {
+      failures.push(`${at}.document must be non-empty text`);
+    }
+    if (sentence !== null && (!Number.isSafeInteger(sentence) || Number(sentence) < 1)) {
+      failures.push(`${at}.sentence must be a positive integer or null`);
+    }
+    if (typeof reference !== 'string' || reference.trim() === '') {
+      failures.push(`${at}.reference must be non-empty text`);
+    }
+    if (
+      typeof id === 'string' &&
+      typeof document === 'string' &&
+      (sentence === null || Number.isSafeInteger(sentence)) &&
+      typeof reference === 'string' &&
+      id !== scopeId(document, /** @type {number | null} */ (sentence), reference)
+    ) {
+      failures.push(`${at}.id does not encode its document, sentence and reference`);
+    }
+  }
+  for (const [operator, count] of operatorCounts) {
+    if (count === 0) failures.push(`scopes operator ${operator} has zero records`);
+  }
+
+  const edges = value.edges;
+  if (!Array.isArray(edges)) return [...failures, 'edges must be an array for scopes validation'];
+  let scopedEdges = 0;
+  for (const [index, edge] of edges.entries()) {
+    if (!isRecord(edge)) continue;
+    if (edge.scope === undefined) {
+      if (edge.kind === 'operator') {
+        failures.push(`operator edge ${String(edge.id)} must reference a scope index`);
+      }
+      continue;
+    }
+    scopedEdges += 1;
+    if (!Number.isSafeInteger(edge.scope)) {
+      failures.push(`edges[${String(index)}].scope must be an integer`);
+      continue;
+    }
+    const scope = Number(edge.scope);
+    if (scope < 0 || scope >= scopes.length) {
+      failures.push(`edges[${String(index)}].scope ${String(scope)} is out of range`);
+    }
+  }
+  if (scopedEdges === 0) failures.push('edges carry zero scope references');
+  return failures;
+};
 
 /**
  * Return the semantic node asserted by an entity, event, or operator call and
@@ -170,6 +354,10 @@ const countRecord = (counts) => Object.fromEntries([...counts].sort(([left], [ri
  * @param {ClauseSite[]} [parsedClauses]
  */
 export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(files)) => {
+  const scopes = deriveScopeRecords(parsedClauses);
+  const scopeIndexes = new Map(
+    scopes.map((scope, index) => [scopeKey(scope.document, scope.sentence, scope.reference), index]),
+  );
   /** @type {Map<string, GraphNode>} */
   const nodes = new Map();
   /** @type {GraphEdge[]} */
@@ -216,7 +404,10 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
     /** @type {string} */ target,
     /** @type {string} */ label,
     /** @type {string} */ predicate = clause.predicate,
+    /** @type {{ name: string, args: string[] }} */ scopeCall = clause.head,
   ) => {
+    const reference = scopeCall.args[scopeCall.name === 'guideline_operator' ? 1 : 0] ?? '';
+    const scope = scopeIndexes.get(scopeKey(clause.document, clause.sentence, reference));
     const edge = {
       id: `edge:${clause.line}:${ordinal}`,
       kind,
@@ -227,6 +418,7 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
       sentence: clause.sentence,
       line: clause.line,
       predicate,
+      ...(scope === undefined ? {} : { scope }),
     };
     edges.push(edge);
     increment(edgeKinds, kind);
@@ -328,7 +520,7 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
           );
           if (emittedConditions.has(key)) return;
           emittedConditions.add(key);
-          emit(clause, index + 2, kind, source, target, label, call.name);
+          emit(clause, index + 2, kind, source, target, label, call.name, call);
         };
         if (call.name === 'guideline_arg' || call.name === 'guideline_pp') {
           const source = resolveReference(
@@ -407,6 +599,7 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
             headNode,
             'condition supports',
             'guideline_condition',
+            call,
           );
         }
       }
@@ -438,6 +631,7 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
     schemaVersion: GRAPH_SCHEMA_VERSION,
     nodes: sortedNodes,
     edges: sortedEdges,
+    scopes,
     stats: {
       documents: documents.length,
       clauses: parsedClauses.length,
