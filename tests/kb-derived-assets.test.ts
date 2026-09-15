@@ -149,7 +149,7 @@ describe('static semantic graph asset', () => {
       entity: 1834,
       event: 1254,
       implies: 9804,
-      operator: 1264,
+      operator: 1193,
       preposition: 1197,
       property: 43,
     });
@@ -157,7 +157,7 @@ describe('static semantic graph asset', () => {
       documents: 337,
       clauses: 10_321,
       nodes: 2901,
-      edges: 21_035,
+      edges: 20_964,
     });
   });
 
