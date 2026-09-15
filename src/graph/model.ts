@@ -380,35 +380,68 @@ const lexicalScore = (label: string, text: string, phraseWeight: number): number
 };
 
 const scopeCoordinate = (document: string, sentence: number | null, reference: string): string =>
-  [document, sentence === null ? '' : String(sentence), reference].join('');
+  [document, sentence === null ? '' : String(sentence), reference].join('\u001f');
 
 const edgeRelation = (edge: SemanticGraphEdge): string => edge.relation ?? edge.label;
 
+const scopeOperatorLabel = (operator: SemanticGraphScopeOperator): string =>
+  operator === '-' ? 'negated' : operator;
+
+const scopedRelationLabel = (
+  relation: string,
+  operators: readonly SemanticGraphScopeOperator[],
+): string =>
+  operators.length === 0 ? relation : [relation, ...operators.map(scopeOperatorLabel)].join(' · ');
+
 const enrichScope = (data: SemanticGraphData): readonly SemanticGraphEdge[] => {
-  const byReference = new Map<string, SemanticGraphScope>();
-  for (const scope of data.scopes) {
+  const byReference = new Map<string, { scope: SemanticGraphScope; index: number }>();
+  for (const [index, scope] of data.scopes.entries()) {
     const key = scopeCoordinate(scope.document, scope.sentence, scope.reference);
     if (byReference.has(key)) {
       throw new GraphDataError(`${scope.id}: duplicate scope reference ${scope.reference}`);
     }
-    byReference.set(key, scope);
+    byReference.set(key, { scope, index });
+  }
+  const operatorTargets = new Map<number, string>();
+  for (const edge of data.edges) {
+    if (edge.kind !== 'operator' || edge.scope === undefined) continue;
+    const target = operatorTargets.get(edge.scope);
+    if (target !== undefined && target !== edge.target) {
+      throw new GraphDataError(`${edge.id}: scope ${String(edge.scope)} has conflicting operators`);
+    }
+    operatorTargets.set(edge.scope, edge.target);
   }
   return Object.freeze(
     data.edges.map((edge) => {
       const scope = edge.scope === undefined ? undefined : data.scopes[edge.scope];
-      const scopeOperators = Object.freeze(
+      const resolved =
         scope === undefined
           ? []
           : scope.chain.flatMap((reference, index) => {
               const nested = byReference.get(
                 scopeCoordinate(scope.document, scope.sentence, reference),
               );
-              if (nested !== undefined) return [nested.operator];
+              if (nested !== undefined) return [nested];
               if (index === 0) return [];
               throw new GraphDataError(`${scope.id}.chain cannot resolve ${reference}`);
-            }),
-      );
-      return Object.freeze({ ...edge, relation: edge.label, scopeOperators });
+            });
+      const scopeOperators = Object.freeze(resolved.map(({ scope: nested }) => nested.operator));
+      const parent = resolved.at(-2);
+      const source =
+        edge.kind === 'operator' && parent !== undefined
+          ? operatorTargets.get(parent.index)
+          : edge.source;
+      if (source === undefined) {
+        throw new GraphDataError(`${edge.id}: nested operator scope has no parent edge`);
+      }
+      return Object.freeze({
+        ...edge,
+        source,
+        label:
+          edge.kind === 'operator' ? edge.label : scopedRelationLabel(edge.label, scopeOperators),
+        relation: edge.label,
+        scopeOperators,
+      });
     }),
   );
 };
@@ -442,11 +475,16 @@ const isConceptRelationship = (
   edge: SemanticGraphEdge,
   nodes: ReadonlyMap<string, SemanticGraphNode>,
 ): boolean =>
-  edge.kind !== 'cardinality' &&
+  (edge.kind !== 'cardinality' || edgeRelation(edge) !== 'na eq 1') &&
   edge.kind !== 'operator' &&
   (edge.kind !== 'implies' || edgeRelation(edge) === 'condition supports') &&
   isConceptNode(nodes.get(edge.source)) &&
   isConceptNode(nodes.get(edge.target));
+
+const isNegatedConditionSupport = (edge: SemanticGraphEdge): boolean =>
+  edge.kind === 'implies' &&
+  edgeRelation(edge) === 'condition supports' &&
+  (edge.scopeOperators ?? []).includes('-');
 
 const conceptRole = (edge: SemanticGraphEdge): number => {
   const relation = edgeRelation(edge);
@@ -807,7 +845,12 @@ export class SemanticGraphModel {
     }
     const evidenceKeys = new Set(
       evidenceConceptEdges
-        .filter((edge) => evidenceNodes.has(edge.source) && evidenceNodes.has(edge.target))
+        .filter(
+          (edge) =>
+            !isNegatedConditionSupport(edge) &&
+            evidenceNodes.has(edge.source) &&
+            evidenceNodes.has(edge.target),
+        )
         .map(conceptEdgeKey),
     );
     const representatives = this.#conceptRepresentatives(rawEvidenceIds);
@@ -1158,12 +1201,19 @@ export const graphNodeKindLabel = (node: SemanticGraphNode): string => {
 };
 
 export const graphRelationLabel = (edge: SemanticGraphEdge, from?: string): string => {
+  const relation = edgeRelation(edge);
+  let label: string;
   if (edge.kind === 'argument') {
     const outward = from === undefined || from === edge.source;
-    if (edge.label === 'argument 1') return outward ? 'actor' : 'acts in';
-    if (edge.label === 'argument 2') return outward ? 'target' : 'target of';
-    return outward ? 'participant' : 'participates in';
+    if (relation === 'argument 1') label = outward ? 'actor' : 'acts in';
+    else if (relation === 'argument 2') label = outward ? 'target' : 'target of';
+    else label = outward ? 'participant' : 'participates in';
+  } else if (edge.kind === 'event') {
+    label = from === edge.target ? 'action for' : 'action';
+  } else if (edge.kind === 'implies' && relation === 'condition supports') {
+    label = from === edge.target ? 'supported by condition' : relation;
+  } else {
+    label = relation.replace(/[_-]+/gu, ' ');
   }
-  if (edge.kind === 'event') return from === edge.target ? 'action for' : 'action';
-  return edge.label.replace(/[_-]+/gu, ' ');
+  return edge.kind === 'operator' ? label : scopedRelationLabel(label, edge.scopeOperators ?? []);
 };
