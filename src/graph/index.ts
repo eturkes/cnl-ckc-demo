@@ -5,6 +5,7 @@ export {
   GRAPH_EDGE_KINDS,
   GRAPH_NODE_KINDS,
   GRAPH_SCHEMA_VERSION,
+  GRAPH_SCOPE_OPERATORS,
   MAX_ANSWER_GRAPH_LIMIT,
   MAX_NEIGHBOR_LIMIT,
   GraphDataError,
@@ -24,5 +25,7 @@ export {
   type SemanticGraphEdgeKind,
   type SemanticGraphNode,
   type SemanticGraphNodeKind,
+  type SemanticGraphScope,
+  type SemanticGraphScopeOperator,
   type SemanticGraphStats,
 } from './model.js';

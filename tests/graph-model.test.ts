@@ -19,7 +19,64 @@ describe('semantic graph boundary', () => {
     expect(parsed.stats).toMatchObject({ documents: 2, clauses: 5, nodes: 7, edges: 5 });
     expect(parsed.nodes).toHaveLength(7);
     expect(parsed.edges).toHaveLength(5);
+    expect(parsed.scopes).toEqual([
+      expect.objectContaining({ operator: 'should', chain: ['actual', 'scope:should'] }),
+    ]);
+    expect(parsed.edges.find(({ id }) => id === 'edge:event-operator')?.scope).toBe(0);
     expect(Object.isFrozen(parsed.nodes)).toBe(true);
+    expect(Object.isFrozen(parsed.scopes[0]?.chain)).toBe(true);
+  });
+
+  it.each([
+    [
+      'malformed scope record',
+      { ...GRAPH_FIXTURE, scopes: [{ ...GRAPH_FIXTURE.scopes[0], chain: [] }] },
+      'scopes[0].chain',
+    ],
+    [
+      'non-integer edge scope',
+      {
+        ...GRAPH_FIXTURE,
+        edges: GRAPH_FIXTURE.edges.map((edge) =>
+          edge.id === 'edge:event-operator' ? { ...edge, scope: 0.5 } : edge,
+        ),
+      },
+      'edges[3].scope',
+    ],
+    [
+      'out-of-range edge scope',
+      {
+        ...GRAPH_FIXTURE,
+        edges: GRAPH_FIXTURE.edges.map((edge) =>
+          edge.id === 'edge:event-operator' ? { ...edge, scope: 1 } : edge,
+        ),
+      },
+      'edges[3].scope 1 is out of range',
+    ],
+    [
+      'operator edge without scope',
+      {
+        ...GRAPH_FIXTURE,
+        edges: GRAPH_FIXTURE.edges.map((edge) =>
+          edge.id === 'edge:event-operator' ? { ...edge, scope: undefined } : edge,
+        ),
+      },
+      'edges[3].scope is required',
+    ],
+  ])('rejects %s by field', (_name, input, field) => {
+    expect(() => parseSemanticGraph(input)).toThrow(field);
+  });
+
+  it('accepts scope records that no edge references', () => {
+    const unreferenced = {
+      ...GRAPH_FIXTURE.scopes[0],
+      id: 'scope:unused',
+      chain: ['actual', 'scope:unused'],
+      reference: 'scope:unused',
+    } as const;
+    expect(() =>
+      parseSemanticGraph({ ...GRAPH_FIXTURE, scopes: [...GRAPH_FIXTURE.scopes, unreferenced] }),
+    ).not.toThrow();
   });
 
   it.each([

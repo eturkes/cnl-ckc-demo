@@ -26,12 +26,24 @@ export const GRAPH_EDGE_KINDS = [
 ] as const;
 export type SemanticGraphEdgeKind = (typeof GRAPH_EDGE_KINDS)[number];
 
+export const GRAPH_SCOPE_OPERATORS = ['-', 'should', 'may', 'can', 'must'] as const;
+export type SemanticGraphScopeOperator = (typeof GRAPH_SCOPE_OPERATORS)[number];
+
 export interface SemanticGraphNode {
   id: string;
   kind: SemanticGraphNodeKind;
   label: string;
   document?: string;
   sentence?: number;
+}
+
+export interface SemanticGraphScope {
+  id: string;
+  chain: readonly string[];
+  operator: SemanticGraphScopeOperator;
+  document: string;
+  sentence: number | null;
+  reference: string;
 }
 
 export interface SemanticGraphEdge {
@@ -44,6 +56,7 @@ export interface SemanticGraphEdge {
   sentence: number | null;
   line: number;
   predicate: string;
+  scope?: number;
 }
 
 export interface SemanticGraphStats {
@@ -59,6 +72,7 @@ export interface SemanticGraphData {
   schemaVersion: typeof GRAPH_SCHEMA_VERSION;
   nodes: readonly SemanticGraphNode[];
   edges: readonly SemanticGraphEdge[];
+  scopes: readonly SemanticGraphScope[];
   stats: SemanticGraphStats;
 }
 
@@ -177,10 +191,30 @@ const parseNode = (value: unknown, index: number): SemanticGraphNode => {
   });
 };
 
+const parseScope = (value: unknown, index: number): SemanticGraphScope => {
+  const at = `scopes[${String(index)}]`;
+  if (!isRecord(value)) throw new GraphDataError(`${at} must be an object`);
+  if (!Array.isArray(value.chain) || value.chain.length === 0) {
+    throw new GraphDataError(`${at}.chain must be a non-empty array`);
+  }
+  const sentence = value.sentence === null ? null : integer(value.sentence, `${at}.sentence`, 1);
+  return Object.freeze({
+    id: text(value.id, `${at}.id`),
+    chain: Object.freeze(
+      value.chain.map((entry, chainIndex) => text(entry, `${at}.chain[${String(chainIndex)}]`)),
+    ),
+    operator: enumText(value.operator, GRAPH_SCOPE_OPERATORS, `${at}.operator`),
+    document: text(value.document, `${at}.document`),
+    sentence,
+    reference: text(value.reference, `${at}.reference`),
+  });
+};
+
 const parseEdge = (value: unknown, index: number): SemanticGraphEdge => {
   const at = `edges[${String(index)}]`;
   if (!isRecord(value)) throw new GraphDataError(`${at} must be an object`);
   const sentence = value.sentence === null ? null : integer(value.sentence, `${at}.sentence`, 1);
+  const scope = value.scope === undefined ? undefined : integer(value.scope, `${at}.scope`);
   return Object.freeze({
     id: text(value.id, `${at}.id`),
     kind: enumText(value.kind, GRAPH_EDGE_KINDS, `${at}.kind`),
@@ -191,6 +225,7 @@ const parseEdge = (value: unknown, index: number): SemanticGraphEdge => {
     sentence,
     line: integer(value.line, `${at}.line`, 1),
     predicate: text(value.predicate, `${at}.predicate`),
+    ...(scope === undefined ? {} : { scope }),
   });
 };
 
@@ -224,13 +259,15 @@ export const parseSemanticGraph = (value: unknown): SemanticGraphData => {
       `semantic graph schema ${String(value.schemaVersion)}, expected ${String(GRAPH_SCHEMA_VERSION)}`,
     );
   }
-  if (!Array.isArray(value.nodes) || !Array.isArray(value.edges)) {
-    throw new GraphDataError('semantic graph must contain node and edge arrays');
+  if (!Array.isArray(value.nodes) || !Array.isArray(value.edges) || !Array.isArray(value.scopes)) {
+    throw new GraphDataError('semantic graph must contain node, edge and scope arrays');
   }
   const nodes = value.nodes.map(parseNode);
   const edges = value.edges.map(parseEdge);
+  const scopes = value.scopes.map(parseScope);
   const stats = parseStats(value.stats);
   if (nodes.length === 0) throw new GraphDataError('semantic graph contains no nodes');
+  if (scopes.length === 0) throw new GraphDataError('semantic graph contains no scopes');
   if (stats.nodes !== nodes.length || stats.edges !== edges.length) {
     throw new GraphDataError(
       `stats record ${String(stats.nodes)}/${String(stats.edges)}, parsed ${String(nodes.length)}/${String(edges.length)}`,
@@ -242,14 +279,31 @@ export const parseSemanticGraph = (value: unknown): SemanticGraphData => {
     if (nodeIds.has(node.id)) throw new GraphDataError(`duplicate node id ${node.id}`);
     nodeIds.add(node.id);
   }
+  const scopeIds = new Set<string>();
+  for (const [index, scope] of scopes.entries()) {
+    if (scopeIds.has(scope.id)) throw new GraphDataError(`duplicate scope id ${scope.id}`);
+    scopeIds.add(scope.id);
+    const previous = scopes[index - 1];
+    if (previous !== undefined && scope.id.localeCompare(previous.id) < 0) {
+      throw new GraphDataError(`scopes[${String(index)}].id is not sorted`);
+    }
+  }
   const edgeIds = new Set<string>();
-  for (const edge of edges) {
+  for (const [index, edge] of edges.entries()) {
     if (edgeIds.has(edge.id)) throw new GraphDataError(`duplicate edge id ${edge.id}`);
     edgeIds.add(edge.id);
     if (!nodeIds.has(edge.source))
       throw new GraphDataError(`${edge.id}: missing source ${edge.source}`);
     if (!nodeIds.has(edge.target))
       throw new GraphDataError(`${edge.id}: missing target ${edge.target}`);
+    if (edge.kind === 'operator' && edge.scope === undefined) {
+      throw new GraphDataError(`edges[${String(index)}].scope is required for an operator edge`);
+    }
+    if (edge.scope !== undefined && edge.scope >= scopes.length) {
+      throw new GraphDataError(
+        `edges[${String(index)}].scope ${String(edge.scope)} is out of range`,
+      );
+    }
   }
   const actualNodeKinds = Object.fromEntries(
     GRAPH_NODE_KINDS.map((kind) => [kind, nodes.filter((node) => node.kind === kind).length]),
@@ -274,6 +328,7 @@ export const parseSemanticGraph = (value: unknown): SemanticGraphData => {
     schemaVersion: GRAPH_SCHEMA_VERSION,
     nodes: Object.freeze(nodes),
     edges: Object.freeze(edges),
+    scopes: Object.freeze(scopes),
     stats,
   });
 };
