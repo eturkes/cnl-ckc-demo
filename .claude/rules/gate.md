@@ -45,6 +45,12 @@ Step semantics a reader cannot get from the script name:
   binding check from present into required. Grading a separate run would execute every live
   suite twice and grade a run the gate did not use; grading an earlier report raises a
   staleness question no cheap check settles. `pnpm test` stays for development.
+  It holds **two** declared tables, graded by one inventory loop: `REQUIRED` = the
+  answer-path roll call, each row naming the part of the non-negotiable it holds up, and
+  `LIFECYCLE` = claims the VIEW makes on its own, currently that a run reaches a terminal
+  state and says so. User ruling: the two stay apart so a lifecycle row never dilutes the
+  non-negotiable register. `gradeTable` refuses an EMPTY table by name, and the control feeds
+  it the real table emptied.
 - `engine:check` (`tools/engine-check.mjs`) decides budget-required signatures, `.query`/
   `.ask` call-site arity, exactly one `swipl-wasm` importer (`src/engine/worker.ts` — the
   pattern must admit a BARE side-effect import, which a `from`-anchored one missed), the
@@ -85,7 +91,7 @@ effect of the unit whose grader it loosens.
 | `copy:check` | the shipped English graded at limit 0 against a filler list holding `the`; `en.ts` read as the Japanese catalog; the shell `<title>` prefixed | one per grader, in process, over the real catalogs |
 | `contrast:check` | `--text` collapsed onto `--surface` | the pair loop re-run on the perturbed token map, must report `1:1` |
 | `presentation:check` | one `@font-face` renamed out of `app.css`; each shipped licence compared against the next package's; `overflow-wrap` stripped from every component style | one per declared table, in process |
-| `binding:check` | a required case no suite defines; a required suite the run never loaded | the inventory loop re-run over the gate's OWN suite report, so neither costs a second vitest |
+| `binding:check` | a required case no suite defines; a required suite the run never loaded; the `LIFECYCLE` table emptied | the inventory loop re-run over the gate's OWN suite report, so none costs a second vitest; the third feeds `gradeTable` the real table emptied, through the same function the real one goes through |
 | `kb:reproduce` | one asset digest changed in the second manifest | the equality seam re-run on the perturbed clone |
 | `graph:check` | one edge's `line-style` set to `dashed` in the mounted graph | `dashControl` requires a 0 → 1 → 0 reading off the live renderer |
 | `graph:check` component half | the component's selection callback detached; a `graphUrl` the server does not serve; every `--graph-*` token set to `initial` on the mount host | the interaction sweep re-runs under the detached callback and `gradeInteractions` must refuse it by naming C2 and C6; the other two are the product's own failure paths, graded as C9 and C10 |

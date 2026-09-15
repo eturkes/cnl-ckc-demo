@@ -19,6 +19,15 @@ are this repo's deltas.
 - Toolchain env = symlink the primary `node_modules` into the worktree. `.gitignore`
   therefore spells `node_modules` and `kb/generated` **without a trailing slash** — the slash
   form matches directories only and leaves the symlink untracked.
+- **`kb/generated` must be a real directory in the worktree, never a symlink.** Vite resolves
+  a symlinked id to its real path and then refuses it for sitting outside the worktree root:
+  every suite pulling a generated asset into the import graph fails to COLLECT with
+  `Denied ID …/kb/generated/…json?url&no-inline`, which reads like a broken test rather than a
+  broken harness. `NODE_OPTIONS=--preserve-symlinks` trades it for a pnpm resolution failure.
+  Seed it with `cp -a --reflink=auto kb/generated <wt>/kb/generated` — 344 files, 22 MB,
+  no disk cost on btrfs. The copy is a snapshot: a worktree whose suite depends on freshly
+  built KB bytes gets re-seeded after MAIN's `kb:build`, and `node_modules` stays a symlink
+  because dependency ids resolve through pnpm rather than through the fs allow-list.
 - Surviving teammate tips stay in **branch** form (`wt/<name>`): every committed citation —
   contracts, ledgers, reviewer reports, `Deferred` rows — names the branch. A Close-order
   branch sweep covers its own wave's roster alone; renaming a cited branch invalidates the

@@ -136,6 +136,43 @@ const REQUIRED = Object.freeze([
   },
 ]);
 
+/**
+ * The required RUN-LIFECYCLE checks, by suite and EXACT case name.
+ *
+ * Separate from `REQUIRED` on purpose: these hold up a claim the VIEW makes on its own —
+ * that a run reaches a terminal state and says so — rather than a part of the non-negotiable.
+ * Keeping the two registers apart is what lets a later unit read `REQUIRED` as the answer-path
+ * roll call without a lifecycle row diluting it. Both are graded by the same inventory loop,
+ * so a rename, a deletion or an `it.skip` fails the gate either way.
+ *
+ * @type {readonly Requirement[]}
+ */
+const LIFECYCLE = Object.freeze([
+  {
+    suite: 'tests/demo-controller.dom.test.ts',
+    why: 'a rejected ask settles into a terminal state the view renders',
+    cases: [
+      'rejected run lifecycle P1 settles a rejected ask as a rendered engine error',
+      'rejected run lifecycle P2 fulfils the run promise instead of rejecting it',
+      'rejected run lifecycle P3 leaves the answer region unbusy with Cancel disabled and Retry offered',
+      'rejected run lifecycle P4 announces the failure with the shipped runFailed copy',
+      'rejected run lifecycle P5 lets the next run dispatch its own ask after a rejection',
+      'rejected run lifecycle P6 ignores a superseded run rejection and keeps the live state',
+      'rejected run lifecycle P7 keeps cancel inert once a rejected run has settled',
+    ],
+  },
+  {
+    suite: 'tests/demo-controller.model.test.ts',
+    why: 'an independent transition model still agrees with the controller',
+    cases: [
+      'demo controller transition oracle O1 model and controller agree on every driven transition sequence',
+      'demo controller transition oracle O2 model and controller agree on the state a rejected ask leaves behind',
+      'demo controller transition oracle O3 model and controller agree on a run started after a rejected run',
+      'demo controller transition oracle O4 model and controller agree on a superseded rejection writing nothing',
+    ],
+  },
+]);
+
 const VITEST = join(ROOT, 'node_modules', 'vitest', 'vitest.mjs');
 
 /**
@@ -170,6 +207,21 @@ const gradeInventory = (required, suites) => {
   return { failures, graded };
 };
 
+/**
+ * Grade a declared table, refusing an EMPTY one by name.
+ *
+ * An empty table grades nothing while the success line still prints its count, so a check
+ * that stopped reading its own input and a clean tree emit the same green. Taking the table
+ * as a parameter is what lets the control feed this same function the real table emptied.
+ *
+ * @param {readonly Requirement[]} table @param {string} name @param {SuiteResult[]} suites
+ * @returns {{failures: string[], graded: number}}
+ */
+const gradeTable = (table, name, suites) =>
+  table.length === 0
+    ? { failures: [`the ${name} table is empty, so it grades no case`], graded: 0 }
+    : gradeInventory(table, suites);
+
 /** @type {string[]} */
 const failures = [];
 /** @param {string} message */
@@ -179,9 +231,9 @@ const fail = (message) => failures.push(message);
  * Reported inside the run, not after it: the scratch cleanup runs in a `finally`, and a
  * value assigned there for a later read is what `no-useless-assignment` refuses.
  *
- * @param {number} graded @param {number} controls
+ * @param {number} graded @param {number} lifecycle @param {number} controls
  */
-const report = (graded, controls) => {
+const report = (graded, lifecycle, controls) => {
   if (failures.length > 0) {
     process.stderr.write(
       `binding:check failed —\n${failures.map((line) => `  ${line}`).join('\n')}\n`,
@@ -190,7 +242,8 @@ const report = (graded, controls) => {
   } else {
     process.stdout.write(
       `binding:check ok — ${String(graded)} required binding cases passed ` +
-        `across ${String(REQUIRED.length)} suites, ${String(controls)} controls fired\n`,
+        `across ${String(REQUIRED.length)} suites, ${String(lifecycle)} lifecycle cases ` +
+        `across ${String(LIFECYCLE.length)} suites, ${String(controls)} controls fired\n`,
     );
   }
 };
@@ -226,6 +279,9 @@ try {
   const inventory = gradeInventory(REQUIRED, suites);
   for (const line of inventory.failures) fail(line);
 
+  const lifecycle = gradeTable(LIFECYCLE, 'LIFECYCLE', suites);
+  for (const line of lifecycle.failures) fail(line);
+
   // Controls: the two ways an inventory row stops binding anything. A rename leaves the case
   // undefined; a deleted or renamed file leaves the suite unrun. Both are graded against the
   // gate's OWN suite run, so neither costs a second vitest.
@@ -247,9 +303,14 @@ try {
         gradeInventory([{ suite: 'tests/zz-control.test.ts', why: 'control', cases: [] }], suites)
           .failures,
     ),
+    requireFiring(
+      'binding:check',
+      { mutation: 'the LIFECYCLE table emptied', expect: ['LIFECYCLE table is empty'] },
+      () => gradeTable([], 'LIFECYCLE', suites).failures,
+    ),
   ].length;
 
-  report(inventory.graded, controls);
+  report(inventory.graded, lifecycle.graded, controls);
 } finally {
   rmSync(scratch, { recursive: true, force: true });
 }

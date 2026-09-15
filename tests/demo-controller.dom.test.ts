@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import App from '../src/App.svelte';
 import type { BootOutcome } from '../src/engine/client.js';
 import type { EngineContract, EngineError, LimitKind, PlSolution } from '../src/engine/protocol.js';
+import { messages } from '../src/i18n/locale.svelte.js';
 import { QUESTION_IDS, type QuestionId } from '../src/questions/catalog.js';
 import type { AnswerResult } from '../src/questions/service.js';
 import {
@@ -21,25 +22,36 @@ const ID = QUESTION_IDS[0];
 type Deferred<T> = {
   promise: Promise<T>;
   resolve(value: T): void;
+  reject(reason: unknown): void;
 };
 
 const deferred = <T>(): Deferred<T> => {
   let resolve!: (value: T) => void;
-  const promise = new Promise<T>((accept) => {
+  let reject!: (reason: unknown) => void;
+  const promise = new Promise<T>((accept, refuse) => {
     resolve = accept;
+    reject = refuse;
   });
-  return { promise, resolve };
+  return { promise, resolve, reject };
+};
+
+type AskCall = {
+  id: unknown;
+  outcome: Deferred<AnswerResult>;
 };
 
 class ViewEngine implements DemoEngine {
   readonly bootOutcome = deferred<BootOutcome>();
+  readonly asks: AskCall[] = [];
 
   boot(): Promise<BootOutcome> {
     return this.bootOutcome.promise;
   }
 
-  ask(): Promise<AnswerResult> {
-    return new Promise(() => undefined);
+  ask(id: unknown): Promise<AnswerResult> {
+    const outcome = deferred<AnswerResult>();
+    this.asks.push({ id, outcome });
+    return outcome.promise;
   }
 
   dispose(): void {}
@@ -532,5 +544,172 @@ describe('view states and accessibility', () => {
       expect(allowed.some((value) => rendered.includes(value))).toBe(true);
       expect(rendered).not.toContain('binding-poison');
     }
+  });
+});
+
+// u10b — a rejected `ask()` must settle into a terminal state.
+// Contract + predicates: `.agent/contracts/m5u10b.md`.
+describe('rejected run lifecycle', () => {
+  it('P1 settles a rejected ask as a rendered engine error', async () => {
+    const reason = 'ask-rejection-p1';
+    controller.select(ID);
+    setState({ kind: 'idle', contract: CONTRACT });
+
+    const completion = controller.run().catch(() => undefined);
+    const call = engine.asks[0];
+    if (call === undefined) throw new Error('the first ask was not dispatched');
+    call.outcome.reject(new Error(reason));
+    await completion;
+    flushSync();
+
+    expect(controller.state).toEqual({
+      kind: 'settled',
+      id: ID,
+      result: { kind: 'error', id: ID, error: { code: 'worker', message: reason } },
+    });
+    expect(text(role('alert'))).toContain(reason);
+  });
+
+  it('P2 fulfils the run promise instead of rejecting it', async () => {
+    const unhandled: unknown[] = [];
+    const onUnhandled = (event: PromiseRejectionEvent): void => {
+      unhandled.push(event.reason);
+      event.preventDefault();
+    };
+    window.addEventListener('unhandledrejection', onUnhandled);
+    try {
+      controller.select(ID);
+      setState({ kind: 'idle', contract: CONTRACT });
+
+      const completion = controller.run();
+      const call = engine.asks[0];
+      if (call === undefined) throw new Error('the first ask was not dispatched');
+      call.outcome.reject(new Error('ask-rejection-p2'));
+      await completion;
+      await Promise.resolve();
+
+      expect(unhandled).toEqual([]);
+    } finally {
+      window.removeEventListener('unhandledrejection', onUnhandled);
+    }
+  });
+
+  it('P3 leaves the answer region unbusy with Cancel disabled and Retry offered', async () => {
+    controller.select(ID);
+    setState({ kind: 'idle', contract: CONTRACT });
+
+    const completion = controller.run().catch(() => undefined);
+    const call = engine.asks[0];
+    if (call === undefined) throw new Error('the first ask was not dispatched');
+    call.outcome.reject(new Error('ask-rejection-p3'));
+    await completion;
+    flushSync();
+
+    expect(answerRegion().getAttribute('aria-busy')).toBe('false');
+    expect(buttonNamed(/^cancel\b/iu).disabled).toBe(true);
+    expect(buttonNamed(/^retry\b/iu).disabled).toBe(false);
+  });
+
+  it('P4 announces the failure with the shipped runFailed copy', async () => {
+    const reason = 'ask-rejection-p4';
+    controller.select(ID);
+    setState({ kind: 'idle', contract: CONTRACT });
+
+    const completion = controller.run().catch(() => undefined);
+    const call = engine.asks[0];
+    if (call === undefined) throw new Error('the first ask was not dispatched');
+    call.outcome.reject(new Error(reason));
+    await completion;
+    flushSync();
+
+    const { TEXT } = messages.current;
+    const alert = role('alert');
+    expect(text(alert)).toBe(TEXT.runFailed('worker', reason));
+    expect(alert.closest('[aria-hidden="true"]')).toBeNull();
+    const summary = answerRegion().querySelector<HTMLElement>('.summary');
+    if (summary === null) throw new Error('the answer failure summary is missing');
+    expect(text(summary)).toBe(TEXT.runFailedSummary());
+    expect(summary.closest('[aria-hidden="true"]')).toBeNull();
+  });
+
+  it('P5 lets the next run dispatch its own ask after a rejection', async () => {
+    const next = QUESTION_IDS[1];
+    if (next === undefined) throw new Error('the successor question fixture is missing');
+    controller.select(ID);
+    setState({ kind: 'idle', contract: CONTRACT });
+
+    const firstCompletion = controller.run().catch(() => undefined);
+    const firstCall = engine.asks[0];
+    if (firstCall === undefined) throw new Error('the first ask was not dispatched');
+
+    controller.select(next);
+    const secondCompletion = controller.run();
+    void secondCompletion.catch(() => undefined);
+    firstCall.outcome.reject(new Error('ask-rejection-p5'));
+    await firstCompletion;
+    await Promise.resolve();
+
+    expect(engine.asks).toHaveLength(2);
+    const secondCall = engine.asks[1];
+    if (secondCall === undefined) throw new Error('the successor ask was not dispatched');
+    expect(secondCall.id).toBe(next);
+    const result = answer(next, 1, 'successor');
+    secondCall.outcome.resolve(result);
+    await secondCompletion;
+    flushSync();
+
+    expect(controller.state).toEqual({ kind: 'settled', id: next, result });
+  });
+
+  it('P6 ignores a superseded run rejection and keeps the live state', async () => {
+    const next = QUESTION_IDS[1];
+    if (next === undefined) throw new Error('the successor question fixture is missing');
+    controller.select(ID);
+    setState({ kind: 'idle', contract: CONTRACT });
+
+    const firstCompletion = controller.run().then(
+      () => 'fulfilled' as const,
+      () => 'rejected' as const,
+    );
+    const firstCall = engine.asks[0];
+    if (firstCall === undefined) throw new Error('the first ask was not dispatched');
+
+    controller.select(next);
+    const secondCompletion = controller.run();
+    void secondCompletion.catch(() => undefined);
+    flushSync();
+    const liveStatus = text(role('status'));
+    expect(answerRegion().getAttribute('aria-busy')).toBe('true');
+
+    firstCall.outcome.reject(new Error('ask-rejection-p6'));
+    expect(await firstCompletion).toBe('fulfilled');
+    await Promise.resolve();
+    flushSync();
+
+    expect(controller.state).toEqual({ kind: 'running', id: next });
+    expect(text(role('status'))).toBe(liveStatus);
+    expect(answerRegion().getAttribute('aria-busy')).toBe('true');
+  });
+
+  it('P7 keeps cancel inert once a rejected run has settled', async () => {
+    const reason = 'ask-rejection-p7';
+    controller.select(ID);
+    setState({ kind: 'idle', contract: CONTRACT });
+
+    const completion = controller.run().catch(() => undefined);
+    const call = engine.asks[0];
+    if (call === undefined) throw new Error('the first ask was not dispatched');
+    call.outcome.reject(reason);
+    await completion;
+    await controller.cancel();
+    flushSync();
+
+    expect(controller.state).toEqual({
+      kind: 'settled',
+      id: ID,
+      result: { kind: 'error', id: ID, error: { code: 'worker', message: reason } },
+    });
+    expect(answerRegion().getAttribute('aria-busy')).toBe('false');
+    expect(buttonNamed(/^cancel\b/iu).disabled).toBe(true);
   });
 });

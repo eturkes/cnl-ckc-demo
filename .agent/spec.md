@@ -46,6 +46,14 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
 - **Security lane.** Live `pnpm audit` in the gate, no allowlist; secretlint pinned `^12` so
   Node stays 20; static analysis = ESLint security rules only, no CodeQL/Semgrep; the
   `Deferred` defects stay deferred into MAINTAIN. Wiring → `.claude/rules/gate.md`.
+- **`binding:check` holds two declared tables.** `REQUIRED` stays the answer-path register —
+  every row names the part of the non-negotiable it holds up — and `LIFECYCLE` carries claims
+  the view makes on its own, so a lifecycle row never dilutes the non-negotiable roll call.
+  One inventory loop grades both. Wiring → `.claude/rules/gate.md`.
+- **Judgment review reads the SHIPPED SURFACE, not a commit range.** The `rev` lenses read the
+  working tree at close — `src/`, `tools/`, the gate, the contracts — so a defect is caught
+  wherever it ships and superseded code is never re-read. The u3–u10 pass the ledger calls
+  outstanding is discharged by that reading, not by a separate history pass.
 
 **MAIN:** premise display = deduplicated steps inside the EXISTING ladder rungs, never a new
 step type (3,930 leaves / 346 premises), carrying hypothetical origin and no source line.
@@ -64,9 +72,9 @@ into the spine below, leaving one queued.
 
 ## Units — the remaining IMPLEMENT path
 
-u10b→u10c clear the verification-integrity census first; u11→u13 then finish the graph, and
-u14→u15 close the phase over both spines. Full `Accept:` + `Depends` → archive; u3–u10 closed,
-contract each in `.agent/contracts/`, close summaries in `.agent/archive/units-m5.md`.
+u10c clears the rest of the verification-integrity census; u11→u13 then finish the graph, and
+u14→u15 close the phase over both spines. Full `Accept:` + `Depends` → archive; u3–u10b
+closed, contract each in `.agent/contracts/`, close summaries in `.agent/archive/units-m5.md`.
 
 **From u11 on, every unit contract carries its red witness** — `N/M RED at base <sha>` plus
 the command that reproduces it, the form `.agent/archive/contracts/m5u1.md:232` and
@@ -74,12 +82,6 @@ the command that reproduces it, the form `.agent/archive/contracts/m5u1.md:232` 
 revision. Form + the two shapes that satisfy it without a `git show` →
 `.claude/rules/waves.md`.
 
-- **u10b terminal state for a rejected `ask()`** — `DemoController.svelte.ts:224-226` retires
-  the active run and rethrows, leaving `{ kind: 'running' }` set at `:201`, while
-  `App.svelte:151` `void demo.run()` discards the rejection; `EngineClient.query` throws on a
-  disposed client (`client.ts:114`). The UI stays busy and Cancel becomes a no-op. Accept: a
-  rejected `ask()` settles into a terminal state a dom case reads, that case RED on the
-  unfixed revision with its revision + command in the contract.
 - **u10c empty-table guards + the two unowned check thresholds** — five declared tables grade
   nothing when empty and the step still prints its count: `binding-check.mjs:37` `REQUIRED`,
   `engine-check.mjs:61` `CONTROLS` (`:283` prints `${CONTROLS.length} controls fired`),
@@ -112,4 +114,4 @@ revision. Form + the two shapes that satisfy it without a `git show` →
 
 # Phase
 
-IMPLEMENT, at u11. Judgment review → `.agent/review.md`, adjudicated before the phase closes.
+IMPLEMENT, at u10c. Judgment review → `.agent/review.md`, adjudicated before the phase closes.

@@ -207,25 +207,32 @@ export class DemoController {
 
     // Nothing live means the engine call goes out in this same tick; only a
     // predecessor's open iterator defers it, and the replacement is already
-    // visible either way.
-    const query = previous === undefined ? dispatch() : previous.query.then(dispatch);
+    // visible either way. The predecessor's OUTCOME must not decide whether this
+    // run happens: a bare `.then(dispatch)` propagates its rejection instead, so
+    // this run would report a failure for a question it never asked.
+    const query = previous === undefined ? dispatch() : previous.query.then(dispatch, dispatch);
     const retire = (): void => {
       if (this.#active?.controller === controller) this.#active = undefined;
     };
-    const done = query.then(
-      (result) => {
-        if (this.#active?.controller !== controller) return;
-        retire();
-        this.state = { kind: 'settled', id, result };
-        this.solutionIndex = solutionsOf(result).length > 0 ? 0 : -1;
-        const first = solutionsOf(result)[0];
-        if (first !== undefined) void this.#trace(id, 0, first);
-      },
-      (cause: unknown) => {
-        retire();
-        throw cause;
-      },
-    );
+    const settle = (result: AnswerResult): void => {
+      if (this.#active?.controller !== controller) return;
+      retire();
+      this.state = { kind: 'settled', id, result };
+      this.solutionIndex = solutionsOf(result).length > 0 ? 0 : -1;
+      const first = solutionsOf(result)[0];
+      if (first !== undefined) void this.#trace(id, 0, first);
+    };
+    // A rejected `ask()` is an outcome, not an escape. Rethrowing it left `running`
+    // set while `run()`'s only caller discards the promise, so the view stayed busy
+    // forever and Cancel read an already-retired run. `worker` is the code `#boot`
+    // and `#trace` already give an unexpected rejection from an engine call.
+    const done = query.then(settle, (cause: unknown) => {
+      settle({
+        kind: 'error',
+        id,
+        error: { code: 'worker', message: cause instanceof Error ? cause.message : String(cause) },
+      });
+    });
 
     this.#active = { id, controller, query, done };
     return done;
