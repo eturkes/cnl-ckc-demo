@@ -1,7 +1,7 @@
 import type { SemanticGraphData } from '../src/graph/model.js';
 
 export const GRAPH_FIXTURE = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   nodes: [
     { id: 'doc:cdc', kind: 'document', label: 'CDC 2022 opioid guideline' },
     {
