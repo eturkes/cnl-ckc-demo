@@ -21,25 +21,35 @@ const ID = QUESTION_IDS[0];
 type Deferred<T> = {
   promise: Promise<T>;
   resolve(value: T): void;
+  reject(reason: unknown): void;
 };
 
 const deferred = <T>(): Deferred<T> => {
   let resolve!: (value: T) => void;
-  const promise = new Promise<T>((accept) => {
+  let reject!: (reason: unknown) => void;
+  const promise = new Promise<T>((accept, refuse) => {
     resolve = accept;
+    reject = refuse;
   });
-  return { promise, resolve };
+  return { promise, resolve, reject };
+};
+
+type AskCall = {
+  outcome: Deferred<AnswerResult>;
 };
 
 class ViewEngine implements DemoEngine {
   readonly bootOutcome = deferred<BootOutcome>();
+  readonly asks: AskCall[] = [];
 
   boot(): Promise<BootOutcome> {
     return this.bootOutcome.promise;
   }
 
   ask(): Promise<AnswerResult> {
-    return new Promise(() => undefined);
+    const outcome = deferred<AnswerResult>();
+    this.asks.push({ outcome });
+    return outcome.promise;
   }
 
   dispose(): void {}
@@ -538,8 +548,24 @@ describe('view states and accessibility', () => {
 // u10b — a rejected `ask()` must settle into a terminal state.
 // Contract + predicates: `.agent/contracts/m5u10b.md`.
 describe('rejected run lifecycle', () => {
-  it('P1 settles a rejected ask as a rendered engine error', () => {
-    expect.fail('unimplemented');
+  it('P1 settles a rejected ask as a rendered engine error', async () => {
+    const reason = 'ask-rejection-p1';
+    controller.select(ID);
+    setState({ kind: 'idle', contract: CONTRACT });
+
+    const completion = controller.run().catch(() => undefined);
+    const call = engine.asks[0];
+    if (call === undefined) throw new Error('the first ask was not dispatched');
+    call.outcome.reject(new Error(reason));
+    await completion;
+    flushSync();
+
+    expect(controller.state).toEqual({
+      kind: 'settled',
+      id: ID,
+      result: { kind: 'error', id: ID, error: { code: 'worker', message: reason } },
+    });
+    expect(text(role('alert'))).toContain(reason);
   });
 
   it('P2 fulfils the run promise instead of rejecting it', () => {
