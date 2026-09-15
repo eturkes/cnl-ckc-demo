@@ -430,4 +430,38 @@ describe('scope projection differential oracle', () => {
       expect(graphRelationLabel(support, support.target)).toBe('supported by condition');
     });
   });
+
+  describe('P4 accepted-open separation', () => {
+    it('keeps the S9 headline defect independent of scope-aware edge grouping', () => {
+      const asset = readOracleAsset();
+      const connected = new Set(conceptEdges(asset).flatMap((edge) => [edge.source, edge.target]));
+      const connectedNodes = asset.nodes.filter((node) => connected.has(node.id));
+      const conceptsAndActions = connectedNodes.filter(
+        (node) => node.kind === 'entity' || node.kind === 'event',
+      ).length;
+      const attributes = connectedNodes.filter((node) => node.kind === 'value').length;
+      const model = new SemanticGraphModel(parseSemanticGraph(asset));
+
+      expect({
+        reportedConceptsAndActions: model.conceptNodeCount,
+        actualConceptsAndActions: conceptsAndActions,
+        attributes,
+      }).toEqual({
+        reportedConceptsAndActions: conceptsAndActions,
+        actualConceptsAndActions: conceptsAndActions,
+        attributes,
+      });
+    });
+
+    it('keeps S13+ endpoint-role validation independent while its scope stays valid', () => {
+      const asset = structuredClone(readOracleAsset()) as OracleAsset & {
+        edges: OracleEdge[];
+      };
+      const malformed = edgeById(asset, 'edge:513:0');
+      malformed.source = 'document:cdc2022-opioid-rec01';
+
+      expect(orderedScopeResolver(asset)(malformed)).toEqual(['-', 'should']);
+      expect(() => parseSemanticGraph(asset)).toThrow(GraphDataError);
+    });
+  });
 });
