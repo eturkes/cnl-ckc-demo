@@ -661,8 +661,34 @@ describe('rejected run lifecycle', () => {
     expect(controller.state).toEqual({ kind: 'settled', id: next, result });
   });
 
-  it('P6 ignores a superseded run rejection and keeps the live state', () => {
-    expect.fail('unimplemented');
+  it('P6 ignores a superseded run rejection and keeps the live state', async () => {
+    const next = QUESTION_IDS[1];
+    if (next === undefined) throw new Error('the successor question fixture is missing');
+    controller.select(ID);
+    setState({ kind: 'idle', contract: CONTRACT });
+
+    const firstCompletion = controller.run().then(
+      () => 'fulfilled' as const,
+      () => 'rejected' as const,
+    );
+    const firstCall = engine.asks[0];
+    if (firstCall === undefined) throw new Error('the first ask was not dispatched');
+
+    controller.select(next);
+    const secondCompletion = controller.run();
+    void secondCompletion.catch(() => undefined);
+    flushSync();
+    const liveStatus = text(role('status'));
+    expect(answerRegion().getAttribute('aria-busy')).toBe('true');
+
+    firstCall.outcome.reject(new Error('ask-rejection-p6'));
+    expect(await firstCompletion).toBe('fulfilled');
+    await Promise.resolve();
+    flushSync();
+
+    expect(controller.state).toEqual({ kind: 'running', id: next });
+    expect(text(role('status'))).toBe(liveStatus);
+    expect(answerRegion().getAttribute('aria-busy')).toBe('true');
   });
 
   it('P7 keeps cancel inert once a rejected run has settled', () => {
