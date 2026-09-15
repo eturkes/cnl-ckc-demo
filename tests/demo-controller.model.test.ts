@@ -178,7 +178,7 @@ const transition = (model: Model, event: ModelEvent): Model => {
 type Completion = { kind: 'fulfilled' } | { kind: 'rejected'; reason: unknown };
 
 const observe = (promise: Promise<void>): Promise<Completion> =>
-  promise.then<Completion>(
+  promise.then<Completion, Completion>(
     () => ({ kind: 'fulfilled' }),
     (reason: unknown) => ({ kind: 'rejected', reason }),
   );
@@ -279,8 +279,10 @@ class Differential {
   private startRun(kind: 'run' | 'retry'): number {
     const token = this.nextToken;
     this.nextToken += 1;
-    const event = { kind, token } as const;
-    const next = transition(this.model, event);
+    const next = transition(
+      this.model,
+      kind === 'run' ? { kind: 'run', token } : { kind: 'retry', token },
+    );
     if (next.active?.token === token) this.engine.plan(token, next.active.id);
     const completion = observe(kind === 'run' ? this.controller.run() : this.controller.retry());
     this.model = next;
@@ -344,7 +346,17 @@ describe('demo controller transition oracle', () => {
     await driven.fulfill(successor, answer(QUESTION_IDS[1], 'successor'));
   });
 
-  it('O4 model and controller agree on a superseded rejection writing nothing', () => {
-    expect.fail('unimplemented');
+  it('O4 model and controller agree on a superseded rejection writing nothing', async () => {
+    const driven = new Differential();
+    await driven.boot({ kind: 'booted', contract: CONTRACT });
+    driven.select(QUESTION_IDS[0]);
+    const retired = driven.run();
+    driven.select(QUESTION_IDS[1]);
+    driven.run();
+
+    driven.rejectNow(retired, new Error('retired rejection'));
+    await drain();
+    driven.expectState();
+    void driven.cancel();
   });
 });
