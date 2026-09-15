@@ -152,4 +152,23 @@ describe('generated semantic graph scopes', () => {
     };
     expect(() => readAsVersionOne(asset)).toThrow('semantic graph schema 2, expected 1');
   });
+
+  it('validates the emitted scope shape and refuses an empty scopes table by name', async () => {
+    const graphModule = await import('../tools/kb/graph.mjs');
+    const validators = Object.entries(graphModule).filter(
+      ([name, value]) => name.toLowerCase().includes('validate') && typeof value === 'function',
+    );
+    if (validators.length === 0) {
+      throw new Error('semantic graph structural validator export is missing');
+    }
+    if (validators.length !== 1) {
+      throw new Error(
+        `semantic graph structural validator export is ambiguous: ${String(validators.length)}`,
+      );
+    }
+    const validate = validators[0]?.[1] as (value: unknown) => void;
+    const asset = readGraphAsset();
+    expect(() => validate(asset)).not.toThrow();
+    expect(() => validate({ ...asset, scopes: [] })).toThrow(/scopes/u);
+  });
 });
