@@ -7,7 +7,7 @@
 
 import { atomText, generatedJson, parseClauseSites } from './provenance.mjs';
 
-export const GRAPH_SCHEMA_VERSION = 1;
+export const GRAPH_SCHEMA_VERSION = 2;
 export const GRAPH_ASSET_PATH = 'graph/semantic-graph.json';
 
 /**
