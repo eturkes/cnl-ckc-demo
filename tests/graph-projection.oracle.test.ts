@@ -464,4 +464,36 @@ describe('scope projection differential oracle', () => {
       expect(() => parseSemanticGraph(asset)).toThrow(GraphDataError);
     });
   });
+
+  describe('P5 concept-first feasibility', () => {
+    it('carries 1,572 scoped of 2,615 groups without operator-context endpoints', () => {
+      const asset = readOracleAsset();
+      const resolveScope = orderedScopeResolver(asset);
+      const expected = new Map(
+        conceptEdges(asset).map((edge) => [projectionKey(edge, resolveScope), edge]),
+      );
+      const scoped = [...expected.values()].filter((edge) => resolveScope(edge).length > 0);
+      const nodes = new Map(asset.nodes.map((node) => [node.id, node]));
+      const forbiddenEndpoints = [...expected.values()].filter(
+        (edge) =>
+          nodes.get(edge.source)?.kind === 'operator-context' ||
+          nodes.get(edge.target)?.kind === 'operator-context',
+      );
+      const nested = edgeById(asset, 'edge:514:0');
+      const model = new SemanticGraphModel(parseSemanticGraph(asset));
+      const shippedForbidden = projectedRepresentatives(model).filter(
+        (edge) =>
+          model.node(edge.source)?.kind === 'operator-context' ||
+          model.node(edge.target)?.kind === 'operator-context',
+      );
+
+      expect({ groups: expected.size, scoped: scoped.length }).toEqual({
+        groups: 2_615,
+        scoped: 1_572,
+      });
+      expect(resolveScope(nested)).toEqual(['-', 'should']);
+      expect(forbiddenEndpoints).toEqual([]);
+      expect(shippedForbidden).toEqual([]);
+    });
+  });
 });
