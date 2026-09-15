@@ -41,4 +41,18 @@ describe('generated semantic graph scopes', () => {
     expect(Object.values(partition).reduce((sum, count) => sum + count, 0)).toBe(1_263);
     expect(scopes).toHaveLength(1_263);
   });
+
+  it('adds no scope-specific node kind', () => {
+    const stats = readGraphAsset().stats;
+    if (!isRecord(stats) || !isRecord(stats.byNodeKind)) {
+      throw new Error('semantic graph stats.byNodeKind must be an object');
+    }
+    expect(Object.keys(stats.byNodeKind).sort()).toEqual([
+      'document',
+      'entity',
+      'event',
+      'operator-context',
+      'value',
+    ]);
+  });
 });
