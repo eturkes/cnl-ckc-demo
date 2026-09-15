@@ -534,3 +534,35 @@ describe('view states and accessibility', () => {
     }
   });
 });
+
+// u10b — a rejected `ask()` must settle into a terminal state.
+// Contract + predicates: `.agent/contracts/m5u10b.md`.
+describe('rejected run lifecycle', () => {
+  it('P1 settles a rejected ask as a rendered engine error', () => {
+    expect.fail('unimplemented');
+  });
+
+  it('P2 fulfils the run promise instead of rejecting it', () => {
+    expect.fail('unimplemented');
+  });
+
+  it('P3 leaves the answer region unbusy with Cancel disabled and Retry offered', () => {
+    expect.fail('unimplemented');
+  });
+
+  it('P4 announces the failure with the shipped runFailed copy', () => {
+    expect.fail('unimplemented');
+  });
+
+  it('P5 lets the next run dispatch its own ask after a rejection', () => {
+    expect.fail('unimplemented');
+  });
+
+  it('P6 ignores a superseded run rejection and keeps the live state', () => {
+    expect.fail('unimplemented');
+  });
+
+  it('P7 keeps cancel inert once a rejected run has settled', () => {
+    expect.fail('unimplemented');
+  });
+});
