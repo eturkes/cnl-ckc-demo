@@ -93,7 +93,6 @@ export const GRAPH_FIXTURE = {
       sentence: null,
       line: 23,
       predicate: 'guideline_arg',
-      scope: 0,
     },
   ],
   scopes: [

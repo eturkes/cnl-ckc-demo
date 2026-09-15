@@ -279,9 +279,11 @@ export const parseSemanticGraph = (value: unknown): SemanticGraphData => {
   }
 
   const nodeIds = new Set<string>();
+  const nodesById = new Map<string, SemanticGraphNode>();
   for (const node of nodes) {
     if (nodeIds.has(node.id)) throw new GraphDataError(`duplicate node id ${node.id}`);
     nodeIds.add(node.id);
+    nodesById.set(node.id, node);
   }
   const scopeIds = new Set<string>();
   for (const [index, scope] of scopes.entries()) {
@@ -290,6 +292,12 @@ export const parseSemanticGraph = (value: unknown): SemanticGraphData => {
     const previous = scopes[index - 1];
     if (previous !== undefined && scope.id.localeCompare(previous.id) < 0) {
       throw new GraphDataError(`scopes[${String(index)}].id is not sorted`);
+    }
+    if (scope.chain.at(-1) !== scope.reference) {
+      throw new GraphDataError(`scopes[${String(index)}].chain must end with its reference`);
+    }
+    if (new Set(scope.chain).size !== scope.chain.length) {
+      throw new GraphDataError(`scopes[${String(index)}].chain must not repeat a context`);
     }
   }
   const edgeIds = new Set<string>();
@@ -303,10 +311,29 @@ export const parseSemanticGraph = (value: unknown): SemanticGraphData => {
     if (edge.kind === 'operator' && edge.scope === undefined) {
       throw new GraphDataError(`edges[${String(index)}].scope is required for an operator edge`);
     }
-    if (edge.scope !== undefined && edge.scope >= scopes.length) {
-      throw new GraphDataError(
-        `edges[${String(index)}].scope ${String(edge.scope)} is out of range`,
-      );
+    if (edge.scope !== undefined) {
+      const scope = scopes[edge.scope];
+      if (scope === undefined) {
+        throw new GraphDataError(
+          `edges[${String(index)}].scope ${String(edge.scope)} is out of range`,
+        );
+      }
+      if (scope.document !== edge.document || scope.sentence !== edge.sentence) {
+        throw new GraphDataError(`edges[${String(index)}].scope belongs to another source unit`);
+      }
+      if (edge.kind === 'operator') {
+        const target = nodesById.get(edge.target);
+        if (
+          target?.kind !== 'operator-context' ||
+          target.document !== scope.document ||
+          (target.sentence ?? null) !== scope.sentence ||
+          target.label !== scope.operator
+        ) {
+          throw new GraphDataError(
+            `edges[${String(index)}].scope does not describe its operator target`,
+          );
+        }
+      }
     }
   }
   const actualNodeKinds = Object.fromEntries(
@@ -411,20 +438,19 @@ const enrichScope = (data: SemanticGraphData): readonly SemanticGraphEdge[] => {
     }
     operatorTargets.set(edge.scope, edge.target);
   }
+  const resolvedScopes = data.scopes.map((scope) =>
+    Object.freeze(
+      scope.chain.flatMap((reference, index) => {
+        const nested = byReference.get(scopeCoordinate(scope.document, scope.sentence, reference));
+        if (nested !== undefined) return [nested];
+        if (index === 0) return [];
+        throw new GraphDataError(`${scope.id}.chain cannot resolve ${reference}`);
+      }),
+    ),
+  );
   return Object.freeze(
     data.edges.map((edge) => {
-      const scope = edge.scope === undefined ? undefined : data.scopes[edge.scope];
-      const resolved =
-        scope === undefined
-          ? []
-          : scope.chain.flatMap((reference, index) => {
-              const nested = byReference.get(
-                scopeCoordinate(scope.document, scope.sentence, reference),
-              );
-              if (nested !== undefined) return [nested];
-              if (index === 0) return [];
-              throw new GraphDataError(`${scope.id}.chain cannot resolve ${reference}`);
-            });
+      const resolved = edge.scope === undefined ? [] : (resolvedScopes[edge.scope] ?? []);
       const scopeOperators = Object.freeze(resolved.map(({ scope: nested }) => nested.operator));
       const parent = resolved.at(-2);
       const source =

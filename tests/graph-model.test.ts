@@ -34,6 +34,40 @@ describe('semantic graph boundary', () => {
       'scopes[0].chain',
     ],
     [
+      'scope chain with the wrong terminal reference',
+      {
+        ...GRAPH_FIXTURE,
+        scopes: [{ ...GRAPH_FIXTURE.scopes[0], chain: ['actual', 'scope:other'] }],
+      },
+      'scopes[0].chain must end with its reference',
+    ],
+    [
+      'scope chain with a repeated context',
+      {
+        ...GRAPH_FIXTURE,
+        scopes: [{ ...GRAPH_FIXTURE.scopes[0], chain: ['actual', 'actual', 'scope:should'] }],
+      },
+      'scopes[0].chain must not repeat a context',
+    ],
+    [
+      'edge scope from another source unit',
+      {
+        ...GRAPH_FIXTURE,
+        edges: GRAPH_FIXTURE.edges.map((edge) =>
+          edge.id === 'edge:dosage-event' ? { ...edge, sentence: 3 } : edge,
+        ),
+      },
+      'edges[2].scope belongs to another source unit',
+    ],
+    [
+      'operator target that disagrees with its scope',
+      {
+        ...GRAPH_FIXTURE,
+        scopes: [{ ...GRAPH_FIXTURE.scopes[0], operator: 'may' }],
+      },
+      'edges[3].scope does not describe its operator target',
+    ],
+    [
       'non-integer edge scope',
       {
         ...GRAPH_FIXTURE,
@@ -77,6 +111,24 @@ describe('semantic graph boundary', () => {
     expect(() =>
       parseSemanticGraph({ ...GRAPH_FIXTURE, scopes: [...GRAPH_FIXTURE.scopes, unreferenced] }),
     ).not.toThrow();
+  });
+
+  it('refuses unreferenced scope semantics that the projection cannot resolve', () => {
+    const unrepresentable = {
+      ...GRAPH_FIXTURE.scopes[0],
+      id: 'scope:unused',
+      chain: ['actual', 'scope:missing', 'scope:unused'],
+      operator: 'may',
+      reference: 'scope:unused',
+    } as const;
+    const parsed = parseSemanticGraph({
+      ...GRAPH_FIXTURE,
+      scopes: [...GRAPH_FIXTURE.scopes, unrepresentable],
+    });
+
+    expect(() => new SemanticGraphModel(parsed)).toThrow(
+      'scope:unused.chain cannot resolve scope:missing',
+    );
   });
 
   it.each([
@@ -250,12 +302,12 @@ describe('semantic graph indexes', () => {
         reference: 'scope:unused-should',
       },
     ] as const;
-    const source = GRAPH_FIXTURE.edges.find(({ id }) => id === 'edge:event-value');
+    const source = GRAPH_FIXTURE.edges.find(({ id }) => id === 'edge:dosage-event');
     if (source === undefined) throw new Error('missing scoped fixture edge');
     const edges = [
       ...GRAPH_FIXTURE.edges,
-      { ...source, id: 'edge:event-value-should-may', line: 24, scope: 1 },
-      { ...source, id: 'edge:event-value-may-should', line: 25, scope: 3 },
+      { ...source, id: 'edge:dosage-event-should-may', line: 24, scope: 1 },
+      { ...source, id: 'edge:dosage-event-may-should', line: 25, scope: 3 },
     ] as const;
     const graph = new SemanticGraphModel(
       parseSemanticGraph({
@@ -265,19 +317,19 @@ describe('semantic graph indexes', () => {
         stats: {
           ...GRAPH_FIXTURE.stats,
           edges: 7,
-          byEdgeKind: { ...GRAPH_FIXTURE.stats.byEdgeKind, argument: 3 },
+          byEdgeKind: { ...GRAPH_FIXTURE.stats.byEdgeKind, event: 3 },
         },
       }),
     );
     const variants = graph
       .conceptNeighborhood('event:have', 1, 10)
-      .edges.filter(({ source, target }) => source === 'event:have' && target === 'value:gradual')
+      .edges.filter(({ source, target }) => source === 'entity:dosage' && target === 'event:have')
       .sort((left, right) => left.line - right.line);
 
     expect(variants.map(({ relation }) => relation)).toEqual([
-      'argument 2',
-      'argument 2',
-      'argument 2',
+      'participates in event',
+      'participates in event',
+      'participates in event',
     ]);
     expect(variants.map(({ scopeOperators }) => scopeOperators)).toEqual([
       ['should'],
