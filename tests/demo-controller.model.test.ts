@@ -253,9 +253,13 @@ class Differential {
     this.expectState();
   }
 
-  async reject(token: number, cause: unknown, compare = true): Promise<void> {
+  rejectNow(token: number, cause: unknown): void {
     this.engine.planFor(token).outcome.reject(cause);
     this.model = transition(this.model, { kind: 'ask-rejected', token, cause });
+  }
+
+  async reject(token: number, cause: unknown, compare = true): Promise<void> {
+    this.rejectNow(token, cause);
     await drain();
     if (compare) this.expectState();
   }
@@ -326,8 +330,18 @@ describe('demo controller transition oracle', () => {
     expect(await driven.completion(run)).toEqual({ kind: 'fulfilled' });
   });
 
-  it('O3 model and controller agree on a run started after a rejected run', () => {
-    expect.fail('unimplemented');
+  it('O3 model and controller agree on a run started after a rejected run', async () => {
+    const driven = new Differential();
+    await driven.boot({ kind: 'booted', contract: CONTRACT });
+    driven.select(QUESTION_IDS[0]);
+    const predecessor = driven.run();
+    driven.rejectNow(predecessor, 'predecessor rejection');
+    driven.select(QUESTION_IDS[1], false);
+    const successor = driven.run();
+
+    await drain();
+    driven.expectState();
+    await driven.fulfill(successor, answer(QUESTION_IDS[1], 'successor'));
   });
 
   it('O4 model and controller agree on a superseded rejection writing nothing', () => {
