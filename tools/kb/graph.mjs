@@ -137,6 +137,112 @@ export const deriveScopeRecords = (parsedClauses) => {
     .sort((left, right) => left.id.localeCompare(right.id));
 };
 
+const SCOPE_OPERATORS = /** @type {const} */ (['-', 'should', 'may', 'can', 'must']);
+const SCOPE_FIELDS = ['chain', 'document', 'id', 'operator', 'reference', 'sentence'];
+
+/** @param {unknown} value @returns {value is Record<string, unknown>} */
+const isRecord = (value) => typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/**
+ * Grade the serialized scope table and every numeric edge reference into it.
+ *
+ * @param {unknown} value
+ * @returns {string[]}
+ */
+export const gradeSemanticGraphScopes = (value) => {
+  if (!isRecord(value)) return ['semantic graph must be an object for scopes validation'];
+  const scopes = value.scopes;
+  if (!Array.isArray(scopes)) return ['scopes must be an array'];
+  if (scopes.length === 0) {
+    return ['scopes table is empty, so graph scope validation grades no record'];
+  }
+
+  /** @type {string[]} */
+  const failures = [];
+  const ids = new Set();
+  const operatorCounts = new Map(SCOPE_OPERATORS.map((operator) => [operator, 0]));
+  let previousId;
+  for (const [index, scope] of scopes.entries()) {
+    const at = `scopes[${String(index)}]`;
+    if (!isRecord(scope)) {
+      failures.push(`${at} must be an object`);
+      continue;
+    }
+    const fields = Object.keys(scope).sort();
+    if (fields.join(',') !== SCOPE_FIELDS.join(',')) {
+      failures.push(`${at} fields ${fields.join(',')}, expected ${SCOPE_FIELDS.join(',')}`);
+    }
+    const { id, chain, operator, document, sentence, reference } = scope;
+    if (typeof id !== 'string' || id.trim() === '') failures.push(`${at}.id must be non-empty text`);
+    else {
+      if (ids.has(id)) failures.push(`${at}.id duplicates ${id}`);
+      ids.add(id);
+      if (previousId !== undefined && id.localeCompare(previousId) < 0) {
+        failures.push(`${at}.id is not sorted`);
+      }
+      previousId = id;
+    }
+    if (
+      !Array.isArray(chain) ||
+      chain.length === 0 ||
+      chain.some((entry) => typeof entry !== 'string' || entry.trim() === '')
+    ) {
+      failures.push(`${at}.chain must be a non-empty text array`);
+    }
+    if (!SCOPE_OPERATORS.includes(/** @type {ScopeOperator} */ (operator))) {
+      failures.push(`${at}.operator has unknown value ${String(operator)}`);
+    } else {
+      const known = /** @type {ScopeOperator} */ (operator);
+      operatorCounts.set(known, (operatorCounts.get(known) ?? 0) + 1);
+    }
+    if (typeof document !== 'string' || document.trim() === '') {
+      failures.push(`${at}.document must be non-empty text`);
+    }
+    if (sentence !== null && (!Number.isSafeInteger(sentence) || Number(sentence) < 1)) {
+      failures.push(`${at}.sentence must be a positive integer or null`);
+    }
+    if (typeof reference !== 'string' || reference.trim() === '') {
+      failures.push(`${at}.reference must be non-empty text`);
+    }
+    if (
+      typeof id === 'string' &&
+      typeof document === 'string' &&
+      (sentence === null || Number.isSafeInteger(sentence)) &&
+      typeof reference === 'string' &&
+      id !== scopeId(document, /** @type {number | null} */ (sentence), reference)
+    ) {
+      failures.push(`${at}.id does not encode its document, sentence and reference`);
+    }
+  }
+  for (const [operator, count] of operatorCounts) {
+    if (count === 0) failures.push(`scopes operator ${operator} has zero records`);
+  }
+
+  const edges = value.edges;
+  if (!Array.isArray(edges)) return [...failures, 'edges must be an array for scopes validation'];
+  const references = Array.from({ length: scopes.length }, () => 0);
+  let scopedEdges = 0;
+  for (const [index, edge] of edges.entries()) {
+    if (!isRecord(edge) || edge.scope === undefined) continue;
+    scopedEdges += 1;
+    if (!Number.isSafeInteger(edge.scope)) {
+      failures.push(`edges[${String(index)}].scope must be an integer`);
+      continue;
+    }
+    const scope = Number(edge.scope);
+    if (scope < 0 || scope >= scopes.length) {
+      failures.push(`edges[${String(index)}].scope ${String(scope)} is out of range`);
+      continue;
+    }
+    references[scope] = (references[scope] ?? 0) + 1;
+  }
+  if (scopedEdges === 0) failures.push('edges carry zero scope references');
+  for (const [index, count] of references.entries()) {
+    if (count === 0) failures.push(`scopes[${String(index)}] is not referenced by an edge`);
+  }
+  return failures;
+};
+
 /**
  * Return the semantic node asserted by an entity, event, or operator call and
  * optionally bind its Prolog reference for relation calls in the same sentence.
