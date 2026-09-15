@@ -568,8 +568,28 @@ describe('rejected run lifecycle', () => {
     expect(text(role('alert'))).toContain(reason);
   });
 
-  it('P2 fulfils the run promise instead of rejecting it', () => {
-    expect.fail('unimplemented');
+  it('P2 fulfils the run promise instead of rejecting it', async () => {
+    const unhandled: unknown[] = [];
+    const onUnhandled = (event: PromiseRejectionEvent): void => {
+      unhandled.push(event.reason);
+      event.preventDefault();
+    };
+    window.addEventListener('unhandledrejection', onUnhandled);
+    try {
+      controller.select(ID);
+      setState({ kind: 'idle', contract: CONTRACT });
+
+      const completion = controller.run();
+      const call = engine.asks[0];
+      if (call === undefined) throw new Error('the first ask was not dispatched');
+      call.outcome.reject(new Error('ask-rejection-p2'));
+      await completion;
+      await Promise.resolve();
+
+      expect(unhandled).toEqual([]);
+    } finally {
+      window.removeEventListener('unhandledrejection', onUnhandled);
+    }
   });
 
   it('P3 leaves the answer region unbusy with Cancel disabled and Retry offered', () => {
