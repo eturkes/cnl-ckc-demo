@@ -218,10 +218,15 @@ export const validateSemanticGraphAsset = (value) => {
 
   const edges = value.edges;
   if (!Array.isArray(edges)) return [...failures, 'edges must be an array for scopes validation'];
-  const references = Array.from({ length: scopes.length }, () => 0);
   let scopedEdges = 0;
   for (const [index, edge] of edges.entries()) {
-    if (!isRecord(edge) || edge.scope === undefined) continue;
+    if (!isRecord(edge)) continue;
+    if (edge.scope === undefined) {
+      if (edge.kind === 'operator') {
+        failures.push(`operator edge ${String(edge.id)} must reference a scope index`);
+      }
+      continue;
+    }
     scopedEdges += 1;
     if (!Number.isSafeInteger(edge.scope)) {
       failures.push(`edges[${String(index)}].scope must be an integer`);
@@ -230,14 +235,9 @@ export const validateSemanticGraphAsset = (value) => {
     const scope = Number(edge.scope);
     if (scope < 0 || scope >= scopes.length) {
       failures.push(`edges[${String(index)}].scope ${String(scope)} is out of range`);
-      continue;
     }
-    references[scope] = (references[scope] ?? 0) + 1;
   }
   if (scopedEdges === 0) failures.push('edges carry zero scope references');
-  for (const [index, count] of references.entries()) {
-    if (count === 0) failures.push(`scopes[${String(index)}] is not referenced by an edge`);
-  }
   return failures;
 };
 
@@ -522,24 +522,7 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
           emittedConditions.add(key);
           emit(clause, index + 2, kind, source, target, label, call.name, call);
         };
-        if (call.name === 'guideline_operator') {
-          const source = resolveReference(
-            nodes,
-            globalReferences,
-            localReferences,
-            clause.document,
-            clause.sentence,
-            call.args[0] ?? '',
-          );
-          const target = declareCallNode(
-            nodes,
-            call,
-            clause.document,
-            clause.sentence,
-            localReferences,
-          );
-          if (target !== null) condition('operator', source, target, termLabel(call.args[2] ?? ''));
-        } else if (call.name === 'guideline_arg' || call.name === 'guideline_pp') {
+        if (call.name === 'guideline_arg' || call.name === 'guideline_pp') {
           const source = resolveReference(
             nodes,
             globalReferences,
