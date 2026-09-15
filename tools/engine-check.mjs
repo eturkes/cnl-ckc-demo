@@ -105,6 +105,15 @@ const check = (ok, message) => {
 };
 
 /**
+ * Refuse a control table that can execute no liveness mutation.
+ *
+ * @param {readonly unknown[]} controls
+ * @returns {string[]}
+ */
+const gradeControls = (controls) =>
+  controls.length === 0 ? ['CONTROLS table is empty, so no engine control can fire'] : [];
+
+/**
  * @param {string} dir
  * @returns {string[]} absolute paths of every `.ts` and `.svelte` file below `dir`
  */
@@ -146,6 +155,8 @@ const countArgs = (text, open) => {
   }
   return -1;
 };
+
+for (const problem of gradeControls(CONTROLS)) check(false, problem);
 
 const files = sources(SRC);
 check(files.length > 0, 'engine-check found no sources under src/');
@@ -258,7 +269,14 @@ if (problems.length > 0) {
 
 // A control run has said all it can say: it reports the clean tree and its parent grades the
 // exit status. Only the outer run proves the four predicates can still fail.
+let controlsFired = 0;
 if (CONTROL === undefined) {
+  requireFiring(
+    'engine-check',
+    { mutation: 'the CONTROLS table emptied', expect: ['CONTROLS table is empty'] },
+    () => gradeControls([]),
+  );
+  controlsFired += 1;
   for (const { name, file, expect } of CONTROLS) {
     requireFiring(
       'engine-check',
@@ -274,11 +292,12 @@ if (CONTROL === undefined) {
         return run.status === 0 ? [] : [`${run.stdout}${run.stderr}`];
       },
     );
+    controlsFired += 1;
   }
 }
 
 console.log(
   `engine-check: ${String(files.length)} sources, P6.2-P6.5 hold ` +
     `(swipl-wasm owned by ${ENGINE_OWNER}, ${String(termsExports.length)} pinned terms exports), ` +
-    `${String(CONTROLS.length)} controls fired`,
+    `${String(controlsFired)} controls fired`,
 );

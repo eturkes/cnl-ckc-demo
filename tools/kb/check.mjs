@@ -6,6 +6,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
+import { requireFiring } from '../control.mjs';
 import { sha256, verifyBag } from './bag.mjs';
 import { catalogJson, catalogRecords } from './catalog.mjs';
 import { deriveSemanticGraph, GRAPH_SCHEMA_VERSION } from './graph.mjs';
@@ -62,10 +63,54 @@ const walk = (path) => {
   return readdirSync(path).flatMap((entry) => walk(join(path, entry)));
 };
 
+/** @typedef {{root: string, paths: string[]}} BoundScanRoot */
+/**
+ * @param {readonly string[]} roots
+ * @returns {BoundScanRoot[]}
+ */
+const bindScanRoots = (roots) =>
+  roots.map((root) => ({ root, paths: walk(join(ROOT, root)) }));
+
+/**
+ * @param {readonly BoundScanRoot[]} roots
+ * @returns {string[]}
+ */
+const gradeScanRoots = (roots) => {
+  if (roots.length === 0) {
+    return ['SCAN_ROOTS table is empty, so the sibling-path scan grades no root'];
+  }
+  return roots.flatMap(({ root, paths }) =>
+    paths.length === 0 ? [`SCAN_ROOTS entry "${root}" yielded no paths`] : [],
+  );
+};
+
 /** @type {string[]} */
 const failures = [];
 /** @param {string} message */
 const fail = (message) => failures.push(message);
+
+const boundScanRoots = bindScanRoots(SCAN_ROOTS);
+const scanFailures = gradeScanRoots(boundScanRoots);
+for (const problem of scanFailures) fail(problem);
+let controlsFired = 0;
+if (scanFailures.length === 0) {
+  requireFiring(
+    'kb:asset-check',
+    {
+      mutation: 'the first SCAN_ROOTS entry pointed at zz-missing-scan-root',
+      expect: ['SCAN_ROOTS', 'zz-missing-scan-root'],
+    },
+    () =>
+      gradeScanRoots(
+        bindScanRoots(
+          SCAN_ROOTS.map((root, index) =>
+            index === 0 ? `${root}/zz-missing-scan-root` : root,
+          ),
+        ),
+      ),
+  );
+  controlsFired = 1;
+}
 
 const manifest = loadManifest();
 if (manifest === undefined) {
@@ -174,8 +219,8 @@ if (manifest !== undefined) {
   }
 }
 
-for (const root of SCAN_ROOTS) {
-  for (const path of walk(join(ROOT, root))) {
+for (const { paths } of boundScanRoots) {
+  for (const path of paths) {
     // latin1 keeps the byte↔char mapping 1:1, so the ASCII pattern reads the same in the binary assets.
     if (SIBLING.test(readFileSync(path, 'latin1'))) fail(`sibling path in ${relative(ROOT, path)}`);
   }
@@ -226,6 +271,7 @@ if (failures.length > 0) {
       `sibling-path scan clean over ${SCAN_ROOTS.length} roots, ` +
       `answer-oracle scan clean over ${PRODUCTION_ROOTS.length} roots, ` +
       `JSON-serialization scan clean over ${SERIALIZE_ROOTS.length} root, ` +
-      `${questions.length} question sentences absent from ${QUESTION_ROOTS.length} roots\n`,
+      `${questions.length} question sentences absent from ${QUESTION_ROOTS.length} roots, ` +
+      `${String(controlsFired)} SCAN_ROOTS control fired\n`,
   );
 }

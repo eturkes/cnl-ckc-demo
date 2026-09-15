@@ -234,6 +234,15 @@ const gradeEnglish = (source, buckets, filler) => {
   return { failures, graded };
 };
 
+/**
+ * @param {readonly string[]} filler
+ * @returns {string[]}
+ */
+const gradeFiller = (filler) =>
+  filler.length === 0
+    ? ['FILLER table is empty, so the English register grades no banned word']
+    : [];
+
 const main = () => {
   const en = readFileSync(join(ROOT, EN), 'utf8');
   const ja = readFileSync(join(ROOT, JA), 'utf8');
@@ -257,6 +266,11 @@ const main = () => {
     ),
     requireFiring(
       'copy',
+      { mutation: 'the FILLER table emptied', expect: ['FILLER table is empty'] },
+      () => gradeFiller([]),
+    ),
+    requireFiring(
+      'copy',
       { mutation: 'en.ts read as the Japanese catalog', expect: [': untranslated'] },
       () => {
         /** @type {string[]} */
@@ -277,7 +291,9 @@ const main = () => {
     ),
   ];
 
-  const { failures, graded } = gradeEnglish(en, BUCKETS, FILLER);
+  const failures = gradeFiller(FILLER);
+  const { failures: englishFailures, graded } = gradeEnglish(en, BUCKETS, FILLER);
+  failures.push(...englishFailures);
   const compared = checkParity(failures, en, ja);
   const shell = checkShell(failures, en, html);
 

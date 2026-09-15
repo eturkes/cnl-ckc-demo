@@ -10,9 +10,11 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { requireFiring } from './control.mjs';
 import { ROOT } from './kb/paths.mjs';
 
 const SECRETLINT = join(ROOT, 'node_modules', '.bin', 'secretlint');
+const TREE_TARGETS = ['**/*'];
 
 // Split so the control literal cannot itself match the rule it exercises. This is a
 // structurally valid GitHub token shape, never a credential.
@@ -34,8 +36,25 @@ const secretlint = (targets) => {
   return { status: run.status ?? 2, output: `${run.stdout}${run.stderr}` };
 };
 
+/**
+ * @param {readonly string[]} targets
+ * @returns {string[]}
+ */
+const gradeTreeTargets = (targets) =>
+  targets.length === 0
+    ? ['TREE_TARGETS table is empty, so secretlint has no working-tree target']
+    : [];
+
+const targetFailures = gradeTreeTargets(TREE_TARGETS);
 /** @type {string[]} */
-const failures = [];
+const failures = [...targetFailures];
+let controlsFired = 0;
+requireFiring(
+  'secret:check',
+  { mutation: 'the TREE_TARGETS table emptied', expect: ['TREE_TARGETS table is empty'] },
+  () => gradeTreeTargets([]),
+);
+controlsFired += 1;
 
 const control = mkdtempSync(join(tmpdir(), 'secret-control-'));
 try {
@@ -46,16 +65,20 @@ try {
     failures.push(
       `liveness control did not trip: expected status 1 on a planted token, got ${proof.status}\n${proof.output}`,
     );
+  } else {
+    controlsFired += 1;
   }
 } finally {
   rmSync(control, { recursive: true, force: true });
 }
 
-const tree = secretlint(['**/*']);
-if (tree.status !== 0) failures.push(`secret found in the working tree:\n${tree.output}`);
+if (targetFailures.length === 0) {
+  const tree = secretlint(TREE_TARGETS);
+  if (tree.status !== 0) failures.push(`secret found in the working tree:\n${tree.output}`);
+}
 
 if (failures.length > 0) {
   for (const failure of failures) console.error(failure);
   process.exit(1);
 }
-console.log('secret:check — tree clean, detector live');
+console.log(`secret:check — tree clean, ${String(controlsFired)} controls fired`);

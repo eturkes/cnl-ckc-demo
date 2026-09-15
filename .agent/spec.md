@@ -64,16 +64,16 @@ renderer.
 
 # Deferred
 
-Queue = `.agent/deferred.md` — 48 rows, acceptance check each, plus the accepted-open review
+Queue = `.agent/deferred.md` — 49 rows, acceptance check each, plus the accepted-open review
 ids, whose checks stay in `.agent/archive/review-expedited.md`. The defects are user-ruled
 into MAINTAIN and the gate's open firing-input row sits beside them; nothing there blocks the
-spine below. The verification-integrity census raised four rows and the user promoted three
-into the spine below, leaving one queued.
+spine below. The verification-integrity census raised four rows, three of which closed as u10b + u10c;
+the fourth stays queued, now beside the `graph:check` hang u10c measured.
 
 ## Units — the remaining IMPLEMENT path
 
-u10c clears the rest of the verification-integrity census; u11→u13 then finish the graph, and
-u14→u15 close the phase over both spines. Full `Accept:` + `Depends` → archive; u3–u10b
+The verification-integrity census is cleared; u11→u13 finish the graph, and
+u14→u15 close the phase over both spines. Full `Accept:` + `Depends` → archive; u3–u10c
 closed, contract each in `.agent/contracts/`, close summaries in `.agent/archive/units-m5.md`.
 
 **From u11 on, every unit contract carries its red witness** — `N/M RED at base <sha>` plus
@@ -81,17 +81,6 @@ the command that reproduces it, the form `.agent/archive/contracts/m5u1.md:232` 
 `m5u2.md:216` already use. Today 1 of 8 live contracts and 7 of 103 commit bodies name a
 revision. Form + the two shapes that satisfy it without a `git show` →
 `.claude/rules/waves.md`.
-
-- **u10c empty-table guards + the two unowned check thresholds** — five declared tables grade
-  nothing when empty and the step still prints its count: `binding-check.mjs:37` `REQUIRED`,
-  `engine-check.mjs:61` `CONTROLS` (`:283` prints `${CONTROLS.length} controls fired`),
-  `copy-check.mjs:25` `FILLER`, `secret-check.mjs:54`'s `['**/*']` tree glob,
-  `kb/check.mjs:60`'s `return []` for a missing `SCAN_ROOTS` entry. Each existing firing input
-  builds its OWN synthetic table, so none proves the real one non-empty;
-  `engine-check.mjs:151` `check(files.length > 0, …)` is the pattern. Accept: emptying each of
-  the five gives rc 1 naming the table, the guards join `gate.md` `Firing inputs`, and
-  `tools/kb/clinical.mjs:102` `PREPOSITIONS` + `graph-probe/probe.ts:134` `SEPARATION_PX` each
-  name an owner whose search returns rc 0.
 
 - **u11 scoped edge records** — `tools/kb/graph.mjs` emits versioned edge→scope records from
   the clause AST. Accept: 156 negation / 857 `should` contexts + 1,263 operators represented
@@ -114,4 +103,4 @@ revision. Form + the two shapes that satisfy it without a `git show` →
 
 # Phase
 
-IMPLEMENT, at u10c. Judgment review → `.agent/review.md`, adjudicated before the phase closes.
+IMPLEMENT, at u11. Judgment review → `.agent/review.md`, adjudicated before the phase closes.

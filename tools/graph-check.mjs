@@ -317,6 +317,16 @@ try {
       );
       const at = `${viewport.name}/${view}`;
       require_(
+        row.separationPx === 3,
+        'R1',
+        `${at}: midpoint separation cutoff is ${String(row.separationPx)} px, expected 3`,
+      );
+      require_(
+        row.separationAt2Px === 1 && row.separationAt3Px === 2,
+        'R1',
+        `${at}: fixed midpoint boundary yielded ${String(row.separationAt2Px)}/${String(row.separationAt3Px)} at 2/3 px, expected 1/2`,
+      );
+      require_(
         row.parallelSeparated === row.parallelPairs,
         'R1',
         `${at}: ${String(row.parallelSeparated)}/${String(row.parallelPairs)} parallel pairs separated`,

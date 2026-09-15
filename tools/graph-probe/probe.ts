@@ -256,6 +256,9 @@ export interface Reading {
   zoom: number;
   labelPx: number;
   /** R1 */
+  separationPx: number;
+  separationAt2Px: number;
+  separationAt3Px: number;
   parallelPairs: number;
   parallelSeparated: number;
   /** R2 — edges whose rendered label is not `graphRelationLabel`, and labelled non-path edges */
@@ -379,6 +382,15 @@ const api = {
       edges: cy.edges().length,
       zoom: cy.zoom(),
       labelPx: 10 * cy.zoom(),
+      separationPx: SEPARATION_PX,
+      separationAt2Px: distinct([
+        { x: 100, y: 100 },
+        { x: 102, y: 100 },
+      ]),
+      separationAt3Px: distinct([
+        { x: 100, y: 100 },
+        { x: 103, y: 100 },
+      ]),
       parallelPairs,
       parallelSeparated,
       labelMismatches,

@@ -277,6 +277,13 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   `.claude/rules/` or `.agent/contracts/` whose search returns rc 0, and the 60-relation cap
   either surfaces its truncation or is contract-owned. `pri` med.
 
+- **`graph:check` prints green then never exits** — the campaign completes both readings and
+  both summaries, then hangs; `test-owners` killed it at 600 s (rc 143) on `wt/test-owners`.
+  A lane that cannot terminate makes `pnpm release:check` unrunnable unattended, and a
+  timeout kill is indistinguishable from a hung browser. Accept: `pnpm graph:check` exits on
+  its own with rc 0 inside its own budget, and a planted non-terminating page still fails it
+  by name rather than by wall clock. `pri` med.
+
 ## Index — one line per `high` + `med` row
 
 Defect and acceptance check. Full text is above in this file; the `low` rows are prose only.
@@ -304,7 +311,8 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | Two tests time out under parallel execution | both pass 20 consecutive full-suite runs at the committed worker count |
 | 9 of u5's 26 combobox predicates rest on jsdom stubs | a Chromium test drives real input, reads the AX tree, runs axe |
 | `smoke` + `browser:check` ship no firing input | each reddens on a mutation its own lane runs, and joins gate.md `Firing inputs` |
-| Twelve shipped bounds have no owner | each names an owner whose search returns rc 0; the 60-relation cap surfaces truncation or is contract-owned |
+| `graph:check` prints green then never exits | it exits on its own rc 0; a planted non-terminating page fails by name |
+| Ten shipped bounds have no owner | each names an owner whose search returns rc 0; the 60-relation cap surfaces truncation or is contract-owned |
 
 ## Accepted-open
 
