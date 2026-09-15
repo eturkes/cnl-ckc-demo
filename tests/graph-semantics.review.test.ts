@@ -53,8 +53,7 @@ describe('semantic graph source fidelity review', () => {
     expect(semantics.some((label) => /\b30\b/u.test(label))).toBe(true);
   });
 
-  // Accepted-open S9: keep the assertion executable until its MAINTAIN unit closes it.
-  it.fails('does not count attributes as concepts or actions', () => {
+  it('does not count attributes as concepts or actions', () => {
     const conceptsAndActions = graph.data.nodes.filter(
       (node) =>
         (node.kind === 'entity' || node.kind === 'event') &&
@@ -90,8 +89,7 @@ describe('semantic graph source fidelity review', () => {
     expect(inverted).toBeUndefined();
   });
 
-  // Accepted-open S13+: preserve the failing boundary assertion without blocking this unit.
-  it.fails('rejects an argument edge whose source is not an event', () => {
+  it('rejects an argument edge whose source is not an event', () => {
     const malformed = JSON.parse(sourceText) as {
       edges: { id: string; source: string }[];
     };
