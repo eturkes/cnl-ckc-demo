@@ -3,7 +3,12 @@ import { fileURLToPath, URL } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { GraphDataError, SemanticGraphModel, parseSemanticGraph } from '../src/graph/model.js';
+import {
+  GraphDataError,
+  SemanticGraphModel,
+  graphRelationLabel,
+  parseSemanticGraph,
+} from '../src/graph/model.js';
 
 import { GRAPH_FIXTURE } from './graph-fixture.js';
 
@@ -142,6 +147,31 @@ const projectedRepresentatives = (model: SemanticGraphModel): readonly OracleEdg
   return [...byId.values()];
 };
 
+const projectedScope = (asset: OracleAsset, edge: unknown): readonly string[] => {
+  if (!isRecord(edge)) throw new Error('projected edge must be an object');
+  const candidate = edge.orderedScope ?? edge.scope;
+  if (Array.isArray(candidate)) {
+    if (!candidate.every((operator) => typeof operator === 'string')) {
+      throw new Error(`${String(edge.id)} projected scope must contain strings`);
+    }
+    return candidate as string[];
+  }
+  if (candidate === undefined) return [];
+  if (!Number.isSafeInteger(candidate)) {
+    throw new Error(`${String(edge.id)} projected scope must be an index or string sequence`);
+  }
+  return orderedScopeResolver(asset)({
+    ...edge,
+    scope: Number(candidate),
+  } as unknown as OracleEdge);
+};
+
+const edgeById = (asset: OracleAsset, id: string): OracleEdge => {
+  const edge = asset.edges.find((candidate) => candidate.id === id);
+  if (edge === undefined) throw new Error(`oracle input misses ${id}`);
+  return edge;
+};
+
 describe('scope projection differential oracle', () => {
   describe('P1 producer boundary', () => {
     it('preserves the scopes table and edge scope index', () => {
@@ -270,7 +300,10 @@ describe('scope projection differential oracle', () => {
       const model = new SemanticGraphModel(parseSemanticGraph(input));
       const actual = model
         .conceptIncident('event:have')
-        .filter((edge) => relationKey(edge as OracleEdge) === relationKey(relation as unknown as OracleEdge))
+        .filter(
+          (edge) =>
+            relationKey(edge as OracleEdge) === relationKey(relation as unknown as OracleEdge),
+        )
         .map((edge) => resolveScope(edge as OracleEdge))
         .sort();
 
@@ -279,6 +312,122 @@ describe('scope projection differential oracle', () => {
         ['-', 'should'],
         ['should', '-'],
       ]);
+    });
+  });
+
+  describe('P3 reviewed source-fidelity cases', () => {
+    it('attaches negated premise and recommendation relations to their exact scopes', () => {
+      const asset = readOracleAsset();
+      const model = new SemanticGraphModel(parseSemanticGraph(asset));
+      const view = model.answerSubgraph({
+        document: 'cdc2022-opioid-rec01',
+        sentences: [3],
+        lines: [506],
+      });
+      if (view === undefined) throw new Error('negated recommendation view is missing');
+      const premise = view.edges.find(
+        ({ source, target, label }) =>
+          source === 'event:outweigh' &&
+          target === 'entity:opioid-benefit' &&
+          label === 'argument 1',
+      );
+      const recommendation = view.edges.find(
+        ({ source, target, label }) =>
+          source === 'event:consider' &&
+          target === 'entity:opioid-therapy' &&
+          label === 'argument 2',
+      );
+
+      expect(projectedScope(asset, premise)).toEqual(['-']);
+      expect(projectedScope(asset, recommendation)).toEqual(['-', 'should']);
+    });
+
+    it('attaches modal force and numeric cardinality to the qualified relation', () => {
+      const asset = readOracleAsset();
+      const rawRelation = edgeById(asset, 'edge:1803:0');
+      const cardinality = asset.edges.find(
+        (edge) =>
+          edge.kind === 'cardinality' &&
+          edge.source === rawRelation.target &&
+          edge.document === rawRelation.document &&
+          edge.sentence === rawRelation.sentence,
+      );
+      if (cardinality === undefined) throw new Error('qualified day cardinality is missing');
+      const expected = [...orderedScopeResolver(asset)(rawRelation), cardinality.label];
+      const model = new SemanticGraphModel(parseSemanticGraph(asset));
+      const view = model.answerSubgraph({
+        document: 'cdc2022-opioid-rec02-imp21',
+        sentences: [1],
+        lines: [1795],
+      });
+      const relation = view?.edges.find(
+        ({ source, target, label }) =>
+          source === rawRelation.source &&
+          target === rawRelation.target &&
+          label === rawRelation.label,
+      );
+
+      expect(expected).toEqual(['may', 'na eq 30']);
+      expect(projectedScope(asset, relation)).toEqual(expected);
+    });
+
+    it('attaches a nested operator to the operator named by its outer scope', () => {
+      const asset = readOracleAsset();
+      const rawShould = edgeById(asset, 'edge:507:0');
+      if (rawShould.scope === undefined) throw new Error('nested should scope is missing');
+      const shouldScope = asset.scopes[rawShould.scope];
+      const outerReference = shouldScope?.chain.at(-2);
+      if (shouldScope === undefined || outerReference === undefined) {
+        throw new Error('nested should chain has no outer reference');
+      }
+      const outerScopeIndex = asset.scopes.findIndex(
+        (scope) =>
+          scope.document === shouldScope.document &&
+          scope.sentence === shouldScope.sentence &&
+          scope.reference === outerReference,
+      );
+      const outerEdge = asset.edges.find(
+        (edge) => edge.kind === 'operator' && edge.scope === outerScopeIndex,
+      );
+      if (outerEdge === undefined) throw new Error('outer operator edge is missing');
+      const model = new SemanticGraphModel(parseSemanticGraph(asset));
+
+      expect(model.edge(rawShould.id)?.source).toBe(outerEdge.target);
+    });
+
+    it('omits a shortcut whose scope cannot preserve both asserted event contexts', () => {
+      const asset = readOracleAsset();
+      const shortcut = edgeById(asset, 'edge:512:12');
+      const recommendation = edgeById(asset, 'edge:514:0');
+      const resolveScope = orderedScopeResolver(asset);
+      expect({
+        premise: resolveScope(shortcut),
+        recommendation: resolveScope(recommendation),
+      }).toEqual({ premise: ['-'], recommendation: ['-', 'should'] });
+
+      const model = new SemanticGraphModel(parseSemanticGraph(asset));
+      expect(model.edge(shortcut.id)).toBeUndefined();
+    });
+
+    it('does not highlight the cross-scope shortcut', () => {
+      const asset = readOracleAsset();
+      const model = new SemanticGraphModel(parseSemanticGraph(asset));
+      const view = model.answerSubgraph({
+        document: 'cdc2022-opioid-rec01',
+        sentences: [3],
+        lines: [506],
+      });
+
+      expect(view?.highlight.edges).not.toContain('edge:512:12');
+    });
+
+    it('names a directed support relation from its target perspective', () => {
+      const asset = readOracleAsset();
+      const model = new SemanticGraphModel(parseSemanticGraph(asset));
+      const support = model.edge('edge:4501:11');
+      if (support === undefined) throw new Error('positive support relation is missing');
+
+      expect(graphRelationLabel(support, support.target)).toBe('supported by condition');
     });
   });
 });
