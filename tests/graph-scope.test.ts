@@ -4,6 +4,8 @@ import { gzipSync } from 'node:zlib';
 
 import { describe, expect, it } from 'vitest';
 
+import { GRAPH_SCHEMA_VERSION, parseSemanticGraph } from '../src/graph/model.js';
+
 const GRAPH_PATH = fileURLToPath(
   new URL('../kb/generated/graph/semantic-graph.json', import.meta.url),
 );
@@ -91,5 +93,26 @@ describe('generated semantic graph scopes', () => {
     for (const index of asset.scopes.keys()) {
       if (!referenced.has(index)) throw new Error(`scopes[${String(index)}] is orphaned`);
     }
+  });
+
+  it('bumps producer and reader together and makes a v1 reader refuse v2 by name', () => {
+    const asset = readGraphAsset();
+    if (asset.schemaVersion !== 2) {
+      throw new Error(`semantic graph producer schema ${String(asset.schemaVersion)}, expected 2`);
+    }
+    if (GRAPH_SCHEMA_VERSION !== 2) {
+      throw new Error(`semantic graph reader schema ${String(GRAPH_SCHEMA_VERSION)}, expected 2`);
+    }
+
+    expect(() => parseSemanticGraph(asset)).not.toThrow();
+    expect(() => parseSemanticGraph({ ...asset, schemaVersion: 1 })).toThrow(
+      'semantic graph schema 1, expected 2',
+    );
+    const readAsVersionOne = (value: Record<string, unknown>): void => {
+      if (value.schemaVersion !== 1) {
+        throw new Error(`semantic graph schema ${String(value.schemaVersion)}, expected 1`);
+      }
+    };
+    expect(() => readAsVersionOne(asset)).toThrow('semantic graph schema 2, expected 1');
   });
 });
