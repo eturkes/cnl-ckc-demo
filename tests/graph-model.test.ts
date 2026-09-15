@@ -226,6 +226,67 @@ describe('semantic graph indexes', () => {
     expect(graph.searchConcepts('operator')).toEqual([]);
   });
 
+  it('keeps ordered operator scope distinct while grouping identical relations', () => {
+    const scopes = [
+      GRAPH_FIXTURE.scopes[0],
+      {
+        ...GRAPH_FIXTURE.scopes[0],
+        id: 'scope:then-may',
+        chain: ['actual', 'scope:should', 'scope:then-may'],
+        operator: 'may',
+        reference: 'scope:then-may',
+      },
+      {
+        ...GRAPH_FIXTURE.scopes[0],
+        id: 'scope:unused-may',
+        chain: ['actual', 'scope:unused-may'],
+        operator: 'may',
+        reference: 'scope:unused-may',
+      },
+      {
+        ...GRAPH_FIXTURE.scopes[0],
+        id: 'scope:unused-should',
+        chain: ['actual', 'scope:unused-may', 'scope:unused-should'],
+        reference: 'scope:unused-should',
+      },
+    ] as const;
+    const source = GRAPH_FIXTURE.edges.find(({ id }) => id === 'edge:event-value');
+    if (source === undefined) throw new Error('missing scoped fixture edge');
+    const edges = [
+      ...GRAPH_FIXTURE.edges,
+      { ...source, id: 'edge:event-value-should-may', line: 24, scope: 1 },
+      { ...source, id: 'edge:event-value-may-should', line: 25, scope: 3 },
+    ] as const;
+    const graph = new SemanticGraphModel(
+      parseSemanticGraph({
+        ...GRAPH_FIXTURE,
+        scopes,
+        edges,
+        stats: {
+          ...GRAPH_FIXTURE.stats,
+          edges: 7,
+          byEdgeKind: { ...GRAPH_FIXTURE.stats.byEdgeKind, argument: 3 },
+        },
+      }),
+    );
+    const variants = graph
+      .conceptNeighborhood('event:have', 1, 10)
+      .edges.filter(({ source, target }) => source === 'event:have' && target === 'value:gradual')
+      .sort((left, right) => left.line - right.line);
+
+    expect(variants.map(({ relation }) => relation)).toEqual([
+      'argument 2',
+      'argument 2',
+      'argument 2',
+    ]);
+    expect(variants.map(({ scopeOperators }) => scopeOperators)).toEqual([
+      ['should'],
+      ['should', 'may'],
+      ['may', 'should'],
+    ]);
+    expect(graph.conceptEdgeCount).toBe(4);
+  });
+
   it('finds a deterministic shortest path in either edge direction', () => {
     const graph = model();
     expect(graph.shortestPath('doc:cdc', 'operator:should')).toEqual({

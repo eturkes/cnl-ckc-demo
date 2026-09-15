@@ -57,6 +57,10 @@ export interface SemanticGraphEdge {
   line: number;
   predicate: string;
   scope?: number;
+  /** Producer relation before reader-facing scope is composed into a label. */
+  relation?: string;
+  /** Ordered outermost-first operator semantics resolved from `scope`. */
+  scopeOperators?: readonly SemanticGraphScopeOperator[];
 }
 
 export interface SemanticGraphStats {
@@ -375,6 +379,40 @@ const lexicalScore = (label: string, text: string, phraseWeight: number): number
   );
 };
 
+const scopeCoordinate = (document: string, sentence: number | null, reference: string): string =>
+  [document, sentence === null ? '' : String(sentence), reference].join('');
+
+const edgeRelation = (edge: SemanticGraphEdge): string => edge.relation ?? edge.label;
+
+const enrichScope = (data: SemanticGraphData): readonly SemanticGraphEdge[] => {
+  const byReference = new Map<string, SemanticGraphScope>();
+  for (const scope of data.scopes) {
+    const key = scopeCoordinate(scope.document, scope.sentence, scope.reference);
+    if (byReference.has(key)) {
+      throw new GraphDataError(`${scope.id}: duplicate scope reference ${scope.reference}`);
+    }
+    byReference.set(key, scope);
+  }
+  return Object.freeze(
+    data.edges.map((edge) => {
+      const scope = edge.scope === undefined ? undefined : data.scopes[edge.scope];
+      const scopeOperators = Object.freeze(
+        scope === undefined
+          ? []
+          : scope.chain.flatMap((reference, index) => {
+              const nested = byReference.get(
+                scopeCoordinate(scope.document, scope.sentence, reference),
+              );
+              if (nested !== undefined) return [nested.operator];
+              if (index === 0) return [];
+              throw new GraphDataError(`${scope.id}.chain cannot resolve ${reference}`);
+            }),
+      );
+      return Object.freeze({ ...edge, relation: edge.label, scopeOperators });
+    }),
+  );
+};
+
 const compareNodes = (left: SemanticGraphNode, right: SemanticGraphNode): number =>
   left.label.localeCompare(right.label, 'en', { sensitivity: 'base', numeric: true }) ||
   left.kind.localeCompare(right.kind) ||
@@ -396,7 +434,9 @@ const isConceptNode = (node: SemanticGraphNode | undefined): node is SemanticGra
   node !== undefined && CONCEPT_NODE_KINDS.has(node.kind);
 
 const conceptEdgeKey = (edge: SemanticGraphEdge): string =>
-  [edge.kind, edge.source, edge.target, edge.label].join('\u001f');
+  [edge.kind, edge.source, edge.target, edgeRelation(edge), ...(edge.scopeOperators ?? [])].join(
+    '\u001f',
+  );
 
 const isConceptRelationship = (
   edge: SemanticGraphEdge,
@@ -404,14 +444,15 @@ const isConceptRelationship = (
 ): boolean =>
   edge.kind !== 'cardinality' &&
   edge.kind !== 'operator' &&
-  (edge.kind !== 'implies' || edge.label === 'condition supports') &&
+  (edge.kind !== 'implies' || edgeRelation(edge) === 'condition supports') &&
   isConceptNode(nodes.get(edge.source)) &&
   isConceptNode(nodes.get(edge.target));
 
 const conceptRole = (edge: SemanticGraphEdge): number => {
+  const relation = edgeRelation(edge);
   if (edge.kind === 'argument') {
-    if (edge.label === 'argument 2') return 4;
-    if (edge.label === 'argument 1') return 1;
+    if (relation === 'argument 2') return 4;
+    if (relation === 'argument 1') return 1;
     return 3;
   }
   if (edge.kind === 'preposition') return 3;
@@ -445,13 +486,14 @@ export class SemanticGraphModel {
   readonly #search: readonly SearchRow[];
 
   constructor(data: SemanticGraphData) {
-    this.data = data;
-    for (const node of data.nodes) this.#nodes.set(node.id, node);
-    for (const edge of data.edges) this.#edges.set(edge.id, edge);
+    const modelData = Object.freeze({ ...data, edges: enrichScope(data) });
+    this.data = modelData;
+    for (const node of modelData.nodes) this.#nodes.set(node.id, node);
+    for (const edge of modelData.edges) this.#edges.set(edge.id, edge);
 
     const adjacent = new Map<string, SemanticGraphEdge[]>();
-    for (const node of data.nodes) adjacent.set(node.id, []);
-    for (const edge of data.edges) {
+    for (const node of modelData.nodes) adjacent.set(node.id, []);
+    for (const edge of modelData.edges) {
       adjacent.get(edge.source)?.push(edge);
       if (edge.target !== edge.source) adjacent.get(edge.target)?.push(edge);
     }
@@ -460,7 +502,7 @@ export class SemanticGraphModel {
     }
 
     const conceptGroups = new Map<string, SemanticGraphEdge[]>();
-    for (const edge of data.edges) {
+    for (const edge of modelData.edges) {
       if (!isConceptRelationship(edge, this.#nodes)) continue;
       const key = conceptEdgeKey(edge);
       const group = conceptGroups.get(key) ?? [];
@@ -487,7 +529,7 @@ export class SemanticGraphModel {
     }
 
     this.#search = Object.freeze(
-      data.nodes.map((node) => {
+      modelData.nodes.map((node) => {
         const metadata = normalized(
           [node.document, node.sentence === undefined ? undefined : String(node.sentence)]
             .filter(Boolean)
