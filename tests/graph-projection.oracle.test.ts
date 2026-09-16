@@ -615,4 +615,70 @@ describe('scope projection differential oracle', () => {
       });
     });
   });
+
+  describe('P7 reader-facing taxonomy', () => {
+    it('separates connected concepts and actions from attributes', () => {
+      const asset = readOracleAsset();
+      const nodes = new Map(asset.nodes.map((node) => [node.id, node]));
+      const connected = new Set(conceptEdges(asset).flatMap((edge) => [edge.source, edge.target]));
+      const membership = { entity: 0, event: 0, value: 0 };
+      for (const id of connected) {
+        const kind = nodes.get(id)?.kind;
+        if (kind === 'entity' || kind === 'event' || kind === 'value') membership[kind] += 1;
+      }
+      const model = new SemanticGraphModel(parseSemanticGraph(asset));
+      const census = {
+        ...membership,
+        conceptsAndActions: membership.entity + membership.event,
+        connected: connected.size,
+        reportedConceptsAndActions: model.conceptNodeCount,
+      };
+      console.info(`P7 headline ${JSON.stringify(census)}`);
+
+      expect(membership).toEqual({ entity: 1_084, event: 151, value: 53 });
+      expect(model.conceptNodeCount).toBe(membership.entity + membership.event);
+    });
+
+    it('partitions the hidden counts of a negated evidence sentence by real kind', () => {
+      const asset = readOracleAsset();
+      const model = new SemanticGraphModel(parseSemanticGraph(asset));
+      const focus = {
+        id: 'event:be',
+        document: 'cdc2022-opioid-rec04-imp01',
+        sentence: 1,
+        lines: [2773],
+      } as const;
+      const evidence = model.evidenceSubgraph(focus);
+      const view = model.answerSubgraph(focus);
+      if (evidence === undefined || view === undefined) {
+        throw new Error('negated evidence taxonomy is missing');
+      }
+      const shownNodes = new Set(view.highlight.nodes);
+      const shownEdges = new Set(view.highlight.edges);
+      const nodeKinds: Record<string, number> = {};
+      const edgeKinds: Record<string, number> = {};
+      for (const node of evidence.nodes) {
+        if (shownNodes.has(node.id)) continue;
+        nodeKinds[node.kind] = (nodeKinds[node.kind] ?? 0) + 1;
+      }
+      for (const edge of evidence.edges) {
+        if (shownEdges.has(edge.id)) continue;
+        edgeKinds[edge.kind] = (edgeKinds[edge.kind] ?? 0) + 1;
+      }
+      const census = {
+        reportedNodes: view.hiddenTechnicalNodes,
+        reportedEdges: view.hiddenTechnicalEdges,
+        nodeKinds,
+        edgeKinds,
+      };
+      console.info(`P7 hidden ${JSON.stringify(census)}`);
+
+      expect(census).toEqual({
+        reportedNodes: 3,
+        reportedEdges: 6,
+        nodeKinds: { document: 1, value: 1, 'operator-context': 1 },
+        edgeKinds: { entity: 2, cardinality: 2, operator: 1, event: 1 },
+      });
+    });
+  });
 });
