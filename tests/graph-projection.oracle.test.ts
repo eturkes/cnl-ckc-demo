@@ -681,4 +681,60 @@ describe('scope projection differential oracle', () => {
       });
     });
   });
+
+  describe('P8 schema source roles', () => {
+    const roleKinds = new Map<string, ReadonlySet<string>>([
+      ['argument', new Set(['event'])],
+      ['preposition', new Set(['event'])],
+    ]);
+
+    it('finds zero role-invalid sources among all 20,964 shipped edges', () => {
+      const asset = readOracleAsset();
+      const nodes = new Map(asset.nodes.map((node) => [node.id, node]));
+      const counts = { eventReference: 0, schemaFree: 0 };
+      const violations: string[] = [];
+      for (const edge of asset.edges) {
+        const allowed = roleKinds.get(edge.kind);
+        if (allowed === undefined) counts.schemaFree += 1;
+        else counts.eventReference += 1;
+        const sourceKind = nodes.get(edge.source)?.kind;
+        if (allowed !== undefined && !allowed.has(sourceKind ?? '')) violations.push(edge.id);
+      }
+      const constrained = counts.eventReference;
+      const census = {
+        total: asset.edges.length,
+        constrained,
+        ...counts,
+        violations,
+      };
+      console.info(`P8 roles ${JSON.stringify(census)}`);
+
+      expect(census).toEqual({
+        total: 20_964,
+        constrained: 5_002,
+        eventReference: 5_002,
+        schemaFree: 15_962,
+        violations: [],
+      });
+    });
+
+    it.each([
+      { kind: 'argument', replacement: 'entity:clinician' },
+      { kind: 'preposition', replacement: 'entity:clinician' },
+    ])('refuses a $kind edge whose source has the wrong schema role', ({ kind, replacement }) => {
+      const asset = structuredClone(readOracleAsset()) as OracleAsset & {
+        edges: OracleEdge[];
+      };
+      const index = asset.edges.findIndex((edge) => edge.kind === kind);
+      const edge = asset.edges[index];
+      if (edge === undefined) throw new Error(`oracle input misses a ${kind} edge`);
+      edge.source = replacement;
+      const read = (): void => {
+        parseSemanticGraph(asset);
+      };
+
+      expect(read).toThrowError(GraphDataError);
+      expect(read).toThrow(`edges[${String(index)}].source`);
+    });
+  });
 });
