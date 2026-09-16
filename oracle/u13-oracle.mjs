@@ -83,6 +83,67 @@ export const expectedFallbackReading = (edge, from = edge.target) => {
   return edge.scope.length === 0 ? label : [label, ...edge.scope.map(scopeLabel)].join(' · ');
 };
 
+const endpointKey = (edge) =>
+  JSON.stringify([edge.document, edge.sentence, edge.line, edge.target]);
+
+export const deriveSpanningScopes = (asset) => {
+  const chains = deriveScopeChains(asset);
+  const targetDeclarations = new Map();
+  for (const edge of asset.edges.filter(({ kind }) => kind === 'event')) {
+    const key = endpointKey(edge);
+    const matches = targetDeclarations.get(key) ?? [];
+    matches.push(edge);
+    targetDeclarations.set(key, matches);
+  }
+  const conditionSupports = asset.edges.filter(
+    ({ kind, label }) => kind === 'implies' && label === 'condition supports',
+  );
+  const rows = conditionSupports.map((edge) => {
+    const declarations = targetDeclarations.get(endpointKey(edge)) ?? [];
+    if (declarations.length !== 1) {
+      throw new Error(
+        `${edge.id}: expected one target event declaration, got ${declarations.length}`,
+      );
+    }
+    const target = declarations[0];
+    const sourceScope = edge.scope === undefined ? [] : (chains[edge.scope] ?? []);
+    const targetScope = target.scope === undefined ? [] : (chains[target.scope] ?? []);
+    return {
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      sourceScope,
+      targetScope,
+      targetDeclaration: target.id,
+      different: JSON.stringify(sourceScope) !== JSON.stringify(targetScope),
+    };
+  });
+  const differentIds = new Set(rows.filter(({ different }) => different).map(({ id }) => id));
+  const projected = deriveProjection(asset).filter(
+    ({ representative }) =>
+      representative.kind === 'implies' && representative.relation === 'condition supports',
+  );
+  const pairs = new Map();
+  for (const row of rows.filter(({ different }) => different)) {
+    const key = `${JSON.stringify(row.sourceScope)} → ${JSON.stringify(row.targetScope)}`;
+    const value = pairs.get(key) ?? { count: 0, ids: [] };
+    value.count += 1;
+    if (value.ids.length < 5) value.ids.push(row.id);
+    pairs.set(key, value);
+  }
+  return {
+    conditionSupports: rows.length,
+    different: rows.filter(({ different }) => different),
+    projectedGroups: projected.length,
+    differentProjectedGroups: projected.filter(({ occurrences }) =>
+      occurrences.some(({ id }) => differentIds.has(id)),
+    ).length,
+    pairs: [...pairs.entries()]
+      .map(([pair, value]) => ({ pair, ...value }))
+      .sort((left, right) => right.count - left.count || left.pair.localeCompare(right.pair)),
+  };
+};
+
 export const projectionSummary = (asset) => {
   const groups = deriveProjection(asset);
   const rows = groups.map(({ representative }) => ({
@@ -100,7 +161,18 @@ export const projectionSummary = (asset) => {
 };
 
 const main = () => {
-  const summary = projectionSummary(readAsset());
+  const asset = readAsset();
+  if (process.argv.includes('--spanning')) {
+    const census = deriveSpanningScopes(asset);
+    const samples = census.pairs.slice(0, 5).map(({ pair, ids }) => `${ids[0]} ${pair}`);
+    console.log(
+      `O4 different-occurrences=${String(census.different.length)}/${String(census.conditionSupports)} ` +
+        `different-groups=${String(census.differentProjectedGroups)}/${String(census.projectedGroups)} ` +
+        `scope-pairs=${String(census.pairs.length)} samples=${samples.join('; ')}`,
+    );
+    return;
+  }
+  const summary = projectionSummary(asset);
   if (process.argv.includes('--json')) {
     process.stdout.write(`${JSON.stringify(summary.rows, null, 2)}\n`);
     return;
