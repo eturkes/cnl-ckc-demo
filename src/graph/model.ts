@@ -26,10 +26,10 @@ export const GRAPH_EDGE_KINDS = [
 ] as const;
 export type SemanticGraphEdgeKind = (typeof GRAPH_EDGE_KINDS)[number];
 
-// guideline_arg/4 binds its second argument to an event reference; the producer
-// serializes that reference as the edge source.
+// guideline_arg/4 and guideline_pp/4 bind their second argument to an event
+// reference; the producer serializes that reference as the edge source.
 const EDGE_SOURCE_ROLES: Partial<Readonly<Record<SemanticGraphEdgeKind, SemanticGraphNodeKind>>> =
-  Object.freeze({ argument: 'event' });
+  Object.freeze({ argument: 'event', preposition: 'event' });
 
 export const GRAPH_SCOPE_OPERATORS = ['-', 'should', 'may', 'can', 'must'] as const;
 export type SemanticGraphScopeOperator = (typeof GRAPH_SCOPE_OPERATORS)[number];
@@ -235,8 +235,9 @@ const parseEdge = (
     sourceKind !== undefined &&
     sourceKind !== requiredSourceKind
   ) {
+    const article = /^[aeiou]/u.test(kind) ? 'an' : 'a';
     throw new GraphDataError(
-      `${at}.source must reference an ${requiredSourceKind} for an ${kind} edge`,
+      `${at}.source must reference an ${requiredSourceKind} for ${article} ${kind} edge`,
     );
   }
   const sentence = value.sentence === null ? null : integer(value.sentence, `${at}.sentence`, 1);

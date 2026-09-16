@@ -107,6 +107,18 @@ describe('semantic graph boundary', () => {
       },
       'edges[4].source must reference an event for an argument edge',
     ],
+    [
+      'preposition source whose node is not an event',
+      {
+        ...GRAPH_FIXTURE,
+        edges: GRAPH_FIXTURE.edges.map((edge) =>
+          edge.id === 'edge:event-value'
+            ? { ...edge, kind: 'preposition', source: 'doc:cdc', predicate: 'guideline_pp' }
+            : edge,
+        ),
+      },
+      'edges[4].source must reference an event for a preposition edge',
+    ],
   ])('rejects %s by field', (_name, input, field) => {
     expect(() => parseSemanticGraph(input)).toThrow(field);
   });
