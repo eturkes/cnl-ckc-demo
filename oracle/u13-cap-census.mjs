@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url';
+
 import { deriveProjection, readAsset } from './u13-oracle.mjs';
 
 const DEFAULT_NEIGHBOR_LIMIT = 80;
@@ -96,17 +98,21 @@ export const deriveCapCensus = (asset) => {
   };
 };
 
-const census = deriveCapCensus(readAsset());
-console.log(
-  `O5 roots=${String(census.roots)} search24('${census.searchCap.query}')=` +
-    `${String(census.searchCap.dropped)}/${String(census.searchCap.candidates)} nodes removed; ` +
-    `node80=${String(census.nodeCap.affected)} roots/${String(census.nodeCap.total)} nodes/` +
-    `${String(census.nodeCapEdges.total)} edge-view rows removed/` +
-    `${String(census.nodeMeaningSplits.total)} meaning splits ` +
-    `(max ${census.nodeCap.max.root}:${String(census.nodeCap.max.nodeDrop)} nodes/` +
-    `${String(census.nodeCapEdges.max.nodeEdgeDrop)} edges); ` +
-    `edge480=${String(census.edgeCap.affected)} roots/${String(census.edgeCap.total)} removed; ` +
-    `fallback60=${String(census.fallbackCap.affected)} roots/${String(census.fallbackCap.total)} removed; ` +
-    `meaning-splits=${String(census.fallbackScopeSplits.relations)} relations/` +
-    `${String(census.fallbackScopeSplits.droppedVariants)} variants`,
-);
+const main = () => {
+  const census = deriveCapCensus(readAsset());
+  console.log(
+    `O5 roots=${String(census.roots)} search24('${census.searchCap.query}')=` +
+      `${String(census.searchCap.dropped)}/${String(census.searchCap.candidates)} nodes removed; ` +
+      `node80=${String(census.nodeCap.affected)} roots/${String(census.nodeCap.total)} nodes/` +
+      `${String(census.nodeCapEdges.total)} edge-view rows removed/` +
+      `${String(census.nodeMeaningSplits.total)} meaning splits ` +
+      `(max ${census.nodeCap.max.root}:${String(census.nodeCap.max.nodeDrop)} nodes/` +
+      `${String(census.nodeCapEdges.max.nodeEdgeDrop)} edges); ` +
+      `edge480=${String(census.edgeCap.affected)} roots/${String(census.edgeCap.total)} removed; ` +
+      `fallback60=${String(census.fallbackCap.affected)} roots/${String(census.fallbackCap.total)} removed; ` +
+      `meaning-splits=${String(census.fallbackScopeSplits.relations)} relations/` +
+      `${String(census.fallbackScopeSplits.droppedVariants)} variants`,
+  );
+};
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) main();
