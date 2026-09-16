@@ -10,9 +10,11 @@ export {
   MAX_NEIGHBOR_LIMIT,
   GraphDataError,
   SemanticGraphModel,
+  graphEdgeLabel,
   graphFocusKey,
   graphNodeKindLabel,
   graphNodeLabel,
+  graphRelation,
   graphRelationLabel,
   parseSemanticGraph,
   type GraphAnswerView,
@@ -29,3 +31,11 @@ export {
   type SemanticGraphScopeOperator,
   type SemanticGraphStats,
 } from './model.js';
+export {
+  edgeCapDisclosure,
+  edgeLabel,
+  edgeLabelFrom,
+  edgeViewsOf,
+  type EdgeCapDisclosure,
+  type EdgeView,
+} from './view.js';

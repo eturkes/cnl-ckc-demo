@@ -4,14 +4,19 @@ import {
   DEFAULT_ANSWER_GRAPH_LIMIT,
   DEFAULT_NEIGHBOR_LIMIT,
   graphNodeLabel,
-  graphRelationLabel,
   type GraphPath,
-  type GraphSubgraph,
+  type SemanticGraphNode,
   type SemanticGraphNodeKind,
 } from './model.js';
+import type { EdgeView } from './view.js';
 
 export interface GraphCanvas {
-  update(subgraph: GraphSubgraph, selectedId: string, path: GraphPath | null): void;
+  update(
+    nodes: readonly SemanticGraphNode[],
+    selectedId: string,
+    path: GraphPath | null,
+    edges: readonly EdgeView[],
+  ): void;
   recenter(selectedId?: string): void;
   destroy(): void;
 }
@@ -96,15 +101,15 @@ const spread = (count: number): number =>
   );
 
 const elementsOf = (
-  subgraph: GraphSubgraph,
+  nodes: readonly SemanticGraphNode[],
   selectedId: string,
   path: GraphPath | null,
+  edges: readonly EdgeView[],
 ): cytoscape.ElementDefinition[] => {
   const pathNodes = new Set(path?.nodes ?? []);
-  const pathEdges = new Set(path?.edges ?? []);
   const hasHighlight = path !== null;
   return [
-    ...subgraph.nodes.map((node) => ({
+    ...nodes.map((node) => ({
       group: 'nodes' as const,
       data: { id: node.id, label: graphNodeLabel(node), kind: node.kind },
       classes: [
@@ -115,16 +120,15 @@ const elementsOf = (
         .filter(Boolean)
         .join(' '),
     })),
-    ...subgraph.edges.map((edge) => ({
+    ...edges.map((edge) => ({
       group: 'edges' as const,
-      data: {
-        id: edge.id,
-        source: edge.source,
-        target: edge.target,
-        label: graphRelationLabel(edge),
-        kind: edge.kind,
-      },
-      classes: pathEdges.has(edge.id) ? 'path' : hasHighlight ? 'context' : '',
+      data: { ...edge },
+      classes: [
+        edge.state === 'highlight' ? 'path' : hasHighlight ? 'context' : '',
+        edge.dashed ? 'negated' : '',
+      ]
+        .filter(Boolean)
+        .join(' '),
     })),
   ];
 };
@@ -183,6 +187,13 @@ const stylesheet = (palette: Palette): cytoscape.StylesheetJson => [
       // Opaque, because `--graph-edge` clears 3:1 against the canvas as a colour and a
       // faded stroke does not. `.context` below is where de-emphasis lives.
       opacity: 1,
+    },
+  },
+  {
+    selector: 'edge.negated',
+    style: {
+      // Polarity remains readable when zoom, occlusion, or colour makes the edge label unavailable.
+      'line-style': 'dashed',
     },
   },
   {
@@ -339,10 +350,10 @@ export const mountGraphCanvas = async (
   };
 
   return {
-    update(subgraph, selectedId, path) {
+    update(nodes, selectedId, path, edges) {
       cy.batch(() => {
         cy.elements().remove();
-        cy.add(elementsOf(subgraph, selectedId, path));
+        cy.add(elementsOf(nodes, selectedId, path, edges));
       });
       layout(selectedId, path);
     },

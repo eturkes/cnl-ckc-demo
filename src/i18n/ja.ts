@@ -284,6 +284,8 @@ export const TEXT = {
     '否定・法性のスコープ、来歴レコード、切り離された臨床詳細、重複する出典関係を含みます。' +
     'すべて証明の表示で参照できます。',
   graphDirectRelations: (n: number) => `直接の意味的な関係 ${String(n)}件`,
+  graphSearchMatches: (shown: number, total: number) =>
+    `一致するノード${total.toLocaleString()}件のうち${shown.toLocaleString()}件を表示しています。`,
   graphNodeLocation: (document: string, sentence: number | undefined) =>
     sentence === undefined ? document : `${document} · 文 ${String(sentence)}`,
   graphPathTo: (label: string) => `${label} へ`,
@@ -295,8 +297,13 @@ export const TEXT = {
   graphViewAnswer: (nodes: number, edges: number, highlighted: number) =>
     `概念・動作 ${nodes.toLocaleString()} 件と意味的な関係 ${edges.toLocaleString()} 件を表示し、` +
     `うち ${String(highlighted)} 件を現在の回答としてハイライトしています。`,
-  graphRelationsTruncated: (shown: number, total: number) =>
-    `直接の関係${String(total)}件のうち、最初の${String(shown)}件を表示しています。` +
+  graphViewOmissions: (nodes: number, edges: number, splitRelations: number) =>
+    `現在の上限によりノード${String(nodes)}件とエッジ表示行${String(edges)}件を省略しています。` +
+    `スコープの変種が一部欠けている表示済み関係識別子は${String(splitRelations)}件です。`,
+  graphRelationsTruncated: (shown: number, total: number, splitRelations: number) =>
+    `直接の関係${String(total)}件のうち、${String(shown)}件を表示しています。` +
+    `上限によりエッジ表示行${String(total - shown)}件を省略しています。` +
+    `スコープの変種が一部欠けている表示済み関係識別子は${String(splitRelations)}件です。` +
     '検索を使うと任意のノードに到達できます。',
   graphCanvasUnavailable: (message: string) =>
     `視覚的なグラフを利用できません。以下の完全なHTMLナビゲーションをお使いください。${message}`,

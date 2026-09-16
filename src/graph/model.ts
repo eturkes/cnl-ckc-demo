@@ -64,8 +64,10 @@ export interface SemanticGraphEdge {
   scope?: number;
   /** Producer relation before reader-facing scope is composed into a label. */
   relation?: string;
-  /** Ordered outermost-first operator semantics resolved from `scope`. */
+  /** Ordered outermost-first scope recorded at the source/near endpoint. */
   scopeOperators?: readonly SemanticGraphScopeOperator[];
+  /** Target/far endpoint scope when non-empty and different from the near endpoint. */
+  farScopeOperators?: readonly SemanticGraphScopeOperator[];
 }
 
 export interface SemanticGraphStats {
@@ -434,14 +436,21 @@ const scopeCoordinate = (document: string, sentence: number | null, reference: s
 
 const edgeRelation = (edge: SemanticGraphEdge): string => edge.relation ?? edge.label;
 
-const scopeOperatorLabel = (operator: SemanticGraphScopeOperator): string =>
-  operator === '-' ? 'negated' : operator;
+const scopeOperatorLabel = (operator: string): string => (operator === '-' ? 'negated' : operator);
 
-const scopedRelationLabel = (
+const scopeLabel = (scope: readonly string[]): string => scope.map(scopeOperatorLabel).join(' · ');
+
+export const graphEdgeLabel = (
   relation: string,
-  operators: readonly SemanticGraphScopeOperator[],
-): string =>
-  operators.length === 0 ? relation : [relation, ...operators.map(scopeOperatorLabel)].join(' · ');
+  scope: readonly string[],
+  farScope: readonly string[] | null = null,
+): string => {
+  const near = scopeLabel(scope);
+  if (farScope === null || farScope.length === 0)
+    return near === '' ? relation : `${relation} · ${near}`;
+  const far = scopeLabel(farScope);
+  return near === '' ? `${relation} → ${far}` : `${relation} · ${near} → ${far}`;
+};
 
 const enrichScope = (data: SemanticGraphData): readonly SemanticGraphEdge[] => {
   const byReference = new Map<string, { scope: SemanticGraphScope; index: number }>();
@@ -471,25 +480,61 @@ const enrichScope = (data: SemanticGraphData): readonly SemanticGraphEdge[] => {
       }),
     ),
   );
+  const enriched = data.edges.map((edge) => {
+    const resolved = edge.scope === undefined ? [] : (resolvedScopes[edge.scope] ?? []);
+    const scopeOperators = Object.freeze(resolved.map(({ scope: nested }) => nested.operator));
+    const parent = resolved.at(-2);
+    const source =
+      edge.kind === 'operator' && parent !== undefined
+        ? operatorTargets.get(parent.index)
+        : edge.source;
+    if (source === undefined) {
+      throw new GraphDataError(`${edge.id}: nested operator scope has no parent edge`);
+    }
+    return Object.freeze({
+      ...edge,
+      source,
+      label: edge.kind === 'operator' ? edge.label : graphEdgeLabel(edge.label, scopeOperators),
+      relation: edge.label,
+      scopeOperators,
+    });
+  });
+
+  const eventScopeKey = (edge: SemanticGraphEdge): string =>
+    [
+      edge.document,
+      edge.sentence === null ? '' : String(edge.sentence),
+      String(edge.line),
+      edge.target,
+    ].join('');
+  const eventScopes = new Map<string, readonly SemanticGraphScopeOperator[]>();
+  for (const edge of enriched) {
+    if (edge.kind !== 'event') continue;
+    const key = eventScopeKey(edge);
+    if (eventScopes.has(key)) {
+      throw new GraphDataError(`${edge.id}: duplicate event scope witness`);
+    }
+    eventScopes.set(key, edge.scopeOperators ?? []);
+  }
+  const sameScope = (
+    near: readonly SemanticGraphScopeOperator[],
+    far: readonly SemanticGraphScopeOperator[],
+  ): boolean =>
+    near.length === far.length && near.every((operator, index) => operator === far[index]);
+
   return Object.freeze(
-    data.edges.map((edge) => {
-      const resolved = edge.scope === undefined ? [] : (resolvedScopes[edge.scope] ?? []);
-      const scopeOperators = Object.freeze(resolved.map(({ scope: nested }) => nested.operator));
-      const parent = resolved.at(-2);
-      const source =
-        edge.kind === 'operator' && parent !== undefined
-          ? operatorTargets.get(parent.index)
-          : edge.source;
-      if (source === undefined) {
-        throw new GraphDataError(`${edge.id}: nested operator scope has no parent edge`);
+    enriched.map((edge) => {
+      if (edge.kind !== 'implies' || edge.relation !== 'condition supports') return edge;
+      const targetScope = eventScopes.get(eventScopeKey(edge));
+      if (targetScope === undefined) {
+        throw new GraphDataError(`${edge.id}: condition support target has no event scope witness`);
       }
+      const nearScope = edge.scopeOperators ?? [];
+      if (targetScope.length === 0 || sameScope(nearScope, targetScope)) return edge;
       return Object.freeze({
         ...edge,
-        source,
-        label:
-          edge.kind === 'operator' ? edge.label : scopedRelationLabel(edge.label, scopeOperators),
-        relation: edge.label,
-        scopeOperators,
+        label: graphEdgeLabel(edge.relation, nearScope, targetScope),
+        farScopeOperators: targetScope,
       });
     }),
   );
@@ -516,9 +561,14 @@ const isConceptNode = (node: SemanticGraphNode | undefined): node is SemanticGra
   node !== undefined && CONCEPT_NODE_KINDS.has(node.kind);
 
 const conceptEdgeKey = (edge: SemanticGraphEdge): string =>
-  [edge.kind, edge.source, edge.target, edgeRelation(edge), ...(edge.scopeOperators ?? [])].join(
-    '\u001f',
-  );
+  [
+    edge.kind,
+    edge.source,
+    edge.target,
+    edgeRelation(edge),
+    (edge.scopeOperators ?? []).join(''),
+    (edge.farScopeOperators ?? []).join(''),
+  ].join('\u001f');
 
 const isConceptRelationship = (
   edge: SemanticGraphEdge,
@@ -533,7 +583,7 @@ const isConceptRelationship = (
 const isNegatedConditionSupport = (edge: SemanticGraphEdge): boolean =>
   edge.kind === 'implies' &&
   edgeRelation(edge) === 'condition supports' &&
-  (edge.scopeOperators ?? []).includes('-');
+  ((edge.scopeOperators ?? []).includes('-') || (edge.farScopeOperators ?? []).includes('-'));
 
 const conceptRole = (edge: SemanticGraphEdge): number => {
   const relation = edgeRelation(edge);
@@ -861,6 +911,7 @@ export class SemanticGraphModel {
   answerSubgraph(
     focus: GraphFocusToken,
     nodeLimit = DEFAULT_ANSWER_GRAPH_LIMIT,
+    edgeLimit = DEFAULT_EDGE_LIMIT,
   ): GraphAnswerView | undefined {
     const evidence = this.evidenceSubgraph(focus);
     if (evidence === undefined) return undefined;
@@ -925,10 +976,10 @@ export class SemanticGraphModel {
       target.push(edge);
       adjacent.set(edge.target, target);
     }
-    const limit = Math.max(
-      evidenceNodes.size,
-      Math.min(MAX_ANSWER_GRAPH_LIMIT, Math.trunc(nodeLimit)),
-    );
+    const limit =
+      nodeLimit === Number.POSITIVE_INFINITY
+        ? Number.POSITIVE_INFINITY
+        : Math.max(evidenceNodes.size, Math.min(MAX_ANSWER_GRAPH_LIMIT, Math.trunc(nodeLimit)));
     const selected = new Set<string>(evidenceNodes);
     selected.add(root.id);
     const contextWords = `${focus.question ?? ''} ${focus.answer ?? ''}`;
@@ -996,7 +1047,7 @@ export class SemanticGraphModel {
           Number(evidenceKeys.has(conceptEdgeKey(left)));
         return highlighted || compareEdges(left, right);
       });
-    const visibleEdges = allVisibleEdges.slice(0, DEFAULT_EDGE_LIMIT);
+    const visibleEdges = allVisibleEdges.slice(0, edgeLimit);
     const reachableWithinTwo = new Set<string>([root.id]);
     for (const edge of directEdges) {
       const peer = otherEnd(edge, root.id);
@@ -1039,11 +1090,15 @@ export class SemanticGraphModel {
     nodeLimit = DEFAULT_NEIGHBOR_LIMIT,
     include: readonly string[] = [],
     includeEdges: readonly string[] = [],
+    edgeLimit = DEFAULT_EDGE_LIMIT,
   ): GraphSubgraph {
     if (!this.#conceptNodeIds.has(root)) {
       return { nodes: [], edges: [], truncatedNodes: false, truncatedEdges: false };
     }
-    const limit = Math.max(1, Math.min(MAX_NEIGHBOR_LIMIT, Math.trunc(nodeLimit)));
+    const limit =
+      nodeLimit === Number.POSITIVE_INFINITY
+        ? Number.POSITIVE_INFINITY
+        : Math.max(1, Math.min(MAX_NEIGHBOR_LIMIT, Math.trunc(nodeLimit)));
     const selected = new Set<string>([root]);
     const queue: { id: string; depth: number }[] = [{ id: root, depth: 0 }];
     let truncatedNodes = false;
@@ -1079,7 +1134,7 @@ export class SemanticGraphModel {
         const preferredOrder = Number(preferred.has(right.id)) - Number(preferred.has(left.id));
         return preferredOrder || compareEdges(left, right);
       });
-    const edges = allEdges.slice(0, DEFAULT_EDGE_LIMIT);
+    const edges = allEdges.slice(0, edgeLimit);
     return {
       nodes: Object.freeze(
         [...selected]
@@ -1252,20 +1307,24 @@ export const graphNodeKindLabel = (node: SemanticGraphNode): string => {
   return 'document';
 };
 
-export const graphRelationLabel = (edge: SemanticGraphEdge, from?: string): string => {
+export const graphRelation = (edge: SemanticGraphEdge, from?: string): string => {
   const relation = edgeRelation(edge);
-  let label: string;
   if (edge.kind === 'argument') {
     const outward = from === undefined || from === edge.source;
-    if (relation === 'argument 1') label = outward ? 'actor' : 'acts in';
-    else if (relation === 'argument 2') label = outward ? 'target' : 'target of';
-    else label = outward ? 'participant' : 'participates in';
-  } else if (edge.kind === 'event') {
-    label = from === edge.target ? 'action for' : 'action';
-  } else if (edge.kind === 'implies' && relation === 'condition supports') {
-    label = from === edge.target ? 'supported by condition' : relation;
-  } else {
-    label = relation.replace(/[_-]+/gu, ' ');
+    if (relation === 'argument 1') return outward ? 'actor' : 'acts in';
+    if (relation === 'argument 2') return outward ? 'target' : 'target of';
+    return outward ? 'participant' : 'participates in';
   }
-  return edge.kind === 'operator' ? label : scopedRelationLabel(label, edge.scopeOperators ?? []);
+  if (edge.kind === 'event') return from === edge.target ? 'action for' : 'action';
+  if (edge.kind === 'implies' && relation === 'condition supports') {
+    return from === edge.target ? 'supported by condition' : relation;
+  }
+  return relation.replace(/[_-]+/gu, ' ');
+};
+
+export const graphRelationLabel = (edge: SemanticGraphEdge, from?: string): string => {
+  const relation = graphRelation(edge, from);
+  return edge.kind === 'operator'
+    ? relation
+    : graphEdgeLabel(relation, edge.scopeOperators ?? [], edge.farScopeOperators ?? null);
 };
