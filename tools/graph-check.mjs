@@ -954,6 +954,7 @@ if (violations.length > 0) {
 
 console.log(
   `graph-check: R1-R7 and the palette hold over ${String(readings.length)} rendered views — ` +
+    `${String(canvasScopeReadings.length)} canvas scope readings, ` +
     `${String(total('parallelSeparated'))}/${String(total('parallelPairs'))} parallel pairs separated, ` +
     `${String(total('labelsMeasured'))} node labels drawn whole, ` +
     `labels ${(number('labelPx')[0] ?? 0).toFixed(2)}-${(number('labelPx').at(-1) ?? 0).toFixed(2)} px ` +
@@ -961,10 +962,11 @@ console.log(
     `label overlaps, median ${median(number('settleMs')).toFixed(0)} ms to settle`,
 );
 console.log(
-  `graph-check: C1-C11 hold over ${String(components.length)} component sweeps and ` +
+  `graph-check: C1-C12 hold over ${String(components.length)} component sweeps and ` +
     `${String(fallbacks.length)} fallback sweeps — ` +
+    `${String(fallbackScopeReadings.length)} fallback + ${String(spanningScopeReadings.length)} spanning scope readings, ` +
     `${String(components.reduce((sum, row) => sum + row.cyNodes, 0))} nodes drawn from the ` +
     `component's own state, ${String(expanded)} views expanded, ${String(taps)} canvas taps ` +
-    `delivered, both fallbacks kept the HTML relation view, ` +
-    `control: a detached selection callback refused by C2 + C6`,
+    `delivered, both fallbacks kept the HTML relation view, controls: callback C2/C6 + ` +
+    `scope drops/order/dash + empty reading tables refused`,
 );
