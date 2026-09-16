@@ -197,6 +197,7 @@ const SPANNING_SCOPE_READINGS = [
   },
 ];
 const PARTIAL_SCOPE_DISCLOSURE = /\b(?:incomplete|partial|scope omitted|scope spans)\b/iu;
+const BOUND_DISCLOSURE = /\b(?:more|additional|partial|limit|outside|hidden|not shown|expand)\b/iu;
 
 /** @type {(message: string) => never} */
 const fail = failWith('graph-check');
@@ -442,6 +443,12 @@ const gradeInteractions = (row, at) => {
     row.expandRounds.at(-1)?.enabled === false,
     'C4',
     `expand stayed enabled after ${n(row.expandRounds.length)} rounds`,
+  );
+  const bounded = row.expandRounds.filter(({ enabled }) => enabled);
+  req(
+    bounded.every(({ status }) => BOUND_DISCLOSURE.test(status)),
+    'V7',
+    `bounded neighborhood hid semantics without disclosure: ${bounded.map(({ status }) => JSON.stringify(status)).join(' → ')}`,
   );
 
   req(
@@ -811,8 +818,12 @@ require_(
 const expanded = components.filter(
   (row) => (row.expandRounds.at(-1)?.nodes ?? 0) > (row.expandRounds[0]?.nodes ?? 0),
 ).length;
+const boundedRounds = components.flatMap(({ expandRounds }) =>
+  expandRounds.filter(({ enabled }) => enabled),
+);
 const taps = components.filter((row) => row.tapEmitted !== '').length;
 require_(expanded > 0, 'C4', 'no view raised its drawn node count on expand');
+require_(boundedRounds.length > 0, 'V7', 'no bounded neighborhood disclosure was graded');
 require_(taps > 0, 'C6', 'no canvas tap reached the selection callback');
 
 if (violations.length > 0) {

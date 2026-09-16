@@ -186,6 +186,7 @@ const typeQuery = async (query: string): Promise<void> => {
 export interface ExpandRound {
   enabled: boolean;
   nodes: number;
+  status: string;
 }
 
 export interface InteractionReading {
@@ -245,7 +246,11 @@ const expandLeg = async (start: CyLike): Promise<ExpandRound[]> => {
   for (let round = 0; round < 4; round += 1) {
     const control = all('.search-row button')[1];
     if (!(control instanceof HTMLButtonElement)) throw new Error('probe: no expand control');
-    rounds.push({ enabled: !control.disabled, nodes: cy.nodes().length });
+    rounds.push({
+      enabled: !control.disabled,
+      nodes: cy.nodes().length,
+      status: text('.view-status'),
+    });
     if (control.disabled) break;
     control.click();
     cy = await settle();
