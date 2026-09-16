@@ -431,7 +431,12 @@
       <p class="canvas-error" role="status">{canvasError}</p>
     {/if}
 
-    <p class="view-status" role="status">
+    <p
+      class="view-status"
+      role="status"
+      data-truncated-nodes={subgraph.truncatedNodes}
+      data-truncated-edges={subgraph.truncatedEdges}
+    >
       {evidenceView === null
         ? t.TEXT.graphViewDepth(subgraph.nodes.length, subgraph.edges.length, depth)
         : t.TEXT.graphViewAnswer(
@@ -486,7 +491,12 @@
           {#each relations as relation (relation.id)}
             {@const peer = peerOf(relation)}
             {#if peer !== undefined}
-              <li>
+              <li
+                data-edge-id={relation.id}
+                data-edge-scope={relation.scope.join(' ')}
+                data-edge-state={relation.state}
+                data-edge-dashed={relation.dashed}
+              >
                 <span class="relation">{edgeLabelFrom(relation, selected.id)}</span>
                 <button type="button" onclick={() => choose(peer.id, true, evidenceView !== null)}
                   >{graphNodeLabel(peer)}</button
