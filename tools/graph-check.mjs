@@ -103,6 +103,83 @@ const CANVAS_SCOPE_FIXTURE = {
   },
 };
 
+const FALLBACK_SCOPE_READINGS = [
+  {
+    caseId: 'V3.fallback-forward',
+    edgeId: 'fixture:fallback-scope',
+    direction: 'forward',
+    relation: 'condition supports',
+    scope: ['-', 'should'],
+  },
+  {
+    caseId: 'V3.fallback-reverse',
+    edgeId: 'fixture:fallback-scope',
+    direction: 'reverse',
+    relation: 'supported by condition',
+    scope: ['-', 'should'],
+  },
+];
+const FALLBACK_SCOPE_ASSET = {
+  schemaVersion: 2,
+  nodes: [
+    { id: 'document:fixture-scope', kind: 'document', label: 'scope fixture' },
+    {
+      id: 'event:fixture-condition',
+      kind: 'event',
+      label: 'scope condition',
+      document: 'fixture-scope',
+      sentence: 1,
+    },
+    {
+      id: 'event:fixture-action',
+      kind: 'event',
+      label: 'scope action',
+      document: 'fixture-scope',
+      sentence: 1,
+    },
+  ],
+  edges: [
+    {
+      id: 'fixture:fallback-scope',
+      kind: 'implies',
+      source: 'event:fixture-condition',
+      target: 'event:fixture-action',
+      label: 'condition supports',
+      document: 'fixture-scope',
+      sentence: 1,
+      line: 1,
+      predicate: 'guideline_condition',
+      scope: 1,
+    },
+  ],
+  scopes: [
+    {
+      id: 'scope:fixture-negated',
+      chain: ['actual', 'scope:fixture-negated'],
+      operator: '-',
+      document: 'fixture-scope',
+      sentence: 1,
+      reference: 'scope:fixture-negated',
+    },
+    {
+      id: 'scope:fixture-should',
+      chain: ['actual', 'scope:fixture-negated', 'scope:fixture-should'],
+      operator: 'should',
+      document: 'fixture-scope',
+      sentence: 1,
+      reference: 'scope:fixture-should',
+    },
+  ],
+  stats: {
+    documents: 1,
+    clauses: 1,
+    nodes: 3,
+    edges: 1,
+    byNodeKind: { document: 1, event: 2 },
+    byEdgeKind: { implies: 1 },
+  },
+};
+
 /** @type {(message: string) => never} */
 const fail = failWith('graph-check');
 
@@ -407,6 +484,8 @@ let browser;
 const readings = [];
 /** @type {ScopeReading[]} */
 const canvasScopeReadings = [];
+/** @type {ScopeReading[]} */
+const fallbackScopeReadings = [];
 /** @type {(import('./graph-probe/app.svelte.js').InteractionReading & { device: string })[]} */
 const components = [];
 /** @type {Record<string, unknown>[]} */
@@ -604,7 +683,27 @@ try {
     );
     require_(palette.relations > 0, 'C10', `${at}: the HTML relation view lists nothing`);
     require_(palette.nodeIndex > 0, 'C10', `${at}: the HTML node index lists nothing`);
-    fallbacks.push({ device: device.name, ...load, ...palette });
+
+    const scoped = /** @type {import('./graph-probe/app.svelte.js').ScopeFallbackReading} */ (
+      await run(
+        `scopeFallback(${JSON.stringify(FALLBACK_SCOPE_ASSET)}, "scope condition", "scope action")`,
+      )
+    );
+    const declaredFallback = FALLBACK_SCOPE_READINGS.map((expected) => {
+      const rows = expected.direction === 'forward' ? scoped.forward : scoped.reverse;
+      return {
+        caseId: `${expected.caseId}:${device.name}`,
+        edgeId: expected.edgeId,
+        relation: expected.relation,
+        scope: expected.scope,
+        rendered: rows.find((reading) => reading.startsWith(expected.relation)) ?? null,
+        dashed: undefined,
+        required: true,
+      };
+    });
+    recordScopeErrors(gradeScopeReadings(declaredFallback, 'FALLBACK_SCOPE_READINGS', false), 'V3');
+    fallbackScopeReadings.push(...declaredFallback);
+    fallbacks.push({ device: device.name, ...load, ...palette, scoped });
   }
 } finally {
   await browser?.close();
@@ -612,7 +711,10 @@ try {
 }
 
 if (report !== undefined) {
-  writeFileSync(report, `${JSON.stringify({ readings, components, fallbacks }, null, 1)}\n`);
+  writeFileSync(
+    report,
+    `${JSON.stringify({ readings, canvasScopeReadings, components, fallbacks, fallbackScopeReadings }, null, 1)}\n`,
+  );
 }
 
 const number = (/** @type {string} */ key) =>

@@ -491,6 +491,34 @@ export interface PaletteFallbackReading {
   counts: string;
 }
 
+export interface ScopeFallbackReading {
+  forward: string[];
+  reverse: string[];
+}
+
+const selectSearchResult = async (label: string): Promise<void> => {
+  await typeQuery(label);
+  const result = all('.search-results button.result').find(
+    (candidate) => labelOf(candidate.querySelector('span')) === label,
+  );
+  press(result, `the ${label} search result`);
+  await waitFor(`the ${label} selection`, () =>
+    text('.selection-card h3') === label ? true : undefined,
+  );
+};
+
+const relationTexts = (peer: string): string[] =>
+  all('.relations li').flatMap((row) => {
+    const peerButton = [...row.querySelectorAll('button')].find(
+      (candidate) => labelOf(candidate) === peer,
+    );
+    if (peerButton === undefined) return [];
+    const copy = row.cloneNode(true);
+    if (!(copy instanceof HTMLElement)) throw new Error('probe: relation row clone is not HTML');
+    for (const button of copy.querySelectorAll('button')) button.remove();
+    return [labelOf(copy)];
+  });
+
 const api = {
   /** C1 + C2-C7 in one mount, ordered so each leg establishes its own precondition. */
   async interactions(
@@ -556,6 +584,41 @@ const api = {
       recovered: text('.counts'),
       rendererAfterRetry: maybeCy(canvasHost()) !== undefined,
     };
+  },
+
+  /** Raw forward + reverse HTML relation rows while the shipped canvas is unavailable. */
+  async scopeFallback(
+    asset: unknown,
+    source: string,
+    target: string,
+  ): Promise<ScopeFallbackReading> {
+    const objectUrl =
+      asset === null
+        ? undefined
+        : URL.createObjectURL(
+            new Blob([JSON.stringify(asset)], { type: 'application/json;charset=utf-8' }),
+          );
+    try {
+      props.graphUrl = objectUrl ?? GRAPH_URL;
+      props.focus = null;
+      props.onSelect = record;
+      await remount();
+      for (const token of GRAPH_TOKENS) host.style.setProperty(token, 'initial');
+      await activate();
+      await waitFor('the canvas fallback', () => one('.canvas-error'));
+      await selectSearchResult(source);
+      const forward = relationTexts(target);
+      const targetButton = all('.relations li button').find(
+        (candidate) => labelOf(candidate) === target,
+      );
+      press(targetButton, `the ${target} relation target`);
+      await waitFor(`the ${target} selection`, () =>
+        text('.selection-card h3') === target ? true : undefined,
+      );
+      return { forward, reverse: relationTexts(source) };
+    } finally {
+      if (objectUrl !== undefined) URL.revokeObjectURL(objectUrl);
+    }
   },
 
   /** C10: a palette the canvas cannot read leaves the HTML relation view carrying the graph. */
