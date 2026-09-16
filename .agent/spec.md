@@ -68,6 +68,15 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   with the original text; approving unit `.agent/contracts/m5u13.md` V6. The 38 cases whose ends
   CONTRADICT rather than nest are a producer question queued to `.agent/deferred.md`; the
   shipped edge population does not move.
+- **The reading is READER-RELATIVE; the data is direction-fixed.** `scope` is always the source
+  end and `farScope` always the target end, `null` IFF that end is unscoped. The LABEL resolves
+  them against the node the reader selected — your own end first, `→` always pointing away from
+  you — so one edge yields two strings and the arrow carries one meaning everywhere. Far end is
+  omitted when empty or deep-equal to near; nesting writes both sides in full rather than
+  eliding a repeat, because eliding would render a nested pair identically to a divergent one.
+  Approved change of the graded case `tests/graph-semantics.review.test.ts:118` →
+  `'supported by condition · should'`, the original's firing recorded in
+  `.agent/contracts/m5u13.md`.
 - **Judgment review reads the SHIPPED SURFACE, not a commit range.** The `rev` lenses read the
   working tree at close — `src/`, `tools/`, the gate, the contracts — so a defect is caught
   wherever it ships and superseded code is never re-read. The u3–u10 pass the ledger calls

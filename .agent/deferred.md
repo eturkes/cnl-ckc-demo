@@ -277,12 +277,21 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   `.claude/rules/` or `.agent/contracts/` whose search returns rc 0, and the 60-relation cap
   either surfaces its truncation or is contract-owned. `pri` med.
 
-- **`graph:check` prints green then never exits** — the campaign completes both readings and
-  both summaries, then hangs; `test-owners` killed it at 600 s (rc 143) on `wt/test-owners`.
-  A lane that cannot terminate makes `pnpm release:check` unrunnable unattended, and a
-  timeout kill is indistinguishable from a hung browser. Accept: `pnpm graph:check` exits on
-  its own with rc 0 inside its own budget, and a planted non-terminating page still fails it
-  by name rather than by wall clock. `pri` med.
+- **`graph:check` prints green then never exits** — **CLOSING IN u13**, row leaves in that
+  commit. The campaign completed both readings and both summaries, then hung; `test-owners`
+  killed it at 600 s (rc 143) on `wt/test-owners`. A lane that cannot terminate makes
+  `pnpm release:check` unrunnable unattended, and a timeout kill is indistinguishable from a
+  hung browser. Accept: `pnpm graph:check` exits on its own with rc 0 inside its own budget,
+  and a planted non-terminating page still fails it by name rather than by wall clock.
+  **Met on `wt/triage-hang` `da3f80e`** (substantive `e5ea85d`): root cause was
+  `spawn('pnpm exec vite')` building wrapper→pnpm→Vite while `stop()` signalled the wrapper
+  alone, so the surviving Vite held stdout/stderr open and left referenced pipes after both
+  summaries. Fix = in-process Vite plus awaited browser/server teardown. Committed-state
+  `pnpm graph:check` rc 0 in 43.916 s with no outer timeout; control
+  `GRAPH_CHECK_CONTROL=non-terminating-page node tools/graph-check.mjs` rc 1 in 10.252 s
+  naming `control/non-terminating-page`; probe page added is `tools/graph-probe/hang.html`
+  alone. Counts unchanged across the fix — 28 views, 116/116 pairs, 692 labels, 4 component +
+  2 fallback sweeps, 54 nodes, 4 expansions, 4 taps — and all six non-zero assertions intact.
 
 - **71 operator contexts have no edge in the shipped graph** — 64 negation (`-`) and 7 `can`,
   i.e. 41% of the corpus's 156 negation contexts, sit as operator-context nodes nothing

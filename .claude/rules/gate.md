@@ -101,6 +101,8 @@ effect of the unit whose grader it loosens.
 | `binding:check` | a required case no suite defines; a required suite the run never loaded; the `REQUIRED` table emptied; the `LIFECYCLE` table emptied; the `MEANING` table emptied | the inventory loop re-run over the gate's OWN suite report, so none costs a second vitest; the last three feed `gradeTable` the real table emptied, through the same function the real one goes through |
 | `kb:reproduce` | one asset digest changed in the second manifest | the equality seam re-run on the perturbed clone |
 | `graph:check` | one edge's `line-style` set to `dashed` in the mounted graph; `SEPARATION_PX` set to 0 | `dashControl` requires a 0 → 1 → 0 reading off the live renderer; R1 requires the probe-reported cutoff to be exactly 3 px AND a fixed absolute boundary pair where 2 px collapses and 3 px separates — at 0 every coincident midpoint reads distinct, so R1 passed vacuously while the renderer regressed |
+| `graph:check` termination | a planted non-terminating page, `tools/graph-probe/hang.html` | `GRAPH_CHECK_CONTROL=non-terminating-page node tools/graph-check.mjs` drives the REAL campaign against that page and must exit 1 naming `control/non-terminating-page` — 10.252 s measured — so a lane that cannot finish is refused BY NAME instead of by wall clock, which is the whole distinction a timeout kill destroys |
+| `graph:check` scope readings | one scope element dropped from a rendered label; the scope reordered; the negation dash removed; one scope element dropped from the fallback reading; each of `CANVAS_SCOPE_READINGS`, `FALLBACK_SCOPE_READINGS` and `SPANNING_SCOPE_READINGS` emptied | each refusal must NAME the case and the edge — a dropped canvas `may` reads `expected … ordered scope [should, may]`, a removed dash reads `dashed=false` — because a count alone cannot say WHICH reading regressed; each emptied table must refuse by its own table name, since the other controls survive on the two tables they do not empty and a vacuous `0 readings` would otherwise pass |
 | `graph:check` component half | the component's selection callback detached; a `graphUrl` the server does not serve; every `--graph-*` token set to `initial` on the mount host | the interaction sweep re-runs under the detached callback and `gradeInteractions` must refuse it by naming C2 and C6; the other two are the product's own failure paths, graded as C9 and C10 |
 | `binding:replay` | `pnpm binding:replay HEAD` | both differential arms go green, so the command exits 1 instead of accepting archived-red/current-green |
 
@@ -155,6 +157,18 @@ container itself, and any whose client point falls outside the container rect �
 scrolls the canvas into view, resolves the layer with `elementFromPoint`, and pans the victim
 node under that point first. Pointer events reach nothing; `mousedown` + `mouseup` are the
 pair that fires `tap`.
+
+**The campaign owns a named budget and terminates on its own.** It formerly printed both
+summaries and then hung forever, which made `release:check` unrunnable unattended and made a
+finished campaign indistinguishable from a hung browser. Cause: `spawn('pnpm exec vite')` builds
+wrapper→pnpm→Vite, `stop()` signalled the wrapper alone, and the surviving Vite held stdout and
+stderr open, so referenced pipes outlived the work. Vite now runs IN PROCESS with browser and
+server teardown awaited. The budget is 120000 ms; on expiry the run prints
+`graph-check: campaign exceeded 120000 ms during <phase>` and takes 2000 ms to clean up, and a
+2000 ms unref'd post-summary guard names any residual liveness rather than hanging on it. A
+healthy committed-state run is 43.916 s with no outer timeout, so the budget is roughly 3x
+headroom, not a tight fit. **Never wrap this command in an outer `timeout` to paper over a
+regression** — the budget message names the phase, and a wall-clock kill does not.
 
 `pnpm release:check` = `gate && kb:reproduce && smoke && browser:check && graph:check`.
 
