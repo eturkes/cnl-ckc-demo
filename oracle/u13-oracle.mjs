@@ -63,6 +63,26 @@ export const deriveProjection = (asset) => {
     .sort((left, right) => left.key.localeCompare(right.key));
 };
 
+const scopeLabel = (operator) => (operator === '-' ? 'negated' : operator);
+
+export const expectedFallbackReading = (edge, from = edge.target) => {
+  const relation = edge.relation ?? edge.label;
+  let label;
+  if (edge.kind === 'argument') {
+    const outward = from === edge.source;
+    if (relation === 'argument 1') label = outward ? 'actor' : 'acts in';
+    else if (relation === 'argument 2') label = outward ? 'target' : 'target of';
+    else label = outward ? 'participant' : 'participates in';
+  } else if (edge.kind === 'event') {
+    label = from === edge.target ? 'action for' : 'action';
+  } else if (edge.kind === 'implies' && relation === 'condition supports') {
+    label = from === edge.target ? 'supported by condition' : relation;
+  } else {
+    label = relation.replace(/[_-]+/gu, ' ');
+  }
+  return edge.scope.length === 0 ? label : [label, ...edge.scope.map(scopeLabel)].join(' · ');
+};
+
 export const projectionSummary = (asset) => {
   const groups = deriveProjection(asset);
   const rows = groups.map(({ representative }) => ({
