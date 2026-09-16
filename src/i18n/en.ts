@@ -308,8 +308,10 @@ export const TEXT = {
     `The highlight comes from ${plural(sentences, 'controlled sentence')} in`,
   graphHighlightOriginAfter: (_sentences: number) => '.',
   graphHiddenScaffolding: (nodes: number, edges: number) =>
-    `${String(nodes)} parser or provenance nodes and ${String(edges)} lower-level relationships ` +
-    'are hidden here and remain inspectable in the proof view.',
+    `${String(nodes)} source-detail nodes and ${String(edges)} source-detail relationships are ` +
+    'not shown as distinct highlighted map items. These totals include negation and modality ' +
+    'scopes, provenance records, disconnected clinical details and repeated source relationships. ' +
+    'All remain inspectable in the proof view.',
   graphDirectRelations: (n: number) => `${plural(n, 'direct semantic relationship')}`,
   graphNodeLocation: (document: string, sentence: number | undefined) =>
     sentence === undefined ? document : `${document} · sentence ${String(sentence)}`,

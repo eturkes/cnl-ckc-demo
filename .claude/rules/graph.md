@@ -114,18 +114,35 @@ server refuses, and a `--graph-*` palette set to `initial`). The mocked suite ca
   mechanisms: **9,053 rule-context implications + 751 synthesized event-support shortcuts**.
   The 751 are the defect site at `graph.mjs:398`.
 
-## Projection scope loss
+## Projection scope — the model carries it, the renderer does not yet
 
-The concept projection filters `operator` edges and non-`condition supports` `implies` edges,
-and `operator-context` is absent from `CONCEPT_NODE_KINDS` (`src/graph/model.ts`).
+The concept projection still filters `operator` edges and non-`condition supports` `implies`
+edges, and `operator-context` is still absent from `CONCEPT_NODE_KINDS`. **u12 moved the scope
+onto the surviving edges instead** (`SemanticGraphEdge.scopeOperators`, ordered outermost
+first), which is the user's edge-state ruling made real in `src/graph/model.ts`.
 
-- Modal census, all hidden: 156 `-` (negation), 857 `should`, 156 `may`, 85 `can`, 9 `must`
-  = **1,263 operator contexts**.
-- **100% of the surviving projection is scope-stripped**: all 5,796 retained edge occurrences
-  and all 2,381 groups belong to a scope-bearing source unit, so there is no small subset to
-  repair.
-- Projection = 1,288 nodes / 2,381 grouped edges out of 2,901 / 20,964; the filter drops
-  15,168 occurrences and dedup removes another 3,415.
+- Projection = **1,300 nodes / 2,630 grouped edges** out of 2,901 / 20,964. The nodes are
+  1,084 entity + 151 event + 65 value; the headline counts the 1,235 entity/event alone and
+  names the 65 as attributes, because calling a value node a concept is what S9 caught.
+- **1,584 of the 2,630 groups carry an ordered scope.** Grouping keys on that sequence —
+  `conceptEdgeKey` spreads `scopeOperators` in order — so two occurrences differing only in
+  scope ORDER stay distinct groups. The corpus holds zero permuted pairs, so the guarantee is
+  structural plus the constructed case at `tests/graph-model.test.ts:303`, never a corpus
+  witness.
+- Scope-keyed dedup split 2,381 → 2,615 groups; the remaining 15 are the non-unit cardinality
+  edges the projection now admits (`relation !== 'na eq 1'`), 12 of which carry scope.
+- Modal census, unchanged by u12: 156 `-` (negation), 857 `should`, 156 `may`, 85 `can`,
+  9 `must` = **1,263 operator contexts**, of which 71 carry no edge at all and stay orphaned by
+  user ruling.
 
-Consequence, and the reason for the ruling above: a negated recommendation renders as its
-clinical inverse while the answer text keeps the negation.
+**What remains open is the SHOWN edge, and that is u13.** `src/graph/canvas.ts` and
+`src/graph/SemanticGraph.svelte` still render neither the scope nor a scope-composed label, so
+a negated recommendation still DISPLAYS as its clinical inverse even though the model no longer
+drops the negation. `m5u8.md:90-97` declares the `EdgeView` u13 creates; `label` when shown is
+exactly relation + ordered scope. A model-side assertion cannot grade that — `pnpm graph:check`
+is the only grader of rendered output.
+
+One known gap the model carries by design: a synthesized `condition supports` shortcut spanning
+two scopes records the producer's single `edge.scope`, so `edge:512:12` ships `['-']` and drops
+the recommendation end's `should`. Polarity survives, modality does not.
+`.agent/deferred.md` carries it with u13's acceptance check.

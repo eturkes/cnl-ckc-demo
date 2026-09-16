@@ -296,6 +296,26 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   records the moved counts with the original firing, or a committed check proves no shown path
   can skip a negation context that has no edge. `pri` med.
 
+- **The independent projection oracle lives on a branch alone** — u12's differential ran
+  `tests/graph-projection.oracle.test.ts` (branch `wt/orc-proj` `1a893b1`) against the shipped
+  model: 19 passed / 5 failed, every failure adjudicated for the shipped side. Three of the
+  five are one stale lookup — the oracle finds an edge by `label === 'argument 1'`, while
+  `label` is now relation + ordered scope per `.agent/contracts/m5u8.md:90-97`. It does not
+  ship in u12 because editing a teammate's oracle until it passes and then grading the
+  projection with it grades a check MAIN bent. Accept: the three lookups match on `relation`,
+  the suite runs 24/24 green against the shipped model from the primary tree, and it joins a
+  declared `binding:check` register. `pri` med.
+
+- **A concept edge spanning two scopes carries one** — `edge:512:12` is a synthesized
+  `condition supports` shortcut whose premise end sits under `['-']` and whose recommendation
+  end under `['-', 'should']`. The model records the producer's own single `edge.scope`, so the
+  edge ships `scopeOperators: ['-']` and the label `condition supports · negated`. The `should`
+  drops; the polarity does not invert, so the reading is a bare negated support where the KB
+  asserts a negated recommendation. Keeping the edge is the u12 ruling — review case 3 requires
+  only that it not be HIGHLIGHTED, and omitting it is the silent loss P6 forbids. Accept: u13
+  renders both endpoint scopes on a spanning edge, or a committed check proves no shown path
+  presents a spanning edge's partial scope as its whole scope. `pri` med.
+
 ## Index — one line per `high` + `med` row
 
 Defect and acceptance check. Full text is above in this file; the `low` rows are prose only.
@@ -326,10 +346,19 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | `graph:check` prints green then never exits | it exits on its own rc 0; a planted non-terminating page fails by name |
 | Ten shipped bounds have no owner | each names an owner whose search returns rc 0; the 60-relation cap surfaces truncation or is contract-owned |
 | 71 operator contexts have no edge, 64 of them negation | the 71 carry edges with the moved counts recorded, or a check proves no shown path skips an edgeless negation context |
+| The projection oracle lives on a branch alone | its label lookups match on `relation`, 24/24 green in-tree, joined to a declared register |
+| A concept edge spanning two scopes carries one | u13 renders both endpoint scopes, or a check proves no shown path presents a partial scope as whole |
 
 ## Accepted-open
 
 Review rows ruled open rather than fixed. Each carries its acceptance check in
 `.agent/archive/review-expedited.md`; none is current scope.
 
-A1 A3 A4 A5 A6 A8 A9+ A10+ A11+ · S7 S9 S13+ · C1 C4u1 C4u4 C4u5 C6.
+A1 A3 A4 A5 A6 A8 A9+ A10+ A11+ · S7 · C1 C4u1 C4u4 C4u5 C6.
+
+**S9 and S13+ left this set in u12** by user ruling: `binding:check` fails the gate on any red
+case in its run, so a tree holding them red can never be gate-green, and xfail, a split suite
+or branch-only storage each stop executing the defect. S9's headline now counts entity and
+event nodes alone and both locales name what the hidden totals contain; S13+ is refused at
+`parseEdge`, where `guideline_arg/4` and `guideline_pp/4` constrain their source to an event —
+5,002 constrained edges, 0 violations across the shipped 20,964.

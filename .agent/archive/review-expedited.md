@@ -16,7 +16,8 @@ harvest: `wt/rev-arch-1` `d0584cb`, `wt/rev-sem-1` `f2644a3`, `wt/rev-sem-2`
 `main` — they encode the acceptance checks that close their rows, so each turns
 green when its defect is fixed. **Measured during M5 planning, not uniform:**
 `rev-sem-2`'s suite is 8 red / 1 green, and two of those reds (S9 headline, S13+)
-test accepted-open rows, so requiring all nine green would widen M5's scope.
+test accepted-open rows. **Both closed in u12 by user ruling** — see `Rulings — closed`
+below — so all nine are green in the tree.
 
 ## Verdict summary
 
@@ -195,6 +196,19 @@ these decide what happens about them.
    u6 restores the `queries/answers/` byte oracle, but the four `queries/traces/`
    oracles are a different artifact and stay open. C5 is fixed at `93cda83`; the
    register's two entries live in `.agent/polish.md`.
+
+5. **S9 and S13+ CLOSE in u12** (user ruling, superseding their accepted-open
+   entries above). Mechanical reason: `binding:check` runs the whole suite once and
+   fails the gate on ANY red case in that run
+   (`tools/binding-check.mjs:267`), so a tree holding these two red can never be
+   gate-green, and xfail, a split suite and branch-only storage each stop executing
+   the defect. S9's headline now derives 1,235 entity/event nodes with 65 attributes
+   left visible, and both locales name what the hidden totals contain; S13+ is
+   refused at `parseEdge`, where `guideline_arg/4` and `guideline_pp/4` constrain
+   their source to an event — 5,002 constrained edges, 0 violations across the
+   shipped 20,964. Accepted-open is now **A1 A3 A4 A5 A6 A8 A9+ A10+ A11+ · S7 ·
+   C1 C4u1 C4u4 C4u5 C6** — `.agent/deferred.md` carries the live set.
+   → `.agent/contracts/m5u12.md`.
 
 Standing constraint on all of it: visual design, layout, colour, type, spacing,
 motion, component composition, affordance placement, disclosure/interaction

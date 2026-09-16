@@ -95,21 +95,26 @@ const modality = tally(
 // reports a non-zero count, u11's ordered chain has a tie nothing in the schema breaks.
 const ambiguous = [...contexts.values()].filter((entry) => entry.outer.size > 1).length;
 
-/** @param {string} key @param {Set<string>} seen @returns {number} */
+/**
+ * A rule VARIABLE outer names another context of the SAME sentence, not a root: the clause
+ * body `guideline_operator(actual,E,-), guideline_operator(E,F,can)` puts `F` two hops down.
+ * Terminating on every non-`'$guideline_id'` outer undercounted 7 records against the chains
+ * the asset ships, which is what makes the shipped `chain` the arbiter of this number.
+ *
+ * @param {string} key @param {Set<string>} seen @returns {number}
+ */
 const depth = (key, seen = new Set()) => {
   if (seen.has(key)) return Number.POSITIVE_INFINITY;
   seen.add(key);
   const entry = contexts.get(key);
   if (entry === undefined) return 0;
+  const [document = '', sentence = ''] = key.split('|');
   let deepest = 0;
   for (const outer of entry.outer) {
-    if (!outer.startsWith(ID_TERM)) {
-      deepest = Math.max(deepest, 1);
-      continue;
-    }
-    const sentence = /,([1-9][0-9]*),box/u.exec(outer)?.[1] ?? 'null';
-    const parent = `${key.split('|')[0] ?? ''}|${sentence}|${outer}`;
-    deepest = Math.max(deepest, 1 + depth(parent, new Set(seen)));
+    const parent = outer.startsWith(ID_TERM)
+      ? `${document}|${/,([1-9][0-9]*),box/u.exec(outer)?.[1] ?? 'null'}|${outer}`
+      : `${document}|${sentence}|${outer}`;
+    deepest = Math.max(deepest, contexts.has(parent) ? 1 + depth(parent, new Set(seen)) : 1);
   }
   return deepest;
 };

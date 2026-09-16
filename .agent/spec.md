@@ -53,10 +53,13 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
 - **Security lane.** Live `pnpm audit` in the gate, no allowlist; secretlint pinned `^12` so
   Node stays 20; static analysis = ESLint security rules only, no CodeQL/Semgrep; the
   `Deferred` defects stay deferred into MAINTAIN. Wiring → `.claude/rules/gate.md`.
-- **`binding:check` holds two declared tables.** `REQUIRED` stays the answer-path register —
-  every row names the part of the non-negotiable it holds up — and `LIFECYCLE` carries claims
-  the view makes on its own, so a lifecycle row never dilutes the non-negotiable roll call.
-  One inventory loop grades both. Wiring → `.claude/rules/gate.md`.
+- **`binding:check` holds declared tables that stay APART.** `REQUIRED` = the answer-path
+  register, every row naming the part of the non-negotiable it holds up; `LIFECYCLE` = claims
+  the view makes on its own; a lifecycle row never dilutes the non-negotiable roll call. One
+  inventory loop grades all of them. MAIN added a third, `MEANING`, for the graph projection
+  cases that hold up the polarity ruling rather than the non-negotiable; each table carries its
+  own `gradeTable`, its own emptied-table control and its own count in the success line.
+  Wiring → `.claude/rules/gate.md`.
 - **Judgment review reads the SHIPPED SURFACE, not a commit range.** The `rev` lenses read the
   working tree at close — `src/`, `tools/`, the gate, the contracts — so a defect is caught
   wherever it ships and superseded code is never re-read. The u3–u10 pass the ledger calls
@@ -65,13 +68,13 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
 **MAIN:** premise display = deduplicated steps inside the EXISTING ladder rungs, never a new
 step type (3,930 leaves / 346 premises), carrying hypothetical origin and no source line.
 u6's oracle is GREEN at base, credited RED-under-dependency-removal alone — it guards the
-compiled KB, which the answer-path defect never broke. u11 grades records and u12 the
-projection model, but the shown-edge conjunction is graded whole by u13 against the FINAL
-renderer.
+compiled KB, which the answer-path defect never broke. u11 graded the scope records and u12 the
+projection model; the shown-edge conjunction is graded whole by u13 against the FINAL renderer,
+so no u13 case may rest on a model-side assertion.
 
 # Deferred
 
-Queue = `.agent/deferred.md` — 50 rows, acceptance check each, plus the accepted-open review
+Queue = `.agent/deferred.md` — 52 rows, acceptance check each, plus the accepted-open review
 ids, whose checks stay in `.agent/archive/review-expedited.md`. The defects are user-ruled
 into MAINTAIN and the gate's open firing-input row sits beside them; nothing there blocks the
 spine below. The verification-integrity census raised four rows, three of which closed as u10b + u10c;
@@ -79,26 +82,22 @@ the fourth stays queued, now beside the `graph:check` hang u10c measured.
 
 ## Units — the remaining IMPLEMENT path
 
-The verification-integrity census is cleared and u11 shipped the scope records; u12→u13 finish
+The verification-integrity census is cleared and u12 shipped the projection model; u13 finishes
 the graph, and u14→u15 close the phase over both spines. Full `Accept:` + `Depends` → archive;
-u3–u11 closed, contract each in `.agent/contracts/`, close summaries in
+u3–u12 closed, contract each in `.agent/contracts/`, close summaries in
 `.agent/archive/units-m5.md`.
 
 **From u11 on, every unit contract carries its red witness** — `N/M RED at base <sha>` plus
 the command that reproduces it, the form `.agent/archive/contracts/m5u1.md:232` and
-`m5u2.md:216` already use. Today 1 of 8 live contracts and 7 of 103 commit bodies name a
-revision. Form + the two shapes that satisfy it without a `git show` →
-`.claude/rules/waves.md`.
+`m5u2.md:216` already use. Coverage today, by `/usr/bin/rg -c 'at base `?[0-9a-f]{7}'`: 3 of 13
+live contracts and 4 of 108 commit bodies. Form + the two shapes that satisfy it without a
+`git show` → `.claude/rules/waves.md`.
 
-- **u12 scope-aware projection** — `model.ts` grouping, bounded paths, highlights, dashes,
-  reading u11's `scopes` table (schema 2, 1,263 records, `edge.scope` index). `model.ts`
-  still DROPS both fields — teaching `parseSemanticGraph` to parse them is this unit's first
-  move. Accept: every projected edge preserves the relation + its ordered scope;
-  `tests/graph-semantics.review.test.ts` (branch `wt/rev-sem-2`, absent from the primary
-  tree) merges in and its six in-scope reds go GREEN.
 - **u13 scoped views + probe rerun** — scope rendered in canvas AND fallback; u10's component
-  sweep rerun on final output. Accept: every shown edge preserves relation + ordered scope in
-  BOTH views, graded whole.
+  sweep rerun on final output. u12 hands over `SemanticGraphEdge.scopeOperators`; no `EdgeView`
+  type exists yet, so u13 creates it, maps `scopeOperators` → `scope` and composes `label` as
+  exactly relation + ordered scope (`.agent/contracts/m5u8.md:90-97`). Accept: every shown edge
+  preserves relation + ordered scope in BOTH views, graded whole.
 - **u14 claim alignment** — the false strings, on the surfaces that hold them now: the
   `lede` + trace/proof `TEXT` entries in `src/i18n/en.ts` AND their `ja.ts` twins (i18n took
   the copy out of `ProvenanceLadder.svelte`, and `copy.ts` is licence data), plus
@@ -110,6 +109,6 @@ revision. Form + the two shapes that satisfy it without a `git show` →
 
 # Phase
 
-IMPLEMENT, at u12. Judgment review → `.agent/review.md`, adjudicated before the phase closes
+IMPLEMENT, at u13. Judgment review → `.agent/review.md`, adjudicated before the phase closes
 against the fixed 32-row check set in `.agent/contracts/review-implement.md`, which reads the
 SHIPPED SURFACE at close rather than a commit range (user ruling).

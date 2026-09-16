@@ -173,6 +173,55 @@ const LIFECYCLE = Object.freeze([
   },
 ]);
 
+const REVIEW_SUITE = 'tests/graph-semantics.review.test.ts';
+
+/**
+ * The required GRAPH-MEANING checks, by suite and EXACT case name.
+ *
+ * A third register rather than a row in either table above: `REQUIRED` is the answer-path roll
+ * call and `LIFECYCLE` carries claims the view makes about a run settling, while these hold up
+ * the user's graph-polarity ruling — negation and modality ride the EDGES, so no projected edge
+ * may read as a claim the source denies. Folding them into either table would cost that table
+ * the property that makes it readable.
+ *
+ * @type {readonly Requirement[]}
+ */
+const MEANING = Object.freeze([
+  {
+    suite: REVIEW_SUITE,
+    why: 'an edge that drops its scope renders the clinical inverse of its source',
+    cases: [
+      'semantic graph source fidelity review keeps polarity and modality visible for a negated recommendation',
+      'semantic graph source fidelity review keeps modal force and numeric scope visible for a qualified action',
+      'semantic graph source fidelity review keeps a nested operator edge attached to its asserted outer context',
+      'semantic graph source fidelity review does not turn a negated premise into positive event support',
+      'semantic graph source fidelity review does not highlight a direct edge that skips hidden negation contexts',
+    ],
+  },
+  {
+    suite: REVIEW_SUITE,
+    why: 'the view counts and names the membership it actually shows',
+    cases: [
+      'semantic graph source fidelity review does not count attributes as concepts or actions',
+    ],
+  },
+  {
+    suite: REVIEW_SUITE,
+    why: 'role-invalid input is refused where it is read, not dropped inside the projection',
+    cases: [
+      'semantic graph source fidelity review rejects an argument edge whose source is not an event',
+    ],
+  },
+  {
+    suite: REVIEW_SUITE,
+    why: 'direction and cited provenance survive the projection',
+    cases: [
+      'semantic graph source fidelity review reverses a directed relation label when HTML navigation starts at its target',
+      'semantic graph source fidelity review keeps every prepared answer highlight inside its cited source contribution',
+    ],
+  },
+]);
+
 const VITEST = join(ROOT, 'node_modules', 'vitest', 'vitest.mjs');
 
 /**
@@ -231,9 +280,9 @@ const fail = (message) => failures.push(message);
  * Reported inside the run, not after it: the scratch cleanup runs in a `finally`, and a
  * value assigned there for a later read is what `no-useless-assignment` refuses.
  *
- * @param {number} graded @param {number} lifecycle @param {number} controls
+ * @param {number} graded @param {number} lifecycle @param {number} meaning @param {number} controls
  */
-const report = (graded, lifecycle, controls) => {
+const report = (graded, lifecycle, meaning, controls) => {
   if (failures.length > 0) {
     process.stderr.write(
       `binding:check failed —\n${failures.map((line) => `  ${line}`).join('\n')}\n`,
@@ -243,7 +292,8 @@ const report = (graded, lifecycle, controls) => {
     process.stdout.write(
       `binding:check ok — ${String(graded)} required binding cases passed ` +
         `across ${String(REQUIRED.length)} suites, ${String(lifecycle)} lifecycle cases ` +
-        `across ${String(LIFECYCLE.length)} suites, ${String(controls)} controls fired\n`,
+        `across ${String(LIFECYCLE.length)} suites, ${String(meaning)} graph-meaning cases ` +
+        `across ${String(MEANING.length)} declared rows, ${String(controls)} controls fired\n`,
     );
   }
 };
@@ -282,6 +332,9 @@ try {
   const lifecycle = gradeTable(LIFECYCLE, 'LIFECYCLE', suites);
   for (const line of lifecycle.failures) fail(line);
 
+  const meaning = gradeTable(MEANING, 'MEANING', suites);
+  for (const line of meaning.failures) fail(line);
+
   // Controls: the ways a declared inventory stops binding anything. A rename leaves the case
   // undefined; a deleted or renamed file leaves the suite unrun; an empty table grades no case.
   // Every control uses the gate's OWN suite run, so none costs a second vitest.
@@ -313,9 +366,14 @@ try {
       { mutation: 'the LIFECYCLE table emptied', expect: ['LIFECYCLE table is empty'] },
       () => gradeTable([], 'LIFECYCLE', suites).failures,
     ),
+    requireFiring(
+      'binding:check',
+      { mutation: 'the MEANING table emptied', expect: ['MEANING table is empty'] },
+      () => gradeTable([], 'MEANING', suites).failures,
+    ),
   ].length;
 
-  report(inventory.graded, lifecycle.graded, controls);
+  report(inventory.graded, lifecycle.graded, meaning.graded, controls);
 } finally {
   rmSync(scratch, { recursive: true, force: true });
 }

@@ -57,6 +57,7 @@ export const GRAPH_FIXTURE = {
       sentence: 2,
       line: 20,
       predicate: 'guideline_entity',
+      scope: 0,
     },
     {
       id: 'edge:dosage-event',
@@ -68,6 +69,7 @@ export const GRAPH_FIXTURE = {
       sentence: 2,
       line: 21,
       predicate: 'guideline_event',
+      scope: 0,
     },
     {
       id: 'edge:event-operator',
@@ -79,6 +81,7 @@ export const GRAPH_FIXTURE = {
       sentence: 2,
       line: 22,
       predicate: 'guideline_operator',
+      scope: 0,
     },
     {
       id: 'edge:event-value',
@@ -90,6 +93,16 @@ export const GRAPH_FIXTURE = {
       sentence: null,
       line: 23,
       predicate: 'guideline_arg',
+    },
+  ],
+  scopes: [
+    {
+      id: 'scope:should',
+      chain: ['actual', 'scope:should'],
+      operator: 'should',
+      document: 'cdc2022-opioid-rec05',
+      sentence: 2,
+      reference: 'scope:should',
     },
   ],
   stats: {

@@ -19,7 +19,138 @@ describe('semantic graph boundary', () => {
     expect(parsed.stats).toMatchObject({ documents: 2, clauses: 5, nodes: 7, edges: 5 });
     expect(parsed.nodes).toHaveLength(7);
     expect(parsed.edges).toHaveLength(5);
+    expect(parsed.scopes).toEqual([
+      expect.objectContaining({ operator: 'should', chain: ['actual', 'scope:should'] }),
+    ]);
+    expect(parsed.edges.find(({ id }) => id === 'edge:event-operator')?.scope).toBe(0);
     expect(Object.isFrozen(parsed.nodes)).toBe(true);
+    expect(Object.isFrozen(parsed.scopes[0]?.chain)).toBe(true);
+  });
+
+  it.each([
+    [
+      'malformed scope record',
+      { ...GRAPH_FIXTURE, scopes: [{ ...GRAPH_FIXTURE.scopes[0], chain: [] }] },
+      'scopes[0].chain',
+    ],
+    [
+      'scope chain with the wrong terminal reference',
+      {
+        ...GRAPH_FIXTURE,
+        scopes: [{ ...GRAPH_FIXTURE.scopes[0], chain: ['actual', 'scope:other'] }],
+      },
+      'scopes[0].chain must end with its reference',
+    ],
+    [
+      'scope chain with a repeated context',
+      {
+        ...GRAPH_FIXTURE,
+        scopes: [{ ...GRAPH_FIXTURE.scopes[0], chain: ['actual', 'actual', 'scope:should'] }],
+      },
+      'scopes[0].chain must not repeat a context',
+    ],
+    [
+      'edge scope from another source unit',
+      {
+        ...GRAPH_FIXTURE,
+        edges: GRAPH_FIXTURE.edges.map((edge) =>
+          edge.id === 'edge:dosage-event' ? { ...edge, sentence: 3 } : edge,
+        ),
+      },
+      'edges[2].scope belongs to another source unit',
+    ],
+    [
+      'operator target that disagrees with its scope',
+      {
+        ...GRAPH_FIXTURE,
+        scopes: [{ ...GRAPH_FIXTURE.scopes[0], operator: 'may' }],
+      },
+      'edges[3].scope does not describe its operator target',
+    ],
+    [
+      'non-integer edge scope',
+      {
+        ...GRAPH_FIXTURE,
+        edges: GRAPH_FIXTURE.edges.map((edge) =>
+          edge.id === 'edge:event-operator' ? { ...edge, scope: 0.5 } : edge,
+        ),
+      },
+      'edges[3].scope',
+    ],
+    [
+      'out-of-range edge scope',
+      {
+        ...GRAPH_FIXTURE,
+        edges: GRAPH_FIXTURE.edges.map((edge) =>
+          edge.id === 'edge:event-operator' ? { ...edge, scope: 1 } : edge,
+        ),
+      },
+      'edges[3].scope 1 is out of range',
+    ],
+    [
+      'operator edge without scope',
+      {
+        ...GRAPH_FIXTURE,
+        edges: GRAPH_FIXTURE.edges.map((edge) =>
+          edge.id === 'edge:event-operator' ? { ...edge, scope: undefined } : edge,
+        ),
+      },
+      'edges[3].scope is required',
+    ],
+    [
+      'argument source whose node is not an event',
+      {
+        ...GRAPH_FIXTURE,
+        edges: GRAPH_FIXTURE.edges.map((edge) =>
+          edge.id === 'edge:event-value' ? { ...edge, source: 'doc:cdc' } : edge,
+        ),
+      },
+      'edges[4].source must reference an event for an argument edge',
+    ],
+    [
+      'preposition source whose node is not an event',
+      {
+        ...GRAPH_FIXTURE,
+        edges: GRAPH_FIXTURE.edges.map((edge) =>
+          edge.id === 'edge:event-value'
+            ? { ...edge, kind: 'preposition', source: 'doc:cdc', predicate: 'guideline_pp' }
+            : edge,
+        ),
+      },
+      'edges[4].source must reference an event for a preposition edge',
+    ],
+  ])('rejects %s by field', (_name, input, field) => {
+    expect(() => parseSemanticGraph(input)).toThrow(field);
+  });
+
+  it('accepts scope records that no edge references', () => {
+    const unreferenced = {
+      ...GRAPH_FIXTURE.scopes[0],
+      id: 'scope:unused',
+      chain: ['actual', 'scope:unused'],
+      reference: 'scope:unused',
+    } as const;
+    expect(() =>
+      parseSemanticGraph({ ...GRAPH_FIXTURE, scopes: [...GRAPH_FIXTURE.scopes, unreferenced] }),
+    ).not.toThrow();
+  });
+
+  it('refuses unreferenced scope semantics that the projection cannot resolve', () => {
+    const unrepresentable = {
+      ...GRAPH_FIXTURE.scopes[0],
+      id: 'scope:unused',
+      chain: ['actual', 'scope:missing', 'scope:unused'],
+      operator: 'may',
+      reference: 'scope:unused',
+    } as const;
+    const parsed = parseSemanticGraph({
+      ...GRAPH_FIXTURE,
+      scopes: [...GRAPH_FIXTURE.scopes, unrepresentable],
+    });
+
+    expect(() => new SemanticGraphModel(parsed)).toThrow(
+      'scope:unused.chain cannot resolve scope:missing',
+    );
   });
 
   it.each([
@@ -167,6 +298,67 @@ describe('semantic graph indexes', () => {
     ]);
     expect(answer?.nodes.some(({ kind }) => kind === 'operator-context')).toBe(false);
     expect(graph.searchConcepts('operator')).toEqual([]);
+  });
+
+  it('keeps ordered operator scope distinct while grouping identical relations', () => {
+    const scopes = [
+      GRAPH_FIXTURE.scopes[0],
+      {
+        ...GRAPH_FIXTURE.scopes[0],
+        id: 'scope:then-may',
+        chain: ['actual', 'scope:should', 'scope:then-may'],
+        operator: 'may',
+        reference: 'scope:then-may',
+      },
+      {
+        ...GRAPH_FIXTURE.scopes[0],
+        id: 'scope:unused-may',
+        chain: ['actual', 'scope:unused-may'],
+        operator: 'may',
+        reference: 'scope:unused-may',
+      },
+      {
+        ...GRAPH_FIXTURE.scopes[0],
+        id: 'scope:unused-should',
+        chain: ['actual', 'scope:unused-may', 'scope:unused-should'],
+        reference: 'scope:unused-should',
+      },
+    ] as const;
+    const source = GRAPH_FIXTURE.edges.find(({ id }) => id === 'edge:dosage-event');
+    if (source === undefined) throw new Error('missing scoped fixture edge');
+    const edges = [
+      ...GRAPH_FIXTURE.edges,
+      { ...source, id: 'edge:dosage-event-should-may', line: 24, scope: 1 },
+      { ...source, id: 'edge:dosage-event-may-should', line: 25, scope: 3 },
+    ] as const;
+    const graph = new SemanticGraphModel(
+      parseSemanticGraph({
+        ...GRAPH_FIXTURE,
+        scopes,
+        edges,
+        stats: {
+          ...GRAPH_FIXTURE.stats,
+          edges: 7,
+          byEdgeKind: { ...GRAPH_FIXTURE.stats.byEdgeKind, event: 3 },
+        },
+      }),
+    );
+    const variants = graph
+      .conceptNeighborhood('event:have', 1, 10)
+      .edges.filter(({ source, target }) => source === 'entity:dosage' && target === 'event:have')
+      .sort((left, right) => left.line - right.line);
+
+    expect(variants.map(({ relation }) => relation)).toEqual([
+      'participates in event',
+      'participates in event',
+      'participates in event',
+    ]);
+    expect(variants.map(({ scopeOperators }) => scopeOperators)).toEqual([
+      ['should'],
+      ['should', 'may'],
+      ['may', 'should'],
+    ]);
+    expect(graph.conceptEdgeCount).toBe(4);
   });
 
   it('finds a deterministic shortest path in either edge direction', () => {
