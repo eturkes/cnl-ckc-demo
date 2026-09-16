@@ -54,6 +54,161 @@ const MIN_LABEL_PX = 11;
 const SEAM = ['src/graph/model.ts', 'src/graph/index.ts', 'src/graph/SemanticGraph.svelte'];
 const RENDERER = /cytoscape|fcose/iu;
 
+const CANVAS_SCOPE_READINGS = [
+  {
+    caseId: 'V2.canvas-ordered',
+    edgeId: 'fixture:scope-ordered',
+    source: 'fixture:scope-a',
+    target: 'fixture:scope-b',
+    relation: 'action',
+    scope: ['should', 'may'],
+  },
+  {
+    caseId: 'V2.canvas-reordered',
+    edgeId: 'fixture:scope-reordered',
+    source: 'fixture:scope-b',
+    target: 'fixture:scope-c',
+    relation: 'action',
+    scope: ['may', 'should'],
+  },
+  {
+    caseId: 'V2.canvas-negated',
+    edgeId: 'fixture:scope-negated',
+    source: 'fixture:scope-c',
+    target: 'fixture:scope-d',
+    relation: 'action',
+    scope: ['-'],
+  },
+];
+const CANVAS_SCOPE_FIXTURE = {
+  subgraph: {
+    nodes: ['a', 'b', 'c', 'd'].map((suffix) => ({
+      id: `fixture:scope-${suffix}`,
+      kind: 'event',
+      label: `scope ${suffix}`,
+      document: 'fixture-scope',
+      sentence: 1,
+    })),
+    edges: CANVAS_SCOPE_READINGS.map((row, index) => ({
+      id: row.edgeId,
+      kind: 'event',
+      source: row.source,
+      target: row.target,
+      label: row.relation,
+      relation: row.relation,
+      scopeOperators: row.scope,
+      document: 'fixture-scope',
+      sentence: 1,
+      line: index + 1,
+      predicate: 'guideline_event',
+    })),
+    truncatedNodes: false,
+    truncatedEdges: false,
+  },
+  selectedId: 'fixture:scope-a',
+  path: {
+    nodes: ['a', 'b', 'c', 'd'].map((suffix) => `fixture:scope-${suffix}`),
+    edges: CANVAS_SCOPE_READINGS.map(({ edgeId }) => edgeId),
+  },
+};
+
+const FALLBACK_SCOPE_READINGS = [
+  {
+    caseId: 'V3.fallback-forward',
+    edgeId: 'fixture:fallback-scope',
+    direction: 'forward',
+    relation: 'condition supports',
+    scope: ['-', 'should'],
+  },
+  {
+    caseId: 'V3.fallback-reverse',
+    edgeId: 'fixture:fallback-scope',
+    direction: 'reverse',
+    relation: 'supported by condition',
+    scope: ['-', 'should'],
+  },
+];
+const FALLBACK_SCOPE_ASSET = {
+  schemaVersion: 2,
+  nodes: [
+    { id: 'document:fixture-scope', kind: 'document', label: 'scope fixture' },
+    {
+      id: 'event:fixture-condition',
+      kind: 'event',
+      label: 'scope condition',
+      document: 'fixture-scope',
+      sentence: 1,
+    },
+    {
+      id: 'event:fixture-action',
+      kind: 'event',
+      label: 'scope action',
+      document: 'fixture-scope',
+      sentence: 1,
+    },
+  ],
+  edges: [
+    {
+      id: 'fixture:fallback-scope',
+      kind: 'implies',
+      source: 'event:fixture-condition',
+      target: 'event:fixture-action',
+      label: 'condition supports',
+      document: 'fixture-scope',
+      sentence: 1,
+      line: 1,
+      predicate: 'guideline_condition',
+      scope: 1,
+    },
+  ],
+  scopes: [
+    {
+      id: 'scope:fixture-negated',
+      chain: ['actual', 'scope:fixture-negated'],
+      operator: '-',
+      document: 'fixture-scope',
+      sentence: 1,
+      reference: 'scope:fixture-negated',
+    },
+    {
+      id: 'scope:fixture-should',
+      chain: ['actual', 'scope:fixture-negated', 'scope:fixture-should'],
+      operator: 'should',
+      document: 'fixture-scope',
+      sentence: 1,
+      reference: 'scope:fixture-should',
+    },
+  ],
+  stats: {
+    documents: 1,
+    clauses: 1,
+    nodes: 3,
+    edges: 1,
+    byNodeKind: { document: 1, event: 2 },
+    byEdgeKind: { implies: 1 },
+  },
+};
+
+const SPANNING_SCOPE_READINGS = [
+  {
+    caseId: 'V6.spanning-forward',
+    edgeId: 'edge:512:12',
+    direction: 'forward',
+    relation: 'condition supports',
+    completeScope: ['-', 'should'],
+  },
+  {
+    caseId: 'V6.spanning-reverse',
+    edgeId: 'edge:512:12',
+    direction: 'reverse',
+    relation: 'supported by condition',
+    completeScope: ['-', 'should'],
+  },
+];
+const PARTIAL_SCOPE_DISCLOSURE = /\b(?:incomplete|partial|scope omitted|scope spans)\b/iu;
+const BOUND_DISCLOSURE =
+  /\b(?:more|additional|partial|limit|outside|hidden|not shown|expand|depth)\b/iu;
+
 /** @type {(message: string) => never} */
 const fail = failWith('graph-check');
 
@@ -220,6 +375,91 @@ const require_ = (ok, rule, detail) => {
 };
 
 /**
+ * @typedef {{
+ *   caseId: string,
+ *   edgeId: string,
+ *   relation: string,
+ *   scope: string[],
+ *   rendered: string | null,
+ *   dashed: boolean | undefined,
+ *   required: boolean,
+ * }} ScopeReading
+ */
+
+const LABEL_SEPARATOR = String.raw`(?:[\s·•:→›|(),;/—–]|\[|\]|\{|\})+`;
+const escapePattern = (/** @type {string} */ value) =>
+  value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+const displayScopeOperator = (/** @type {string} */ operator) =>
+  operator === '-' ? 'negated' : operator;
+const scopeOperatorPattern = (/** @type {string} */ operator) =>
+  operator === '-' ? '(?:-|negated)' : escapePattern(operator);
+const canonicalScopeLabel = (/** @type {Pick<ScopeReading, 'relation' | 'scope'>} */ row) =>
+  [row.relation, ...row.scope.map(displayScopeOperator)].join(' · ');
+const scopePattern = (/** @type {ScopeReading} */ row) => {
+  const scope = row.scope
+    .map((operator) => `${LABEL_SEPARATOR}${scopeOperatorPattern(operator)}`)
+    .join('');
+  const closing = row.scope.length === 0 ? '' : String.raw`(?:[\)\]\}])?`;
+  return new RegExp(`^${escapePattern(row.relation)}${scope}${closing}$`, 'u');
+};
+
+/** @param {ScopeReading[]} rows @param {string} table @param {boolean} gradeDash */
+const gradeScopeReadings = (rows, table, gradeDash) => {
+  /** @type {string[]} */
+  const out = [];
+  if (rows.length === 0) return [`${table} is empty, so no rendered scope was graded`];
+  for (const row of rows) {
+    const at = `${row.caseId}/${row.edgeId}`;
+    if (row.rendered === null) {
+      if (row.required) out.push(`${at}: the renderer showed no label`);
+    } else if (!scopePattern(row).test(row.rendered)) {
+      out.push(
+        `${at}: rendered ${JSON.stringify(row.rendered)}, expected relation ${JSON.stringify(row.relation)} + ordered scope [${row.scope.join(', ')}]`,
+      );
+    }
+    if (gradeDash && row.dashed !== row.scope.includes('-')) {
+      out.push(
+        `${at}: dashed=${String(row.dashed)}, expected ${String(row.scope.includes('-'))} from scope polarity`,
+      );
+    }
+  }
+  return out;
+};
+
+/**
+ * @param {{ caseId: string, edgeId: string, relation: string, completeScope: string[], rendered: string | null }[]} rows
+ */
+const gradeSpanningScope = (rows) => {
+  /** @type {string[]} */
+  const out = [];
+  if (rows.length === 0) return ['SPANNING_SCOPE_READINGS is empty, so edge:512:12 was not graded'];
+  for (const row of rows) {
+    if (row.rendered === null) continue;
+    const complete = scopePattern({
+      caseId: row.caseId,
+      edgeId: row.edgeId,
+      relation: row.relation,
+      scope: row.completeScope,
+      rendered: row.rendered,
+      dashed: undefined,
+      required: false,
+    }).test(row.rendered);
+    if (!complete && !PARTIAL_SCOPE_DISCLOSURE.test(row.rendered)) {
+      out.push(
+        `${row.caseId}/${row.edgeId}: rendered ${JSON.stringify(row.rendered)} as whole scope; require [${row.completeScope.join(', ')}], explicit partial-scope disclosure, or no row`,
+      );
+    }
+  }
+  return out;
+};
+
+/** @param {string[]} errors @param {string} rule */
+const recordScopeErrors = (errors, rule) => {
+  for (const error of errors.slice(0, 4)) violations.push(`${rule}: ${error}`);
+  if (errors.length > 4) violations.push(`${rule}: ${String(errors.length - 4)} more refusals`);
+};
+
+/**
  * C1-C7 over one component reading.
  *
  * A pure grader, because the C2/C6 firing input below re-runs the SAME function over a sweep
@@ -298,6 +538,12 @@ const gradeInteractions = (row, at) => {
     row.expandRounds.at(-1)?.enabled === false,
     'C4',
     `expand stayed enabled after ${n(row.expandRounds.length)} rounds`,
+  );
+  const bounded = row.expandRounds.filter(({ enabled }) => enabled);
+  req(
+    bounded.every(({ status }) => BOUND_DISCLOSURE.test(status)),
+    'V7',
+    `bounded neighborhood hid semantics without disclosure: ${bounded.map(({ status }) => JSON.stringify(status)).join(' → ')}`,
   );
 
   req(
@@ -383,6 +629,12 @@ const runningDev = await devServer();
 dev = runningDev;
 /** @type {Record<string, unknown>[]} */
 const readings = [];
+/** @type {ScopeReading[]} */
+const canvasScopeReadings = [];
+/** @type {ScopeReading[]} */
+const fallbackScopeReadings = [];
+/** @type {{ caseId: string, edgeId: string, relation: string, completeScope: string[], rendered: string | null }[]} */
+const spanningScopeReadings = [];
 /** @type {(import('./graph-probe/app.svelte.js').InteractionReading & { device: string })[]} */
 const components = [];
 /** @type {Record<string, unknown>[]} */
@@ -424,6 +676,18 @@ try {
         `${at}: ${String(row.parallelSeparated)}/${String(row.parallelPairs)} parallel pairs separated`,
       );
       require_(row.labelMismatches.length === 0, 'R2', `${at}: ${row.labelMismatches.join(', ')}`);
+      const liveScope = row.scopeReadings.map((reading) => ({
+        ...reading,
+        caseId: `V2.live:${at}`,
+        required: false,
+      }));
+      const liveScopeErrors = gradeScopeReadings(liveScope, 'CANVAS_LIVE_SCOPE_READINGS', true);
+      require_(
+        liveScopeErrors.length === 0,
+        'V2',
+        `${at}: ${liveScopeErrors[0] ?? 'unknown scope refusal'}${liveScopeErrors.length > 1 ? ` (+${String(liveScopeErrors.length - 1)})` : ''}`,
+      );
+      canvasScopeReadings.push(...liveScope);
       require_(
         row.labelledOffPath === 0,
         'R2',
@@ -436,7 +700,6 @@ try {
         `${at}: tapping moved the highlight ${String(row.highlightBeforeTap)} → ${String(row.highlightAfterTap)}`,
       );
       require_(row.tapDelivered, 'R3', `${at}: a tap reached no selection callback`);
-      require_(row.dashedEdges === 0, 'R4', `${at}: ${String(row.dashedEdges)} edges dash already`);
       require_(
         row.labelPx >= MIN_LABEL_PX - 0.01,
         'R5',
@@ -460,6 +723,24 @@ try {
         path: join(shots, `${view.replace(/[^a-z0-9-]+/giu, '_')}-${viewport.name}.png`),
       });
     }
+    const scopeFixture = /** @type {import('./graph-probe/probe.js').ScopeReading[]} */ (
+      await page.evaluate(`window.graphProbe.scopeFixture(${JSON.stringify(CANVAS_SCOPE_FIXTURE)})`)
+    );
+    const declaredScope = CANVAS_SCOPE_READINGS.map((expected) => {
+      const observed = scopeFixture.find(({ edgeId }) => edgeId === expected.edgeId);
+      return {
+        caseId: `${expected.caseId}:${viewport.name}`,
+        edgeId: expected.edgeId,
+        relation: expected.relation,
+        scope: expected.scope,
+        rendered: observed?.rendered ?? null,
+        dashed: observed?.dashed,
+        required: true,
+      };
+    });
+    recordScopeErrors(gradeScopeReadings(declaredScope, 'CANVAS_SCOPE_READINGS', true), 'V2');
+    canvasScopeReadings.push(...declaredScope);
+
     const flip =
       /** @type {{ before: string, after: string, restored: string, moved: number, mismatches: number }} */ (
         await page.evaluate('window.graphProbe.themeFlip()')
@@ -483,7 +764,7 @@ try {
       await page.evaluate('window.graphProbe.dashControl()')
     );
     require_(
-      dash.before === 0 && dash.during === 1 && dash.after === 0,
+      dash.during === dash.before + 1 && dash.after === dash.before,
       'R4',
       `${viewport.name}: per-edge dashing reads ${String(dash.before)}/${String(dash.during)}/${String(dash.after)}`,
     );
@@ -560,15 +841,169 @@ try {
     );
     require_(palette.relations > 0, 'C10', `${at}: the HTML relation view lists nothing`);
     require_(palette.nodeIndex > 0, 'C10', `${at}: the HTML node index lists nothing`);
-    fallbacks.push({ device: device.name, ...load, ...palette });
+
+    const scoped = /** @type {import('./graph-probe/app.svelte.js').ScopeFallbackReading} */ (
+      await run(
+        `scopeFallback(${JSON.stringify(FALLBACK_SCOPE_ASSET)}, "scope condition", "scope action")`,
+      )
+    );
+    const declaredFallback = FALLBACK_SCOPE_READINGS.map((expected) => {
+      const rows = expected.direction === 'forward' ? scoped.forward : scoped.reverse;
+      return {
+        caseId: `${expected.caseId}:${device.name}`,
+        edgeId: expected.edgeId,
+        relation: expected.relation,
+        scope: expected.scope,
+        rendered: rows.find((reading) => reading.startsWith(expected.relation)) ?? null,
+        dashed: undefined,
+        required: true,
+      };
+    });
+    recordScopeErrors(gradeScopeReadings(declaredFallback, 'FALLBACK_SCOPE_READINGS', false), 'V3');
+    fallbackScopeReadings.push(...declaredFallback);
+
+    const spanning = /** @type {import('./graph-probe/app.svelte.js').ScopeFallbackReading} */ (
+      await run('scopeFallback(null, "outweigh", "consider")')
+    );
+    const declaredSpanning = SPANNING_SCOPE_READINGS.map((expected) => {
+      const rows = expected.direction === 'forward' ? spanning.forward : spanning.reverse;
+      return {
+        caseId: `${expected.caseId}:${device.name}`,
+        edgeId: expected.edgeId,
+        relation: expected.relation,
+        completeScope: expected.completeScope,
+        rendered: rows.find((reading) => reading.startsWith(expected.relation)) ?? null,
+      };
+    });
+    recordScopeErrors(gradeSpanningScope(declaredSpanning), 'V6');
+    spanningScopeReadings.push(...declaredSpanning);
+    fallbacks.push({ device: device.name, ...load, ...palette, scoped, spanning });
   }
 } finally {
   phase = 'cleanup';
   await cleanup();
 }
 
+const orderedControl = canvasScopeReadings.find(({ caseId }) =>
+  caseId.startsWith('V2.canvas-ordered:'),
+);
+require_(orderedControl !== undefined, 'control', 'V2.canvas-ordered produced no real reading');
+if (orderedControl !== undefined) {
+  const dropped = gradeScopeReadings(
+    [
+      {
+        ...orderedControl,
+        rendered: canonicalScopeLabel({
+          relation: orderedControl.relation,
+          scope: orderedControl.scope.slice(0, -1),
+        }),
+      },
+    ],
+    'CANVAS_SCOPE_READINGS',
+    true,
+  );
+  require_(
+    dropped.some(
+      (line) =>
+        line.includes(orderedControl.caseId) &&
+        line.includes(orderedControl.edgeId) &&
+        line.includes('ordered scope [should, may]'),
+    ),
+    'control',
+    'dropping `may` from V2.canvas-ordered was not refused by case + edge name',
+  );
+  const reordered = gradeScopeReadings(
+    [
+      {
+        ...orderedControl,
+        rendered: canonicalScopeLabel({
+          relation: orderedControl.relation,
+          scope: [...orderedControl.scope].reverse(),
+        }),
+      },
+    ],
+    'CANVAS_SCOPE_READINGS',
+    true,
+  );
+  require_(
+    reordered.some((line) => line.includes(orderedControl.caseId)),
+    'control',
+    'reordering V2.canvas-ordered was not refused by case name',
+  );
+}
+
+const negatedControl = canvasScopeReadings.find(({ caseId }) =>
+  caseId.startsWith('V2.canvas-negated:'),
+);
+require_(negatedControl !== undefined, 'control', 'V2.canvas-negated produced no real reading');
+if (negatedControl !== undefined) {
+  const undashed = gradeScopeReadings(
+    [
+      {
+        ...negatedControl,
+        rendered: canonicalScopeLabel(negatedControl),
+        dashed: false,
+      },
+    ],
+    'CANVAS_SCOPE_READINGS',
+    true,
+  );
+  require_(
+    undashed.some((line) => line.includes(negatedControl.caseId) && line.includes('dashed=false')),
+    'control',
+    'removing the negated edge dash was not refused by case name',
+  );
+}
+
+const fallbackControl = fallbackScopeReadings.find(({ caseId }) =>
+  caseId.startsWith('V3.fallback-forward:'),
+);
+require_(fallbackControl !== undefined, 'control', 'V3.fallback-forward produced no real reading');
+if (fallbackControl !== undefined) {
+  const dropped = gradeScopeReadings(
+    [
+      {
+        ...fallbackControl,
+        rendered: canonicalScopeLabel({
+          relation: fallbackControl.relation,
+          scope: fallbackControl.scope.slice(0, -1),
+        }),
+      },
+    ],
+    'FALLBACK_SCOPE_READINGS',
+    false,
+  );
+  require_(
+    dropped.some(
+      (line) => line.includes(fallbackControl.caseId) && line.includes(fallbackControl.edgeId),
+    ),
+    'control',
+    'dropping `should` from V3.fallback-forward was not refused by case + edge name',
+  );
+}
+
+const emptyControls = [
+  ...gradeScopeReadings([], 'CANVAS_SCOPE_READINGS', true),
+  ...gradeScopeReadings([], 'FALLBACK_SCOPE_READINGS', false),
+  ...gradeSpanningScope([]),
+];
+for (const table of [
+  'CANVAS_SCOPE_READINGS',
+  'FALLBACK_SCOPE_READINGS',
+  'SPANNING_SCOPE_READINGS',
+]) {
+  require_(
+    emptyControls.some((line) => line.includes(`${table} is empty`)),
+    'control',
+    `${table} passed after every reading was removed`,
+  );
+}
+
 if (report !== undefined) {
-  writeFileSync(report, `${JSON.stringify({ readings, components, fallbacks }, null, 1)}\n`);
+  writeFileSync(
+    report,
+    `${JSON.stringify({ readings, canvasScopeReadings, components, fallbacks, fallbackScopeReadings, spanningScopeReadings }, null, 1)}\n`,
+  );
 }
 
 const number = (/** @type {string} */ key) =>
@@ -602,8 +1037,12 @@ require_(
 const expanded = components.filter(
   (row) => (row.expandRounds.at(-1)?.nodes ?? 0) > (row.expandRounds[0]?.nodes ?? 0),
 ).length;
+const boundedRounds = components.flatMap(({ expandRounds }) =>
+  expandRounds.filter(({ enabled }) => enabled),
+);
 const taps = components.filter((row) => row.tapEmitted !== '').length;
 require_(expanded > 0, 'C4', 'no view raised its drawn node count on expand');
+require_(boundedRounds.length > 0, 'V7', 'no bounded neighborhood disclosure was graded');
 require_(taps > 0, 'C6', 'no canvas tap reached the selection callback');
 
 if (violations.length > 0) {
@@ -613,6 +1052,7 @@ if (violations.length > 0) {
 
 console.log(
   `graph-check: R1-R7 and the palette hold over ${String(readings.length)} rendered views — ` +
+    `${String(canvasScopeReadings.length)} canvas scope readings, ` +
     `${String(total('parallelSeparated'))}/${String(total('parallelPairs'))} parallel pairs separated, ` +
     `${String(total('labelsMeasured'))} node labels drawn whole, ` +
     `labels ${(number('labelPx')[0] ?? 0).toFixed(2)}-${(number('labelPx').at(-1) ?? 0).toFixed(2)} px ` +
@@ -620,13 +1060,15 @@ console.log(
     `label overlaps, median ${median(number('settleMs')).toFixed(0)} ms to settle`,
 );
 console.log(
-  `graph-check: C1-C11 hold over ${String(components.length)} component sweeps and ` +
+  `graph-check: C1-C12 hold over ${String(components.length)} component sweeps and ` +
     `${String(fallbacks.length)} fallback sweeps — ` +
+    `${String(fallbackScopeReadings.length)} fallback + ${String(spanningScopeReadings.length)} spanning scope readings, ` +
     `${String(components.reduce((sum, row) => sum + row.cyNodes, 0))} nodes drawn from the ` +
     `component's own state, ${String(expanded)} views expanded, ${String(taps)} canvas taps ` +
     `delivered, both fallbacks kept the HTML relation view, controls: a detached selection ` +
-    `callback refused by C2 + C6; a non-terminating page exceeded ${String(CONTROL_TIMEOUT)} ms ` +
-    `during control/${CONTROL_NAME}`,
+    `callback refused by C2 + C6; a dropped, reordered or undashed scope refused by case and ` +
+    `edge; the canvas, fallback and spanning reading tables each refused when emptied; ` +
+    `a non-terminating page exceeded ${String(CONTROL_TIMEOUT)} ms during control/${CONTROL_NAME}`,
 );
 
 clearTimeout(campaignTimer);
