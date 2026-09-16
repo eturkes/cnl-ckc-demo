@@ -279,8 +279,10 @@ export const TEXT = {
   graphHighlightOriginAfter: (sentences: number) =>
     `内の制御文${String(sentences)}件に由来します。`,
   graphHiddenScaffolding: (nodes: number, edges: number) =>
-    `構文解析および来歴のノード${String(nodes)}件と、下位の関係${String(edges)}件は` +
-    'ここでは非表示ですが、証明の表示では参照できます。',
+    `出典詳細のノード${String(nodes)}件と関係${String(edges)}件は、` +
+    '個別のハイライト項目としてマップに表示されません。' +
+    '否定・法性のスコープ、来歴レコード、切り離された臨床詳細、重複する出典関係を含みます。' +
+    'すべて証明の表示で参照できます。',
   graphDirectRelations: (n: number) => `直接の意味的な関係 ${String(n)}件`,
   graphNodeLocation: (document: string, sentence: number | undefined) =>
     sentence === undefined ? document : `${document} · 文 ${String(sentence)}`,

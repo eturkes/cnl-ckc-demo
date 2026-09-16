@@ -77,7 +77,7 @@ const activate = async (root: HTMLElement): Promise<void> => {
   );
   await vi.waitFor(() =>
     expect(root.querySelector('.counts')?.textContent).toMatch(
-      /3 concepts\/actions\s*·\s*2 semantic links/u,
+      /2 concepts\/actions\s*·\s*2 semantic links/u,
     ),
   );
   await tick();
@@ -232,7 +232,7 @@ describe('lazy semantic graph surface', () => {
     );
     await vi.waitFor(() =>
       expect(root.querySelector('.counts')?.textContent).toMatch(
-        /3 concepts\/actions\s*·\s*2 semantic links/u,
+        /2 concepts\/actions\s*·\s*2 semantic links/u,
       ),
     );
     expect(fetcher).toHaveBeenCalledTimes(2);

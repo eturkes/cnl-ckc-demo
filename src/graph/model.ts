@@ -124,9 +124,9 @@ export interface GraphAnswerView extends GraphEvidenceSubgraph {
   root: string;
   /** Concept relationships carried by the live proof, highlighted over broader context. */
   highlight: GraphPath;
-  /** Low-level compiled nodes omitted from the concept map but retained in provenance. */
+  /** Source-detail nodes omitted from the highlighted concept component. */
   hiddenTechnicalNodes: number;
-  /** Low-level compiled relationships omitted from the concept map but retained in provenance. */
+  /** Source-detail relationships not shown as distinct highlighted map items. */
   hiddenTechnicalEdges: number;
 }
 
@@ -662,7 +662,10 @@ export class SemanticGraphModel {
   }
 
   get conceptNodeCount(): number {
-    return this.#conceptNodeIds.size;
+    return this.data.nodes.filter(
+      (node) =>
+        (node.kind === 'entity' || node.kind === 'event') && this.#conceptNodeIds.has(node.id),
+    ).length;
   }
 
   get conceptEdgeCount(): number {
