@@ -12,6 +12,9 @@
 import { spawn } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { createServer } from 'vite';
 
 import { answerDocuments } from './answer-oracle.mjs';
 import { failWith, launch } from './browser.mjs';
@@ -19,7 +22,13 @@ import { ROOT } from './kb/paths.mjs';
 
 const GENERATED = join(ROOT, 'kb/generated');
 const CONFIG = join(ROOT, 'tools/graph-probe/vite.config.mjs');
-const TIMEOUT = 120_000;
+const CAMPAIGN_TIMEOUT = 120_000;
+const CONTROL_TIMEOUT = 10_000;
+const CLEANUP_GRACE = 2_000;
+const EXIT_GRACE = 2_000;
+const CONTROL_NAME = 'non-terminating-page';
+const CONTROL = process.env['GRAPH_CHECK_CONTROL'];
+const budget = CONTROL === CONTROL_NAME ? CONTROL_TIMEOUT : CAMPAIGN_TIMEOUT;
 /**
  * The shipped `.graph-shell .canvas` box at a 1280x900 and a 320x720 device. The probe stage
  * is the whole viewport, so sizing the viewport to the box makes every fit zoom the
@@ -47,6 +56,37 @@ const RENDERER = /cytoscape|fcose/iu;
 
 /** @type {(message: string) => never} */
 const fail = failWith('graph-check');
+
+/** @type {import('./browser.mjs').Browser | undefined} */
+let browser;
+/** @type {{ url: string, stop: () => Promise<void> } | undefined} */
+let dev;
+let phase = 'startup';
+
+/** @param {number} milliseconds @param {string} at */
+const timeoutFailure = (milliseconds, at) =>
+  `graph-check: campaign exceeded ${String(milliseconds)} ms during ${at}`;
+
+const cleanup = async () => {
+  const closingBrowser = browser;
+  const closingDev = dev;
+  browser = undefined;
+  dev = undefined;
+  try {
+    if (closingBrowser !== undefined) await closingBrowser.close();
+  } finally {
+    if (closingDev !== undefined) await closingDev.stop();
+  }
+};
+
+const campaignTimer = setTimeout(() => {
+  console.error(timeoutFailure(budget, phase));
+  const hardStop = setTimeout(() => process.exit(1), CLEANUP_GRACE);
+  void cleanup().finally(() => {
+    clearTimeout(hardStop);
+    process.exit(1);
+  });
+}, budget);
 
 // `JSON.parse` is typed `any`; routing it through `unknown` keeps every cast below an
 // explicit, checkable claim. Same pattern as `tools/kb/paths.mjs`.
@@ -84,31 +124,22 @@ const focusTokens = () => {
   return tokens;
 };
 
-/** @returns {Promise<{ url: string, stop: () => void }>} */
-const devServer = () =>
-  new Promise((resolve, reject) => {
-    const child = spawn('pnpm', ['exec', 'vite', '--config', CONFIG, '--host', '127.0.0.1'], {
-      cwd: ROOT,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-    const stop = () => {
-      child.kill('SIGTERM');
-    };
-    let seen = '';
-    const timer = setTimeout(() => {
-      stop();
-      reject(new Error(`vite printed no URL:\n${seen.slice(-800)}`));
-    }, 60_000);
-    const scan = (/** @type {unknown} */ chunk) => {
-      seen += String(chunk);
-      const url = /(http:\/\/127\.0\.0\.1:\d+\/)/u.exec(seen)?.[1];
-      if (url === undefined) return;
-      clearTimeout(timer);
-      resolve({ url, stop });
-    };
-    child.stdout.on('data', scan);
-    child.stderr.on('data', scan);
+/** @returns {Promise<{ url: string, stop: () => Promise<void> }>} */
+const devServer = async () => {
+  const server = await createServer({
+    configFile: CONFIG,
+    clearScreen: false,
+    logLevel: 'silent',
+    server: { host: '127.0.0.1' },
   });
+  await server.listen();
+  const url = server.resolvedUrls?.local[0];
+  if (url === undefined) {
+    await server.close();
+    return fail('vite exposed no local URL');
+  }
+  return { url, stop: () => server.close() };
+};
 
 /**
  * @param {import('./browser.mjs').Browser} browser
@@ -119,10 +150,67 @@ const devServer = () =>
 const openProbe = async (browser, url, viewport, tokens) => {
   const page = await browser.newPage({ viewport });
   page.on('pageerror', (/** @type {Error} */ error) => fail(`page raised ${error.message}`));
-  await page.goto(url, { waitUntil: 'load', timeout: TIMEOUT });
+  await page.goto(url, { waitUntil: 'load', timeout: CAMPAIGN_TIMEOUT });
   await page.evaluate(`window.graphProbe.boot(${JSON.stringify(tokens)})`);
   return page;
 };
+
+const nonTerminatingPageControl = async () => {
+  phase = 'control/vite-startup';
+  const controlDev = await devServer();
+  dev = controlDev;
+  phase = 'control/browser-launch';
+  const controlBrowser = await launch(fail);
+  browser = controlBrowser;
+  const page = await controlBrowser.newPage({ viewport: { width: 320, height: 240 } });
+  await page.goto(`${controlDev.url}hang.html`, {
+    waitUntil: 'load',
+    timeout: CAMPAIGN_TIMEOUT,
+  });
+  const armed = await page.evaluate('window.timeoutControl?.armed === true');
+  if (armed !== true) fail('the non-terminating page control did not arm');
+  phase = `control/${CONTROL_NAME}`;
+  await page.evaluate('window.timeoutControl.wait()');
+  fail('the non-terminating page control returned');
+};
+
+/** @returns {Promise<{ code: number | null, signal: string | null, output: string }>} */
+const runTimeoutControl = () =>
+  new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [fileURLToPath(import.meta.url)], {
+      cwd: ROOT,
+      env: { ...process.env, GRAPH_CHECK_CONTROL: CONTROL_NAME },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    let output = '';
+    const scan = (/** @type {unknown} */ chunk) => {
+      output = `${output}${String(chunk)}`.slice(-4_000);
+    };
+    child.stdout.on('data', scan);
+    child.stderr.on('data', scan);
+    child.once('error', reject);
+    child.once('close', (code, signal) => resolve({ code, signal, output }));
+  });
+
+const requireTimeoutControl = async () => {
+  const expected = timeoutFailure(CONTROL_TIMEOUT, `control/${CONTROL_NAME}`);
+  const result = await runTimeoutControl();
+  if (result.code !== 1 || !result.output.includes(expected)) {
+    fail(
+      `timeout control exited ${String(result.code)} signal ${String(result.signal)}, ` +
+        `missing ${JSON.stringify(expected)} in ${JSON.stringify(result.output)}`,
+    );
+  }
+};
+
+if (CONTROL !== undefined && CONTROL !== CONTROL_NAME) {
+  fail(`unknown GRAPH_CHECK_CONTROL ${JSON.stringify(CONTROL)}`);
+}
+if (CONTROL === CONTROL_NAME) {
+  await nonTerminatingPageControl();
+}
+phase = 'non-terminating page firing control';
+await requireTimeoutControl();
 
 /** @type {string[]} */
 const violations = [];
@@ -290,9 +378,9 @@ const report = option('--report');
 if (shots !== undefined) mkdirSync(shots, { recursive: true });
 
 const tokens = focusTokens();
-const dev = await devServer();
-/** @type {import('./browser.mjs').Browser | undefined} */
-let browser;
+phase = 'vite startup';
+const runningDev = await devServer();
+dev = runningDev;
 /** @type {Record<string, unknown>[]} */
 const readings = [];
 /** @type {(import('./graph-probe/app.svelte.js').InteractionReading & { device: string })[]} */
@@ -300,9 +388,12 @@ const components = [];
 /** @type {Record<string, unknown>[]} */
 const fallbacks = [];
 try {
-  browser = await launch(fail);
+  phase = 'browser launch';
+  const runningBrowser = await launch(fail);
+  browser = runningBrowser;
   for (const viewport of VIEWPORTS) {
-    const page = await openProbe(browser, dev.url, viewport, tokens);
+    phase = `adapter/${viewport.name}/open`;
+    const page = await openProbe(runningBrowser, runningDev.url, viewport, tokens);
     const views = /** @type {string[]} */ (await page.evaluate('window.graphProbe.views()'));
     require_(
       views.length === tokens.length + 2,
@@ -310,6 +401,7 @@ try {
       `${String(views.length)} fixtures for ${String(tokens.length)} contributions + 2`,
     );
     for (const view of views) {
+      phase = `adapter/${viewport.name}/${view}`;
       const row = /** @type {import('./graph-probe/probe.js').Reading} */ (
         await page.evaluate(
           `window.graphProbe.render(${JSON.stringify(view)}, ${JSON.stringify(viewport.name === 'mobile' ? 'dark' : 'light')})`,
@@ -402,11 +494,15 @@ try {
   // and the renderer's output can be read against each other. `.agent/contracts/m5u10.md`.
   const answerFocus = tokens[0] ?? fail('the bag yielded no answer focus');
   for (const device of DEVICES) {
-    const page = await browser.newPage({
+    phase = `component/${device.name}/open`;
+    const page = await runningBrowser.newPage({
       viewport: { width: device.width, height: device.height },
     });
     page.on('pageerror', (/** @type {Error} */ error) => fail(`app probe raised ${error.message}`));
-    await page.goto(`${dev.url}app.html`, { waitUntil: 'load', timeout: TIMEOUT });
+    await page.goto(`${runningDev.url}app.html`, {
+      waitUntil: 'load',
+      timeout: CAMPAIGN_TIMEOUT,
+    });
     /** @param {string} call @returns {Promise<unknown>} */
     const run = (call) => page.evaluate(`window.componentProbe.${call}`);
 
@@ -416,6 +512,7 @@ try {
       { view: 'answer', focus: answerFocus },
     ];
     for (const { view, focus } of sweeps) {
+      phase = `component/${device.name}/${view}`;
       const row = /** @type {import('./graph-probe/app.svelte.js').InteractionReading} */ (
         await run(`interactions(${JSON.stringify(view)}, ${JSON.stringify(focus)})`)
       );
@@ -466,8 +563,8 @@ try {
     fallbacks.push({ device: device.name, ...load, ...palette });
   }
 } finally {
-  await browser?.close();
-  dev.stop();
+  phase = 'cleanup';
+  await cleanup();
 }
 
 if (report !== undefined) {
@@ -527,6 +624,14 @@ console.log(
     `${String(fallbacks.length)} fallback sweeps — ` +
     `${String(components.reduce((sum, row) => sum + row.cyNodes, 0))} nodes drawn from the ` +
     `component's own state, ${String(expanded)} views expanded, ${String(taps)} canvas taps ` +
-    `delivered, both fallbacks kept the HTML relation view, ` +
-    `control: a detached selection callback refused by C2 + C6`,
+    `delivered, both fallbacks kept the HTML relation view, controls: a detached selection ` +
+    `callback refused by C2 + C6; a non-terminating page exceeded ${String(CONTROL_TIMEOUT)} ms ` +
+    `during control/${CONTROL_NAME}`,
 );
+
+clearTimeout(campaignTimer);
+const exitGuard = setTimeout(
+  () => fail(`event loop remained live ${String(EXIT_GRACE)} ms after both summaries`),
+  EXIT_GRACE,
+);
+exitGuard.unref();
