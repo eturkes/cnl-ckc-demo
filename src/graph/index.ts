@@ -13,6 +13,7 @@ export {
   graphFocusKey,
   graphNodeKindLabel,
   graphNodeLabel,
+  graphRelation,
   graphRelationLabel,
   parseSemanticGraph,
   type GraphAnswerView,
@@ -29,3 +30,4 @@ export {
   type SemanticGraphScopeOperator,
   type SemanticGraphStats,
 } from './model.js';
+export { edgeLabel, edgeViewsOf, type EdgeView } from './view.js';

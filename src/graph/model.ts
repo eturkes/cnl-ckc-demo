@@ -1252,20 +1252,24 @@ export const graphNodeKindLabel = (node: SemanticGraphNode): string => {
   return 'document';
 };
 
-export const graphRelationLabel = (edge: SemanticGraphEdge, from?: string): string => {
+export const graphRelation = (edge: SemanticGraphEdge, from?: string): string => {
   const relation = edgeRelation(edge);
-  let label: string;
   if (edge.kind === 'argument') {
     const outward = from === undefined || from === edge.source;
-    if (relation === 'argument 1') label = outward ? 'actor' : 'acts in';
-    else if (relation === 'argument 2') label = outward ? 'target' : 'target of';
-    else label = outward ? 'participant' : 'participates in';
-  } else if (edge.kind === 'event') {
-    label = from === edge.target ? 'action for' : 'action';
-  } else if (edge.kind === 'implies' && relation === 'condition supports') {
-    label = from === edge.target ? 'supported by condition' : relation;
-  } else {
-    label = relation.replace(/[_-]+/gu, ' ');
+    if (relation === 'argument 1') return outward ? 'actor' : 'acts in';
+    if (relation === 'argument 2') return outward ? 'target' : 'target of';
+    return outward ? 'participant' : 'participates in';
   }
-  return edge.kind === 'operator' ? label : scopedRelationLabel(label, edge.scopeOperators ?? []);
+  if (edge.kind === 'event') return from === edge.target ? 'action for' : 'action';
+  if (edge.kind === 'implies' && relation === 'condition supports') {
+    return from === edge.target ? 'supported by condition' : relation;
+  }
+  return relation.replace(/[_-]+/gu, ' ');
+};
+
+export const graphRelationLabel = (edge: SemanticGraphEdge, from?: string): string => {
+  const relation = graphRelation(edge, from);
+  return edge.kind === 'operator'
+    ? relation
+    : scopedRelationLabel(relation, edge.scopeOperators ?? []);
 };

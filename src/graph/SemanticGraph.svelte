@@ -14,16 +14,15 @@
     graphFocusKey,
     graphNodeKindLabel,
     graphNodeLabel,
-    graphRelationLabel,
     parseSemanticGraph,
     type GraphAnswerView,
     type GraphFocus,
     type GraphFocusToken,
     type GraphPath,
     type GraphSubgraph,
-    type SemanticGraphEdge,
     type SemanticGraphNode,
   } from './model.js';
+  import { edgeViewsOf, type EdgeView } from './view.js';
 
   interface Props {
     /** URL injection keeps nested-host and failure-path checks independent of Vite output names. */
@@ -94,14 +93,12 @@
             path?.edges ?? [],
           )),
   );
+  const route = $derived(path ?? evidenceView?.highlight ?? null);
+  const edgeViews = $derived(edgeViewsOf(subgraph, route));
   const relationPool = $derived(
-    model === null || selectedId === null
+    selectedId === null
       ? []
-      : evidenceView === null
-        ? model.conceptIncident(selectedId)
-        : evidenceView.edges.filter(
-            (edge) => edge.source === selectedId || edge.target === selectedId,
-          ),
+      : edgeViews.filter((edge) => edge.source === selectedId || edge.target === selectedId),
   );
   const relations = $derived(relationPool.slice(0, 60));
   const canExpand = $derived(
@@ -126,7 +123,7 @@
     if (notify) onSelect(node);
   };
 
-  const peerOf = (edge: SemanticGraphEdge): SemanticGraphNode | undefined => {
+  const peerOf = (edge: EdgeView): SemanticGraphNode | undefined => {
     if (model === null || selectedId === null) return undefined;
     return model.node(edge.source === selectedId ? edge.target : edge.source);
   };
@@ -247,8 +244,9 @@
     const current = canvas;
     const view = subgraph;
     const root = selectedId;
-    const route = path ?? evidenceView?.highlight ?? null;
-    if (current !== undefined && root !== null) current.update(view, root, route);
+    const currentRoute = route;
+    const edges = edgeViews;
+    if (current !== undefined && root !== null) current.update(view, root, currentRoute, edges);
   });
 
   $effect(() => {
@@ -489,7 +487,7 @@
             {@const peer = peerOf(relation)}
             {#if peer !== undefined}
               <li>
-                <span class="relation">{graphRelationLabel(relation, selected.id)}</span>
+                <span class="relation">{relation.label}</span>
                 <button type="button" onclick={() => choose(peer.id, true, evidenceView !== null)}
                   >{graphNodeLabel(peer)}</button
                 >

@@ -4,14 +4,19 @@ import {
   DEFAULT_ANSWER_GRAPH_LIMIT,
   DEFAULT_NEIGHBOR_LIMIT,
   graphNodeLabel,
-  graphRelationLabel,
   type GraphPath,
   type GraphSubgraph,
   type SemanticGraphNodeKind,
 } from './model.js';
+import { edgeViewsOf, type EdgeView } from './view.js';
 
 export interface GraphCanvas {
-  update(subgraph: GraphSubgraph, selectedId: string, path: GraphPath | null): void;
+  update(
+    subgraph: GraphSubgraph,
+    selectedId: string,
+    path: GraphPath | null,
+    edges?: readonly EdgeView[],
+  ): void;
   recenter(selectedId?: string): void;
   destroy(): void;
 }
@@ -99,9 +104,9 @@ const elementsOf = (
   subgraph: GraphSubgraph,
   selectedId: string,
   path: GraphPath | null,
+  edges: readonly EdgeView[],
 ): cytoscape.ElementDefinition[] => {
   const pathNodes = new Set(path?.nodes ?? []);
-  const pathEdges = new Set(path?.edges ?? []);
   const hasHighlight = path !== null;
   return [
     ...subgraph.nodes.map((node) => ({
@@ -115,16 +120,10 @@ const elementsOf = (
         .filter(Boolean)
         .join(' '),
     })),
-    ...subgraph.edges.map((edge) => ({
+    ...edges.map((edge) => ({
       group: 'edges' as const,
-      data: {
-        id: edge.id,
-        source: edge.source,
-        target: edge.target,
-        label: graphRelationLabel(edge),
-        kind: edge.kind,
-      },
-      classes: pathEdges.has(edge.id) ? 'path' : hasHighlight ? 'context' : '',
+      data: { ...edge },
+      classes: edge.state === 'highlight' ? 'path' : hasHighlight ? 'context' : '',
     })),
   ];
 };
@@ -339,10 +338,10 @@ export const mountGraphCanvas = async (
   };
 
   return {
-    update(subgraph, selectedId, path) {
+    update(subgraph, selectedId, path, edges = edgeViewsOf(subgraph, path)) {
       cy.batch(() => {
         cy.elements().remove();
-        cy.add(elementsOf(subgraph, selectedId, path));
+        cy.add(elementsOf(subgraph, selectedId, path, edges));
       });
       layout(selectedId, path);
     },
