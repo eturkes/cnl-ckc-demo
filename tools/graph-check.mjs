@@ -45,6 +45,64 @@ const MIN_LABEL_PX = 11;
 const SEAM = ['src/graph/model.ts', 'src/graph/index.ts', 'src/graph/SemanticGraph.svelte'];
 const RENDERER = /cytoscape|fcose/iu;
 
+const CANVAS_SCOPE_READINGS = [
+  {
+    caseId: 'V2.canvas-ordered',
+    edgeId: 'fixture:scope-ordered',
+    source: 'fixture:scope-a',
+    target: 'fixture:scope-b',
+    relation: 'qualifies',
+    scope: ['should', 'may'],
+  },
+  {
+    caseId: 'V2.canvas-reordered',
+    edgeId: 'fixture:scope-reordered',
+    source: 'fixture:scope-b',
+    target: 'fixture:scope-c',
+    relation: 'constrains',
+    scope: ['may', 'should'],
+  },
+  {
+    caseId: 'V2.canvas-negated',
+    edgeId: 'fixture:scope-negated',
+    source: 'fixture:scope-c',
+    target: 'fixture:scope-d',
+    relation: 'excludes',
+    scope: ['-'],
+  },
+];
+const CANVAS_SCOPE_FIXTURE = {
+  subgraph: {
+    nodes: ['a', 'b', 'c', 'd'].map((suffix) => ({
+      id: `fixture:scope-${suffix}`,
+      kind: 'event',
+      label: `scope ${suffix}`,
+      document: 'fixture-scope',
+      sentence: 1,
+    })),
+    edges: CANVAS_SCOPE_READINGS.map((row, index) => ({
+      id: row.edgeId,
+      kind: 'event',
+      source: row.source,
+      target: row.target,
+      label: row.relation,
+      relation: row.relation,
+      scopeOperators: row.scope,
+      document: 'fixture-scope',
+      sentence: 1,
+      line: index + 1,
+      predicate: 'guideline_event',
+    })),
+    truncatedNodes: false,
+    truncatedEdges: false,
+  },
+  selectedId: 'fixture:scope-a',
+  path: {
+    nodes: ['a', 'b', 'c', 'd'].map((suffix) => `fixture:scope-${suffix}`),
+    edges: CANVAS_SCOPE_READINGS.map(({ edgeId }) => edgeId),
+  },
+};
+
 /** @type {(message: string) => never} */
 const fail = failWith('graph-check');
 
@@ -129,6 +187,58 @@ const violations = [];
 /** @param {boolean} ok @param {string} rule @param {string} detail */
 const require_ = (ok, rule, detail) => {
   if (!ok) violations.push(`${rule}: ${detail}`);
+};
+
+/**
+ * @typedef {{
+ *   caseId: string,
+ *   edgeId: string,
+ *   relation: string,
+ *   scope: string[],
+ *   rendered: string | null,
+ *   dashed: boolean | undefined,
+ *   required: boolean,
+ * }} ScopeReading
+ */
+
+const LABEL_SEPARATOR = String.raw`(?:[\s·•:→›|(),;/—–]|\[|\]|\{|\})+`;
+const escapePattern = (/** @type {string} */ value) =>
+  value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+const scopePattern = (/** @type {ScopeReading} */ row) => {
+  const scope = row.scope
+    .map((operator) => `${LABEL_SEPARATOR}${escapePattern(operator)}`)
+    .join('');
+  const closing = row.scope.length === 0 ? '' : String.raw`(?:[\)\]\}])?`;
+  return new RegExp(`^${escapePattern(row.relation)}${scope}${closing}$`, 'u');
+};
+
+/** @param {ScopeReading[]} rows @param {string} table @param {boolean} gradeDash */
+const gradeScopeReadings = (rows, table, gradeDash) => {
+  /** @type {string[]} */
+  const out = [];
+  if (rows.length === 0) return [`${table} is empty, so no rendered scope was graded`];
+  for (const row of rows) {
+    const at = `${row.caseId}/${row.edgeId}`;
+    if (row.rendered === null) {
+      if (row.required) out.push(`${at}: the renderer showed no label`);
+    } else if (!scopePattern(row).test(row.rendered)) {
+      out.push(
+        `${at}: rendered ${JSON.stringify(row.rendered)}, expected relation ${JSON.stringify(row.relation)} + ordered scope [${row.scope.join(', ')}]`,
+      );
+    }
+    if (gradeDash && row.dashed !== row.scope.includes('-')) {
+      out.push(
+        `${at}: dashed=${String(row.dashed)}, expected ${String(row.scope.includes('-'))} from scope polarity`,
+      );
+    }
+  }
+  return out;
+};
+
+/** @param {string[]} errors @param {string} rule */
+const recordScopeErrors = (errors, rule) => {
+  for (const error of errors.slice(0, 4)) violations.push(`${rule}: ${error}`);
+  if (errors.length > 4) violations.push(`${rule}: ${String(errors.length - 4)} more refusals`);
 };
 
 /**
@@ -295,6 +405,8 @@ const dev = await devServer();
 let browser;
 /** @type {Record<string, unknown>[]} */
 const readings = [];
+/** @type {ScopeReading[]} */
+const canvasScopeReadings = [];
 /** @type {(import('./graph-probe/app.svelte.js').InteractionReading & { device: string })[]} */
 const components = [];
 /** @type {Record<string, unknown>[]} */
@@ -332,6 +444,18 @@ try {
         `${at}: ${String(row.parallelSeparated)}/${String(row.parallelPairs)} parallel pairs separated`,
       );
       require_(row.labelMismatches.length === 0, 'R2', `${at}: ${row.labelMismatches.join(', ')}`);
+      const liveScope = row.scopeReadings.map((reading) => ({
+        ...reading,
+        caseId: `V2.live:${at}`,
+        required: false,
+      }));
+      const liveScopeErrors = gradeScopeReadings(liveScope, 'CANVAS_LIVE_SCOPE_READINGS', true);
+      require_(
+        liveScopeErrors.length === 0,
+        'V2',
+        `${at}: ${liveScopeErrors[0] ?? 'unknown scope refusal'}${liveScopeErrors.length > 1 ? ` (+${String(liveScopeErrors.length - 1)})` : ''}`,
+      );
+      canvasScopeReadings.push(...liveScope);
       require_(
         row.labelledOffPath === 0,
         'R2',
@@ -344,7 +468,6 @@ try {
         `${at}: tapping moved the highlight ${String(row.highlightBeforeTap)} → ${String(row.highlightAfterTap)}`,
       );
       require_(row.tapDelivered, 'R3', `${at}: a tap reached no selection callback`);
-      require_(row.dashedEdges === 0, 'R4', `${at}: ${String(row.dashedEdges)} edges dash already`);
       require_(
         row.labelPx >= MIN_LABEL_PX - 0.01,
         'R5',
@@ -368,6 +491,24 @@ try {
         path: join(shots, `${view.replace(/[^a-z0-9-]+/giu, '_')}-${viewport.name}.png`),
       });
     }
+    const scopeFixture = /** @type {import('./graph-probe/probe.js').ScopeReading[]} */ (
+      await page.evaluate(`window.graphProbe.scopeFixture(${JSON.stringify(CANVAS_SCOPE_FIXTURE)})`)
+    );
+    const declaredScope = CANVAS_SCOPE_READINGS.map((expected) => {
+      const observed = scopeFixture.find(({ edgeId }) => edgeId === expected.edgeId);
+      return {
+        caseId: `${expected.caseId}:${viewport.name}`,
+        edgeId: expected.edgeId,
+        relation: expected.relation,
+        scope: expected.scope,
+        rendered: observed?.rendered ?? null,
+        dashed: observed?.dashed,
+        required: true,
+      };
+    });
+    recordScopeErrors(gradeScopeReadings(declaredScope, 'CANVAS_SCOPE_READINGS', true), 'V2');
+    canvasScopeReadings.push(...declaredScope);
+
     const flip =
       /** @type {{ before: string, after: string, restored: string, moved: number, mismatches: number }} */ (
         await page.evaluate('window.graphProbe.themeFlip()')
@@ -391,7 +532,7 @@ try {
       await page.evaluate('window.graphProbe.dashControl()')
     );
     require_(
-      dash.before === 0 && dash.during === 1 && dash.after === 0,
+      dash.during === dash.before + 1 && dash.after === dash.before,
       'R4',
       `${viewport.name}: per-edge dashing reads ${String(dash.before)}/${String(dash.during)}/${String(dash.after)}`,
     );

@@ -249,6 +249,32 @@ const shownLabel = (node: CyNode): string =>
     .replace(/\s+/gu, ' ')
     .trim();
 
+export interface ScopeReading {
+  edgeId: string;
+  relation: string;
+  scope: string[];
+  rendered: string | null;
+  dashed: boolean;
+  onPath: boolean;
+}
+
+const scopeReadings = (fixture: Fixture, cy: CyLike): ScopeReading[] => {
+  const expected = new Map(fixture.subgraph.edges.map((edge) => [edge.id, edge]));
+  return cy.edges().map((edge) => {
+    const source = expected.get(edge.id());
+    if (source === undefined) throw new Error(`renderer added undeclared edge ${edge.id()}`);
+    const rendered = edge.style('label').replace(/\s+/gu, ' ').trim();
+    return {
+      edgeId: source.id,
+      relation: graphRelationLabel(source),
+      scope: [...(source.scopeOperators ?? [])],
+      rendered: rendered === '' ? null : rendered,
+      dashed: edge.style('line-style') !== 'solid',
+      onPath: edge.hasClass('path'),
+    };
+  });
+};
+
 export interface Reading {
   view: string;
   nodes: number;
@@ -261,7 +287,8 @@ export interface Reading {
   separationAt3Px: number;
   parallelPairs: number;
   parallelSeparated: number;
-  /** R2 — edges whose rendered label is not `graphRelationLabel`, and labelled non-path edges */
+  /** R2 — raw renderer output; `graph-check` owns the exact relation + ordered-scope oracle. */
+  scopeReadings: ScopeReading[];
   labelMismatches: string[];
   labelledOffPath: number;
   /** R3 */
@@ -337,7 +364,8 @@ const api = {
     cy.edges().forEach((edge) => {
       const shown = edge.style('label');
       const onPath = edge.hasClass('path');
-      if (shown !== '' && shown !== relations.get(edge.id())) labelMismatches.push(edge.id());
+      if (shown !== '' && !shown.startsWith(relations.get(edge.id()) ?? ''))
+        labelMismatches.push(edge.id());
       if (shown !== '' && !onPath) labelledOffPath += 1;
       if (edge.style('line-style') !== 'solid') dashedEdges += 1;
       if (edge.source().id() === edge.target().id()) return;
@@ -393,6 +421,7 @@ const api = {
       ]),
       parallelPairs,
       parallelSeparated,
+      scopeReadings: scopeReadings(fixture, cy),
       labelMismatches,
       labelledOffPath,
       selectableElements,
@@ -411,6 +440,16 @@ const api = {
       panHeights: (extent.y2 - extent.y1) / stage.clientHeight,
       settleMs,
     };
+  },
+  /** A contract-authored subgraph, read back only after the shipped renderer settles. */
+  async scopeFixture(fixture: Fixture): Promise<ScopeReading[]> {
+    const settled = new Promise<void>((resolve) => {
+      cyOf().one('layoutstop', resolve);
+    });
+    canvas.update(fixture.subgraph, fixture.selectedId, fixture.path);
+    await settled;
+    await frame();
+    return scopeReadings(fixture, cyOf());
   },
   /**
    * u10: the theme toggle restyles a MOUNTED graph.
@@ -458,8 +497,8 @@ const api = {
     const dashed = (): number =>
       cy.edges().filter((edge) => edge.style('line-style') !== 'solid').length;
     const before = dashed();
-    const victim = cy.edges()[0];
-    if (victim === undefined) throw new Error('fixture has no edge to dash');
+    const victim = cy.edges().filter((edge) => edge.style('line-style') === 'solid')[0];
+    if (victim === undefined) throw new Error('fixture has no solid edge to dash');
     victim.style('line-style', 'dashed');
     const during = dashed();
     victim.style('line-style', 'solid');
