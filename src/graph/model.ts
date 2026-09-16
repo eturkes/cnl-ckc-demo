@@ -26,6 +26,11 @@ export const GRAPH_EDGE_KINDS = [
 ] as const;
 export type SemanticGraphEdgeKind = (typeof GRAPH_EDGE_KINDS)[number];
 
+// guideline_arg/4 binds its second argument to an event reference; the producer
+// serializes that reference as the edge source.
+const EDGE_SOURCE_ROLES: Partial<Readonly<Record<SemanticGraphEdgeKind, SemanticGraphNodeKind>>> =
+  Object.freeze({ argument: 'event' });
+
 export const GRAPH_SCOPE_OPERATORS = ['-', 'should', 'may', 'can', 'must'] as const;
 export type SemanticGraphScopeOperator = (typeof GRAPH_SCOPE_OPERATORS)[number];
 
@@ -214,15 +219,32 @@ const parseScope = (value: unknown, index: number): SemanticGraphScope => {
   });
 };
 
-const parseEdge = (value: unknown, index: number): SemanticGraphEdge => {
+const parseEdge = (
+  value: unknown,
+  index: number,
+  nodes: ReadonlyMap<string, SemanticGraphNode>,
+): SemanticGraphEdge => {
   const at = `edges[${String(index)}]`;
   if (!isRecord(value)) throw new GraphDataError(`${at} must be an object`);
+  const kind = enumText(value.kind, GRAPH_EDGE_KINDS, `${at}.kind`);
+  const source = text(value.source, `${at}.source`);
+  const requiredSourceKind = EDGE_SOURCE_ROLES[kind];
+  const sourceKind = nodes.get(source)?.kind;
+  if (
+    requiredSourceKind !== undefined &&
+    sourceKind !== undefined &&
+    sourceKind !== requiredSourceKind
+  ) {
+    throw new GraphDataError(
+      `${at}.source must reference an ${requiredSourceKind} for an ${kind} edge`,
+    );
+  }
   const sentence = value.sentence === null ? null : integer(value.sentence, `${at}.sentence`, 1);
   const scope = value.scope === undefined ? undefined : integer(value.scope, `${at}.scope`);
   return Object.freeze({
     id: text(value.id, `${at}.id`),
-    kind: enumText(value.kind, GRAPH_EDGE_KINDS, `${at}.kind`),
-    source: text(value.source, `${at}.source`),
+    kind,
+    source,
     target: text(value.target, `${at}.target`),
     label: text(value.label, `${at}.label`),
     document: text(value.document, `${at}.document`),
@@ -267,23 +289,23 @@ export const parseSemanticGraph = (value: unknown): SemanticGraphData => {
     throw new GraphDataError('semantic graph must contain node, edge and scope arrays');
   }
   const nodes = value.nodes.map(parseNode);
-  const edges = value.edges.map(parseEdge);
-  const scopes = value.scopes.map(parseScope);
-  const stats = parseStats(value.stats);
   if (nodes.length === 0) throw new GraphDataError('semantic graph contains no nodes');
-  if (scopes.length === 0) throw new GraphDataError('semantic graph contains no scopes');
-  if (stats.nodes !== nodes.length || stats.edges !== edges.length) {
-    throw new GraphDataError(
-      `stats record ${String(stats.nodes)}/${String(stats.edges)}, parsed ${String(nodes.length)}/${String(edges.length)}`,
-    );
-  }
-
   const nodeIds = new Set<string>();
   const nodesById = new Map<string, SemanticGraphNode>();
   for (const node of nodes) {
     if (nodeIds.has(node.id)) throw new GraphDataError(`duplicate node id ${node.id}`);
     nodeIds.add(node.id);
     nodesById.set(node.id, node);
+  }
+
+  const edges = value.edges.map((edge, index) => parseEdge(edge, index, nodesById));
+  const scopes = value.scopes.map(parseScope);
+  const stats = parseStats(value.stats);
+  if (scopes.length === 0) throw new GraphDataError('semantic graph contains no scopes');
+  if (stats.nodes !== nodes.length || stats.edges !== edges.length) {
+    throw new GraphDataError(
+      `stats record ${String(stats.nodes)}/${String(stats.edges)}, parsed ${String(nodes.length)}/${String(edges.length)}`,
+    );
   }
   const scopeIds = new Set<string>();
   for (const [index, scope] of scopes.entries()) {
