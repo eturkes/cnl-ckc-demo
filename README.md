@@ -94,6 +94,11 @@ pnpm release:check
 Generated runtime files live under `kb/generated/` and are intentionally ignored.
 `pnpm kb:reproduce` builds the tree twice and requires the two manifests to be identical.
 
+Every durable claim this repository makes is listed in [the claim registry](docs/claims.md),
+beside the command that re-derives it. Read a row as a promise and its receipt. A claim no
+command re-derives says so in its own row, because a registry that hid those would be one more
+claim to check.
+
 ## Static deployment
 
 The application has no server-side runtime. Publish `dist/` at any static path;

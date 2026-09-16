@@ -1,4 +1,4 @@
-# Closed IMPLEMENT units — u3-u14
+# Closed IMPLEMENT units — u3-u15
 
 Retired record. Live successors: the acceptance contract per unit in `.agent/contracts/`,
 the law each unit wrote in `.claude/rules/`, and the open path in `.agent/spec.md`
@@ -123,3 +123,34 @@ u11→u12 = scope, from the asset record to the projection model. Contract + sui
   Two suites pin shipped copy and both went red when the strings moved under them
   (`2/13 RED at base ceab9c5`) — the firing input proving they grade copy at all. Neither is in
   `binding:check`'s declared inventory, so no declared case moved.
+
+- **u15 claim→command registry** — `docs/claims.md`, 378 rows, every one adjudicated: 304
+  `true`, 34 `deferred`, 40 `historical`. `pnpm claims:check` joined the gate chain after
+  `presentation:check`, grading COVERAGE rather than truth — it re-derives the claim set from
+  four sources and refuses drift by row count, row anchor or open row, with its own firing input
+  (the set rebuilt from ONE rules file, refused by row count). Contract `.agent/contracts/m5u15.md`.
+
+  User ruling set the scope at the FULL R1 union, not shipped copy alone; the narrower 46-row
+  reading that would have closed C7 as written was offered and declined.
+
+  R3 ran the whole distinct command set: 19 shell one-offs, 22 `npx vitest run` suites,
+  `pnpm binding:replay`, and one `pnpm release:check` subsuming every remaining `pnpm` command —
+  all rc 0. 74 rows name `none`, exactly the 34 `deferred` plus the 40 `historical`, so no row
+  claims coverage it lacks.
+
+  The row count moved 375 → 376 → 378 mid-unit because `claims:check` reads `.claude/rules/`:
+  documenting the check in `gate.md`, then recording u15's wave laws in `waves.md`, each added a
+  claim to the check's own input. Every addition arrived `unknown` and reddened the gate until
+  MAIN answered it. Self-reference is the designed behaviour, not drift — the seed is idempotent,
+  so the count cannot move unless a source moved.
+
+  Three tooling defects had to be fixed before the registry was maintainable: `--seed` was
+  destructive and would have discarded every ruling on the next source edit (it now merges,
+  keyed on claim TEXT, since ids and anchors are re-issued each run); the row block shipped with
+  no header or delimiter row, so GFM rendered it as literal text; and three distinct ways a
+  150-char cell slice provoked a Prettier reformat kept `format:check` red.
+
+  Wave: `map-shipped` 46 rows and `map-contract` 158 both landed complete. `map-rules` burned
+  153K across five flat polls and wrote nothing — replaced, not steered, by `map-rules-2`, whose
+  brief opened by naming that failure and demanding an `Edit` as its first tool call; it filled
+  all 171. MAIN ruled the rows no partition covered.

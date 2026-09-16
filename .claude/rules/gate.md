@@ -3,7 +3,7 @@
 `pnpm gate` = one `&&` chain in `package.json`; every step fails closed:
 
 `audit:check → secret:check → kb:build → kb:asset-check → kb:export-check → engine:check →
-copy:check → contrast:check → presentation:check → format:check → lint → check →
+copy:check → contrast:check → presentation:check → claims:check → format:check → lint → check →
 binding:check → build`
 
 `package.json` is authoritative if that list ever diverges from it. The chain's per-run counts
@@ -62,6 +62,21 @@ Step semantics a reader cannot get from the script name:
 - `copy:check` (`tools/copy-check.mjs`) runs two graders over `src/i18n/`: English on sentence
   length and banned filler, Japanese on key parity alone. Why the limits do not port, and what
   may stay untranslated, are in `.claude/rules/i18n.md`.
+- `claims:check` (`tools/claims-sweep.mjs`) grades COVERAGE of `docs/claims.md`, never truth.
+  No tool here can decide whether a sentence is true, so judgment stays in the committed
+  registry and the check owns what a tool can decide: it re-derives the claim set from the tree
+  — u14's adjudicated shipped rows, `.agent/spec.md` `Artifacts`, `.claude/rules/`,
+  `.agent/contracts/m5u*.md` acceptance rows — and refuses a registry that has drifted from it
+  by row count, by row anchor, or by leaving a row unadjudicated. A claim unit is a bullet with
+  its continuations, a table row or a paragraph; raw lines would split one assertion in two.
+  Adding a claim to any of those sources therefore reddens the gate until the registry answers
+  it, which is the whole point — and editing THIS file is itself such an addition, so the check
+  is self-referential by construction. `pnpm claims:seed` re-derives the row set when a source
+  moves and carries every adjudicated cell forward, keyed on the claim TEXT: ids and line
+  anchors are re-issued on every run, so an id-keyed merge would hand one claim's verdict to
+  its neighbour. Prettier owns `docs/`, so the row block ships under `prettier-ignore` — at a
+  150-char claim cell, column padding rewrites every row and `format:check` never agrees with
+  the seed again.
 - `presentation:check` (`tools/presentation-check.mjs`) grades three DECLARED tables against
   source alone — no build, no browser: `@font-face` rows, shipped OFL texts against each
   package `LICENSE`, and the selectors rendering engine-authored text. Rule bodies match
@@ -99,6 +114,7 @@ effect of the unit whose grader it loosens.
 | `contrast:check` | `--text` collapsed onto `--surface` | the pair loop re-run on the perturbed token map, must report `1:1` |
 | `presentation:check` | one `@font-face` renamed out of `app.css`; each shipped licence compared against the next package's; `overflow-wrap` stripped from every component style | one per declared table, in process |
 | `binding:check` | a required case no suite defines; a required suite the run never loaded; the `REQUIRED` table emptied; the `LIFECYCLE` table emptied; the `MEANING` table emptied | the inventory loop re-run over the gate's OWN suite report, so none costs a second vitest; the last three feed `gradeTable` the real table emptied, through the same function the real one goes through |
+| `claims:check` | the claim set re-derived from ONE rules file, contracts dropped | its own `gradeRegistry` over the real registry, in process; the short set must be refused by row count, because a sweep that silently stopped reading would otherwise agree with any registry it could still match |
 | `kb:reproduce` | one asset digest changed in the second manifest | the equality seam re-run on the perturbed clone |
 | `graph:check` | one edge's `line-style` set to `dashed` in the mounted graph; `SEPARATION_PX` set to 0 | `dashControl` requires a 0 → 1 → 0 reading off the live renderer; R1 requires the probe-reported cutoff to be exactly 3 px AND a fixed absolute boundary pair where 2 px collapses and 3 px separates — at 0 every coincident midpoint reads distinct, so R1 passed vacuously while the renderer regressed |
 | `graph:check` termination | a planted non-terminating page, `tools/graph-probe/hang.html` | `GRAPH_CHECK_CONTROL=non-terminating-page node tools/graph-check.mjs` drives the REAL campaign against that page and must exit 1 naming `control/non-terminating-page` — 10.252 s measured — so a lane that cannot finish is refused BY NAME instead of by wall clock, which is the whole distinction a timeout kill destroys |
@@ -121,6 +137,18 @@ committed state:
 | `pnpm browser:check` | 337 documents on dev + built output, every 320 px interaction state incl. Japanese, that `unicode-range` keeps the Japanese face off an English page, browser cancel delivery, and the rendered canonical answer byte-equal to `tools/answer-oracle.mjs` in BOTH locales |
 | `pnpm graph:check` | the renderer-neutral edge-view contract R1-R7 (`.agent/contracts/m5u8.md`) against the SHIPPED `mountGraphCanvas`, over 14 fixtures x 2 viewports, plus C1-C12 (`m5u10.md`) against the SHIPPED `SemanticGraph.svelte` over 2 devices x 2 views + both fallbacks |
 | `pnpm binding:replay` | that `clinical-binding` E2 is load-bearing: the same erasure is invisible at `a944fca` and drops exactly one document now |
+
+**A server spawned through `pnpm exec` outlives `child.kill()`, and both browser lanes were
+bitten by it.** `spawn('pnpm', ['exec', 'vite', ...])` builds a pnpm → vite tree, so signalling
+the child reaps the wrapper and orphans vite; the orphan holds the inherited stdout and stderr
+pipes open and Node's loop never drains. The lane prints its success line and then hangs
+forever — so **a check that prints its success line is not a check that exited.** Two remedies
+ship, and either is sound: `graph:check` runs Vite IN PROCESS with teardown awaited (below),
+while `browser:check` keeps the child and fixes the signal, `detached: true` plus
+`process.kill(-pid, 'SIGTERM')`. Prefer in-process for a new lane; a spawned server must name
+its group kill. Untreated, `browser:check` sat at **rc 124 on a 600 s timeout** with a stray dev
+server on 5173 and took `pnpm release:check` down with it — the composite had never once run
+end to end. Fixed, it is rc 0 in 8 s with no strays.
 
 `tools/answer-oracle.mjs` is the browser lanes' shared expectation — `clinicalArtifacts` answer
 terms assembled in JavaScript from the bag, never scraped from the page and never a fixture
@@ -160,10 +188,8 @@ pair that fires `tap`.
 
 **The campaign owns a named budget and terminates on its own.** It formerly printed both
 summaries and then hung forever, which made `release:check` unrunnable unattended and made a
-finished campaign indistinguishable from a hung browser. Cause: `spawn('pnpm exec vite')` builds
-wrapper→pnpm→Vite, `stop()` signalled the wrapper alone, and the surviving Vite held stdout and
-stderr open, so referenced pipes outlived the work. Vite now runs IN PROCESS with browser and
-server teardown awaited. The budget is 120000 ms; on expiry the run prints
+finished campaign indistinguishable from a hung browser — the orphaned-Vite cause above. Vite
+now runs IN PROCESS with browser and server teardown awaited. The budget is 120000 ms; on expiry the run prints
 `graph-check: campaign exceeded 120000 ms during <phase>` and takes 2000 ms to clean up, and a
 2000 ms unref'd post-summary guard names any residual liveness rather than hanging on it. A
 healthy committed-state run is 43.916 s with no outer timeout, so the budget is roughly 3x

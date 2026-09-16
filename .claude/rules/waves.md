@@ -66,6 +66,17 @@ are this repo's deltas.
   cap each finding at ~250 chars, ship no detail sections, run one measurement pass per row,
   flush after every row. A bare "flush now" moved nobody; the cost directive carried every
   lagging teammate to complete inside one poll. The brief's batch size is what it corrects.
+- **A seeded progress counter must not contain the token it counts.** u15 seeded each
+  partition with a header line quoting its own `grep -c 'unknown'` command, so the counter
+  could never reach 0 and every poll under-reported the wave. Seed a row-anchored pattern
+  instead — `^| R[0-9]* |.*| unknown |$` — and keep the bare token out of prose.
+- **An agent that reads for a whole window and writes nothing is replaced, not steered.** u15's
+  first `map-rules` burned 153K across five flat polls with zero rows written, its last message
+  still its opening statement of intent; a same-shape peer finished 158 rows in that window, so
+  the task was never the problem. The successor's brief opens by naming the predecessor's
+  failure and demanding an `Edit` as its FIRST tool call — it filled all 171 rows. When a
+  successor then goes flat holding a complete mapping in its transcript, the directive that
+  moves it names a batch size: flush ≤20 rows per `Edit`, never one final write.
 - **`cat >>` on a file already in MAIN's context re-echoes the WHOLE file back into
   context.** Append with the `Edit` tool anchored on the file's last line instead; it echoes
   nothing.

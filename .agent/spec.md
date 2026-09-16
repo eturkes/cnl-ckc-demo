@@ -109,10 +109,10 @@ spanning edge.
 
 ## Units — the remaining IMPLEMENT path
 
-The verification-integrity census is cleared, u12 shipped the projection model, u13 finished
-the graph and u14 aligned the claims; u15 closes the phase. Full `Accept:` + `Depends` →
-archive; u3–u14 closed, contract each in `.agent/contracts/`, close summaries in
-`.agent/archive/units-m5.md`.
+Every IMPLEMENT unit is closed. u12 shipped the projection model, u13 finished the graph, u14
+aligned the claims and u15 built the claim→command registry. What remains before the phase
+closes is the judgment review alone. Full `Accept:` + `Depends` → archive; u3–u15 closed,
+contract each in `.agent/contracts/`, close summaries in `.agent/archive/units-m5.md`.
 
 **From u11 on, every unit contract carries its red witness** — `N/M RED at base <sha>` plus
 the command that reproduces it, the form `.agent/archive/contracts/m5u1.md:232` and
@@ -120,13 +120,24 @@ the command that reproduces it, the form `.agent/archive/contracts/m5u1.md:232` 
 live contracts and 4 of 108 commit bodies. Form + the two shapes that satisfy it without a
 `git show` → `.claude/rules/waves.md`.
 
-- **u15 claim→command registry** — fill the registry, record dispositions. Accept: every
-  claim names a committed-state command that re-derives it. Input = the 48 adjudicated rows in
-  `.agent/contracts/m5u14.md`, whose `evidence` cell already carries the command or `file:line`
-  per row; 28 `true` rows need one each, and the 17 corrected rows carry MAIN's ruling.
+- **the `rev` judgment review** — the last step. One `rev` teammate per lens over the fixed
+  32-row check set in `.agent/contracts/review-implement.md`, reading the SHIPPED SURFACE at
+  close rather than a commit range (user ruling), adjudicated into `.agent/review.md`. It runs
+  only now that u15 has landed, because the lenses read the working tree and u15 added
+  `tools/claims-sweep.mjs`, `docs/claims.md` and a gate step. Accept: every one of the 32 rows
+  adjudicated — an all-`pass` table is a complete review — and no open row at phase close.
 
 # Phase
 
-IMPLEMENT, at u15. Judgment review → `.agent/review.md`, adjudicated before the phase closes
-against the fixed 32-row check set in `.agent/contracts/review-implement.md`, which reads the
-SHIPPED SURFACE at close rather than a commit range (user ruling).
+IMPLEMENT, every unit closed through u15. **The `rev` judgment review is the only work left
+before `MAINTAIN`** — 32 rows in `.agent/review.md`, all still `unknown`, adjudicated against
+the fixed check set in `.agent/contracts/review-implement.md`, which reads the SHIPPED SURFACE
+at close rather than a commit range (user ruling).
+
+Resume point: the four lens skeletons are seeded at `.scratch/agents/rev-{arch,semantic,graph,
+assurance}.md` — 8 + 8 + 6 + 10 rows, every cell `unknown`, one row per predicate. `.scratch/`
+is gitignored, so if they are gone, re-derive them by matching `^\| ([ASGC])(\d+) \| (.*) \|$`
+over `.agent/contracts/review-implement.md`; that contract is the only source and the skeleton
+must never be hand-listed. Dispatch one `rev` teammate per lens, each in its own worktree,
+diff-blind to the others. Counter:
+`command grep -c '^| [A-Z][0-9]* | unknown' .agent/review.md` reads 32 and must reach 0.

@@ -47,12 +47,23 @@ if (documents === undefined) fail('no build manifest; run pnpm kb:build');
  */
 const devServer = () =>
   new Promise((resolve, reject) => {
+    // `detached` puts pnpm AND the vite it execs into one process group, and `stop` signals
+    // the group. Signalling the child alone reaps the pnpm wrapper and orphans vite, which
+    // keeps the inherited stdout pipe open — the check then prints its success line and hangs
+    // forever, taking `pnpm release:check` with it.
     const child = spawn('pnpm', ['exec', 'vite', '--host', '127.0.0.1'], {
       cwd: ROOT,
       stdio: ['ignore', 'pipe', 'pipe'],
+      detached: true,
     });
     const stop = () => {
-      child.kill('SIGTERM');
+      const { pid } = child;
+      if (pid === undefined) return;
+      try {
+        process.kill(-pid, 'SIGTERM');
+      } catch {
+        // Already gone: the group exited between the check and the signal.
+      }
     };
     const timer = setTimeout(() => {
       stop();

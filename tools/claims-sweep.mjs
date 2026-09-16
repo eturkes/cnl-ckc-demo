@@ -14,6 +14,17 @@ import { join } from 'node:path';
 import { requireFiring } from './control.mjs';
 
 const REGISTRY = 'docs/claims.md';
+
+/**
+ * The row block's own table header. `prettier-ignore` is load-bearing: Prettier owns `docs/`
+ * and pads every table cell to its column's widest, which at a 150-char claim cell rewrites
+ * all 376 rows to 451 characters and leaves `--seed` and `format:check` disagreeing forever.
+ * Without the delimiter row the block is not a table at all and renders as literal text.
+ */
+const HEADER =
+  '<!-- prettier-ignore -->\n' +
+  '| id | source | at | claim | command | disposition |\n' +
+  '| --- | --- | --- | --- | --- | --- |';
 const RULES_DIR = '.claude/rules';
 const CONTRACT_DIR = '.agent/contracts';
 
@@ -80,8 +91,34 @@ const units = (text) => {
  */
 const claimlike = (text) => /[0-9]/u.test(text) || /`?pnpm [a-z:]+/u.test(text);
 
-/** @param {string} text @returns {string} */
-const cell = (text) => text.replace(/\|/gu, '\\|').slice(0, 150);
+/**
+ * Settle a cell into the only shape Prettier will leave alone.
+ *
+ * Prettier owns `docs/`, so a generated cell it would reformat reddens `format:check` forever.
+ * A cut between `\\` and the pipe it escapes leaves a dangling backslash that swallows the
+ * row's own delimiter; a cut through a code span leaves an ODD backtick count, and Prettier
+ * then reflows the unmatched opener across the rest of the row, gluing pipes to text.
+ *
+ * Idempotent, and that is load-bearing: the merge keys on the settled text, so a cell written
+ * by an EARLIER form of this function settles to the same key as the claim it came from.
+ *
+ * @param {string} text @returns {string}
+ */
+const settle = (text) => {
+  let out = text.trim();
+  if (/(?:^|[^\\])(?:\\\\)*\\$/u.test(out)) out = out.slice(0, -1);
+  const ticks = out.match(/`/gu)?.length ?? 0;
+  if (ticks % 2 === 1) out = out.slice(0, out.lastIndexOf('`'));
+  return out.trim();
+};
+
+/**
+ * A slice can land mid-word and leave a trailing space Prettier strips, so the cell trims
+ * itself before it settles.
+ *
+ * @param {string} text @returns {string}
+ */
+const cell = (text) => settle(text.replace(/\|/gu, '\\|').slice(0, 150).trim());
 
 /**
  * Re-derive the whole claim set, in registry order.
@@ -150,14 +187,44 @@ export const claimSet = (override = {}) => {
   return rows;
 };
 
-/** @param {{source: string, at: string, claim: string}[]} rows @returns {string} */
-const table = (rows) =>
-  rows
+/**
+ * Carry every adjudicated cell forward onto the re-derived set.
+ *
+ * Keyed on the claim TEXT, never on the row id or the line number: editing any source file
+ * renumbers every row below it, and an id-keyed merge would silently reassign one claim's
+ * verdict to its neighbour. A claim whose text is unchanged keeps its ruling; a genuinely new
+ * claim arrives `unknown` and reddens the gate until someone answers it.
+ *
+ * @param {{source: string, at: string, claim: string}[]} rows @param {string} registry
+ * @returns {string}
+ */
+const table = (rows, registry) => {
+  // NUL joins the key halves and splits the cell pair: it is the one byte a Markdown table
+  // cell cannot carry, so a claim containing the delimiter cannot forge a neighbour's key.
+  /** @type {Map<string, string[][]>} */
+  const kept = new Map();
+  for (const line of registry.split('\n')) {
+    const found = /^\|\s*R\d+\s*\|\s*([a-z]+)\s*\|\s*`[^`]*`\s*\|(.*)\|([^|]*)\|([^|]*)\|$/u.exec(
+      line,
+    );
+    if (found === null) continue;
+    // An `unknown` cell is the absence of a ruling, so it must not claim the slot a
+    // partition file fills: skipping it is what lets `--seed` fold harvested work in.
+    if ((found[4] ?? '').trim() === 'unknown') continue;
+    const key = `${found[1] ?? ''}\u0000${settle(found[2] ?? '')}`;
+    const cells = [(found[3] ?? '').trim(), (found[4] ?? '').trim()];
+    kept.set(key, [...(kept.get(key) ?? []), cells]);
+  }
+  /** @param {string | undefined} value @returns {string} */
+  const held = (value) => (value === undefined || value === '' ? 'unknown' : value);
+  return rows
     .map((row, index) => {
       const id = `R${String(index + 1).padStart(3, '0')}`;
-      return `| ${id} | ${row.source} | \`${row.at}\` | ${row.claim} | unknown | unknown |`;
+      const [command, disposition] = kept.get(`${row.source}\u0000${row.claim}`)?.shift() ?? [];
+      return `| ${id} | ${row.source} | \`${row.at}\` | ${row.claim} | ${held(command)} | ${held(disposition)} |`;
     })
     .join('\n');
+};
 
 /**
  * Grade the registry against the re-derived set: same rows, in order, none unadjudicated.
@@ -170,7 +237,10 @@ export const gradeRegistry = (rows, registry) => {
   const failures = [];
   const found = registry
     .split('\n')
-    .map((line) => /^\| (R\d+) \| ([a-z]+) \| `([^`]*)` \|(.*)\|([^|]*)\|([^|]*)\|$/u.exec(line))
+    // Whitespace-tolerant: a formatter that decides to pad this table must not redden the gate.
+    .map((line) =>
+      /^\|\s*(R\d+)\s*\|\s*([a-z]+)\s*\|\s*`([^`]*)`\s*\|(.*)\|([^|]*)\|([^|]*)\|$/u.exec(line),
+    )
     .filter((match) => match !== null);
   if (found.length === 0) return ['registry holds no rows, so the claim set grades nothing'];
   if (found.length !== rows.length) {
@@ -191,12 +261,26 @@ const rows = claimSet();
 
 if (process.argv.includes('--seed')) {
   const registry = readFileSync(REGISTRY, 'utf8');
+  // Extra arguments are harvested partition files. Folding them through the SAME text-keyed
+  // merge is what makes a wave re-derivable: ids and line anchors are re-issued from the
+  // live sweep, so a partition seeded against a stale row set still lands on the right claim.
+  const harvested = process.argv
+    .slice(process.argv.indexOf('--seed') + 1)
+    .filter((arg) => !arg.startsWith('--'))
+    .map((path) => readFileSync(path, 'utf8'))
+    .join('\n');
   const anchor = '<!-- rows -->';
-  const [head, tail] = registry.split(anchor);
-  if (head === undefined || tail === undefined) throw new Error(`${REGISTRY} lacks ${anchor}`);
+  const [head, , tail] = registry.split(anchor);
+  if (head === undefined || tail === undefined) {
+    throw new Error(`${REGISTRY} needs ${anchor} twice, wrapped around the row block`);
+  }
+  // Prettier owns `docs/` and reformats what it disagrees with, so the seed emits Prettier's
+  // own shape or `--seed` and `format:check` fight on every run: a blank line between the
+  // opening HTML comment and the table, and a final newline.
+  const rest = tail.trimStart();
   writeFileSync(
     REGISTRY,
-    `${head}${anchor}\n${table(rows)}\n${anchor}${tail.split(anchor)[1] ?? ''}`,
+    `${head}${anchor}\n\n${HEADER}\n${table(rows, `${registry}\n${harvested}`)}\n\n${anchor}\n${rest === '' ? '' : `\n${rest}`}`,
   );
   process.stdout.write(`claims:seed — ${String(rows.length)} rows written to ${REGISTRY}\n`);
 } else {
