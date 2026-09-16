@@ -266,7 +266,7 @@ const scopeReadings = (fixture: Fixture, cy: CyLike): ScopeReading[] => {
     const rendered = edge.style('label').replace(/\s+/gu, ' ').trim();
     return {
       edgeId: source.id,
-      relation: graphRelationLabel(source),
+      relation: source.relation ?? source.label,
       scope: [...(source.scopeOperators ?? [])],
       rendered: rendered === '' ? null : rendered,
       dashed: edge.style('line-style') !== 'solid',

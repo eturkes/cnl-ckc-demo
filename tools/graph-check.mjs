@@ -300,11 +300,15 @@ const require_ = (ok, rule, detail) => {
 const LABEL_SEPARATOR = String.raw`(?:[\s·•:→›|(),;/—–]|\[|\]|\{|\})+`;
 const escapePattern = (/** @type {string} */ value) =>
   value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+const displayScopeOperator = (/** @type {string} */ operator) =>
+  operator === '-' ? 'negated' : operator;
+const scopeOperatorPattern = (/** @type {string} */ operator) =>
+  operator === '-' ? '(?:-|negated)' : escapePattern(operator);
 const canonicalScopeLabel = (/** @type {Pick<ScopeReading, 'relation' | 'scope'>} */ row) =>
-  [row.relation, ...row.scope].join(' · ');
+  [row.relation, ...row.scope.map(displayScopeOperator)].join(' · ');
 const scopePattern = (/** @type {ScopeReading} */ row) => {
   const scope = row.scope
-    .map((operator) => `${LABEL_SEPARATOR}${escapePattern(operator)}`)
+    .map((operator) => `${LABEL_SEPARATOR}${scopeOperatorPattern(operator)}`)
     .join('');
   const closing = row.scope.length === 0 ? '' : String.raw`(?:[\)\]\}])?`;
   return new RegExp(`^${escapePattern(row.relation)}${scope}${closing}$`, 'u');
