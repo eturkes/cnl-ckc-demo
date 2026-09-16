@@ -300,6 +300,8 @@ const require_ = (ok, rule, detail) => {
 const LABEL_SEPARATOR = String.raw`(?:[\s·•:→›|(),;/—–]|\[|\]|\{|\})+`;
 const escapePattern = (/** @type {string} */ value) =>
   value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+const canonicalScopeLabel = (/** @type {Pick<ScopeReading, 'relation' | 'scope'>} */ row) =>
+  [row.relation, ...row.scope].join(' · ');
 const scopePattern = (/** @type {ScopeReading} */ row) => {
   const scope = row.scope
     .map((operator) => `${LABEL_SEPARATOR}${escapePattern(operator)}`)
@@ -778,6 +780,121 @@ try {
 } finally {
   await browser?.close();
   dev.stop();
+}
+
+const orderedControl = canvasScopeReadings.find(({ caseId }) =>
+  caseId.startsWith('V2.canvas-ordered:'),
+);
+require_(orderedControl !== undefined, 'control', 'V2.canvas-ordered produced no real reading');
+if (orderedControl !== undefined) {
+  const dropped = gradeScopeReadings(
+    [
+      {
+        ...orderedControl,
+        rendered: canonicalScopeLabel({
+          relation: orderedControl.relation,
+          scope: orderedControl.scope.slice(0, -1),
+        }),
+      },
+    ],
+    'CANVAS_SCOPE_READINGS',
+    true,
+  );
+  require_(
+    dropped.some(
+      (line) =>
+        line.includes(orderedControl.caseId) &&
+        line.includes(orderedControl.edgeId) &&
+        line.includes('ordered scope [should, may]'),
+    ),
+    'control',
+    'dropping `may` from V2.canvas-ordered was not refused by case + edge name',
+  );
+  const reordered = gradeScopeReadings(
+    [
+      {
+        ...orderedControl,
+        rendered: canonicalScopeLabel({
+          relation: orderedControl.relation,
+          scope: [...orderedControl.scope].reverse(),
+        }),
+      },
+    ],
+    'CANVAS_SCOPE_READINGS',
+    true,
+  );
+  require_(
+    reordered.some((line) => line.includes(orderedControl.caseId)),
+    'control',
+    'reordering V2.canvas-ordered was not refused by case name',
+  );
+}
+
+const negatedControl = canvasScopeReadings.find(({ caseId }) =>
+  caseId.startsWith('V2.canvas-negated:'),
+);
+require_(negatedControl !== undefined, 'control', 'V2.canvas-negated produced no real reading');
+if (negatedControl !== undefined) {
+  const undashed = gradeScopeReadings(
+    [
+      {
+        ...negatedControl,
+        rendered: canonicalScopeLabel(negatedControl),
+        dashed: false,
+      },
+    ],
+    'CANVAS_SCOPE_READINGS',
+    true,
+  );
+  require_(
+    undashed.some((line) => line.includes(negatedControl.caseId) && line.includes('dashed=false')),
+    'control',
+    'removing the negated edge dash was not refused by case name',
+  );
+}
+
+const fallbackControl = fallbackScopeReadings.find(({ caseId }) =>
+  caseId.startsWith('V3.fallback-forward:'),
+);
+require_(fallbackControl !== undefined, 'control', 'V3.fallback-forward produced no real reading');
+if (fallbackControl !== undefined) {
+  const dropped = gradeScopeReadings(
+    [
+      {
+        ...fallbackControl,
+        rendered: canonicalScopeLabel({
+          relation: fallbackControl.relation,
+          scope: fallbackControl.scope.slice(0, -1),
+        }),
+      },
+    ],
+    'FALLBACK_SCOPE_READINGS',
+    false,
+  );
+  require_(
+    dropped.some(
+      (line) => line.includes(fallbackControl.caseId) && line.includes(fallbackControl.edgeId),
+    ),
+    'control',
+    'dropping `should` from V3.fallback-forward was not refused by case + edge name',
+  );
+}
+
+const emptyControls = [
+  ...gradeScopeReadings([], 'CANVAS_SCOPE_READINGS', true),
+  ...gradeScopeReadings([], 'FALLBACK_SCOPE_READINGS', false),
+  ...gradeSpanningScope([]),
+];
+for (const table of [
+  'CANVAS_SCOPE_READINGS',
+  'FALLBACK_SCOPE_READINGS',
+  'SPANNING_SCOPE_READINGS',
+]) {
+  require_(
+    emptyControls.some((line) => line.includes(`${table} is empty`)),
+    'control',
+    `${table} passed after every reading was removed`,
+  );
 }
 
 if (report !== undefined) {
