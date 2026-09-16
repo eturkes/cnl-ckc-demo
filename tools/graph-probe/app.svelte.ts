@@ -520,7 +520,7 @@ const relationTexts = (peer: string): string[] =>
     if (peerButton === undefined) return [];
     const copy = row.cloneNode(true);
     if (!(copy instanceof HTMLElement)) throw new Error('probe: relation row clone is not HTML');
-    for (const button of copy.querySelectorAll('button')) button.remove();
+    for (const control of copy.querySelectorAll('button, small')) control.remove();
     return [labelOf(copy)];
   });
 

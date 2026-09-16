@@ -258,6 +258,18 @@ export interface ScopeReading {
   onPath: boolean;
 }
 
+const relationAlone = (edge: Fixture['subgraph']['edges'][number]): string => {
+  const scope = edge.scopeOperators ?? [];
+  const suffix = scope.map((operator) => ` · ${operator === '-' ? 'negated' : operator}`).join('');
+  const composed = graphRelationLabel(edge);
+  if (suffix !== '' && !composed.endsWith(suffix)) {
+    throw new Error(
+      `scope suffix ${JSON.stringify(suffix)} is absent from ${JSON.stringify(composed)}`,
+    );
+  }
+  return suffix === '' ? composed : composed.slice(0, -suffix.length);
+};
+
 const scopeReadings = (fixture: Fixture, cy: CyLike): ScopeReading[] => {
   const expected = new Map(fixture.subgraph.edges.map((edge) => [edge.id, edge]));
   return cy.edges().map((edge) => {
@@ -266,7 +278,7 @@ const scopeReadings = (fixture: Fixture, cy: CyLike): ScopeReading[] => {
     const rendered = edge.style('label').replace(/\s+/gu, ' ').trim();
     return {
       edgeId: source.id,
-      relation: source.relation ?? source.label,
+      relation: relationAlone(source),
       scope: [...(source.scopeOperators ?? [])],
       rendered: rendered === '' ? null : rendered,
       dashed: edge.style('line-style') !== 'solid',

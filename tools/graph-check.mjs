@@ -51,7 +51,7 @@ const CANVAS_SCOPE_READINGS = [
     edgeId: 'fixture:scope-ordered',
     source: 'fixture:scope-a',
     target: 'fixture:scope-b',
-    relation: 'qualifies',
+    relation: 'action',
     scope: ['should', 'may'],
   },
   {
@@ -59,7 +59,7 @@ const CANVAS_SCOPE_READINGS = [
     edgeId: 'fixture:scope-reordered',
     source: 'fixture:scope-b',
     target: 'fixture:scope-c',
-    relation: 'constrains',
+    relation: 'action',
     scope: ['may', 'should'],
   },
   {
@@ -67,7 +67,7 @@ const CANVAS_SCOPE_READINGS = [
     edgeId: 'fixture:scope-negated',
     source: 'fixture:scope-c',
     target: 'fixture:scope-d',
-    relation: 'excludes',
+    relation: 'action',
     scope: ['-'],
   },
 ];
@@ -197,7 +197,8 @@ const SPANNING_SCOPE_READINGS = [
   },
 ];
 const PARTIAL_SCOPE_DISCLOSURE = /\b(?:incomplete|partial|scope omitted|scope spans)\b/iu;
-const BOUND_DISCLOSURE = /\b(?:more|additional|partial|limit|outside|hidden|not shown|expand)\b/iu;
+const BOUND_DISCLOSURE =
+  /\b(?:more|additional|partial|limit|outside|hidden|not shown|expand|depth)\b/iu;
 
 /** @type {(message: string) => never} */
 const fail = failWith('graph-check');
