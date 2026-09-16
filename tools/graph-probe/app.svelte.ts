@@ -608,13 +608,7 @@ const api = {
       await waitFor('the canvas fallback', () => one('.canvas-error'));
       await selectSearchResult(source);
       const forward = relationTexts(target);
-      const targetButton = all('.relations li button').find(
-        (candidate) => labelOf(candidate) === target,
-      );
-      press(targetButton, `the ${target} relation target`);
-      await waitFor(`the ${target} selection`, () =>
-        text('.selection-card h3') === target ? true : undefined,
-      );
+      await selectSearchResult(target);
       return { forward, reverse: relationTexts(source) };
     } finally {
       if (objectUrl !== undefined) URL.revokeObjectURL(objectUrl);

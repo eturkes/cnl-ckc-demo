@@ -180,6 +180,24 @@ const FALLBACK_SCOPE_ASSET = {
   },
 };
 
+const SPANNING_SCOPE_READINGS = [
+  {
+    caseId: 'V6.spanning-forward',
+    edgeId: 'edge:512:12',
+    direction: 'forward',
+    relation: 'condition supports',
+    completeScope: ['-', 'should'],
+  },
+  {
+    caseId: 'V6.spanning-reverse',
+    edgeId: 'edge:512:12',
+    direction: 'reverse',
+    relation: 'supported by condition',
+    completeScope: ['-', 'should'],
+  },
+];
+const PARTIAL_SCOPE_DISCLOSURE = /\b(?:incomplete|partial|scope omitted|scope spans)\b/iu;
+
 /** @type {(message: string) => never} */
 const fail = failWith('graph-check');
 
@@ -306,6 +324,33 @@ const gradeScopeReadings = (rows, table, gradeDash) => {
     if (gradeDash && row.dashed !== row.scope.includes('-')) {
       out.push(
         `${at}: dashed=${String(row.dashed)}, expected ${String(row.scope.includes('-'))} from scope polarity`,
+      );
+    }
+  }
+  return out;
+};
+
+/**
+ * @param {{ caseId: string, edgeId: string, relation: string, completeScope: string[], rendered: string | null }[]} rows
+ */
+const gradeSpanningScope = (rows) => {
+  /** @type {string[]} */
+  const out = [];
+  if (rows.length === 0) return ['SPANNING_SCOPE_READINGS is empty, so edge:512:12 was not graded'];
+  for (const row of rows) {
+    if (row.rendered === null) continue;
+    const complete = scopePattern({
+      caseId: row.caseId,
+      edgeId: row.edgeId,
+      relation: row.relation,
+      scope: row.completeScope,
+      rendered: row.rendered,
+      dashed: undefined,
+      required: false,
+    }).test(row.rendered);
+    if (!complete && !PARTIAL_SCOPE_DISCLOSURE.test(row.rendered)) {
+      out.push(
+        `${row.caseId}/${row.edgeId}: rendered ${JSON.stringify(row.rendered)} as whole scope; require [${row.completeScope.join(', ')}], explicit partial-scope disclosure, or no row`,
       );
     }
   }
@@ -486,6 +531,8 @@ const readings = [];
 const canvasScopeReadings = [];
 /** @type {ScopeReading[]} */
 const fallbackScopeReadings = [];
+/** @type {{ caseId: string, edgeId: string, relation: string, completeScope: string[], rendered: string | null }[]} */
+const spanningScopeReadings = [];
 /** @type {(import('./graph-probe/app.svelte.js').InteractionReading & { device: string })[]} */
 const components = [];
 /** @type {Record<string, unknown>[]} */
@@ -703,7 +750,23 @@ try {
     });
     recordScopeErrors(gradeScopeReadings(declaredFallback, 'FALLBACK_SCOPE_READINGS', false), 'V3');
     fallbackScopeReadings.push(...declaredFallback);
-    fallbacks.push({ device: device.name, ...load, ...palette, scoped });
+
+    const spanning = /** @type {import('./graph-probe/app.svelte.js').ScopeFallbackReading} */ (
+      await run('scopeFallback(null, "outweigh", "consider")')
+    );
+    const declaredSpanning = SPANNING_SCOPE_READINGS.map((expected) => {
+      const rows = expected.direction === 'forward' ? spanning.forward : spanning.reverse;
+      return {
+        caseId: `${expected.caseId}:${device.name}`,
+        edgeId: expected.edgeId,
+        relation: expected.relation,
+        completeScope: expected.completeScope,
+        rendered: rows.find((reading) => reading.startsWith(expected.relation)) ?? null,
+      };
+    });
+    recordScopeErrors(gradeSpanningScope(declaredSpanning), 'V6');
+    spanningScopeReadings.push(...declaredSpanning);
+    fallbacks.push({ device: device.name, ...load, ...palette, scoped, spanning });
   }
 } finally {
   await browser?.close();
@@ -713,7 +776,7 @@ try {
 if (report !== undefined) {
   writeFileSync(
     report,
-    `${JSON.stringify({ readings, canvasScopeReadings, components, fallbacks, fallbackScopeReadings }, null, 1)}\n`,
+    `${JSON.stringify({ readings, canvasScopeReadings, components, fallbacks, fallbackScopeReadings, spanningScopeReadings }, null, 1)}\n`,
   );
 }
 
