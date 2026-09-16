@@ -1,4 +1,4 @@
-# Closed IMPLEMENT units — u3-u12
+# Closed IMPLEMENT units — u3-u13
 
 Retired record. Live successors: the acceptance contract per unit in `.agent/contracts/`,
 the law each unit wrote in `.claude/rules/`, and the open path in `.agent/spec.md`
@@ -78,3 +78,29 @@ u11→u12 = scope, from the asset record to the projection model. Contract + sui
   as disqualified; `prod-model-2` implemented the role rule for `argument` alone, and the
   independent oracle's derivation of the identical `guideline_pp/4` constraint is what closed it
   at `89d8b6b`. The oracle itself does not ship — `.agent/deferred.md` carries the port.
+- **u13** `m5u13.md`, tier `kernel`, 7 predicates · `prod-view` + `test-view` + `orc-view` +
+  `triage-hang`, one wave of four. `EdgeView` (`src/graph/view.ts`) is the seam both renderers
+  read, carrying `scope`, `farScope` and the composed `label`; `pnpm graph:check` grades the
+  rendered output over 28 views + 4 component + 2 fallback sweeps and is the ONLY grader of it.
+  Two user rulings shaped the result. **A spanning edge shows BOTH ends** — the model reads the
+  target end off the `event` edge declaring that event on the same line and stores
+  `farScopeOperators`, refusing by name a `condition supports` edge whose target has no witness.
+  **Labels are reader-relative** — data direction-fixed, presentation flipped, composed by ONE
+  shared `scopeReading` helper so a second derivation per surface cannot let the renderers
+  disagree; `→` means the end away from the reader everywhere.
+  The contract's blanket "every V2/V3/V6 case is RED at base" premise was **DISPROVED and
+  withdrawn**, independently by `test-view` off the live renderer and `orc-view` off the asset:
+  u12 composed scope into the label string both surfaces already consumed, so scope rendering
+  arrived a unit early. Genuinely absent at base were the seam, the negation dash, the spanning
+  far end and cap disclosure. `orc-view`'s O6 raised five predicate gaps and **all five were
+  upheld**, the sharpest being that a cap must report its SPLIT COUNT separately from its row
+  count — `search24` silently dropped 1,276 of 1,300 nodes while grading green.
+  `triage-hang` root-caused the u10c non-termination: `spawn('pnpm exec vite')` built
+  wrapper→pnpm→Vite while `stop()` signalled the wrapper alone, so the surviving Vite held the
+  pipes open past both summaries. In-process Vite plus awaited teardown; the campaign now exits
+  on its own with no outer `timeout`, and a planted non-terminating page still refuses by name.
+  Three defects surfaced only when the close RAN the graders against the post-ruling tree — a
+  banned `JSON.stringify` under `src/`, a probe recovering the relation by stripping a suffix
+  that is no longer a suffix, and `model.ts` still nulling the far scope when the two ends agree
+  (the withdrawn rule, invisible from the source end, stranding the target-side reader). All
+  three are in `m5u13.md` `Close` with the third's red witness.

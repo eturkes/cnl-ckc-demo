@@ -12,6 +12,7 @@ import { mountGraphCanvas, type GraphCanvas } from '../../src/graph/canvas.js';
 import {
   DEFAULT_NEIGHBOR_LIMIT,
   SemanticGraphModel,
+  graphRelation,
   graphRelationLabel,
   parseSemanticGraph,
   type GraphFocusToken,
@@ -20,6 +21,8 @@ import {
   type SemanticGraphEdge,
   type SemanticGraphNode,
 } from '../../src/graph/model.js';
+
+import { edgeViewsOf } from '../../src/graph/view.js';
 
 import { cyOf as cyIn, type CyElement, type CyLike, type CyNode, type Point } from './cy.js';
 
@@ -258,17 +261,17 @@ export interface ScopeReading {
   onPath: boolean;
 }
 
-const relationAlone = (edge: Fixture['subgraph']['edges'][number]): string => {
-  const scope = edge.scopeOperators ?? [];
-  const suffix = scope.map((operator) => ` · ${operator === '-' ? 'negated' : operator}`).join('');
-  const composed = graphRelationLabel(edge);
-  if (suffix !== '' && !composed.endsWith(suffix)) {
-    throw new Error(
-      `scope suffix ${JSON.stringify(suffix)} is absent from ${JSON.stringify(composed)}`,
-    );
-  }
-  return suffix === '' ? composed : composed.slice(0, -suffix.length);
-};
+/**
+ * The canvas reads every edge from its SOURCE end, so the ordered scope the grader matches is
+ * the near end then the far end — `condition supports · negated → negated · should` carries
+ * `['-', '-', 'should']`. Recovering the relation by stripping a scope SUFFIX cannot survive
+ * that: under the reader-relative ruling the far end follows the scope, so the suffix sits mid
+ * string. `graphRelation` names the relation outright.
+ */
+const completeScope = (edge: Fixture['subgraph']['edges'][number]): string[] => [
+  ...(edge.scopeOperators ?? []),
+  ...(edge.farScopeOperators ?? []),
+];
 
 const scopeReadings = (fixture: Fixture, cy: CyLike): ScopeReading[] => {
   const expected = new Map(fixture.subgraph.edges.map((edge) => [edge.id, edge]));
@@ -278,8 +281,8 @@ const scopeReadings = (fixture: Fixture, cy: CyLike): ScopeReading[] => {
     const rendered = edge.style('label').replace(/\s+/gu, ' ').trim();
     return {
       edgeId: source.id,
-      relation: relationAlone(source),
-      scope: [...(source.scopeOperators ?? [])],
+      relation: graphRelation(source),
+      scope: completeScope(source),
       rendered: rendered === '' ? null : rendered,
       dashed: edge.style('line-style') !== 'solid',
       onPath: edge.hasClass('path'),
@@ -340,7 +343,12 @@ const api = {
     const settled = new Promise<void>((resolve) => {
       cyOf().one('layoutstop', resolve);
     });
-    canvas.update(fixture.subgraph, fixture.selectedId, fixture.path);
+    canvas.update(
+      fixture.subgraph.nodes,
+      fixture.selectedId,
+      fixture.path,
+      edgeViewsOf(fixture.subgraph, fixture.path),
+    );
     await settled;
     await frame();
     const settleMs = performance.now() - started;
@@ -458,7 +466,12 @@ const api = {
     const settled = new Promise<void>((resolve) => {
       cyOf().one('layoutstop', resolve);
     });
-    canvas.update(fixture.subgraph, fixture.selectedId, fixture.path);
+    canvas.update(
+      fixture.subgraph.nodes,
+      fixture.selectedId,
+      fixture.path,
+      edgeViewsOf(fixture.subgraph, fixture.path),
+    );
     await settled;
     await frame();
     return scopeReadings(fixture, cyOf());

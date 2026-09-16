@@ -160,6 +160,22 @@ const FALLBACK_SCOPE_ASSET = {
       predicate: 'guideline_condition',
       scope: 1,
     },
+    // The target end's scope witness. A `condition supports` shortcut carries the SOURCE scope
+    // alone, so the model reads the target end off the `event` edge declaring that event on the
+    // same line — `edge:512:0` for `edge:512:12` in the shipped bag. Without it the fixture is
+    // not a fixture of the shipped shape and the model refuses it by name.
+    {
+      id: 'fixture:fallback-event',
+      kind: 'event',
+      source: 'document:fixture-scope',
+      target: 'event:fixture-action',
+      label: 'event',
+      document: 'fixture-scope',
+      sentence: 1,
+      line: 1,
+      predicate: 'guideline_event',
+      scope: 1,
+    },
   ],
   scopes: [
     {
@@ -183,9 +199,9 @@ const FALLBACK_SCOPE_ASSET = {
     documents: 1,
     clauses: 1,
     nodes: 3,
-    edges: 1,
+    edges: 2,
     byNodeKind: { document: 1, event: 2 },
-    byEdgeKind: { implies: 1 },
+    byEdgeKind: { implies: 1, event: 1 },
   },
 };
 

@@ -77,6 +77,14 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   Approved change of the graded case `tests/graph-semantics.review.test.ts:118` →
   `'supported by condition · should'`, the original's firing recorded in
   `.agent/contracts/m5u13.md`.
+- **An edge label is READER-RELATIVE; the data stays direction-fixed.** `scope` is the source
+  end and `farScope` the target end, `null` IFF the target end is genuinely unscoped — nulling
+  it when the two ends AGREE is wrong, because the source reading hides the defect while a
+  target-side reader loses their own near scope. Whichever end the reader stands on leads, and
+  `→` always points away from them. ONE shared `scopeReading` helper composes both surfaces; a
+  second derivation per surface is what R1 forbids. Nothing is trimmed across ends — eliding a
+  repeat would render a nested pair identically to a divergent one. Forms + the four-case table
+  → `.claude/rules/graph.md`.
 - **Judgment review reads the SHIPPED SURFACE, not a commit range.** The `rev` lenses read the
   working tree at close — `src/`, `tools/`, the gate, the contracts — so a defect is caught
   wherever it ships and superseded code is never re-read. The u3–u10 pass the ledger calls
@@ -85,23 +93,25 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
 **MAIN:** premise display = deduplicated steps inside the EXISTING ladder rungs, never a new
 step type (3,930 leaves / 346 premises), carrying hypothetical origin and no source line.
 u6's oracle is GREEN at base, credited RED-under-dependency-removal alone — it guards the
-compiled KB, which the answer-path defect never broke. u11 graded the scope records and u12 the
-projection model; the shown-edge conjunction is graded whole by u13 against the FINAL renderer,
-so no u13 case may rest on a model-side assertion.
+compiled KB, which the answer-path defect never broke. u11 graded the scope records, u12 the
+projection model and u13 the shown edge; **rendered output is graded by `pnpm graph:check`
+alone**, because a model-side assertion and a mocked DOM suite both survive a renderer that
+shows the wrong label.
 
 # Deferred
 
-Queue = `.agent/deferred.md` — 53 rows, acceptance check each, plus the accepted-open review
+Queue = `.agent/deferred.md` — 51 rows, acceptance check each, plus the accepted-open review
 ids, whose checks stay in `.agent/archive/review-expedited.md`. The defects are user-ruled
 into MAINTAIN and the gate's open firing-input row sits beside them; nothing there blocks the
 spine below. The verification-integrity census raised four rows, three of which closed as u10b + u10c;
-the fourth stays queued, now beside the `graph:check` hang u10c measured.
+the fourth stays queued. u13 closed two more — the `graph:check` hang and the one-scope
+spanning edge.
 
 ## Units — the remaining IMPLEMENT path
 
-The verification-integrity census is cleared and u12 shipped the projection model; u13 finishes
-the graph, and u14→u15 close the phase over both spines. Full `Accept:` + `Depends` → archive;
-u3–u12 closed, contract each in `.agent/contracts/`, close summaries in
+The verification-integrity census is cleared, u12 shipped the projection model and u13 finished
+the graph; u14→u15 close the phase over both spines. Full `Accept:` + `Depends` → archive;
+u3–u13 closed, contract each in `.agent/contracts/`, close summaries in
 `.agent/archive/units-m5.md`.
 
 **From u11 on, every unit contract carries its red witness** — `N/M RED at base <sha>` plus
@@ -110,11 +120,6 @@ the command that reproduces it, the form `.agent/archive/contracts/m5u1.md:232` 
 live contracts and 4 of 108 commit bodies. Form + the two shapes that satisfy it without a
 `git show` → `.claude/rules/waves.md`.
 
-- **u13 scoped views + probe rerun** — scope rendered in canvas AND fallback; u10's component
-  sweep rerun on final output. u12 hands over `SemanticGraphEdge.scopeOperators`; no `EdgeView`
-  type exists yet, so u13 creates it, maps `scopeOperators` → `scope` and composes `label` as
-  exactly relation + ordered scope (`.agent/contracts/m5u8.md:90-97`). Accept: every shown edge
-  preserves relation + ordered scope in BOTH views, graded whole.
 - **u14 claim alignment** — the false strings, on the surfaces that hold them now: the
   `lede` + trace/proof `TEXT` entries in `src/i18n/en.ts` AND their `ja.ts` twins (i18n took
   the copy out of `ProvenanceLadder.svelte`, and `copy.ts` is licence data), plus
@@ -126,6 +131,6 @@ live contracts and 4 of 108 commit bodies. Form + the two shapes that satisfy it
 
 # Phase
 
-IMPLEMENT, at u13. Judgment review → `.agent/review.md`, adjudicated before the phase closes
+IMPLEMENT, at u14. Judgment review → `.agent/review.md`, adjudicated before the phase closes
 against the fixed 32-row check set in `.agent/contracts/review-implement.md`, which reads the
 SHIPPED SURFACE at close rather than a commit range (user ruling).

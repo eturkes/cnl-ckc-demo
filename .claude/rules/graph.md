@@ -121,28 +121,55 @@ edges, and `operator-context` is still absent from `CONCEPT_NODE_KINDS`. **u12 m
 onto the surviving edges instead** (`SemanticGraphEdge.scopeOperators`, ordered outermost
 first), which is the user's edge-state ruling made real in `src/graph/model.ts`.
 
-- Projection = **1,300 nodes / 2,630 grouped edges** out of 2,901 / 20,964. The nodes are
+- Projection = **1,300 nodes / 2,668 grouped edges** out of 2,901 / 20,964. The nodes are
   1,084 entity + 151 event + 65 value; the headline counts the 1,235 entity/event alone and
   names the 65 as attributes, because calling a value node a concept is what S9 caught.
-- **1,584 of the 2,630 groups carry an ordered scope.** Grouping keys on that sequence —
-  `conceptEdgeKey` spreads `scopeOperators` in order — so two occurrences differing only in
-  scope ORDER stay distinct groups. The corpus holds zero permuted pairs, so the guarantee is
-  structural plus the constructed case at `tests/graph-model.test.ts:303`, never a corpus
-  witness.
+- **1,912 of the 2,668 groups carry an ordered scope**, and **372 of them carry a far scope**
+  (737 edge occurrences). Grouping keys on both sequences — `conceptEdgeKey` spreads
+  `scopeOperators` then `farScopeOperators` in order — so two occurrences differing only in
+  scope ORDER, or only at the far end, stay distinct groups. The corpus holds zero permuted
+  pairs, so the guarantee is structural plus the constructed case at
+  `tests/graph-model.test.ts:303`, never a corpus witness.
+- u13's `farScopeOperators` is what moved the group count off 2,630 and the scoped count off
+  1,584: a far end that differs splits what used to be one group. Re-derive both from
+  `conceptEdgeCount` rather than quoting them forward.
 - Scope-keyed dedup split 2,381 → 2,615 groups; the remaining 15 are the non-unit cardinality
   edges the projection now admits (`relation !== 'na eq 1'`), 12 of which carry scope.
 - Modal census, unchanged by u12: 156 `-` (negation), 857 `should`, 156 `may`, 85 `can`,
   9 `must` = **1,263 operator contexts**, of which 71 carry no edge at all and stay orphaned by
   user ruling.
 
-**What remains open is the SHOWN edge, and that is u13.** `src/graph/canvas.ts` and
-`src/graph/SemanticGraph.svelte` still render neither the scope nor a scope-composed label, so
-a negated recommendation still DISPLAYS as its clinical inverse even though the model no longer
-drops the negation. `m5u8.md:90-97` declares the `EdgeView` u13 creates; `label` when shown is
-exactly relation + ordered scope. A model-side assertion cannot grade that — `pnpm graph:check`
-is the only grader of rendered output.
+**u13 closed the SHOWN edge.** `EdgeView` (`src/graph/view.ts`) carries `scope`, `farScope` and
+the composed `label`, and both renderers show them. `m5u8.md:90-97` declares the type, amended
+so `label` is relation + ordered scope across BOTH ends. A model-side assertion cannot grade
+that — `pnpm graph:check` is the only grader of rendered output.
 
-One known gap the model carries by design: a synthesized `condition supports` shortcut spanning
-two scopes records the producer's single `edge.scope`, so `edge:512:12` ships `['-']` and drops
-the recommendation end's `should`. Polarity survives, modality does not.
-`.agent/deferred.md` carries it with u13's acceptance check.
+**A spanning shortcut now shows both ends.** A synthesized `condition supports` edge records
+the producer's single `edge.scope` for its SOURCE end; the model reads the TARGET end off the
+`event` edge declaring that event on the same line (`edge:512:0` witnesses `edge:512:12`) and
+stores it as `farScopeOperators`. A `condition supports` edge whose target has no such witness
+is refused by name — that refusal is what caught `graph-check.mjs`'s fallback fixture omitting
+the witness entirely.
+
+## Reader-relative labels (user ruling, binding)
+
+**The data is direction-fixed; the presentation is reader-relative.** `scope` is the SOURCE end
+byte-for-byte and `farScope` the TARGET end, with `farScope === null` **IFF the target end is
+genuinely unscoped**. Nulling it when the two ends AGREE is WRONG and was withdrawn: the source
+reading looks identical either way, so the defect is invisible there, while a target-side reader
+is left with an empty near scope and cannot recover their own modality.
+
+One shared helper composes both surfaces — `scopeReading(scope, farScope, atTarget)` exported
+from `src/graph/model.ts`, called by `graphRelationLabel` (model) and `edgeLabelFrom` (view).
+A second derivation per surface is exactly what R1 exists to forbid.
+
+- at SOURCE: `near = scope`, `far = farScope ?? []`
+- at TARGET: `near = farScope ?? []`, `far = scope`, relation rewritten via `REVERSED_RELATIONS`
+- `far` is omitted when empty **or** deep-equal to `near` — that omission is the LABEL's
+  decision, never the data's
+
+Four forms on the resolved pair: `<rel> · <near>`, `<rel>`, `<rel> · <near> → <far>`,
+`<rel> → <far>`. `→` means one thing everywhere: the end AWAY from the reader. Nothing is
+trimmed or composed across ends — `[-]` against `[-, should]` writes both sides in full,
+because eliding the repeat would render a nested pair identically to a divergent one, and the
+38 contradicting cases are where that would lie.

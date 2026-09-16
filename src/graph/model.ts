@@ -440,13 +440,32 @@ const scopeOperatorLabel = (operator: string): string => (operator === '-' ? 'ne
 
 const scopeLabel = (scope: readonly string[]): string => scope.map(scopeOperatorLabel).join(' · ');
 
+const sameScope = (a: readonly string[], b: readonly string[]): boolean =>
+  a.length === b.length && a.every((operator, index) => operator === b[index]);
+
+/**
+ * Resolve an edge's two endpoint scopes against the node being read FROM (user ruling). The
+ * fields are direction-fixed — `scope` is the source end, `farScope` the target end — but the
+ * reading is not: whichever end the reader stands on leads, so `→` always means the far end,
+ * away from the reader. Both label paths call this, because a second derivation per surface is
+ * exactly what lets one renderer disagree with the other.
+ */
+export const scopeReading = (
+  scope: readonly string[],
+  farScope: readonly string[] | null,
+  atTarget: boolean,
+): { near: readonly string[]; far: readonly string[] } =>
+  atTarget ? { near: farScope ?? [], far: scope } : { near: scope, far: farScope ?? [] };
+
 export const graphEdgeLabel = (
   relation: string,
   scope: readonly string[],
   farScope: readonly string[] | null = null,
 ): string => {
   const near = scopeLabel(scope);
-  if (farScope === null || farScope.length === 0)
+  // The far end shows only when it ADDS something. An identical far scope would repeat the near
+  // one and read as two separate stacks rather than one shared modality.
+  if (farScope === null || farScope.length === 0 || sameScope(scope, farScope))
     return near === '' ? relation : `${relation} · ${near}`;
   const far = scopeLabel(farScope);
   return near === '' ? `${relation} → ${far}` : `${relation} · ${near} → ${far}`;
@@ -506,7 +525,7 @@ const enrichScope = (data: SemanticGraphData): readonly SemanticGraphEdge[] => {
       edge.sentence === null ? '' : String(edge.sentence),
       String(edge.line),
       edge.target,
-    ].join('');
+    ].join('\u001f');
   const eventScopes = new Map<string, readonly SemanticGraphScopeOperator[]>();
   for (const edge of enriched) {
     if (edge.kind !== 'event') continue;
@@ -516,12 +535,6 @@ const enrichScope = (data: SemanticGraphData): readonly SemanticGraphEdge[] => {
     }
     eventScopes.set(key, edge.scopeOperators ?? []);
   }
-  const sameScope = (
-    near: readonly SemanticGraphScopeOperator[],
-    far: readonly SemanticGraphScopeOperator[],
-  ): boolean =>
-    near.length === far.length && near.every((operator, index) => operator === far[index]);
-
   return Object.freeze(
     enriched.map((edge) => {
       if (edge.kind !== 'implies' || edge.relation !== 'condition supports') return edge;
@@ -530,7 +543,12 @@ const enrichScope = (data: SemanticGraphData): readonly SemanticGraphEdge[] => {
         throw new GraphDataError(`${edge.id}: condition support target has no event scope witness`);
       }
       const nearScope = edge.scopeOperators ?? [];
-      if (targetScope.length === 0 || sameScope(nearScope, targetScope)) return edge;
+      // `farScopeOperators` is absent IFF the target end is genuinely unscoped (user ruling).
+      // Dropping it when the two ends AGREE would read fine from the source and strand a
+      // target-side reader with an empty near scope, because the reading flips but the data
+      // does not. Repeating an identical far end is the LABEL's decision, and `graphEdgeLabel`
+      // omits it there.
+      if (targetScope.length === 0) return edge;
       return Object.freeze({
         ...edge,
         label: graphEdgeLabel(edge.relation, nearScope, targetScope),
@@ -566,8 +584,8 @@ const conceptEdgeKey = (edge: SemanticGraphEdge): string =>
     edge.source,
     edge.target,
     edgeRelation(edge),
-    (edge.scopeOperators ?? []).join(''),
-    (edge.farScopeOperators ?? []).join(''),
+    (edge.scopeOperators ?? []).join('\u001e'),
+    (edge.farScopeOperators ?? []).join('\u001e'),
   ].join('\u001f');
 
 const isConceptRelationship = (
@@ -1324,7 +1342,11 @@ export const graphRelation = (edge: SemanticGraphEdge, from?: string): string =>
 
 export const graphRelationLabel = (edge: SemanticGraphEdge, from?: string): string => {
   const relation = graphRelation(edge, from);
-  return edge.kind === 'operator'
-    ? relation
-    : graphEdgeLabel(relation, edge.scopeOperators ?? [], edge.farScopeOperators ?? null);
+  if (edge.kind === 'operator') return relation;
+  const { near, far } = scopeReading(
+    edge.scopeOperators ?? [],
+    edge.farScopeOperators ?? null,
+    from === edge.target,
+  );
+  return graphEdgeLabel(relation, near, far);
 };

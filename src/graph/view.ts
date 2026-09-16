@@ -1,4 +1,10 @@
-import { graphEdgeLabel, graphRelation, type GraphPath, type GraphSubgraph } from './model.js';
+import {
+  graphEdgeLabel,
+  graphRelation,
+  scopeReading,
+  type GraphPath,
+  type GraphSubgraph,
+} from './model.js';
 
 export interface EdgeView {
   id: string;
@@ -19,11 +25,24 @@ export interface EdgeCapDisclosure {
   splitRelations: number;
 }
 
+// Separator joins, never JSON: `kb:asset-check` refuses a serializing call anywhere in `src/`,
+// because a serialized oracle is the shape a hard-coded answer would take on its way to the
+// page. `model.ts` keys the same way. `\u0000` marks an absent far end, which no operator can
+// collide with, so a null far scope stays distinct from an empty one.
+const FIELD = '\u001f';
+const GROUP = '\u001e';
+
 const relationIdentity = (edge: EdgeView): string =>
-  JSON.stringify([edge.source, edge.target, edge.relation]);
+  [edge.source, edge.target, edge.relation].join(FIELD);
 
 const edgeVariantIdentity = (edge: EdgeView): string =>
-  JSON.stringify([edge.source, edge.target, edge.relation, edge.scope, edge.farScope]);
+  [
+    edge.source,
+    edge.target,
+    edge.relation,
+    edge.scope.join(FIELD),
+    edge.farScope === null ? '\u0000' : edge.farScope.join(FIELD),
+  ].join(GROUP);
 
 /** Count removed rows separately from shown relation identities missing scope variants. */
 export const edgeCapDisclosure = (
@@ -52,12 +71,18 @@ const REVERSED_RELATIONS: Readonly<Record<string, string>> = Object.freeze({
   'condition supports': 'supported by condition',
 });
 
-/** Read an edge from either endpoint without changing or reordering its scope. */
+/**
+ * Read an edge from either endpoint. The fields are direction-fixed, but the READING is
+ * reader-relative (user ruling): the node you selected reports its own end first and `→` always
+ * points at the other end, away from you. Pinning the label to the edge instead would render
+ * `supported by condition → should` while the reader stands on the `should` node.
+ */
 export const edgeLabelFrom = (edge: EdgeView, from: string): string | null => {
   if (edge.label === null) return null;
-  const relation =
-    from === edge.target ? (REVERSED_RELATIONS[edge.relation] ?? edge.relation) : edge.relation;
-  return edgeLabel(relation, edge.scope, edge.farScope);
+  const atTarget = from === edge.target;
+  const relation = atTarget ? (REVERSED_RELATIONS[edge.relation] ?? edge.relation) : edge.relation;
+  const { near, far } = scopeReading(edge.scope, edge.farScope, atTarget);
+  return edgeLabel(relation, near, far);
 };
 
 /** Produce the renderer-neutral edge state once for every visible relationship. */

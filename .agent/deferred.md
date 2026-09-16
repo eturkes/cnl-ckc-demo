@@ -277,22 +277,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   `.claude/rules/` or `.agent/contracts/` whose search returns rc 0, and the 60-relation cap
   either surfaces its truncation or is contract-owned. `pri` med.
 
-- **`graph:check` prints green then never exits** — **CLOSING IN u13**, row leaves in that
-  commit. The campaign completed both readings and both summaries, then hung; `test-owners`
-  killed it at 600 s (rc 143) on `wt/test-owners`. A lane that cannot terminate makes
-  `pnpm release:check` unrunnable unattended, and a timeout kill is indistinguishable from a
-  hung browser. Accept: `pnpm graph:check` exits on its own with rc 0 inside its own budget,
-  and a planted non-terminating page still fails it by name rather than by wall clock.
-  **Met on `wt/triage-hang` `da3f80e`** (substantive `e5ea85d`): root cause was
-  `spawn('pnpm exec vite')` building wrapper→pnpm→Vite while `stop()` signalled the wrapper
-  alone, so the surviving Vite held stdout/stderr open and left referenced pipes after both
-  summaries. Fix = in-process Vite plus awaited browser/server teardown. Committed-state
-  `pnpm graph:check` rc 0 in 43.916 s with no outer timeout; control
-  `GRAPH_CHECK_CONTROL=non-terminating-page node tools/graph-check.mjs` rc 1 in 10.252 s
-  naming `control/non-terminating-page`; probe page added is `tools/graph-probe/hang.html`
-  alone. Counts unchanged across the fix — 28 views, 116/116 pairs, 692 labels, 4 component +
-  2 fallback sweeps, 54 nodes, 4 expansions, 4 taps — and all six non-zero assertions intact.
-
 - **71 operator contexts have no edge in the shipped graph** — 64 negation (`-`) and 7 `can`,
   i.e. 41% of the corpus's 156 negation contexts, sit as operator-context nodes nothing
   connects. They are the body-level scopes like `guideline_operator(actual, C, -)` whose
@@ -314,18 +298,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   projection with it grades a check MAIN bent. Accept: the three lookups match on `relation`,
   the suite runs 24/24 green against the shipped model from the primary tree, and it joins a
   declared `binding:check` register. `pri` med.
-
-- **A concept edge spanning two scopes carries one** — `edge:512:12` is a synthesized
-  `condition supports` shortcut whose premise end sits under `['-']` and whose recommendation
-  end under `['-', 'should']`. The model records the producer's own single `edge.scope`, so the
-  edge ships `scopeOperators: ['-']` and the label `condition supports · negated`. **u13
-  measured the scale and it is not one edge: 736 of 751 shortcut occurrences — 333 of 344
-  projected groups, 12 scope-pair shapes — join endpoints whose scopes differ**, commonest
-  `[] → [should]` 527 and `[] → [may]` 117. CLOSING IN u13 by user ruling: `EdgeView` gains
-  `farScope` and R2 carries near end then far end; `scope` stays byte-for-byte what the producer
-  recorded, because composing the two ends would manufacture a chain no `scopes` record holds.
-  Accept: a spanning edge shows both endpoint scopes in BOTH views, graded by
-  `pnpm graph:check`. `pri` med.
 
 - **38 shortcut edges join scopes that contradict rather than nest** — of the 736 spanning
   occurrences, 698 have a target scope that EXTENDS the source's and 38 have neither as a prefix
@@ -365,11 +337,9 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | Two tests time out under parallel execution | both pass 20 consecutive full-suite runs at the committed worker count |
 | 9 of u5's 26 combobox predicates rest on jsdom stubs | a Chromium test drives real input, reads the AX tree, runs axe |
 | `smoke` + `browser:check` ship no firing input | each reddens on a mutation its own lane runs, and joins gate.md `Firing inputs` |
-| `graph:check` prints green then never exits | it exits on its own rc 0; a planted non-terminating page fails by name |
 | Ten shipped bounds have no owner | each names an owner whose search returns rc 0; the 60-relation cap surfaces truncation or is contract-owned |
 | 71 operator contexts have no edge, 64 of them negation | the 71 carry edges with the moved counts recorded, or a check proves no shown path skips an edgeless negation context |
 | The projection oracle lives on a branch alone | its label lookups match on `relation`, 24/24 green in-tree, joined to a declared register |
-| A concept edge spanning two scopes carries one | CLOSING IN u13 — a spanning edge shows both endpoint scopes in BOTH views, graded by `pnpm graph:check` |
 | 38 shortcut edges join scopes that contradict rather than nest | each carries a source-derived justification, or the synthesis declines to emit it and the moved counts are recorded with the original firing |
 
 ## Accepted-open

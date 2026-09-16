@@ -19,14 +19,15 @@ vi.mock('../src/graph/canvas.js', () => ({
     if (canvasState.fail !== '') return Promise.reject(new Error(canvasState.fail));
     return Promise.resolve({
       update: (
-        subgraph: { nodes: unknown[]; edges: unknown[] },
+        nodes: unknown[],
         selected: string,
         path: { nodes: unknown[] } | null,
+        edges: unknown[],
       ) => {
         canvasState.updates.push({
           selected,
-          nodes: subgraph.nodes.length,
-          edges: subgraph.edges.length,
+          nodes: nodes.length,
+          edges: edges.length,
           path: path?.nodes.length ?? 0,
         });
       },

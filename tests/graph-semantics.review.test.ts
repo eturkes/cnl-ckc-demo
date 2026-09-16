@@ -115,7 +115,7 @@ describe('semantic graph source fidelity review', () => {
     const support = graph.edge('edge:4501:11');
     if (support === undefined) throw new Error('missing positive condition-support edge');
 
-    expect(graphRelationLabel(support, support.target)).toBe('supported by condition');
+    expect(graphRelationLabel(support, support.target)).toBe('supported by condition · should');
   });
 
   it('keeps every prepared answer highlight inside its cited source contribution', () => {

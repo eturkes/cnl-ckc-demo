@@ -361,6 +361,57 @@ describe('semantic graph indexes', () => {
     expect(graph.conceptEdgeCount).toBe(4);
   });
 
+  it('keeps a far scope that agrees with the near end so the target reading can flip', () => {
+    // The source reading is identical whether or not an agreeing far end is stored, so this
+    // grades the TARGET reading, where dropping it strands the reader with an empty near scope.
+    const graph = new SemanticGraphModel(
+      parseSemanticGraph({
+        ...GRAPH_FIXTURE,
+        nodes: [
+          ...GRAPH_FIXTURE.nodes,
+          {
+            id: 'event:outweigh',
+            kind: 'event',
+            label: 'outweigh',
+            document: 'cdc2022-opioid-rec05',
+            sentence: 2,
+          },
+        ],
+        edges: [
+          ...GRAPH_FIXTURE.edges,
+          {
+            id: 'edge:agreeing-support',
+            kind: 'implies',
+            source: 'event:outweigh',
+            target: 'event:have',
+            label: 'condition supports',
+            document: 'cdc2022-opioid-rec05',
+            sentence: 2,
+            // `edge:dosage-event` witnesses `event:have` on this line, so both ends read
+            // `['should']` — the case that used to null the far end.
+            line: 21,
+            predicate: 'guideline_condition',
+            scope: 0,
+          },
+        ],
+        stats: {
+          ...GRAPH_FIXTURE.stats,
+          nodes: 8,
+          edges: 6,
+          byNodeKind: { ...GRAPH_FIXTURE.stats.byNodeKind, event: 2 },
+          byEdgeKind: { ...GRAPH_FIXTURE.stats.byEdgeKind, implies: 2 },
+        },
+      }),
+    );
+    const edge = graph.edge('edge:agreeing-support');
+    if (edge === undefined) throw new Error('missing agreeing-scope support edge');
+
+    expect(edge.scopeOperators).toEqual(['should']);
+    expect(edge.farScopeOperators).toEqual(['should']);
+    expect(graphRelationLabel(edge)).toBe('condition supports · should');
+    expect(graphRelationLabel(edge, 'event:have')).toBe('supported by condition · should');
+  });
+
   it('finds a deterministic shortest path in either edge direction', () => {
     const graph = model();
     expect(graph.shortestPath('doc:cdc', 'operator:should')).toEqual({
