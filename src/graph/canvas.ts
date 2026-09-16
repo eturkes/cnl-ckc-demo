@@ -5,17 +5,17 @@ import {
   DEFAULT_NEIGHBOR_LIMIT,
   graphNodeLabel,
   type GraphPath,
-  type GraphSubgraph,
+  type SemanticGraphNode,
   type SemanticGraphNodeKind,
 } from './model.js';
-import { edgeViewsOf, type EdgeView } from './view.js';
+import type { EdgeView } from './view.js';
 
 export interface GraphCanvas {
   update(
-    subgraph: GraphSubgraph,
+    nodes: readonly SemanticGraphNode[],
     selectedId: string,
     path: GraphPath | null,
-    edges?: readonly EdgeView[],
+    edges: readonly EdgeView[],
   ): void;
   recenter(selectedId?: string): void;
   destroy(): void;
@@ -101,7 +101,7 @@ const spread = (count: number): number =>
   );
 
 const elementsOf = (
-  subgraph: GraphSubgraph,
+  nodes: readonly SemanticGraphNode[],
   selectedId: string,
   path: GraphPath | null,
   edges: readonly EdgeView[],
@@ -109,7 +109,7 @@ const elementsOf = (
   const pathNodes = new Set(path?.nodes ?? []);
   const hasHighlight = path !== null;
   return [
-    ...subgraph.nodes.map((node) => ({
+    ...nodes.map((node) => ({
       group: 'nodes' as const,
       data: { id: node.id, label: graphNodeLabel(node), kind: node.kind },
       classes: [
@@ -350,10 +350,10 @@ export const mountGraphCanvas = async (
   };
 
   return {
-    update(subgraph, selectedId, path, edges = edgeViewsOf(subgraph, path)) {
+    update(nodes, selectedId, path, edges) {
       cy.batch(() => {
         cy.elements().remove();
-        cy.add(elementsOf(subgraph, selectedId, path, edges));
+        cy.add(elementsOf(nodes, selectedId, path, edges));
       });
       layout(selectedId, path);
     },

@@ -64,8 +64,10 @@ export interface SemanticGraphEdge {
   scope?: number;
   /** Producer relation before reader-facing scope is composed into a label. */
   relation?: string;
-  /** Ordered outermost-first semantics; spanning support appends target-only operators. */
+  /** Ordered outermost-first scope recorded at the source/near endpoint. */
   scopeOperators?: readonly SemanticGraphScopeOperator[];
+  /** Target/far endpoint scope when non-empty and different from the near endpoint. */
+  farScopeOperators?: readonly SemanticGraphScopeOperator[];
 }
 
 export interface SemanticGraphStats {
@@ -436,8 +438,19 @@ const edgeRelation = (edge: SemanticGraphEdge): string => edge.relation ?? edge.
 
 const scopeOperatorLabel = (operator: string): string => (operator === '-' ? 'negated' : operator);
 
-export const graphEdgeLabel = (relation: string, scope: readonly string[]): string =>
-  scope.length === 0 ? relation : [relation, ...scope.map(scopeOperatorLabel)].join(' · ');
+const scopeLabel = (scope: readonly string[]): string => scope.map(scopeOperatorLabel).join(' · ');
+
+export const graphEdgeLabel = (
+  relation: string,
+  scope: readonly string[],
+  farScope: readonly string[] | null = null,
+): string => {
+  const near = scopeLabel(scope);
+  if (farScope === null || farScope.length === 0)
+    return near === '' ? relation : `${relation} · ${near}`;
+  const far = scopeLabel(farScope);
+  return near === '' ? `${relation} → ${far}` : `${relation} · ${near} → ${far}`;
+};
 
 const enrichScope = (data: SemanticGraphData): readonly SemanticGraphEdge[] => {
   const byReference = new Map<string, { scope: SemanticGraphScope; index: number }>();
@@ -503,14 +516,11 @@ const enrichScope = (data: SemanticGraphData): readonly SemanticGraphEdge[] => {
     }
     eventScopes.set(key, edge.scopeOperators ?? []);
   }
-  const mergeScopes = (
-    outer: readonly SemanticGraphScopeOperator[],
-    inner: readonly SemanticGraphScopeOperator[],
-  ): readonly SemanticGraphScopeOperator[] => {
-    let shared = 0;
-    while (shared < outer.length && outer[shared] === inner[shared]) shared += 1;
-    return Object.freeze([...outer, ...inner.slice(shared)]);
-  };
+  const sameScope = (
+    near: readonly SemanticGraphScopeOperator[],
+    far: readonly SemanticGraphScopeOperator[],
+  ): boolean =>
+    near.length === far.length && near.every((operator, index) => operator === far[index]);
 
   return Object.freeze(
     enriched.map((edge) => {
@@ -519,12 +529,12 @@ const enrichScope = (data: SemanticGraphData): readonly SemanticGraphEdge[] => {
       if (targetScope === undefined) {
         throw new GraphDataError(`${edge.id}: condition support target has no event scope witness`);
       }
-      const completeScope = mergeScopes(edge.scopeOperators ?? [], targetScope);
-      if (completeScope.length === (edge.scopeOperators?.length ?? 0)) return edge;
+      const nearScope = edge.scopeOperators ?? [];
+      if (targetScope.length === 0 || sameScope(nearScope, targetScope)) return edge;
       return Object.freeze({
         ...edge,
-        label: graphEdgeLabel(edge.relation, completeScope),
-        scopeOperators: completeScope,
+        label: graphEdgeLabel(edge.relation, nearScope, targetScope),
+        farScopeOperators: targetScope,
       });
     }),
   );
@@ -551,9 +561,14 @@ const isConceptNode = (node: SemanticGraphNode | undefined): node is SemanticGra
   node !== undefined && CONCEPT_NODE_KINDS.has(node.kind);
 
 const conceptEdgeKey = (edge: SemanticGraphEdge): string =>
-  [edge.kind, edge.source, edge.target, edgeRelation(edge), ...(edge.scopeOperators ?? [])].join(
-    '\u001f',
-  );
+  [
+    edge.kind,
+    edge.source,
+    edge.target,
+    edgeRelation(edge),
+    (edge.scopeOperators ?? []).join(''),
+    (edge.farScopeOperators ?? []).join(''),
+  ].join('\u001f');
 
 const isConceptRelationship = (
   edge: SemanticGraphEdge,
@@ -568,7 +583,7 @@ const isConceptRelationship = (
 const isNegatedConditionSupport = (edge: SemanticGraphEdge): boolean =>
   edge.kind === 'implies' &&
   edgeRelation(edge) === 'condition supports' &&
-  (edge.scopeOperators ?? []).includes('-');
+  ((edge.scopeOperators ?? []).includes('-') || (edge.farScopeOperators ?? []).includes('-'));
 
 const conceptRole = (edge: SemanticGraphEdge): number => {
   const relation = edgeRelation(edge);
@@ -896,6 +911,7 @@ export class SemanticGraphModel {
   answerSubgraph(
     focus: GraphFocusToken,
     nodeLimit = DEFAULT_ANSWER_GRAPH_LIMIT,
+    edgeLimit = DEFAULT_EDGE_LIMIT,
   ): GraphAnswerView | undefined {
     const evidence = this.evidenceSubgraph(focus);
     if (evidence === undefined) return undefined;
@@ -960,10 +976,10 @@ export class SemanticGraphModel {
       target.push(edge);
       adjacent.set(edge.target, target);
     }
-    const limit = Math.max(
-      evidenceNodes.size,
-      Math.min(MAX_ANSWER_GRAPH_LIMIT, Math.trunc(nodeLimit)),
-    );
+    const limit =
+      nodeLimit === Number.POSITIVE_INFINITY
+        ? Number.POSITIVE_INFINITY
+        : Math.max(evidenceNodes.size, Math.min(MAX_ANSWER_GRAPH_LIMIT, Math.trunc(nodeLimit)));
     const selected = new Set<string>(evidenceNodes);
     selected.add(root.id);
     const contextWords = `${focus.question ?? ''} ${focus.answer ?? ''}`;
@@ -1031,7 +1047,7 @@ export class SemanticGraphModel {
           Number(evidenceKeys.has(conceptEdgeKey(left)));
         return highlighted || compareEdges(left, right);
       });
-    const visibleEdges = allVisibleEdges.slice(0, DEFAULT_EDGE_LIMIT);
+    const visibleEdges = allVisibleEdges.slice(0, edgeLimit);
     const reachableWithinTwo = new Set<string>([root.id]);
     for (const edge of directEdges) {
       const peer = otherEnd(edge, root.id);
@@ -1074,11 +1090,15 @@ export class SemanticGraphModel {
     nodeLimit = DEFAULT_NEIGHBOR_LIMIT,
     include: readonly string[] = [],
     includeEdges: readonly string[] = [],
+    edgeLimit = DEFAULT_EDGE_LIMIT,
   ): GraphSubgraph {
     if (!this.#conceptNodeIds.has(root)) {
       return { nodes: [], edges: [], truncatedNodes: false, truncatedEdges: false };
     }
-    const limit = Math.max(1, Math.min(MAX_NEIGHBOR_LIMIT, Math.trunc(nodeLimit)));
+    const limit =
+      nodeLimit === Number.POSITIVE_INFINITY
+        ? Number.POSITIVE_INFINITY
+        : Math.max(1, Math.min(MAX_NEIGHBOR_LIMIT, Math.trunc(nodeLimit)));
     const selected = new Set<string>([root]);
     const queue: { id: string; depth: number }[] = [{ id: root, depth: 0 }];
     let truncatedNodes = false;
@@ -1114,7 +1134,7 @@ export class SemanticGraphModel {
         const preferredOrder = Number(preferred.has(right.id)) - Number(preferred.has(left.id));
         return preferredOrder || compareEdges(left, right);
       });
-    const edges = allEdges.slice(0, DEFAULT_EDGE_LIMIT);
+    const edges = allEdges.slice(0, edgeLimit);
     return {
       nodes: Object.freeze(
         [...selected]
@@ -1304,5 +1324,7 @@ export const graphRelation = (edge: SemanticGraphEdge, from?: string): string =>
 
 export const graphRelationLabel = (edge: SemanticGraphEdge, from?: string): string => {
   const relation = graphRelation(edge, from);
-  return edge.kind === 'operator' ? relation : graphEdgeLabel(relation, edge.scopeOperators ?? []);
+  return edge.kind === 'operator'
+    ? relation
+    : graphEdgeLabel(relation, edge.scopeOperators ?? [], edge.farScopeOperators ?? null);
 };

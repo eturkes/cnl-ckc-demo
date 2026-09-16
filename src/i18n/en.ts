@@ -313,6 +313,8 @@ export const TEXT = {
     'scopes, provenance records, disconnected clinical details and repeated source relationships. ' +
     'All remain inspectable in the proof view.',
   graphDirectRelations: (n: number) => `${plural(n, 'direct semantic relationship')}`,
+  graphSearchMatches: (shown: number, total: number) =>
+    `Showing ${shown.toLocaleString()} of ${total.toLocaleString()} matches.`,
   graphNodeLocation: (document: string, sentence: number | undefined) =>
     sentence === undefined ? document : `${document} · sentence ${String(sentence)}`,
   graphPathTo: (label: string) => `to ${label}`,
@@ -325,8 +327,15 @@ export const TEXT = {
   graphViewAnswer: (nodes: number, edges: number, highlighted: number) =>
     `Showing ${nodes.toLocaleString()} concepts/actions and ${edges.toLocaleString()} ` +
     `semantic relationships, with ${String(highlighted)} highlighted for the current answer.`,
-  graphRelationsTruncated: (shown: number, total: number) =>
-    `Showing the first ${String(shown)} of ${String(total)} direct relationships. ` +
+  graphViewOmissions: (nodes: number, edges: number, splitRelations: number) =>
+    `The current limit omits ${plural(nodes, 'node')} and ${plural(edges, 'edge-view row')}. ` +
+    `${plural(splitRelations, 'shown relation identity', 'shown relation identities')} ` +
+    `${splitRelations === 1 ? 'is' : 'are'} missing at least one scope variant.`,
+  graphRelationsTruncated: (shown: number, total: number, splitRelations: number) =>
+    `Showing ${String(shown)} of ${String(total)} direct relationships. ` +
+    `The limit omits ${plural(total - shown, 'edge-view row')}. ` +
+    `${plural(splitRelations, 'shown relation identity', 'shown relation identities')} ` +
+    `${splitRelations === 1 ? 'is' : 'are'} missing at least one scope variant. ` +
     'Use search to reach any node.',
   graphCanvasUnavailable: (message: string) =>
     `The visual graph is unavailable. Use the complete HTML navigation below. ${message}`,

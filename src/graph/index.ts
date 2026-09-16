@@ -31,4 +31,11 @@ export {
   type SemanticGraphScopeOperator,
   type SemanticGraphStats,
 } from './model.js';
-export { edgeLabel, edgeLabelFrom, edgeViewsOf, type EdgeView } from './view.js';
+export {
+  edgeCapDisclosure,
+  edgeLabel,
+  edgeLabelFrom,
+  edgeViewsOf,
+  type EdgeCapDisclosure,
+  type EdgeView,
+} from './view.js';

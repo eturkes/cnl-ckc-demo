@@ -22,7 +22,7 @@
     type GraphSubgraph,
     type SemanticGraphNode,
   } from './model.js';
-  import { edgeLabelFrom, edgeViewsOf, type EdgeView } from './view.js';
+  import { edgeCapDisclosure, edgeLabelFrom, edgeViewsOf, type EdgeView } from './view.js';
 
   interface Props {
     /** URL injection keeps nested-host and failure-path checks independent of Vite output names. */
@@ -49,6 +49,8 @@
   const searchHelpId = `${uid}-search-help`;
   const pathHeadingId = `${uid}-path-heading`;
   const htmlHeadingId = `${uid}-html-heading`;
+  const SEARCH_RESULT_LIMIT = 24;
+  const FALLBACK_RELATION_LIMIT = 60;
 
   type Phase = 'inactive' | 'loading' | 'ready' | 'error';
 
@@ -80,7 +82,10 @@
   const evidenceRoot = $derived(
     model === null || evidenceView === null ? undefined : model.node(evidenceView.root),
   );
-  const searchResults = $derived(model === null ? [] : model.searchConcepts(query));
+  const searchMatches = $derived(
+    model === null ? [] : model.searchConcepts(query, model.data.nodes.length),
+  );
+  const searchResults = $derived(searchMatches.slice(0, SEARCH_RESULT_LIMIT));
   const subgraph = $derived<GraphSubgraph>(
     model === null || selectedId === null
       ? { nodes: [], edges: [], truncatedNodes: false, truncatedEdges: false }
@@ -94,13 +99,47 @@
           )),
   );
   const route = $derived(path ?? evidenceView?.highlight ?? null);
+  const completeSubgraph = $derived<GraphSubgraph>(
+    model === null || selectedId === null
+      ? subgraph
+      : evidenceView !== null && answerFocus !== null
+        ? (model.answerSubgraph(answerFocus, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY) ??
+          subgraph)
+        : model.conceptNeighborhood(
+            selectedId,
+            depth,
+            Number.POSITIVE_INFINITY,
+            path?.nodes ?? [],
+            path?.edges ?? [],
+            Number.POSITIVE_INFINITY,
+          ),
+  );
   const edgeViews = $derived(edgeViewsOf(subgraph, route));
+  const completeEdgeViews = $derived(edgeViewsOf(completeSubgraph, route));
+  const viewCap = $derived(edgeCapDisclosure(edgeViews, completeEdgeViews));
+  const omittedViewNodes = $derived(
+    Math.max(0, completeSubgraph.nodes.length - subgraph.nodes.length),
+  );
   const relationPool = $derived(
     selectedId === null
       ? []
       : edgeViews.filter((edge) => edge.source === selectedId || edge.target === selectedId),
   );
-  const relations = $derived(relationPool.slice(0, 60));
+  const relations = $derived(relationPool.slice(0, FALLBACK_RELATION_LIMIT));
+  const completeRelationPool = $derived(
+    model === null || selectedId === null
+      ? []
+      : edgeViewsOf(
+          {
+            nodes: [],
+            edges: model.conceptIncident(selectedId),
+            truncatedNodes: false,
+            truncatedEdges: false,
+          },
+          route,
+        ),
+  );
+  const relationCap = $derived(edgeCapDisclosure(relations, completeRelationPool));
   const canExpand = $derived(
     selected !== undefined &&
       (evidenceView !== null
@@ -246,7 +285,8 @@
     const root = selectedId;
     const currentRoute = route;
     const edges = edgeViews;
-    if (current !== undefined && root !== null) current.update(view, root, currentRoute, edges);
+    if (current !== undefined && root !== null)
+      current.update(view.nodes, root, currentRoute, edges);
   });
 
   $effect(() => {
@@ -394,6 +434,9 @@
               {/each}
             </ul>
           {/if}
+          <p class="help search-total">
+            {t.TEXT.graphSearchMatches(searchResults.length, searchMatches.length)}
+          </p>
         </div>
       {/if}
     </div>
@@ -443,7 +486,12 @@
             subgraph.nodes.length,
             subgraph.edges.length,
             evidenceView.highlight.edges.length,
-          )}{#if subgraph.truncatedNodes || subgraph.truncatedEdges}
+          )}{#if omittedViewNodes > 0 || viewCap.removed > 0}
+        {t.TEXT.graphViewOmissions(
+          omittedViewNodes,
+          viewCap.removed,
+          viewCap.splitRelations,
+        )}{/if}{#if subgraph.truncatedNodes || subgraph.truncatedEdges}
         {t.INSTRUCTIONS.graphExpandHint}{/if}
     </p>
 
@@ -494,6 +542,7 @@
               <li
                 data-edge-id={relation.id}
                 data-edge-scope={relation.scope.join(' ')}
+                data-edge-far-scope={relation.farScope?.join(' ')}
                 data-edge-state={relation.state}
                 data-edge-dashed={relation.dashed}
               >
@@ -506,9 +555,13 @@
             {/if}
           {/each}
         </ul>
-        {#if relationPool.length > relations.length}
+        {#if relationCap.removed > 0}
           <p class="help">
-            {t.TEXT.graphRelationsTruncated(relations.length, relationPool.length)}
+            {t.TEXT.graphRelationsTruncated(
+              relations.length,
+              completeRelationPool.length,
+              relationCap.splitRelations,
+            )}
           </p>
         {/if}
       {/if}
