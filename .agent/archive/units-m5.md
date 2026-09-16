@@ -1,4 +1,4 @@
-# Closed IMPLEMENT units — u3-u13
+# Closed IMPLEMENT units — u3-u14
 
 Retired record. Live successors: the acceptance contract per unit in `.agent/contracts/`,
 the law each unit wrote in `.claude/rules/`, and the open path in `.agent/spec.md`
@@ -104,3 +104,22 @@ u11→u12 = scope, from the asset record to the projection model. Contract + sui
   that is no longer a suffix, and `model.ts` still nulling the far scope when the two ends agree
   (the withdrawn rule, invisible from the source end, stranding the target-side reader). All
   three are in `m5u13.md` `Close` with the third's red witness.
+
+- **u14 claim alignment** — `ceab9c5` → `HEAD`. The 48-hit sweep was adjudicated TWICE against
+  one committed all-`unknown` skeleton: `map-claims` and `orc-claims`, the second blind to the
+  first. Both returned 48/48; they agreed on 36 and disputed 12, and MAIN ruled the 17 rows
+  either had flagged. Final: 28 `true`, 10 `false`, 7 `unreadable`, 3 `not a claim`.
+  **Seven of the twelve disputes were settled by a decisive code fact MAIN read itself**, each
+  going to whichever pass had flagged it: an answer link activates the graph with no Explore
+  press (`SemanticGraph.svelte:313-316`), `evidenceSubgraph` expands a proof coordinate to every
+  relation of that SENTENCE rather than to the proved path (`model.ts:816-845`, behind three
+  separate false claims), `kb:reproduce` compares two forced builds rather than a fresh tree
+  against the current one, `consult` carries a 10 s deadline so "unbudgeted" was false, and the
+  hard wall-clock watchdog returns `solutions: []` so the `limit` doc-comment was false whole.
+  The other five were accurate sentences that failed A2 — a reader could not tell a quotation
+  from a supplied premise from a derived clause — and were disambiguated rather than corrected.
+  Every corrected catalog key moved with its `ja.ts` twin, which the English-term sweep cannot
+  see; that blindness is recorded as an amendment to A1 rather than left implicit.
+  Two suites pin shipped copy and both went red when the strings moved under them
+  (`2/13 RED at base ceab9c5`) — the firing input proving they grade copy at all. Neither is in
+  `binding:check`'s declared inventory, so no declared case moved.

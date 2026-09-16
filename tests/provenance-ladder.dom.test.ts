@@ -122,7 +122,9 @@ describe('proof-to-source provenance ladder', () => {
     const root = render(ready);
 
     expect(fetcher).not.toHaveBeenCalled();
-    expect(root.textContent).toContain('1 source clause re-proved this part of the answer live.');
+    expect(root.textContent).toContain(
+      '1 guideline clause proved this part of the answer in this run.',
+    );
     expect(root.querySelector('iframe')).toBeNull();
 
     await openEvidence(root);

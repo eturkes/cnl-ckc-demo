@@ -42,7 +42,8 @@ export const DESCRIPTIONS = {
 
   lede:
     'CDCガイドラインをコンパイルした版に対して、用意された質問を実行します。' +
-    'すべての回答はブラウザ内で実際に証明され、その出典まで追跡できます。',
+    'ブラウザは実行のたびに、ガイドラインと質問が与える臨床的文脈から各回答を証明します。' +
+    'すべての回答はその出典まで追跡できます。',
 
   prototypeNote: '研究用の試作です。臨床上の指針ではありません。',
 
@@ -64,14 +65,15 @@ export const DESCRIPTIONS = {
   answerAssembly:
     '証明されたすべての推奨事項を1つの回答にまとめます。番号付きの引用が、描画された各記述と出典との対応を保ちます。',
 
-  sourcePassage: 'この一節は同じProlog結果に含まれており、変更されていません。',
+  sourcePassage: 'これはガイドライン自体の原文です。同じProlog結果がそのまま保持しています。',
   sourceUnavailable:
     'この結果には構造化された原文の一節がありません。正規形のProlog値は下で参照できます。',
 
   workingAnswer: 'コンパイル済みガイドラインに対して回答を証明しています…',
 
   proofStepOrigin:
-    'エンジンは選択された出典の寄与を、範囲を限定した証明インタプリタで再実行しました。',
+    'エンジンは、範囲を限定した証明インタプリタでこの証明を改めて導出しました。' +
+    '保存済みの結果ではありません。',
   proofPremiseOrigin:
     'ガイドラインの節はすべての臨床医に適用されます。以下の前提は、質問が述べる臨床的文脈を与えます。' +
     '知識ベースは前提を述べていないため、前提に出典の行はありません。',
@@ -84,9 +86,11 @@ export const DESCRIPTIONS = {
 
   graphIntro:
     'コンパイル済み知識ベース全体でつながる臨床概念と動作を探索できます。' +
-    'マップはオピオイド療法から始まり、回答リンクが正確な証明経路をハイライトとして追加します。',
+    'マップはオピオイド療法から始まります。' +
+    '回答リンクは、その回答が引用する文に含まれる関係をハイライトします。',
 
-  graphLoadNote: 'グラフのデータとレイアウトエンジンは、この操作を選択した後にのみ読み込まれます。',
+  graphLoadNote:
+    'グラフのデータとレイアウトエンジンは、この操作または回答リンクを選択したときに読み込まれます。',
 
   graphDerivation:
     '主要概念は、質問と決定的な回答に含まれる語および意味役割から機械的に順位付けされます。',
@@ -209,7 +213,7 @@ export const LABELS = {
 
 export const TEXT = {
   answerYes: () => '回答: はい。',
-  answerYesSummary: () => 'はい。知識ベースがそれを証明します。',
+  answerYesSummary: () => 'はい。質問が与える臨床的文脈のもとで、知識ベースがそれを証明します。',
   answerReady: () => '回答の準備ができました。',
   answerNo: () => '回答: いいえ。',
   answerNoSummary: () => 'いいえ。知識ベースは証明を見つけませんでした。',
@@ -257,7 +261,7 @@ export const TEXT = {
   traceLimit: (limitCode: string) => `証明トレースは ${limitCode} の上限で停止しました。`,
   traceError: (code: string, message: string) => `証明トレースに失敗しました (${code})。${message}`,
   traceReady: (steps: number) =>
-    `${String(steps)}件の出典節が、回答のこの部分を実行時に再証明しました。`,
+    `${String(steps)}件のガイドラインの節が、この実行で回答のこの部分を証明しました。`,
 
   proofStepCount: (n: number) => `証明ステップ${String(n)}件`,
   proofPremiseCount: (n: number) => `仮定した前提${String(n)}件`,
@@ -274,7 +278,7 @@ export const TEXT = {
     `概念・動作 ${concepts.toLocaleString()} 件 · 意味リンク ${links.toLocaleString()} 件`,
   graphPrimaryIs: (label: string) => `${label} が主要概念です。`,
   graphHighlightPaths: (n: number) =>
-    `橙色の経路は、この回答の寄与によって証明された${String(n)}件の関係です。`,
+    `橙色の経路は、この回答の寄与が引用する文に含まれる${String(n)}件の関係です。`,
   graphHighlightOriginBefore: (_sentences: number) => 'ハイライトは',
   graphHighlightOriginAfter: (sentences: number) =>
     `内の制御文${String(sentences)}件に由来します。`,

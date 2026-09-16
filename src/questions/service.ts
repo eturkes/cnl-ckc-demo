@@ -1,9 +1,16 @@
 // The demo's one answer path: a catalog id in, a live Prolog result out.
 //
+// The goal that id names is not a bare knowledge-base query. It carries the
+// question's clinical context as explicit premises, because a guideline clause is
+// universally quantified over clinicians and the `actual` world holds no clinician
+// instance (`.claude/rules/proof.md`). A clause the run derives and a premise the
+// question supplies are therefore different things in every result returned here.
+//
 // The service takes an id, never a goal. That is what keeps arbitrary text
-// unexecutable and keeps every run budgeted — `EngineClient.query` is the only
-// engine call reachable from here, and `consult` stays out because it is
-// unbudgeted and fails open on its own diagnostics.
+// unexecutable — `EngineClient.query` is the only engine call reachable from here.
+// `consult` stays out because a `:- Goal.` directive runs arbitrary Prolog, and the
+// interpreter already compiles into the saved image, so a runtime load buys nothing.
+// It carries a 10 s watchdog of its own; it is a `BudgetSpec` it never takes.
 
 import type { EngineClient } from '../engine/client.js';
 import type { BudgetSpec, EngineError, LimitKind, PlSolution } from '../engine/protocol.js';
@@ -21,7 +28,12 @@ export type AnswerResult =
   | { kind: 'rejected'; reason: 'unknown-id' }
   /** The goal has no proof. `serialized` still renders it, as `no` or an empty row set. */
   | { kind: 'failure'; id: QuestionId; serialized: string }
-  /** A budget stopped the run; `solutions` holds whatever was proven first. */
+  /**
+   * A budget stopped the run. `solutions` holds the prefix the engine proved before
+   * its own soft check, and is EMPTY when the client's hard watchdog fires instead —
+   * that path terminates a worker stuck in an uninterruptible step, so nothing it
+   * proved is recoverable (`engine/client.ts` `#onDeadline`).
+   */
   | { kind: 'limit'; id: QuestionId; limit: LimitKind; serialized: string; solutions: PlSolution[] }
   | { kind: 'cancelled'; id: QuestionId; serialized: string; solutions: PlSolution[] }
   | { kind: 'error'; id: QuestionId; error: EngineError };

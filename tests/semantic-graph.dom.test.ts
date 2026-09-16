@@ -103,7 +103,7 @@ describe('lazy semantic graph surface', () => {
     const root = render();
 
     expect(fetcher).not.toHaveBeenCalled();
-    expect(root.textContent).toContain('load only after you select this control');
+    expect(root.textContent).toContain('load when you select this control or an answer link');
 
     await activate(root);
     expect(fetcher).toHaveBeenCalledTimes(1);

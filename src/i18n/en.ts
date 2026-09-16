@@ -6,11 +6,13 @@
 // limits mechanically checkable. `tools/copy-check.mjs` grades this file on every
 // gate run and grades `ja.ts` for parity against it.
 //
-// `TEXT` holds every string that interpolates a value. Each entry returns a WHOLE
-// sentence rather than a fragment other code joins, because Japanese reorders what
-// English concatenates — a shared `${count} ${noun}` helper would force one
-// language's word order onto the other. Nothing outside a locale file builds a
-// sentence from parts.
+// `TEXT` holds every string that interpolates a value. Sentence word order is decided
+// inside the locale file, because Japanese reorders what English concatenates — a
+// shared `${count} ${noun}` helper would force one language's word order onto the
+// other. Not every entry is a whole sentence: a limit name that `runStopped`
+// interpolates, a bare count rendered as its own label, and the two declared
+// `…Before`/`…After` pairs that straddle a `<code>` element. What holds is the rule
+// those follow — no code outside a locale file joins catalog fragments INTO a sentence.
 //
 // NOT here, and deliberately: question strings, ACE renderings, canonical Prolog
 // values, document ids and engine error messages. Those are payload — the demo
@@ -41,7 +43,8 @@ export const DESCRIPTIONS = {
 
   lede:
     'Run prepared questions against a compiled version of the CDC guideline. ' +
-    'Every answer is proved live in the browser and traceable to its source.',
+    'The browser proves each answer as you run it, from the guideline and the ' +
+    'clinical context the question supplies. Every answer traces back to its source.',
 
   prototypeNote: 'Research prototype. Not clinical guidance.',
 
@@ -64,14 +67,16 @@ export const DESCRIPTIONS = {
   answerAssembly:
     'All proved recommendations are combined into one answer. Numbered citations retain the source relationship for each rendered statement.',
 
-  sourcePassage: 'This passage is carried in the same Prolog result and remains unchanged.',
+  sourcePassage:
+    'This is wording from the guideline itself. The same Prolog result carries it, unchanged.',
   sourceUnavailable:
     'This result has no structured source passage. Its canonical Prolog value remains available below.',
 
   workingAnswer: 'Proving the answer against the compiled guideline…',
 
   proofStepOrigin:
-    'The engine re-ran the selected source contribution through its bounded proof interpreter.',
+    'The engine derived this proof again through its bounded proof interpreter. ' +
+    'It is not a stored result.',
   proofPremiseOrigin:
     'A guideline clause applies to every clinician. Each premise below supplies the clinical ' +
     'context that the question describes. The knowledge base does not state a premise, so a ' +
@@ -85,9 +90,11 @@ export const DESCRIPTIONS = {
 
   graphIntro:
     'Explore clinical concepts and actions connected across the compiled knowledge base. ' +
-    'The map starts with opioid therapy; answer links add the exact proof path as a highlight.',
+    'The map starts with opioid therapy. Answer links highlight the relationships in ' +
+    'the sentences that answer cites.',
 
-  graphLoadNote: 'The graph data and layout engine load only after you select this control.',
+  graphLoadNote:
+    'The graph data and layout engine load when you select this control or an answer link.',
 
   graphDerivation:
     'The primary concept is ranked mechanically from terms and semantic roles in the question and deterministic answer.',
@@ -235,7 +242,8 @@ const plural = (n: number, singular: string, many = `${singular}s`): string =>
  */
 export const TEXT = {
   answerYes: () => 'Answer: yes.',
-  answerYesSummary: () => 'Yes. The knowledge base proves it.',
+  answerYesSummary: () =>
+    'Yes. The knowledge base proves it, given the clinical context in the question.',
   answerReady: () => 'Answer ready.',
   answerNo: () => 'Answer: no.',
   answerNoSummary: () => 'No. The knowledge base found no proof.',
@@ -283,7 +291,7 @@ export const TEXT = {
   traceLimit: (limitCode: string) => `The proof trace stopped at the ${limitCode} limit.`,
   traceError: (code: string, message: string) => `The proof trace failed (${code}). ${message}`,
   traceReady: (steps: number) =>
-    `${plural(steps, 'source clause')} re-proved this part of the answer live.`,
+    `${plural(steps, 'guideline clause')} proved this part of the answer in this run.`,
 
   proofStepCount: (n: number) => plural(n, 'proof step'),
   proofPremiseCount: (n: number) => plural(n, 'assumed premise'),
@@ -300,7 +308,8 @@ export const TEXT = {
     `${concepts.toLocaleString()} concepts/actions · ${links.toLocaleString()} semantic links`,
   graphPrimaryIs: (label: string) => `${label} is the primary concept.`,
   graphHighlightPaths: (n: number) =>
-    `Orange paths are the ${plural(n, 'relationship')} proved by this answer contribution.`,
+    `Orange paths are the ${plural(n, 'relationship')} in the sentences this answer ` +
+    'contribution cites.',
   // Split around a `<code>` element, which a single returned string cannot carry.
   // Both halves take the count because English puts it before the document id and
   // Japanese puts it after.
@@ -344,8 +353,10 @@ export const TEXT = {
 
 /**
  * Locale contract. Every key is required and every value widens to `string`, so a
- * missing, extra or misnamed key in `ja.ts` is a `pnpm check` failure rather than
- * a string that silently falls back to English at run time.
+ * missing or misnamed key in `ja.ts` is a `pnpm check` failure rather than a string
+ * that silently falls back to English at run time. An EXTRA key stays structurally
+ * assignable — `ja.ts` reaches this type through four bucket identifiers rather than
+ * one object literal — so `copy:check` key parity is what names that one.
  */
 export interface Messages {
   INSTRUCTIONS: Record<keyof typeof INSTRUCTIONS, string>;

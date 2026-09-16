@@ -18,10 +18,11 @@ The shipped answers are produced at run time. They are not stored UI fixtures.
 - A lazily loaded semantic graph with search, bounded neighborhoods, shortest
   paths, fCoSE layout, and complete keyboard-usable HTML navigation.
 - A concept-first answer map that mechanically selects the question's primary
-  clinical entity, places it at the center, and highlights the semantic paths
-  compiled from the live proof over a bounded cross-source neighborhood.
-- Parser, document, cardinality, and modality nodes remain in the provenance
-  graph but are hidden from the primary ontology view.
+  clinical entity, places it at the center, and highlights the relationships in
+  the sentences the live proof cites, over a bounded cross-source neighborhood.
+- Parser, document, cardinality, and modality nodes stay in the provenance
+  graph. The primary ontology view hides those nodes. It keeps modality and
+  negation visible as state on the relationships themselves.
 - Light and dark themes, responsive layouts, local fonts, and relative asset
   paths for nested static hosting.
 - An English and Japanese interface. The header toggle switches the interface
@@ -91,7 +92,7 @@ pnpm release:check
 ```
 
 Generated runtime files live under `kb/generated/` and are intentionally ignored.
-`pnpm kb:reproduce` derives a fresh tree and compares it with the current one.
+`pnpm kb:reproduce` builds the tree twice and requires the two manifests to be identical.
 
 ## Static deployment
 
