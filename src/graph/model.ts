@@ -64,7 +64,7 @@ export interface SemanticGraphEdge {
   scope?: number;
   /** Producer relation before reader-facing scope is composed into a label. */
   relation?: string;
-  /** Ordered outermost-first operator semantics resolved from `scope`. */
+  /** Ordered outermost-first semantics; spanning support appends target-only operators. */
   scopeOperators?: readonly SemanticGraphScopeOperator[];
 }
 
@@ -492,17 +492,21 @@ const enrichScope = (data: SemanticGraphData): readonly SemanticGraphEdge[] => {
     });
   });
 
-  const endpointScopes = new Map<string, (readonly SemanticGraphScopeOperator[])[]>();
-  const endpointKey = (edge: SemanticGraphEdge, endpoint: string): string =>
-    [edge.document, edge.sentence === null ? '' : String(edge.sentence), endpoint].join('');
+  const eventScopeKey = (edge: SemanticGraphEdge): string =>
+    [
+      edge.document,
+      edge.sentence === null ? '' : String(edge.sentence),
+      String(edge.line),
+      edge.target,
+    ].join('');
+  const eventScopes = new Map<string, readonly SemanticGraphScopeOperator[]>();
   for (const edge of enriched) {
-    if (edge.kind === 'implies' || edge.scope === undefined) continue;
-    for (const endpoint of [edge.source, edge.target]) {
-      const key = endpointKey(edge, endpoint);
-      const scopes = endpointScopes.get(key) ?? [];
-      scopes.push(edge.scopeOperators ?? []);
-      endpointScopes.set(key, scopes);
+    if (edge.kind !== 'event') continue;
+    const key = eventScopeKey(edge);
+    if (eventScopes.has(key)) {
+      throw new GraphDataError(`${edge.id}: duplicate event scope witness`);
     }
+    eventScopes.set(key, edge.scopeOperators ?? []);
   }
   const mergeScopes = (
     outer: readonly SemanticGraphScopeOperator[],
@@ -516,10 +520,11 @@ const enrichScope = (data: SemanticGraphData): readonly SemanticGraphEdge[] => {
   return Object.freeze(
     enriched.map((edge) => {
       if (edge.kind !== 'implies' || edge.relation !== 'condition supports') return edge;
-      const completeScope = (endpointScopes.get(endpointKey(edge, edge.target)) ?? []).reduce(
-        mergeScopes,
-        edge.scopeOperators ?? [],
-      );
+      const targetScope = eventScopes.get(eventScopeKey(edge));
+      if (targetScope === undefined) {
+        throw new GraphDataError(`${edge.id}: condition support target has no event scope witness`);
+      }
+      const completeScope = mergeScopes(edge.scopeOperators ?? [], targetScope);
       if (completeScope.length === (edge.scopeOperators?.length ?? 0)) return edge;
       return Object.freeze({
         ...edge,
