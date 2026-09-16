@@ -60,6 +60,14 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   cases that hold up the polarity ruling rather than the non-negotiable; each table carries its
   own `gradeTable`, its own emptied-table control and its own count in the success line.
   Wiring → `.claude/rules/gate.md`.
+- **A spanning edge shows BOTH endpoint scopes.** 736 of 751 synthesized `condition supports`
+  occurrences — 333 of 344 projected groups — join endpoints under DIFFERENT scopes, commonest
+  `[] → [should]` 527. `EdgeView` therefore gains `farScope` and R2 carries near end then far
+  end; `scope` stays byte-for-byte what the producer recorded, because composing the two would
+  manufacture a chain no `scopes` record holds. Amendment recorded at `.agent/contracts/m5u8.md`
+  with the original text; approving unit `.agent/contracts/m5u13.md` V6. The 38 cases whose ends
+  CONTRADICT rather than nest are a producer question queued to `.agent/deferred.md`; the
+  shipped edge population does not move.
 - **Judgment review reads the SHIPPED SURFACE, not a commit range.** The `rev` lenses read the
   working tree at close — `src/`, `tools/`, the gate, the contracts — so a defect is caught
   wherever it ships and superseded code is never re-read. The u3–u10 pass the ledger calls
@@ -74,7 +82,7 @@ so no u13 case may rest on a model-side assertion.
 
 # Deferred
 
-Queue = `.agent/deferred.md` — 52 rows, acceptance check each, plus the accepted-open review
+Queue = `.agent/deferred.md` — 53 rows, acceptance check each, plus the accepted-open review
 ids, whose checks stay in `.agent/archive/review-expedited.md`. The defects are user-ruled
 into MAINTAIN and the gate's open firing-input row sits beside them; nothing there blocks the
 spine below. The verification-integrity census raised four rows, three of which closed as u10b + u10c;

@@ -309,12 +309,25 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
 - **A concept edge spanning two scopes carries one** — `edge:512:12` is a synthesized
   `condition supports` shortcut whose premise end sits under `['-']` and whose recommendation
   end under `['-', 'should']`. The model records the producer's own single `edge.scope`, so the
-  edge ships `scopeOperators: ['-']` and the label `condition supports · negated`. The `should`
-  drops; the polarity does not invert, so the reading is a bare negated support where the KB
-  asserts a negated recommendation. Keeping the edge is the u12 ruling — review case 3 requires
-  only that it not be HIGHLIGHTED, and omitting it is the silent loss P6 forbids. Accept: u13
-  renders both endpoint scopes on a spanning edge, or a committed check proves no shown path
-  presents a spanning edge's partial scope as its whole scope. `pri` med.
+  edge ships `scopeOperators: ['-']` and the label `condition supports · negated`. **u13
+  measured the scale and it is not one edge: 736 of 751 shortcut occurrences — 333 of 344
+  projected groups, 12 scope-pair shapes — join endpoints whose scopes differ**, commonest
+  `[] → [should]` 527 and `[] → [may]` 117. CLOSING IN u13 by user ruling: `EdgeView` gains
+  `farScope` and R2 carries near end then far end; `scope` stays byte-for-byte what the producer
+  recorded, because composing the two ends would manufacture a chain no `scopes` record holds.
+  Accept: a spanning edge shows both endpoint scopes in BOTH views, graded by
+  `pnpm graph:check`. `pri` med.
+
+- **38 shortcut edges join scopes that contradict rather than nest** — of the 736 spanning
+  occurrences, 698 have a target scope that EXTENDS the source's and 38 have neither as a prefix
+  of the other, e.g. source `[should]` against target `[-, may]`. Those 38 are a producer
+  question, not a rendering one: `tools/kb/graph.mjs:398` synthesizes a `condition supports`
+  shortcut between two scopes the KB never joins, which is the S12+ site under a new name. u13
+  SHOWS both ends so nothing is silently dropped, and the shipped edge population stays at
+  20,964 — the user ruled the investigation queued rather than widening u13. Accept: each of the
+  38 either carries a source-derived justification for joining its two scopes, or the synthesis
+  declines to emit it and `tests/kb-derived-assets.test.ts` records the moved counts with the
+  original firing. `pri` med.
 
 ## Index — one line per `high` + `med` row
 
@@ -347,7 +360,8 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | Ten shipped bounds have no owner | each names an owner whose search returns rc 0; the 60-relation cap surfaces truncation or is contract-owned |
 | 71 operator contexts have no edge, 64 of them negation | the 71 carry edges with the moved counts recorded, or a check proves no shown path skips an edgeless negation context |
 | The projection oracle lives on a branch alone | its label lookups match on `relation`, 24/24 green in-tree, joined to a declared register |
-| A concept edge spanning two scopes carries one | u13 renders both endpoint scopes, or a check proves no shown path presents a partial scope as whole |
+| A concept edge spanning two scopes carries one | CLOSING IN u13 — a spanning edge shows both endpoint scopes in BOTH views, graded by `pnpm graph:check` |
+| 38 shortcut edges join scopes that contradict rather than nest | each carries a source-derived justification, or the synthesis declines to emit it and the moved counts are recorded with the original firing |
 
 ## Accepted-open
 
