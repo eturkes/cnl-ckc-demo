@@ -434,14 +434,10 @@ const scopeCoordinate = (document: string, sentence: number | null, reference: s
 
 const edgeRelation = (edge: SemanticGraphEdge): string => edge.relation ?? edge.label;
 
-const scopeOperatorLabel = (operator: SemanticGraphScopeOperator): string =>
-  operator === '-' ? 'negated' : operator;
+const scopeOperatorLabel = (operator: string): string => (operator === '-' ? 'negated' : operator);
 
-const scopedRelationLabel = (
-  relation: string,
-  operators: readonly SemanticGraphScopeOperator[],
-): string =>
-  operators.length === 0 ? relation : [relation, ...operators.map(scopeOperatorLabel)].join(' · ');
+export const graphEdgeLabel = (relation: string, scope: readonly string[]): string =>
+  scope.length === 0 ? relation : [relation, ...scope.map(scopeOperatorLabel)].join(' · ');
 
 const enrichScope = (data: SemanticGraphData): readonly SemanticGraphEdge[] => {
   const byReference = new Map<string, { scope: SemanticGraphScope; index: number }>();
@@ -485,8 +481,7 @@ const enrichScope = (data: SemanticGraphData): readonly SemanticGraphEdge[] => {
     return Object.freeze({
       ...edge,
       source,
-      label:
-        edge.kind === 'operator' ? edge.label : scopedRelationLabel(edge.label, scopeOperators),
+      label: edge.kind === 'operator' ? edge.label : graphEdgeLabel(edge.label, scopeOperators),
       relation: edge.label,
       scopeOperators,
     });
@@ -528,7 +523,7 @@ const enrichScope = (data: SemanticGraphData): readonly SemanticGraphEdge[] => {
       if (completeScope.length === (edge.scopeOperators?.length ?? 0)) return edge;
       return Object.freeze({
         ...edge,
-        label: scopedRelationLabel(edge.relation, completeScope),
+        label: graphEdgeLabel(edge.relation, completeScope),
         scopeOperators: completeScope,
       });
     }),
@@ -1309,7 +1304,5 @@ export const graphRelation = (edge: SemanticGraphEdge, from?: string): string =>
 
 export const graphRelationLabel = (edge: SemanticGraphEdge, from?: string): string => {
   const relation = graphRelation(edge, from);
-  return edge.kind === 'operator'
-    ? relation
-    : scopedRelationLabel(relation, edge.scopeOperators ?? []);
+  return edge.kind === 'operator' ? relation : graphEdgeLabel(relation, edge.scopeOperators ?? []);
 };

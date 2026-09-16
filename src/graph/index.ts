@@ -10,6 +10,7 @@ export {
   MAX_NEIGHBOR_LIMIT,
   GraphDataError,
   SemanticGraphModel,
+  graphEdgeLabel,
   graphFocusKey,
   graphNodeKindLabel,
   graphNodeLabel,

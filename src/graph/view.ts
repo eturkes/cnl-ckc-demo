@@ -1,4 +1,4 @@
-import { graphRelation, type GraphPath, type GraphSubgraph } from './model.js';
+import { graphEdgeLabel, graphRelation, type GraphPath, type GraphSubgraph } from './model.js';
 
 export interface EdgeView {
   id: string;
@@ -11,10 +11,7 @@ export interface EdgeView {
   label: string | null;
 }
 
-const scopeLabel = (operator: string): string => (operator === '-' ? 'negated' : operator);
-
-export const edgeLabel = (relation: string, scope: readonly string[]): string =>
-  scope.length === 0 ? relation : [relation, ...scope.map(scopeLabel)].join(' · ');
+export const edgeLabel = graphEdgeLabel;
 
 const REVERSED_RELATIONS: Readonly<Record<string, string>> = Object.freeze({
   actor: 'acts in',
