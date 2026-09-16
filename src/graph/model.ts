@@ -471,25 +471,60 @@ const enrichScope = (data: SemanticGraphData): readonly SemanticGraphEdge[] => {
       }),
     ),
   );
+  const enriched = data.edges.map((edge) => {
+    const resolved = edge.scope === undefined ? [] : (resolvedScopes[edge.scope] ?? []);
+    const scopeOperators = Object.freeze(resolved.map(({ scope: nested }) => nested.operator));
+    const parent = resolved.at(-2);
+    const source =
+      edge.kind === 'operator' && parent !== undefined
+        ? operatorTargets.get(parent.index)
+        : edge.source;
+    if (source === undefined) {
+      throw new GraphDataError(`${edge.id}: nested operator scope has no parent edge`);
+    }
+    return Object.freeze({
+      ...edge,
+      source,
+      label:
+        edge.kind === 'operator' ? edge.label : scopedRelationLabel(edge.label, scopeOperators),
+      relation: edge.label,
+      scopeOperators,
+    });
+  });
+
+  const endpointScopes = new Map<string, (readonly SemanticGraphScopeOperator[])[]>();
+  const endpointKey = (edge: SemanticGraphEdge, endpoint: string): string =>
+    [edge.document, edge.sentence === null ? '' : String(edge.sentence), endpoint].join('');
+  for (const edge of enriched) {
+    if (edge.kind === 'implies' || edge.scope === undefined) continue;
+    for (const endpoint of [edge.source, edge.target]) {
+      const key = endpointKey(edge, endpoint);
+      const scopes = endpointScopes.get(key) ?? [];
+      scopes.push(edge.scopeOperators ?? []);
+      endpointScopes.set(key, scopes);
+    }
+  }
+  const mergeScopes = (
+    outer: readonly SemanticGraphScopeOperator[],
+    inner: readonly SemanticGraphScopeOperator[],
+  ): readonly SemanticGraphScopeOperator[] => {
+    let shared = 0;
+    while (shared < outer.length && outer[shared] === inner[shared]) shared += 1;
+    return Object.freeze([...outer, ...inner.slice(shared)]);
+  };
+
   return Object.freeze(
-    data.edges.map((edge) => {
-      const resolved = edge.scope === undefined ? [] : (resolvedScopes[edge.scope] ?? []);
-      const scopeOperators = Object.freeze(resolved.map(({ scope: nested }) => nested.operator));
-      const parent = resolved.at(-2);
-      const source =
-        edge.kind === 'operator' && parent !== undefined
-          ? operatorTargets.get(parent.index)
-          : edge.source;
-      if (source === undefined) {
-        throw new GraphDataError(`${edge.id}: nested operator scope has no parent edge`);
-      }
+    enriched.map((edge) => {
+      if (edge.kind !== 'implies' || edge.relation !== 'condition supports') return edge;
+      const completeScope = (endpointScopes.get(endpointKey(edge, edge.target)) ?? []).reduce(
+        mergeScopes,
+        edge.scopeOperators ?? [],
+      );
+      if (completeScope.length === (edge.scopeOperators?.length ?? 0)) return edge;
       return Object.freeze({
         ...edge,
-        source,
-        label:
-          edge.kind === 'operator' ? edge.label : scopedRelationLabel(edge.label, scopeOperators),
-        relation: edge.label,
-        scopeOperators,
+        label: scopedRelationLabel(edge.relation, completeScope),
+        scopeOperators: completeScope,
       });
     }),
   );
