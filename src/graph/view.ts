@@ -16,6 +16,22 @@ const scopeLabel = (operator: string): string => (operator === '-' ? 'negated' :
 export const edgeLabel = (relation: string, scope: readonly string[]): string =>
   scope.length === 0 ? relation : [relation, ...scope.map(scopeLabel)].join(' · ');
 
+const REVERSED_RELATIONS: Readonly<Record<string, string>> = Object.freeze({
+  actor: 'acts in',
+  target: 'target of',
+  participant: 'participates in',
+  action: 'action for',
+  'condition supports': 'supported by condition',
+});
+
+/** Read an edge from either endpoint without changing or reordering its scope. */
+export const edgeLabelFrom = (edge: EdgeView, from: string): string | null => {
+  if (edge.label === null) return null;
+  const relation =
+    from === edge.target ? (REVERSED_RELATIONS[edge.relation] ?? edge.relation) : edge.relation;
+  return edgeLabel(relation, edge.scope);
+};
+
 /** Produce the renderer-neutral edge state once for every visible relationship. */
 export const edgeViewsOf = (
   subgraph: GraphSubgraph,

@@ -22,7 +22,7 @@
     type GraphSubgraph,
     type SemanticGraphNode,
   } from './model.js';
-  import { edgeViewsOf, type EdgeView } from './view.js';
+  import { edgeLabelFrom, edgeViewsOf, type EdgeView } from './view.js';
 
   interface Props {
     /** URL injection keeps nested-host and failure-path checks independent of Vite output names. */
@@ -487,7 +487,7 @@
             {@const peer = peerOf(relation)}
             {#if peer !== undefined}
               <li>
-                <span class="relation">{relation.label}</span>
+                <span class="relation">{edgeLabelFrom(relation, selected.id)}</span>
                 <button type="button" onclick={() => choose(peer.id, true, evidenceView !== null)}
                   >{graphNodeLabel(peer)}</button
                 >
