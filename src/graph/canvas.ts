@@ -123,7 +123,12 @@ const elementsOf = (
     ...edges.map((edge) => ({
       group: 'edges' as const,
       data: { ...edge },
-      classes: edge.state === 'highlight' ? 'path' : hasHighlight ? 'context' : '',
+      classes: [
+        edge.state === 'highlight' ? 'path' : hasHighlight ? 'context' : '',
+        edge.dashed ? 'negated' : '',
+      ]
+        .filter(Boolean)
+        .join(' '),
     })),
   ];
 };
@@ -182,6 +187,13 @@ const stylesheet = (palette: Palette): cytoscape.StylesheetJson => [
       // Opaque, because `--graph-edge` clears 3:1 against the canvas as a colour and a
       // faded stroke does not. `.context` below is where de-emphasis lives.
       opacity: 1,
+    },
+  },
+  {
+    selector: 'edge.negated',
+    style: {
+      // Polarity remains readable when zoom, occlusion, or colour makes the edge label unavailable.
+      'line-style': 'dashed',
     },
   },
   {
