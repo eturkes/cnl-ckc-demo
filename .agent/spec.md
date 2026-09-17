@@ -87,8 +87,17 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   → `.claude/rules/graph.md`.
 - **Judgment review reads the SHIPPED SURFACE, not a commit range.** The `rev` lenses read the
   working tree at close — `src/`, `tools/`, the gate, the contracts — so a defect is caught
-  wherever it ships and superseded code is never re-read. The u3–u10 pass the ledger calls
+  wherever it ships and superseded code is never re-read. The u3–u10 pass the ledger called
   outstanding is discharged by that reading, not by a separate history pass.
+- **The IMPLEMENT close fixes the product-side defect alone.** The review's six fails split by
+  where they bite. `A8` was a shipped fail-open — `tools/kb/catalog.mjs` emitted
+  `catalogVersion` and its sole reader consumed `entries` without looking — and it is fixed in
+  place. `G3`, `C2`, `C5`, `C6` and `C10` are grader and record-keeping defects off the answer
+  path, which the demo-tier waiver already calls scheduled work rather than defects, so each
+  carries a `.agent/deferred.md` row and closes in MAINTAIN. The four architecture rows
+  `A3`–`A6` stay accepted-open on their retained checks: semantics in `.svelte` components, no
+  runtime validation at the worker boundary, query and proof paths that never drain
+  diagnostics, and a 3,139,261 B worker booting before user activation.
 
 **MAIN:** premise display = deduplicated steps inside the EXISTING ladder rungs, never a new
 step type (3,930 leaves / 346 premises), carrying hypothetical origin and no source line.
@@ -100,44 +109,36 @@ shows the wrong label.
 
 # Deferred
 
-Queue = `.agent/deferred.md` — 51 rows, acceptance check each, plus the accepted-open review
-ids, whose checks stay in `.agent/archive/review-expedited.md`. The defects are user-ruled
-into MAINTAIN and the gate's open firing-input row sits beside them; nothing there blocks the
-spine below. The verification-integrity census raised four rows, three of which closed as u10b + u10c;
-the fourth stays queued. u13 closed two more — the `graph:check` hang and the one-scope
-spanning edge.
+Queue = `.agent/deferred.md` — 57 rows, acceptance check each, plus the accepted-open review
+ids, whose checks stay in `.agent/archive/review-expedited.md`. Every defect there is
+user-ruled into MAINTAIN; a MAINTAIN request closes rows off this queue.
 
-## Units — the remaining IMPLEMENT path
+The IMPLEMENT close review added the last six, each with its red witness cited by branch where
+one exists: `G3` the edge-blind spanning-scope grader, `C2` three `kb:asset-check` root tables
+that grade nothing when emptied, `C5` two registry rows saying `deferred` and citing no row,
+`C6` u13's firing record with no base revision, `C10` two rows that may already be satisfied,
+and the `gate.md` static-analysis bullet that overstates its own completeness.
 
-Every IMPLEMENT unit is closed. u12 shipped the projection model, u13 finished the graph, u14
-aligned the claims and u15 built the claim→command registry. What remains before the phase
-closes is the judgment review alone. Full `Accept:` + `Depends` → archive; u3–u15 closed,
-contract each in `.agent/contracts/`, close summaries in `.agent/archive/units-m5.md`.
-
-**From u11 on, every unit contract carries its red witness** — `N/M RED at base <sha>` plus
-the command that reproduces it, the form `.agent/archive/contracts/m5u1.md:232` and
-`m5u2.md:216` already use. Coverage today, by `/usr/bin/rg -c 'at base `?[0-9a-f]{7}'`: 3 of 13
-live contracts and 4 of 108 commit bodies. Form + the two shapes that satisfy it without a
-`git show` → `.claude/rules/waves.md`.
-
-- **the `rev` judgment review** — the last step. One `rev` teammate per lens over the fixed
-  32-row check set in `.agent/contracts/review-implement.md`, reading the SHIPPED SURFACE at
-  close rather than a commit range (user ruling), adjudicated into `.agent/review.md`. It runs
-  only now that u15 has landed, because the lenses read the working tree and u15 added
-  `tools/claims-sweep.mjs`, `docs/claims.md` and a gate step. Accept: every one of the 32 rows
-  adjudicated — an all-`pass` table is a complete review — and no open row at phase close.
+No unfinished unit remains. u3–u15 closed, contract each in `.agent/contracts/`, close
+summaries in `.agent/archive/units-m5.md`; the judgment review is discharged in
+`.agent/review.md`. MAINTAIN takes one `/goal` per request, so the spine is empty until you
+open one.
 
 # Phase
 
-IMPLEMENT, every unit closed through u15. **The `rev` judgment review is the only work left
-before `MAINTAIN`** — 32 rows in `.agent/review.md`, all still `unknown`, adjudicated against
-the fixed check set in `.agent/contracts/review-implement.md`, which reads the SHIPPED SURFACE
-at close rather than a commit range (user ruling).
+MAINTAIN.
 
-Resume point: the four lens skeletons are seeded at `.scratch/agents/rev-{arch,semantic,graph,
-assurance}.md` — 8 + 8 + 6 + 10 rows, every cell `unknown`, one row per predicate. `.scratch/`
-is gitignored, so if they are gone, re-derive them by matching `^\| ([ASGC])(\d+) \| (.*) \|$`
-over `.agent/contracts/review-implement.md`; that contract is the only source and the skeleton
-must never be hand-listed. Dispatch one `rev` teammate per lens, each in its own worktree,
-diff-blind to the others. Counter:
-`command grep -c '^| [A-Z][0-9]* | unknown' .agent/review.md` reads 32 and must reach 0.
+The `rev` judgment review closed IMPLEMENT: 32 of 32 rows adjudicated in `.agent/review.md`
+against the fixed check set in `.agent/contracts/review-implement.md`, **no open row** — 20
+`pass`, 6 `n/a: deferred`, `A8` fixed in place and 5 fails deferred by user ruling. Five `rev`
+teammates ran it, one per lens, each diff-blind in its own worktree, with MAIN holding the
+security-vocabulary lane. The non-negotiable is held: all 8 `S` rows pass, `S1` and `S2` on a
+differential that moves the answer and the proof when the cited clauses are erased.
+
+Surviving evidence branches, cited by the ledger and by queue rows — never rename one:
+`wt/rev-arch` `1e89286` (A8 red witness), `wt/rev-graph` `ace618a` (G3), `wt/rev-assurance`
+`5c97965` (C2).
+
+`prototype/` never existed here. The PROTOTYPE-phase role was played by the expedited M2–M4
+surfaces, shipped in place and redeveloped under M5 by user ruling, so there is no tree to
+retire and no `prototype` tag to cut; `.claude/rules/stack.md` already records the carve-out.

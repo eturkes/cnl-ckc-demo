@@ -310,6 +310,65 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   declines to emit it and `tests/kb-derived-assets.test.ts` records the moved counts with the
   original firing. `pri` med.
 
+- **`graph:check`'s spanning-scope grader is edge-blind** — review row `G3`.
+  `SPANNING_SCOPE_READINGS` declares `edge:512:12`, but the probe returns label TEXT only, so
+  `tools/graph-check.mjs:891` takes the first label carrying the same relation and never binds
+  the declared edge. At `44406bd` both forward readings graded
+  `condition supports · negated → should` while the declared edge reads
+  `condition supports · negated → negated · should`, and both reverse readings were `null`,
+  which `gradeSpanningScope` accepts and still counts — so the summary says four readings
+  passed when none of the four was the declared one. `.claude/rules/gate.md` claims each
+  refusal NAMES the case and the edge; that claim is what fails here. Accept: the probe returns
+  `data-edge-id`; the grader requires a non-null row in BOTH directions and compares each exact
+  asset-derived reader-relative label; a wrong edge and a missing reverse row each redden BY
+  ID. Red witness `tests/rev-graph-g3.test.ts:20` at `wt/rev-graph` `ace618a`, all 4 readings.
+  `pri` med.
+- **Three `kb:asset-check` root tables grade nothing when emptied** — review row `C2`.
+  `SCAN_ROOTS` is guarded, but `PRODUCTION_ROOTS`, `SERIALIZE_ROOTS` and `QUESTION_ROOTS`
+  (`tools/kb/check.mjs:28`) each exit 0 with the table never named, while the step still prints
+  its count — the exact shape `.claude/rules/gate.md` `Firing inputs` forbids, and the shape the
+  `SCAN_ROOTS` row was added to close. Accept: each of the three refuses an emptied table by its
+  OWN name through `requireFiring`, and the step's success line names every control that fired.
+  Red witness `tests/review-assurance-c2.red.test.ts` at `wt/rev-assurance` `5c97965`, which
+  mutates the real checker rather than a copy. `pri` med.
+- **Two registry rows say `deferred` and cite no queue row** — review row `C5`.
+  `docs/claims.md:72` (R003) and `:89` (R020) name `none` as the command and `deferred — …` as
+  the disposition, but neither cites a `.agent/deferred.md` row and no row covers either
+  subject. `.agent/contracts/m5u15.md:39-41` R2 requires the citation, so the pair is honest in
+  shape and untracked in substance: nothing will ever re-derive the catalog-fragment claim or
+  the proof-RPC failure copy. Accept: both subjects carry a queue row with its own acceptance
+  check, both dispositions cite it by name, and `claims:check` refuses a `deferred` disposition
+  that names no row. `pri` med.
+- **u13's firing record names no base revision** — review row `C6`.
+  `.agent/contracts/m5u13.md:102` records the perturbation, the reproducing command, rc 1 and
+  the assertion text, but no revision to apply them to, and `0d5f4c1` omits base `3c4c17c` from
+  its body. `.claude/rules/waves.md` wants both halves. The other four contracts from u11 on
+  carry a substantive witness, `m5u15.md:62-68` in different WORDS than the declared form —
+  which is the second half of this row: the census in the old `.agent/spec.md` measured the
+  PHRASING `at base <sha>`, so it under-reported substance and re-staled itself on every
+  commit. Accept: `m5u13.md`'s record names its base revision; the coverage claim is re-derived
+  by a command rather than written down as a total, or it is dropped. `pri` low.
+- **Two queue rows may already be satisfied** — review row `C10`.
+  `Boot-error recovery` (`:92`) and `Boot carries no deadline` (`:157`) both look closed in the
+  tree: `src/demo/RunControls.svelte:53` ships the retry control and `src/engine/client.ts:40`
+  arms `BOOT_DEADLINE_MS`. Neither row was ever graded against its OWN acceptance text, and the
+  second's text expects a hung boot to settle as `code: 'worker'` while `client.ts:221` emits
+  `code: 'boot'` — so the row and the implementation disagree on the settled value and one of
+  them is wrong. Accept: each row's acceptance check is run as written and the row closes on
+  its own result, or its text is corrected to the value the contract actually owns and then
+  run. `pri` low.
+- **`gate.md`'s static-analysis bullet overstates its own completeness** — MAIN finding,
+  security-vocabulary lane. The `lint` bullet ends `Every remaining exception is one inline
+  disable carrying its reason`, which is false: `eslint.config.js:54` turns
+  `security/detect-unsafe-regex` off for `src/questions/advice.ts` through per-file CONFIG,
+  over a `src/**` path the same bullet says keeps its rules on. The config's own comment gives
+  the sound reason — `advice.ts` is byte-frozen against `22053ef` by `clinical-records` T9 — and
+  that reason is exactly what the law file omits. All 11 genuine inline disables DO carry
+  theirs. `docs/claims.md:135` R066 rules the whole bullet `true` on receipt `pnpm lint`, which
+  passes either way and cannot reach the sentence. Accept: the bullet names the `advice.ts`
+  config exception and why it cannot be inline, and `pnpm claims:seed` re-derives R066 so the
+  re-worded claim is adjudicated afresh. `pri` low.
+
 ## Index — one line per `high` + `med` row
 
 Defect and acceptance check. Full text is above in this file; the `low` rows are prose only.
@@ -341,6 +400,9 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | 71 operator contexts have no edge, 64 of them negation | the 71 carry edges with the moved counts recorded, or a check proves no shown path skips an edgeless negation context |
 | The projection oracle lives on a branch alone | its label lookups match on `relation`, 24/24 green in-tree, joined to a declared register |
 | 38 shortcut edges join scopes that contradict rather than nest | each carries a source-derived justification, or the synthesis declines to emit it and the moved counts are recorded with the original firing |
+| `graph:check`'s spanning-scope grader is edge-blind | probe returns `data-edge-id`; both directions non-null; a wrong edge and a missing reverse row redden by id |
+| Three `kb:asset-check` root tables grade nothing when emptied | each refuses an emptied table by its own name; the success line names every control that fired |
+| Two registry rows say `deferred` and cite no queue row | both subjects carry a queue row, both dispositions cite it, `claims:check` refuses an uncited `deferred` |
 
 ## Accepted-open
 

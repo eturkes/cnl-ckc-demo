@@ -43,7 +43,20 @@ export interface CatalogEntry {
 
 const PROVENANCES: readonly string[] = ['bag-derived'];
 
+/**
+ * The producer's schema pin (`tools/kb/catalog.mjs`). This reader is the only one the
+ * emitted `catalogVersion` has, so a bump that nobody read here would be absorbed in
+ * silence — the entry shape would change under a reader still trusting the old one.
+ */
+const CATALOG_VERSION = 3;
+
 const build = (): Readonly<Record<QuestionId, CatalogEntry>> => {
+  if (generated.catalogVersion !== CATALOG_VERSION) {
+    throw new Error(
+      `question catalog version ${String(generated.catalogVersion)} is unsupported; ` +
+        `this reader pins ${String(CATALOG_VERSION)} — run pnpm kb:build`,
+    );
+  }
   const emitted = new Map(generated.entries.map((entry) => [entry.id, entry]));
   if (emitted.size !== generated.entries.length)
     throw new Error('question catalog emitted duplicate ids');
