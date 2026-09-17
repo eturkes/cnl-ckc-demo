@@ -1,0 +1,5 @@
+
+> cnl-ckc-demo@0.0.0 engine:check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-assurance
+> node tools/engine-check.mjs
+
+engine-check: 36 sources, P6.2-P6.5 hold (swipl-wasm owned by src/engine/worker.ts, 10 pinned terms exports), 5 controls fired

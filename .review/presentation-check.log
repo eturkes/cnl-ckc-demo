@@ -1,0 +1,5 @@
+
+> cnl-ckc-demo@0.0.0 presentation:check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-assurance
+> node tools/presentation-check.mjs
+
+presentation: 8 faces pinned and installed, 4 licences byte-equal, 10 text surfaces contained, 3 controls fired

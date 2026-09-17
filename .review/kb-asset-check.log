@@ -1,0 +1,5 @@
+
+> cnl-ckc-demo@0.0.0 kb:asset-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-assurance
+> node tools/kb/check.mjs
+
+kb:asset-check ok — 343 assets verified, catalog re-derived from the bag, sibling-path scan clean over 6 roots, answer-oracle scan clean over 4 roots, JSON-serialization scan clean over 1 root, 7 question sentences absent from 2 roots, 1 SCAN_ROOTS control fired, 1263 graph scopes verified, 1 scopes control fired

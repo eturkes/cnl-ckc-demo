@@ -1,0 +1,566 @@
+===== u3 =====
+1ee4117a24d0a9c808af5a2188afb8441128573e
+kb (u3): findall alone shipped a truncated answer → gate-count equality, 5 live acceptance cases
+`pnpm gate` rc 0, 338 tests / 31 files (+5 over the last commit).
+
+A6 found a real defect the first draft's nine predicates missed, and it is now A10.
+`findall(R,clinical_derive(Doc,_,R,_),Rules)` collects whatever happens to derive: withholding
+one document's premises left that document's OTHER sentences proving, and the answer shipped
+silently truncated while still reading as complete. Withholding rec01's premises dropped
+nothing — 12 answers still derived.
+
+The rule now counts the document's gates and demands the same number of derivations:
+
+  findall(S,clause(clinical_gate(Doc,S,_,_),_,_),Sentences), length(Sentences,N),
+  findall(R,clinical_derive(Doc,_,R,_),Rules), length(Rules,N),
+
+Answers are therefore all-or-nothing. Every erasure control depends on it — without it a
+missing premise or an erased cited clause SHRINKS an answer instead of removing it, and the
+control reads green. Re-measured: withholding rec01's premises now yields 11 documents, rec01
+absent.
+
+`tests/clinical-answer-live.test.ts` commits A1-A6 against the loaded PVM, importing no
+answer fixture:
+- A1 12 answers derive in shipped contribution order.
+- A2/A3 all 12 answer terms and source ids `==` u1's oracle. `==` inside Prolog, so the
+  grading does not depend on how either side writes a term.
+- A4 one `clinical_advice/3` clause in the helper, and it is the rule.
+- A5 `assertz` → `permission_error(modify,static_procedure,clinical_advice/3)`, read from
+  `catch/3` INSIDE Prolog because a permission error prints to real stderr and never reaches
+  JS as `$error`.
+- A6 rebuilds the image with one document's premises withheld: 11 documents, victim absent.
+
+===== u4 =====
+cc8886fd1955e085ebd41e9e8323e7ed88bd5f48
+proof (u4): the ladder drew a precomputed site list, never a derivation → clinical_advice/4 carries the proof, ProofStep = clause|assumption|negation
+clinical_advice/3 projects /4; the interpreter arm hands its proof straight to
+that clause, so answer and proof are ONE derivation and cannot drift.
+clinical_advice_source/4 (12 facts, the last precomputed answer statement in the
+image) and advice_nodes/2 are gone.
+
+Measured on the shipped image, all 12 selections through EngineSession.prove:
+686 clause nodes = the cited-site census exactly, equality both ways against
+each gate line list; 3,930 assumption leaves, none carrying a line; 15 NAF marks,
+all in rec05; 430 ms total, 7-72 ms per document against a 1,000 ms budget.
+Erasing one cited line turns its document proof into failure while the
+unmutated session still proves it; a wrong answer term yields failure, not a
+proof.
+
+Re-anchored: T1 advice eafc1f7f65b0 (2 clauses, 0 facts), T12/T14 baseline
+15,480 B / 7a8bb9e7cc6d, clinical-inference P1 seven proof hashes, and
+clinical-reference D4 onto the answerTerm oracle the helper no longer emits.
+
+pnpm gate rc 0, 345 tests / 32 files.
+
+===== u5 =====
+34e4ff2764d74854e55ac46fa895ab7366ef5e2a
+ladder (u5): u4 decoded premises and then never showed them → per-proof dedup inside the live-proof rung, badged and lineless
+3,930 assumption leaves collapse to the document own premise set (4-131 rows,
+346 across all 12 — exactly the clinical_premise/4 row count, since the
+per-sentence skolem map keeps documents disjoint). The set renders once inside
+the EXISTING Live Prolog proof rung; no ladder step type is added and the <ol>
+still has six rungs.
+
+A premise row carries "assumed, not stated" and NO line: a line would claim the
+knowledge base states it. The one NAF goal (rec05, 15 leaves, 1 distinct) gets
+its own "proved absent" badge, because granted and proved-absent are different
+claims. Graph focus, the clause list and the sentence set stay clause-only.
+
+presentation:check gains the ladder rows .proof-steps li and .premises li, so
+its engine-text containment table now covers the surface that renders canonical
+premise literals — 10 text surfaces.
+
+pnpm gate rc 0, 348 tests / 32 files; pnpm browser:check rc 0 (337 documents on
+dev and built output, 9 states at 320px, cancel delivered in 405 ms).
+
+===== u6 =====
+ebaa5132f4ad4196988125cd0ab4c9e419ced2cc
+kb (u6): the EXPORTED preflight and the four-export oracle were documented but absent → kb:export-check lane, whole-envelope byte match
+`.claude/rules/kb-build.md` described a catalog parsed from `queries/pl/*.pl` behind an
+`EXPORTED` declaration; `catalog.mjs` is 22 lines, re-exports `clinicalArtifacts` and reads
+nothing under `queries/`. `rg EXPORTED` over src/tools/tests/package.json returned rc 1.
+
+Lane = `tools/kb/exports.mjs` (declaration + goal parse + rendering goal), gate step
+`kb:export-check` (`tools/kb/export-check.mjs`), 4 graded cases in
+`tests/legacy-export-lane.test.ts`. `queries/` is not in the PVM — `payloadSource` admits
+`data/guidelines/*/pl/*.pl` alone — so goal text is read out of the verified bag at run time
+and run against the shipped image.
+
+Measured, `.agent/contracts/m5u6.md` D1-D9:
+
+- D1 4 declared ids == the bag's `queries/pl/*.pl` set.
+- D2 extra / missing / renamed export each refused, naming the offending id.
+- D3/D4 4/4 statements match their committed oracle byte for byte. The comparison covers the
+  WHOLE `'$guideline_answers'` envelope: `query_sha256` is recomputed as sha256 of the query
+  file (verified against all four oracles), and the live term is rendered by `writeq` inside
+  the image. Yield: category-A 7 sols, dosage-reduction 2, evidence-type-1 1,
+  recommendation-exists `yes`. Raw `findall` order already equals committed order; the lane
+  still sorts by SWI standard order over decoded terms.
+- D5 erasing the one `category-A-recommendation` entity line reddens category-A — that
+  document leaves the statement — while the other three exports still match.
+- D6 controls, each rc 1: lane deleted → 4 ids name 0 cases; `it.skip` on D3 → `D3 skipped`;
+  D5 renamed → names 0 cases.
+- D7 `node tools/kb/build.mjs --force` → pvm dbdd11a5492d, qlf 3cee8c4948c7, manifest
+  8de673e4c685, all three byte-identical to the pre-lane capture.
+- D8 `## Question catalog` rewritten to the shipped clinical catalog; the lane's design moves
+  to a new `## Legacy export lane`. Retired: the six-catalog-goal counts and the
+  token-substitution recipe for repo-authored goals.
+- D9 `pnpm gate` rc 0 — 33 test files, 352 tests.
+
+The byte oracle lives in `tests/` because `kb:asset-check` bans answer-oracle reach over
+`tools/` — a comment spelling the path reddens it, which is the scan working. `kb:export-check`
+therefore runs that suite under vitest and requires case ids D1 D2 D3 D5 to have PASSED, so
+deleting the file, renaming a case or skipping one fails the gate.
+
+===== u7 =====
+29c82be6ef3dbfc4e7443fbc53309c980fd923c7
+binding (u7): the browser answer check was a shape test and the battery proved nothing about the defect it was written for → one bag-derived oracle, both locales, and a replay that dates the fix
+E9 closed the last retired C2 class. `browser:check` read `.canonical code` and graded it
+`/[a-z_]+\(/` — a page rendering `foo(` passed. `tools/answer-oracle.mjs` now owns the one
+expectation both browser lanes use: `clinicalArtifacts` answer terms assembled in JavaScript
+from the vendored bag, sorted, wrapped in the bag's own `result/1` grammar. Never scraped from
+the page, never a fixture the page also loads. `smoke.mjs` loses its private copy.
+
+The lane grades the page's OWN selection: the question id is read off the first option's `id`
+attribute, so the oracle follows the combobox instead of a written-down question — and the
+handle stays locale-independent, which is what lets the same bytes be required in English AND
+in Japanese with every disclosure open at 320 px. A divergence reports the first differing
+byte with a window; two 2.9 kB walls of Prolog are not a diff.
+
+`pnpm browser:check` rc 0 — `when-to-use-opioids` rendered the bag's 2-row 2,899 B canonical
+answer byte for byte in both locales. Control: one extra `sol(` in the expectation → rc 1,
+`differs from the bag at byte 2897 (bag 2917 B, dom 2899 B)`.
+
+E11 `pnpm binding:replay` (`tools/binding-replay.mjs`): `clinical-binding` E2 requires an
+erased cited clause to drop exactly its document, but before u3 the answer shipped as a
+compiled FACT, so no erasure could reach it. The replay varies the answer-path producer alone
+— `payloadSource` from the ref under test, bag + image build + loader from the working tree,
+which the two trees share byte-identically — and reports both arms:
+
+  erasing cdc2022-opioid-rec01 line 496 — a944fca red (12 → 12 documents),
+  working tree green (12 → 11 documents)
+
+Victim = the first cited gate line, located by clause TEXT not line number, so the replay
+survives a change to helper assembly. Control: `pnpm binding:replay HEAD` rc 1, both arms
+green. It reads git history, so it stays out of `release:check` and CI.
+
+`pnpm gate` rc 0. `pnpm smoke` rc 0 on the shared oracle. u7 DONE.
+
+===== u8 =====
+e639e686d1cb6253afe19d2f2464240ce08fd518
+graph(u8): the renderer swap was ruled on assumption → four-arm spike, vis rejected
+Spike (scratch, `.scratch/u8/`) ran cy-fcose (shipped), cy-fcose-tuned, cy-cose and
+vis-network 10.1.2 over the shipped `src/graph/model.ts`, 14 fixtures x 2 viewports.
+
+Viewport = the measured `.graph-shell .canvas` box (1152x558 desktop, 296x384 mobile), not
+the device size: the stage is 100vw x 100vh, so fit zoom then equals the product's. Device-
+size numbers overstate every label by ~1.34-1.42x, which voids the `5.03 / 2.19 px` baseline
+`.claude/rules/graph.md` carried. `labelPx = 10 x zoom` exactly.
+
+desktop  medLbl / wbLbl / wbOvl / wbPar / wbMs
+  cy-fcose        8.58   9.38   103   0/6      148
+  cy-fcose-tuned  6.48   7.67    32   6/6      146
+  cy-cose         6.27   6.30    48   6/6      209
+  vis             4.24   2.39     0   6/6    12253
+
+Five capability verdicts, all measured: vis separates parallel edges via
+`smooth:{type:'dynamic'}` — but so does Cytoscape via `curve-style: bezier` (0/9 -> 9/9), so
+that is one style property, not a renderer capability; `scaling.label.drawThreshold` (default
+5) BITES, fading labels at 4.12 px desktop and skipping them at 1.39 px mobile, where
+Cytoscape's `min-zoomed-font-size` defaults to 0; `selectNodes` isolates with
+`highlightEdges:false` (0 vs 11 selected edges); per-edge `dashes` round-trip byte-identical;
+bundle delta -34,149 B raw / -11,319 B gzip on a lazily imported chunk.
+
+User ruling: Cytoscape stays. vis loses 2x on the metric the swap was proposed for, hides
+labels on the densest view, and costs 10.2-12.3 s of layout there against 146-224 ms. Fit
+clamps to a zoom FLOOR (pan below it) and node labels WRAP — `text-max-width: 96px` renders
+`category-B-recommendation` as `gory B reco`. Under a floor, fit-zoom label size stops being
+a layout metric, which leaves overlaps/crossings/cost, where tuned fcose wins 32 vs 103.
+
+`pnpm remove vis-network` returned package.json + lockfile byte-identical (`git diff --stat`
+empty). Renderer-neutral edge-view contract R1-R7 committed as what u9-u13 decide against.
+
+===== u9 =====
+fff49b9834ac980981119ec68f20b15df61bd607
+graph(theme): the canvas was the one surface the theme toggle never reached → every colour resolves from an app.css token, graded in both themes
+u10, theme half. The remaining half — the component interaction + fallback sweep — is
+named in `.agent/spec.md`.
+
+`canvas.ts` hardcoded 13 hex literals, so the graph ignored `data-theme` entirely and
+its colours sat outside `contrast:check`, which fails on any token in no pair. Nothing
+on a `<canvas>` inherits, so the fix is to READ the tokens: `paletteOf(container)`
+resolves 11 of them through `getComputedStyle` at mount, and a `MutationObserver` on
+`<html data-theme>` re-reads and replaces the stylesheet in place. That keeps R6's
+`mountGraphCanvas(container, onSelect)` signature intact — the deferral had assumed a
+theme parameter, which R6 pins shut.
+
+New tokens: `--graph-{label,document,entity,event,operator,value,edge,path}`, light and
+dark. Reused rather than twinned: `--action` (selected node fill), `--surface-sunken`
+(canvas, and the node border, which is a GAP not a line), `--surface-raised` (proof
+label pill).
+
+The dark theme inverts the node — light fill, dark label — because the selected node is
+filled `--action`, light in that theme; mid-dark fills would leave that one node reading
+backwards against every other. Fills are derived from the light hues at a fixed relative
+luminance, so all five land 5.63-5.69:1 against the canvas rather than the 2.38-3.57:1
+the old literals would have given there.
+
+Base edges are now opaque. `--graph-edge` clears 3:1 against the canvas as a COLOUR
+(3.40 light / 3.24 dark); the same colour at the old 0.38 opacity composites to ~1.4:1,
+so a declared pair would have graded a stroke nobody sees. De-emphasis stays in
+`.context`. `--graph-edge` also darkened to #78838f light for margin over the 3:1 floor.
+
+The `SemanticGraph.svelte` legend swatches read the same five tokens instead of
+restating their hex, so legend and canvas can no longer drift.
+
+Two graders, because either alone is passable:
+- `contrast:check` 17 → 33 pairs, 66 light/dark, all pass. Node label NORMAL against its
+  own fill, fill LARGE against the canvas.
+- `graph:check` gained `palette` — the RENDERED value read back off Cytoscape must equal
+  the token, per node kind, plain edge, path node, path edge and selected node, on all 28
+  views — and `theme`, a flip on a mounted graph: colour changes, palette stays consistent
+  in the new theme, 0 of N nodes move (a remount would re-run the layout).
+
+Also fixed: the probe set `data-theme` on `<body>`, where `src/app.css` binds nothing, so
+its `mobile → dark` arm had been grading the light palette twice.
+
+pnpm gate rc 0. pnpm graph:check rc 0 — R1-R7 and the palette over 28 views, 34/34
+parallel pairs separated, 690 labels whole, 11.00-24.38 px over the 11 px floor.
+pnpm browser:check rc 0 — 337 documents on dev and built output, the bag's canonical
+answer byte for byte in both locales.
+
+Closes the `.agent/archive/polish.md` theme row (21 → 20 deferred rows) by implementing
+it rather than carrying it into MAINTAIN.
+
+===== u10 =====
+828003405ed0a498f3fd80b9b17e69e9dfad391d
+graph(component): the only grader of the component's interactions mocked the renderer away → graph:check mounts the shipped component and reads both sides of the seam
+`tests/semantic-graph.dom.test.ts` mocks `src/graph/canvas.js`, so every interaction in
+`SemanticGraph.svelte` was graded against a stub that records calls; `graph:check` mounted the
+adapter directly and skipped the component. Nothing decided whether the path the panel lists is
+the path the canvas highlights.
+
+`tools/graph-probe/app.html` + `app.svelte.ts` mount the SHIPPED component over the real asset
+on a second page of the same dev server. C1-C12 (`.agent/contracts/m5u10.md`) read each
+interaction on BOTH sides of the adapter seam — search, path, expand, recenter, canvas tap,
+node index — in the concept AND answer branch, at 1280x900 and 320x720, plus a refused
+`graphUrl` (C9) and a `--graph-*` palette set to `initial` (C10).
+
+- 4 component sweeps + 2 fallback sweeps, 54 nodes drawn from the component's own state,
+  4 views expanded, 4 canvas taps delivered; whole check 45 s.
+- Viewport is the DEVICE here, not the canvas box: the component computes its own box from the
+  page container copied out of `src/App.svelte`. `index.html` keeps the opposite convention.
+- Runes in `app.svelte.ts` because C9 changes `graphUrl` between the failed load and the retry
+  click — the component's own prop path, not a patched `fetch`.
+- A synthetic tap needs a DESCENDANT target inside the layout viewport: Cytoscape's
+  `eventInContainer` discards an event whose `target` is the container, and pointer events
+  reach nothing. Scroll into view + `elementFromPoint` + `mousedown`/`mouseup`.
+- `cy.ts` holds the Cytoscape slice both probes read, so neither owns an `any`.
+
+Firing inputs: a detached selection callback re-runs the sweep and `gradeInteractions` refuses
+it by naming C2 and C6, in the run itself; `subgraph.nodes.slice(1)` in the node index reddened
+C7 8 times by hand, reverted.
+
+pnpm gate green; pnpm graph:check green (28 adapter views + 6 component sweeps).
+
+dispatch: solo — the probe's pass criteria are the legibility and behaviour judgment MAIN
+retains, the component already exists so there is no implementation for a test/orc split to
+grade, and every census this unit needed was script-derivable.
+
+===== u11 =====
+32c6a84f6cd9636bfbdfe08ae79e2dc9f91ebeba
+graph(scope): operator scope was implicit in the asset → emit a versioned scopes table the gate validates
+`tools/kb/graph.mjs` emitted nodes and edges with no record of which guideline
+context an edge sits in or under what modality, so 1,263 operator contexts were
+derivable from the clause AST and absent from the shipped asset. u11 emits them
+as a versioned top-level `scopes` table with each operator edge carrying an index
+into it, never an inlined object — 1,263 contexts across 1,936 occurrences dedupe
+hard and inlining pays the string cost on every one.
+
+Base 7d95b96. Red suite wt/test-scope 6219955, producer wt/prod-scope 84f7fd6;
+worktrees removed, branches kept as the witness record. 5/7 RED at base,
+reproduced with npx vitest run tests/graph-scope.test.ts -t '<case>':
+S1 `scopes table is missing`, S2 `constructed semantic graph scopes table is
+missing`, S3 `operator edge edge:25:0 must reference exactly one scope index`,
+S6 `semantic graph producer schema 1, expected 2`, S7 `structural validator
+export is missing`. S4 and S5 are declared base-GREEN: both are non-regression
+bounds and a bound passes vacuously over an absent payload.
+
+Verified by MAIN off the rebuilt asset, not taken from either report:
+schemaVersion 2, 1,263 scope records (should 857, - 156, may 156, can 85,
+must 9), 17,667 scoped edges, 0 unresolvable indexes, 0 operator edges without a
+scope, byNodeKind unchanged at five keys, gzip 354,080 B at node zlib.gzipSync
+default options — 154,492 B inside the 508,572 B budget. The compressor is part
+of that number: the gzip CLI reads 327,090 B on the base asset and level 9 reads
+286,015 B.
+
+User ruling — the 71 edgeless operator contexts stay orphaned. 64 of them are
+negation and 7 `can`, 41% of the corpus's 156 negation contexts. prod-scope first
+closed the gap with 71 added body edges, moving totals to 21,035 / 1,264; the
+ruling restores the shipped population at 20,964 total / 1,193 operator. S3 is
+therefore ONE-WAY: every operator edge resolves to exactly one record, an
+unreferenced record is legal, and the count is pinned at 7 rather than dropped —
+a relaxed direction that asserts nothing is green for the same reason a correct
+one is. Queued in .agent/deferred.md with its acceptance check. test-scope pinned
+71 there against instruction; prod-scope caught it and MAIN confirmed 7
+independently. The populations differ because a non-operator edge can cite a
+context whose own node has no edge.
+
+GRAPH_SCHEMA_VERSION 1 → 2 in tools/kb/graph.mjs and src/graph/model.ts together:
+parseEdge allowlists edge fields and parseSemanticGraph ignores unknown top-level
+keys, so a v1 reader drops `scopes` and `edge.scope` in silence. Two committed
+expected-output constants moved with the bump and both are now derived rather
+than literal — graph-model's drift row spelled `2` while the reader pinned 1, so
+the bump turned it into the CURRENT version and it stopped refusing; kb-live used
+one constant for three independent schemas.
+
+S7 ships validateSemanticGraphAsset(model): string[] inside kb:asset-check with a
+requireFiring control over the REAL table emptied, refusing `scopes table is
+empty, so graph scope validation grades no record`. The seven vitest cases do not
+join binding:check's inventory — a data-tier unit does not buy a third declared
+register — and .agent/contracts/m5u11.md records that as a choice.
+
+pnpm gate rc 0: 373 tests / 36 files; secret:check 2 controls, engine:check 5,
+copy:check 4, contrast:check 1, presentation:check 3, binding:check 4 (35
+required across 11 suites, 11 lifecycle across 2), kb:asset-check `1263 graph
+scopes verified, 1 scopes control fired` and `1 SCAN_ROOTS control fired`.
+Not run: kb:reproduce, smoke, browser:check, graph:check, binding:replay.
+
+tools/kb/scope-census.mjs reprints every census figure from the bag, independent
+of the producer's own table.
+
+dispatch: prod-scope + test-scope — versioned edge→scope records from the clause AST and a diff-blind red census/budget suite; MAIN pinned the schema, re-derived the corpus census, ruled the orphan question to the user and wired the gate
+
+===== u12 =====
+3c4c17cb5b4da523f8532965e2c18ec8534d24eb
+graph(model): the projection dropped every operator scope → scope-keyed edges the review suite grades
+`src/graph/model.ts` allowlisted edge fields, so `edge.scope` never survived `parseEdge` and
+`parseSemanticGraph` ignored u11's top-level `scopes` table outright. Every one of the 2,381
+projected groups was scope-stripped, which renders a negated recommendation as its clinical
+inverse. The reader now parses both, and ordered scope rides the edge as
+`SemanticGraphEdge.scopeOperators` — `edge.scope` is already the asset's numeric index, so the
+two cannot share a field.
+
+Tier `kernel`. Contract `.agent/contracts/m5u12.md`, 8 predicates, base `32c6a84`.
+
+Measured (MAIN re-derived from `kb/generated/graph/semantic-graph.json`, not read off a report):
+
+- 2,630 concept groups, 1,584 scope-bearing, 2,630 distinct `(source,target,relation,scope)`
+  keys; 1,300 projected nodes = 1,084 entity + 151 event + 65 value.
+- Scope-keyed dedup split 2,381 → 2,615; the remaining 15 are the non-unit cardinality edges
+  review case 2 exposes, 12 of them scoped. Order-distinctness is structural — `conceptEdgeKey`
+  spreads `scopeOperators` in order — and the corpus holds ZERO permuted pairs, so
+  `tests/graph-model.test.ts:303` supplies the constructed witness rather than a corpus one.
+- S9: the headline derives 1,235 entity/event nodes, 65 attributes stay visible, and both
+  locales name what the hidden totals contain.
+- S13+: `parseEdge` derives `argument.source` and `preposition.source -> event` from
+  `guideline_arg/4` + `guideline_pp/4`. 3,805 + 1,197 = 5,002 constrained, 0 rejections,
+  15,962 schema-free.
+- `tools/kb/scope-census.mjs` `depth()` treated a rule VARIABLE as a root, but
+  `guideline_operator(actual,E,-), guideline_operator(E,F,can)` makes `E` a real context of the
+  same sentence. Chain-depth partition corrected 1,200/63 -> 1,193 at depth 1, 70 at depth 2,
+  which now agrees with the shipped `chain` record for record. `m5u11.md:42,93` corrected.
+
+Red witness: 8/9 RED at base `32c6a84`, reproduced by
+`git show wt/rev-sem-2:tests/graph-semantics.review.test.ts > tests/graph-semantics.review.test.ts && npx vitest run tests/graph-semantics.review.test.ts`.
+The ninth is base-GREEN and declared. Grading check unchanged, proved not asserted:
+`git show wt/rev-sem-2:tests/graph-semantics.review.test.ts | cmp - tests/graph-semantics.review.test.ts` -> rc 0.
+
+S9 and S13+ close here rather than in MAINTAIN (user ruling): `binding:check` fails the gate on
+ANY red case in its run, so a tree holding them red can never be gate-green, and xfail, a split
+suite and branch-only storage each stop executing the defect. Both leave the accepted-open set.
+
+`binding:check` gains a THIRD declared table, `MEANING` — the graph-polarity ruling, not the
+answer-path roll call and not a claim about a run settling. All nine review cases across four
+`why` rows, its own `gradeTable`, its own emptied-table control, its own count.
+
+Teammate tips kept as the red-witness record: `wt/prod-model` `89d8b6b`, `wt/orc-proj`
+`1a893b1`. The differential ran 19 passed / 5 failed against the shipped model; all five are
+adjudicated for the shipped side in the contract, three of them one stale `label ===` lookup.
+The oracle does NOT ship — editing a teammate's oracle until it passes and then grading the
+projection with it grades a check MAIN bent. Port + the two-scope `edge:512:12` gap are the two
+new `.agent/deferred.md` rows, 52 total.
+
+The differential is what caught `prod-model-2` implementing the role rule for `argument` alone;
+the oracle had independently derived the identical `guideline_pp/4` constraint, and `89d8b6b`
+closed it.
+
+dispatch: prod-model + orc-proj — scope-aware projection against a committed review suite and an independent asset-derived oracle; MAIN ruled the label objection, caught the half-implemented schema role rule, wired the MEANING register and corrected the census
+
+===== u13 =====
+0d5f4c1d209fba1bc57fe30b1285ae34696999a4
+graph(u13): running the graders found three live defects a diff read would miss → all fixed, u13 closed
+Closes u13. Both graders green on one clean tree, this commit's state:
+
+  pnpm gate            rc 0 — 14/14 steps
+                       Test Files 37 passed (37), Tests 396 passed (396)
+                       binding:check ok — 35 required across 11 suites, 11 lifecycle
+                       across 2, 9 graph-meaning across 4 declared rows, 5 controls fired
+                       kb:asset-check ok — 343 assets, JSON-serialization scan clean over
+                       1 root, 1263 graph scopes, SCAN_ROOTS + scopes controls fired
+  pnpm graph:check     rc 0 on its own, no outer timeout — 28 rendered views, 1160 canvas
+                       + 4 fallback + 4 spanning scope readings, 130/130 parallel pairs,
+                       692 labels whole, 4 component + 2 fallback sweeps
+
+Not run, by name: kb:reproduce, smoke, browser:check, binding:replay. graph:check moves
+from not-run to run-and-passed with this unit.
+
+Three defects, each found by RUNNING a grader against the post-ruling tree, not by
+reading the diff:
+
+1. kb:asset-check refused src/graph/view.ts — cap-disclosure keys used JSON.stringify,
+   and the scan bans any serializing call under src/ because a serialized oracle is the
+   shape a hard-coded answer takes on its way to the page. Now separator joins.
+2. tools/graph-probe/probe.ts recovered the relation by stripping a scope SUFFIX. Under
+   the reader-relative ruling the far end FOLLOWS the scope, so it threw
+   `scope suffix " · negated" is absent from "condition supports · negated → negated ·
+   should"`. graphRelation names the relation; the probe reports near+far as one ordered
+   sequence, which is what the canvas renders.
+3. src/graph/model.ts still nulled farScopeOperators when the two ends AGREE — the rule
+   the user WITHDREW. The source reading is identical either way, which is why review
+   missed it; the target reading is where it bites, stranding that reader with an empty
+   near scope. Exactly 1 corpus edge affected, far-scope population 736 → 737, so no
+   count moved.
+
+Red witness for 3, in tests/graph-model.test.ts `keeps a far scope that agrees with the
+near end so the target reading can flip`. V3 cannot grade it: scopePattern's
+LABEL_SEPARATOR admits →, so it accepts the buggy reading too. Perturbation restores the
+withdrawn rule —
+
+  if (targetScope.length === 0) return edge;
+    → if (targetScope.length === 0 || sameScope(nearScope, targetScope)) return edge;
+  npx vitest run tests/graph-model.test.ts -t 'agrees with the near end'
+
+rc 1, AssertionError: expected undefined to deeply equal [ 'should' ] at
+tests/graph-model.test.ts:410:36. Restored byte-identically, cmp rc 0. The case is
+undeclared in binding:check, so no inventory moved.
+
+A fourth, in the grader rather than the product: graph-check.mjs's FALLBACK_SCOPE_ASSET
+carried a `condition supports` edge with no `event` witness for its target end, so the
+model refused it by name and the component never reached its ready header. The fixture
+now carries the witness, matching edge:512:0 for edge:512:12 in the shipped bag.
+
+Census correction. farScopeOperators entered conceptEdgeKey at f89dbb1, which split
+groups and stranded the figures in .claude/rules/graph.md. Re-derived, and the
+re-derivation reproduces conceptEdgeCount exactly: grouped edges 2,630 → 2,668, groups
+carrying an ordered scope 1,584 → 1,912, groups carrying a far scope 372 (from 737 edge
+occurrences); projection nodes unchanged at 1,300. The move predates this unit's own
+fix — HEAD f89dbb1 already measured 2,668 / 736.
+
+Wave harvested, worktrees removed, wt/ branches kept: prod-view eb94128, test-view
+4fb4b27, orc-view 799cef9 → 92f9c3d, triage-hang da3f80e. Merges a9411d3, b0b05f7,
+f89dbb1.
+
+.agent/deferred.md 53 → 51 rows: the graph:check hang and the one-scope spanning edge
+both close here. spec.md Phase: IMPLEMENT at u14; the reader-relative ruling is recorded
+under Decisions. .claude/rules/graph.md gains the four label forms and loses the
+dropped-modality gap u13 closed.
+
+Doc-only surfaces in this commit (.agent/, .claude/) are .prettierignore'd and read by no
+gate step; the gate result above covers every source file it touches.
+
+dispatch: prod-view + test-view + orc-view + triage-hang — the EdgeView seam and scope in
+both renderers, the diff-blind red grading cases, an independent asset-derived oracle, and
+the graph:check non-termination; MAIN ruled V6's encoding twice and V7's two counts, upheld
+all five O6 objections, retains the reader-relative composition, and closed on its own
+graders
+
+===== u14 =====
+d73305979a8f0844994e6851ea4bdfb3ff160b52
+claims(u14): shipped copy credited the bare KB and the proof path → 17 rows ruled and rewritten
+Sweep rc 0 at 0d5f4c1, 48 hits (en.ts 27, ja.ts 2, README 13, service.ts 6), adjudicated
+TWICE against one committed all-`unknown` skeleton: map-claims, then orc-claims blind to it.
+Both 48/48; agreed 36, disputed 12, union flagged 17. MAIN ruled all 17.
+Final: 28 true, 10 false, 7 unreadable, 3 not a claim. 17/17 anchors rematched at ceab9c5
+(only .agent/ moved since 0d5f4c1), so no row retired unread.
+
+Seven of the twelve disputes settled on a decisive code fact MAIN read itself, each going to
+whichever pass flagged it:
+- SemanticGraph.svelte:313-316 — a focusRequest at phase inactive/error calls activate(), so
+  an answer link loads the graph with no Explore press. "only after you select this control"
+  was false.
+- model.ts:816-845 — evidenceSubgraph expands a proof sentence coordinate to EVERY relation
+  of that sentence. Behind three separate false claims: "the exact proof path" (graphIntro),
+  "proved by this answer contribution" (graphHighlightPaths), "compiled from the live proof"
+  (README:22). graphHighlightOriginBefore already stated the real mechanism.
+- reproduce.mjs:36-37 — build() twice, manifests compared to each other, never to the
+  pre-run tree.
+- client.ts:50 — CONSULT_DEADLINE_MS = 10_000 bounds consult, so "unbudgeted" was false.
+- client.ts:211 — #onDeadline settles limit 'wall-clock' with solutions: [] after terminating
+  the worker; only session.ts:379 returns the proved prefix.
+Plus answerYesSummary crediting the bare knowledge base, which the user ruling calls a
+CORRECT failure (guideline_operator(actual,C,should)); the question's clinical context is
+what derives it.
+
+The other five (A06 A09 A10 A22 A43) were accurate and failed A2 — a reader could not tell a
+quotation from a supplied premise from a derived clause — and were disambiguated, not
+corrected. Both locales moved together for all 8 catalog keys; the English-term sweep cannot
+see a stale Japanese twin, recorded as an amendment to A1 rather than left implicit.
+
+Red witness: 2/13 RED at base ceab9c5 —
+  npx vitest run tests/semantic-graph.dom.test.ts tests/provenance-ladder.dom.test.ts
+rc 1 with the strings moved and the assertions unchanged, proving both pins grade shipped
+copy. Assertions then moved; 13/13. Neither suite is among binding:check's 14 declared
+suites, so no declared inventory moved.
+
+pnpm gate rc 0 at this tree: 37 test files, 396 tests; copy 301 en strings pass, 186 ja keys
+at parity, 4 controls fired; binding:check ok — 35 required across 11 suites, 11 lifecycle
+across 2, 9 graph-meaning across 4 rows, 5 controls fired. pnpm graph:check rc 0 on its own,
+rerun because graph copy moved — R1-R7 over 28 rendered views, C1-C12 over 4 component and 2
+fallback sweeps. Not run: kb:reproduce, smoke, browser:check, binding:replay.
+
+dispatch: map-claims + orc-claims — two independent adjudications of the 48-row claim set,
+the second blind to the first; MAIN ruled the 17 flagged rows against code it read itself and
+wrote the corrected prose in both locales
+
+===== u15 =====
+44406bda391c92758284374d8330b631d749d6db
+claims(u15): every durable claim was asserted without a receipt → 379-row registry, gate-graded
+`docs/claims.md` ships 379 adjudicated rows — shipped 45, spec 1, rules 175, contract 158;
+305 `true`, 34 `deferred`, 40 `historical`. 74 rows name `none`, exactly the deferred plus
+the historical, so no row claims coverage it lacks.
+
+`pnpm claims:check` (`tools/claims-sweep.mjs`) joins the gate after `presentation:check`. It
+grades COVERAGE, never truth: it re-derives the claim set from the tree and refuses drift by
+row count, row anchor or open row. Firing input = the set rebuilt from ONE rules file, refused
+by row count.
+
+R3 — every distinct command executed once, rc recorded:
+  19 shell one-offs            all rc 0
+  22 `npx vitest run <suite>`  all rc 0
+  `pnpm binding:replay`        rc 0 — a944fca red 12 → 12 docs, working tree green 12 → 11
+  `pnpm release:check`         rc 0 — gate + kb:reproduce + smoke + browser:check + graph:check
+
+release:check had NEVER completed. `tools/browser-check.mjs` spawned Vite via
+`pnpm exec`, building a pnpm → vite tree, then signalled the child alone; the orphaned Vite
+held the inherited pipes open, so the lane printed `browser-check: ok` and hung — rc 124 at a
+600 s timeout, stray dev server on 5173, composite unable to reach graph:check. `detached:
+true` + `process.kill(-pid, 'SIGTERM')` → rc 0 in 8 s, no strays. 6 registry rows name
+browser:check and 8 name release:check; every one cited a command that could not terminate.
+u10c had already fixed the identical orphan in graph:check by going in-process — gate.md now
+states the cause once and names both remedies.
+
+Row count moved 375 → 376 → 378 → 379 mid-unit: claims:check reads `.claude/rules/`, so
+documenting it in gate.md and recording the wave laws in waves.md each added a claim to the
+check's own input. Self-reference is the design; the seed is idempotent, so the count cannot
+move unless a source moved.
+
+Tooling defects fixed before the registry was maintainable: `--seed` was destructive and would
+have discarded every ruling on the next source edit (now merges, keyed on claim TEXT, since
+ids and anchors are re-issued each run); the row block had no header or delimiter row, so GFM
+rendered 379 rows as literal text; three ways a 150-char cell slice provoked a Prettier
+reformat kept format:check red, all settled in an idempotent `cell()`, with the table under
+`prettier-ignore` because column padding rewrites every row to 451 chars.
+
+Red witness: 375/375 RED at base `d733059` —
+  node tools/claims-sweep.mjs --seed   # 375 rows, every cell `unknown`
+  node tools/claims-sweep.mjs          # rc 1 — "375 rows are unadjudicated"
+
+Gate: full `pnpm release:check` rc 0. `.claude/` and `.agent/` are prettier-ignored; the only
+gate steps reaching bytes edited after that run are claims:check and format:check, both rerun
+rc 0, plus lint rc 0 and check 426 files / 0 errors.
+Not run: none.
+
+dispatch: map-shipped + map-rules + map-rules-2 + map-contract — one teammate per claim source
+over a partitioned skeleton MAIN seeded and committed first; MAIN owns the sweep tool, ruled
+the rows no partition covered, and executed the distinct command set once itself.

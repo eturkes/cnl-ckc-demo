@@ -1,0 +1,5 @@
+
+> cnl-ckc-demo@0.0.0 copy:check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-assurance
+> node tools/copy-check.mjs
+
+copy: 301 en strings pass, 186 ja keys at parity, 2 shell strings match index.html, 4 controls fired

@@ -1,0 +1,5 @@
+
+> cnl-ckc-demo@0.0.0 contrast:check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-assurance
+> node tools/contrast.mjs
+
+contrast: 66 light/dark pairs pass, control: --text collapsed onto --surface

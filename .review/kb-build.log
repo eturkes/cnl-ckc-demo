@@ -1,0 +1,5 @@
+
+> cnl-ckc-demo@0.0.0 kb:build /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-assurance
+> node tools/kb/build.mjs
+
+kb:build cached — 337 files, input 7d7d0efc59c2, control: one digit changed in the bag sidecar

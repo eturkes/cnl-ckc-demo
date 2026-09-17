@@ -1,0 +1,5 @@
+
+> cnl-ckc-demo@0.0.0 kb:export-check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-assurance
+> node tools/kb/export-check.mjs
+
+kb:export-check ok — 4 of 4 declared exports read from the bag: category-a-recommendations, dosage-reduction-content, evidence-type-1-recommendation, recommendation-exists; control: one declared query dropped from the verified bag

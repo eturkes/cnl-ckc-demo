@@ -1,0 +1,5 @@
+
+> cnl-ckc-demo@0.0.0 claims:check /run/host/home/eturkes/Projects/cnl-ckc-demo/.scratch/worktrees/rev-assurance
+> node tools/claims-sweep.mjs
+
+claims:check ok — 379 claims covered (shipped 45, spec 1, rules 175, contract 158), every row adjudicated; control: the claim set re-derived from one rules file alone
