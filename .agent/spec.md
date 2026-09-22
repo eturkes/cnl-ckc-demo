@@ -132,6 +132,30 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   `wt/res-nl-intake` `ae608ff` (routing, grounding, vocabulary) and `wt/res-u16-shape`
   `490dfcf` (premise shape, rule shape) — never rename either.
 
+- **u16 delivery bindings.** Four rulings, taken at the u16 orientation wave:
+  - **Key handover = pasted in chat**, then straight to a gitignored `.dev.vars` and a
+    Cloudflare secret, never a commit. **The key has not arrived yet** — the live arm is
+    unfunded and every live measurement stays unrun until it does.
+  - **MAIN deploys the Worker**, not commit-only. Needs `CLOUDFLARE_API_TOKEN` (Workers
+    Scripts:Edit) + `CLOUDFLARE_ACCOUNT_ID`, so the committed `README.md:113` `connect-src`
+    names the real origin instead of a placeholder.
+  - **Layout = free text FIRST, drop-down below.** The textarea is the primary intake at the
+    top of the ask flow; `QuestionCombobox` keeps its exact look and sits under it as the "or
+    pick a built-in question" path. Both stay visible. This refines map-ui-1's U8, which had
+    proposed a separate sibling section.
+  - **Japanese = copy parity only.** `en.ts`/`ja.ts` parity as `copy:check` already enforces;
+    Japanese free-text intake is NOT graded, the probe set and its gold are English, and no
+    bilingual-intake claim is made either way.
+
+- **The third outcome has no primitive that can produce it — ASK BEFORE BUILDING.** A Noul
+  returns a probability alone and a Choice returns one of the options the caller supplied, so
+  the ruled 24 Nouls + scope Choice cannot NAME what a description asserts that the KB has no
+  vocabulary for. Inventing `unsupportedTerms` in the response parser would be the exact
+  fabrication the non-negotiable forbids. Four ways out, recommendation first — deterministic
+  candidate discovery from the user's OWN words then one Noul per candidate; a fixed authored
+  out-of-KB vocabulary; a Choice naming the nearest COVERED concept instead; or dropping the
+  naming entirely. Options + evidence → `.agent/archive/u16-wave1/index.md`.
+
 **MAIN:** premise display = deduplicated steps inside the EXISTING ladder rungs, never a new
 step type (3,930 leaves / 346 premises), carrying hypothetical origin and no source line.
 u6's oracle is GREEN at base, credited RED-under-dependency-removal alone — it guards the
@@ -177,6 +201,20 @@ recommendation answers a user, so it carries the full battery. Contract →
   phrasing, never accuracy estimates, and do not transfer to this larger answer space.
 - `.claude/rules/proof.md` gains the premise-scaffolding / condition-discriminator law this
   unit proves. It is deliberately NOT written ahead of the build.
+
+**u16 progress: orientation only, nothing built.** The wave ran and was harvested; the session
+wound down before the contract. Resume from `.agent/archive/u16-wave1/index.md`, which carries
+the roster, the four rulings, the blocking gap, the still-owed inputs and the resume order;
+its two `res` reports hold the Worker and Jev code sketches verbatim. The three `map` reports
+stay uncommitted at `.scratch/agents/map-{ui,kb,close}-1.md` because they re-derive from the
+tree. Measured there, independently of the figures above and agreeing with them:
+`clinical_rule/3` is **not a bag member** — `tools/kb/clinical.mjs:631-638` derives all 48
+facts — and the vocabulary is 24 distinct conditions / 26 occurrences / 22 unconditional, 27
+distinct modifiers / 74 occurrences, 12 document scopes.
+
+Resume order: settle the third-outcome gap with the user and collect the key plus the
+Cloudflare inputs → write `.agent/contracts/m5u16.md` → producer, `JudgmentClient` under the
+stub, Worker, UI, probe set with its forced-arm control → `rev` per lens → `Phase: MAINTAIN`.
 
 The `pri` high **Browser WASM abort** row stays gated and does **not** unblock here: it needs a
 runaway `assertz` to abort the runtime, and this design composes no goal, so the abort stays
