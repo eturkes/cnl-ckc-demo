@@ -99,6 +99,17 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   runtime validation at the worker boundary, query and proof paths that never drain
   diagnostics, and a 3,139,261 B worker booting before user activation.
 
+- **Free-text intake is measured and HELD.** The judgment layer is feasible — routing onto the
+  seven compiled catalog goals scores 13/13 with 6/6 abstention, and the escape hatch is what
+  refuses, not the `covered` Noul, which cannot separate in-scope from out-of-scope at any
+  threshold. Nothing is built. When a MAINTAIN unit opens it, intake resolves a CATALOG ID and
+  nothing else, so the executed goal stays byte-identical to the drop-down's and the
+  non-negotiable is untouched by construction; concept grounding adds executable surface and
+  is a separate decision. Key stays server-side behind a **serverless proxy** — Cloudflare
+  Workers, chosen on abuse containment — never `dangerouslyAllowBrowser`. Measurements, costs
+  and limits → `.agent/archive/nl-intake.md`; probe code → branch `wt/res-nl-intake`
+  `ae608ff`. Queued in `.agent/deferred.md`.
+
 **MAIN:** premise display = deduplicated steps inside the EXISTING ladder rungs, never a new
 step type (3,930 leaves / 346 premises), carrying hypothetical origin and no source line.
 u6's oracle is GREEN at base, credited RED-under-dependency-removal alone — it guards the
@@ -109,7 +120,7 @@ shows the wrong label.
 
 # Deferred
 
-Queue = `.agent/deferred.md` — 57 rows, acceptance check each, plus the accepted-open review
+Queue = `.agent/deferred.md` — 59 rows, acceptance check each, plus the accepted-open review
 ids, whose checks stay in `.agent/archive/review-expedited.md`. Every defect there is
 user-ruled into MAINTAIN; a MAINTAIN request closes rows off this queue.
 

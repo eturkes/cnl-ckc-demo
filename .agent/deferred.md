@@ -39,6 +39,23 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
 - **Question deep-links + history** — encode the selected catalog ID in the URL.
   Accept: reload and back/forward restore only a catalog ID, and never start a
   run without an explicit user action. `pri` low.
+- **`claims:seed` carries a verdict across an edit past the claim-cell truncation** — the
+  registry stores a truncated claim and the seed re-keys on that stored text, so an edit
+  BEYOND the cut silently preserves the old `disposition` and `command`. Hit live: appending
+  `wt/res-nl-intake` `ae608ff` to the `waves.md` evidence-branch bullet left R215 reading
+  `true` under a command that verified only the four older SHAs. Caught by eye, not by the
+  gate. Accept: the seed keys on the FULL claim text (hash it if the cell must stay short), so
+  any edit to a claim drops its verdict to `unknown`; firing input = this exact append,
+  re-seeded, which must leave the row unadjudicated. `pri` med.
+- **Free-text intake, measured but unbuilt** — `Intent` names free text as the future intake;
+  a judgment layer routes it onto the seven compiled catalog goals at 13/13 with 6/6
+  abstention, and the same request without an escape hatch answers a migraine question with
+  opioid advice. Measurements + limits → `.agent/archive/nl-intake.md`; probes → branch
+  `wt/res-nl-intake` `ae608ff`. User ruling: hold. Accept: intake resolves a catalog ID and
+  nothing else, so the executed goal stays byte-identical to the drop-down's; an `other`
+  verdict refuses visibly and starts no run; abstention is a conjunction, never the `covered`
+  Noul alone; the key never reaches the bundle; and a declared probe set with its gold is
+  committed with a refusal control that fires. `pri` low.
 - **Offline asset caching** — service worker over the hashed runtime assets.
   Accept: a second visit boots with the network offline, and a changed KB input
   hash invalidates every stale PVM asset. `pri` low.
@@ -403,6 +420,7 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | `graph:check`'s spanning-scope grader is edge-blind | probe returns `data-edge-id`; both directions non-null; a wrong edge and a missing reverse row redden by id |
 | Three `kb:asset-check` root tables grade nothing when emptied | each refuses an emptied table by its own name; the success line names every control that fired |
 | Two registry rows say `deferred` and cite no queue row | both subjects carry a queue row, both dispositions cite it, `claims:check` refuses an uncited `deferred` |
+| `claims:seed` keeps a verdict when a claim is edited past the stored cell's truncation | the seed keys on full claim text, so any edit drops the row to `unknown`; the `waves.md` branch-list append re-seeds unadjudicated |
 
 ## Accepted-open
 
