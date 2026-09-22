@@ -99,16 +99,38 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   runtime validation at the worker boundary, query and proof paths that never drain
   diagnostics, and a 3,139,261 B worker booting before user activation.
 
-- **Free-text intake is measured and HELD.** The judgment layer is feasible — routing onto the
-  seven compiled catalog goals scores 13/13 with 6/6 abstention, and the escape hatch is what
-  refuses, not the `covered` Noul, which cannot separate in-scope from out-of-scope at any
-  threshold. Nothing is built. When a MAINTAIN unit opens it, intake resolves a CATALOG ID and
-  nothing else, so the executed goal stays byte-identical to the drop-down's and the
-  non-negotiable is untouched by construction; concept grounding adds executable surface and
-  is a separate decision. Key stays server-side behind a **serverless proxy** — Cloudflare
-  Workers, chosen on abuse containment — never `dangerouslyAllowBrowser`. Measurements, costs
-  and limits → `.agent/archive/nl-intake.md`; probe code → branch `wt/res-nl-intake`
-  `ae608ff`. Queued in `.agent/deferred.md`.
+- **Free-text patient intake is BUILT, and it SELECTS rules rather than composing goals.**
+  Reverses the hold. The user describes a clinical situation; the demo returns the subset of
+  the 48 shipped `clinical_rule/3` recommendations whose guideline conditions that description
+  meets, each derived through the existing clinical path unchanged.
+  - The 346 `clinical_premise` facts are **not** patient facts: 346 raw-distinct but **42
+    shapes** once the per-sentence skolem is normalized, and the two commonest are pure
+    universal-instantiation scaffolding present in 46 and 45 of 46 sentences
+    (`guideline_cardinality(actual,_H,na,eq,1)`, `guideline_entity(actual,_H,clinician,countable)`).
+    Selecting premises therefore cannot select recommendations, and **`derive/5` is not
+    touched**. The archive's O4 framing — compile patient facts into `derive/5`, new engine
+    surface — is measured WRONG and superseded.
+  - The discriminating vocabulary is `clinical_rule/3`: **24 distinct conditions** over 48
+    rules, 22 of them unconditional, 27 action modifiers, 12 document scopes. Conditions read
+    as situations (`a clinician prescribes an opioid-pain-medication with a benzodiazepine`).
+  - Intake is ONE judgment request — 24 condition Nouls + a scope Choice (pain type, therapy
+    phase) + an `other` hatch. **No goal is composed and no new executable surface is added**:
+    every derivation is an existing predicate over existing shipped records, and the answer
+    set is a subset of the 48 shipped recommendations, so it cannot fabricate.
+  - Refusal = hatch fired or empty match set, **never a probability threshold** — `covered`
+    spans [0.50,0.97] in-scope against [0.01,0.65] out, which overlap, so no threshold
+    separates them.
+  - Three outcomes stay distinct on screen: refused at intake / matched nothing, naming what
+    the description asserts that the KB has **no vocabulary for** / answered. That third list
+    is the anti-hallucination story made visible rather than asserted, and it is honest about
+    real gaps — the condition vocabulary carries no numeric dose threshold and nothing about
+    sleep-disordered breathing.
+  - Key stays server-side behind a **serverless proxy** — Cloudflare Workers, chosen on abuse
+    containment — never `dangerouslyAllowBrowser`.
+
+  Measurements, costs and limits → `.agent/archive/nl-intake.md`; probe code → branches
+  `wt/res-nl-intake` `ae608ff` (routing, grounding, vocabulary) and `wt/res-u16-shape`
+  `490dfcf` (premise shape, rule shape) — never rename either.
 
 **MAIN:** premise display = deduplicated steps inside the EXISTING ladder rungs, never a new
 step type (3,930 leaves / 346 premises), carrying hypothetical origin and no source line.
@@ -120,9 +142,10 @@ shows the wrong label.
 
 # Deferred
 
-Queue = `.agent/deferred.md` — 59 rows, acceptance check each, plus the accepted-open review
-ids, whose checks stay in `.agent/archive/review-expedited.md`. Every defect there is
-user-ruled into MAINTAIN; a MAINTAIN request closes rows off this queue.
+Queue = `.agent/deferred.md` — 58 rows, acceptance check each, plus the accepted-open review
+ids, whose checks stay in `.agent/archive/review-expedited.md`. Every defect there stays
+user-ruled into MAINTAIN and is **out of u16's scope**; the free-text intake row left the
+queue for the u16 spine below.
 
 The IMPLEMENT close review added the last six, each with its red witness cited by branch where
 one exists: `G3` the edge-blind spanning-scope grader, `C2` three `kb:asset-check` root tables
@@ -130,16 +153,48 @@ that grade nothing when emptied, `C5` two registry rows saying `deferred` and ci
 `C6` u13's firing record with no base revision, `C10` two rows that may already be satisfied,
 and the `gate.md` static-analysis bullet that overstates its own completeness.
 
-No unfinished unit remains. u3–u15 closed, contract each in `.agent/contracts/`, close
-summaries in `.agent/archive/units-m5.md`; the judgment review is discharged in
-`.agent/review.md`. MAINTAIN takes one `/goal` per request, so the spine is empty until you
-open one.
+u3–u15 closed, contract each in `.agent/contracts/`, close summaries in
+`.agent/archive/units-m5.md`; the IMPLEMENT-close judgment review is discharged in
+`.agent/review.md` with no open row.
+
+**u16 — free-text patient intake** is the whole spine. Tier `kernel`: it decides which shipped
+recommendation answers a user, so it carries the full battery. Contract →
+`.agent/contracts/m5u16.md`, testable predicates written before code. Scope, bound by
+`Decisions` above:
+
+- Extract the 24 conditions, 27 action modifiers and 12 document scopes out of
+  `clinical_rule/3` into a typed artifact that intake and the UI both read. Producer lives in
+  `tools/kb/` and is graded like its neighbours, firing input included.
+- One `JudgmentClient` seam with Jev behind it, so the whole path runs end to end under a
+  deterministic stub before the key lands. **The key is not in the environment — ask for it.**
+  Proxy = Cloudflare Worker; `README.md:112` `connect-src` gains the Worker origin; `wrangler`
+  needs Node 22, which `engines` already permits and which belongs in its own deploy job so
+  the secretlint-capped gate job stays on 20.19.0.
+- Three outcomes distinct on screen, the third naming what the description asserts that the KB
+  has no vocabulary for.
+- A held-out probe set with its gold committed, plus the forced-arm control — hatch removed —
+  which must fire. The existing n=19/n=12 numbers are feasibility signals on MAIN-authored
+  phrasing, never accuracy estimates, and do not transfer to this larger answer space.
+- `.claude/rules/proof.md` gains the premise-scaffolding / condition-discriminator law this
+  unit proves. It is deliberately NOT written ahead of the build.
+
+The `pri` high **Browser WASM abort** row stays gated and does **not** unblock here: it needs a
+runaway `assertz` to abort the runtime, and this design composes no goal, so the abort stays
+unreachable. Reaching it still requires the ad-hoc goal path that `Decisions` declines.
 
 # Phase
 
-MAINTAIN.
+IMPLEMENT.
 
-The `rev` judgment review closed IMPLEMENT: 32 of 32 rows adjudicated in `.agent/review.md`
+Reopened from MAINTAIN by user ruling. Free-text patient intake is product work under full
+Engineering law — new executable UI surface, a third-party judgment dependency and a deploy
+target — not a maintenance request, so it runs as an IMPLEMENT phase with u16 as its only
+unit rather than as one MAINTAIN `/goal`. Everything the prior close established stands as the
+baseline and is not re-derived: the gate, the contracts, CI, the scanners and the shipped
+surfaces are done, so the IMPLEMENT arc resumes at its unit step.
+
+The prior close, which remains the baseline: the `rev` judgment review closed the first
+IMPLEMENT pass — 32 of 32 rows adjudicated in `.agent/review.md`
 against the fixed check set in `.agent/contracts/review-implement.md`, **no open row** — 20
 `pass`, 6 `n/a: deferred`, `A8` fixed in place and 5 fails deferred by user ruling. Five `rev`
 teammates ran it, one per lens, each diff-blind in its own worktree, with MAIN holding the

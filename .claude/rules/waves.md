@@ -38,7 +38,9 @@ are this repo's deltas.
   meta-interpreter, cap-completeness, oracle, clause-identity and budget probe),
   `wt/res-m2-3` `24d027e` (asset-shape, PDF-viewer, ladder-UI), `wt/res-nl-intake` `ae608ff`
   (free-text intake: vocabulary gap, BM25 recall, graph-vs-clause parity, ad-hoc goal
-  fail-closed, concept grounding, topic routing — findings `.agent/archive/nl-intake.md`).
+  fail-closed, concept grounding, topic routing — findings `.agent/archive/nl-intake.md`),
+  `wt/res-u16-shape` `490dfcf` (u16 shape: skolem-normalized premise census, `clinical_rule/3`
+  condition and modifier census — findings `.agent/archive/nl-intake.md` `O4 remeasured`).
 - A probe branch also carries probe code `main` cannot hold. `wt/res-nl-intake`'s four `.mjs`
   probes fail `pnpm lint` under the typescript-eslint project service, which resolves every
   linted file through `tsconfig.json`; adding `.agent/` to the ESLint ignore list would be a

@@ -104,8 +104,45 @@ M5) leaves ample headroom.
   how an expected-output table stops being evidence.
 - Only `probe-vocab-gap.py`, `probe-candidate-recall.py` and `probe-routing.py --control`
   ship refusal controls. The other five probes are demonstrations, not graded checks.
-- O3 template selection beyond topic routing, and O4 clinical-context premise compilation into
-  `derive/5`, are UNMEASURED. O4 needs a new engine surface.
+- O3 template selection beyond topic routing is UNMEASURED.
+- **O4 is measured and its framing was WRONG** — see the section below. Premise compilation
+  into `derive/5` is not the build, and no new engine surface is needed.
+
+## O4 remeasured: the premises are scaffolding, the conditions discriminate
+
+Base `ace381c`. Probes → branch `wt/res-u16-shape` `490dfcf`, `probes/u16-shape/{premise,rule}-shape.mjs`
+— same lint carve-out as `wt/res-nl-intake`, same never-rename rule. Both read the verified bag
+through `payloadSource`, so they re-derive from committed state.
+
+| id | measurement |
+|---|---|
+| M14 | 346 `clinical_premise` facts over **46** sentences — the 2 `true`-antecedent gates carry none, matching `proof.md`'s bare-KB count |
+| M15 | **346 raw-distinct literals, 42 distinct once `'$clinical_hypothetical'(Doc,S,N)` is normalized.** 29 normalized shapes span more than one sentence, covering 333 of the 346 occurrences |
+| M16 | the two commonest are universal-instantiation scaffolding: `guideline_cardinality(actual,_H,na,eq,1)` in **46 of 46** sentences, `guideline_entity(actual,_H,clinician,countable)` in **45 of 46** |
+| M17 | predicate histogram over normalized premises: entity 108, cardinality 108, arg 68, event 34, pp 23, operator 4, property 1 |
+| M18 | `clinical_rule/3`: 48 rules, **24 distinct condition strings**, 26 condition occurrences, **22 rules unconditional**, 27 distinct action modifiers, 44 distinct verb+object pairs, modes `should` 45 / `fact` 2 / `can` 1, spread over 12 documents (1–9 rules each) |
+
+**M15 + M16 kill the premise-selection design.** The premises are not a patient-fact
+vocabulary; they are the hypothetical clinician and cardinality that `proof.md` says apply a
+universal. 45 of 46 sentences assume the same thing, so no selection over them partitions the
+corpus — a judgment layer choosing premises would choose nothing.
+
+**M18 locates the signal that does partition it.** The conditions read as clinical situations
+— `a clinician continues an opioid-therapy for a chronic-pain and the clinician prescribes an
+opioid at a dosage`, `a clinician prescribes an opioid-pain-medication with a benzodiazepine`
+— and 24 of them fit one judgment request. The 22 unconditional rules ride document scope plus
+the `for a {acute,subacute,chronic}-pain` modifier instead.
+
+Consequences that bind u16:
+
+- `derive/5`, `clinical_derive/4,5` and the shipped premises are **untouched**. The unit adds a
+  selector over existing records, not a new execution path.
+- The condition vocabulary has **no numeric dose threshold** (`at a dosage` and `above a
+  diminishing-return-level` are the nearest) and **nothing on sleep-disordered breathing**. An
+  intake mock-up promising either would be describing a KB this is not; the honest surface is
+  the third outcome, which names such a term as present in the description and absent here.
+- 24 Nouls + one scope Choice is ONE request, well inside the 255-option cap and far cheaper
+  than M8's 800-name fan-out, which this design does not need.
 
 ## Delivery posture
 

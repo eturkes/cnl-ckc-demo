@@ -44,18 +44,13 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   BEYOND the cut silently preserves the old `disposition` and `command`. Hit live: appending
   `wt/res-nl-intake` `ae608ff` to the `waves.md` evidence-branch bullet left R215 reading
   `true` under a command that verified only the four older SHAs. Caught by eye, not by the
-  gate. Accept: the seed keys on the FULL claim text (hash it if the cell must stay short), so
+  gate. **Hit live a SECOND time on that same row**: appending `wt/res-u16-shape` `490dfcf` to
+  the same bullet re-seeded 380 rows with **zero** `unknown`, R215 still `true` under the
+  five-SHA command, and only the seven line anchors below it moved. Both occurrences were
+  repaired by hand-editing the command cell, which is not a fix.
+  Accept: the seed keys on the FULL claim text (hash it if the cell must stay short), so
   any edit to a claim drops its verdict to `unknown`; firing input = this exact append,
   re-seeded, which must leave the row unadjudicated. `pri` med.
-- **Free-text intake, measured but unbuilt** — `Intent` names free text as the future intake;
-  a judgment layer routes it onto the seven compiled catalog goals at 13/13 with 6/6
-  abstention, and the same request without an escape hatch answers a migraine question with
-  opioid advice. Measurements + limits → `.agent/archive/nl-intake.md`; probes → branch
-  `wt/res-nl-intake` `ae608ff`. User ruling: hold. Accept: intake resolves a catalog ID and
-  nothing else, so the executed goal stays byte-identical to the drop-down's; an `other`
-  verdict refuses visibly and starts no run; abstention is a conjunction, never the `covered`
-  Noul alone; the key never reaches the bundle; and a declared probe set with its gold is
-  committed with a refusal control that fires. `pri` low.
 - **Offline asset caching** — service worker over the hashed runtime assets.
   Accept: a second visit boots with the network offline, and a changed KB input
   hash invalidates every stale PVM asset. `pri` low.
