@@ -227,9 +227,9 @@ IMPLEMENT.
 Reopened from MAINTAIN by user ruling. Free-text patient intake is product work under full
 Engineering law — new executable UI surface, a third-party judgment dependency and a deploy
 target — not a maintenance request, so it runs as an IMPLEMENT phase with u16 as its only
-unit rather than as one MAINTAIN `/goal`. Everything the prior close established stands as the
-baseline and is not re-derived: the gate, the contracts, CI, the scanners and the shipped
-surfaces are done, so the IMPLEMENT arc resumes at its unit step.
+unit. Everything the prior close established stands as the baseline and is not re-derived:
+the gate, the contracts, CI, the scanners and the shipped surfaces are done, so the IMPLEMENT
+arc resumes at its unit step.
 
 The prior close, which remains the baseline: the `rev` judgment review closed the first
 IMPLEMENT pass — 32 of 32 rows adjudicated in `.agent/review.md`

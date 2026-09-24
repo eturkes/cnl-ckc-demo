@@ -22,12 +22,16 @@ and `git -C ~/agents log -- claude/CLAUDE.project.md` says what each refresh mov
   this one included — load on first touch of a matching file.
 - After a refresh, read `git diff HEAD -- CLAUDE.md` before committing. **Both directions
   obligate a `.claude/rules/` pass**, and the added-line direction obligates a census too.
-  A REMOVED line is repo law that needs a rule file, or template law that moved to the global
-  `CLAUDE.md`: a project file that restated the moved text now duplicates it, and one that
-  carried an exception to it now reads as a contradiction. An ADDED line is an obligation the
-  tree has never been measured against — a rule file that permits what it now forbids
-  contradicts it, the practice it names needs a binding here, and the corpus needs a sweep for
-  where it already breaks. Project docs cite the bullet and add bindings only.
+  A REMOVED line is repo law that needs a rule file, template law that moved to the global
+  `CLAUDE.md` — a project file that restated it now duplicates it, and one that carried an
+  exception to it now reads as a contradiction — or template law cut as redundant with the
+  current model. **A cut is not a reversal**: its practice stands with no rule line restoring
+  it, and nothing here flips it to its opposite (the UI/UX + `Report every issue` lines). A
+  practice retires only where its upstream commit names a real change, as `/goal`'s did
+  (`Retired`). An ADDED line is an obligation the tree has never been measured against — a
+  rule file that permits what it now forbids contradicts it, the practice it names needs a
+  binding here, and the corpus needs a sweep for where it already breaks. Project docs cite
+  the bullet and add bindings only.
 
 ## State files
 
@@ -52,7 +56,12 @@ Named so a later diff reads cleanly and nobody restores them:
 - The milestone vocabulary (M1-M5, MODE, WORK-UNIT, PLANNING, MILESTONE-REVIEW) → the four
   phases in `CLAUDE.md` `Session flow`. Archived text still uses it.
 - The sizing model (`M = 45 + 2·I`, the 1.77 multiplier, the 223K one-window aim) →
-  retired by user ruling. A `/goal` phase runs across compactions, so per-unit window fitting
+  retired by user ruling. A phase session runs across compactions, so per-unit window fitting
   no longer binds MAIN; teammates size by the global `CLAUDE.md` ≤~190K rule and a wave
   re-measures if it overruns. Derivation stays in `.agent/archive/roadmap.md`.
+- `/goal` as the phase-session vehicle → a plain session per pasted phase body. The flow
+  stays; law now holds it where the goal's Stop hook did: the turn ends once the body's
+  `Met when` holds or nothing can move without the user (`CLAUDE.md` `Session flow`), and the
+  global `agent-flow` PreCompact hook carries that condition across compaction. Commit history
+  still says `/goal`.
 - `.serena/` → deleted. Code intelligence is the built-in `LSP` tool.
