@@ -29,7 +29,7 @@ are this repo's deltas.
   built KB bytes gets re-seeded after MAIN's `kb:build`, and `node_modules` stays a symlink
   because dependency ids resolve through pnpm rather than through the fs allow-list.
 - Surviving teammate tips stay in **branch** form (`wt/<name>`): every committed citation —
-  contracts, ledgers, reviewer reports, `Deferred` rows — names the branch. A Close-order
+  contracts, ledgers, reviewer reports, `.agent/deferred.md` rows — names the branch. A Close-order
   branch sweep covers its own wave's roster alone; renaming a cited branch invalidates the
   record it was preserving.
 - Research probe branches held as evidence, worktrees removed: `wt/res-m1-1` `36cc56f`
@@ -46,14 +46,8 @@ are this repo's deltas.
   linted file through `tsconfig.json`; adding `.agent/` to the ESLint ignore list would be a
   grader change, and `CLAUDE.md` `Engineering` reserves those for their own approved unit.
 
-## Dispatch
+## Units + teammates
 
-- **Every commit carries a `dispatch:` trailer in its body**, not units alone — roles + scope
-  (`dispatch: map-controls — firing-input census; MAIN authors the controls`), or
-  `dispatch: solo — <licence>` naming one of the six closed licences. It is the only durable
-  record of who did the work: `.scratch/agents/` is gitignored and a `wt/<name>` branch
-  outlives the roster that named it, so `git log --grep='^dispatch:'` is the census surface.
-  Trailers start at `2592828`; every commit from there on carries one.
 - **A check ships with its red witness in the unit's acceptance row, cited from the commit
   body.** The form is already in the tree: `19/20 RED at base `22053ef``, `5/9 RED at base
   `e71486e``, each beside the command that reproduces it — `git show <sha>:<producer> >
@@ -79,12 +73,12 @@ are this repo's deltas.
   could never reach 0 and every poll under-reported the wave. Seed a row-anchored pattern
   instead — `^| R[0-9]* |.*| unknown |$` — and keep the bare token out of prose.
 - **An agent that reads for a whole window and writes nothing is replaced, not steered.** u15's
-  first `map-rules` burned 153K across five flat polls with zero rows written, its last message
-  still its opening statement of intent; a same-shape peer finished 158 rows in that window, so
-  the task was never the problem. The successor's brief opens by naming the predecessor's
-  failure and demanding an `Edit` as its FIRST tool call — it filled all 171 rows. When a
-  successor then goes flat holding a complete mapping in its transcript, the directive that
-  moves it names a batch size: flush ≤20 rows per `Edit`, never one final write.
+  first mapping teammate burned 153K across five flat polls with zero rows written, its last
+  message still its opening statement of intent; a same-shape peer finished 158 rows in that
+  window, so the task was never the problem. The successor's brief opens by naming the
+  predecessor's failure and demanding an `Edit` as its FIRST tool call — it filled all 171 rows.
+  When a successor then goes flat holding a complete mapping in its transcript, the directive
+  that moves it names a batch size: flush ≤20 rows per `Edit`, never one final write.
 - **`cat >>` on a file already in MAIN's context re-echoes the WHOLE file back into
   context.** Append with the `Edit` tool anchored on the file's last line instead; it echoes
   nothing.

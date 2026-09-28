@@ -52,7 +52,7 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   pinned so it cannot drift. Queued in `.agent/deferred.md`.
 - **Security lane.** Live `pnpm audit` in the gate, no allowlist; secretlint pinned `^12` so
   Node stays 20; static analysis = ESLint security rules only, no CodeQL/Semgrep; the
-  `Deferred` defects stay deferred into MAINTAIN. Wiring → `.claude/rules/gate.md`.
+  `.agent/deferred.md` defects stay deferred into MAINTAIN. Wiring → `.claude/rules/gate.md`.
 - **`binding:check` holds declared tables that stay APART.** `REQUIRED` = the answer-path
   register, every row naming the part of the non-negotiable it holds up; `LIFECYCLE` = claims
   the view makes on its own; a lifecycle row never dilutes the non-negotiable roll call. One
@@ -85,7 +85,7 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   second derivation per surface is what R1 forbids. Nothing is trimmed across ends — eliding a
   repeat would render a nested pair identically to a divergent one. Forms + the four-case table
   → `.claude/rules/graph.md`.
-- **Judgment review reads the SHIPPED SURFACE, not a commit range.** The `rev` lenses read the
+- **Judgment review reads the SHIPPED SURFACE, not a commit range.** The `reviewer` lenses read the
   working tree at close — `src/`, `tools/`, the gate, the contracts — so a defect is caught
   wherever it ships and superseded code is never re-read. The u3–u10 pass the ledger called
   outstanding is discharged by that reading, not by a separate history pass.
@@ -141,8 +141,8 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
     names the real origin instead of a placeholder.
   - **Layout = free text FIRST, drop-down below.** The textarea is the primary intake at the
     top of the ask flow; `QuestionCombobox` keeps its exact look and sits under it as the "or
-    pick a built-in question" path. Both stay visible. This refines map-ui-1's U8, which had
-    proposed a separate sibling section.
+    pick a built-in question" path. Both stay visible. This refines U8 of the UI mapping report
+    (`.scratch/agents/map-ui-1.md`), which had proposed a separate sibling section.
   - **Japanese = copy parity only.** `en.ts`/`ja.ts` parity as `copy:check` already enforces;
     Japanese free-text intake is NOT graded, the probe set and its gold are English, and no
     bilingual-intake claim is made either way.
@@ -162,63 +162,61 @@ u6's oracle is GREEN at base, credited RED-under-dependency-removal alone — it
 compiled KB, which the answer-path defect never broke. u11 graded the scope records, u12 the
 projection model and u13 the shown edge; **rendered output is graded by `pnpm graph:check`
 alone**, because a model-side assertion and a mocked DOM suite both survive a renderer that
-shows the wrong label.
+shows the wrong label. The `pri` high **Browser WASM abort** queue row stays gated through
+u16: it needs a runaway `assertz` to abort the runtime, and u16 composes no goal, so the abort
+stays unreachable. Reaching it still requires the ad-hoc goal path the free-text ruling
+declines.
 
-# Deferred
+# Tasks
 
-Queue = `.agent/deferred.md` — 58 rows, acceptance check each, plus the accepted-open review
-ids, whose checks stay in `.agent/archive/review-expedited.md`. Every defect there stays
-user-ruled into MAINTAIN and is **out of u16's scope**; the free-text intake row left the
-queue for the u16 spine below.
-
-The IMPLEMENT close review added the last six, each with its red witness cited by branch where
-one exists: `G3` the edge-blind spanning-scope grader, `C2` three `kb:asset-check` root tables
-that grade nothing when emptied, `C5` two registry rows saying `deferred` and citing no row,
-`C6` u13's firing record with no base revision, `C10` two rows that may already be satisfied,
-and the `gate.md` static-analysis bullet that overstates its own completeness.
-
-u3–u15 closed, contract each in `.agent/contracts/`, close summaries in
-`.agent/archive/units-m5.md`; the IMPLEMENT-close judgment review is discharged in
-`.agent/review.md` with no open row.
-
-**u16 — free-text patient intake** is the whole spine. Tier `kernel`: it decides which shipped
-recommendation answers a user, so it carries the full battery. Contract →
-`.agent/contracts/m5u16.md`, testable predicates written before code. Scope, bound by
-`Decisions` above:
-
-- Extract the 24 conditions, 27 action modifiers and 12 document scopes out of
-  `clinical_rule/3` into a typed artifact that intake and the UI both read. Producer lives in
-  `tools/kb/` and is graded like its neighbours, firing input included.
-- One `JudgmentClient` seam with Jev behind it, so the whole path runs end to end under a
-  deterministic stub before the key lands. **The key is not in the environment — ask for it.**
-  Proxy = Cloudflare Worker; `README.md:112` `connect-src` gains the Worker origin; `wrangler`
-  needs Node 22, which `engines` already permits and which belongs in its own deploy job so
-  the secretlint-capped gate job stays on 20.19.0.
-- Three outcomes distinct on screen, the third naming what the description asserts that the KB
-  has no vocabulary for.
-- A held-out probe set with its gold committed, plus the forced-arm control — hatch removed —
-  which must fire. The existing n=19/n=12 numbers are feasibility signals on MAIN-authored
-  phrasing, never accuracy estimates, and do not transfer to this larger answer space.
-- `.claude/rules/proof.md` gains the premise-scaffolding / condition-discriminator law this
-  unit proves. It is deliberately NOT written ahead of the build.
-
-**u16 progress: orientation only, nothing built.** The wave ran and was harvested; the session
-wound down before the contract. Resume from `.agent/archive/u16-wave1/index.md`, which carries
-the roster, the four rulings, the blocking gap, the still-owed inputs and the resume order;
-its two `res` reports hold the Worker and Jev code sketches verbatim. The three `map` reports
-stay uncommitted at `.scratch/agents/map-{ui,kb,close}-1.md` because they re-derive from the
-tree. Measured there, independently of the figures above and agreeing with them:
-`clinical_rule/3` is **not a bag member** — `tools/kb/clinical.mjs:631-638` derives all 48
-facts — and the vocabulary is 24 distinct conditions / 26 occurrences / 22 unconditional, 27
-distinct modifiers / 74 occurrences, 12 document scopes.
-
-Resume order: settle the third-outcome gap with the user and collect the key plus the
-Cloudflare inputs → write `.agent/contracts/m5u16.md` → producer, `JudgmentClient` under the
-stub, Worker, UI, probe set with its forced-arm control → `rev` per lens → `Phase: MAINTAIN`.
-
-The `pri` high **Browser WASM abort** row stays gated and does **not** unblock here: it needs a
-runaway `assertz` to abort the runtime, and this design composes no goal, so the abort stays
-unreachable. Reaching it still requires the ad-hoc goal path that `Decisions` declines.
+- [ ] **u16 — free-text patient intake**, the phase's only unit; the queue's free-text intake
+  row became it. Tier `kernel`: it decides which shipped recommendation answers a user, so it
+  carries the full battery. Contract → `.agent/contracts/m5u16.md`, testable predicates
+  written before code. Scope, bound by `Decisions` above:
+  - Extract the 24 conditions, 27 action modifiers and 12 document scopes out of
+    `clinical_rule/3` into a typed artifact that intake and the UI both read. Producer lives in
+    `tools/kb/` and is graded like its neighbours, firing input included.
+  - One `JudgmentClient` seam with Jev behind it, so the whole path runs end to end under a
+    deterministic stub before the key lands. **The key is not in the environment — ask for
+    it.** Proxy = Cloudflare Worker; `README.md:112` `connect-src` gains the Worker origin;
+    `wrangler` needs Node 22, which `engines` already permits and which belongs in its own
+    deploy job so the secretlint-capped gate job stays on 20.19.0.
+  - Three outcomes distinct on screen, the third naming what the description asserts that the
+    KB has no vocabulary for.
+  - A held-out probe set with its gold committed, plus the forced-arm control — hatch removed —
+    which must fire. The existing n=19/n=12 numbers are feasibility signals on MAIN-authored
+    phrasing, never accuracy estimates, and do not transfer to this larger answer space.
+  - `.claude/rules/proof.md` gains the premise-scaffolding / condition-discriminator law this
+    unit proves. It is deliberately NOT written ahead of the build.
+  - Progress: orientation only, nothing built. The wave ran and was harvested; the session
+    wound down before the contract. Resume from `.agent/archive/u16-wave1/index.md`, which
+    carries the roster, the four rulings, the blocking gap, the still-owed inputs and the
+    resume order; its two research reports hold the Worker and Jev code sketches verbatim. The
+    three mapping reports stay uncommitted at `.scratch/agents/map-{ui,kb,close}-1.md` because
+    they re-derive from the tree. Measured there, independently of the figures above and
+    agreeing with them: `clinical_rule/3` is **not a bag member** —
+    `tools/kb/clinical.mjs:631-638` derives all 48 facts — and the vocabulary is 24 distinct
+    conditions / 26 occurrences / 22 unconditional, 27 distinct modifiers / 74 occurrences, 12
+    document scopes.
+  - [ ] Settle the third-outcome gap with the user; collect the key plus the Cloudflare inputs.
+  - [ ] Write `.agent/contracts/m5u16.md`.
+  - [ ] Producer.
+  - [ ] `JudgmentClient` under the stub.
+  - [ ] Worker.
+  - [ ] UI.
+  - [ ] Probe set with its forced-arm control.
+  - [ ] `reviewer` per lens → `Phase: MAINTAIN`.
+- Queue → `.agent/deferred.md`: 61 rows, acceptance check each, plus the accepted-open review
+  ids, whose checks stay in `.agent/archive/review-expedited.md`; the 57 rows queued before
+  agents@8fc2e19 stay user-ruled into MAINTAIN, **out of u16's scope** (`Decisions` Security
+  lane). The IMPLEMENT-close review
+  added six, each with its red witness cited by branch where one exists: `G3` the
+  edge-blind spanning-scope grader, `C2` three `kb:asset-check` root tables that grade nothing
+  when emptied, `C5` two registry rows saying `deferred` and citing no row, `C6` u13's firing
+  record with no base revision, `C10` two rows that may already be satisfied, and the
+  `gate.md` static-analysis bullet that overstates its own completeness. The agents@8fc2e19
+  template refresh added the last four: a registry pipe parse, `Tasks` with no mechanical owner,
+  the `reviewer` verdict vocabulary, u16's missing phase-binding steps.
 
 # Phase
 
@@ -231,10 +229,11 @@ unit. Everything the prior close established stands as the baseline and is not r
 the gate, the contracts, CI, the scanners and the shipped surfaces are done, so the IMPLEMENT
 arc resumes at its unit step.
 
-The prior close, which remains the baseline: the `rev` judgment review closed the first
-IMPLEMENT pass — 32 of 32 rows adjudicated in `.agent/review.md`
+The prior close, which remains the baseline: u3–u15 closed, contract each in
+`.agent/contracts/`, close summaries in `.agent/archive/units-m5.md`; the `reviewer` judgment
+review closed the first IMPLEMENT pass — 32 of 32 rows adjudicated in `.agent/review.md`
 against the fixed check set in `.agent/contracts/review-implement.md`, **no open row** — 20
-`pass`, 6 `n/a: deferred`, `A8` fixed in place and 5 fails deferred by user ruling. Five `rev`
+`pass`, 6 `n/a: deferred`, `A8` fixed in place and 5 fails deferred by user ruling. Five `reviewer`
 teammates ran it, one per lens, each diff-blind in its own worktree, with MAIN holding the
 security-vocabulary lane. The non-negotiable is held: all 8 `S` rows pass, `S1` and `S2` on a
 differential that moves the answer and the proof when the cited clauses are erased.

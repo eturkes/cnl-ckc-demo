@@ -1,6 +1,6 @@
 # Deferral queue
 
-The queue `.agent/spec.md` `Deferred` points at: off-spine improvements, held out of the
+The queue `.agent/spec.md` `Tasks` points at: off-spine improvements, held out of the
 attached state because a queue only grows. Each entry carries the acceptance check that
 closes it and a `pri` — `high` = a defect reachable in the shipped product, `med` = a gate or
 evidence gap under a durable claim, `low` = a feature or a tidy-up. A row closes on its own
@@ -274,11 +274,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   and 25 such rows reduce to 22 index lines, so some queue items share a line or have none.
   Accept: one command derives the index from the queue rows, and a `high`/`med` row added
   without its line fails; the regenerated index round-trips to the same row set. `pri` low.
-- **The `dispatch:` trailer has no mechanical owner** — it is the only durable record of who
-  did each piece of work, and nothing refuses a commit that omits it. Accept: one command
-  reads `2592828..HEAD`, fails on any commit whose body has no
-  `dispatch:` line, and passes on the history as it stands; a commit added without the
-  trailer reddens it. `pri` low.
 - **Twelve shipped bounds have no owner** — a legitimate change updates the constant instead
   of being refused. Worst first: `src/graph/SemanticGraph.svelte:106`
   `relationPool.slice(0, 60)`, which truncates a node's relation list with no indication, then
@@ -380,6 +375,30 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   passes either way and cannot reach the sentence. Accept: the bullet names the `advice.ts`
   config exception and why it cannot be inline, and `pnpm claims:seed` re-derives R066 so the
   re-worded claim is adjudicated afresh. `pri` low.
+- **A registry command cell cannot hold a pipe** — `tools/claims-sweep.mjs` parses the
+  `command` and `disposition` cells as `([^|]*)`, so a command carrying an escaped `\|` grades
+  clean under `claims:check` but loses its verdict on the next `claims:seed`: the claim key
+  swallows half the command and the row drops to `unknown`. Measured on R209 with
+  `git show HEAD:CLAUDE.md \| cmp - CLAUDE.md`: check rc 0, seed → `unknown | unknown`, check
+  rc 1. Accept: a row whose command holds `\|` survives `claims:seed` byte-identical, or
+  `claims:check` refuses the pipe by row id. `pri` low.
+- **`spec.md` `Tasks` has no mechanical owner** — nothing refuses a spec whose open unit is not
+  a `- [ ]` row, whose ticked row carries no SHA, or whose last line stops pointing at
+  `.agent/deferred.md`. The template refresh proved `Deferred` → `Tasks` preservation with a
+  scratch-local script, `.scratch/refresh/unit-ids.py` (old ids vs `Tasks` ∪ `Phase`, backticked
+  spans + numbers, two planted-loss controls rc 1). Accept: one committed command grades that
+  layout inside `pnpm gate`, and each of the three planted defects reddens it by name. `pri`
+  low.
+- **`waves.md` `Report grading` and the `reviewer` role disagree on verdicts** — the law's
+  `--verdict` form wants the finding cell to open `pass:` or `fail(low|med|high):`, while
+  `~/.claude/agents/reviewer.md` writes `pass` | `finding` with severity `blocker` | `major` |
+  `minor`. A reviewer following its role fails the repo's grader. Accept: `waves.md` names the
+  one vocabulary a reviewer brief carries, and a role-format verdict table grades clean under
+  `.scratch/validate-report.py --verdict` or its committed port. `pri` low.
+- **u16's `Tasks` sub-steps omit two template phase bindings** — `CLAUDE.md` `Session flow`
+  puts a `consultant` on each phase plan at orientation close and a `tester` on each committed
+  kernel contract; u16's steps name only `reviewer` per lens. Accept: the u16 checklist carries
+  both steps in order, or the u16 session records why either does not apply. `pri` low.
 
 ## Index — one line per `high` + `med` row
 
