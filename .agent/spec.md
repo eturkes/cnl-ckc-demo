@@ -195,7 +195,7 @@ declines.
     `devEngines.runtime` + `engines` + CI; secretlint + jsdom caps lifted and their Dependabot
     ignores pruned; `@typesafe-ai/sdk` + `wrangler` added; Pages publish removed (CI = gate +
     scanners). Accept: `pnpm gate` green under Node 24, `node --version` inside it = v24.
-  - [ ] **contract** `.agent/contracts/m5u16.md`, committed → funds `tester` (pure kernel:
+  - [x] 2a230cc **contract** `.agent/contracts/m5u16.md`, committed → funds `tester` (pure kernel:
     chunker, request builder, response parser, selector) + `scientist` (held-out probes).
   - [ ] **u16b producer** (`kernel`) `tools/kb/intake.mjs` → `kb/generated/intake-vocabulary.json`:
     conditions, sections (Box 3), pain sets, per-rule trigger + build-time `clinical_derive/4`
@@ -209,10 +209,24 @@ declines.
     allowlist, rate limit, timeout, validated response; `wrangler dev` + `.dev.vars`.
   - [ ] **u16f UI** (`kernel`): textarea first, combobox below, result panel, three outcomes,
     gap list, "Show derivation", en/ja copy, contrast pairs, DOM + axe.
-  - [ ] **u16g probes** (`kernel`): scientist's held-out gold committed → live run → committed
-    replay + per-case report; gate replays it and fires the forced-arm control.
+  - [ ] **u16g probes** (`kernel`): scientist's held-out gold committed (568f36c, 30 cases) →
+    live run → committed replay + per-case report; gate replays it and fires the forced-arm
+    control.
   - [ ] **u16h close** (`docs`): `.claude/rules/proof.md` law, README, claims registry,
     deferred rows, `reviewer` per lens → `.agent/review.md` → `Phase: MAINTAIN`.
+  - **Resume here** (session paused for a host restart). UNCOMMITTED in the working tree,
+    written but not yet graded by the tester suites or reviewed: u16b producer + reader
+    (`tools/kb/intake.mjs`, `clinical.mjs` `sentences`, `build.mjs`/`check.mjs` wiring, manifest
+    v6, `src/intake/vocabulary.ts`; `kb:build` + `kb:asset-check` green, 48/48 goals derive their
+    rule on the image); u16c core (`src/intake/{chunker,request,judgment,select,client}.ts`,
+    lint + `pnpm check` clean); u16d (`src/intake/service.ts`; `DemoController` one engine
+    queue `#exclusive`, `derive`, `reveal`) untested; u16e (`worker/index.ts`,
+    `wrangler.jsonc` port 8791, Vite proxy, `pnpm intake:dev`, gitignored `.dev.vars` holding
+    the key) — one live dev call returned 200. Diff-blind red suites wait on branches
+    `wt/tester-1` (K/Q/J/S/C + oracles) and `wt/tester-2` (V/D/W, `9fb8849`), worktrees under
+    `.scratch/worktrees/`; roster `.scratch/agents/roster.md`. Next: merge both suites → run →
+    fix → `reviewer` per kernel diff → one commit per sub-unit (u16b first); then u16f UI.
+    Before merging, re-check suites built on the old API sheet (`noul` field, stopwords).
 - Queue → `.agent/deferred.md`: 61 rows, acceptance check each, plus the accepted-open review
   ids, whose checks stay in `.agent/archive/review-expedited.md`; the 57 rows queued before
   agents@8fc2e19 stay user-ruled into MAINTAIN, **out of u16's scope** (`Decisions` Security
