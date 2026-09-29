@@ -24,6 +24,7 @@
   },
   "include": [
     "src/**/*.ts",
+    "worker/**/*.ts",
     "src/**/*.svelte",
     "tests/**/*.ts",
     "tools/**/*.mjs",

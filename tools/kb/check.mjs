@@ -22,6 +22,7 @@ import { GENERATED_DIR, ROOT, loadManifest, payloadSource } from './paths.mjs';
 const SCAN_ROOTS = [
   'tools',
   'src',
+  'worker',
   'kb/generated',
   'vite.config.ts',
   'package.json',
@@ -33,7 +34,7 @@ const SCAN_ROOTS = [
  * makes them oracles. Production reading them would make the demo's answers
  * indistinguishable from a lookup.
  */
-const PRODUCTION_ROOTS = ['src', 'tools', 'vite.config.ts', 'index.html'];
+const PRODUCTION_ROOTS = ['src', 'tools', 'worker', 'vite.config.ts', 'index.html'];
 /**
  * Assembled from parts so this scanner is not itself a match. A byte scan sees a
  * static import, a dynamic `import()` and an `fs` read alike, which an ESLint
