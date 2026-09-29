@@ -3,7 +3,9 @@
 A static browser demo of an executable clinical-guideline knowledge base. It runs
 SWI-Prolog in a web worker, combines matching recommendations into answers for seven
 prepared clinical questions, traces each cited contribution back to its source, and
-exposes the full semantic graph.
+exposes the full semantic graph. You can also describe a clinical situation in your own
+words, and the demo derives the recommendations whose guideline conditions that
+description meets.
 
 The shipped answers are produced at run time. They are not stored UI fixtures.
 
@@ -23,6 +25,10 @@ The shipped answers are produced at run time. They are not stored UI fixtures.
 - Parser, document, cardinality, and modality nodes stay in the provenance
   graph. The primary ontology view hides those nodes. It keeps modality and
   negation visible as state on the relationships themselves.
+- Free-text intake. A language model judges which guideline conditions a description
+  meets. Prolog then derives each matching recommendation, so the model selects rules
+  but writes none of the text. Phrases that the knowledge base has no vocabulary for
+  are listed as judged gaps.
 - Light and dark themes, responsive layouts, local fonts, and relative asset
   paths for nested static hosting.
 - An English and Japanese interface. The header toggle switches the interface
@@ -35,8 +41,19 @@ The shipped answers are produced at run time. They are not stored UI fixtures.
   advice.
 - Every compiled document is labelled `unreviewed`; no human adjudication is
   recorded.
-- The seven questions are prepared examples, not unrestricted natural-language
-  input.
+- The seven questions are prepared examples.
+- Free-text intake can only select from the 48 recommendations that the knowledge base
+  compiles. A description that is not about opioid prescribing, pain care or opioid
+  use disorder is refused.
+- The language model judges which conditions apply. A judgment is not a proof: a gap
+  phrase is judged absent, never proved absent, and at most 16 phrases are judged.
+- The intake does not enforce the guideline's own exclusions, such as cancer-related
+  pain, sickle cell disease, or palliative and end-of-life care.
+- Intake is graded in English. The Japanese interface translates the controls, not
+  the free-text matching.
+- On 30 held-out descriptions, the live model matched the expected outcome in 27. The
+  per-case results are in `tests/intake/report.json`. These numbers describe that set
+  alone.
 - The controlled language is a projection. The evidence ladder identifies
   material kept, changed, or omitted.
 
@@ -66,6 +83,30 @@ source. **Find in graph** activates the lazy graph and moves directly to that
 answer map. Orange paths come only from the selected source contribution; muted
 branches show how its primary concept connects elsewhere in the knowledge base.
 
+### Free-text intake
+
+The intake sends the description to a local proxy, which holds the TypeSafe API key
+and asks the language model one fixed question set. The browser never holds the key.
+
+1. Put the key in a file named `.dev.vars` at the repository root:
+
+   ```sh
+   printf 'TYPESAFE_API_KEY=%s\n' "$(cat ~/.config/typesafe/key)" > .dev.vars
+   ```
+
+2. Start the proxy in one terminal, then the demo in a second terminal:
+
+   ```sh
+   pnpm intake:dev
+   pnpm dev
+   ```
+
+3. Type a description in **Clinical situation**, then select **Match recommendations**.
+   Select **Show derivation** on a row to run its prepared question and open the proof.
+
+`.dev.vars` is ignored by git. Without the proxy, the intake reports that the matching
+service did not respond, and the prepared questions still work.
+
 For a production build:
 
 ```sh
@@ -82,6 +123,11 @@ formatting, lint, types, tests, and the production bundle:
 ```sh
 pnpm gate
 ```
+
+`pnpm intake:probe` reruns the held-out descriptions against the live model and needs
+the key. The gate replays the recorded responses instead, so it needs no key. With
+`pnpm intake:dev` and `pnpm dev` running, `pnpm intake:live` checks the whole intake path
+in a real browser.
 
 The release check adds byte-for-byte knowledge-base reproduction and real-browser
 proofs for the nested production build, live answers, lazy graph, responsive
@@ -101,8 +147,9 @@ claim to check.
 
 ## Static deployment
 
-The application has no server-side runtime. Publish `dist/` at any static path;
-Vite emits relative URLs. The included CI workflow runs the gate on every push to
+The prepared questions need no server-side runtime. Publish `dist/` at any static path;
+Vite emits relative URLs. Free-text intake needs the judgment proxy in `worker/`. It runs
+locally under `pnpm intake:dev`, and this repository does not deploy it. The included CI workflow runs the gate on every push to
 `main` and on pull requests. It publishes nothing.
 
 SWI-Prolog/WASM generates JavaScript functions, and the app starts a module

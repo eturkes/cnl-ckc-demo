@@ -8,6 +8,10 @@ paths:
   - "src/provenance/**"
   - "tests/clinical-*.ts"
   - "tests/proof-*.ts"
+  - "tools/kb/intake.mjs"
+  - "src/intake/**"
+  - "worker/**"
+  - "tests/intake-*.ts"
 ---
 
 # Inference and proof
@@ -26,6 +30,32 @@ Real inference over the compiled clauses is measured feasible: asserting one hyp
 clinician entity + cardinality makes `should` operators, `maximize` events (7),
 `nonopioid-therapy` entities (3) and the full operator→event→arg→entity join all derive. The
 blocker was ever a missing clinical context premise, never a missing KB.
+
+## Free-text intake selects; it never composes
+
+A clinical premise is universal-instantiation scaffolding, not a patient fact: 346 raw
+`clinical_premise` facts normalize to 42 shapes once the per-sentence skolem is removed, and
+the two commonest (`guideline_cardinality(actual,_H,na,eq,1)`,
+`guideline_entity(actual,_H,clinician,countable)`) sit in 46 and 45 of the 46 sentences.
+Matching a description to premises therefore cannot pick a recommendation. The
+discriminator is the rule's own condition: `clinical_rule/3` carries 24 distinct conditions
+over 48 rules, 22 of them unconditional, across 12 documents.
+
+- The intake judgment chooses rule ids among those 48 and phrases among the user's own
+  words. Each chosen id runs its BUILD-TIME `clinical_derive/4` goal from
+  `intake-vocabulary.json`; the shown text is rendered from the `Rule` the engine returned.
+  No goal is assembled at run time and `derive/5` is untouched, so the intake adds no
+  executable surface and cannot fabricate a recommendation.
+- An unconditional rule is triggered by its CDC Box 3 section instead. A section "yes"
+  therefore selects every unconditional rule of that section, however qualified: 95 of the 97
+  derived rules the held-out gold does not list are section-triggered
+  (`tests/intake/report.json`).
+- Declared model limits, not defects: `unstated` pain admits the 13 pain-agnostic rules
+  alone; the pain Choice is single-valued; a gap phrase is judged absent, never proved
+  absent, and phrases past the 16th go unjudged; the guideline's own exclusions (cancer
+  pain, sickle cell disease, palliative and end-of-life care) are not enforced.
+- Refusal = the `other` pain hatch alone, never a probability threshold: in-scope and
+  out-of-scope coverage scores overlap (`.agent/archive/nl-intake.md`).
 
 ## The closed saved state
 

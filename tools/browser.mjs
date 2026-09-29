@@ -15,6 +15,8 @@ import { readdirSync } from 'node:fs';
 /**
  * @typedef {object} Locator
  * @property {() => Promise<void>} click
+ * @property {(value: string) => Promise<void>} fill
+ * @property {() => Locator} first
  * @property {() => Promise<number>} count
  * @property {(name: string) => Promise<string | null>} getAttribute
  * @property {() => Promise<string | null>} textContent

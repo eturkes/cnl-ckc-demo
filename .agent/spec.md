@@ -17,6 +17,9 @@ questions by deterministic Prolog execution.
 # Artifacts
 
 - `src/` + `index.html` — the demo. `pnpm dev`; production `pnpm build && pnpm preview`.
+- `worker/` + `wrangler.jsonc` — local judgment proxy for free-text intake, key in gitignored
+  `.dev.vars`. `pnpm intake:dev` beside `pnpm dev`.
+- `tools/intake-probe.mjs` — live held-out accuracy, keyed + billed. `pnpm intake:probe`.
 
 # Decisions
 
@@ -218,15 +221,12 @@ declines.
     `pnpm gate` green on a clean tree at the closing commit, `.agent/review.md` no open row,
     every `Decisions` entry implemented or deferred with reason, `Phase: MAINTAIN` committed
     (prototype retirement n/a — `stack.md` carve-out).
-  - **Resume here.** Working tree holds u16c–u16g, all graded: tester-1/2/3 suites (wt/tester-1
-    4da48b3, wt/tester-2 b9278ac, wt/tester-3 7ab6142) green; reviewer-2/3/4 findings fixed
-    (wt/reviewer-3 40fd9d6, wt/reviewer-4 897a0a6 witnesses). Land in order c → d → e → f → g,
-    each gate-verified from a clean checkout at `.scratch/worktrees/base`; per-unit file lists =
-    review snapshots on `wip/u16-review` (b 28e98dd, c d5e9cc6, d c210b9c, e 66a4960) + later
-    fixes. u16e review = MAIN (security lane), all rows pass. Owed: reviewer on u16f + u16g,
-    LIFECYCLE U4 rows, W7/X3 live two-server check, u16h close. Roster + finds:
-    `.scratch/agents/roster.md`, `.scratch/u16-finds.md`.
-- Queue → `.agent/deferred.md`: 61 rows, acceptance check each, plus the accepted-open review
+  - **Resume here.** u16b–u16g landed (43a5da8 9666042 bc2c2b6 504e149 99596de d939de0), each
+    gate-verified from a clean checkout at `.scratch/worktrees/base`. u16h docs commit next,
+    then the close review: fixed check set `.agent/contracts/review-u16.md` (X C G I F rows →
+    one `reviewer` per lens; M1–M2 = MAIN) → rows into `.agent/review.md` → `Phase: MAINTAIN`.
+    Roster `.scratch/agents/roster.md`; finds `.scratch/u16-finds.md`.
+- Queue → `.agent/deferred.md`: 63 rows, acceptance check each, plus the accepted-open review
   ids, whose checks stay in `.agent/archive/review-expedited.md`; the 57 rows queued before
   agents@8fc2e19 stay user-ruled into MAINTAIN, **out of u16's scope** (`Decisions` Security
   lane). The IMPLEMENT-close review

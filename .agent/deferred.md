@@ -395,10 +395,24 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   `minor`. A reviewer following its role fails the repo's grader. Accept: `waves.md` names the
   one vocabulary a reviewer brief carries, and a role-format verdict table grades clean under
   `.scratch/validate-report.py --verdict` or its committed port. `pri` low.
-- **u16's `Tasks` sub-steps omit two template phase bindings** — `CLAUDE.md` `Session flow`
-  puts a `consultant` on each phase plan at orientation close and a `tester` on each committed
-  kernel contract; u16's steps name only `reviewer` per lens. Accept: the u16 checklist carries
-  both steps in order, or the u16 session records why either does not apply. `pri` low.
+- **The judgment Worker runs locally alone** — user ruling deferred the Cloudflare deploy and
+  stopped Pages publishing, so free-text intake exists only under `pnpm intake:dev` + Vite's
+  proxy. `worker/index.ts` spends one global limiter bucket (`key: 'intake'`), correct for one
+  local caller and wrong for a public one. Accept: a deployed Worker answers every W1–W6 case of
+  `tests/intake-worker.test.ts` from its own origin, the limiter keys per client
+  (`CF-Connecting-IP`), `ALLOWED_ORIGINS` names the published page alone, and the published
+  page reaches it under its `connect-src`. `pri` low.
+- **The selector's trigger-id mutant has no gate-resident control** — review INT-F1 showed the
+  ORACLE-S differential passed a selector that read one fixed trigger id; the fixture now varies
+  ids and the mutant dies, but the only proof is `wt/reviewer-3` `40fd9d6`
+  `tests/zz-review-intake-mutation.test.ts`, which spawns nested vitest runs. Accept: a gate
+  step or `binding:check` control plants that mutant and requires the selector suites to fail,
+  naming the case. `pri` low.
+- **A section "yes" selects every unconditional rule of that section** — 95 of the 97 derived
+  rules the held-out gold does not list are section-triggered (`.claude/rules/proof.md`), so
+  derived-rule precision on the 30 held-out cases is 143/240. Accept: an intake change lifts
+  precision on `pnpm intake:probe` without lowering recall below 143/163, re-derived through
+  `tests/intake-replay.test.ts`. `pri` low.
 
 ## Index — one line per `high` + `med` row
 
