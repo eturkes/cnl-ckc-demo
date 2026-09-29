@@ -120,13 +120,15 @@ describe('automatic selected-solution proof tracing', () => {
     const created = await run(engine);
     const first = engine.calls[0];
     created.selectSolution(1);
-    const second = engine.calls[1];
     expect(first?.signal?.aborted).toBe(true);
-    expect(second?.input).toMatchObject({ selected: solution(1).display });
+    // `m5u16.md` D5: the aborted proof still holds the engine, so its successor waits for it.
+    expect(engine.calls).toHaveLength(1);
 
     first?.result.resolve({ kind: 'proof', steps: [step(21)] });
     await tick();
     expect(created.provenance).toEqual({ kind: 'loading', solution: 1 });
+    const second = engine.calls[1];
+    expect(second?.input).toMatchObject({ selected: solution(1).display });
 
     second?.result.resolve({ kind: 'proof', steps: [step(22)] });
     await tick();

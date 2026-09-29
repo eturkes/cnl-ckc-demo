@@ -22,6 +22,7 @@ import type { ProvenanceState } from '../provenance/model.js';
 import { QUESTION_CATALOG, type QuestionId } from '../questions/catalog.js';
 import { serializeAnswer } from '../questions/serialize.js';
 import { AnswerService, type AnswerResult } from '../questions/service.js';
+import { IntakeService, type IntakeDerivation } from '../intake/service.js';
 
 /**
  * Bounds every demo run. These are working values, not the `BUDGET_MAX` ceilings:
@@ -47,21 +48,27 @@ const PROOF_BUDGET: Readonly<BudgetSpec> = Object.freeze({
   answerCap: 1,
 });
 
-/** The controller's whole view of the engine: one boot, one budgeted ask, one dispose. */
+/**
+ * The controller's whole view of the engine: one boot, one budgeted ask, the selected
+ * proof, the intake derivation by rule id, one dispose. No arbitrary goal crosses it.
+ */
 export interface DemoEngine {
   boot(): Promise<BootOutcome>;
   ask(id: unknown, budget: BudgetSpec, signal?: AbortSignal): Promise<AnswerResult>;
   prove?(input: ProofInput, budget: BudgetSpec, signal?: AbortSignal): Promise<ProofOutcome>;
+  derive?(ruleIds: readonly unknown[], signal?: AbortSignal): Promise<IntakeDerivation>;
   dispose(): void;
 }
 
 export const createDemoEngine = (): DemoEngine => {
   const client = new EngineClient();
   const service = new AnswerService(client);
+  const intake = new IntakeService(client);
   return {
     boot: () => client.boot(),
     ask: (id, budget, signal) => service.ask(id, budget, signal),
     prove: (input, budget, signal) => client.prove(input, budget, signal),
+    derive: (ruleIds, signal) => intake.derive(ruleIds, signal),
     dispose: () => {
       client.dispose();
     },
@@ -79,7 +86,7 @@ export type DemoState =
 interface ActiveRun {
   id: QuestionId;
   controller: AbortController;
-  /** Engine call alone. A successor waits on this, never on the state write. */
+  /** Engine call alone, queued through `#exclusive` rather than chained on a predecessor. */
   query: Promise<unknown>;
   /** Resolves once this run's state write has happened; `cancel()` awaits it. */
   done: Promise<void>;
@@ -113,6 +120,15 @@ export class DemoController {
 
   readonly #engine: DemoEngine;
   #active: ActiveRun | undefined;
+  /** The run whose state write landed last, so a caller awaiting a run can tell it was ITS run. */
+  #settledBy: AbortController | undefined;
+  /**
+   * One engine queue. The session holds a single active request, so a call must not go out
+   * while another — an aborted proof included — is still in flight; with nothing in flight it
+   * goes out in the caller's own tick.
+   */
+  #engineCalls = 0;
+  #engineTail: Promise<void> = Promise.resolve();
   #proofController: AbortController | undefined;
   #proofToken = 0;
   #disposed = false;
@@ -160,12 +176,80 @@ export class DemoController {
     }
   }
 
+  /**
+   * Derive intake rules by id through the same engine queue as every other call. `undefined`
+   * = no derivation ran: the engine carries no intake path, has not booted, or is disposed.
+   * Boot stays outside the queue, so readiness is checked here, as `#start` checks it.
+   */
+  derive(ruleIds: readonly unknown[], signal?: AbortSignal): Promise<IntakeDerivation> | undefined {
+    const derive = this.#engine.derive?.bind(this.#engine);
+    const booted = this.state.kind !== 'booting' && this.state.kind !== 'boot-error';
+    if (derive === undefined || !booted || this.#disposed) return undefined;
+    return this.#exclusive(() => derive(ruleIds, signal));
+  }
+
+  /**
+   * Run `question` and select the solution derived from `document` (`m5u16.md` U3).
+   *
+   * Three built-in questions span several documents and a run settles on solution 0, so
+   * opening "the question" alone would show another document's derivation. This waits for
+   * ITS run — a newer one supersedes it — then selects by the derived document, and reports
+   * a missing document instead of standing on the wrong one.
+   */
+  async reveal(
+    question: QuestionId,
+    document: string,
+  ): Promise<'shown' | 'missing' | 'superseded' | 'unavailable'> {
+    this.select(question);
+    const pending = this.run();
+    const mine = this.#active?.controller;
+    await pending;
+    if (mine === undefined || this.#settledBy !== mine || this.#active !== undefined) {
+      return mine === undefined ? 'unavailable' : 'superseded';
+    }
+    if (this.state.kind !== 'settled' || this.state.result.kind !== 'answer') return 'missing';
+    const index = this.state.result.solutions.findIndex((solution) => {
+      const answer = solution.bindings.Answer;
+      const cited = answer?.kind === 'compound' ? answer.args[0] : undefined;
+      return (
+        answer?.kind === 'compound' &&
+        answer.functor === 'clinical_answer' &&
+        cited?.kind === 'atom' &&
+        cited.value === document
+      );
+    });
+    if (index < 0) return 'missing';
+    this.selectSolution(index);
+    return 'shown';
+  }
+
   dispose(): void {
     this.#disposed = true;
     this.#active?.controller.abort();
     this.#proofController?.abort();
     this.#active = undefined;
     this.#engine.dispose();
+  }
+
+  #exclusive<T>(call: () => Promise<T>): Promise<T> {
+    const invoke = (): Promise<T> => {
+      try {
+        return call();
+      } catch (cause) {
+        return Promise.reject(cause instanceof Error ? cause : new Error(String(cause)));
+      }
+    };
+    const pending = this.#engineCalls === 0 ? invoke() : this.#engineTail.then(invoke, invoke);
+    this.#engineCalls += 1;
+    const settled = pending.then(
+      () => undefined,
+      () => undefined,
+    );
+    this.#engineTail = settled;
+    void settled.then(() => {
+      this.#engineCalls -= 1;
+    });
+    return pending;
   }
 
   async #boot(): Promise<void> {
@@ -205,18 +289,18 @@ export class DemoController {
         ? Promise.resolve(cancelledResult(id))
         : this.#engine.ask(id, DEMO_BUDGET, controller.signal);
 
-    // Nothing live means the engine call goes out in this same tick; only a
-    // predecessor's open iterator defers it, and the replacement is already
-    // visible either way. The predecessor's OUTCOME must not decide whether this
-    // run happens: a bare `.then(dispatch)` propagates its rejection instead, so
-    // this run would report a failure for a question it never asked.
-    const query = previous === undefined ? dispatch() : previous.query.then(dispatch, dispatch);
+    // Nothing in flight means the engine call goes out in this same tick; any call still
+    // open — a predecessor's iterator or an aborted proof — defers it through the queue,
+    // and the replacement is already visible either way. The queue runs this call after a
+    // predecessor's rejection too, so this run never reports a failure it did not have.
+    const query = this.#exclusive(dispatch);
     const retire = (): void => {
       if (this.#active?.controller === controller) this.#active = undefined;
     };
     const settle = (result: AnswerResult): void => {
       if (this.#active?.controller !== controller) return;
       retire();
+      this.#settledBy = controller;
       this.state = { kind: 'settled', id, result };
       this.solutionIndex = solutionsOf(result).length > 0 ? 0 : -1;
       const first = solutionsOf(result)[0];
@@ -239,7 +323,8 @@ export class DemoController {
   }
 
   async #trace(id: QuestionId, solution: number, selected: PlSolution): Promise<void> {
-    if (this.#engine.prove === undefined) {
+    const prove = this.#engine.prove?.bind(this.#engine);
+    if (prove === undefined) {
       const { TEXT } = messages.current;
       this.provenance = { kind: 'unavailable', message: TEXT.traceUnavailable() };
       return;
@@ -251,10 +336,12 @@ export class DemoController {
     this.provenance = { kind: 'loading', solution };
     let outcome: ProofOutcome;
     try {
-      outcome = await this.#engine.prove(
-        { goal: QUESTION_CATALOG[id].goal, selected: selected.display },
-        PROOF_BUDGET,
-        controller.signal,
+      outcome = await this.#exclusive(() =>
+        prove(
+          { goal: QUESTION_CATALOG[id].goal, selected: selected.display },
+          PROOF_BUDGET,
+          controller.signal,
+        ),
       );
     } catch (cause) {
       outcome = {
