@@ -3,31 +3,31 @@ import { createRequire } from 'node:module';
 
 import type { Engine, ImageLoader } from '../src/engine/session.js';
 import type { PlTerm } from '../src/engine/terms.js';
-import type { IntakeVocabulary, PainType } from '../src/intake/vocabulary.js';
+import type { IntakeRule, IntakeVocabulary, PainType } from '../src/intake/vocabulary.js';
 import { CLINICAL_QUESTIONS } from '../tools/kb/clinical.mjs';
 
 import { artifacts, bagFiles } from './clinical-test-support.js';
 
 // Restricted independent reader for the ground terms clinical_rule/3 emits.
 export const readGroundTerm = (source: string): PlTerm => {
-  const tokens =
+  const lexemes =
     source.match(/"(?:\\.|[^"\\])*"|'(?:\\.|''|[^'\\])*'|[a-zA-Z_][\w-]*|\d+|[()[\],.]/gu) ?? [];
   let offset = 0;
-  for (const token of tokens) {
+  for (const lexeme of lexemes) {
     while (offset < source.length && /\s/u.test(source[offset] ?? '')) offset += 1;
-    if (!source.startsWith(token, offset)) throw new Error(`unsupported ground term at ${offset}`);
-    offset += token.length;
+    if (!source.startsWith(lexeme, offset)) throw new Error(`unsupported ground term at ${offset}`);
+    offset += lexeme.length;
   }
   if (source.slice(offset).trim() !== '') throw new Error('unparsed ground-term suffix');
   let cursor = 0;
-  const consume = (token: string): void => {
-    if (tokens[cursor++] !== token) throw new Error(`expected ${token} in ${source}`);
+  const consume = (lexeme: string): void => {
+    if (lexemes[cursor++] !== lexeme) throw new Error(`expected ${lexeme} in ${source}`);
   };
   const sequence = (end: string): PlTerm[] => {
     const values: PlTerm[] = [];
-    if (tokens[cursor] !== end) {
+    if (lexemes[cursor] !== end) {
       values.push(term());
-      while (tokens[cursor] === ',') {
+      while (lexemes[cursor] === ',') {
         cursor += 1;
         values.push(term());
       }
@@ -36,23 +36,23 @@ export const readGroundTerm = (source: string): PlTerm => {
     return values;
   };
   const term = (): PlTerm => {
-    const token = tokens[cursor++];
-    if (token === undefined) throw new Error('truncated ground term');
-    if (token === '[') return { kind: 'list', items: sequence(']') };
-    if (token.startsWith('"')) return { kind: 'string', value: JSON.parse(token) as string };
-    if (/^\d+$/u.test(token)) return { kind: 'integer', value: Number(token) };
-    const value = token.startsWith("'")
-      ? token.slice(1, -1).replaceAll("''", "'").replaceAll("\\'", "'").replaceAll('\\\\', '\\')
-      : token;
-    if (tokens[cursor] === '(') {
+    const lexeme = lexemes[cursor++];
+    if (lexeme === undefined) throw new Error('truncated ground term');
+    if (lexeme === '[') return { kind: 'list', items: sequence(']') };
+    if (lexeme.startsWith('"')) return { kind: 'string', value: JSON.parse(lexeme) as string };
+    if (/^\d+$/u.test(lexeme)) return { kind: 'integer', value: Number(lexeme) };
+    const value = lexeme.startsWith("'")
+      ? lexeme.slice(1, -1).replaceAll("''", "'").replaceAll("\\'", "'").replaceAll('\\\\', '\\')
+      : lexeme;
+    if (lexemes[cursor] === '(') {
       cursor += 1;
       return { kind: 'compound', functor: value, args: sequence(')') };
     }
     return { kind: 'atom', value };
   };
   const value = term();
-  if (tokens[cursor] === '.') cursor += 1;
-  if (cursor !== tokens.length) throw new Error('extra ground-term tokens');
+  if (lexemes[cursor] === '.') cursor += 1;
+  if (cursor !== lexemes.length) throw new Error('extra ground-term lexemes');
   return value;
 };
 
@@ -101,7 +101,7 @@ export const box3 = new TextDecoder('utf-8', { fatal: true }).decode(
 );
 export const sectionRecords = box3
   .split('\n')
-  .filter((line) => /^.+ \(Recommendations \d+(?:(?:, | and |, and )\d+)*\)$/u.test(line))
+  .filter((line) => /^.+ \(Recommendations [\d, and]+\)$/u.test(line))
   .map((heading, index) => {
     const list = heading.slice(heading.lastIndexOf('(Recommendations ') + 17, -1);
     return {
@@ -152,7 +152,7 @@ export const referenceVocabulary = (): IntakeVocabulary => {
           : { kind: 'condition' as const, condition: condition.id },
       painSet: painTypes.filter((pain) => (own.length > 0 ? own : documentPains).includes(pain)),
       section: section.id,
-      question: question.id,
+      question: question.id as IntakeRule['question'],
       goal: `clinical_derive('${record.document}',${String(record.sentence)},Rule,Proof)`,
     };
   });

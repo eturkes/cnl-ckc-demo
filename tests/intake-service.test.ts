@@ -29,12 +29,19 @@ if (first === undefined || firstRecord === undefined) throw new Error('no intake
 const ruleTerm = firstRecord.rule;
 const call = (functor: string, ...args: PlTerm[]): PlTerm => ({ kind: 'compound', functor, args });
 const line = (value: number): PlTerm => call('line', { kind: 'integer', value });
+const node = (value: number, children: PlTerm[] = []): PlTerm =>
+  call(
+    'node',
+    line(value),
+    { kind: 'atom', value: 'test_head' },
+    { kind: 'list', items: children },
+  );
 const proof: PlTerm = {
   kind: 'list',
   items: [
-    call('clause', line(31), { kind: 'list', items: [line(7), line(31)] }),
+    node(31, [node(7), node(31)]),
     call('assumption', { kind: 'atom', value: 'hypothetical' }),
-    line(17),
+    node(17),
   ],
 };
 const solution = (Rule: PlTerm = ruleTerm, Proof: PlTerm = proof): PlSolution => ({
@@ -110,12 +117,12 @@ describe('intake derivation contract', () => {
       expect(Number.isFinite(value)).toBe(true);
       expect(value).toBeGreaterThan(0);
     }
-    for (const [index, id] of ids.entries()) {
-      expect(engine.query.mock.calls[index]).toEqual([
-        vocabulary.rules.find((rule) => rule.id === id)?.goal,
-        INTAKE_BUDGET,
-        signal,
-      ]);
+    expect(engine.query.mock.calls.map(([goal]) => goal).sort()).toEqual(
+      vocabulary.rules.map(({ goal }) => goal).sort(),
+    );
+    for (const [, budget, receivedSignal] of engine.query.mock.calls) {
+      expect(budget).toEqual(INTAKE_BUDGET);
+      expect(receivedSignal).toBe(signal);
     }
     expect(result.kind).toBe('derived');
     if (result.kind !== 'derived') throw new Error('valid ids rejected');

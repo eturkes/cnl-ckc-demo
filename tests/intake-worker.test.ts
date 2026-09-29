@@ -44,7 +44,7 @@ const request = (
 const validResponse = (sent: JudgmentRequest) => ({
   model: sent.model,
   answers: Object.fromEntries(
-    Object.entries(sent.questions).map(([id, question]) => {
+    Object.entries(sent.questions).map(([id, question]): [string, unknown] => {
       if (question.type === 'noul') return [id, { type: 'noul', value: 0.75 }];
       const options = Object.keys(question.criteria);
       return [
@@ -337,6 +337,20 @@ describe('intake Worker contract', () => {
     );
   });
 
+  it('W6 every representable non-2xx status follows the same status mapping', async () => {
+    const { createHandler } = await subject();
+    let graded = 0;
+    for (let status = 300; status <= 599; status += 1) {
+      const remote = upstream(() => new Response(null, { status }));
+      await checkResponse(
+        await createHandler({ ...remote, vocabulary }).fetch(request(), env()),
+        status === 429 || status === 529 ? 503 : 502,
+      );
+      graded += 1;
+    }
+    expect(graded).toBe(300);
+  });
+
   it.each([
     { name: 'non-JSON', response: () => new Response(KEY) },
     {
@@ -390,6 +404,30 @@ describe('intake Worker contract', () => {
     const { createHandler } = await subject();
     const fetch = vi.fn<typeof globalThis.fetch>().mockRejectedValue(new Error(KEY));
     await checkResponse(await createHandler({ fetch, vocabulary }).fetch(request(), env()), 502);
+  });
+
+  it('W6 the default deadline is exactly 15000 ms', async () => {
+    const { createHandler } = await subject();
+    vi.useFakeTimers();
+    try {
+      const fetch = vi.fn<typeof globalThis.fetch>(() => new Promise<Response>(() => {}));
+      let settled = false;
+      const result = createHandler({ fetch, vocabulary })
+        .fetch(request(), env())
+        .then((response) => {
+          settled = true;
+          return response;
+        });
+      await vi.advanceTimersByTimeAsync(0);
+      expect(fetch).toHaveBeenCalledTimes(1);
+      await vi.advanceTimersByTimeAsync(14_999);
+      expect(settled).toBe(false);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(settled).toBe(true);
+      await checkResponse(await result, 504);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it.each(['fetch', 'body'] as const)(
