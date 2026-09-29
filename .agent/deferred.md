@@ -408,7 +408,8 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   `tests/zz-review-intake-mutation.test.ts`, which spawns nested vitest runs. Accept: a gate
   step or `binding:check` control plants that mutant and requires the selector suites to fail,
   naming the case. `pri` low.
-- **A section "yes" selects every unconditional rule of that section** — 95 of the 97 derived
+- **A section "yes" selects every pain-compatible unconditional rule of that section** — 95 of
+  the 97 derived
   rules the held-out gold does not list are section-triggered (`.claude/rules/proof.md`), so
   derived-rule precision on the 30 held-out cases is 143/240. Accept: an intake change lifts
   precision on `pnpm intake:probe` without lowering recall below 143/163, re-derived through

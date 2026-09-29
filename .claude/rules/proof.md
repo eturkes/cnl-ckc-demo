@@ -47,7 +47,8 @@ over 48 rules, 22 of them unconditional, across 12 documents.
   No goal is assembled at run time and `derive/5` is untouched, so the intake adds no
   executable surface and cannot fabricate a recommendation.
 - An unconditional rule is triggered by its CDC Box 3 section instead. A section "yes"
-  therefore selects every unconditional rule of that section, however qualified: 95 of the 97
+  therefore selects every unconditional rule of that section whose pain set admits the judged
+  pain type, however qualified: 95 of the 97
   derived rules the held-out gold does not list are section-triggered
   (`tests/intake/report.json`).
 - Declared model limits, not defects: `unstated` pain admits the 13 pain-agnostic rules

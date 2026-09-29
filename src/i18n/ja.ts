@@ -359,7 +359,8 @@ export const TEXT = {
     '照合サービスへのリクエストが多すぎます。1分待ってから「もう一度照合」を選択してください。',
   intakeStale: () =>
     'このページと照合サービスの知識ベース語彙が一致しません。ページを再読み込みしてください。解決しない場合は、照合サービスを再起動してください。',
-  intakeServer: () => '照合サービスでエラーが発生しました。「もう一度照合」を選択してください。',
+  intakeServer: () =>
+    '照合サービスでエラーが発生しました。起動していない場合は、pnpm intake:dev で起動してください。その後「もう一度照合」を選択してください。',
   intakeNetwork: () =>
     '照合サービスが応答しませんでした。pnpm intake:dev で起動してから「もう一度照合」を選択してください。',
   intakeInvalid: () =>
@@ -377,8 +378,8 @@ export const TEXT = {
   intakeLimit: (code: string) => `導出は${code}の上限で停止しました。`,
   intakeError: (code: string, message: string) => `導出に失敗しました（${code}）。${message}`,
   intakeRuleCancelled: () => '導出を中止しました。',
-  intakeOverflow: (unjudged: number, limit: number) =>
-    `このデモが判定する語句は最大${String(limit)}件のため、${String(unjudged)}件の語句は判定していません。`,
+  intakeOverflow: (unjudged: number, limit: number, length: number) =>
+    `${String(unjudged)}件の語句は判定していません。このデモが判定する語句は最大${String(limit)}件で、各${String(length)}文字までです。`,
   intakeRevealMissing: () =>
     '用意された質問の結果にこの文書が含まれなかったため、導出は表示していません。',
   intakeRevealUnavailable: () => 'エンジンの準備ができていません。起動後にもう一度お試しください。',

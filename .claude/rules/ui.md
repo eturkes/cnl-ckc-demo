@@ -75,10 +75,11 @@ is why attribution and nonendorsement cannot live inside the About disclosure.
 
 ## Run lifecycle
 
-- **Run serialization chains on the ENGINE CALL, not on the state write.** A successor that
-  awaits its predecessor's settle promise adds a microtask hop a 4-tick test drain misses, and
-  the state write is guarded by run identity anyway. `ActiveRun` carries both promises for
-  that reason.
+- **Run serialization chains on the ENGINE CALL, not on the state write.** Every engine call —
+  query, proof, intake derivation — goes through the controller's one queue (`#exclusive`),
+  which dispatches after the previous call SETTLED, aborted proofs included. A successor that
+  awaited its predecessor's settle promise would add a microtask hop a 4-tick test drain
+  misses, and the state write is guarded by run identity anyway.
 - With nothing live the engine call must go out in `run()`'s own tick — an unconditional
   `await previous?.done` suspends even when `previous` is `undefined`.
 - `$state.raw` carries the state union because every transition replaces the whole member, so

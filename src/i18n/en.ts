@@ -398,7 +398,8 @@ export const TEXT = {
     'Too many requests reached the matching service. Wait one minute. Then select Match again.',
   intakeStale: () =>
     'This page and the matching service use different knowledge-base vocabularies. Reload the page. If the problem continues, restart the matching service.',
-  intakeServer: () => 'The matching service failed. Select Match again.',
+  intakeServer: () =>
+    'The matching service failed. If it is not running, start it with pnpm intake:dev. Then select Match again.',
   intakeNetwork: () =>
     'The matching service did not respond. Start it with pnpm intake:dev. Then select Match again.',
   intakeInvalid: () =>
@@ -415,8 +416,9 @@ export const TEXT = {
   intakeLimit: (code: string) => `The derivation stopped at the ${code} limit.`,
   intakeError: (code: string, message: string) => `The derivation failed (${code}). ${message}`,
   intakeRuleCancelled: () => 'The derivation was cancelled.',
-  intakeOverflow: (unjudged: number, limit: number) =>
-    `The demo judges at most ${String(limit)} phrases, so ${plural(unjudged, 'phrase')} went unjudged.`,
+  intakeOverflow: (unjudged: number, limit: number, length: number) =>
+    `${plural(unjudged, 'phrase')} went unjudged. The demo judges at most ${String(limit)} phrases, ` +
+    `each at most ${String(length)} characters long.`,
   intakeRevealMissing: () =>
     'The prepared question did not return this document, so no derivation is shown.',
   intakeRevealUnavailable: () => 'The engine is not ready. Try again when it has started.',

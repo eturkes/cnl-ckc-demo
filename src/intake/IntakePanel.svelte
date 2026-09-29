@@ -5,7 +5,7 @@
 
   import { messages } from '../i18n/locale.svelte.js';
 
-  import { MAX_CANDIDATES } from './chunker.js';
+  import { MAX_CANDIDATE_LENGTH, MAX_CANDIDATES } from './chunker.js';
   import type { IntakeController, IntakeRow } from './IntakeController.svelte.js';
   import type { PainOption } from './request.js';
   import type { Gap, Match } from './select.js';
@@ -253,7 +253,9 @@
     {/each}
   </ul>
   {#if overflow > 0}
-    <p class="meta" data-intake-overflow>{t.TEXT.intakeOverflow(overflow, MAX_CANDIDATES)}</p>
+    <p class="meta" data-intake-overflow>
+      {t.TEXT.intakeOverflow(overflow, MAX_CANDIDATES, MAX_CANDIDATE_LENGTH)}
+    </p>
   {/if}
 {/snippet}
 

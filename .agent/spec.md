@@ -122,7 +122,8 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
     section Nouls + candidate-term Nouls (below). **No goal is composed and no new executable surface is added**:
     every derivation is an existing predicate over existing shipped records, and the answer
     set is a subset of the 48 shipped recommendations, so it cannot fabricate.
-  - Refusal = hatch fired or empty match set, **never a probability threshold** — `covered`
+  - Refusal = the hatch alone; an empty match set is the distinct no-match outcome. **Never a
+    probability threshold** — `covered`
     spans [0.50,0.97] in-scope against [0.01,0.65] out, which overlap, so no threshold
     separates them.
   - Three outcomes stay distinct on screen: refused at intake / matched nothing, naming what

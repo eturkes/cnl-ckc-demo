@@ -86,8 +86,6 @@ export type DemoState =
 interface ActiveRun {
   id: QuestionId;
   controller: AbortController;
-  /** Engine call alone, queued through `#exclusive` rather than chained on a predecessor. */
-  query: Promise<unknown>;
   /** Resolves once this run's state write has happened; `cancel()` awaits it. */
   done: Promise<void>;
 }
@@ -318,7 +316,7 @@ export class DemoController {
       });
     });
 
-    this.#active = { id, controller, query, done };
+    this.#active = { id, controller, done };
     return done;
   }
 

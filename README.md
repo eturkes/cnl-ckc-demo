@@ -94,18 +94,20 @@ and asks the language model one fixed question set. The browser never holds the 
    printf 'TYPESAFE_API_KEY=%s\n' "$(cat ~/.config/typesafe/key)" > .dev.vars
    ```
 
-2. Start the proxy in one terminal, then the demo in a second terminal:
+2. Start the proxy in one terminal. Start the demo in a second terminal:
 
    ```sh
    pnpm intake:dev
    pnpm dev
    ```
 
-3. Type a description in **Clinical situation**, then select **Match recommendations**.
-   Select **Show derivation** on a row to run its prepared question and open the proof.
+3. Type a description in **Clinical situation**.
+4. Select **Match recommendations**.
+5. To open a proof, select **Show derivation** on a row. The demo runs that row's prepared
+   question and shows its derivation.
 
 `.dev.vars` is ignored by git. Without the proxy, the intake reports that the matching
-service did not respond, and the prepared questions still work.
+service failed. The prepared questions still work.
 
 For a production build:
 
