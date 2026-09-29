@@ -173,7 +173,11 @@ describe('intake derivation contract', () => {
     expect(result.kind).toBe('derived');
     if (result.kind !== 'derived') throw new Error('valid id rejected');
     expect(result.rules).toHaveLength(1);
-    expect(result.rules[0]?.status).not.toBe('derived');
+    expect(result.rules[0]).toEqual({
+      ruleId: first.id,
+      status: 'error',
+      error: { code: 'decode', message: expect.any(String) as string },
+    });
     expect(result.rules[0]).not.toHaveProperty('text');
   });
 

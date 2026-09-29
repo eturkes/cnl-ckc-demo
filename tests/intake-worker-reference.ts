@@ -130,7 +130,7 @@ const validate = (raw: unknown, request: JudgmentRequest) => {
     const answer = object(answers[id]);
     if (answer.type !== question.type) throw new Error(id);
     if (question.type === 'noul') {
-      if (!probability(answer.value)) throw new Error(id);
+      if (!probability(answer.noul)) throw new Error(id);
     } else {
       const values = object(answer.probabilities);
       if (!sameKeys(values, question.criteria)) throw new Error(id);
@@ -155,33 +155,48 @@ export const createHandler = (
     const headers: Record<string, string> = { Vary: 'Origin' };
     if (origin !== null && allowed.includes(origin))
       headers['Access-Control-Allow-Origin'] = origin;
-    const respond = (status: number, body: unknown = { status }) =>
-      Response.json(body, { status, headers });
-    if (origin !== null && !allowed.includes(origin)) return respond(403);
+    const respond = (status: number, body: unknown = { status }) => {
+      if (status === 405) headers.Allow = 'POST, OPTIONS';
+      if (status === 429) headers['Retry-After'] = '60';
+      return status === 204
+        ? new Response(null, { status, headers })
+        : Response.json(body, { status, headers });
+    };
+    if (origin === null || !allowed.includes(origin)) return respond(403);
     if (new URL(incoming.url).pathname !== '/api/judgment') return respond(404);
-    if (incoming.method === 'OPTIONS') return respond(200);
+    if (incoming.method === 'OPTIONS')
+      return respond(incoming.headers.get('Access-Control-Request-Method') === 'POST' ? 204 : 405);
     if (incoming.method !== 'POST') return respond(405);
+    if (Number(incoming.headers.get('Content-Length')) > 65_536) return respond(413);
     const body = await incoming.arrayBuffer();
     if (body.byteLength > 65_536) return respond(413);
     if (
       incoming.headers.get('Content-Type')?.split(';')[0]?.trim().toLowerCase() !==
       'application/x-www-form-urlencoded'
     )
-      return respond(400);
+      return respond(415);
     const source = new TextDecoder().decode(body);
     try {
       decodeURIComponent(source.replaceAll('+', ' '));
     } catch {
       return respond(400);
     }
+    if (source.split('&').some((pair) => !pair.includes('='))) return respond(400);
     const fields = new URLSearchParams(source);
+    if (
+      fields.getAll('description').length !== 1 ||
+      fields.getAll('vocabulary').length !== 1 ||
+      [...fields.keys()].some((key) => key !== 'description' && key !== 'vocabulary')
+    )
+      return respond(400);
     const description = fields.get('description');
     if (description === null || description.trim() === '' || description.length > 2000)
       return respond(400);
     const vocabulary = deps.vocabulary ?? referenceVocabulary();
     if (fields.get('vocabulary') !== vocabulary.digest) return respond(409);
-    if (!env.TYPESAFE_API_KEY) return respond(503);
-    if (env.INTAKE_RATE_LIMITER !== undefined) {
+    if (!env.TYPESAFE_API_KEY?.trim()) return respond(503);
+    if (env.INTAKE_RATE_LIMITER === undefined) return respond(503);
+    {
       try {
         if (
           !(

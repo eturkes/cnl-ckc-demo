@@ -102,8 +102,9 @@ export const box3 = new TextDecoder('utf-8', { fatal: true }).decode(
 export const sectionRecords = box3
   .split('\n')
   .filter((line) => /^.+ \(Recommendations [\d, and]+\)$/u.test(line))
-  .map((heading, index) => {
-    const list = heading.slice(heading.lastIndexOf('(Recommendations ') + 17, -1);
+  .map((line, index) => {
+    const heading = line.slice(0, line.lastIndexOf(' (Recommendations '));
+    const list = line.slice(line.lastIndexOf('(Recommendations ') + 17, -1);
     return {
       id: `s${String(index + 1)}`,
       heading,

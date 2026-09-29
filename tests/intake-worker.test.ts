@@ -45,7 +45,7 @@ const validResponse = (sent: JudgmentRequest) => ({
   model: sent.model,
   answers: Object.fromEntries(
     Object.entries(sent.questions).map(([id, question]): [string, unknown] => {
-      if (question.type === 'noul') return [id, { type: 'noul', value: 0.75 }];
+      if (question.type === 'noul') return [id, { type: 'noul', noul: 0.75 }];
       const options = Object.keys(question.criteria);
       return [
         id,
@@ -78,6 +78,7 @@ const checkResponse = async (
   origin: string | null = ORIGIN,
 ): Promise<void> => {
   expect(response.status).toBe(status);
+  if (status === 405) expect(response.headers.get('Allow')).toBe('POST, OPTIONS');
   expect([...response.headers.values()].join('\n')).not.toContain(KEY);
   expect(await response.clone().text()).not.toContain(KEY);
   if (origin !== null) {
@@ -128,9 +129,25 @@ describe('intake Worker contract', () => {
       }),
       { ALLOWED_ORIGINS: ORIGIN },
     );
-    expect(response.status).toBeGreaterThanOrEqual(200);
-    expect(response.status).toBeLessThan(300);
-    await checkResponse(response, response.status);
+    await checkResponse(response, 204);
+    expect(remote.fetch).not.toHaveBeenCalled();
+  });
+
+  it('W1 preflight methods other than POST receive 405 and the declared Allow header', async () => {
+    const { createHandler } = await subject();
+    const remote = upstream();
+    for (const method of ['', 'GET', 'DELETE']) {
+      await checkResponse(
+        await createHandler({ ...remote, vocabulary }).fetch(
+          request({
+            method: 'OPTIONS',
+            headers: { 'Access-Control-Request-Method': method },
+          }),
+          env(),
+        ),
+        405,
+      );
+    }
     expect(remote.fetch).not.toHaveBeenCalled();
   });
 
@@ -147,7 +164,23 @@ describe('intake Worker contract', () => {
       env(),
     );
     await checkResponse(response, 403, null);
-    expect(response.headers.get('Access-Control-Allow-Origin')).not.toBe(origin);
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBeNull();
+    expect(remote.fetch).not.toHaveBeenCalled();
+  });
+
+  it('W2 missing or outside Origin precedes every path and method decision', async () => {
+    const { createHandler } = await subject();
+    const remote = upstream();
+    for (const origin of [null, 'https://outside.example']) {
+      for (const path of ['/api/judgment', '/missing']) {
+        const response = await createHandler({ ...remote, vocabulary }).fetch(
+          request({ origin, path, method: 'DELETE' }),
+          env(),
+        );
+        await checkResponse(response, 403, null);
+        expect(response.headers.get('Access-Control-Allow-Origin')).toBeNull();
+      }
+    }
     expect(remote.fetch).not.toHaveBeenCalled();
   });
 
@@ -196,21 +229,66 @@ describe('intake Worker contract', () => {
     expect(remote.fetch).toHaveBeenCalledTimes(1);
   });
 
+  it('W3 malformed encoding, unnamed pairs, duplicates and missing fields get 400', async () => {
+    const { createHandler } = await subject();
+    const bodies = [
+      form() + '&description=duplicate',
+      form() + '&vocabulary=duplicate',
+      form() + '&%64escription=duplicate',
+      form() + '&nameless',
+      `description=%&vocabulary=${vocabulary.digest}`,
+      `description=%GG&vocabulary=${vocabulary.digest}`,
+      `description=%C3%28&vocabulary=${vocabulary.digest}`,
+      new URLSearchParams({ vocabulary: vocabulary.digest }).toString(),
+      new URLSearchParams({ description: DESCRIPTION }).toString(),
+    ];
+    for (const body of bodies) {
+      const remote = upstream();
+      await checkResponse(
+        await createHandler({ ...remote, vocabulary }).fetch(request({ body }), env()),
+        400,
+      );
+      expect(remote.fetch).not.toHaveBeenCalled();
+    }
+  });
+
+  it('W3 media-type parameters are ignored and the description bound counts UTF-16 units', async () => {
+    const { createHandler } = await subject();
+    const remote = upstream();
+    const handler = createHandler({ ...remote, vocabulary });
+    await checkResponse(
+      await handler.fetch(
+        request({
+          contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+          body: form('😀'.repeat(1000)),
+        }),
+        env(),
+      ),
+      200,
+    );
+    remote.fetch.mockClear();
+    await checkResponse(
+      await handler.fetch(request({ body: form('😀'.repeat(1001)) }), env()),
+      400,
+    );
+    expect(remote.fetch).not.toHaveBeenCalled();
+  });
+
   it.each(['application/json', 'text/plain', 'multipart/form-data; boundary=missing'])(
-    'W3 non-form or unparsable %s gets 400 without upstream',
+    'W3 non-form media type %s gets 415 without upstream',
     async (contentType) => {
       const { createHandler } = await subject();
       const remote = upstream();
       await checkResponse(
         await createHandler({ ...remote, vocabulary }).fetch(request({ contentType }), env()),
-        400,
+        415,
       );
       expect(remote.fetch).not.toHaveBeenCalled();
     },
   );
 
   it.each([undefined, '', '0'.repeat(64), '1'])(
-    'W3 missing or stale digest %s gets 409 without upstream',
+    'W3 missing digest gets 400 and mismatched digest %s gets 409',
     async (digest) => {
       const { createHandler } = await subject();
       const remote = upstream();
@@ -220,7 +298,7 @@ describe('intake Worker contract', () => {
           : form(DESCRIPTION, digest);
       await checkResponse(
         await createHandler({ ...remote, vocabulary }).fetch(request({ body }), env()),
-        409,
+        digest === undefined ? 400 : 409,
       );
       expect(remote.fetch).not.toHaveBeenCalled();
     },
@@ -234,6 +312,10 @@ describe('intake Worker contract', () => {
     const handler = createHandler({ ...remote, vocabulary });
     const boundary = await handler.fetch(request({ body: exact }), env());
     expect(boundary.status).not.toBe(413);
+    await checkResponse(
+      await handler.fetch(request({ headers: { 'Content-Length': '65537' } }), env()),
+      413,
+    );
     for (const body of [exact + 'x', prefix + '😀'.repeat(16_384)]) {
       expect(new TextEncoder().encode(body).length).toBeGreaterThan(65_536);
       remote.fetch.mockClear();
@@ -251,11 +333,22 @@ describe('intake Worker contract', () => {
     const bindings = env();
     const limit = vi.fn().mockResolvedValue({ success: false });
     bindings.INTAKE_RATE_LIMITER = { limit };
+    const response = await createHandler({ ...remote, vocabulary }).fetch(request(), bindings);
+    await checkResponse(response, 429);
+    expect(response.headers.get('Retry-After')).toBeTruthy();
+    expect(limit).toHaveBeenCalledTimes(1);
+    expect(remote.fetch).not.toHaveBeenCalled();
+  });
+
+  it('W4 an absent limiter returns 503 before upstream', async () => {
+    const { createHandler } = await subject();
+    const remote = upstream();
+    const bindings = env();
+    delete bindings.INTAKE_RATE_LIMITER;
     await checkResponse(
       await createHandler({ ...remote, vocabulary }).fetch(request(), bindings),
-      429,
+      503,
     );
-    expect(limit).toHaveBeenCalledTimes(1);
     expect(remote.fetch).not.toHaveBeenCalled();
   });
 
@@ -271,7 +364,7 @@ describe('intake Worker contract', () => {
     expect(remote.fetch).not.toHaveBeenCalled();
   });
 
-  it.each([undefined, ''])('W4 missing key %s returns 503 before upstream', async (key) => {
+  it.each([undefined, '', '  \t'])('W4 missing key %s returns 503 before upstream', async (key) => {
     const { createHandler } = await subject();
     const remote = upstream();
     const bindings = env();
@@ -281,6 +374,7 @@ describe('intake Worker contract', () => {
       await createHandler({ ...remote, vocabulary }).fetch(request(), bindings),
       503,
     );
+    expect(bindings.INTAKE_RATE_LIMITER?.limit).not.toHaveBeenCalled();
     expect(remote.fetch).not.toHaveBeenCalled();
   });
 
@@ -288,7 +382,11 @@ describe('intake Worker contract', () => {
     const { createHandler } = await subject();
     const { buildRequest } = await requestBuilder();
     const remote = upstream((sent) =>
-      Response.json({ ...validResponse(sent), usage: { total_tokens: 1 }, ignored: KEY }),
+      Response.json({
+        ...validResponse(sent),
+        usage: { input_tokens: 1, output_tokens: 1 },
+        ignored: KEY,
+      }),
     );
     const handler = createHandler({ ...remote, vocabulary });
     const response = await handler.fetch(request(), env());
@@ -302,18 +400,12 @@ describe('intake Worker contract', () => {
 
   it('W5 caller fields cannot replace model, questions, state or the other hatch', async () => {
     const { createHandler } = await subject();
-    const { buildRequest } = await requestBuilder();
     const remote = upstream();
     const body =
       form() + '&model=caller-model&questions=caller-question&state=caller-state&hatch=false';
     const response = await createHandler({ ...remote, vocabulary }).fetch(request({ body }), env());
-    expect([200, 400]).toContain(response.status);
-    await checkResponse(response, response.status);
-    if (response.status === 400) expect(remote.fetch).not.toHaveBeenCalled();
-    else {
-      expect(remote.sent).toHaveLength(1);
-      expect(remote.sent[0]?.body).toEqual(buildRequest(vocabulary, DESCRIPTION).request);
-    }
+    await checkResponse(response, 400);
+    expect(remote.fetch).not.toHaveBeenCalled();
   });
 
   it.each([400, 401, 403, 404, 408, 500, 502, 503])(
@@ -367,7 +459,7 @@ describe('intake Worker contract', () => {
         const raw = validResponse(sent);
         return Response.json({
           ...raw,
-          answers: { ...raw.answers, extra: { type: 'noul', value: 0.5 } },
+          answers: { ...raw.answers, extra: { type: 'noul', noul: 0.5 } },
         });
       },
     },
@@ -377,7 +469,7 @@ describe('intake Worker contract', () => {
         const raw = validResponse(sent);
         return Response.json({
           ...raw,
-          answers: { ...raw.answers, c01: { type: 'noul', value: 1.01 } },
+          answers: { ...raw.answers, c01: { type: 'noul', noul: 1.01 } },
         });
       },
     },
@@ -387,7 +479,7 @@ describe('intake Worker contract', () => {
         const raw = validResponse(sent);
         return Response.json({
           ...raw,
-          answers: { ...raw.answers, pain: { type: 'noul', value: 0.5 } },
+          answers: { ...raw.answers, pain: { type: 'noul', noul: 0.5 } },
         });
       },
     },

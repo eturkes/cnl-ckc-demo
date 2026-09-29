@@ -165,7 +165,14 @@ describe('intake vocabulary contract', () => {
     expect(actual.rules.filter(({ trigger }) => trigger.kind === 'condition')).toHaveLength(26);
     expect(actual.rules.filter(({ trigger }) => trigger.kind === 'section')).toHaveLength(22);
     expect(actual.sections).toEqual(sectionRecords);
-    for (const section of actual.sections) expect(box3.split('\n')).toContain(section.heading);
+    for (const section of actual.sections) {
+      const sourceLines = box3
+        .split('\n')
+        .filter(
+          (line) => line.startsWith(`${section.heading} (Recommendations `) && line.endsWith(')'),
+        );
+      expect(sourceLines, section.id).toHaveLength(1);
+    }
     for (const rule of actual.rules) {
       const owners = actual.sections.filter(({ documents }) => documents.includes(rule.document));
       expect(owners, rule.id).toHaveLength(1);
