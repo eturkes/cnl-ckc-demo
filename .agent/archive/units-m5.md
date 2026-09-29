@@ -154,3 +154,24 @@ u11→u12 = scope, from the asset record to the projection model. Contract + sui
   153K across five flat polls and wrote nothing — replaced, not steered, by `map-rules-2`, whose
   brief opened by naming that failure and demanding an `Edit` as its first tool call; it filled
   all 171. MAIN ruled the rows no partition covered.
+
+- **u16 free-text patient intake** `m5u16.md`, IMPLEMENT reopened by user ruling, u16 the only
+  unit, split into sub-units each on its own commit, each gate-verified from a clean checkout:
+  u16a toolchain `049f5a1` (Node 24, caps lifted, SDK + wrangler, CI gate-only) · contract
+  `2a230cc` + amendments `5f6a807` `40361aa` · u16b producer `43a5da8` · u16c judgment core
+  `9666042` · u16d derivation + engine queue `bc2c2b6` · u16e local Worker `504e149` · u16f UI
+  `99596de` · u16g probes `d939de0` · u16h docs `c7c6b71` + close fixes `efcf977`.
+
+  The judgment layer SELECTS among the 48 shipped `clinical_rule/3` rules and the user's own
+  words; every shown recommendation is the `Rule` the engine derived through its build-time
+  `clinical_derive/4` goal. Live on 30 held-out cases (jev-1.13.0, reported, never gated):
+  outcome 27/30, derived-rule precision 143/240 and recall 143/163 (95 of 97 extras
+  section-triggered), gap spans 15/22 found; the forced arm fires on h26 + h30.
+
+  Resume session: a paused WIP was graded, not trusted — tester-1/2 suites first ran 326/339
+  against it; 13 failures became 3 fixes + 6 contract rulings. Per-kernel reviews
+  (reviewer-2…6, MAIN on u16e) found 15 defects, all fixed, each red on the reviewed snapshot;
+  the close review (reviewer-7…11 one per lens, MAIN on key custody) found 7 low findings —
+  6 text/dead-field defects fixed and re-reviewed, 1 stale resume note cleared by the close. Four pre-existing graders re-pinned to contracted surfaces,
+  each with its original firing, user-approved. CPU starvation from other sessions (load ~18
+  on 8 cores) produced two 5000 ms timeouts in `kb-reach` + `graph-live`; reruns green.

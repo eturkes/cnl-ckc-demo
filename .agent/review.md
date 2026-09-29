@@ -66,3 +66,35 @@ progress counter and reads 32 at seed.
 | C8 | pass | .claude/rules/gate.md:13 | Every report made under the roll-call rule discloses its skipped lanes; the three bodies a naive census flags predate it and each names the exact command it ran. | post-floor misses 3, all cleared on reading — `a0d43e2` "Not run: `pnpm gate`", `d44493f` "Gate not rerun", `b0b05f7` "still deferred" · rev-assurance-2 + MAIN |
 | C9 | pass | .agent/contracts/review-implement.md:106 | No live skip, xfail or only marker and no post-`7e2f80` case deletion; all 7 tier changes ADD a declaration and none lowers one. | marker sweep rc 1 with a named-case control at 1; `git diff 7e2f80^..HEAD -- tests` removed-cases rc 1 · rev-assurance-2 |
 | C10 | fail(low) → deferred | .agent/deferred.md:92,157 | All 51 rows carry a checkable `Accept:`, but two look already satisfied in the tree — the boot retry control ships and `BOOT_DEADLINE_MS` is armed — and neither was ever graded against its own acceptance text. The boot-deadline row expects `code: 'worker'` where `src/engine/client.ts:221` emits `code: 'boot'`, so row and implementation disagree. | parser 51/51 `Accept:`; boot suites rc 0, 42/42; `/usr/bin/rg -Fn "BOOT_DEADLINE_MS" src/engine/client.ts` → :40,:221,:231 · rev-assurance-2 + MAIN |
+
+## u16 close — free-text intake
+
+Fixed check set `.agent/contracts/review-u16.md`, 14 rows written before reading, graded over
+the shipped surface at `c7c6b71`; fixes landed at `efcf977` and were re-reviewed against their
+acceptance checks alone. **Closed: 14/14 adjudicated, none open** — 11 `pass`, 3 `fail(low)`
+fixed in place (U16-C1, U16-F1, U16-F2). Five `reviewer` teammates, one per lens, each in its
+own worktree: reviewer-7 (X), reviewer-8 (C), reviewer-9 (G), reviewer-10 (I), reviewer-11 (F);
+MAIN held the security rows (M). The per-kernel reviews before each sub-unit commit
+(reviewer-2…6, MAIN on u16e) are recorded in the u16b–u16g commit bodies.
+
+Register entries outside the acceptance contract, expired with the report: R-G1a — toolchain
+pins, CI semantics and the manifest-version numeral are documentary, not graded by any gate
+step (off the answer path, demo-tier waiver); R-G1b — gold chronology (P1) and ledger closure
+are process facts no gate proves.
+
+| id | verdict | source | finding | evidence |
+|---|---|---|---|---|
+| U16-X1 | pass | src/intake/service.ts:121 | Every shown intake recommendation is rendered from the `Rule` the engine derived for that id in that run; no artifact, judgment or fixture text reaches a row. | `pnpm exec vitest run tests/intake-{service,citation,controller}.test.ts tests/intake-panel.dom.test.ts` 106/106 incl. live cited-clause erasure · reviewer-7 |
+| U16-X2 | pass | src/intake/judgment.ts:127 | The judgment selects shipped rule ids and locally cut candidate slices alone; provider-authored strings never render. | chunker/judgment/gaps/select/client suites 201/201, 750-case grounded-gap property + independent oracles · reviewer-7 |
+| U16-X3 | pass | src/demo/DemoController.svelte.ts:187 | Browser, Worker and probe share one artifact digest and one `buildRequest`; query, proof and derivation share one settling queue, gated on boot. | vocabulary/request/worker/queue/boot-gate suites 145/145 · reviewer-7 |
+| U16-C1 | fail(low) → fixed | README.md:108 | Three claims overstated behaviour: a missing proxy reads as a service failure through Vite, not "did not respond"; a section "yes" selects only pain-compatible unconditional rules; overflow also counts over-long tokens. | witness `wt/reviewer-8` `cbb14b0` 3/3 red at `c7c6b71`; re-review at `efcf977`: all three pass (replacement bytes matched, fixed locale functions executed, proxy state reproduced) · reviewer-8 |
+| U16-C2 | pass | tests/intake/report.json | Every live-probe number quoted in README, `proof.md`, `deferred.md` and the commit bodies re-derives from the replay + report. Browser-session counts from `pnpm intake:live` are live, not fixture-backed, and are reported as such. | independent recount of 30 cases / 36 arms: 27/30, 143/240, 143/163, 95+2, 15/22, h26+h30; replay 4/4 · reviewer-8 |
+| U16-G1 | pass | package.json gate | Each answer-path guarantee maps to a gate check that fails on its violation; keyed/live and reproduction lanes are named out of the gate. | intake suites 472/472; ten planted violations → ten rc 1 refusals (57 failing cases); `kb:asset-check` section-empty control fired · reviewer-9 |
+| U16-G2 | pass | src/intake/IntakePanel.svelte | Proxy down, stale vocabulary, rate limit, engine not booted and all-rules-not-derived each reach their own honest state — never a no-match or a recommendation. | `tests/zz-review-failure-states.dom.test.ts` 6/6 on `c7c6b71` (`wt/reviewer-9` `3e21deb`) · reviewer-9 |
+| U16-I1 | pass | git log 43a5da8..d939de0 | Every kernel sub-unit commit records a red witness with revision + command; the sampled u16c witness reproduces red at `5f6a807` and green on the shipped chunker. | chunker suite rc 1 `Cannot find module` → 53/53 with the shipped module · reviewer-10 |
+| U16-I2 | pass | .agent/contracts/m5u16.md:504 | The four pre-existing grader re-pins keep every assertion, reproduce their recorded firings, and carry the user's explicit approval; nothing skipped, deleted or demoted. | originals over `c7c6b71` 23 fail / 19 pass incl. all four firings; shipped 42/42; transcript answer `Approve all four (Recommended)` · reviewer-10 |
+| U16-I3 | pass | tools/binding-check.mjs | `REQUIRED` names 31 intake answer-path cases and `LIFECYCLE` 18 intake terminal states; each occurs once, passes, and fails under a behavioural control. | 150/150 baseline; mutant archive → all 49 named cases fail · reviewer-10 |
+| U16-F1 | fail(low) → fixed | README.md:97 | README intake steps bundled two user actions per sentence. | re-review at `efcf977`: one instruction per step/sentence, old anchors rc 1 · reviewer-11 |
+| U16-F2 | fail(low) → fixed | .agent/spec.md:125 | `spec.md` stated refusal as "hatch or empty match set" against the three-outcome contract; the resume note went stale; `ActiveRun.query` was stored but never read after the engine queue replaced the chain. | re-review at `efcf977`: F2a + F2c pass; F2b cleared by the close edit to `Tasks` · reviewer-11 |
+| U16-M1 | pass | worker/index.ts | The key reaches only the Worker's SDK client and the keyed probe; it is absent from every response, log, commit and bundle, and the SDK stays out of `src/` + `dist/`. | key-file control 1 match; HEAD tree, `git log -p 969c96f..HEAD`, `wip/u16-review`, `dist/`, `kb/generated/`, `.scratch` logs → 0; SDK only in `worker/index.ts` · MAIN |
+| U16-M2 | pass | eslint.config.js:20 | `audit:check`, `secret:check` (`**/*`) and ESLint's `security/*` + `no-unsanitized/*` rules cover `worker/` at `--max-warnings=0`; all green at the closing commits. | `eslint --print-config worker/index.ts` resolves the security rules; gate rc 0 at `c7c6b71` + `efcf977` · MAIN |

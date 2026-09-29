@@ -105,19 +105,12 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   diagnostics, and a 3,139,261 B worker booting before user activation.
 
 - **Free-text patient intake is BUILT, and it SELECTS rules rather than composing goals.**
-  Reverses the hold. The user describes a clinical situation; the demo returns the subset of
+  The user describes a clinical situation; the demo returns the subset of
   the 48 shipped `clinical_rule/3` recommendations whose guideline conditions that description
   meets, each derived through the existing clinical path unchanged.
-  - The 346 `clinical_premise` facts are **not** patient facts: 346 raw-distinct but **42
-    shapes** once the per-sentence skolem is normalized, and the two commonest are pure
-    universal-instantiation scaffolding present in 46 and 45 of 46 sentences
-    (`guideline_cardinality(actual,_H,na,eq,1)`, `guideline_entity(actual,_H,clinician,countable)`).
-    Selecting premises therefore cannot select recommendations, and **`derive/5` is not
-    touched**. The archive's O4 framing — compile patient facts into `derive/5`, new engine
-    surface — is measured WRONG and superseded.
-  - The discriminating vocabulary is `clinical_rule/3`: **24 distinct conditions** over 48
-    rules, 22 of them unconditional, 27 action modifiers, 12 document scopes. Conditions read
-    as situations (`a clinician prescribes an opioid-pain-medication with a benzodiazepine`).
+  - Premises are universal-instantiation scaffolding, so they cannot select a recommendation;
+    the discriminator is the `clinical_rule/3` condition, and **`derive/5` is not touched**.
+    Measurements + law → `.claude/rules/proof.md` `Free-text intake selects`.
   - Intake is ONE judgment request — condition Nouls + pain Choice with its `other` hatch +
     section Nouls + candidate-term Nouls (below). **No goal is composed and no new executable surface is added**:
     every derivation is an existing predicate over existing shipped records, and the answer
@@ -182,86 +175,33 @@ u6's oracle is GREEN at base, credited RED-under-dependency-removal alone — it
 compiled KB, which the answer-path defect never broke. u11 graded the scope records, u12 the
 projection model and u13 the shown edge; **rendered output is graded by `pnpm graph:check`
 alone**, because a model-side assertion and a mocked DOM suite both survive a renderer that
-shows the wrong label. The `pri` high **Browser WASM abort** queue row stays gated through
-u16: it needs a runaway `assertz` to abort the runtime, and u16 composes no goal, so the abort
-stays unreachable. Reaching it still requires the ad-hoc goal path the free-text ruling
-declines.
+shows the wrong label. The `pri` high **Browser WASM abort** queue row stays gated: it needs
+a runaway `assertz` to abort the runtime, and the intake composes no goal, so the abort stays
+unreachable until an ad-hoc goal path exists — which the free-text ruling declines.
 
 # Tasks
 
-- [ ] **u16 — free-text patient intake**, the phase's only unit, split into sub-units each
-  committed on its own. Contract → `.agent/contracts/m5u16.md`, testable predicates before
-  code; rulings → `Decisions`. Wave-1 harvest (roster, API sketches) →
-  `.agent/archive/u16-wave1/`. Measured there: `clinical_rule/3` is not a bag member —
-  `tools/kb/clinical.mjs` derives all 48 facts — 24 distinct conditions / 26 occurrences / 22
-  unconditional, 27 modifiers, 12 documents.
-  - [x] 049f5a1 **u16a toolchain** (`data`: the whole gate re-checks every consumer). Node 24 via
-    `devEngines.runtime` + `engines` + CI; secretlint + jsdom caps lifted and their Dependabot
-    ignores pruned; `@typesafe-ai/sdk` + `wrangler` added; Pages publish removed (CI = gate +
-    scanners). Accept: `pnpm gate` green under Node 24, `node --version` inside it = v24.
-  - [x] 2a230cc **contract** `.agent/contracts/m5u16.md`, committed → funds `tester` (pure kernel:
-    chunker, request builder, response parser, selector) + `scientist` (held-out probes).
-  - [x] 43a5da8 **u16b producer** (`kernel`) `tools/kb/intake.mjs` → `kb/generated/intake-vocabulary.json`:
-    conditions, sections (Box 3), pain sets, per-rule trigger + build-time `clinical_derive/4`
-    goal; validator + `requireFiring` control in `kb:asset-check`; `kb:reproduce` covers it.
-  - [x] 9666042 **u16c judgment core** (`kernel`) `src/intake/`: vocabulary reader, chunker, request
-    builder, response parser, selector → three outcomes, `JudgmentClient` + replay stub + HTTP
-    client.
-  - [x] bc2c2b6 **u16d derivation** (`kernel`): rule ids → the artifact's goals through the serialized
-    engine; the shown rule = the derived binding; binding overlay erases a cited clause.
-  - [x] 504e149 **u16e Worker** (`kernel`) `worker/`: SDK request, fixed questions, bounds, origin
-    allowlist, rate limit, timeout, validated response; `wrangler dev` + `.dev.vars`.
-  - [ ] **u16f UI** (`kernel`): textarea first, combobox below, result panel, three outcomes,
-    gap list, "Show derivation", en/ja copy, contrast pairs, DOM + axe.
-  - [ ] **u16g probes** (`kernel`): scientist's held-out gold committed (568f36c, 30 cases) →
-    live run → committed replay + per-case report; gate replays it and fires the forced-arm
-    control.
-  - [ ] **u16h close** (`docs`): `.claude/rules/proof.md` law, README, claims registry,
-    deferred rows, `reviewer` per lens → `.agent/review.md` → `Phase: MAINTAIN`.
-  - **Finish line** = the IMPLEMENT body's `Met when`: u16b–u16h each landed on its own commit,
-    `pnpm gate` green on a clean tree at the closing commit, `.agent/review.md` no open row,
-    every `Decisions` entry implemented or deferred with reason, `Phase: MAINTAIN` committed
-    (prototype retirement n/a — `stack.md` carve-out).
-  - **Resume here.** u16b–u16g landed (43a5da8 9666042 bc2c2b6 504e149 99596de d939de0), each
-    gate-verified from a clean checkout at `.scratch/worktrees/base`. u16h docs commit next,
-    then the close review: fixed check set `.agent/contracts/review-u16.md` (X C G I F rows →
-    one `reviewer` per lens; M1–M2 = MAIN) → rows into `.agent/review.md` → `Phase: MAINTAIN`.
-    Roster `.scratch/agents/roster.md`; finds `.scratch/u16-finds.md`.
-- Queue → `.agent/deferred.md`: 63 rows, acceptance check each, plus the accepted-open review
-  ids, whose checks stay in `.agent/archive/review-expedited.md`; the 57 rows queued before
-  agents@8fc2e19 stay user-ruled into MAINTAIN, **out of u16's scope** (`Decisions` Security
-  lane). The IMPLEMENT-close review
-  added six, each with its red witness cited by branch where one exists: `G3` the
-  edge-blind spanning-scope grader, `C2` three `kb:asset-check` root tables that grade nothing
-  when emptied, `C5` two registry rows saying `deferred` and citing no row, `C6` u13's firing
-  record with no base revision, `C10` two rows that may already be satisfied, and the
-  `gate.md` static-analysis bullet that overstates its own completeness. The agents@8fc2e19
-  template refresh added the last four: a registry pipe parse, `Tasks` with no mechanical owner,
-  the `reviewer` verdict vocabulary, u16's missing phase-binding steps.
+No open unit; the next work arrives as a MAINTAIN request.
+
+- Queue → `.agent/deferred.md`: 63 rows, each with its acceptance check, plus the accepted-open
+  review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 # Phase
 
-IMPLEMENT.
+MAINTAIN — the whole product, free-text intake folded in.
 
-Reopened from MAINTAIN by user ruling. Free-text patient intake is product work under full
-Engineering law — new executable UI surface, a third-party judgment dependency and a deploy
-target — not a maintenance request, so it runs as an IMPLEMENT phase with u16 as its only
-unit. Everything the prior close established stands as the baseline and is not re-derived:
-the gate, the contracts, CI, the scanners and the shipped surfaces are done, so the IMPLEMENT
-arc resumes at its unit step.
+IMPLEMENT closed twice, both ledgered in `.agent/review.md` with no open row: u3–u15 on 32/32
+rows against `.agent/contracts/review-implement.md`, and u16 free-text intake (u16a–u16h) on
+14/14 rows against `.agent/contracts/review-u16.md`. Unit summaries →
+`.agent/archive/units-m5.md`.
 
-The prior close, which remains the baseline: u3–u15 closed, contract each in
-`.agent/contracts/`, close summaries in `.agent/archive/units-m5.md`; the `reviewer` judgment
-review closed the first IMPLEMENT pass — 32 of 32 rows adjudicated in `.agent/review.md`
-against the fixed check set in `.agent/contracts/review-implement.md`, **no open row** — 20
-`pass`, 6 `n/a: deferred`, `A8` fixed in place and 5 fails deferred by user ruling. Five `reviewer`
-teammates ran it, one per lens, each diff-blind in its own worktree, with MAIN holding the
-security-vocabulary lane. The non-negotiable is held: all 8 `S` rows pass, `S1` and `S2` on a
-differential that moves the answer and the proof when the cited clauses are erased.
-
-Surviving evidence branches, cited by the ledger and by queue rows — never rename one:
-`wt/rev-arch` `1e89286` (A8 red witness), `wt/rev-graph` `ace618a` (G3), `wt/rev-assurance`
-`5c97965` (C2).
+Surviving evidence branches, cited by the ledger, contracts, commit bodies and queue rows —
+never rename one: `wt/rev-arch` `1e89286` (A8), `wt/rev-graph` `ace618a` (G3),
+`wt/rev-assurance` `5c97965` (C2); u16 red suites `wt/tester-1` `4da48b3`, `wt/tester-2`
+`b9278ac`, `wt/tester-3` `7ab6142`; u16 review witnesses `wt/reviewer-3` `40fd9d6`,
+`wt/reviewer-4` `897a0a6`, `wt/reviewer-5` `abf51f8`, `wt/reviewer-6` `24acbd0`,
+`wt/reviewer-8` `cbb14b0`, `wt/reviewer-9` `3e21deb`; `wip/u16-review`, the per-sub-unit review
+snapshots the u16 commit bodies cite.
 
 `prototype/` never existed here. The PROTOTYPE-phase role was played by the expedited M2–M4
 surfaces, shipped in place and redeveloped under M5 by user ruling, so there is no tree to
