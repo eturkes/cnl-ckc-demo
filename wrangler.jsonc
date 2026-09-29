@@ -1,0 +1,23 @@
+// Local judgment proxy. `pnpm intake:dev` serves it in workerd; Vite proxies `/api/judgment`
+// here. Deploying it is user-deferred (`.agent/deferred.md`), so no route or workers.dev
+// target is configured. The key lives in the gitignored `.dev.vars` as `TYPESAFE_API_KEY`.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cnl-ckc-intake",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-09-26",
+  "workers_dev": false,
+  "alias": { "@kb": "./kb/generated" },
+  "vars": {
+    "ALLOWED_ORIGINS": "http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173,http://127.0.0.1:4173",
+  },
+  "ratelimits": [
+    {
+      "name": "INTAKE_RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 10, "period": 60 },
+    },
+  ],
+  // 8787, wrangler's default, is often taken by a local API proxy.
+  "dev": { "ip": "127.0.0.1", "port": 8791 },
+}
