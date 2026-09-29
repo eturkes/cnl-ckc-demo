@@ -210,6 +210,36 @@ const LIFECYCLE = Object.freeze([
       'demo controller transition oracle O4 model and controller agree on a superseded rejection writing nothing',
     ],
   },
+  {
+    suite: 'tests/intake-controller.test.ts',
+    why: 'an intake run settles into a terminal state the view renders, and a failure never reads as a no-match',
+    cases: [
+      'U4 failures, retry and cancellation U4 unavailable rate-limited is failure rather than no-match',
+      'U4 failures, retry and cancellation U4 unavailable stale is failure rather than no-match',
+      'U4 failures, retry and cancellation U4 unavailable server is failure rather than no-match',
+      'U4 failures, retry and cancellation U4 unavailable network is failure rather than no-match',
+      'U4 failures, retry and cancellation U4 unavailable invalid is failure rather than no-match',
+      'U4 failures, retry and cancellation U4 host undefined maps to failed engine',
+      'U4 failures, retry and cancellation U4 host rejected maps to failed engine',
+      'U4 failures, retry and cancellation U4 judgment rejection fails with its own phase reason',
+      'U4 failures, retry and cancellation U4 derivation rejection fails with its own phase reason',
+      'U4 failures, retry and cancellation U4 cancel during judgment returns idle and discards late success',
+      'U4 failures, retry and cancellation U4 cancel during derivation returns idle and discards late success',
+    ],
+  },
+  {
+    suite: 'tests/intake-panel.dom.test.ts',
+    why: 'every intake failure renders with Retry and the typed text kept; cancel returns to idle',
+    cases: [
+      'U4 mounted live regions and complete control lifecycle U4 rate-limited failure keeps typed text and retries through the injected client',
+      'U4 mounted live regions and complete control lifecycle U4 stale failure keeps typed text and retries through the injected client',
+      'U4 mounted live regions and complete control lifecycle U4 server failure keeps typed text and retries through the injected client',
+      'U4 mounted live regions and complete control lifecycle U4 network failure keeps typed text and retries through the injected client',
+      'U4 mounted live regions and complete control lifecycle U4 invalid failure keeps typed text and retries through the injected client',
+      'U4 mounted live regions and complete control lifecycle U4 cancelling judging returns idle with late results suppressed',
+      'U4 mounted live regions and complete control lifecycle U4 cancelling deriving returns idle with late results suppressed',
+    ],
+  },
 ]);
 
 const REVIEW_SUITE = 'tests/graph-semantics.review.test.ts';

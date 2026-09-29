@@ -47,6 +47,13 @@ const PAIRS = [
   { fg: '--action', bg: '--surface-raised', min: LARGE, where: 'active option fill boundary' },
   { fg: '--focus-ring', bg: '--surface', min: LARGE, where: 'focus indicator on the page' },
   { fg: '--focus-ring', bg: '--surface-raised', min: LARGE, where: 'focus indicator on a field' },
+  {
+    fg: '--focus-ring',
+    bg: '--surface-sunken',
+    min: LARGE,
+    where: 'focus on an intake result action',
+  },
+  { fg: '--text-muted', bg: '--surface-sunken', min: LARGE, where: 'intake reveal button border' },
   { fg: '--action-text', bg: '--action', min: LARGE, where: 'selected option text on its fill' },
   // The graph canvas. A node label is small bold text on its own fill, so it takes NORMAL;
   // the fill itself is a graphical object on the canvas and takes LARGE. Both themes are

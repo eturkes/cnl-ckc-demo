@@ -175,9 +175,14 @@ const setState = (state: DemoState): void => {
   flushSync();
 };
 
-const roles = (role: string): HTMLElement[] => [
-  ...target.querySelectorAll<HTMLElement>(`[role="${role}"]`),
-];
+// `m5u16.md` U4: the intake panel owns its own live regions and busy region, graded by the
+// intake suites; these helpers grade the run's.
+const INTAKE_REGIONS = '[data-intake-status], [data-intake-alert], [data-intake-result]';
+
+const roles = (role: string): HTMLElement[] =>
+  [...target.querySelectorAll<HTMLElement>(`[role="${role}"]`)].filter(
+    (element) => !element.matches(INTAKE_REGIONS),
+  );
 
 const role = (name: string): HTMLElement => {
   const matches = roles(name);
@@ -187,7 +192,7 @@ const role = (name: string): HTMLElement => {
 };
 
 const answerRegion = (): HTMLElement => {
-  const region = target.querySelector<HTMLElement>('[aria-busy]');
+  const region = target.querySelector<HTMLElement>(`[aria-busy]:not(${INTAKE_REGIONS})`);
   if (region === null) throw new Error('answer region has no aria-busy state');
   return region;
 };

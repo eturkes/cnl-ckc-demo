@@ -28,6 +28,9 @@ export const INSTRUCTIONS = {
   graphExpandHint:
     '表示は読みやすさのために制限されています。「展開」を選択すると範囲が広がります。',
   graphCompareRun: '上にある用意された質問を実行すると、グラフと実行時の証明を比較できます。',
+  intakeDescribe: '臨床状況をご自身の言葉で記述してください。',
+  intakePrivacy: '氏名、日付など、患者を特定できる情報は記入しないでください。',
+  intakeOrPick: 'または、下の用意された質問を選択してください。',
 } as const;
 
 export const DESCRIPTIONS = {
@@ -105,6 +108,22 @@ export const DESCRIPTIONS = {
   prolog:
     'Prologエンジンは以下の各値を正規構文で描画します。デモはそれらの値を書き出し用の回答形式に整えます。',
 
+  intakeDisclosure:
+    '言語モデルが記述を読み、ガイドラインのどの条件に該当するかを判定します。' +
+    'その後、Prologエンジンが該当する各推奨を導出します。',
+  intakeRefused:
+    'この記述は、オピオイドの処方、疼痛ケア、オピオイド使用障害に関するものではないようです。' +
+    '記述を言い換えるか、用意された質問を選択してください。',
+  intakeNoMatch:
+    'この記述について判定された条件と疼痛の種類に当てはまる推奨は、知識ベースにありません。',
+  intakeAnswered:
+    '以下の各推奨は、Prologが引用元のガイドラインの節から導出したものです。' +
+    '言語モデルは導出する規則を選んだだけで、文章は一切書いていません。',
+  intakeNoneDerived: '該当した規則はPrologで導出されなかったため、推奨は表示していません。',
+  intakeGapsNote:
+    '言語モデルは、これらの語句を表す語彙が知識ベースにないと判定しました。' +
+    'これは判定であり、証明ではありません。',
+  intakeNoGaps: '言語モデルは、記述の中に知識ベースにない語句を挙げませんでした。',
   attribution: '出典: CDC。米国疾病予防管理センターが原典資料を作成しました。',
 
   freeAvailability: '原典資料は同機関のウェブサイトで無償で入手できます。',
@@ -209,6 +228,22 @@ export const LABELS = {
 
   graphSelectedBefore: '',
   graphSelectedAfter: 'から選択しました。',
+
+  intakeLabel: '臨床状況',
+  intakeSubmit: '推奨を照合',
+  intakeCancel: '照合を停止',
+  intakeRetry: 'もう一度照合',
+  intakeResults: '照合結果',
+  intakeRefusedHeading: 'このデモの対象外です',
+  intakeNoMatchHeading: '該当なし: 知識ベースに語彙がない語句',
+  intakeAnsweredHeading: '該当した推奨',
+  intakeFailedHeading: '照合を完了できませんでした',
+  intakeGapsLabel: '知識ベースにないと判定された語句',
+  intakeReveal: '導出を表示',
+  painAcute: '急性',
+  painSubacute: '亜急性',
+  painChronic: '慢性',
+  painUnstated: '記載なし',
 } as const;
 
 export const TEXT = {
@@ -312,6 +347,41 @@ export const TEXT = {
   graphCanvasUnavailable: (message: string) =>
     `視覚的なグラフを利用できません。以下の完全なHTMLナビゲーションをお使いください。${message}`,
   graphLoadFailed: (message: string) => `意味グラフを読み込めませんでした。${message}`,
+
+  intakeJudging: () => '記述をガイドラインの条件と照合しています。',
+  intakeDeriving: () => '該当した推奨をPrologで導出しています。',
+  intakeAnsweredStatus: (derived: number, matched: number) =>
+    `該当した規則${String(matched)}件から推奨を${String(derived)}件導出しました。`,
+  intakeNoMatchStatus: () => '記述に該当する推奨はありませんでした。',
+  intakeRefusedStatus: () => 'この記述はこのデモの対象外です。',
+  intakeCancelled: () => '照合を中止しました。',
+  intakeRateLimited: () =>
+    '照合サービスへのリクエストが多すぎます。1分待ってから「もう一度照合」を選択してください。',
+  intakeStale: () =>
+    'このページと照合サービスの知識ベース語彙が一致しません。ページを再読み込みしてください。解決しない場合は、照合サービスを再起動してください。',
+  intakeServer: () => '照合サービスでエラーが発生しました。「もう一度照合」を選択してください。',
+  intakeNetwork: () =>
+    '照合サービスが応答しませんでした。pnpm intake:dev で起動してから「もう一度照合」を選択してください。',
+  intakeInvalid: () =>
+    '照合サービスの回答をこのデモで検証できませんでした。「もう一度照合」を選択してください。',
+  intakeEngine: () =>
+    'Prologエンジンが該当した規則を導出できませんでした。「もう一度照合」を選択してください。',
+  intakePain: (pain: string) => `判定された疼痛の種類: ${pain}`,
+  intakeCondition: (condition: string, score: string) =>
+    `該当した条件: ${condition}（モデルのスコア ${score}）`,
+  intakeSection: (heading: string, score: string) =>
+    `該当した項目: ${heading}（モデルのスコア ${score}）`,
+  intakeDocument: (document: string) => `文書: ${document}`,
+  intakeClauses: (n: number) => `証明が引用したガイドラインの節: ${String(n)}件`,
+  intakeNotDerived: () => 'この規則は導出されなかったため、推奨として表示していません。',
+  intakeLimit: (code: string) => `導出は${code}の上限で停止しました。`,
+  intakeError: (code: string, message: string) => `導出に失敗しました（${code}）。${message}`,
+  intakeRuleCancelled: () => '導出を中止しました。',
+  intakeOverflow: (unjudged: number, limit: number) =>
+    `このデモが判定する語句は最大${String(limit)}件のため、${String(unjudged)}件の語句は判定していません。`,
+  intakeRevealMissing: () =>
+    '用意された質問の結果にこの文書が含まれなかったため、導出は表示していません。',
+  intakeRevealUnavailable: () => 'エンジンの準備ができていません。起動後にもう一度お試しください。',
 } as const;
 
 export const JA: Messages = { INSTRUCTIONS, DESCRIPTIONS, LABELS, TEXT };

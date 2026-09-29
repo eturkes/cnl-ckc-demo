@@ -13,6 +13,10 @@
     type GraphFocus as SemanticGraphFocus,
     type SemanticGraphNode,
   } from './graph/index.js';
+  import { HttpJudgmentClient } from './intake/client.js';
+  import { IntakeController, type IntakeRow } from './intake/IntakeController.svelte.js';
+  import IntakePanel from './intake/IntakePanel.svelte';
+  import { INTAKE_VOCABULARY } from './intake/vocabulary.js';
   import { proofClauses, type GraphFocus as ProvenanceGraphFocus } from './provenance/model.js';
   import { QUESTION_CATALOG, type QuestionId } from './questions/catalog.js';
   import QuestionCombobox from './questions/QuestionCombobox.svelte';
@@ -20,23 +24,34 @@
   interface Props {
     /** Injected by tests; the shipped app lets `App` build and own the default. */
     controller?: DemoController;
+    /** Injected by tests with a fake judgment client; shipped, it posts to the local proxy. */
+    intake?: IntakeController;
   }
 
-  let { controller }: Props = $props();
+  let { controller, intake: injectedIntake }: Props = $props();
 
   // The controller is an ownership handoff read once at construction, not a
   // reactive input: swapping it mid-life would strand the engine it owns.
   // svelte-ignore state_referenced_locally
   const injected = controller;
   const demo = injected ?? new DemoController();
+  // svelte-ignore state_referenced_locally
+  const intake =
+    injectedIntake ??
+    new IntakeController({
+      host: demo,
+      client: new HttpJudgmentClient({ vocabulary: INTAKE_VOCABULARY }),
+    });
 
   let graphFocus = $state.raw<SemanticGraphFocus | null>(null);
   let graphFocusRequest = $state(0);
   let graphSelection = $state.raw<SemanticGraphNode | null>(null);
   let graphRegion = $state<HTMLElement>();
+  let answerRegion = $state<HTMLElement>();
 
   $effect(() => () => {
     if (injected === undefined) demo.dispose();
+    if (injectedIntake === undefined) intake.dispose();
   });
 
   // Everything below is derived in the script rather than the template: ESLint
@@ -76,6 +91,18 @@
         : [],
     ),
   );
+
+  // `m5u16.md` U3: run the rule's prepared question, then stand on the solution its own
+  // document derived; scroll only when that solution is the one shown.
+  const reveal = async (row: IntakeRow) => {
+    const result = await demo.reveal(row.rule.question, row.rule.document);
+    if (result === 'shown') {
+      answerRegion
+        ?.querySelector<HTMLElement>('.answer-region')
+        ?.scrollIntoView({ block: 'start' });
+    }
+    return result;
+  };
 
   const showInGraph = (focus: ProvenanceGraphFocus): void => {
     const answer = rows[demo.solutionIndex]?.label;
@@ -134,6 +161,8 @@
       </header>
 
       <div class="query-area">
+        <IntakePanel {intake} onReveal={reveal} />
+
         <QuestionCombobox
           selected={demo.selected}
           onSelect={(id: QuestionId) => {
@@ -161,19 +190,21 @@
 
       <!-- Always mounted: `aria-busy` has to be readable while the run is live, and a
            region that appears only at settle cannot announce its own replacement. -->
-      <AnswerPanel
-        {rows}
-        {serialized}
-        question={activeQuestion}
-        selectedIndex={demo.solutionIndex}
-        busy={description.busy}
-        summary={description.summary}
-        provenance={demo.provenance}
-        onSelect={(index: number) => {
-          demo.selectSolution(index);
-        }}
-        onGraphFocus={showInGraph}
-      />
+      <div class="answer-anchor" bind:this={answerRegion}>
+        <AnswerPanel
+          {rows}
+          {serialized}
+          question={activeQuestion}
+          selectedIndex={demo.solutionIndex}
+          busy={description.busy}
+          summary={description.summary}
+          provenance={demo.provenance}
+          onSelect={(index: number) => {
+            demo.selectSolution(index);
+          }}
+          onGraphFocus={showInGraph}
+        />
+      </div>
     </section>
 
     <div id="graph" class="graph-region" bind:this={graphRegion}>
@@ -419,7 +450,8 @@
     font-family: var(--font-code);
   }
 
-  #about {
+  #about,
+  .answer-anchor :global(.answer-region) {
     scroll-margin-top: 5rem;
   }
 

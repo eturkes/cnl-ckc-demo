@@ -200,12 +200,12 @@ declines.
   - [x] 43a5da8 **u16b producer** (`kernel`) `tools/kb/intake.mjs` → `kb/generated/intake-vocabulary.json`:
     conditions, sections (Box 3), pain sets, per-rule trigger + build-time `clinical_derive/4`
     goal; validator + `requireFiring` control in `kb:asset-check`; `kb:reproduce` covers it.
-  - [ ] **u16c judgment core** (`kernel`) `src/intake/`: vocabulary reader, chunker, request
+  - [x] 9666042 **u16c judgment core** (`kernel`) `src/intake/`: vocabulary reader, chunker, request
     builder, response parser, selector → three outcomes, `JudgmentClient` + replay stub + HTTP
     client.
-  - [ ] **u16d derivation** (`kernel`): rule ids → the artifact's goals through the serialized
+  - [x] bc2c2b6 **u16d derivation** (`kernel`): rule ids → the artifact's goals through the serialized
     engine; the shown rule = the derived binding; binding overlay erases a cited clause.
-  - [ ] **u16e Worker** (`kernel`) `worker/`: SDK request, fixed questions, bounds, origin
+  - [x] 504e149 **u16e Worker** (`kernel`) `worker/`: SDK request, fixed questions, bounds, origin
     allowlist, rate limit, timeout, validated response; `wrangler dev` + `.dev.vars`.
   - [ ] **u16f UI** (`kernel`): textarea first, combobox below, result panel, three outcomes,
     gap list, "Show derivation", en/ja copy, contrast pairs, DOM + axe.
