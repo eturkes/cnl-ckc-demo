@@ -134,6 +134,13 @@ const REQUIRED = Object.freeze([
       'P5 fail-closed inputs P5.4 discards the engine after a load that emitted a diagnostic',
     ],
   },
+  {
+    suite: 'tests/intake-vocabulary.test.ts',
+    why: 'every intake rule id resolves to a build-time goal that derives exactly that rule',
+    cases: [
+      'intake vocabulary contract V5 all 48 artifact goals derive exactly their own clinical_rule term on the saved image',
+    ],
+  },
 ]);
 
 /**

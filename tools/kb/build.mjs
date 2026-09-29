@@ -10,6 +10,7 @@ import { requireFiring } from '../control.mjs';
 import { sha256, verifyBag } from './bag.mjs';
 import { catalogJson, catalogRecords } from './catalog.mjs';
 import { deriveSemanticGraph, GRAPH_SCHEMA_VERSION } from './graph.mjs';
+import { deriveIntakeVocabulary } from './intake.mjs';
 import { deriveProvenance, PROVENANCE_SCHEMA_VERSION } from './provenance.mjs';
 import { buildImage, buildQlf, swiplWasmVersion, verifyImage, verifyQlf } from './produce.mjs';
 import { GENERATED_DIR, MANIFEST_PATH, ROOT, loadManifest, payloadSource } from './paths.mjs';
@@ -17,7 +18,7 @@ import { GENERATED_DIR, MANIFEST_PATH, ROOT, loadManifest, payloadSource } from 
 /** @typedef {import('../../src/kb/manifest.ts').KbManifest} KbManifest */
 /** @typedef {import('./produce.mjs').LiveContract} LiveContract */
 
-const MANIFEST_VERSION = 5;
+const MANIFEST_VERSION = 6;
 
 /**
  * Locate the single vendored bag and prove it against its committed sidecar.
@@ -84,6 +85,7 @@ const main = async () => {
   const catalogBytes = Buffer.from(catalogJson(catalog.records), 'utf8');
   const provenance = deriveProvenance(files);
   const graph = deriveSemanticGraph(files, provenance.clauses);
+  const intake = deriveIntakeVocabulary(files);
 
   const cached = loadManifest();
   if (
@@ -95,6 +97,7 @@ const main = async () => {
     cached.toolchain.swiplWasm === swiplWasm &&
     cached.catalog.sha256 === sha256(catalogBytes) &&
     cached.graph.schemaVersion === GRAPH_SCHEMA_VERSION &&
+    cached.intake.digest === intake.model.digest &&
     assetsIntact(cached)
   ) {
     process.stdout.write(
@@ -132,6 +135,7 @@ const main = async () => {
   for (const chunk of provenance.chunks) writeGenerated(chunk.path, chunk.bytes);
   writeGenerated(provenance.pdf.path, provenance.pdf.bytes);
   writeGenerated(graph.path, graph.bytes);
+  writeGenerated(intake.path, intake.bytes);
 
   const provenanceAssets = [
     asset(provenance.index.bytes, provenance.index.path, 'provenance-index'),
@@ -167,12 +171,18 @@ const main = async () => {
       nodes: graph.model.stats.nodes,
       edges: graph.model.stats.edges,
     },
+    intake: {
+      vocabularyVersion: intake.model.vocabularyVersion,
+      rules: intake.model.rules.length,
+      digest: intake.model.digest,
+    },
     assets: [
       asset(image, 'kb.pvm', 'pvm'),
       asset(qlf, 'kb.qlf', 'qlf'),
       asset(catalogBytes, 'question-catalog.json', 'catalog'),
       ...provenanceAssets,
       asset(graph.bytes, graph.path, 'semantic-graph'),
+      asset(intake.bytes, intake.path, 'intake-vocabulary'),
     ],
     contract: { schemaVersion: contract.schemaVersion, documents: contract.documents },
   };
@@ -188,6 +198,7 @@ const main = async () => {
       `catalog ${catalog.records.length} entries from ${catalog.names.length} controlled sources, ` +
       `provenance ${provenance.stats.documents} documents/${provenance.stats.clauses} clauses, ` +
       `graph ${graph.model.stats.nodes} nodes/${graph.model.stats.edges} edges, ` +
+      `intake ${intake.model.rules.length} rules/${intake.model.conditions.length} conditions, ` +
       `schema ${contract.schemaVersion}, ${contract.documents} documents, control: ${control}\n`,
   );
 };
