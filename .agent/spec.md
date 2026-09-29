@@ -223,10 +223,13 @@ declines.
     queue `#exclusive`, `derive`, `reveal`) untested; u16e (`worker/index.ts`,
     `wrangler.jsonc` port 8791, Vite proxy, `pnpm intake:dev`, gitignored `.dev.vars` holding
     the key) — one live dev call returned 200. Diff-blind red suites wait on branches
-    `wt/tester-1` (K/Q/J/S/C + oracles) and `wt/tester-2` (V/D/W, `9fb8849`), worktrees under
-    `.scratch/worktrees/`; roster `.scratch/agents/roster.md`. Next: merge both suites → run →
-    fix → `reviewer` per kernel diff → one commit per sub-unit (u16b first); then u16f UI.
-    Before merging, re-check suites built on the old API sheet (`noul` field, stopwords).
+    `wt/tester-1` `4da48b3` (K/Q/J/S/C + chunker/selector oracles, 210 cases) and `wt/tester-2`
+    `b9278ac` (V/D/W, 129 cases), worktrees under `.scratch/worktrees/`, both aligned to the
+    committed rulings but NOT rerun after that alignment; roster `.scratch/agents/roster.md`,
+    deliverables `.scratch/agents/tester-{1,2}.md`. The same WIP is snapshotted on branch
+    `wip/u16-resume` (never merge). Next: bring the suites into `tests/` → run against the WIP
+    → fix → `reviewer` per kernel diff → one commit per sub-unit (u16b first); then u16f UI.
+    `pnpm intake:dev` needs `.dev.vars` (rewrite it from `~/.config/typesafe/key` if absent).
 - Queue → `.agent/deferred.md`: 61 rows, acceptance check each, plus the accepted-open review
   ids, whose checks stay in `.agent/archive/review-expedited.md`; the 57 rows queued before
   agents@8fc2e19 stay user-ruled into MAINTAIN, **out of u16's scope** (`Decisions` Security
