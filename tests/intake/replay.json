@@ -1,0 +1,6255 @@
+{
+  "schemaVersion": 1,
+  "model": "jev-1.13.0",
+  "vocabulary": "31f6b57f66597566a7c7bc701acc0ba81b9228614552d1e8ec0a76107ef25225",
+  "cases": [
+    {
+      "id": "h01",
+      "baseline": {
+        "request": "50ffdbe031f8598cd46d07f66fec255fd7c9525cc2a3ca610f0ada27276f7589",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "acute",
+              "confidence": 1,
+              "probabilities": {
+                "other": 0,
+                "chronic": 0,
+                "unstated": 0,
+                "subacute": 0,
+                "acute": 1
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.97
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.73
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.17
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.7
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.1
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.91
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.73
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.1
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.14
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.3
+            }
+          },
+          "usage": {
+            "input_tokens": 11215,
+            "output_tokens": 684
+          }
+        }
+      }
+    },
+    {
+      "id": "h02",
+      "baseline": {
+        "request": "c1eb88ce980d70f50b750bd07cf8a2baa7f99b4ebb392570ba7486dee4c2c16e",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "subacute",
+              "confidence": 1,
+              "probabilities": {
+                "acute": 0,
+                "subacute": 1,
+                "chronic": 0,
+                "unstated": 0,
+                "other": 0
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.97
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.65
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.19
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.74
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.08
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.93
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.66
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.44
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.21
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.41
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.12
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.11
+            }
+          },
+          "usage": {
+            "input_tokens": 12354,
+            "output_tokens": 704
+          }
+        }
+      }
+    },
+    {
+      "id": "h03",
+      "baseline": {
+        "request": "8721ea36e1faafe56f805b939fbca84ff66a10979570b9631f0505076b6bf34c",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.97
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.97
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "chronic",
+              "confidence": 1,
+              "probabilities": {
+                "acute": 0,
+                "other": 0,
+                "unstated": 0,
+                "chronic": 1,
+                "subacute": 0
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.98
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.3
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.92
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.59
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.11
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.14
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.47
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.39
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.58
+            },
+            "t09": {
+              "type": "noul",
+              "noul": 0.09
+            }
+          },
+          "usage": {
+            "input_tokens": 13481,
+            "output_tokens": 722
+          }
+        }
+      }
+    },
+    {
+      "id": "h04",
+      "baseline": {
+        "request": "1f345707f07837765f61ffa862f33b0af4e6997aa2207337b33d8901227a5d99",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "unstated",
+              "confidence": 1,
+              "probabilities": {
+                "unstated": 1,
+                "other": 0,
+                "chronic": 0,
+                "subacute": 0,
+                "acute": 0
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.85
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.94
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.42
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.5
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.71
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.85
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.32
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.5
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.55
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.26
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.18
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.41
+            },
+            "t09": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "t10": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "t11": {
+              "type": "noul",
+              "noul": 0.28
+            }
+          },
+          "usage": {
+            "input_tokens": 15748,
+            "output_tokens": 757
+          }
+        }
+      }
+    },
+    {
+      "id": "h05",
+      "baseline": {
+        "request": "ddfeed66bef76b33f482dcccc4f8c8a0daea54da0e4c6738dc7e77f3101644c5",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.19
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.1
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.06
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.25
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.11
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.22
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "chronic",
+              "confidence": 1,
+              "probabilities": {
+                "acute": 0,
+                "other": 0,
+                "subacute": 0,
+                "unstated": 0,
+                "chronic": 1
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.94
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.59
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.37
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.14
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.35
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.12
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.18
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.3
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.08
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.05
+            }
+          },
+          "usage": {
+            "input_tokens": 12354,
+            "output_tokens": 704
+          }
+        }
+      }
+    },
+    {
+      "id": "h06",
+      "baseline": {
+        "request": "8849baa0877217a8d66d7fbe5302e2b4eddbde66239d8397d8e565dbccc91653",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.2
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.2
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.06
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.16
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "subacute",
+              "confidence": 1,
+              "probabilities": {
+                "acute": 0,
+                "subacute": 1,
+                "chronic": 0,
+                "unstated": 0,
+                "other": 0
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.93
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.7
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.67
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.36
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.15
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.14
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.37
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.1
+            },
+            "t09": {
+              "type": "noul",
+              "noul": 0.11
+            }
+          },
+          "usage": {
+            "input_tokens": 13498,
+            "output_tokens": 722
+          }
+        }
+      }
+    },
+    {
+      "id": "h07",
+      "baseline": {
+        "request": "8e7df507a1cf1e0ad7df1cf67630b37f9ca56f4503b6c001ec7402414f4d3ea1",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.08
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "unstated",
+              "confidence": 1,
+              "probabilities": {
+                "chronic": 0,
+                "subacute": 0,
+                "other": 0,
+                "acute": 0,
+                "unstated": 1
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.42
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.77
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.8
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.9
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.27
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.52
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.14
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.31
+            }
+          },
+          "usage": {
+            "input_tokens": 11230,
+            "output_tokens": 685
+          }
+        }
+      }
+    },
+    {
+      "id": "h08",
+      "baseline": {
+        "request": "ef4c2ab0a6e73becbf1c145c9ab0cf70ebc14d6b44ea48d93ffec96ae3f43f4e",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.96
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.08
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.97
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.11
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.97
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.94
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.06
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.06
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.19
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "acute",
+              "confidence": 1,
+              "probabilities": {
+                "acute": 1,
+                "other": 0,
+                "unstated": 0,
+                "chronic": 0,
+                "subacute": 0
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.4
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.98
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.39
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.94
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.19
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.66
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.4
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.16
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.39
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.48
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.47
+            },
+            "t09": {
+              "type": "noul",
+              "noul": 0.23
+            },
+            "t10": {
+              "type": "noul",
+              "noul": 0.36
+            },
+            "t11": {
+              "type": "noul",
+              "noul": 0.11
+            },
+            "t12": {
+              "type": "noul",
+              "noul": 0.45
+            },
+            "t13": {
+              "type": "noul",
+              "noul": 0.48
+            }
+          },
+          "usage": {
+            "input_tokens": 18030,
+            "output_tokens": 792
+          }
+        }
+      }
+    },
+    {
+      "id": "h09",
+      "baseline": {
+        "request": "4312b37f3d52b21eef638441837e28678a14ad16654cbd98b4d25f73dba0b1fd",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.13
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.95
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.08
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.14
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.97
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.12
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.15
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.13
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.96
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.08
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.96
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.06
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.22
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "subacute",
+              "confidence": 1,
+              "probabilities": {
+                "acute": 0,
+                "subacute": 1,
+                "chronic": 0,
+                "unstated": 0,
+                "other": 0
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.73
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.98
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.9
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.93
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.31
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.18
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.35
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.24
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.28
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.13
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.16
+            },
+            "t09": {
+              "type": "noul",
+              "noul": 0.25
+            }
+          },
+          "usage": {
+            "input_tokens": 13515,
+            "output_tokens": 722
+          }
+        }
+      }
+    },
+    {
+      "id": "h10",
+      "baseline": {
+        "request": "e69a82ac6f5306ac319dd8b71f595279d12c9c6bf117f69fdae04f71567d02b7",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.11
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.95
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.97
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.11
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.96
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.96
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.21
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "chronic",
+              "confidence": 1,
+              "probabilities": {
+                "unstated": 0,
+                "chronic": 1,
+                "subacute": 0,
+                "acute": 0,
+                "other": 0
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.66
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.95
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.85
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.95
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.12
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.93
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.55
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.25
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.56
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.23
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.34
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.45
+            },
+            "t09": {
+              "type": "noul",
+              "noul": 0.22
+            },
+            "t10": {
+              "type": "noul",
+              "noul": 0.23
+            },
+            "t11": {
+              "type": "noul",
+              "noul": 0.49
+            }
+          },
+          "usage": {
+            "input_tokens": 15771,
+            "output_tokens": 758
+          }
+        }
+      }
+    },
+    {
+      "id": "h11",
+      "baseline": {
+        "request": "b8cbcb83bd44c118698f8f6972f1a162dc1ed63246c04ab4981f263c2160226a",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.81
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.71
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.96
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.82
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.92
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.74
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.8
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.61
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.08
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.1
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.92
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "subacute",
+              "confidence": 0.97,
+              "probabilities": {
+                "acute": 0,
+                "unstated": 0.01,
+                "other": 0,
+                "chronic": 0.01,
+                "subacute": 0.98
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.06
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.87
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.13
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.75
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.1
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.46
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.52
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.13
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.66
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.41
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.19
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.48
+            },
+            "t09": {
+              "type": "noul",
+              "noul": 0.18
+            },
+            "t10": {
+              "type": "noul",
+              "noul": 0.35
+            },
+            "t11": {
+              "type": "noul",
+              "noul": 0.31
+            },
+            "t12": {
+              "type": "noul",
+              "noul": 0.08
+            }
+          },
+          "usage": {
+            "input_tokens": 16909,
+            "output_tokens": 776
+          }
+        }
+      }
+    },
+    {
+      "id": "h12",
+      "baseline": {
+        "request": "f15baec3f4f0483f0116f79612632693c54ccf357ce5f12ffd52910db8cbd8f9",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.96
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.34
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.1
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.93
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.9
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.62
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.94
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "chronic",
+              "confidence": 1,
+              "probabilities": {
+                "acute": 0,
+                "chronic": 1,
+                "unstated": 0,
+                "subacute": 0,
+                "other": 0
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.08
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.88
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.11
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.96
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.12
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.11
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.63
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.38
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.29
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.94
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.38
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.22
+            },
+            "t09": {
+              "type": "noul",
+              "noul": 0.1
+            },
+            "t10": {
+              "type": "noul",
+              "noul": 0.18
+            },
+            "t11": {
+              "type": "noul",
+              "noul": 0.54
+            },
+            "t12": {
+              "type": "noul",
+              "noul": 0.11
+            }
+          },
+          "usage": {
+            "input_tokens": 16924,
+            "output_tokens": 776
+          }
+        }
+      }
+    },
+    {
+      "id": "h13",
+      "baseline": {
+        "request": "2e8aa2d2dc22387abfcd35f9d06d250d654e974c1e0fd4f655f1917229aa8bd6",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.08
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.92
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.97
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.76
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.97
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.96
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "chronic",
+              "confidence": 1,
+              "probabilities": {
+                "chronic": 1,
+                "other": 0,
+                "unstated": 0,
+                "acute": 0,
+                "subacute": 0
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.93
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.82
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.42
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.26
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.41
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.19
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.16
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.15
+            },
+            "t09": {
+              "type": "noul",
+              "noul": 0.11
+            }
+          },
+          "usage": {
+            "input_tokens": 13506,
+            "output_tokens": 722
+          }
+        }
+      }
+    },
+    {
+      "id": "h14",
+      "baseline": {
+        "request": "e8962bb05b3540eb5aa3fad7459f3d27fe507b210adfe6099d32d61b5f6e6e9e",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.06
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.28
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.12
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.15
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.06
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.24
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.18
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.1
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.12
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.11
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.15
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.96
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.96
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "unstated",
+              "confidence": 1,
+              "probabilities": {
+                "chronic": 0,
+                "subacute": 0,
+                "acute": 0,
+                "unstated": 1,
+                "other": 0
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.38
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.39
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.25
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.94
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.89
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.26
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.63
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.36
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.2
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.19
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.16
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.94
+            }
+          },
+          "usage": {
+            "input_tokens": 12384,
+            "output_tokens": 703
+          }
+        }
+      }
+    },
+    {
+      "id": "h15",
+      "baseline": {
+        "request": "53d49743a192515a4cb8e870592b531a5022880a8033011bd95802a817f87c90",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.96
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.1
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.95
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "acute",
+              "confidence": 1,
+              "probabilities": {
+                "acute": 1,
+                "subacute": 0,
+                "chronic": 0,
+                "unstated": 0,
+                "other": 0
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.96
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.12
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.83
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.43
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.39
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.72
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.11
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.15
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "t09": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "t10": {
+              "type": "noul",
+              "noul": 0.06
+            }
+          },
+          "usage": {
+            "input_tokens": 14620,
+            "output_tokens": 738
+          }
+        }
+      }
+    },
+    {
+      "id": "h16",
+      "baseline": {
+        "request": "37384e9e38b3dcab3dbc206f99fe702c9b146cacdd640cafbad05cc34f2b446a",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.74
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.19
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.97
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.6
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.15
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "acute",
+              "confidence": 1,
+              "probabilities": {
+                "subacute": 0,
+                "other": 0,
+                "chronic": 0,
+                "unstated": 0,
+                "acute": 1
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.13
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.79
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.92
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.65
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.13
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.93
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.37
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.14
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.27
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.22
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.22
+            },
+            "t09": {
+              "type": "noul",
+              "noul": 0.26
+            },
+            "t10": {
+              "type": "noul",
+              "noul": 0.25
+            },
+            "t11": {
+              "type": "noul",
+              "noul": 0.1
+            },
+            "t12": {
+              "type": "noul",
+              "noul": 0.17
+            },
+            "t13": {
+              "type": "noul",
+              "noul": 0.13
+            }
+          },
+          "usage": {
+            "input_tokens": 18010,
+            "output_tokens": 792
+          }
+        }
+      }
+    },
+    {
+      "id": "h17",
+      "baseline": {
+        "request": "c8aa3ac652b39856b6a38ab7b73d8d1d868b338fb27c9ddc0c85cfa3c7089858",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "chronic",
+              "confidence": 1,
+              "probabilities": {
+                "other": 0,
+                "subacute": 0,
+                "unstated": 0,
+                "acute": 0,
+                "chronic": 1
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.06
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.3
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.13
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.94
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.61
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.2
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.58
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.4
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.62
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.47
+            },
+            "t09": {
+              "type": "noul",
+              "noul": 0.6
+            },
+            "t10": {
+              "type": "noul",
+              "noul": 0.23
+            },
+            "t11": {
+              "type": "noul",
+              "noul": 0.17
+            }
+          },
+          "usage": {
+            "input_tokens": 15755,
+            "output_tokens": 758
+          }
+        }
+      }
+    },
+    {
+      "id": "h18",
+      "baseline": {
+        "request": "eceecec3284b9c086cbc33f8455cf3c8f6fa1d455bbb9a9a9ebb7fc301add2d9",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.11
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.12
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.06
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.06
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.1
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.96
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "unstated",
+              "confidence": 1,
+              "probabilities": {
+                "acute": 0,
+                "subacute": 0,
+                "chronic": 0,
+                "unstated": 1,
+                "other": 0
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.33
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.23
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.17
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.91
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.34
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.08
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.3
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.75
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.47
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.86
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.25
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.31
+            },
+            "t09": {
+              "type": "noul",
+              "noul": 0.84
+            },
+            "t10": {
+              "type": "noul",
+              "noul": 0.72
+            },
+            "t11": {
+              "type": "noul",
+              "noul": 0.15
+            },
+            "t12": {
+              "type": "noul",
+              "noul": 0.1
+            }
+          },
+          "usage": {
+            "input_tokens": 16891,
+            "output_tokens": 775
+          }
+        }
+      }
+    },
+    {
+      "id": "h19",
+      "baseline": {
+        "request": "f7c1d32d80e4c2ba7c96c5133b4455be7c474509a98abd9227808d11e00b0089",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "unstated",
+              "confidence": 1,
+              "probabilities": {
+                "unstated": 1,
+                "acute": 0,
+                "subacute": 0,
+                "other": 0,
+                "chronic": 0
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.97
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.55
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.14
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.66
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.68
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.82
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.28
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.53
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.27
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.13
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.29
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.25
+            },
+            "t09": {
+              "type": "noul",
+              "noul": 0.09
+            }
+          },
+          "usage": {
+            "input_tokens": 13486,
+            "output_tokens": 721
+          }
+        }
+      }
+    },
+    {
+      "id": "h20",
+      "baseline": {
+        "request": "644b8bd4973968554fbe24d8a5cd1ac73351238dee3e5545048e77b0135718c4",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.27
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.17
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "acute",
+              "confidence": 1,
+              "probabilities": {
+                "other": 0,
+                "chronic": 0,
+                "unstated": 0,
+                "subacute": 0,
+                "acute": 1
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.08
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.35
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.33
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.1
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.11
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.33
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.41
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.27
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.06
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.08
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.42
+            },
+            "t09": {
+              "type": "noul",
+              "noul": 0.16
+            }
+          },
+          "usage": {
+            "input_tokens": 13486,
+            "output_tokens": 720
+          }
+        }
+      }
+    },
+    {
+      "id": "h21",
+      "baseline": {
+        "request": "4f2133d3d9b741a2fa0eedb953683541941d36633e93fb6f853deca516e26625",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.08
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.1
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.19
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.06
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.12
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "unstated",
+              "confidence": 0.99,
+              "probabilities": {
+                "acute": 0,
+                "other": 0,
+                "unstated": 1,
+                "chronic": 0,
+                "subacute": 0
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.06
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.93
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.37
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.4
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.86
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.09
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.52
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.3
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.27
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.35
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.29
+            },
+            "t09": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "t10": {
+              "type": "noul",
+              "noul": 0.07
+            },
+            "t11": {
+              "type": "noul",
+              "noul": 0.1
+            }
+          },
+          "usage": {
+            "input_tokens": 15757,
+            "output_tokens": 757
+          }
+        }
+      }
+    },
+    {
+      "id": "h22",
+      "baseline": {
+        "request": "fdb77efd18c93257a9769caf1ca4923195212fa0d4872080ffe79e0f0ca82b83",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "chronic",
+              "confidence": 0.96,
+              "probabilities": {
+                "chronic": 0.97,
+                "subacute": 0,
+                "other": 0.03,
+                "acute": 0,
+                "unstated": 0
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.88
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.87
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.85
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.24
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.89
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.77
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.12
+            }
+          },
+          "usage": {
+            "input_tokens": 11226,
+            "output_tokens": 686
+          }
+        }
+      }
+    },
+    {
+      "id": "h23",
+      "baseline": {
+        "request": "3bc3e07f6b67744b72ede8ae14619dfcd0ba0e6ac5f70684807dce0b70828067",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "subacute",
+              "confidence": 0.99,
+              "probabilities": {
+                "acute": 0,
+                "other": 0.01,
+                "unstated": 0,
+                "chronic": 0,
+                "subacute": 0.99
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.56
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.96
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.39
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.21
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.27
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.15
+            }
+          },
+          "usage": {
+            "input_tokens": 10098,
+            "output_tokens": 668
+          }
+        }
+      }
+    },
+    {
+      "id": "h24",
+      "baseline": {
+        "request": "afd46175b86713a2cc8b586a93621521c069dfd1b806e96d6c9eed7fc777aa6a",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "chronic",
+              "confidence": 1,
+              "probabilities": {
+                "acute": 0,
+                "subacute": 0,
+                "chronic": 1,
+                "unstated": 0,
+                "other": 0
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.06
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.08
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.34
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.94
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.61
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.71
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.68
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.15
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.12
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.32
+            }
+          },
+          "usage": {
+            "input_tokens": 12369,
+            "output_tokens": 704
+          }
+        }
+      }
+    },
+    {
+      "id": "h25",
+      "baseline": {
+        "request": "03ae431a5895126c02cddbdbfa77c5eeeb35519393a717866c04287e3b06b9bb",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "other",
+              "confidence": 1,
+              "probabilities": {
+                "subacute": 0,
+                "other": 1,
+                "chronic": 0,
+                "unstated": 0,
+                "acute": 0
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.87
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.94
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.8
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.36
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.6
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.88
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.85
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.55
+            },
+            "t09": {
+              "type": "noul",
+              "noul": 0.66
+            }
+          },
+          "usage": {
+            "input_tokens": 13500,
+            "output_tokens": 720
+          }
+        }
+      },
+      "forced": {
+        "request": "7f79f74d9d3c0e19bbd966e15926c083ed2b9a331e51de1dfe958716d3463ef4",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.03
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "unstated",
+              "confidence": 1,
+              "probabilities": {
+                "chronic": 0,
+                "subacute": 0,
+                "acute": 0,
+                "unstated": 1
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.84
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.94
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.8
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.35
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.61
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.89
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.85
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.52
+            },
+            "t09": {
+              "type": "noul",
+              "noul": 0.65
+            }
+          },
+          "usage": {
+            "input_tokens": 13473,
+            "output_tokens": 714
+          }
+        }
+      }
+    },
+    {
+      "id": "h26",
+      "baseline": {
+        "request": "40cee73e4ab4c07df52d894b5bbfd66201169f751f6db6ac3c7c310db469d9d3",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.98
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "other",
+              "confidence": 1,
+              "probabilities": {
+                "acute": 0,
+                "subacute": 0,
+                "chronic": 0,
+                "unstated": 0,
+                "other": 1
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.95
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.86
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.83
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.14
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.12
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.13
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.29
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.35
+            },
+            "t09": {
+              "type": "noul",
+              "noul": 0.22
+            },
+            "t10": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "t11": {
+              "type": "noul",
+              "noul": 0.06
+            }
+          },
+          "usage": {
+            "input_tokens": 15763,
+            "output_tokens": 756
+          }
+        }
+      },
+      "forced": {
+        "request": "a9621f2a2d4f09101c34b4202685fcf41569cc7ab4bb9726c947ecd826ad5939",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.97
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "unstated",
+              "confidence": 0.99,
+              "probabilities": {
+                "subacute": 0,
+                "acute": 0,
+                "unstated": 0.99,
+                "chronic": 0.01
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.95
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.84
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.8
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.11
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.11
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.11
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.3
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.3
+            },
+            "t09": {
+              "type": "noul",
+              "noul": 0.25
+            },
+            "t10": {
+              "type": "noul",
+              "noul": 0.05
+            },
+            "t11": {
+              "type": "noul",
+              "noul": 0.05
+            }
+          },
+          "usage": {
+            "input_tokens": 15736,
+            "output_tokens": 750
+          }
+        }
+      }
+    },
+    {
+      "id": "h27",
+      "baseline": {
+        "request": "9e5662f62567255789f90307e141a7d4d2ba35b75ea26ade248891e037a21734",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "other",
+              "confidence": 1,
+              "probabilities": {
+                "other": 1,
+                "acute": 0,
+                "subacute": 0,
+                "unstated": 0,
+                "chronic": 0
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.96
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.94
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.78
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.84
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.62
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.27
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.93
+            }
+          },
+          "usage": {
+            "input_tokens": 11231,
+            "output_tokens": 684
+          }
+        }
+      },
+      "forced": {
+        "request": "7f32a5d00f1b7bae3a2bd3f7773a4f079d5401648a4c742b5bb73427163e214d",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "unstated",
+              "confidence": 0.92,
+              "probabilities": {
+                "unstated": 0.94,
+                "subacute": 0,
+                "acute": 0.06,
+                "chronic": 0
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.96
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.94
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.8
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.84
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.66
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.35
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.94
+            }
+          },
+          "usage": {
+            "input_tokens": 11204,
+            "output_tokens": 678
+          }
+        }
+      }
+    },
+    {
+      "id": "h28",
+      "baseline": {
+        "request": "760497f4afd612f6b543a68bab1a58bb0bb0b15915e6a61385a838f3560d8b84",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "other",
+              "confidence": 1,
+              "probabilities": {
+                "chronic": 0,
+                "acute": 0,
+                "subacute": 0,
+                "unstated": 0,
+                "other": 1
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.7
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.65
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.44
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.3
+            }
+          },
+          "usage": {
+            "input_tokens": 7829,
+            "output_tokens": 630
+          }
+        }
+      },
+      "forced": {
+        "request": "aa7f88c3d01656fdc7b46ff34337bb817ede017bf85165011f53a909b9bc9b08",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "unstated",
+              "confidence": 0.97,
+              "probabilities": {
+                "acute": 0,
+                "subacute": 0,
+                "unstated": 0.98,
+                "chronic": 0.02
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.67
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.66
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.42
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.28
+            }
+          },
+          "usage": {
+            "input_tokens": 7802,
+            "output_tokens": 624
+          }
+        }
+      }
+    },
+    {
+      "id": "h29",
+      "baseline": {
+        "request": "f3412d93c5b8b38ea246580020a1681c8be6d7558efb29e05a1998b91ff65821",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "other",
+              "confidence": 1,
+              "probabilities": {
+                "acute": 0,
+                "subacute": 0,
+                "chronic": 0,
+                "unstated": 0,
+                "other": 1
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.7
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.06
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.43
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.4
+            }
+          },
+          "usage": {
+            "input_tokens": 8971,
+            "output_tokens": 648
+          }
+        }
+      },
+      "forced": {
+        "request": "9a7b7cc88ed27b29e58a90f36764747f4d79c2f8836218941611c2d985c8ab7f",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "unstated",
+              "confidence": 0.99,
+              "probabilities": {
+                "chronic": 0,
+                "subacute": 0,
+                "acute": 0,
+                "unstated": 1
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.72
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.04
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.06
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.41
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.36
+            }
+          },
+          "usage": {
+            "input_tokens": 8944,
+            "output_tokens": 642
+          }
+        }
+      }
+    },
+    {
+      "id": "h30",
+      "baseline": {
+        "request": "f20f7a4afad229436a8fb8042a7993201a831139704e2d7468dab0233dbb0741",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.95
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "other",
+              "confidence": 1,
+              "probabilities": {
+                "acute": 0,
+                "chronic": 0,
+                "unstated": 0,
+                "subacute": 0,
+                "other": 1
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.78
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.51
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.71
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.26
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.51
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.86
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.26
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.07
+            }
+          },
+          "usage": {
+            "input_tokens": 12366,
+            "output_tokens": 702
+          }
+        }
+      },
+      "forced": {
+        "request": "edc0cd588e0ff0f0af35ba02ea2b8ed2926bbb3e4b3cd3bd0142b43ad877917f",
+        "response": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "c01": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c02": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c03": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c04": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c05": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c06": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c07": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c08": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c09": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c10": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c11": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c12": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c13": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c14": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c15": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c16": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c17": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c18": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c19": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c20": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c21": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c22": {
+              "type": "noul",
+              "noul": 0.01
+            },
+            "c23": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "c24": {
+              "type": "noul",
+              "noul": 0.95
+            },
+            "pain": {
+              "type": "choice",
+              "choice": "unstated",
+              "confidence": 1,
+              "probabilities": {
+                "unstated": 1,
+                "subacute": 0,
+                "chronic": 0,
+                "acute": 0
+              }
+            },
+            "s1": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "s2": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "s3": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "s4": {
+              "type": "noul",
+              "noul": 0.02
+            },
+            "t01": {
+              "type": "noul",
+              "noul": 0.77
+            },
+            "t02": {
+              "type": "noul",
+              "noul": 0.48
+            },
+            "t03": {
+              "type": "noul",
+              "noul": 0.72
+            },
+            "t04": {
+              "type": "noul",
+              "noul": 0.29
+            },
+            "t05": {
+              "type": "noul",
+              "noul": 0.48
+            },
+            "t06": {
+              "type": "noul",
+              "noul": 0.83
+            },
+            "t07": {
+              "type": "noul",
+              "noul": 0.25
+            },
+            "t08": {
+              "type": "noul",
+              "noul": 0.08
+            }
+          },
+          "usage": {
+            "input_tokens": 12339,
+            "output_tokens": 696
+          }
+        }
+      }
+    }
+  ]
+}
