@@ -197,7 +197,7 @@ declines.
     scanners). Accept: `pnpm gate` green under Node 24, `node --version` inside it = v24.
   - [x] 2a230cc **contract** `.agent/contracts/m5u16.md`, committed → funds `tester` (pure kernel:
     chunker, request builder, response parser, selector) + `scientist` (held-out probes).
-  - [ ] **u16b producer** (`kernel`) `tools/kb/intake.mjs` → `kb/generated/intake-vocabulary.json`:
+  - [x] 43a5da8 **u16b producer** (`kernel`) `tools/kb/intake.mjs` → `kb/generated/intake-vocabulary.json`:
     conditions, sections (Box 3), pain sets, per-rule trigger + build-time `clinical_derive/4`
     goal; validator + `requireFiring` control in `kb:asset-check`; `kb:reproduce` covers it.
   - [ ] **u16c judgment core** (`kernel`) `src/intake/`: vocabulary reader, chunker, request
@@ -218,22 +218,14 @@ declines.
     `pnpm gate` green on a clean tree at the closing commit, `.agent/review.md` no open row,
     every `Decisions` entry implemented or deferred with reason, `Phase: MAINTAIN` committed
     (prototype retirement n/a — `stack.md` carve-out).
-  - **Resume here** (session paused for a host restart). UNCOMMITTED in the working tree,
-    written but not yet graded by the tester suites or reviewed: u16b producer + reader
-    (`tools/kb/intake.mjs`, `clinical.mjs` `sentences`, `build.mjs`/`check.mjs` wiring, manifest
-    v6, `src/intake/vocabulary.ts`; `kb:build` + `kb:asset-check` green, 48/48 goals derive their
-    rule on the image); u16c core (`src/intake/{chunker,request,judgment,select,client}.ts`,
-    lint + `pnpm check` clean); u16d (`src/intake/service.ts`; `DemoController` one engine
-    queue `#exclusive`, `derive`, `reveal`) untested; u16e (`worker/index.ts`,
-    `wrangler.jsonc` port 8791, Vite proxy, `pnpm intake:dev`, gitignored `.dev.vars` holding
-    the key) — one live dev call returned 200. Diff-blind red suites wait on branches
-    `wt/tester-1` `4da48b3` (K/Q/J/S/C + chunker/selector oracles, 210 cases) and `wt/tester-2`
-    `b9278ac` (V/D/W, 129 cases), worktrees under `.scratch/worktrees/`, both aligned to the
-    committed rulings but NOT rerun after that alignment; roster `.scratch/agents/roster.md`,
-    deliverables `.scratch/agents/tester-{1,2}.md`. The same WIP is snapshotted on branch
-    `wip/u16-resume` (never merge). Next: bring the suites into `tests/` → run against the WIP
-    → fix → `reviewer` per kernel diff → one commit per sub-unit (u16b first); then u16f UI.
-    `pnpm intake:dev` needs `.dev.vars` (rewrite it from `~/.config/typesafe/key` if absent).
+  - **Resume here.** Working tree holds u16c–u16g, all graded: tester-1/2/3 suites (wt/tester-1
+    4da48b3, wt/tester-2 b9278ac, wt/tester-3 7ab6142) green; reviewer-2/3/4 findings fixed
+    (wt/reviewer-3 40fd9d6, wt/reviewer-4 897a0a6 witnesses). Land in order c → d → e → f → g,
+    each gate-verified from a clean checkout at `.scratch/worktrees/base`; per-unit file lists =
+    review snapshots on `wip/u16-review` (b 28e98dd, c d5e9cc6, d c210b9c, e 66a4960) + later
+    fixes. u16e review = MAIN (security lane), all rows pass. Owed: reviewer on u16f + u16g,
+    LIFECYCLE U4 rows, W7/X3 live two-server check, u16h close. Roster + finds:
+    `.scratch/agents/roster.md`, `.scratch/u16-finds.md`.
 - Queue → `.agent/deferred.md`: 61 rows, acceptance check each, plus the accepted-open review
   ids, whose checks stay in `.agent/archive/review-expedited.md`; the 57 rows queued before
   agents@8fc2e19 stay user-ruled into MAINTAIN, **out of u16's scope** (`Decisions` Security
