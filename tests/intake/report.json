@@ -1,0 +1,1499 @@
+{
+  "schemaVersion": 1,
+  "model": "jev-1.13.0",
+  "vocabulary": "31f6b57f66597566a7c7bc701acc0ba81b9228614552d1e8ec0a76107ef25225",
+  "cases": [
+    {
+      "id": "h01",
+      "gold": {
+        "outcome": "answered",
+        "pain": "acute",
+        "ruleIds": ["cdc2022-opioid-rec01:2", "cdc2022-opioid-rec01:4"]
+      },
+      "baseline": {
+        "outcome": "answered",
+        "pain": "acute",
+        "selected": [
+          "cdc2022-opioid-rec01:2",
+          "cdc2022-opioid-rec01:4",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "derived": [
+          "cdc2022-opioid-rec01:2",
+          "cdc2022-opioid-rec01:4",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "gaps": ["wrist sprain", "not decided whether"],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": 0.1667,
+      "recall": 1,
+      "spans": [
+        {
+          "text": "wrist sprain",
+          "verdict": "found"
+        }
+      ]
+    },
+    {
+      "id": "h02",
+      "gold": {
+        "outcome": "answered",
+        "pain": "subacute",
+        "ruleIds": [
+          "cdc2022-opioid-rec02:2",
+          "cdc2022-opioid-rec02:4",
+          "cdc2022-opioid-rec02:5",
+          "cdc2022-opioid-rec02:6",
+          "cdc2022-opioid-rec02:7"
+        ]
+      },
+      "baseline": {
+        "outcome": "answered",
+        "pain": "subacute",
+        "selected": [
+          "cdc2022-opioid-rec02:2",
+          "cdc2022-opioid-rec02:4",
+          "cdc2022-opioid-rec02:5",
+          "cdc2022-opioid-rec02:6",
+          "cdc2022-opioid-rec02:7",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "derived": [
+          "cdc2022-opioid-rec02:2",
+          "cdc2022-opioid-rec02:4",
+          "cdc2022-opioid-rec02:5",
+          "cdc2022-opioid-rec02:6",
+          "cdc2022-opioid-rec02:7",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "gaps": ["rotator cuff tendinopathy", "Still deciding whether opioids belong"],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": 0.3125,
+      "recall": 1,
+      "spans": [
+        {
+          "text": "rotator cuff tendinopathy",
+          "verdict": "found"
+        }
+      ]
+    },
+    {
+      "id": "h03",
+      "gold": {
+        "outcome": "answered",
+        "pain": "chronic",
+        "ruleIds": [
+          "cdc2022-opioid-rec02:2",
+          "cdc2022-opioid-rec02:3",
+          "cdc2022-opioid-rec02:4",
+          "cdc2022-opioid-rec02:5",
+          "cdc2022-opioid-rec02:6",
+          "cdc2022-opioid-rec02:7",
+          "cdc2022-opioid-rec02:8",
+          "cdc2022-opioid-rec05:4"
+        ]
+      },
+      "baseline": {
+        "outcome": "answered",
+        "pain": "chronic",
+        "selected": [
+          "cdc2022-opioid-rec02:2",
+          "cdc2022-opioid-rec02:3",
+          "cdc2022-opioid-rec02:4",
+          "cdc2022-opioid-rec02:5",
+          "cdc2022-opioid-rec02:6",
+          "cdc2022-opioid-rec02:7",
+          "cdc2022-opioid-rec02:8",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec05:4",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "derived": [
+          "cdc2022-opioid-rec02:2",
+          "cdc2022-opioid-rec02:3",
+          "cdc2022-opioid-rec02:4",
+          "cdc2022-opioid-rec02:5",
+          "cdc2022-opioid-rec02:6",
+          "cdc2022-opioid-rec02:7",
+          "cdc2022-opioid-rec02:8",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec05:4",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "gaps": ["Chronic pain consultation", "nothing"],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": 0.4444,
+      "recall": 1,
+      "spans": []
+    },
+    {
+      "id": "h04",
+      "gold": {
+        "outcome": "answered",
+        "pain": "unstated",
+        "ruleIds": ["cdc2022-opioid-rec05:5"]
+      },
+      "baseline": {
+        "outcome": "answered",
+        "pain": "unstated",
+        "selected": [
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "derived": [
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "gaps": ["Opioid medication review", "referral omits", "guidance", "selecting"],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": 0.125,
+      "recall": 1,
+      "spans": []
+    },
+    {
+      "id": "h05",
+      "gold": {
+        "outcome": "answered",
+        "pain": "chronic",
+        "ruleIds": ["cdc2022-opioid-rec07:3", "cdc2022-opioid-rec07:4", "cdc2022-opioid-rec07:5"]
+      },
+      "baseline": {
+        "outcome": "answered",
+        "pain": "chronic",
+        "selected": [
+          "cdc2022-opioid-rec07:3",
+          "cdc2022-opioid-rec07:4",
+          "cdc2022-opioid-rec07:5",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "derived": [
+          "cdc2022-opioid-rec07:3",
+          "cdc2022-opioid-rec07:4",
+          "cdc2022-opioid-rec07:5",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "gaps": [],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": 0.2308,
+      "recall": 1,
+      "spans": []
+    },
+    {
+      "id": "h06",
+      "gold": {
+        "outcome": "answered",
+        "pain": "subacute",
+        "ruleIds": ["cdc2022-opioid-rec07:2", "cdc2022-opioid-rec07:4", "cdc2022-opioid-rec07:5"]
+      },
+      "baseline": {
+        "outcome": "answered",
+        "pain": "subacute",
+        "selected": [
+          "cdc2022-opioid-rec07:2",
+          "cdc2022-opioid-rec07:4",
+          "cdc2022-opioid-rec07:5",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "derived": [
+          "cdc2022-opioid-rec07:2",
+          "cdc2022-opioid-rec07:4",
+          "cdc2022-opioid-rec07:5",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "gaps": ["subacute pain service"],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": 0.2308,
+      "recall": 1,
+      "spans": []
+    },
+    {
+      "id": "h07",
+      "gold": {
+        "outcome": "answered",
+        "pain": "unstated",
+        "ruleIds": [
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ]
+      },
+      "baseline": {
+        "outcome": "no-match",
+        "pain": "unstated",
+        "selected": [],
+        "derived": [],
+        "gaps": [
+          "New OUD consult",
+          "requests detox without medication",
+          "No pain complaint",
+          "supplied"
+        ],
+        "overflow": 0
+      },
+      "outcomeMatch": false,
+      "precision": null,
+      "recall": 0,
+      "spans": []
+    },
+    {
+      "id": "h08",
+      "gold": {
+        "outcome": "answered",
+        "pain": "acute",
+        "ruleIds": [
+          "cdc2022-opioid-rec01:2",
+          "cdc2022-opioid-rec01:4",
+          "cdc2022-opioid-rec03:2",
+          "cdc2022-opioid-rec04:2",
+          "cdc2022-opioid-rec06:2",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:2",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ]
+      },
+      "baseline": {
+        "outcome": "answered",
+        "pain": "acute",
+        "selected": [
+          "cdc2022-opioid-rec03:2",
+          "cdc2022-opioid-rec04:2",
+          "cdc2022-opioid-rec06:2",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:2",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "derived": [
+          "cdc2022-opioid-rec03:2",
+          "cdc2022-opioid-rec04:2",
+          "cdc2022-opioid-rec06:2",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:2",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "gaps": ["severe enough"],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": 1,
+      "recall": 0.875,
+      "spans": [
+        {
+          "text": "postoperative",
+          "verdict": "judgment"
+        },
+        {
+          "text": "oxycodone",
+          "verdict": "judgment"
+        }
+      ]
+    },
+    {
+      "id": "h09",
+      "gold": {
+        "outcome": "answered",
+        "pain": "subacute",
+        "ruleIds": [
+          "cdc2022-opioid-rec02:2",
+          "cdc2022-opioid-rec02:4",
+          "cdc2022-opioid-rec02:5",
+          "cdc2022-opioid-rec02:6",
+          "cdc2022-opioid-rec02:7",
+          "cdc2022-opioid-rec03:3",
+          "cdc2022-opioid-rec04:3",
+          "cdc2022-opioid-rec07:2",
+          "cdc2022-opioid-rec07:4",
+          "cdc2022-opioid-rec07:5",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:3",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:2",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ]
+      },
+      "baseline": {
+        "outcome": "answered",
+        "pain": "subacute",
+        "selected": [
+          "cdc2022-opioid-rec02:2",
+          "cdc2022-opioid-rec02:4",
+          "cdc2022-opioid-rec02:5",
+          "cdc2022-opioid-rec02:6",
+          "cdc2022-opioid-rec02:7",
+          "cdc2022-opioid-rec03:3",
+          "cdc2022-opioid-rec04:3",
+          "cdc2022-opioid-rec07:2",
+          "cdc2022-opioid-rec07:4",
+          "cdc2022-opioid-rec07:5",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:3",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:2",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "derived": [
+          "cdc2022-opioid-rec02:2",
+          "cdc2022-opioid-rec02:4",
+          "cdc2022-opioid-rec02:5",
+          "cdc2022-opioid-rec02:6",
+          "cdc2022-opioid-rec02:7",
+          "cdc2022-opioid-rec03:3",
+          "cdc2022-opioid-rec04:3",
+          "cdc2022-opioid-rec07:2",
+          "cdc2022-opioid-rec07:4",
+          "cdc2022-opioid-rec07:5",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:3",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:2",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "gaps": [],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": 1,
+      "recall": 1,
+      "spans": [
+        {
+          "text": "hydrocodone",
+          "verdict": "judgment"
+        }
+      ]
+    },
+    {
+      "id": "h10",
+      "gold": {
+        "outcome": "answered",
+        "pain": "chronic",
+        "ruleIds": [
+          "cdc2022-opioid-rec02:2",
+          "cdc2022-opioid-rec02:4",
+          "cdc2022-opioid-rec02:5",
+          "cdc2022-opioid-rec02:6",
+          "cdc2022-opioid-rec02:7",
+          "cdc2022-opioid-rec03:4",
+          "cdc2022-opioid-rec04:4",
+          "cdc2022-opioid-rec07:3",
+          "cdc2022-opioid-rec07:4",
+          "cdc2022-opioid-rec07:5",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:4",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:3",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ]
+      },
+      "baseline": {
+        "outcome": "answered",
+        "pain": "chronic",
+        "selected": [
+          "cdc2022-opioid-rec02:2",
+          "cdc2022-opioid-rec02:4",
+          "cdc2022-opioid-rec02:5",
+          "cdc2022-opioid-rec02:6",
+          "cdc2022-opioid-rec02:7",
+          "cdc2022-opioid-rec03:4",
+          "cdc2022-opioid-rec04:4",
+          "cdc2022-opioid-rec07:3",
+          "cdc2022-opioid-rec07:4",
+          "cdc2022-opioid-rec07:5",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:4",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:3",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "derived": [
+          "cdc2022-opioid-rec02:2",
+          "cdc2022-opioid-rec02:4",
+          "cdc2022-opioid-rec02:5",
+          "cdc2022-opioid-rec02:6",
+          "cdc2022-opioid-rec02:7",
+          "cdc2022-opioid-rec03:4",
+          "cdc2022-opioid-rec04:4",
+          "cdc2022-opioid-rec07:3",
+          "cdc2022-opioid-rec07:4",
+          "cdc2022-opioid-rec07:5",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:4",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:3",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "gaps": ["stage 3 CKD", "never exposed", "Today"],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": 1,
+      "recall": 1,
+      "spans": [
+        {
+          "text": "stage 3 CKD",
+          "verdict": "found"
+        },
+        {
+          "text": "morphine",
+          "verdict": "judgment"
+        }
+      ]
+    },
+    {
+      "id": "h11",
+      "gold": {
+        "outcome": "answered",
+        "pain": "subacute",
+        "ruleIds": [
+          "cdc2022-opioid-rec04:5",
+          "cdc2022-opioid-rec04:7",
+          "cdc2022-opioid-rec04:9",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:2",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec05:3",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ]
+      },
+      "baseline": {
+        "outcome": "answered",
+        "pain": "subacute",
+        "selected": [
+          "cdc2022-opioid-rec04:5",
+          "cdc2022-opioid-rec04:7",
+          "cdc2022-opioid-rec04:9",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:2",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec05:3",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "derived": [
+          "cdc2022-opioid-rec04:5",
+          "cdc2022-opioid-rec04:7",
+          "cdc2022-opioid-rec04:9",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:2",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec05:3",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "gaps": ["renewing 20 MME/day", "not changing"],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": 1,
+      "recall": 1,
+      "spans": [
+        {
+          "text": "morphine",
+          "verdict": "judgment"
+        },
+        {
+          "text": "20 MME/day",
+          "verdict": "found"
+        }
+      ]
+    },
+    {
+      "id": "h12",
+      "gold": {
+        "outcome": "answered",
+        "pain": "chronic",
+        "ruleIds": [
+          "cdc2022-opioid-rec02:3",
+          "cdc2022-opioid-rec02:8",
+          "cdc2022-opioid-rec04:6",
+          "cdc2022-opioid-rec04:8",
+          "cdc2022-opioid-rec04:10",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:3",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec05:4",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ]
+      },
+      "baseline": {
+        "outcome": "answered",
+        "pain": "chronic",
+        "selected": [
+          "cdc2022-opioid-rec02:3",
+          "cdc2022-opioid-rec02:8",
+          "cdc2022-opioid-rec04:8",
+          "cdc2022-opioid-rec04:10",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:3",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec05:4",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "derived": [
+          "cdc2022-opioid-rec02:3",
+          "cdc2022-opioid-rec02:8",
+          "cdc2022-opioid-rec04:8",
+          "cdc2022-opioid-rec04:10",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:3",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec05:4",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "gaps": ["60 MME/day", "untreated sleep apnoea", "harm-reduction advice rather"],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": 1,
+      "recall": 0.9444,
+      "spans": [
+        {
+          "text": "hydrocodone",
+          "verdict": "judgment"
+        },
+        {
+          "text": "60 MME/day",
+          "verdict": "found"
+        },
+        {
+          "text": "untreated sleep apnoea",
+          "verdict": "found"
+        }
+      ]
+    },
+    {
+      "id": "h13",
+      "gold": {
+        "outcome": "answered",
+        "pain": "chronic",
+        "ruleIds": [
+          "cdc2022-opioid-rec04:6",
+          "cdc2022-opioid-rec04:10",
+          "cdc2022-opioid-rec10:3",
+          "cdc2022-opioid-rec05:2",
+          "cdc2022-opioid-rec05:3",
+          "cdc2022-opioid-rec05:5"
+        ]
+      },
+      "baseline": {
+        "outcome": "answered",
+        "pain": "chronic",
+        "selected": [
+          "cdc2022-opioid-rec04:6",
+          "cdc2022-opioid-rec04:10",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:3",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec05:2",
+          "cdc2022-opioid-rec05:3",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "derived": [
+          "cdc2022-opioid-rec04:6",
+          "cdc2022-opioid-rec04:10",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:3",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec05:2",
+          "cdc2022-opioid-rec05:3",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "gaps": [],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": 0.375,
+      "recall": 1,
+      "spans": []
+    },
+    {
+      "id": "h14",
+      "gold": {
+        "outcome": "answered",
+        "pain": "unstated",
+        "ruleIds": [
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec11:2",
+          "cdc2022-opioid-rec11:3",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ]
+      },
+      "baseline": {
+        "outcome": "answered",
+        "pain": "unstated",
+        "selected": [
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec11:2",
+          "cdc2022-opioid-rec11:3",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "derived": [
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec11:2",
+          "cdc2022-opioid-rec11:3",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "gaps": ["Pain duration not documented", "alprazolam", "obstructive sleep apnea"],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": 1,
+      "recall": 1,
+      "spans": [
+        {
+          "text": "Percocet",
+          "verdict": "judgment"
+        },
+        {
+          "text": "alprazolam",
+          "verdict": "found"
+        },
+        {
+          "text": "obstructive sleep apnea",
+          "verdict": "found"
+        }
+      ]
+    },
+    {
+      "id": "h15",
+      "gold": {
+        "outcome": "answered",
+        "pain": "acute",
+        "ruleIds": [
+          "cdc2022-opioid-rec01:2",
+          "cdc2022-opioid-rec01:3",
+          "cdc2022-opioid-rec01:4",
+          "cdc2022-opioid-rec05:4"
+        ]
+      },
+      "baseline": {
+        "outcome": "answered",
+        "pain": "acute",
+        "selected": [
+          "cdc2022-opioid-rec01:2",
+          "cdc2022-opioid-rec01:3",
+          "cdc2022-opioid-rec01:4",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec05:4",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "derived": [
+          "cdc2022-opioid-rec01:2",
+          "cdc2022-opioid-rec01:3",
+          "cdc2022-opioid-rec01:4",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec05:4",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "gaps": ["not initiating treatment"],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": 0.3077,
+      "recall": 1,
+      "spans": []
+    },
+    {
+      "id": "h16",
+      "gold": {
+        "outcome": "answered",
+        "pain": "acute",
+        "ruleIds": ["cdc2022-opioid-rec06:2"]
+      },
+      "baseline": {
+        "outcome": "answered",
+        "pain": "acute",
+        "selected": [
+          "cdc2022-opioid-rec03:2",
+          "cdc2022-opioid-rec06:2",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:2",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "derived": [
+          "cdc2022-opioid-rec03:2",
+          "cdc2022-opioid-rec06:2",
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:2",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "gaps": ["dental extraction"],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": 0.0769,
+      "recall": 1,
+      "spans": [
+        {
+          "text": "dental extraction",
+          "verdict": "found"
+        }
+      ]
+    },
+    {
+      "id": "h17",
+      "gold": {
+        "outcome": "answered",
+        "pain": "chronic",
+        "ruleIds": [
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec09:5",
+          "cdc2022-opioid-rec09:6",
+          "cdc2022-opioid-rec10:4",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ]
+      },
+      "baseline": {
+        "outcome": "no-match",
+        "pain": "chronic",
+        "selected": [],
+        "derived": [],
+        "gaps": [
+          "COPD",
+          "currently not",
+          "designing",
+          "toxicology screening workflow",
+          "no initiation"
+        ],
+        "overflow": 0
+      },
+      "outcomeMatch": false,
+      "precision": null,
+      "recall": 0,
+      "spans": [
+        {
+          "text": "COPD",
+          "verdict": "found"
+        }
+      ]
+    },
+    {
+      "id": "h18",
+      "gold": {
+        "outcome": "answered",
+        "pain": "unstated",
+        "ruleIds": [
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec11:3",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ]
+      },
+      "baseline": {
+        "outcome": "answered",
+        "pain": "unstated",
+        "selected": [
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec11:3",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "derived": [
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec11:3",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "gaps": ["gabapentin", "no benzodiazepine", "missing", "referral"],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": 1,
+      "recall": 1,
+      "spans": [
+        {
+          "text": "gabapentin",
+          "verdict": "found"
+        }
+      ]
+    },
+    {
+      "id": "h19",
+      "gold": {
+        "outcome": "no-match",
+        "pain": "unstated",
+        "ruleIds": []
+      },
+      "baseline": {
+        "outcome": "answered",
+        "pain": "unstated",
+        "selected": [
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "derived": [
+          "cdc2022-opioid-rec08:2",
+          "cdc2022-opioid-rec08:3",
+          "cdc2022-opioid-rec08:4",
+          "cdc2022-opioid-rec08:5",
+          "cdc2022-opioid-rec05:5",
+          "cdc2022-opioid-rec12:2",
+          "cdc2022-opioid-rec12:3",
+          "cdc2022-opioid-rec12:4"
+        ],
+        "gaps": ["Referral says pain", "gives no duration", "No opioid"],
+        "overflow": 0
+      },
+      "outcomeMatch": false,
+      "precision": 0,
+      "recall": null,
+      "spans": []
+    },
+    {
+      "id": "h20",
+      "gold": {
+        "outcome": "no-match",
+        "pain": "acute",
+        "ruleIds": []
+      },
+      "baseline": {
+        "outcome": "no-match",
+        "pain": "acute",
+        "selected": [],
+        "derived": [],
+        "gaps": [],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": null,
+      "recall": null,
+      "spans": []
+    },
+    {
+      "id": "h21",
+      "gold": {
+        "outcome": "no-match",
+        "pain": "unstated",
+        "ruleIds": []
+      },
+      "baseline": {
+        "outcome": "no-match",
+        "pain": "unstated",
+        "selected": [],
+        "derived": [],
+        "gaps": ["referral omits", "pain"],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": null,
+      "recall": null,
+      "spans": []
+    },
+    {
+      "id": "h22",
+      "gold": {
+        "outcome": "no-match",
+        "pain": "chronic",
+        "ruleIds": []
+      },
+      "baseline": {
+        "outcome": "no-match",
+        "pain": "chronic",
+        "selected": [],
+        "derived": [],
+        "gaps": [
+          "use acupuncture",
+          "LI4",
+          "SP6",
+          "visit concerns needling technique alone",
+          "not choosing"
+        ],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": null,
+      "recall": null,
+      "spans": [
+        {
+          "text": "acupuncture at LI4 and SP6",
+          "verdict": "found"
+        }
+      ]
+    },
+    {
+      "id": "h23",
+      "gold": {
+        "outcome": "no-match",
+        "pain": "subacute",
+        "ruleIds": []
+      },
+      "baseline": {
+        "outcome": "no-match",
+        "pain": "subacute",
+        "selected": [],
+        "derived": [],
+        "gaps": ["Subacute pain rehab", "gait analysis shows reduced ankle dorsiflexion"],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": null,
+      "recall": null,
+      "spans": [
+        {
+          "text": "gait analysis",
+          "verdict": "found"
+        },
+        {
+          "text": "reduced ankle dorsiflexion",
+          "verdict": "found"
+        }
+      ]
+    },
+    {
+      "id": "h24",
+      "gold": {
+        "outcome": "no-match",
+        "pain": "chronic",
+        "ruleIds": []
+      },
+      "baseline": {
+        "outcome": "no-match",
+        "pain": "chronic",
+        "selected": [],
+        "derived": [],
+        "gaps": ["fibromyalgia", "choosing", "patient-reported pain score", "not deciding"],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": null,
+      "recall": null,
+      "spans": [
+        {
+          "text": "fibromyalgia",
+          "verdict": "found"
+        }
+      ]
+    },
+    {
+      "id": "h25",
+      "gold": {
+        "outcome": "refused",
+        "pain": "other",
+        "ruleIds": []
+      },
+      "baseline": {
+        "outcome": "refused",
+        "pain": null,
+        "selected": [],
+        "derived": [],
+        "gaps": [],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": null,
+      "recall": null,
+      "spans": [],
+      "forced": {
+        "outcome": "no-match",
+        "pain": "unstated",
+        "selected": [],
+        "derived": [],
+        "gaps": [
+          "Urine culture",
+          "positive",
+          "asymptomatic pregnant",
+          "antibiotic",
+          "bacteriuria",
+          "chart lists nitrofurantoin",
+          "amoxicillin",
+          "options"
+        ],
+        "overflow": 0
+      }
+    },
+    {
+      "id": "h26",
+      "gold": {
+        "outcome": "refused",
+        "pain": "other",
+        "ruleIds": []
+      },
+      "baseline": {
+        "outcome": "refused",
+        "pain": null,
+        "selected": [],
+        "derived": [],
+        "gaps": [],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": null,
+      "recall": null,
+      "spans": [],
+      "forced": {
+        "outcome": "answered",
+        "pain": "unstated",
+        "selected": ["cdc2022-opioid-rec05:3"],
+        "derived": ["cdc2022-opioid-rec05:3"],
+        "gaps": ["Type 2 diabetes", "metformin", "helping glycemic control"],
+        "overflow": 0
+      }
+    },
+    {
+      "id": "h27",
+      "gold": {
+        "outcome": "refused",
+        "pain": "other",
+        "ruleIds": []
+      },
+      "baseline": {
+        "outcome": "refused",
+        "pain": null,
+        "selected": [],
+        "derived": [],
+        "gaps": [],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": null,
+      "recall": null,
+      "spans": [],
+      "forced": {
+        "outcome": "no-match",
+        "pain": "unstated",
+        "selected": [],
+        "derived": [],
+        "gaps": [
+          "Acute wheeze",
+          "pollen exposure",
+          "current inhaler",
+          "albuterol",
+          "help interpreting spirometry",
+          "no pain complaint"
+        ],
+        "overflow": 0
+      }
+    },
+    {
+      "id": "h28",
+      "gold": {
+        "outcome": "refused",
+        "pain": "other",
+        "ruleIds": []
+      },
+      "baseline": {
+        "outcome": "refused",
+        "pain": null,
+        "selected": [],
+        "derived": [],
+        "gaps": [],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": null,
+      "recall": null,
+      "spans": [],
+      "forced": {
+        "outcome": "no-match",
+        "pain": "unstated",
+        "selected": [],
+        "derived": [],
+        "gaps": ["label printer", "clinic jams whenever reception prints appointment cards"],
+        "overflow": 0
+      }
+    },
+    {
+      "id": "h29",
+      "gold": {
+        "outcome": "refused",
+        "pain": "other",
+        "ruleIds": []
+      },
+      "baseline": {
+        "outcome": "refused",
+        "pain": null,
+        "selected": [],
+        "derived": [],
+        "gaps": [],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": null,
+      "recall": null,
+      "spans": [],
+      "forced": {
+        "outcome": "no-match",
+        "pain": "unstated",
+        "selected": [],
+        "derived": [],
+        "gaps": ["antimicrobial audit compares two amoxicillin suppliers"],
+        "overflow": 0
+      }
+    },
+    {
+      "id": "h30",
+      "gold": {
+        "outcome": "refused",
+        "pain": "other",
+        "ruleIds": []
+      },
+      "baseline": {
+        "outcome": "refused",
+        "pain": null,
+        "selected": [],
+        "derived": [],
+        "gaps": [],
+        "overflow": 0
+      },
+      "outcomeMatch": true,
+      "precision": null,
+      "recall": null,
+      "spans": [],
+      "forced": {
+        "outcome": "answered",
+        "pain": "unstated",
+        "selected": ["cdc2022-opioid-rec05:4"],
+        "derived": ["cdc2022-opioid-rec05:4"],
+        "gaps": ["atrial fibrillation stroke prevention", "anticoagulation", "reviewing warfarin"],
+        "overflow": 0
+      }
+    }
+  ],
+  "summary": {
+    "byOutcome": {
+      "answered": {
+        "n": 18,
+        "matched": 16
+      },
+      "no-match": {
+        "n": 6,
+        "matched": 5
+      },
+      "refused": {
+        "n": 6,
+        "matched": 6
+      }
+    },
+    "rules": {
+      "gold": 163,
+      "derived": 240,
+      "truePositive": 143
+    },
+    "spans": {
+      "n": 22,
+      "found": 15,
+      "discovery": 0,
+      "judgment": 7,
+      "suppressed": 0
+    },
+    "forcedFired": ["h26", "h30"]
+  }
+}

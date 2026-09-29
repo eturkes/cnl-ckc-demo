@@ -173,6 +173,16 @@ const REQUIRED = Object.freeze([
       'intake derivation contract D4 all 48 failed derivations produce zero recommendation text',
     ],
   },
+  {
+    suite: 'tests/intake-replay.test.ts',
+    why: 'recorded live judgments still select, and the real engine still derives, exactly the committed report; the forced arm still fires',
+    cases: [
+      'intake replay P3 every gold case has its baseline arm and every gold-refused case its forced arm',
+      'intake replay P3 a recorded request the rebuilt one does not match is refused by case',
+      'intake replay P4 the committed report re-derives from gold + replay through the real pipeline',
+      'intake replay P5 the forced arm fires: a hatch refusal answers with a derived rule once the hatch is gone',
+    ],
+  },
 ]);
 
 /**
