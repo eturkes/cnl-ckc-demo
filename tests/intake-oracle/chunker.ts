@@ -13,8 +13,8 @@ was were be been being am has have had having do does did will would should shal
 might must i me my we our us you your he him his she her they them their it its who whom whose
 which what when where why how also now just only very some any more most less much many patient
 patients take takes taking took taken start starts started starting want wants wanted ask asks
-asked asking consider considers considered considering think thinking need needs needed use uses
-used using receive receives received receiving`.split(/\s+/u),
+asked asking consider considers considered considering think thinking need needs needed
+receive receives received receiving`.split(/\s+/u),
 );
 
 // Definitions → character-index partition, then token-index partition; no production imports.

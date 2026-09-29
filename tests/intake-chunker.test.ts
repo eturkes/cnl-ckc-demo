@@ -17,6 +17,8 @@ const examples: readonly [string, readonly string[]][] = [
   ['the patient is taking a', []],
   ['alpha  beta\tgamma', ['alpha  beta\tgamma']],
   ['no opioid dependence', ['no opioid dependence']],
+  ['No history of opioid use disorder', ['No history', 'opioid use disorder']],
+  ['use uses used using', ['use uses used using']],
   ['not never without denies denied pain', ['not never without denies denied pain']],
   ["'the' pain ’and’ fever", ['pain', 'fever']],
   ["'THE’ pain ’the' fever", ['pain', 'fever']],
@@ -42,6 +44,17 @@ const examples: readonly [string, readonly string[]][] = [
 ];
 
 describe('K1 candidate chunker', () => {
+  it('discards punctuation-only split pieces without counting overflow', () => {
+    const input = `alpha ${'-'.repeat(79)} beta`;
+    expect(extractCandidates(input)).toEqual({
+      candidates: [
+        { text: 'alpha', start: 0, end: 5 },
+        { text: 'beta', start: input.length - 4, end: input.length },
+      ],
+      overflow: 0,
+    });
+  });
+
   it.each(examples)('chunks %j into verbatim bounded runs', (input, expected) => {
     const actual = extractCandidates(input);
     expect(actual.candidates.map(({ text }) => text)).toEqual(expected);

@@ -53,7 +53,7 @@ export function response(built: BuiltRequest, pain: PainOption = 'unstated'): Ra
   for (const [id, question] of Object.entries(built.request.questions)) {
     answers[id] =
       question.type === 'noul'
-        ? { type: 'noul', value: 0 }
+        ? { type: 'noul', noul: 0 }
         : {
             type: 'choice',
             choice: pain,

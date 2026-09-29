@@ -19,16 +19,14 @@ const choice = (fields: Record<string, unknown> = {}) => ({
   probabilities: probabilities(),
   ...fields,
 });
-function refused(raw: unknown, question?: string): void {
+function refused(raw: unknown, question?: string, field = question): void {
   try {
     parseJudgment(raw, request());
     throw new Error('parser accepted the planted violation');
   } catch (error) {
     expect(error).toBeInstanceOf(JudgmentError);
-    if (question !== undefined) {
-      expect((error as Error).message).toContain(question);
-      expect((error as JudgmentError).question).toBe(question);
-    }
+    expect((error as JudgmentError).question).toBe(question);
+    if (field !== undefined) expect((error as Error).message).toContain(field);
   }
 }
 
@@ -65,7 +63,7 @@ const invalid: readonly [string, string, (raw: RawResponse) => void][] = [
     'unexpected answer',
     'extra',
     (raw) => {
-      raw.answers.extra = { type: 'noul', value: 0 };
+      raw.answers.extra = { type: 'noul', noul: 0 };
     },
   ],
   [
@@ -93,21 +91,21 @@ const invalid: readonly [string, string, (raw: RawResponse) => void][] = [
     'choice wrong type',
     'pain',
     (raw) => {
-      raw.answers.pain = { type: 'noul', value: 1 };
+      raw.answers.pain = { type: 'noul', noul: 1 };
     },
   ],
   [
     'missing type',
     'c01',
     (raw) => {
-      raw.answers.c01 = { value: 0.5 };
+      raw.answers.c01 = { noul: 0.5 };
     },
   ],
   [
     'wrong type casing',
     'c01',
     (raw) => {
-      raw.answers.c01 = { type: 'Noul', value: 0.5 };
+      raw.answers.c01 = { type: 'Noul', noul: 0.5 };
     },
   ],
   [
@@ -220,15 +218,23 @@ const invalidNumbers: readonly unknown[] = [
 ];
 
 describe('J1 request-relative response parser', () => {
+  it('refuses legacy value-only Noul answers in every Noul family', () => {
+    for (const id of ['c01', 's1', 't01']) {
+      const raw = response(request());
+      raw.answers[id] = { type: 'noul', value: 0.5 };
+      refused(raw, id);
+    }
+  });
+
   it('assembles condition, section and candidate records in request order with overflow', () => {
     const built = buildRequest(
       vocabulary(),
       Array.from({ length: 18 }, (_, i) => `term${String(i)}`).join(','),
     );
     const raw = response(built, 'chronic');
-    raw.answers.c01 = { type: 'noul', value: 0.5 };
-    raw.answers.s2 = { type: 'noul', value: 1 };
-    raw.answers.t01 = { type: 'noul', value: 0.75 };
+    raw.answers.c01 = { type: 'noul', noul: 0.5 };
+    raw.answers.s2 = { type: 'noul', noul: 1 };
+    raw.answers.t01 = { type: 'noul', noul: 0.75 };
     raw.terms = [{ text: 'not user text', start: 500, end: 900, value: 1 }];
     raw.usage = 'ignored';
     raw.extra = { arbitrary: true };
@@ -262,7 +268,7 @@ describe('J1 request-relative response parser', () => {
   it.each([0, -0, Number.MIN_VALUE, 0.5, 1])('accepts finite Noul value %s', (value) => {
     const built = request();
     const raw = response(built);
-    raw.answers.c01 = { type: 'noul', value };
+    raw.answers.c01 = { type: 'noul', noul: value };
     expect(parseJudgment(raw, built).conditions.c01).toBe(value);
   });
 
@@ -271,11 +277,11 @@ describe('J1 request-relative response parser', () => {
   );
 
   it.each([undefined, null, [], true, 'answers'])('refuses malformed answers %j', (answers) => {
-    expect(() => parseJudgment({ model: 'jev-1.13.0', answers }, request())).toThrow(/answers/u);
+    refused({ model: 'jev-1.13.0', answers }, undefined, 'answers');
   });
 
   it.each([undefined, null, 42, '', 'jev-1.12.0'])('refuses mismatched model %j', (model) => {
-    expect(() => parseJudgment({ ...response(request()), model }, request())).toThrow(/model/u);
+    refused({ ...response(request()), model }, undefined, 'model');
   });
 
   it.each(invalid)('refuses %s and names %s', (_, id, corrupt) => {
@@ -296,7 +302,7 @@ describe('J1 request-relative response parser', () => {
   it.each(invalidNumbers)('refuses invalid Noul scalar %j in all Noul families', (value) => {
     for (const id of ['c01', 's1', 't01']) {
       const raw = response(request());
-      raw.answers[id] = { type: 'noul', value };
+      raw.answers[id] = { type: 'noul', noul: value };
       refused(raw, id);
     }
   });

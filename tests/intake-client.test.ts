@@ -130,7 +130,7 @@ describe('C1 HTTP judgment client', () => {
 
   it('rebuilds the exact request locally and refuses an extra fabricated term answer', async () => {
     const raw = response(built(), 'acute');
-    raw.answers.t99 = { type: 'noul', value: 1 };
+    raw.answers.t99 = { type: 'noul', noul: 1 };
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json(raw));
     await expect(
       new HttpJudgmentClient({ vocabulary: vocab, fetch: fetcher }).judge(TEXT),

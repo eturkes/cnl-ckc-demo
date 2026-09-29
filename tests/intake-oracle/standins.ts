@@ -113,10 +113,10 @@ export function parseJudgment(raw: unknown, built: BuiltRequest): JudgmentResult
     const answer = raw.answers[id];
     if (!object(answer) || answer.type !== question.type) fail(id);
     if (question.type === 'noul') {
-      if (!probability(answer.value)) fail(id);
-      if (id.startsWith('c')) conditions[id] = answer.value;
-      else if (id.startsWith('s')) sections[id] = answer.value;
-      else values[id] = answer.value;
+      if (!probability(answer.noul)) fail(id);
+      if (id.startsWith('c')) conditions[id] = answer.noul;
+      else if (id.startsWith('s')) sections[id] = answer.noul;
+      else values[id] = answer.noul;
     } else {
       if (!object(answer.probabilities)) fail(id);
       const options = Object.keys(question.criteria);

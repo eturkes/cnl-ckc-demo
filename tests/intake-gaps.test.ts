@@ -28,7 +28,7 @@ describe('S2 gap terms stay inside user candidates', () => {
       const pain = pick(next, iteration % 2 === 0 ? PAINS : PAINS.slice(0, 4));
       const raw = response(built, pain);
       for (const [id, question] of Object.entries(built.request.questions)) {
-        if (question.type === 'noul') raw.answers[id] = { type: 'noul', value: pick(next, VALUES) };
+        if (question.type === 'noul') raw.answers[id] = { type: 'noul', noul: pick(next, VALUES) };
       }
       raw.gaps = [
         { text: `fabricated-${String(iteration)}`, start: -1, end: text.length + 1, value: 1 },
