@@ -214,6 +214,10 @@ declines.
     control.
   - [ ] **u16h close** (`docs`): `.claude/rules/proof.md` law, README, claims registry,
     deferred rows, `reviewer` per lens → `.agent/review.md` → `Phase: MAINTAIN`.
+  - **Finish line** = the IMPLEMENT body's `Met when`: u16b–u16h each landed on its own commit,
+    `pnpm gate` green on a clean tree at the closing commit, `.agent/review.md` no open row,
+    every `Decisions` entry implemented or deferred with reason, `Phase: MAINTAIN` committed
+    (prototype retirement n/a — `stack.md` carve-out).
   - **Resume here** (session paused for a host restart). UNCOMMITTED in the working tree,
     written but not yet graded by the tester suites or reviewed: u16b producer + reader
     (`tools/kb/intake.mjs`, `clinical.mjs` `sentences`, `build.mjs`/`check.mjs` wiring, manifest
