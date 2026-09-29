@@ -1,0 +1,566 @@
+{
+  "schemaVersion": 1,
+  "author": "scientist-1",
+  "cases": [
+    {
+      "id": "h01",
+      "description": "Acute pain from a wrist sprain. We have not decided whether to use an opioid; what should guide that initial decision?",
+      "outcome": "answered",
+      "pain": "acute",
+      "conditions": [],
+      "sections": ["Determining Whether or Not to Initiate Opioids for Pain"],
+      "ruleIds": ["cdc2022-opioid-rec01:2", "cdc2022-opioid-rec01:4"],
+      "gapSpans": ["wrist sprain"],
+      "rationale": "Initiation decision alone activates section 1; acute admits rec01 and excludes the subacute/chronic rec02 document."
+    },
+    {
+      "id": "h02",
+      "description": "Subacute pain with rotator cuff tendinopathy. Still deciding whether opioids belong in the plan, rather than choosing a product or dose.",
+      "outcome": "answered",
+      "pain": "subacute",
+      "conditions": [],
+      "sections": ["Determining Whether or Not to Initiate Opioids for Pain"],
+      "ruleIds": [
+        "cdc2022-opioid-rec02:2",
+        "cdc2022-opioid-rec02:4",
+        "cdc2022-opioid-rec02:5",
+        "cdc2022-opioid-rec02:6",
+        "cdc2022-opioid-rec02:7"
+      ],
+      "gapSpans": ["rotator cuff tendinopathy"],
+      "rationale": "Undecided initiation is not a start condition; section 1 selects the five unconditional rec02 rules for subacute pain."
+    },
+    {
+      "id": "h03",
+      "description": "Chronic pain consultation about whether to initiate opioids. My assessment is that the expected opioid benefit does not outweigh the risk; nothing has been prescribed.",
+      "outcome": "answered",
+      "pain": "chronic",
+      "conditions": [
+        "an opioid-benefit does not outweigh an opioid-risk",
+        "a benefit does not outweigh a risk"
+      ],
+      "sections": ["Determining Whether or Not to Initiate Opioids for Pain"],
+      "ruleIds": [
+        "cdc2022-opioid-rec02:2",
+        "cdc2022-opioid-rec02:3",
+        "cdc2022-opioid-rec02:4",
+        "cdc2022-opioid-rec02:5",
+        "cdc2022-opioid-rec02:6",
+        "cdc2022-opioid-rec02:7",
+        "cdc2022-opioid-rec02:8",
+        "cdc2022-opioid-rec05:4"
+      ],
+      "gapSpans": [],
+      "rationale": "Both adverse benefit-risk conditions hold; the agnostic rec05:4 fires outside section 1 because Selection does not section-gate conditional rules."
+    },
+    {
+      "id": "h04",
+      "description": "Opioid medication review: the referral omits the pain duration. I need guidance on selecting a formulation and dose, but have not started, continued, or changed a prescription.",
+      "outcome": "answered",
+      "pain": "unstated",
+      "conditions": [],
+      "sections": ["Selecting Opioids and Determining Opioid Dosages"],
+      "ruleIds": ["cdc2022-opioid-rec05:5"],
+      "gapSpans": [],
+      "rationale": "No prescribing act is asserted; section 2 selects only its unconditional rec05:5, whose document has no pain-type restriction."
+    },
+    {
+      "id": "h05",
+      "description": "Chronic pain clinic planning: what review timetable belongs in our opioid follow-up template? This question is about review timing, not choice of drug or dose.",
+      "outcome": "answered",
+      "pain": "chronic",
+      "conditions": [],
+      "sections": ["Deciding Duration of Initial Opioid Prescription and Conducting Follow-Up"],
+      "ruleIds": ["cdc2022-opioid-rec07:3", "cdc2022-opioid-rec07:4", "cdc2022-opioid-rec07:5"],
+      "gapSpans": [],
+      "rationale": "Section 3 selects rec07's chronic-specific rule plus its two document-inherited subacute/chronic rules; no patient-specific condition is asserted."
+    },
+    {
+      "id": "h06",
+      "description": "Our subacute pain service needs an opioid reassessment schedule. How soon and how often should we review people? I am asking about follow-up, not making a prescribing decision for a particular patient.",
+      "outcome": "answered",
+      "pain": "subacute",
+      "conditions": [],
+      "sections": ["Deciding Duration of Initial Opioid Prescription and Conducting Follow-Up"],
+      "ruleIds": ["cdc2022-opioid-rec07:2", "cdc2022-opioid-rec07:4", "cdc2022-opioid-rec07:5"],
+      "gapSpans": [],
+      "rationale": "Section 3 plus subacute selects rec07:2,4,5; it neither asserts acute opioid need nor a clinician's prescribing act."
+    },
+    {
+      "id": "h07",
+      "description": "New OUD consult; he requests detox without medication. No pain complaint or pain duration is supplied. What treatment and relapse-prevention advice applies?",
+      "outcome": "answered",
+      "pain": "unstated",
+      "conditions": [],
+      "sections": ["Assessing Risk and Addressing Potential Harms of Opioid Use"],
+      "ruleIds": [
+        "cdc2022-opioid-rec08:2",
+        "cdc2022-opioid-rec08:3",
+        "cdc2022-opioid-rec08:4",
+        "cdc2022-opioid-rec08:5",
+        "cdc2022-opioid-rec12:2",
+        "cdc2022-opioid-rec12:3",
+        "cdc2022-opioid-rec12:4"
+      ],
+      "gapSpans": [],
+      "rationale": "OUD is in scope without a pain type; section 4 admits agnostic rec08 and rec12 but excludes pain-inheriting rec09 and rec10."
+    },
+    {
+      "id": "h08",
+      "description": "Acute postoperative pain is severe enough to require an opioid. I am initiating oxycodone for an opioid-naive patient and choosing the initial formulation, dose and supply; please include the initiation discussion and baseline risk/PDMP checks.",
+      "outcome": "answered",
+      "pain": "acute",
+      "conditions": [
+        "a clinician starts an opioid-therapy for an acute-pain",
+        "a clinician starts an opioid-therapy for an opioid-naive-patient that has an acute-pain",
+        "an opioid is needed for an acute-pain",
+        "a clinician prescribes an initial-opioid-therapy for an acute-pain"
+      ],
+      "sections": [
+        "Determining Whether or Not to Initiate Opioids for Pain",
+        "Selecting Opioids and Determining Opioid Dosages",
+        "Deciding Duration of Initial Opioid Prescription and Conducting Follow-Up",
+        "Assessing Risk and Addressing Potential Harms of Opioid Use"
+      ],
+      "ruleIds": [
+        "cdc2022-opioid-rec01:2",
+        "cdc2022-opioid-rec01:4",
+        "cdc2022-opioid-rec03:2",
+        "cdc2022-opioid-rec04:2",
+        "cdc2022-opioid-rec06:2",
+        "cdc2022-opioid-rec08:2",
+        "cdc2022-opioid-rec08:3",
+        "cdc2022-opioid-rec08:4",
+        "cdc2022-opioid-rec08:5",
+        "cdc2022-opioid-rec09:2",
+        "cdc2022-opioid-rec09:5",
+        "cdc2022-opioid-rec09:6",
+        "cdc2022-opioid-rec05:5",
+        "cdc2022-opioid-rec12:2",
+        "cdc2022-opioid-rec12:3",
+        "cdc2022-opioid-rec12:4"
+      ],
+      "gapSpans": ["postoperative", "oxycodone"],
+      "rationale": "Explicit initiation, product/dose, supply and harm topics activate all sections; acute start, naive start, need and initial prescribing conditions hold."
+    },
+    {
+      "id": "h09",
+      "description": "Subacute pain, opioid-naive. I am prescribing hydrocodone for the first time; need the pre-start conversation, IR versus ER/LA choice, starting dose, follow-up plan and baseline PDMP/toxicology advice.",
+      "outcome": "answered",
+      "pain": "subacute",
+      "conditions": [
+        "a clinician starts an opioid-therapy for a subacute-pain",
+        "a clinician starts an opioid-therapy for an opioid-naive-patient that has a subacute-pain",
+        "a clinician prescribes an initial-opioid-therapy for a subacute-pain",
+        "a clinician prescribes an opioid for a subacute-pain"
+      ],
+      "sections": [
+        "Determining Whether or Not to Initiate Opioids for Pain",
+        "Selecting Opioids and Determining Opioid Dosages",
+        "Deciding Duration of Initial Opioid Prescription and Conducting Follow-Up",
+        "Assessing Risk and Addressing Potential Harms of Opioid Use"
+      ],
+      "ruleIds": [
+        "cdc2022-opioid-rec02:2",
+        "cdc2022-opioid-rec02:4",
+        "cdc2022-opioid-rec02:5",
+        "cdc2022-opioid-rec02:6",
+        "cdc2022-opioid-rec02:7",
+        "cdc2022-opioid-rec03:3",
+        "cdc2022-opioid-rec04:3",
+        "cdc2022-opioid-rec07:2",
+        "cdc2022-opioid-rec07:4",
+        "cdc2022-opioid-rec07:5",
+        "cdc2022-opioid-rec08:2",
+        "cdc2022-opioid-rec08:3",
+        "cdc2022-opioid-rec08:4",
+        "cdc2022-opioid-rec08:5",
+        "cdc2022-opioid-rec09:3",
+        "cdc2022-opioid-rec09:5",
+        "cdc2022-opioid-rec09:6",
+        "cdc2022-opioid-rec10:2",
+        "cdc2022-opioid-rec10:4",
+        "cdc2022-opioid-rec05:5",
+        "cdc2022-opioid-rec12:2",
+        "cdc2022-opioid-rec12:3",
+        "cdc2022-opioid-rec12:4"
+      ],
+      "gapSpans": ["hydrocodone"],
+      "rationale": "All four headings are explicit; first subacute prescribing satisfies ordinary start, naive start, initial-prescribing and general subacute-prescribing conditions."
+    },
+    {
+      "id": "h10",
+      "description": "Chronic pain with stage 3 CKD; never exposed to opioids. Today I prescribe morphine as the first opioid. Review initiation counseling, formulation/dose, follow-up timing and baseline harm-reduction checks.",
+      "outcome": "answered",
+      "pain": "chronic",
+      "conditions": [
+        "a clinician starts an opioid-therapy for a chronic-pain",
+        "a clinician starts an opioid-therapy for an opioid-naive-patient that has a chronic-pain",
+        "a clinician prescribes an initial-opioid-therapy for a chronic-pain",
+        "a clinician prescribes an opioid for a chronic-pain"
+      ],
+      "sections": [
+        "Determining Whether or Not to Initiate Opioids for Pain",
+        "Selecting Opioids and Determining Opioid Dosages",
+        "Deciding Duration of Initial Opioid Prescription and Conducting Follow-Up",
+        "Assessing Risk and Addressing Potential Harms of Opioid Use"
+      ],
+      "ruleIds": [
+        "cdc2022-opioid-rec02:2",
+        "cdc2022-opioid-rec02:4",
+        "cdc2022-opioid-rec02:5",
+        "cdc2022-opioid-rec02:6",
+        "cdc2022-opioid-rec02:7",
+        "cdc2022-opioid-rec03:4",
+        "cdc2022-opioid-rec04:4",
+        "cdc2022-opioid-rec07:3",
+        "cdc2022-opioid-rec07:4",
+        "cdc2022-opioid-rec07:5",
+        "cdc2022-opioid-rec08:2",
+        "cdc2022-opioid-rec08:3",
+        "cdc2022-opioid-rec08:4",
+        "cdc2022-opioid-rec08:5",
+        "cdc2022-opioid-rec09:4",
+        "cdc2022-opioid-rec09:5",
+        "cdc2022-opioid-rec09:6",
+        "cdc2022-opioid-rec10:3",
+        "cdc2022-opioid-rec10:4",
+        "cdc2022-opioid-rec05:5",
+        "cdc2022-opioid-rec12:2",
+        "cdc2022-opioid-rec12:3",
+        "cdc2022-opioid-rec12:4"
+      ],
+      "gapSpans": ["stage 3 CKD", "morphine"],
+      "rationale": "The chronic analogue satisfies four start/prescribing conditions and all headings; CKD stage and the named opioid remain unrepresented facts."
+    },
+    {
+      "id": "h11",
+      "description": "Subacute pain on established morphine: I am renewing 20 MME/day and considering a higher dose, but not changing it today. Benefits clearly outweigh risks at the current dose. Need dosing and adverse-effect guidance, not the follow-up timetable.",
+      "outcome": "answered",
+      "pain": "subacute",
+      "conditions": [
+        "a clinician continues an opioid-therapy for a subacute-pain and the clinician prescribes an opioid at a dosage",
+        "a clinician continues an opioid-therapy for a subacute-pain and the clinician considers a dosage-increase",
+        "a clinician continues an opioid-therapy for a subacute-pain",
+        "a clinician prescribes an opioid for a subacute-pain",
+        "a benefit outweighs a risk"
+      ],
+      "sections": [
+        "Selecting Opioids and Determining Opioid Dosages",
+        "Assessing Risk and Addressing Potential Harms of Opioid Use"
+      ],
+      "ruleIds": [
+        "cdc2022-opioid-rec04:5",
+        "cdc2022-opioid-rec04:7",
+        "cdc2022-opioid-rec04:9",
+        "cdc2022-opioid-rec08:2",
+        "cdc2022-opioid-rec08:3",
+        "cdc2022-opioid-rec08:4",
+        "cdc2022-opioid-rec08:5",
+        "cdc2022-opioid-rec09:5",
+        "cdc2022-opioid-rec09:6",
+        "cdc2022-opioid-rec10:2",
+        "cdc2022-opioid-rec10:4",
+        "cdc2022-opioid-rec05:3",
+        "cdc2022-opioid-rec05:5",
+        "cdc2022-opioid-rec12:2",
+        "cdc2022-opioid-rec12:3",
+        "cdc2022-opioid-rec12:4"
+      ],
+      "gapSpans": ["morphine", "20 MME/day"],
+      "rationale": "Renewal and contemplated escalation satisfy the three subacute continuation conditions, general prescribing and favorable balance; explicitly no actual dosage change."
+    },
+    {
+      "id": "h12",
+      "description": "Chronic pain; I am continuing hydrocodone at 60 MME/day and considering an increase without yet changing the prescription. He has untreated sleep apnoea. My assessment is that opioid benefits do not outweigh risks; I need dose and harm-reduction advice rather than a follow-up interval.",
+      "outcome": "answered",
+      "pain": "chronic",
+      "conditions": [
+        "an opioid-benefit does not outweigh an opioid-risk",
+        "a clinician continues an opioid-therapy for a chronic-pain and the clinician prescribes an opioid at a dosage",
+        "a clinician continues an opioid-therapy for a chronic-pain and the clinician considers a dosage-increase",
+        "a clinician continues an opioid-therapy for a chronic-pain",
+        "a clinician prescribes an opioid for a chronic-pain",
+        "a benefit does not outweigh a risk"
+      ],
+      "sections": [
+        "Selecting Opioids and Determining Opioid Dosages",
+        "Assessing Risk and Addressing Potential Harms of Opioid Use"
+      ],
+      "ruleIds": [
+        "cdc2022-opioid-rec02:3",
+        "cdc2022-opioid-rec02:8",
+        "cdc2022-opioid-rec04:6",
+        "cdc2022-opioid-rec04:8",
+        "cdc2022-opioid-rec04:10",
+        "cdc2022-opioid-rec08:2",
+        "cdc2022-opioid-rec08:3",
+        "cdc2022-opioid-rec08:4",
+        "cdc2022-opioid-rec08:5",
+        "cdc2022-opioid-rec09:5",
+        "cdc2022-opioid-rec09:6",
+        "cdc2022-opioid-rec10:3",
+        "cdc2022-opioid-rec10:4",
+        "cdc2022-opioid-rec05:4",
+        "cdc2022-opioid-rec05:5",
+        "cdc2022-opioid-rec12:2",
+        "cdc2022-opioid-rec12:3",
+        "cdc2022-opioid-rec12:4"
+      ],
+      "gapSpans": ["hydrocodone", "60 MME/day", "untreated sleep apnoea"],
+      "rationale": "Current chronic prescribing and contemplated escalation hold despite an adverse balance; both negative-balance conditions fire, including rec02 outside its heading."
+    },
+    {
+      "id": "h13",
+      "description": "Chronic pain on long-term opioid therapy. I am prescribing a reduced dose today while continuing treatment, because benefits still exceed risks. Please cover dose adjustment only, not follow-up timing or screening protocols.",
+      "outcome": "answered",
+      "pain": "chronic",
+      "conditions": [
+        "a clinician continues an opioid-therapy for a chronic-pain and the clinician prescribes an opioid at a dosage",
+        "a clinician continues an opioid-therapy for a chronic-pain",
+        "a clinician prescribes an opioid for a chronic-pain",
+        "a clinician changes an opioid-dosage for a patient that receives an opioid-therapy",
+        "a benefit outweighs a risk"
+      ],
+      "sections": ["Selecting Opioids and Determining Opioid Dosages"],
+      "ruleIds": [
+        "cdc2022-opioid-rec04:6",
+        "cdc2022-opioid-rec04:10",
+        "cdc2022-opioid-rec10:3",
+        "cdc2022-opioid-rec05:2",
+        "cdc2022-opioid-rec05:3",
+        "cdc2022-opioid-rec05:5"
+      ],
+      "gapSpans": [],
+      "rationale": "An actual reduction is a dosage change, not an increase; chronic prescribing still triggers rec10:3 independently of the excluded screening topic."
+    },
+    {
+      "id": "h14",
+      "description": "Pain duration not documented. I am prescribing Percocet together with alprazolam, a benzodiazepine and CNS depressant; need advice on interaction risk. She also has obstructive sleep apnea.",
+      "outcome": "answered",
+      "pain": "unstated",
+      "conditions": [
+        "a clinician prescribes an opioid-pain-medication with a benzodiazepine",
+        "a clinician prescribes an opioid with a central-nervous-system-depressant"
+      ],
+      "sections": ["Assessing Risk and Addressing Potential Harms of Opioid Use"],
+      "ruleIds": [
+        "cdc2022-opioid-rec08:2",
+        "cdc2022-opioid-rec08:3",
+        "cdc2022-opioid-rec08:4",
+        "cdc2022-opioid-rec08:5",
+        "cdc2022-opioid-rec11:2",
+        "cdc2022-opioid-rec11:3",
+        "cdc2022-opioid-rec12:2",
+        "cdc2022-opioid-rec12:3",
+        "cdc2022-opioid-rec12:4"
+      ],
+      "gapSpans": ["Percocet", "alprazolam", "obstructive sleep apnea"],
+      "rationale": "Both interaction conditions are explicit and agnostic; missing pain duration removes rec09/rec10 inherited rules but not rec08, rec11 or rec12."
+    },
+    {
+      "id": "h15",
+      "description": "Acute pain consultation. Expected opioid benefits do not outweigh risks, so I am not initiating treatment. I am asking whether to use opioids, not how to prescribe, monitor or taper them.",
+      "outcome": "answered",
+      "pain": "acute",
+      "conditions": [
+        "an opioid-benefit does not outweigh an opioid-risk",
+        "a benefit does not outweigh a risk"
+      ],
+      "sections": ["Determining Whether or Not to Initiate Opioids for Pain"],
+      "ruleIds": [
+        "cdc2022-opioid-rec01:2",
+        "cdc2022-opioid-rec01:3",
+        "cdc2022-opioid-rec01:4",
+        "cdc2022-opioid-rec05:4"
+      ],
+      "gapSpans": [],
+      "rationale": "Negated initiation activates no start condition; the acute adverse-balance rule and agnostic rec05:4 join the two unconditional rec01 rules."
+    },
+    {
+      "id": "h16",
+      "description": "Acute pain after a dental extraction; an opioid is clinically needed. Before anyone writes the prescription, I need advice only on the number of doses in the initial supply, not their strength or formulation.",
+      "outcome": "answered",
+      "pain": "acute",
+      "conditions": ["an opioid is needed for an acute-pain"],
+      "sections": ["Deciding Duration of Initial Opioid Prescription and Conducting Follow-Up"],
+      "ruleIds": ["cdc2022-opioid-rec06:2"],
+      "gapSpans": ["dental extraction"],
+      "rationale": "Explicit acute opioid need activates rec06:2; supply is section 3, and no actual initiation, prescription or favorable benefit-risk judgment is asserted."
+    },
+    {
+      "id": "h17",
+      "description": "Chronic pain and COPD, currently not receiving opioids. We are designing a PDMP and toxicology screening workflow for future opioid care; no initiation or dosing decision is being made.",
+      "outcome": "answered",
+      "pain": "chronic",
+      "conditions": [],
+      "sections": ["Assessing Risk and Addressing Potential Harms of Opioid Use"],
+      "ruleIds": [
+        "cdc2022-opioid-rec08:2",
+        "cdc2022-opioid-rec08:3",
+        "cdc2022-opioid-rec08:4",
+        "cdc2022-opioid-rec08:5",
+        "cdc2022-opioid-rec09:5",
+        "cdc2022-opioid-rec09:6",
+        "cdc2022-opioid-rec10:4",
+        "cdc2022-opioid-rec12:2",
+        "cdc2022-opioid-rec12:3",
+        "cdc2022-opioid-rec12:4"
+      ],
+      "gapSpans": ["COPD"],
+      "rationale": "The screening topic activates section 4's ten chronic-admitting unconditional rules; negated current treatment activates no prescribing condition."
+    },
+    {
+      "id": "h18",
+      "description": "I prescribe an opioid for pain together with gabapentin, a sedating CNS depressant; no benzodiazepine is prescribed. Pain duration is missing from the referral. Is there an interaction concern?",
+      "outcome": "answered",
+      "pain": "unstated",
+      "conditions": ["a clinician prescribes an opioid with a central-nervous-system-depressant"],
+      "sections": ["Assessing Risk and Addressing Potential Harms of Opioid Use"],
+      "ruleIds": [
+        "cdc2022-opioid-rec08:2",
+        "cdc2022-opioid-rec08:3",
+        "cdc2022-opioid-rec08:4",
+        "cdc2022-opioid-rec08:5",
+        "cdc2022-opioid-rec11:3",
+        "cdc2022-opioid-rec12:2",
+        "cdc2022-opioid-rec12:3",
+        "cdc2022-opioid-rec12:4"
+      ],
+      "gapSpans": ["gabapentin"],
+      "rationale": "The depressant condition holds and the benzodiazepine condition is explicitly false; unstated pain admits the agnostic section 4 rules only."
+    },
+    {
+      "id": "h19",
+      "description": "Referral says pain but gives no duration or diagnosis. No opioid has been chosen or prescribed. I only need the framework for deciding whether to initiate one.",
+      "outcome": "no-match",
+      "pain": "unstated",
+      "conditions": [],
+      "sections": ["Determining Whether or Not to Initiate Opioids for Pain"],
+      "ruleIds": [],
+      "gapSpans": [],
+      "rationale": "In-scope initiation question, but every unconditional rule in section 1 is pain-restricted and unstated satisfies none; no condition is asserted."
+    },
+    {
+      "id": "h20",
+      "description": "Acute pain; an opioid is not needed and none has been prescribed. I am asking whether the opioid follow-up timetable applies here, not making an initial treatment choice.",
+      "outcome": "no-match",
+      "pain": "acute",
+      "conditions": [],
+      "sections": ["Deciding Duration of Initial Opioid Prescription and Conducting Follow-Up"],
+      "ruleIds": [],
+      "gapSpans": [],
+      "rationale": "Section 3's unconditional rec07 rules require subacute/chronic pain; the sole acute condition, opioid need, is explicitly negated."
+    },
+    {
+      "id": "h21",
+      "description": "Opioid follow-up scheduling question: the referral omits how long the pain has lasted. I need the interval for reassessment, not help with initiation, dosing or a screening test.",
+      "outcome": "no-match",
+      "pain": "unstated",
+      "conditions": [],
+      "sections": ["Deciding Duration of Initial Opioid Prescription and Conducting Follow-Up"],
+      "ruleIds": [],
+      "gapSpans": [],
+      "rationale": "Follow-up is section 3, whose unconditional rules inherit subacute/chronic restrictions; omitted pain duration is not an acute, subacute or chronic assertion."
+    },
+    {
+      "id": "h22",
+      "description": "I use acupuncture at LI4 and SP6 for chronic pain. This visit concerns needling technique alone; I am not choosing or monitoring medication.",
+      "outcome": "no-match",
+      "pain": "chronic",
+      "conditions": [],
+      "sections": [],
+      "ruleIds": [],
+      "gapSpans": ["acupuncture at LI4 and SP6"],
+      "rationale": "Pain management is in scope, but acupuncture technique satisfies no opioid heading or condition; the named technique and points lack rule vocabulary."
+    },
+    {
+      "id": "h23",
+      "description": "Subacute pain rehab: gait analysis shows reduced ankle dorsiflexion. Need help selecting a balance assessment; this is not an opioid decision.",
+      "outcome": "no-match",
+      "pain": "subacute",
+      "conditions": [],
+      "sections": [],
+      "ruleIds": [],
+      "gapSpans": ["gait analysis", "reduced ankle dorsiflexion"],
+      "rationale": "Rehabilitation assessment concerns pain but none of the four opioid topics; the measured gait finding and its assessment method are unrepresented."
+    },
+    {
+      "id": "h24",
+      "description": "Chronic pain associated with fibromyalgia. I am choosing a patient-reported pain score, not deciding on or monitoring an opioid; which questionnaire measures symptom burden?",
+      "outcome": "no-match",
+      "pain": "chronic",
+      "conditions": [],
+      "sections": [],
+      "ruleIds": [],
+      "gapSpans": ["fibromyalgia"],
+      "rationale": "Pain measurement alone activates no opioid heading or condition; fibromyalgia is asserted, whereas an unspecified requested questionnaire is not a patient fact."
+    },
+    {
+      "id": "h25",
+      "description": "Urine culture is positive in an asymptomatic pregnant patient. I need to choose an antibiotic for bacteriuria; the chart lists nitrofurantoin and amoxicillin as options.",
+      "outcome": "refused",
+      "pain": "other",
+      "conditions": [],
+      "sections": [],
+      "ruleIds": [],
+      "gapSpans": [],
+      "rationale": "This is infection treatment during pregnancy, not opioid prescribing, pain management or OUD; the other choice refuses before rule or gap selection."
+    },
+    {
+      "id": "h26",
+      "description": "Type 2 diabetes; metformin is helping glycemic control. The benefit of this treatment outweighs its risk. I need advice on HbA1c monitoring, not on pain or opioids.",
+      "outcome": "refused",
+      "pain": "other",
+      "conditions": ["a benefit outweighs a risk"],
+      "sections": [],
+      "ruleIds": [],
+      "gapSpans": [],
+      "rationale": "AMBIGUOUS: the generic benefit-risk condition has no opioid qualifier, so its literal judgment is yes for metformin; domain refusal still makes the outcome and empty rule set unambiguous."
+    },
+    {
+      "id": "h27",
+      "description": "Acute wheeze after pollen exposure; current inhaler is albuterol. Need help interpreting spirometry for asthma, with no pain complaint.",
+      "outcome": "refused",
+      "pain": "other",
+      "conditions": [],
+      "sections": [],
+      "ruleIds": [],
+      "gapSpans": [],
+      "rationale": "Acute describes a respiratory presentation, not pain; asthma testing and an inhaler do not put the description in the opioid/pain/OUD domain."
+    },
+    {
+      "id": "h28",
+      "description": "The label printer at our clinic jams whenever reception prints appointment cards. Which paper setting should the receptionist check?",
+      "outcome": "refused",
+      "pain": "other",
+      "conditions": [],
+      "sections": [],
+      "ruleIds": [],
+      "gapSpans": [],
+      "rationale": "A clinic location does not make printer troubleshooting a clinical opioid, pain-management or OUD question."
+    },
+    {
+      "id": "h29",
+      "description": "Our antimicrobial audit compares two amoxicillin suppliers. How do I make a bar chart of monthly stockouts for the practice meeting?",
+      "outcome": "refused",
+      "pain": "other",
+      "conditions": [],
+      "sections": [],
+      "ruleIds": [],
+      "gapSpans": [],
+      "rationale": "The drug name is an inventory label, not an opioid/pain/OUD treatment request; plotting stockouts is outside intake scope."
+    },
+    {
+      "id": "h30",
+      "description": "For atrial fibrillation stroke prevention, the expected benefit of anticoagulation does not outweigh the bleeding risk. I am reviewing warfarin, not an analgesic.",
+      "outcome": "refused",
+      "pain": "other",
+      "conditions": ["a benefit does not outweigh a risk"],
+      "sections": [],
+      "ruleIds": [],
+      "gapSpans": [],
+      "rationale": "AMBIGUOUS: the unqualified adverse benefit-risk condition literally holds for anticoagulation, but the opioid-qualified condition does not; domain refusal overrides either interpretation."
+    }
+  ]
+}
