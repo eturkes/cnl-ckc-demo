@@ -29,10 +29,12 @@ export function vocabulary(): IntakeVocabulary {
           id: `${document}:${String(sentence)}`,
           document,
           sentence,
+          // Distinct trigger ids per rule: a selector that looked up one fixed id would
+          // otherwise agree with the reference (review INT-F1).
           trigger:
             kind === 'condition'
-              ? { kind: 'condition', condition: 'c01' }
-              : { kind: 'section', section: 's1' },
+              ? { kind: 'condition', condition: `c${String(index + 1).padStart(2, '0')}` }
+              : { kind: 'section', section: `s${String((index % 4) + 1)}` },
           painSet,
           section: 's1',
           question: 'fixture-question' as IntakeRule['question'],

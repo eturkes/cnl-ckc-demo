@@ -178,11 +178,13 @@ export class DemoController {
 
   /**
    * Derive intake rules by id through the same engine queue as every other call. `undefined`
-   * means this engine carries no intake path.
+   * = no derivation ran: the engine carries no intake path, has not booted, or is disposed.
+   * Boot stays outside the queue, so readiness is checked here, as `#start` checks it.
    */
   derive(ruleIds: readonly unknown[], signal?: AbortSignal): Promise<IntakeDerivation> | undefined {
     const derive = this.#engine.derive?.bind(this.#engine);
-    if (derive === undefined || this.#disposed) return undefined;
+    const booted = this.state.kind !== 'booting' && this.state.kind !== 'boot-error';
+    if (derive === undefined || !booted || this.#disposed) return undefined;
     return this.#exclusive(() => derive(ruleIds, signal));
   }
 

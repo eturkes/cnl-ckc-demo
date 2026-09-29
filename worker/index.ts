@@ -176,6 +176,7 @@ export const createHandler = (
       let allowed: boolean;
       try {
         if (limiter === undefined) throw new Error('no rate limiter bound');
+        // One bucket: the limit caps spend on the key, and the local proxy has one caller.
         ({ success: allowed } = await limiter.limit({ key: 'intake' }));
       } catch {
         return reply(503, origin, { error: 'intake_unavailable' });

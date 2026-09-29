@@ -99,7 +99,7 @@ Clause counts: version 337, document 337, entity 1834, cardinality 1834, event 1
   goals run `clinical_advice/3`. Nothing on the catalog path reads the bag's `queries/` tree
   — that tree belongs to the legacy export lane below.
 - Query goals reach the engine from the catalog, never from the image.
-- `MANIFEST_VERSION` is 5. Bumping it is what stops a cached manifest from lacking a block a
+- `MANIFEST_VERSION` is 6. Bumping it is what stops a cached manifest from lacking a block a
   new build writes.
 
 ## Legacy export lane

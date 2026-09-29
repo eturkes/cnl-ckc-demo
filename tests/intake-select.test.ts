@@ -94,7 +94,7 @@ describe('S1 deterministic selector', () => {
     const vocab = vocabulary();
     vocab.rules = [...vocab.rules].reverse();
     const input = judgment('acute', 1);
-    input.sections = { ...input.sections, s1: 0.5 };
+    input.sections = Object.fromEntries(Object.keys(input.sections).map((id) => [id, 0.5]));
     const actual = select(vocab, input);
     expect(actual.kind).toBe('answered');
     if (actual.kind !== 'answered') throw new Error('expected matched rules');

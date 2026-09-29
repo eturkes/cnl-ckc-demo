@@ -73,7 +73,10 @@ const citedLines = (proof: PlTerm, lines: Set<number>): boolean => {
     if (step.kind !== 'compound') return false;
     if (step.functor === 'node' && step.args.length === 3) {
       const [cite, , sub] = step.args;
-      const line = cite?.kind === 'compound' && cite.functor === 'line' ? cite.args[0] : undefined;
+      const line =
+        cite?.kind === 'compound' && cite.functor === 'line' && cite.args.length === 1
+          ? cite.args[0]
+          : undefined;
       if (line?.kind !== 'integer' || sub === undefined) return false;
       lines.add(Number(line.value));
       if (!citedLines(sub, lines)) return false;

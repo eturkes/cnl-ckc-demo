@@ -2,9 +2,10 @@
 // or its SDK: `HttpJudgmentClient` posts to the same-origin local Worker, and
 // `ReplayJudgmentClient` answers from recorded responses so the whole path runs offline.
 //
-// Both REBUILD the request locally and grade the response against it, so a proxy that asked a
-// different question — or returned a term the user never typed — is refused, not rendered. A
-// transport failure is always `unavailable`, never a no-match: the two must stay tellable apart.
+// Both REBUILD the request locally and grade the response against it: a response whose model,
+// question ids, answer types or values do not fit that request is refused, and gap terms come
+// from the locally cut candidates alone, never from provider text. A transport failure is always
+// `unavailable`, never a no-match: the two must stay tellable apart.
 
 import { JudgmentError, parseJudgment, type JudgmentResult } from './judgment.js';
 import { buildRequest } from './request.js';
@@ -82,6 +83,8 @@ export class HttpJudgmentClient implements JudgmentClient {
         throwIfAborted(signal);
         return { kind: 'unavailable', reason: 'network' };
       }
+      // An abort that lands while the response is in hand still rejects: it is never a status.
+      throwIfAborted(signal);
       if (response.status === 429) return { kind: 'unavailable', reason: 'rate-limited' };
       if (response.status === 409) return { kind: 'unavailable', reason: 'stale' };
       if (response.status !== 200) return { kind: 'unavailable', reason: 'server' };
