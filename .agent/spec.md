@@ -191,7 +191,7 @@ declines.
   `.agent/archive/u16-wave1/`. Measured there: `clinical_rule/3` is not a bag member —
   `tools/kb/clinical.mjs` derives all 48 facts — 24 distinct conditions / 26 occurrences / 22
   unconditional, 27 modifiers, 12 documents.
-  - [ ] **u16a toolchain** (`data`: the whole gate re-checks every consumer). Node 24 via
+  - [x] 049f5a1 **u16a toolchain** (`data`: the whole gate re-checks every consumer). Node 24 via
     `devEngines.runtime` + `engines` + CI; secretlint + jsdom caps lifted and their Dependabot
     ignores pruned; `@typesafe-ai/sdk` + `wrangler` added; Pages publish removed (CI = gate +
     scanners). Accept: `pnpm gate` green under Node 24, `node --version` inside it = v24.
