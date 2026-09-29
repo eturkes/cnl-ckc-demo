@@ -200,8 +200,9 @@ regression** — the budget message names the phase, and a wall-clock kill does 
 
 ## CI
 
-- `.github/workflows/pages.yml` — runs `pnpm gate` on every push to `main`, then publishes
-  `dist/` to Pages. Scanners ride the gate, so CI covers them without a second definition.
+- `.github/workflows/ci.yml` — runs `pnpm gate` on every push to `main` and every pull
+  request, and publishes nothing: the demo runs locally (user ruling). Scanners ride the gate,
+  so CI covers them without a second definition.
 - `.github/workflows/security.yml` — the scanners alone, on a daily schedule plus push and
   pull request. The schedule is the point: a new advisory has to redden something on a day
   nobody pushes.

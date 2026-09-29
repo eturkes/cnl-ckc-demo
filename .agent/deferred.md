@@ -231,9 +231,9 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
 - **Owned PDF viewer** — M2 u7 ships a native `<iframe>` at `#page=N`, so the viewer is a
   black box: no assertion can read the displayed page, and the passage cannot be
   highlighted inside the PDF. PDF.js was rejected on cost — +504727 B gzip, 34.78 MB
-  unpacked, and an engine range that excludes the pinned Node 20. Accept: an owned viewer
+  unpacked, and an engine range that excluded the Node 20 then pinned. Accept: an owned viewer
   renders the coverage row's physical page, a browser check reads the rendered page number
-  and the highlighted region from the DOM, `pnpm gate` still runs under Node 20, and the
+  and the highlighted region from the DOM, `pnpm gate` still runs under the pinned runtime, and the
   viewer's bytes load only after the user activates the page. `pri` low.
 - **Generation-scoped proof cache** — every selection re-proves, and the worst measured
   synchronous proof step is 291.419 ms, which no cooperative cancel can interrupt.

@@ -63,6 +63,19 @@ export default ts.config(
       'security/detect-non-literal-require': 'off',
     },
   },
+  // The judgment SDK holds the API key's call path, so it runs in the local Worker alone; a
+  // browser import would ship it to every page (`.agent/contracts/m5u16.md` T4).
+  {
+    ignores: ['worker/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [{ name: '@typesafe-ai/sdk', message: 'The judgment SDK runs in worker/ alone.' }],
+        },
+      ],
+    },
+  },
   // Config files sit outside tsconfig's project graph, so type-aware rules cannot resolve them.
   { files: ['**/*.js'], extends: [ts.configs.disableTypeChecked] },
 );

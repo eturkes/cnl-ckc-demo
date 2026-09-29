@@ -12,6 +12,15 @@ paths:
 
 # Toolchain constraints
 
+## Runtime
+
+- Node **24** = `package.json` `devEngines.runtime` (exact `24.21.0`, `onFail: download`) +
+  `engines` (`>=24.15.0 <25`, jsdom 30's floor) + CI `setup-node`. pnpm installs that runtime
+  into `node_modules/.bin`, so every `pnpm <script>` and `pnpm exec node` runs on it whatever
+  the host carries. **Bare `node` is the host's** and is never a gate runner.
+- `wrangler` (devDependency) and `@typesafe-ai/sdk` (exact, runtime) serve `worker/` alone;
+  ESLint `no-restricted-imports` refuses the SDK outside it.
+
 ## Dependency pins
 
 - `typescript-eslint` stable caps at TypeScript <6.1 → TypeScript stays on 5.x. Installing
@@ -21,12 +30,9 @@ paths:
 - `swipl-wasm` stays **exact-pinned**: production calls three undeclared APIs off it
   (`.claude/rules/engine.md`), so every version bump re-verifies them against the shipped
   `.d.ts`.
-- jsdom is capped at `^29.1.1`, exact only in the lockfile. jsdom 30 pulls undici 8, which
-  assigns `webidl.util.markAsUncloneable` from `node:worker_threads`; Node 20 does not export
-  it, so the vitest fork dies before any test runs.
-- `secretlint` and every `@secretlint/*` package are capped at `^12`. Version 13 declares
-  `engines.node >= 22`; this project runs Node 20 (`engines`, and the CI `setup-node` pin).
-  Lifting the cap means moving the whole runtime, which also lifts the jsdom cap above.
+- `pnpm.overrides` lifts `undici@>=7.28.0 <7.29.1` to `^7.29.1`: `wrangler` → `miniflare`
+  pins `undici` 7.29.0 exactly, inside GHSA-3wwx-pv8p-q78v, and `audit:check` takes no
+  allowlist. Drop the override once `miniflare` pins ≥7.29.1 — `pnpm why undici` shows it.
 - Each cap here must also appear in `.github/dependabot.yml`'s `ignore` list, or the weekly
   run reopens the same gate-breaking PR.
 - ESLint config needs `@types/node`, and svelte parsing needs `extraFileExtensions`.

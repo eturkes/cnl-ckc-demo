@@ -1,6 +1,6 @@
 name: Security scan
 
-# `pages.yml` already runs the whole gate, scanners included, on every push to main. This
+# `ci.yml` already runs the whole gate, scanners included, on every push and pull request. This
 # workflow exists for the schedule: an advisory published against an unchanged tree has to
 # redden something, and nothing pushes on the day it lands.
 on:
@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: 20.19.0
+          node-version: 24.21.0
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
       # Dependency advisories, live against the registry feed.

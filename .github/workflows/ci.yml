@@ -1,0 +1,24 @@
+name: Verify
+
+# The demo runs locally (user ruling), so CI publishes nothing: it runs the whole gate,
+# scanners included, on every push to main and every pull request.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.21.0
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm gate

@@ -50,9 +50,11 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   1,193 operator. u11's S3 is therefore ONE-WAY: every operator-bearing edge resolves to
   exactly one scope record, an unreferenced record is legal, and the unreferenced count is
   pinned so it cannot drift. Queued in `.agent/deferred.md`.
-- **Security lane.** Live `pnpm audit` in the gate, no allowlist; secretlint pinned `^12` so
-  Node stays 20; static analysis = ESLint security rules only, no CodeQL/Semgrep; the
-  `.agent/deferred.md` defects stay deferred into MAINTAIN. Wiring → `.claude/rules/gate.md`.
+- **Security lane.** Live `pnpm audit` in the gate, no allowlist; static analysis = ESLint
+  security rules only, no CodeQL/Semgrep; the `.agent/deferred.md` defects stay deferred into
+  MAINTAIN. Wiring → `.claude/rules/gate.md`.
+- **Node 24, project-wide.** Pinned locally through `devEngines.runtime` and in CI. It lifts
+  the Node-20 caps (secretlint `^12`, jsdom `^29`) that held the runtime back.
 - **`binding:check` holds declared tables that stay APART.** `REQUIRED` = the answer-path
   register, every row naming the part of the non-negotiable it holds up; `LIFECYCLE` = claims
   the view makes on its own; a lifecycle row never dilutes the non-negotiable roll call. One
@@ -113,8 +115,8 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   - The discriminating vocabulary is `clinical_rule/3`: **24 distinct conditions** over 48
     rules, 22 of them unconditional, 27 action modifiers, 12 document scopes. Conditions read
     as situations (`a clinician prescribes an opioid-pain-medication with a benzodiazepine`).
-  - Intake is ONE judgment request — 24 condition Nouls + a scope Choice (pain type, therapy
-    phase) + an `other` hatch. **No goal is composed and no new executable surface is added**:
+  - Intake is ONE judgment request — condition Nouls + pain Choice with its `other` hatch +
+    section Nouls + candidate-term Nouls (below). **No goal is composed and no new executable surface is added**:
     every derivation is an existing predicate over existing shipped records, and the answer
     set is a subset of the 48 shipped recommendations, so it cannot fabricate.
   - Refusal = hatch fired or empty match set, **never a probability threshold** — `covered`
@@ -132,29 +134,43 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   `wt/res-nl-intake` `ae608ff` (routing, grounding, vocabulary) and `wt/res-u16-shape`
   `490dfcf` (premise shape, rule shape) — never rename either.
 
-- **u16 delivery bindings.** Four rulings, taken at the u16 orientation wave:
-  - **Key handover = pasted in chat**, then straight to a gitignored `.dev.vars` and a
-    Cloudflare secret, never a commit. **The key has not arrived yet** — the live arm is
-    unfunded and every live measurement stays unrun until it does.
-  - **MAIN deploys the Worker**, not commit-only. Needs `CLOUDFLARE_API_TOKEN` (Workers
-    Scripts:Edit) + `CLOUDFLARE_ACCOUNT_ID`, so the committed `README.md:113` `connect-src`
-    names the real origin instead of a placeholder.
-  - **Layout = free text FIRST, drop-down below.** The textarea is the primary intake at the
-    top of the ask flow; `QuestionCombobox` keeps its exact look and sits under it as the "or
-    pick a built-in question" path. Both stay visible. This refines U8 of the UI mapping report
-    (`.scratch/agents/map-ui-1.md`), which had proposed a separate sibling section.
-  - **Japanese = copy parity only.** `en.ts`/`ja.ts` parity as `copy:check` already enforces;
-    Japanese free-text intake is NOT graded, the probe set and its gold are English, and no
-    bilingual-intake claim is made either way.
+- **u16 delivery bindings.**
+  - **Key = `~/.config/typesafe/key`** (supersedes paste-in-chat). It is read only into a
+    gitignored `.dev.vars` and the live probe run; it is never echoed or committed.
+  - **Local-only delivery.** The Cloudflare deploy is DEFERRED (`.agent/deferred.md`); the
+    Worker ships as code and runs under `wrangler dev` behind a same-origin Vite proxy, so
+    `connect-src 'self'` stands. **Pages publishing STOPS**: CI keeps the gate + scanners.
+  - **Layout = free text FIRST, drop-down below.** `QuestionCombobox` keeps its exact look
+    under the textarea as the "or pick a built-in question" path; both stay visible.
+  - **Result view = its own panel under the intake.** Each derived recommendation offers "Show
+    derivation", which runs its document's built-in question through the UNCHANGED
+    `AnswerPanel` + ladder.
+  - **Gap list on BOTH answered and no-match outcomes**; on no-match it is the headline.
+  - **Japanese = copy parity only.** Free-text intake is graded in English alone; no
+    bilingual-intake claim either way.
 
-- **The third outcome has no primitive that can produce it — ASK BEFORE BUILDING.** A Noul
-  returns a probability alone and a Choice returns one of the options the caller supplied, so
-  the ruled 24 Nouls + scope Choice cannot NAME what a description asserts that the KB has no
-  vocabulary for. Inventing `unsupportedTerms` in the response parser would be the exact
-  fabrication the non-negotiable forbids. Four ways out, recommendation first — deterministic
-  candidate discovery from the user's OWN words then one Noul per candidate; a fixed authored
-  out-of-KB vocabulary; a Choice naming the nearest COVERED concept instead; or dropping the
-  naming entirely. Options + evidence → `.agent/archive/u16-wave1/index.md`.
+- **Third outcome = candidates from the user's OWN words.** A dependency-free stopword chunker
+  cuts the description into verbatim substrings (bounded count + length); the same request
+  asks one Noul per candidate — asserted by the description AND expressed by no KB vocabulary
+  entry. The browser recomputes the candidates and refuses any returned term they do not
+  contain, so nothing is generated. `compromise` was measured worse (split `opioid use
+  disorder`, dropped `tramadol`) and is rejected.
+
+- **Selection model.** Condition Nouls (24) select conditional rules; a pain Choice
+  `{acute, subacute, chronic, unstated}` + `other` = the hatch; 4 section Nouls, headings
+  read VERBATIM from the bag's CDC Box 3, select unconditional rules. A rule answers iff its
+  trigger fires (its condition Noul, else its section Noul) AND it is pain-compatible.
+  `painSet(rule)` = the pain types its own text names, else its document's union, else ∅ =
+  agnostic; compatible iff ∅ or the chosen type is in it, so `unstated` admits agnostic rules
+  alone. A Noul says yes at value ≥ 0.5.
+
+- **Stack.** `@typesafe-ai/sdk` exact `0.6.0` inside the Worker ALONE — the browser never
+  imports it, and ESLint enforces that. `wrangler` is a devDependency.
+
+- **Probe set.** An independent `scientist` authors the held-out descriptions + gold from the
+  KB alone, frozen and committed before the first live run. Live accuracy is REPORTED per
+  case, never gated — Jev has no determinism control. The gate grades the committed replay +
+  the forced-arm control.
 
 **MAIN:** premise display = deduplicated steps inside the EXISTING ladder rungs, never a new
 step type (3,930 leaves / 346 premises), carrying hypothetical origin and no source line.
@@ -169,43 +185,34 @@ declines.
 
 # Tasks
 
-- [ ] **u16 — free-text patient intake**, the phase's only unit; the queue's free-text intake
-  row became it. Tier `kernel`: it decides which shipped recommendation answers a user, so it
-  carries the full battery. Contract → `.agent/contracts/m5u16.md`, testable predicates
-  written before code. Scope, bound by `Decisions` above:
-  - Extract the 24 conditions, 27 action modifiers and 12 document scopes out of
-    `clinical_rule/3` into a typed artifact that intake and the UI both read. Producer lives in
-    `tools/kb/` and is graded like its neighbours, firing input included.
-  - One `JudgmentClient` seam with Jev behind it, so the whole path runs end to end under a
-    deterministic stub before the key lands. **The key is not in the environment — ask for
-    it.** Proxy = Cloudflare Worker; `README.md:112` `connect-src` gains the Worker origin;
-    `wrangler` needs Node 22, which `engines` already permits and which belongs in its own
-    deploy job so the secretlint-capped gate job stays on 20.19.0.
-  - Three outcomes distinct on screen, the third naming what the description asserts that the
-    KB has no vocabulary for.
-  - A held-out probe set with its gold committed, plus the forced-arm control — hatch removed —
-    which must fire. The existing n=19/n=12 numbers are feasibility signals on MAIN-authored
-    phrasing, never accuracy estimates, and do not transfer to this larger answer space.
-  - `.claude/rules/proof.md` gains the premise-scaffolding / condition-discriminator law this
-    unit proves. It is deliberately NOT written ahead of the build.
-  - Progress: orientation only, nothing built. The wave ran and was harvested; the session
-    wound down before the contract. Resume from `.agent/archive/u16-wave1/index.md`, which
-    carries the roster, the four rulings, the blocking gap, the still-owed inputs and the
-    resume order; its two research reports hold the Worker and Jev code sketches verbatim. The
-    three mapping reports stay uncommitted at `.scratch/agents/map-{ui,kb,close}-1.md` because
-    they re-derive from the tree. Measured there, independently of the figures above and
-    agreeing with them: `clinical_rule/3` is **not a bag member** —
-    `tools/kb/clinical.mjs:631-638` derives all 48 facts — and the vocabulary is 24 distinct
-    conditions / 26 occurrences / 22 unconditional, 27 distinct modifiers / 74 occurrences, 12
-    document scopes.
-  - [ ] Settle the third-outcome gap with the user; collect the key plus the Cloudflare inputs.
-  - [ ] Write `.agent/contracts/m5u16.md`.
-  - [ ] Producer.
-  - [ ] `JudgmentClient` under the stub.
-  - [ ] Worker.
-  - [ ] UI.
-  - [ ] Probe set with its forced-arm control.
-  - [ ] `reviewer` per lens → `Phase: MAINTAIN`.
+- [ ] **u16 — free-text patient intake**, the phase's only unit, split into sub-units each
+  committed on its own. Contract → `.agent/contracts/m5u16.md`, testable predicates before
+  code; rulings → `Decisions`. Wave-1 harvest (roster, API sketches) →
+  `.agent/archive/u16-wave1/`. Measured there: `clinical_rule/3` is not a bag member —
+  `tools/kb/clinical.mjs` derives all 48 facts — 24 distinct conditions / 26 occurrences / 22
+  unconditional, 27 modifiers, 12 documents.
+  - [ ] **u16a toolchain** (`data`: the whole gate re-checks every consumer). Node 24 via
+    `devEngines.runtime` + `engines` + CI; secretlint + jsdom caps lifted and their Dependabot
+    ignores pruned; `@typesafe-ai/sdk` + `wrangler` added; Pages publish removed (CI = gate +
+    scanners). Accept: `pnpm gate` green under Node 24, `node --version` inside it = v24.
+  - [ ] **contract** `.agent/contracts/m5u16.md`, committed → funds `tester` (pure kernel:
+    chunker, request builder, response parser, selector) + `scientist` (held-out probes).
+  - [ ] **u16b producer** (`kernel`) `tools/kb/intake.mjs` → `kb/generated/intake-vocabulary.json`:
+    conditions, sections (Box 3), pain sets, per-rule trigger + build-time `clinical_derive/4`
+    goal; validator + `requireFiring` control in `kb:asset-check`; `kb:reproduce` covers it.
+  - [ ] **u16c judgment core** (`kernel`) `src/intake/`: vocabulary reader, chunker, request
+    builder, response parser, selector → three outcomes, `JudgmentClient` + replay stub + HTTP
+    client.
+  - [ ] **u16d derivation** (`kernel`): rule ids → the artifact's goals through the serialized
+    engine; the shown rule = the derived binding; binding overlay erases a cited clause.
+  - [ ] **u16e Worker** (`kernel`) `worker/`: SDK request, fixed questions, bounds, origin
+    allowlist, rate limit, timeout, validated response; `wrangler dev` + `.dev.vars`.
+  - [ ] **u16f UI** (`kernel`): textarea first, combobox below, result panel, three outcomes,
+    gap list, "Show derivation", en/ja copy, contrast pairs, DOM + axe.
+  - [ ] **u16g probes** (`kernel`): scientist's held-out gold committed → live run → committed
+    replay + per-case report; gate replays it and fires the forced-arm control.
+  - [ ] **u16h close** (`docs`): `.claude/rules/proof.md` law, README, claims registry,
+    deferred rows, `reviewer` per lens → `.agent/review.md` → `Phase: MAINTAIN`.
 - Queue → `.agent/deferred.md`: 61 rows, acceptance check each, plus the accepted-open review
   ids, whose checks stay in `.agent/archive/review-expedited.md`; the 57 rows queued before
   agents@8fc2e19 stay user-ruled into MAINTAIN, **out of u16's scope** (`Decisions` Security

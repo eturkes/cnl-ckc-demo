@@ -47,7 +47,7 @@ United States Government.
 
 ## Prerequisites
 
-- Node.js `^20.19.0 || >=22.12.0`
+- Node.js 24. pnpm downloads the pinned Node 24 runtime and runs every script on it.
 - pnpm 10, installed through Corepack
 - `chromiumfish` for `pnpm smoke` and `pnpm browser:check`
 
@@ -102,8 +102,8 @@ claim to check.
 ## Static deployment
 
 The application has no server-side runtime. Publish `dist/` at any static path;
-Vite emits relative URLs. The included GitHub Pages workflow runs the gate and
-deploys `dist/` on pushes to `main` or manual dispatch.
+Vite emits relative URLs. The included CI workflow runs the gate on every push to
+`main` and on pull requests. It publishes nothing.
 
 SWI-Prolog/WASM generates JavaScript functions, and the app starts a module
 worker. A static host that sets CSP headers should begin with a policy equivalent
