@@ -40,7 +40,8 @@ describe('generated runtime payload', () => {
     expect(kinds.filter((kind) => kind === 'provenance-index')).toHaveLength(1);
     expect(kinds.filter((kind) => kind === 'source-pdf')).toHaveLength(1);
     expect(kinds.filter((kind) => kind === 'semantic-graph')).toHaveLength(1);
-    expect(kinds).toHaveLength(DOCUMENTS + 6);
+    expect(kinds.filter((kind) => kind === 'intake-vocabulary')).toHaveLength(1);
+    expect(kinds).toHaveLength(DOCUMENTS + 7);
     expect(manifest?.provenance).toMatchObject({
       schemaVersion: SCHEMA_VERSION,
       documents: DOCUMENTS,

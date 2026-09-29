@@ -548,7 +548,7 @@ const contentSites = (source, selected) => {
 
 /**
  * @param {Map<string, Uint8Array>} files
- * @returns {{ records: Array<{ id: string, question: string, goal: string, projection: Array<{ variable: string, descriptor: string }>, provenance: 'bag-derived' }>, names: string[], source: string, helper: string, answers: Map<string, string[]> }}
+ * @returns {{ records: Array<{ id: string, question: string, goal: string, projection: Array<{ variable: string, descriptor: string }>, provenance: 'bag-derived' }>, names: string[], source: string, helper: string, answers: Map<string, string[]>, sentences: Array<{ question: string, document: string, clause: AdviceClause }> }}
  */
 export const clinicalArtifacts = (files) => {
   const documents = payloadDocuments(files);
@@ -579,6 +579,10 @@ export const clinicalArtifacts = (files) => {
   const fragments = [];
   /** @type {string[]} */
   const premises = [];
+  // The parsed clause behind each emitted `clinical_rule/3` fragment, in emission order, so a
+  // consumer reads the SAME records the image carries instead of re-parsing the sentences.
+  /** @type {Array<{ question: string, document: string, clause: AdviceClause }>} */
+  const sentences = [];
   const contentIndex = contentSites(
     documents.source,
     new Set(CLINICAL_QUESTIONS.flatMap((q) => q.sources.map((s) => s.document))),
@@ -637,6 +641,7 @@ export const clinicalArtifacts = (files) => {
         fragments.push(
           `clinical_rule(${key},${groupTerm(/** @type {AdviceGroup} */ (groupClauses([clause])[0]))}).`,
         );
+        sentences.push({ question: question.id, document: selection.document, clause });
         for (const [ordinal, goal] of premiseGoals(
           /** @type {string} */ (bodies[0]),
         ).entries()) {
@@ -716,5 +721,5 @@ export const clinicalArtifacts = (files) => {
     `clinical_merge(Su,M,A,[H|T],[H|Rest],Cs) :- clinical_merge(Su,M,A,T,Rest,Cs).\n` +
     `${selections.join('\n')}\n${passageFacts.join('\n')}\n` +
     `${fragments.join('\n')}\n${premises.join('\n')}\n${gates.join('\n')}\n`;
-  return { records, names: [...names].sort(), source: helper, helper, answers };
+  return { records, names: [...names].sort(), source: helper, helper, answers, sentences };
 };

@@ -14,11 +14,19 @@ import {
   validateSemanticGraphAsset,
   GRAPH_SCHEMA_VERSION,
 } from './graph.mjs';
+import { deriveIntakeVocabulary, validateIntakeVocabulary } from './intake.mjs';
 import { deriveProvenance, PROVENANCE_SCHEMA_VERSION } from './provenance.mjs';
 import { GENERATED_DIR, ROOT, loadManifest, payloadSource } from './paths.mjs';
 
 /** Build inputs and runtime assets. Excludes `.agent/` and `CLAUDE.md`, where the sibling project is legitimately discussed. */
-const SCAN_ROOTS = ['tools', 'src', 'kb/generated', 'vite.config.ts', 'package.json', 'index.html'];
+const SCAN_ROOTS = [
+  'tools',
+  'src',
+  'kb/generated',
+  'vite.config.ts',
+  'package.json',
+  'index.html',
+];
 /**
  * Roots the answer-oracle ban covers. `tests/` is absent on purpose: a regression
  * test proves live output against the committed answers, which is exactly what
@@ -117,6 +125,8 @@ if (scanFailures.length === 0) {
 }
 let scopeControlsFired = 0;
 let scopeRecordsValidated = 0;
+let intakeControlsFired = 0;
+let intakeRulesValidated = 0;
 
 const manifest = loadManifest();
 if (manifest === undefined) {
@@ -170,6 +180,36 @@ if (manifest === undefined) {
         scopeControlsFired = 1;
         scopeRecordsValidated = graph.model.scopes.length;
       }
+      const intake = deriveIntakeVocabulary(files);
+      const intakeFailures = validateIntakeVocabulary(intake.model);
+      for (const problem of intakeFailures) fail(`intake vocabulary: ${problem}`);
+      if (intakeFailures.length === 0) {
+        // The real model with one section's documents emptied: every rule of that section
+        // loses its home, which a validator that stopped reading sections would not notice.
+        requireFiring(
+          'kb:asset-check',
+          {
+            mutation: 'the real intake model with section s2 emptied of documents',
+            expect: ['section s2 has no documents', 'lies in 0 sections'],
+          },
+          () =>
+            validateIntakeVocabulary({
+              ...intake.model,
+              sections: intake.model.sections.map((section) =>
+                section.id === 's2' ? { ...section, documents: [] } : section,
+              ),
+            }),
+        );
+        intakeControlsFired = 1;
+        intakeRulesValidated = intake.model.rules.length;
+      }
+      if (
+        manifest.intake.vocabularyVersion !== intake.model.vocabularyVersion ||
+        manifest.intake.rules !== intake.model.rules.length ||
+        manifest.intake.digest !== intake.model.digest
+      ) {
+        fail('manifest intake metadata does not match the bag-derived vocabulary');
+      }
       if (
         manifest.provenance.schemaVersion !== PROVENANCE_SCHEMA_VERSION ||
         manifest.provenance.documents !== provenance.stats.documents ||
@@ -195,16 +235,18 @@ if (manifest === undefined) {
         })),
         { kind: 'source-pdf', path: provenance.pdf.path, bytes: provenance.pdf.bytes },
         { kind: 'semantic-graph', path: graph.path, bytes: graph.bytes },
+        { kind: 'intake-vocabulary', path: intake.path, bytes: intake.bytes },
       ];
       const derivedKinds = new Set([
         'provenance-index',
         'provenance-document',
         'source-pdf',
         'semantic-graph',
+        'intake-vocabulary',
       ]);
       const recorded = manifest.assets.filter((entry) => derivedKinds.has(entry.kind));
       if (recorded.length !== derived.length) {
-        fail(`manifest records ${recorded.length} derived provenance/graph assets, expected ${derived.length}`);
+        fail(`manifest records ${recorded.length} derived provenance/graph/intake assets, expected ${derived.length}`);
       }
       const recordedByPath = new Map(recorded.map((entry) => [entry.path, entry]));
       for (const expected of derived) {
@@ -294,6 +336,8 @@ if (failures.length > 0) {
       `${questions.length} question sentences absent from ${QUESTION_ROOTS.length} roots, ` +
       `${String(controlsFired)} SCAN_ROOTS control fired, ` +
       `${String(scopeRecordsValidated)} graph scopes verified, ` +
-      `${String(scopeControlsFired)} scopes control fired\n`,
+      `${String(scopeControlsFired)} scopes control fired, ` +
+      `${String(intakeRulesValidated)} intake rules verified, ` +
+      `${String(intakeControlsFired)} intake control fired\n`,
   );
 }

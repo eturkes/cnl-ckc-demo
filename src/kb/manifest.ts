@@ -10,7 +10,8 @@ export type KbAssetKind =
   | 'provenance-index'
   | 'provenance-document'
   | 'source-pdf'
-  | 'semantic-graph';
+  | 'semantic-graph'
+  | 'intake-vocabulary';
 
 export interface KbAsset {
   kind: KbAssetKind;
@@ -61,6 +62,13 @@ export interface KbManifest {
     schemaVersion: number;
     nodes: number;
     edges: number;
+  };
+  /** Free-text intake vocabulary: the rules a judgment may select, each with its goal. */
+  intake: {
+    vocabularyVersion: number;
+    rules: number;
+    /** Content digest the local Worker and the browser must agree on. */
+    digest: string;
   };
   assets: KbAsset[];
   /** Values read back out of a live engine during the build, never assumed. */
