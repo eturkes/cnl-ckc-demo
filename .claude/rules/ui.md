@@ -24,13 +24,14 @@ unicode-range subset it carries — literata ships 1848120 B across 42 files. `s
 therefore hand-authors `@font-face` against the eight latin/latin-ext woff2 files: **176732 B**, pinned by
 `presentation:check`, with family names dropping the packages' `Variable` suffix.
 
-Japanese adds two static faces from `@fontsource/biz-udpgothic` — sizing, the rejected
-alternatives and the ASCII-label rule are in `.claude/rules/i18n.md`. Both are `@font-face`
-rows in the same hand-authored block, so `presentation:check` grades **8** faces against a
-per-row `scope`, and every font stack ends `'BIZ UDPGothic', sans-serif` after its latin face.
+Japanese adds two static faces, committed subsets of `@fontsource/biz-udpgothic` under
+`src/fonts/` — the cut, its grader and the ASCII-label rule are in `.claude/rules/i18n.md`.
+Both are `@font-face` rows in the same hand-authored block, so `presentation:check` grades
+**8** faces against a per-row `scope`, and every font stack ends `'BIZ UDPGothic', sans-serif`
+after its latin face.
 
-Vite resolves a bare package specifier inside CSS `url()`, so the font rules need no relative
-path into `node_modules`.
+Vite resolves a bare package specifier inside CSS `url()`, so the latin rules need no relative
+path into `node_modules`; the two Japanese rules name `./fonts/` relative to `src/app.css`.
 
 ## Colour
 
