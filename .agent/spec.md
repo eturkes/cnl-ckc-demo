@@ -239,8 +239,8 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [ ] d42 session proof cache on `wip/d42` under review.
 - [ ] d43 owes a ruling: a document-first provenance view is a new surface with a layout entry point.
 - [x] d47 `pnpm queue:index` derives the queue index; `claims:check` refuses a stale one by line.
-- [ ] `low`: d35
-  d55 d56 d57 d58 d59 d60 d61 d62 d63
+- [x] d35 m1u7 matrix 34/34: 16 covered, 13 ported green (`tests/m1u7-port{,.dom}.test.ts`), 5 superseded, 0 red.
+- [ ] `low`: d55 d56 d57 d58 d59 d60 d61 d62 d63, then the new-find rows.
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open

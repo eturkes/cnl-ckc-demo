@@ -76,10 +76,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   features now; proposal: no shipped string names a milestone, unit or review id (`M1`–`M5`,
   `u12`, `R045`, `U7-26`); (b) descriptor rendering — no component renders `describeDescriptor`'s
   output any more, so retire the item, or remove the dead `descriptor` field it feeds.
-- **u7 red suite never existed** — same shape as u5's, from `.agent/contracts/m1u7.md`
-  (M1 review X16). Accept: as above against u7's 34 predicates. `pri` low — u7 is a `docs`
-  tier unit whose claims are now carried by `copy:check`, `contrast:check` and
-  `presentation:check`, so a red suite buys less here than on a kernel unit.
 - **Comments carry provenance and restate purpose** — ten file headers say what their module
   is rather than why it is peculiar, and eight comment sites cite review rows instead of
   stating a timeless constraint (M1 review X20); this session's own new headers are in
