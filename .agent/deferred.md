@@ -12,7 +12,9 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   `ja.ts` to です・ます or to a length. Accept: a Japanese-side rule set the gate can decide
   — a per-sentence character ceiling, a fixed-terminology table drawn from
   `.claude/rules/i18n.md`, and one sentence-final-form check — with a positive control per
-  rule. `pri` low.
+  rule. `pri` low. **Owes approval of the contract** `.agent/contracts/mnt-d3.md`: its J1
+  ceilings (40 / 60 units), J2 term table and the three Japanese copy edits J2 forces are
+  MAIN's numbers and a visible text change, so no production edit precedes the ruling.
 - **Phased boot telemetry** — replace the single boot spinner with ordered
   progress phases. Accept: each phase emits one accessible status event in
   order, and no percentage is reported that the runtime does not supply. `pri` low.
