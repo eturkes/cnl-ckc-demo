@@ -171,7 +171,7 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   passes 20 consecutive runs at load avg ≥ 3× cores with no timeout raised, or a user-approved
   gate timeout policy is recorded with its original firing. `pri` med. **Owes the user**: 20
   consecutive `pnpm test` runs then passed 1014/1014 each with no timeout, at load avg 4.6–23.5 on
-  8 cores (`.scratch/maint/runs20/summary.txt`) — up to 2.9× cores, short of the 3× this check
+  8 cores (`4dc9179` body) — up to 2.9× cores, short of the 3× this check
   names and of the 27–33 that broke the earlier runs. Either a run at ≥ 24 sustained (the
   machine is shared with the user's other sessions) or a gate timeout ruling.
 - **Inline-disable reasons have no grader** — `.claude/rules/gate.md`'s `lint` bullet says every
@@ -187,7 +187,7 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
 - **A decoded dict re-encodes without its tag** — `createEncoder` turns `tag{a:0}` into a plain
   object whose `$tag` key the wrapper reads as an ordinary dict key, leaving the real tag
   unbound: `_{'$tag':tag,a:0}` is no variant of `tag{a:0}`, alone or as a list tail (reviewer-il-1
-  register R1, `.scratch/agents/reviewer-il-1.md`). No shipped answer term carries a dict.
+  register R1, `a9bf242` body). No shipped answer term carries a dict.
   Accept: a decoded dict re-encodes as a structural variant — standalone and as an improper-list
   tail — graded by Prolog `=@=` in `tests/engine-term-identity.test.ts`. `pri` low. **Owes a
   ruling**: swipl-wasm 8.0.7 has no supported way to re-enter a TAGGED dict. `toProlog` sets a
