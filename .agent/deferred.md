@@ -76,12 +76,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   features now; proposal: no shipped string names a milestone, unit or review id (`M1`–`M5`,
   `u12`, `R045`, `U7-26`); (b) descriptor rendering — no component renders `describeDescriptor`'s
   output any more, so retire the item, or remove the dead `descriptor` field it feeds.
-- **u5 red suite never existed** — u5 shipped with no `test-m1u5` diff-blind suite, and the
-  roadmap's `NOT verified` clause had no register entry (M1 review X16). Accept: a suite
-  authored from `.agent/contracts/m1u5.md` alone runs in the primary tree, every case red
-  for a contract reason or green, and the cases MAIN's 26 predicates do not cover are
-  merged. `pri` low — u5's own 28-row review found and closed two behaviour defects, so the
-  gap this would close is narrower than for a unit reviewed only by its author.
 - **u7 red suite never existed** — same shape as u5's, from `.agent/contracts/m1u7.md`
   (M1 review X16). Accept: as above against u7's 34 predicates. `pri` low — u7 is a `docs`
   tier unit whose claims are now carried by `copy:check`, `contrast:check` and

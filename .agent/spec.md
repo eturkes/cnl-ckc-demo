@@ -234,7 +234,8 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] d33 `copy:check` grades a keyed literal once, under its key (378 → 251 graded strings).
 - [x] d38 `withBuiltSite` (`tools/browser.mjs`) owns build, serve, launch and teardown for smoke, browser:check and visual-qa.
 - [ ] d39 seven what-only headers deleted (AnswerPanel's already gone), eight provenance sites restated; owes a ruling on `serialize.ts` + `humanize.ts`, byte-frozen by T9.
-- [ ] `low`: d34 d35 d41 d42 d43 d47
+- [x] d34 m1u5 matrix 26/26: 19 covered, 6 ported green (`tests/m1u5-port.dom.test.ts`), 1 superseded, 0 red.
+- [ ] `low`: d35 d41 d42 d43 d47
   d55 d56 d57 d58 d59 d60 d61 d62 d63
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 
