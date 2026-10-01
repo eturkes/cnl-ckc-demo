@@ -170,11 +170,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   cascaded as `Axe is already running` into every later case) and axe warmed in a hook. Owes the
   20-run proof: at external load avg 27–33 on 8 cores, 5 runs before the serialization lost all
   11 V11 states twice to that cascade, and every run timed out other suites (next row).
-- **`smoke` + `browser:check` ship no firing input** — both are browser lanes outside
-  `pnpm gate`, and `.claude/rules/gate.md` `Firing inputs` carries them as its two open rows,
-  so each reports a count it has never proved it can refuse. Accept: each reddens on a
-  mutation its own lane runs — a pvm-stripped `dist` copy, a renamed woff2 — and joins that
-  table with the control that fired. `pri` med.
 - **The `## Index` under-counts the queue** — it promises one line per `high` + `med` row,
   and 25 such rows reduce to 22 index lines, so some queue items share a line or have none.
   Accept: one command derives the index from the queue rows, and a `high`/`med` row added
@@ -357,7 +352,6 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | Wordmark, forbidden claims, descriptor + fallback stacks rest on one reading | each decided by a committed check |
 | Five browser claims + two probes live only on `wt/` branches | one typed `tools/` harness covers all five; probes port or claims prune |
 | Two tests time out under parallel execution | both pass 20 consecutive full-suite runs at the committed worker count |
-| `smoke` + `browser:check` ship no firing input | each reddens on a mutation its own lane runs, and joins gate.md `Firing inputs` |
 | Ten shipped bounds have no owner | each names an owner whose search returns rc 0; the 60-relation cap surfaces truncation or is contract-owned |
 | 71 operator contexts have no edge, 64 of them negation | the 71 carry edges with the moved counts recorded, or a check proves no shown path skips an edgeless negation context |
 | The projection oracle lives on a branch alone | its label lookups match on `relation`, 24/24 green in-tree, joined to a declared register |

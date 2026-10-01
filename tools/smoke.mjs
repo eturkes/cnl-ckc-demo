@@ -23,9 +23,26 @@ import { loadManifest, payloadSource, ROOT } from './kb/paths.mjs';
 
 const QUESTION = 'when-to-use-opioids';
 const NESTED = 'some/nested';
+/** The firing input: the same build served with its hashed saved state removed. */
+const STRIPPED = 'some/stripped';
 
 /** @type {(message: string) => never} */
 const fail = failWith('smoke');
+
+/**
+ * The lane's boot grader: the page must reach `ready`. Waiting for either terminal state
+ * names a boot-error at once instead of letting it run out a 45 s timeout.
+ *
+ * @param {import('./browser.mjs').Page} page
+ * @param {string} at
+ * @returns {Promise<string | undefined>} the refusal, when the engine did not boot
+ */
+const bootRefusal = async (page, at) => {
+  await page.waitForSelector('[data-engine="ready"], [data-engine="error"]', { timeout: 45_000 });
+  return (await page.locator('[data-engine="error"]').count()) > 0
+    ? `${at}: the engine reached boot-error instead of ready`
+    : undefined;
+};
 
 /**
  * Why the served build is stale against the bag, if it is.
@@ -116,8 +133,24 @@ try {
     raised ??= `page raised ${error.message}`;
   });
 
+  // Control first, on the lane's own grader: a build whose saved state is gone must be refused.
+  const stripped = join(root, STRIPPED);
+  await cp(join(ROOT, 'dist'), stripped, { recursive: true });
+  for (const name of readdirSync(join(stripped, 'assets'))) {
+    if (/^kb-.+\.pvm$/u.test(name)) await rm(join(stripped, 'assets', name));
+  }
+  const strippedPage = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  await strippedPage.goto(`http://127.0.0.1:${String(server.port)}/${STRIPPED}/`, {
+    waitUntil: 'load',
+    timeout: 45_000,
+  });
+  const controlRefusal = await bootRefusal(strippedPage, 'pvm-stripped copy');
+  if (controlRefusal === undefined)
+    fail('control did not fire: a build without its saved state booted');
+
   await page.goto(url, { waitUntil: 'load', timeout: 45_000 });
-  await page.waitForSelector('[data-engine="ready"]', { timeout: 45_000 });
+  const refusal = await bootRefusal(page, 'built output');
+  if (refusal !== undefined) fail(refusal);
 
   await page.locator('[role="combobox"]').click();
   await page.locator(`[role="option"][id$="-option-${QUESTION}"]`).click();
@@ -212,7 +245,7 @@ try {
     `smoke: ok — ${url} combined ${String(expected.rows)} Prolog solutions into ` +
       `${String(bullets)} cited deterministic statements, ` +
       `${served} nested requests served, saved state current with bag input ` +
-      `${inputDigest.slice(0, 12)}; controls: ${staleControls.join(', ')}`,
+      `${inputDigest.slice(0, 12)}; controls: ${staleControls.join(', ')}, a pvm-stripped copy refused at boot`,
   );
 } finally {
   await browser?.close();

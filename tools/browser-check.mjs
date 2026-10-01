@@ -13,7 +13,8 @@
 // Outside `pnpm gate` on the `pnpm smoke` precedent: it needs a real browser.
 
 import { execFileSync, spawn } from 'node:child_process';
-import { cp, mkdtemp, rm } from 'node:fs/promises';
+import { readdirSync } from 'node:fs';
+import { cp, mkdtemp, rename, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -22,6 +23,8 @@ import { failWith, launch, serve } from './browser.mjs';
 import { loadManifest, ROOT } from './kb/paths.mjs';
 
 const NESTED = 'some/nested';
+/** The face firing input: the same build with its Japanese woff2 files renamed away. */
+const FACELESS = 'some/faceless';
 const READY = '[data-engine="ready"]';
 const ERRORED = '[data-engine="error"]';
 const TIMEOUT = 60_000;
@@ -205,10 +208,19 @@ const FACE_PROBE = `(async () => {
   return { declared: faces.length, loaded: faces.filter((face) => face.status === 'loaded').length };
 })()`;
 
-/** Waiting on the face, not on the click: the fetch starts when layout needs a glyph. */
-const FACE_LOADED = `[...document.fonts].some(
-  (face) => face.family === 'BIZ UDPGothic' && face.status === 'loaded',
-)`;
+/**
+ * The Japanese face grader: ask the font set for a Japanese glyph and read whether a
+ * `BIZ UDPGothic` face actually loaded. A missing file rejects the load at once, so a lost face
+ * is named immediately instead of running out a timeout.
+ */
+const FACE_SETTLED = `(async () => {
+  try {
+    await document.fonts.load('16px "BIZ UDPGothic"', 'あ');
+  } catch {
+    return false;
+  }
+  return [...document.fonts].some((face) => face.family === 'BIZ UDPGothic' && face.status === 'loaded');
+})()`;
 
 /** Drives a real module worker in the page; a string keeps it out of Node's scope. */
 const CANCEL_PROBE = `(async () => {
@@ -266,7 +278,9 @@ const narrowSweep = async (browser, builtUrl, lang) => {
   if (lang === 'ja') {
     await page.locator('[data-action="language-switch"]').click();
     await page.waitForSelector('html[lang="ja"]', { timeout: TIMEOUT });
-    await page.waitForFunction(FACE_LOADED, undefined, { timeout: TIMEOUT });
+    if (!(await page.evaluate(FACE_SETTLED))) {
+      fail('Japanese rendered without the Japanese face; the interface is in fallback glyphs');
+    }
     if (!requested(JAPANESE_FACE)) {
       fail('Japanese rendered without the Japanese face; the interface is in fallback glyphs');
     }
@@ -497,6 +511,26 @@ try {
   }
   if (raised !== undefined) fail(raised);
 
+  // Control on the lane's face grader: a build whose Japanese files are gone must be refused.
+  const faceless = join(root, FACELESS);
+  await cp(join(ROOT, 'dist'), faceless, { recursive: true });
+  for (const name of readdirSync(join(faceless, 'assets'))) {
+    if (JAPANESE_FACE.test(`/assets/${name}`)) {
+      await rename(join(faceless, 'assets', name), join(faceless, 'assets', `${name}.renamed`));
+    }
+  }
+  const facelessPage = await browser.newPage({ viewport: { width: NARROW, height: 720 } });
+  await facelessPage.goto(`http://127.0.0.1:${String(server.port)}/${FACELESS}/`, {
+    waitUntil: 'load',
+    timeout: TIMEOUT,
+  });
+  await facelessPage.waitForSelector(READY, { timeout: TIMEOUT });
+  await facelessPage.locator('[data-action="language-switch"]').click();
+  await facelessPage.waitForSelector('html[lang="ja"]', { timeout: TIMEOUT });
+  if (await facelessPage.evaluate(FACE_SETTLED)) {
+    fail('control did not fire: a build without its Japanese woff2 still loaded the face');
+  }
+
   const broken = log.filter((entry) => entry.status !== 200 && entry.path.startsWith(`/${NESTED}`));
   if (broken.length > 0) fail(`nested assets missing: ${broken.map((e) => e.path).join(', ')}`);
 
@@ -509,7 +543,7 @@ try {
       `of up to ${String(probe.cap)} solutions in ${Number(probe.elapsed).toFixed(0)} ms, ` +
       `engine still ${String(probe.after)}; a hostile goal was killed at ` +
       `${Number(kill.settled).toFixed(0)} ms and its replacement engine reported ` +
-      `${String(kill.documents)} documents ${Number(kill.cycle).toFixed(0)} ms in`,
+      `${String(kill.documents)} documents ${Number(kill.cycle).toFixed(0)} ms in; control: a build without its Japanese woff2 refused`,
   );
 } catch (cause) {
   // A browser timeout or a launcher fault must read as this check's own one-line

@@ -132,6 +132,8 @@ effect of the unit whose grader it loosens.
 | `presentation:check` | one `@font-face` renamed out of `app.css`; each shipped licence compared against the next package's; `overflow-wrap` stripped from every component style; `--font-code`'s generic family dropped from `app.css`; the `STACKS` table emptied | one per declared table, in process |
 | `binding:check` | a required case no suite defines; a required suite the run never loaded; the `REQUIRED` table emptied; the `LIFECYCLE` table emptied; the `MEANING` table emptied | the inventory loop re-run over the gate's OWN suite report, so none costs a second vitest; the last three feed `gradeTable` the real table emptied, through the same function the real one goes through |
 | `claims:check` | the claim set re-derived from ONE rules file, contracts dropped; the first rules claim the cell cuts short, lengthened past the cut | its own `gradeRegistry` over the real registry, in process; the short set must be refused by row count, because a sweep that silently stopped reading would otherwise agree with any registry it could still match. The lengthened claim must be refused unseeded by its anchor, then come back `unknown` from the seed's own merge — the append the old text-keyed seed carried a verdict across |
+| `smoke` | the same build served with its hashed `kb-*.pvm` removed; the manifest input digest altered; one served pvm byte flipped | the stripped copy loads in its own page and the lane's boot grader must name `boot-error instead of ready`; the two staleness controls run in process |
+| `browser:check` | the same build served with its Japanese `woff2` files renamed | the lane's face grader (`document.fonts.load` of a Japanese glyph) must report the face never loaded |
 | `kb:reproduce` | one asset digest changed in the second manifest | the equality seam re-run on the perturbed clone |
 | `readme:check` | the real README with `## Run locally` renamed; the reference module count off by one | both graders re-run in process before the clone, the second over the measured counts; end to end, a committed README missing its `pnpm kb:build` line exits 1 at `pnpm build` |
 | `graph:check` | one edge's `line-style` set to `dashed` in the mounted graph; `SEPARATION_PX` set to 0 | `dashControl` requires a 0 → 1 → 0 reading off the live renderer; R1 requires the probe-reported cutoff to be exactly 3 px AND a fixed absolute boundary pair where 2 px collapses and 3 px separates — at 0 every coincident midpoint reads distinct, so R1 passed vacuously while the renderer regressed |
@@ -142,8 +144,7 @@ effect of the unit whose grader it loosens.
 
 `audit:check`, `format:check`, `lint`, `check` and `build` are configured third-party
 checkers, not purpose-built ones, and are absent from that table by rule rather than by
-omission. `pnpm smoke` and `pnpm browser:check` are the two open rows —
-`.agent/deferred.md` carries them as one row with its acceptance check.
+omission.
 
 Out of the chain — each needs a real browser or two forced builds, and each reruns from
 committed state:

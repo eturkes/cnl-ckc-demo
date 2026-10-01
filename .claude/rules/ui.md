@@ -127,6 +127,6 @@ read out of the vendored bag **at run time** through `verifyBag`.
   `kb/generated` holds, so a skipped `pnpm kb:build` ships a page that boots and answers from an
   older knowledge base. After its own build, smoke requires the manifest's input digest to equal
   the digest the verified bag yields now and the served saved state to hash to the manifest's pvm
-  record. Its two in-process controls alter that digest and flip one served pvm byte. The
-  lane-level firing input it still owes is a served `dist` copy stripped of the hashed pvm, a
-  `.agent/deferred.md` row.
+  record. Its two in-process controls alter that digest and flip one served pvm byte, and its
+  lane-level firing input serves the same build stripped of the hashed pvm, which the boot grader
+  must refuse.
