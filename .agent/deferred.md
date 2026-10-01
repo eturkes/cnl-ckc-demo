@@ -49,6 +49,11 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
 - **u3 heap limit is unit-tested only** — `P2.7` is covered by `readOutcome` over a
   synthesized `resource_error(memory)`, not a live trip. Accept: a committed test drives
   real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate. `pri` med.
+  **Blocked on the `high` abort row below**: at swipl-wasm 8.0.7 real exhaustion aborts the
+  runtime in Node too and never raises `resource_error(memory)`, so `limit: 'heap'` is
+  unreachable live until that row classifies the abort. The fast live half is committed —
+  `tests/engine-heap.test.ts` drives the trip in ~1 s behind a 1900 MB `_malloc` reserve and
+  pins today's abort; it owes only the `limit: 'heap'` read.
 - **u3 red suite completion** — `test-m1u3` partially filled its 35-case skeleton,
   committed at `22c8b97` on `wt/test-m1u3`. Accept: the cases MAIN's 31 do not cover run
   in the primary tree, red for a contract reason or green. `pri` low.
@@ -122,7 +127,8 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   checks that carry the real force. `pri` low.
 
 - **Browser WASM abort leaves a dead session** — a runaway `assertz` aborts the WASM runtime
-  in a browser and surfaces as `{code:'prolog', message:'Aborted()...'}`, so `limit:'heap'`
+  — in Node too at swipl-wasm 8.0.7, pinned live by `tests/engine-heap.test.ts`, which is the
+  fix's red witness — and surfaces as `{code:'prolog', message:'Aborted()...'}`, so `limit:'heap'`
   never fires and `EngineClient` keeps the dead worker: every later query returns the same
   abort, breaching u3 P3.4 (M1 review R45). Unreachable from M1's six bounded catalog goals;
   free-text intake is what makes it reachable. Accept: an aborted runtime reaches the client
@@ -391,7 +397,7 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 
 | defect | accept |
 | --- | --- |
-| **high** A WASM abort strands the worker | abort = own terminal state, worker recreated, next query reports 337 docs |
+| **high** A WASM abort strands the worker, in Node too | abort = own terminal state, worker recreated, next query reports 337 docs |
 | A QLF fallback import doubles the engine | it loads only on saved-state failure; an untaken fallback ships no bytes |
 | `wt/test-m1u2` + `wt/test-m1u4` suites never ran here | both run in-tree, each case red for a contract reason or green |
 | Heap limit + hard kill are proven in Node alone | a browser run exhausts the heap + kills a hostile goal, reporting 337 docs |

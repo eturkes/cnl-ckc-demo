@@ -85,12 +85,15 @@ failures before it was wired.
   a real browser the same cycle costs 526.4–1732.5 ms, median 641.6 over 5/5 cycles — any UI
   claim must use the browser figure. Each cycle drops the overlay and re-reads 337 documents
   from the replacement engine. Post-termination worker CPU stays unmeasured.
-- **Heap exhaustion diverges by host.** In Node it returns a typed `assertz/1: Not enough
-  resources: no_memory`, no throw, no abort, ~2222464 KiB peak RSS; the engine still answers
-  but must be recreated. In a browser it does not: a runaway `assertz` aborts the WASM runtime
-  after ~12 s and reaches the client as `{code:'prolog', message:'Aborted(). Build with
-  -sASSERTIONS for more info.'}`, never `limit:'heap'`, so the heap-triggered recreation never
-  runs there. Open `pri high` row in `.agent/deferred.md`.
+- **Heap exhaustion aborts the runtime in BOTH hosts.** A runaway `assertz` never raises
+  `resource_error(memory)`: the allocator prints FATAL `Could not allocate memory: Out of
+  memory` and the WASM runtime aborts, reaching the caller as `{code:'prolog', message:
+  'Aborted(). Build with -sASSERTIONS for more info.'}` — ~6.3 s from a fresh engine in Node,
+  ~12 s in a browser. Every later query on that engine aborts too, and `limit:'heap'` is
+  unreachable live, so the heap-triggered recreation never runs. `readOutcome` still maps
+  `resource_error(memory)` for a build that raises it. `pnpm exec vitest run
+  tests/engine-heap.test.ts` pins both halves in ~1 s by reserving 1900 MB with one untouched
+  `_malloc` first. Open `pri high` row in `.agent/deferred.md`.
 - `EngineClient.query` awaits that recreation on `limit:'heap'`, so a caller never sees a heap
   outcome before its replacement engine re-verified the contract. The wall-clock deadline
   fires its reset instead, because there the caller is already settled.
