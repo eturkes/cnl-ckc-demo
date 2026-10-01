@@ -89,5 +89,6 @@ Live-engine tests run in the node project: one non-parallel worker, real saved i
 
 `dist/` totals drift on ANY source byte → report them with `du -sb dist` and
 `jq '.assets|length' kb/generated/kb-manifest.json`; **never record a durable exact total**.
-Re-derive the file count and the asset-class list whenever a unit ships a new asset class.
+Re-derive the file count and the asset-class list whenever a unit ships a new asset class; a
+census figure stated in these rules belongs in `tests/census.test.ts` `CENSUS`.
 Two blobs neither the app nor a unit moves: the worker chunk (swipl-wasm) and the PVM.

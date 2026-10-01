@@ -157,18 +157,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   asking a question that reaches them. Accept: a document-first view lists every document's
   coverage rows and opens each one's passage and page through the same resolver the ladder
   uses, adding no eager asset fetch to the answer path. `pri` low.
-- **Recorded measurements have no mechanical owner** — `.claude/rules/` carries exact
-  censuses (bag members, schema clause counts, derivable-solution counts, graph node/edge and
-  implication splits, modal-context counts, clause-line total, content sites/premises/
-  assumption leaves, manifest asset count) behind a prose rule that says to re-derive them
-  whenever a unit ships a new class. Every one of the pre-M5 figures drifted silently through
-  M2-M4 (expedited review C5), because prose does not run. Volatile totals were dropped in
-  the memory retirement and now carry their own command instead (`du -sb dist`,
-  `stat -c %s`, `jq '.assets|length'`), so this entry owns the stable censuses alone.
-  Accept: one script re-derives each recorded figure from a built `kb/generated` plus `dist`,
-  compares it to the value parsed out of the `.claude/rules/` file that states it, and exits
-  nonzero on any mismatch; it names the rules file and line for each mismatch, and it runs in
-  `pnpm gate` only if a build is already present, otherwise beside `kb:reproduce`. `pri` med.
 - **Two tests time out under parallel execution** — `pnpm test` passed 291/293
   with two 5-second timeouts (`V11 has zero axe`, `fails kb:asset-check on a
   static import`); both pass when rerun in isolation, so the suite is
@@ -348,6 +336,14 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   gate run is green again once the load falls (906/906 at avg 7–15). Accept: the full suite
   passes 20 consecutive runs at load avg ≥ 3× cores with no timeout raised, or a user-approved
   gate timeout policy is recorded with its original firing. `pri` med.
+- **Engine timing figures have no committed benchmark** — `.claude/rules/engine.md` states
+  measured timings no command re-derives: `repeat` emitting 100000 answers in 452.232 ms, the
+  in-worker 25 ms timer never firing across 249.80 ms, Node terminate 2.7–3.5 ms and
+  terminate→respawn→boot 181.75–223.96 ms, the 50.11 ms worst cooperative step, the stack-limit
+  trip in 0.681 ms. Timings drift with the host, so a census table cannot own them. Accept: each
+  figure is either reported by a committed benchmark command named beside it, or reworded to the
+  bound it guarantees (for example "one solution step") and its registry row re-adjudicated.
+  `pri` low.
 
 ## Index — one line per `high` + `med` row
 
@@ -360,7 +356,6 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | Heap limit is proven by a synthesized outcome alone | a live trip reads `limit: 'heap'` (blocked behind the abort row) |
 | Wordmark, forbidden claims, descriptor + fallback stacks rest on one reading | each decided by a committed check |
 | Five browser claims + two probes live only on `wt/` branches | one typed `tools/` harness covers all five; probes port or claims prune |
-| The `.claude/rules/` censuses have no mechanical owner | one script re-derives each from `kb/generated` + `dist`, naming mismatches |
 | Two tests time out under parallel execution | both pass 20 consecutive full-suite runs at the committed worker count |
 | `smoke` + `browser:check` ship no firing input | each reddens on a mutation its own lane runs, and joins gate.md `Firing inputs` |
 | Ten shipped bounds have no owner | each names an owner whose search returns rc 0; the 60-relation cap surfaces truncation or is contract-owned |

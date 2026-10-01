@@ -84,6 +84,13 @@ Step semantics a reader cannot get from the script name:
   kept a verdict across an edit past the cut. Prettier owns `docs/`, so the row block ships under `prettier-ignore` — at a
   150-char claim cell, column padding rewrites every row and `format:check` never agrees with
   the seed again.
+- **The stable censuses the rules state are graded, not trusted.** `tests/census.test.ts` (run by
+  `binding:check` with the rest of the suite, after `kb:build`) holds a `CENSUS` table: each row
+  anchors one claim unit in `.claude/rules/`, parses each figure out of its text and compares it
+  with a value derived from the verified bag, the live image, the twelve live proofs, the intake
+  vocabulary or the projected graph model; a mismatch names the rules file and line. A figure
+  added to those families belongs in that table. Its control re-grades the real `kb-build.md`
+  with one figure altered, and refuses an emptied table.
 - `presentation:check` (`tools/presentation-check.mjs`) grades four DECLARED tables against
   source alone — no build, no browser: `@font-face` rows, shipped OFL texts against each
   package `LICENSE`, the selectors rendering engine-authored text, and the three role tokens'

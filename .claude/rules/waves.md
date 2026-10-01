@@ -24,7 +24,7 @@ are this repo's deltas.
   every suite pulling a generated asset into the import graph fails to COLLECT with
   `Denied ID …/kb/generated/…json?url&no-inline`, which reads like a broken test rather than a
   broken harness. `NODE_OPTIONS=--preserve-symlinks` trades it for a pnpm resolution failure.
-  Seed it with `cp -a --reflink=auto kb/generated <wt>/kb/generated` — 344 files, 22 MB,
+  Seed it with `cp -a --reflink=auto kb/generated <wt>/kb/generated` — 345 files, 22 MB,
   no disk cost on btrfs. The copy is a snapshot: a worktree whose suite depends on freshly
   built KB bytes gets re-seeded after MAIN's `kb:build`, and `node_modules` stays a symlink
   because dependency ids resolve through pnpm rather than through the fs allow-list.
