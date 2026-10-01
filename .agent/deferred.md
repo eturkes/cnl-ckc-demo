@@ -190,10 +190,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   gate run is green again once the load falls (906/906 at avg 7–15). Accept: the full suite
   passes 20 consecutive runs at load avg ≥ 3× cores with no timeout raised, or a user-approved
   gate timeout policy is recorded with its original firing. `pri` med.
-- **Package byte figures have no committed size check** — `.claude/rules/kb-build.md` states
-  exact package byte sizes (the swipl-bundle variants). The packages are exact-pinned, so the
-  bytes are stable. Accept: `tests/census.test.ts` pins each figure from the installed package
-  files, or the rules drop it. `pri` low.
 - **Hand-run mutants and probes have no committed harness** — six registry rows rest on a
   mutation or probe run once and restored: the TypeScript 7 lint break, the rejected listbox
   click handler, the worktree `kb/generated` symlink failure, the u6 pre-lane byte comparison,

@@ -253,7 +253,8 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `65d9afb` find: `copy:check` refuses a component joining catalog fragments outside the declared pairs.
 - [x] `bb27a1a` find: a dom test fails the proof request and reads `TEXT.traceFailure` in both locales.
 - [x] `ee8c3c0` find: the wall-clock absence and `Query.close()` facts re-derived by tests.
-- [ ] find: clause identity and the three probe traps pinned by `tests/proof-identity.test.ts` — closed by the commit that adds this line.
+- [x] `84a55cd` find: clause identity and the three probe traps pinned by `tests/proof-identity.test.ts`.
+- [ ] find: the remaining package byte figures (literata spread, latin faces) pinned by the census; "eight" faces corrected to six — closed by the commit that adds this line.
 - [ ] new-find rows, in queue order.
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 

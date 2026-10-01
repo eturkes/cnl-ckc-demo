@@ -21,8 +21,9 @@ Self-hosted from `@fontsource-variable/{atkinson-hyperlegible-next,atkinson-hype
 literata}` (OFL 1.1, no Reserved Font Name, zero transitive deps). Their CSS entrypoints are
 **axis-scoped** (`wght.css`, `opsz.css`), never subset-scoped, so importing one emits every
 unicode-range subset it carries — literata ships 1848120 B across 42 files. `src/app.css`
-therefore hand-authors `@font-face` against the eight latin/latin-ext woff2 files: **176732 B**, pinned by
-`presentation:check`, with family names dropping the packages' `Variable` suffix.
+therefore hand-authors `@font-face` against the six latin/latin-ext woff2 files: **176732 B**
+(`tests/census.test.ts` pins the byte and file figures here from the installed packages), with
+family names dropping the packages' `Variable` suffix.
 
 Japanese adds two static faces, committed subsets of `@fontsource/biz-udpgothic` under
 `src/fonts/` — the cut, its grader and the ASCII-label rule are in `.claude/rules/i18n.md`.

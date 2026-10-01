@@ -6,7 +6,7 @@
 // the generated intake vocabulary and the graph model the app itself projects — never from the
 // rules text being graded.
 
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 
@@ -41,6 +41,8 @@ interface Row {
   figures: Figure[];
 }
 
+const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+
 /** The anchored line plus its continuation lines, up to a blank line, bullet or heading. */
 const unitOf = (text: string, anchor: string): { line: number; text: string } | string => {
   const lines = text.split('\n');
@@ -65,7 +67,10 @@ const grade = (rows: readonly Row[], read: (file: string) => string): string[] =
     return figures.flatMap(({ label, pattern, derived }) => {
       const stated = pattern.exec(unit.text)?.[1];
       if (stated === undefined) return [`${file}:${String(unit.line)} no longer states ${label}`];
-      const value = Number(stated.replaceAll(',', ''));
+      // A count the prose spells as a word reads as its digit.
+      const value = WORDS.includes(stated)
+        ? WORDS.indexOf(stated)
+        : Number(stated.replaceAll(',', ''));
       const actual = derived();
       return value === actual
         ? []
@@ -116,6 +121,26 @@ beforeAll(async () => {
     payload.filter((path) => /^data\/guidelines\/[^/]+\/pl\/[^/]+\.pl$/u.test(path)).length,
   );
   derived.set('generated.files', manifest.assets.length + 1);
+
+  // Fonts: the installed literata package's whole subset spread, and the latin faces
+  // `src/app.css` actually names, read from the exact-pinned packages.
+  const literata = join(ROOT, 'node_modules', '@fontsource-variable', 'literata', 'files');
+  const spread = readdirSync(literata).filter((name) => name.endsWith('.woff2'));
+  derived.set('fonts.literata.files', spread.length);
+  derived.set(
+    'fonts.literata.bytes',
+    spread.reduce((sum, name) => sum + statSync(join(literata, name)).size, 0),
+  );
+  const latin = [
+    ...readFileSync(join(ROOT, 'src', 'app.css'), 'utf8').matchAll(
+      /url\('(@fontsource-variable\/[^']+)'\)/gu,
+    ),
+  ].map((match) => join(ROOT, 'node_modules', match[1] ?? ''));
+  derived.set('fonts.latin.files', latin.length);
+  derived.set(
+    'fonts.latin.bytes',
+    latin.reduce((sum, path) => sum + statSync(path).size, 0),
+  );
 
   // Live image: clause sites, rule bodies, derivable solutions, vocabulary, clinical records.
   const image = new Uint8Array(readFileSync(join(GENERATED, 'kb.pvm')));
@@ -279,8 +304,23 @@ const KB = '.claude/rules/kb-build.md';
 const PROOF = '.claude/rules/proof.md';
 const GRAPH = '.claude/rules/graph.md';
 const WAVES = '.claude/rules/waves.md';
+const UI = '.claude/rules/ui.md';
 
 const CENSUS: Row[] = [
+  {
+    file: UI,
+    anchor: 'Self-hosted from `@fontsource-variable/',
+    figures: [
+      fig('literata bytes', `literata ships ${N} B`, 'fonts.literata.bytes'),
+      fig('literata files', `B across ${N} files`, 'fonts.literata.files'),
+      fig('latin bytes', `woff2 files: \\*\\*${N} B`, 'fonts.latin.bytes'),
+      {
+        label: 'latin files',
+        pattern: new RegExp(`against the (${WORDS.join('|')}) latin/latin-ext`, 'u'),
+        derived: of('fonts.latin.files'),
+      },
+    ],
+  },
   {
     file: KB,
     anchor: 'payload + 5 tag entries + the tagmanifest',
