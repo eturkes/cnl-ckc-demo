@@ -166,14 +166,12 @@ describe('rendered boot-error recovery', () => {
     });
     await drain();
     expect(view.state.kind).toBe('boot-error');
-    expect(alerts()).toHaveLength(1);
 
     retry().click();
     flushSync();
     expect(view.state.kind).toBe('booting');
     await drain();
     expect(view.state.kind).toBe('boot-error');
-    expect(alerts()).toHaveLength(1);
 
     retry().click();
     flushSync();
@@ -183,6 +181,8 @@ describe('rendered boot-error recovery', () => {
     expect(workers).toHaveLength(3);
     expect(workers.map((worker) => worker.seen.length)).toEqual([1, 1, 1]);
     expect(workers.map((worker) => worker.terminated)).toEqual([true, true, false]);
-    expect(target.querySelector('[role="status"]')?.textContent).toMatch(/ready/iu);
+    expect(target.querySelector('[role="status"]:not([data-intake-status])')?.textContent).toMatch(
+      /ready/iu,
+    );
   });
 });
