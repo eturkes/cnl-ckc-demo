@@ -190,14 +190,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   gate run is green again once the load falls (906/906 at avg 7–15). Accept: the full suite
   passes 20 consecutive runs at load avg ≥ 3× cores with no timeout raised, or a user-approved
   gate timeout policy is recorded with its original firing. `pri` med.
-- **Engine timing figures have no committed benchmark** — `.claude/rules/engine.md` states
-  measured timings no command re-derives: `repeat` emitting 100000 answers in 452.232 ms, the
-  in-worker 25 ms timer never firing across 249.80 ms, Node terminate 2.7–3.5 ms and
-  terminate→respawn→boot 181.75–223.96 ms, the 50.11 ms worst cooperative step, the stack-limit
-  trip in 0.681 ms. Timings drift with the host, so a census table cannot own them. Accept: each
-  figure is either reported by a committed benchmark command named beside it, or reworded to the
-  bound it guarantees (for example "one solution step") and its registry row re-adjudicated.
-  `pri` low.
 - **Catalog-fragment composition has no checker** — `.claude/rules/i18n.md` forbids building a
   string by joining catalog fragments outside the declared before/after pairs
   (`LABELS.graphSelected{Before,After}`, `TEXT.graphHighlightOrigin{Before,After}`), and the

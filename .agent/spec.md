@@ -236,7 +236,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [ ] d39 seven what-only headers deleted (AnswerPanel's already gone), eight provenance sites restated; owes a ruling on `serialize.ts` + `humanize.ts`, byte-frozen by T9.
 - [x] `7f7a2aa` d34 m1u5 matrix 26/26: 19 covered, 6 ported green (`tests/m1u5-port.dom.test.ts`), 1 superseded, 0 red.
 - [ ] d41 owes a ruling: an owned PDF viewer replaces the accepted ladder's iframe (+504,727 B gzip PDF.js).
-- [ ] d42 session proof cache: re-selection runs no meta-interpreter call; solve/consult/poison invalidate — closed by the commit that adds this line.
+- [x] `a067cdc` d42 session proof cache: re-selection runs no meta-interpreter call; solve/consult/poison invalidate.
 - [ ] d43 owes a ruling: a document-first provenance view is a new surface with a layout entry point.
 - [x] `bdd2ae4` d47 `pnpm queue:index` derives the queue index; `claims:check` refuses a stale one by line.
 - [x] `2089c73` d35 m1u7 matrix 34/34: 16 covered, 13 ported green (`tests/m1u7-port{,.dom}.test.ts`), 5 superseded, 0 red.
@@ -249,6 +249,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [ ] d61 owes the user: the Worker deploy (account, route, secret) and a per-client + global limiter ruling.
 - [x] `75e6073` d62 the selector suite plants the fixed-trigger mutant in memory and requires ORACLE-S to catch it.
 - [ ] d63 owes the user: no filter of the shipped selection lifts precision at 143/163 recall (measured offline); a lift needs a request change under the selection-model ruling + a live billed probe.
+- [ ] find: engine timing figures reworded to the bounds they guarantee, browser figures cited to `engine:probe` — closed by the commit that adds this line.
 - [ ] new-find rows, in queue order.
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 
