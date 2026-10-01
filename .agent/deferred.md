@@ -195,7 +195,12 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   unbound: `_{'$tag':tag,a:0}` is no variant of `tag{a:0}`, alone or as a list tail (reviewer-il-1
   register R1, `.scratch/agents/reviewer-il-1.md`). No shipped answer term carries a dict.
   Accept: a decoded dict re-encodes as a structural variant — standalone and as an improper-list
-  tail — graded by Prolog `=@=` in `tests/engine-term-identity.test.ts`. `pri` low.
+  tail — graded by Prolog `=@=` in `tests/engine-term-identity.test.ts`. `pri` low. **Owes a
+  ruling**: no JS value can re-enter swipl-wasm 8.0.7 as a TAGGED dict. `toProlog` sets a dict
+  tag only when `data.constructor.name !== 'Object'`, but that check sits inside the
+  `case "Object"` arm, so it never fires; an instance of a class named after the tag falls to
+  the `default` arm and enters as a `<js>(N,tag)` blob (measured). Choices: `createEncoder`
+  refuses a dict, failing closed instead of re-entering it untagged, or an upstream patch.
 
 ## Index — one line per `high` + `med` row
 

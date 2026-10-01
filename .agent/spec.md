@@ -258,7 +258,8 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `a9bf242` find: improper lists re-encode with falsy tails intact and long lists iteratively.
 - [x] `5da1e02` find: hand-run mutants and probes — two committed (listbox mutant, skipped-case control), one test (TS peer cap), three historical.
 - [x] `a4795fe` find: upstream and design claims disposed; `copy:check` refuses a component literal beyond the brand mark.
-- [ ] find: a halting payload's build refusal names the halt and its exit — closed by the commit that adds this line.
+- [x] `d533775` find: a halting payload's build refusal names the halt and its exit.
+- [ ] find (dict re-encoding) owes a ruling: the wrapper cannot build a tagged dict from JS; refuse dicts in `createEncoder`, or patch upstream.
 - [ ] new-find rows, in queue order.
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 
