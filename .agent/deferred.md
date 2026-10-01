@@ -118,12 +118,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   (M1 review X16). Accept: as above against u7's 34 predicates. `pri` low — u7 is a `docs`
   tier unit whose claims are now carried by `copy:check`, `contrast:check` and
   `presentation:check`, so a red suite buys less here than on a kernel unit.
-- **One protocol arm of twelve is clone-tested** — every `EngineRequest`/`EngineResponse`
-  member is structured-clone-safe today, but `tests/engine-session.test.ts:279` clones a
-  single query response, so a non-cloneable field on an untested arm stays green until it
-  crosses a real worker boundary (M1 review X03). Accept: a table-driven case holds all 12
-  discriminants, clones and deep-compares each, and a non-cloneable-field mutant in any row
-  turns it red. `pri` med.
 - **Built-site browser prologue is duplicated** — `tools/smoke.mjs` and
   `tools/browser-check.mjs` each repeat the temp-root, `cp dist`, launch, `pageerror` and
   teardown sequence although `tools/browser.mjs` already owns `serve`, `launch` and
@@ -349,7 +343,9 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   `graph-live` "produces a concept-first answer map" (7784 ms against 5000), live clinical proofs
   exceeding the shipped 1000 ms proof budget, `engine-u2-port` round trips, and the axe sweeps of
   `question-combobox.dom` B3, `provenance-ladder.dom` C9, `semantic-graph.dom` and `intake-panel`
-  U6. A gate run is green again once the load falls (906/906 at avg 7–15). Accept: the full suite
+  U6; later also `engine-heap` "aborts the runtime … in under 5 s" (13 488 ms in a full run at avg
+  ~13 against 590–812 ms alone) and the `intake-chunker` 750-description property (5070 ms). A
+  gate run is green again once the load falls (906/906 at avg 7–15). Accept: the full suite
   passes 20 consecutive runs at load avg ≥ 3× cores with no timeout raised, or a user-approved
   gate timeout policy is recorded with its original firing. `pri` med.
 
@@ -363,7 +359,6 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | A QLF fallback import doubles the engine | it loads only on saved-state failure; an untaken fallback ships no bytes |
 | Heap limit is proven by a synthesized outcome alone | a live trip reads `limit: 'heap'` (blocked behind the abort row) |
 | Wordmark, forbidden claims, descriptor + fallback stacks rest on one reading | each decided by a committed check |
-| One of twelve protocol arms is clone-tested | all 12 discriminants clone + deep-compare; a mutant reddens it |
 | Five browser claims + two probes live only on `wt/` branches | one typed `tools/` harness covers all five; probes port or claims prune |
 | The `.claude/rules/` censuses have no mechanical owner | one script re-derives each from `kb/generated` + `dist`, naming mismatches |
 | Two tests time out under parallel execution | both pass 20 consecutive full-suite runs at the committed worker count |

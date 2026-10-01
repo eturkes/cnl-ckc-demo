@@ -344,6 +344,54 @@ describe('P2 protocol port', () => {
     expect(new Set(frames.map(([, response]) => response.kind)).size).toBe(9);
   });
 
+  it('P2.1 every protocol discriminant clones, and a non-cloneable field in any row is refused', async () => {
+    // `satisfies Record` fails to compile when the protocol gains or loses an arm, so this
+    // table cannot fall behind the union it grades.
+    const requestKinds = {
+      boot: true,
+      query: true,
+      proof: true,
+      consult: true,
+      cancel: true,
+    } satisfies Record<EngineRequest['kind'], true>;
+    const responseKinds = {
+      booted: true,
+      solutions: true,
+      proof: true,
+      failure: true,
+      limit: true,
+      cancelled: true,
+      ack: true,
+      consulted: true,
+      error: true,
+    } satisfies Record<EngineResponse['kind'], true>;
+    const frames: [EngineRequest, EngineResponse][] = [];
+    for (const original of responseRequests()) {
+      const request = { ...original, id: `table-${original.id}` };
+      if (original.id === 'u2-cancelled') session.requestCancel(request.id);
+      frames.push([request, await session.handle(request, image)]);
+    }
+    frames.push(await proofResponse());
+    const rows = [
+      ...new Map(frames.map(([request]) => [`request ${request.kind}`, request])),
+      ...new Map(frames.map(([, response]) => [`response ${response.kind}`, response])),
+    ];
+    expect(rows.map(([name]) => name).sort()).toEqual(
+      [
+        ...Object.keys(requestKinds).map((kind) => `request ${kind}`),
+        ...Object.keys(responseKinds).map((kind) => `response ${kind}`),
+      ].sort(),
+    );
+    for (const [name, payload] of rows) {
+      expect(structuredClone(payload), name).toEqual(payload);
+      // The same row carrying one non-cloneable field must be refused, by the browser's own
+      // algorithm and by the plain-data walk alike.
+      const leaked = { ...payload, leak: () => name };
+      expect(() => structuredClone(leaked), name).toThrow();
+      expect(() => assertPlainDto(leaked), name).toThrow();
+    }
+  });
+
   it('P2.2 echoes the request id on every response', async () => {
     const kinds = new Set<string>();
     for (const request of responseRequests()) {
