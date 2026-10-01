@@ -208,17 +208,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   reader-relative labels). m5u12 ruled the first, second and fourth for the shipped side, so
   24/24 needs edits to the teammate's oracle beyond the lookups — the user rules which.
 
-- **38 shortcut edges join scopes that contradict rather than nest** — of the 736 spanning
-  occurrences, 698 have a target scope that EXTENDS the source's and 38 have neither as a prefix
-  of the other, e.g. source `[should]` against target `[-, may]`. Those 38 are a producer
-  question, not a rendering one: `tools/kb/graph.mjs:398` synthesizes a `condition supports`
-  shortcut between two scopes the KB never joins, which is the S12+ site under a new name. u13
-  SHOWS both ends so nothing is silently dropped, and the shipped edge population stays at
-  20,964 — the user ruled the investigation queued rather than widening u13. Accept: each of the
-  38 either carries a source-derived justification for joining its two scopes, or the synthesis
-  declines to emit it and `tests/kb-derived-assets.test.ts` records the moved counts with the
-  original firing. `pri` med.
-
 - **`graph:check`'s spanning-scope grader is edge-blind** — review row `G3`.
   `SPANNING_SCOPE_READINGS` declares `edge:512:12`, but the probe returns label TEXT only, so
   `tools/graph-check.mjs:891` takes the first label carrying the same relation and never binds
@@ -356,7 +345,6 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | Two tests time out under parallel execution | both pass 20 consecutive full-suite runs at the committed worker count |
 | 71 operator contexts have no edge, 64 of them negation | the 71 carry edges with the moved counts recorded, or a check proves no shown path skips an edgeless negation context |
 | The projection oracle lives on a branch alone | its label lookups match on `relation`, 24/24 green in-tree, joined to a declared register |
-| 38 shortcut edges join scopes that contradict rather than nest | each carries a source-derived justification, or the synthesis declines to emit it and the moved counts are recorded with the original firing |
 | `graph:check`'s spanning-scope grader is edge-blind | probe returns `data-edge-id`; both directions non-null; a wrong edge and a missing reverse row redden by id |
 | Three `kb:asset-check` root tables grade nothing when emptied | each refuses an emptied table by its own name; the success line names every control that fired |
 | Two registry rows say `deferred` and cite no queue row | both subjects carry a queue row, both dispositions cite it, `claims:check` refuses an uncited `deferred` |
