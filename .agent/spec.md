@@ -211,9 +211,10 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [ ] d40 `pnpm engine:probe` grades R38/R39/R41/R42/R45; owes the `res-m1-*` probes (port or prune).
 - [x] `524dad6` d44 `tests/census.test.ts` grades every stable census the rules state against its derivation.
 - [x] `1193641` d46 smoke + browser:check each refuse a mutation their own lane runs (pvm-stripped copy, renamed woff2).
-- [x] d48 every shipped bound names an owner in the rules; the 60-relation cap surfaces its truncation.
+- [x] `3032246` d48 every shipped bound names an owner in the rules; the 60-relation cap surfaces its truncation.
+- [ ] d49 owes a ruling: the predicate needs orphan-scoped literals the asset lacks (measured: 116/268 unnegated edges in 60 sentences).
 - [ ] d29 `high` WASM abort — waits: an ad-hoc goal path (`Decisions` MAIN).
-- [ ] `med`: d49 d50 d51 d52 d53 d54
+- [ ] `med`: d50 d51 d52 d53 d54
 - [ ] `low`: d1 d3 d5 d6 d8 d9 d12 d15 d17 d20 d22 d28 d33 d34 d35 d38 d39 d41 d42 d43 d47
   d55 d56 d57 d58 d59 d60 d61 d62 d63
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.

@@ -184,7 +184,13 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   edge past a negation the KB asserts, which is what `wt/rev-sem-2`'s hidden-negation reds
   describe. Accept: either the 71 contexts carry an edge and `tests/kb-derived-assets.test.ts`
   records the moved counts with the original firing, or a committed check proves no shown path
-  can skip a negation context that has no edge. `pri` med.
+  can skip a negation context that has no edge. `pri` med. **Owes a ruling** (the check's predicate is unwritten
+  acceptance): the 71 orphans sit in 60 sentences holding 268 shown edges, 116 of them without a
+  negation, mostly legitimately positive — so a sentence-level predicate cannot decide "skips".
+  A sound check needs the body literals each orphan scopes, which the shipped asset does not
+  record: either the producer emits that literal set (asset change, edge population untouched)
+  or the 71 covering edges return, which the standing ruling declines. The two concrete reds
+  (`graph-semantics.review.test.ts:78`, `:103`) already ship green in the `MEANING` register.
 
 - **The independent projection oracle lives on a branch alone** — u12's differential ran
   `tests/graph-projection.oracle.test.ts` (branch `wt/orc-proj` `1a893b1`) against the shipped
