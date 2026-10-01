@@ -260,6 +260,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `a4795fe` find: upstream and design claims disposed; `copy:check` refuses a component literal beyond the brand mark.
 - [x] `d533775` find: a halting payload's build refusal names the halt and its exit.
 - [ ] find (dict re-encoding) owes a ruling: the wrapper cannot build a tagged dict from JS; refuse dicts in `createEncoder`, or patch upstream.
+- [ ] find (inline-disable reasons) owes a ruling: two directives now carry reasons; the third is in T9-frozen `provenance.mjs`.
 - [ ] new-find rows, in queue order.
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 

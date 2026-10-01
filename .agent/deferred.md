@@ -189,7 +189,10 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   disables carry none (`tools/clinical-reference.mjs:227,234`, `tools/kb/provenance.mjs:70`,
   the last byte-frozen by T9). Accept: a committed check (an ESLint directive-description rule
   or a scan in the gate) refuses an `eslint-disable` with no stated reason, with its firing
-  input, and the frozen file's directive handled by ruling. `pri` low.
+  input, and the frozen file's directive handled by ruling. `pri` low. **Owes a ruling**: the two
+  `tools/clinical-reference.mjs` directives now carry their reason; the third,
+  `tools/kb/provenance.mjs:70`, sits in a file T9 freezes against `22053ef`, so a gate check would
+  either exempt it by name or need the file unfrozen.
 - **A decoded dict re-encodes without its tag** — `createEncoder` turns `tag{a:0}` into a plain
   object whose `$tag` key the wrapper reads as an ordinary dict key, leaving the real tag
   unbound: `_{'$tag':tag,a:0}` is no variant of `tag{a:0}`, alone or as a list tail (reviewer-il-1

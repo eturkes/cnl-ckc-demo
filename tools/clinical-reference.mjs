@@ -224,14 +224,14 @@ const groundTerms = (terms, replacement) => {
 
 /** @param {string} value */
 const encodedAtom = (value) => {
-  // eslint-disable-next-line no-control-regex
+  // eslint-disable-next-line no-control-regex -- matching control characters is the refusal
   if (/\r|\n|[\u0000-\u001f\u007f]/u.test(value)) throw new Error('unsafe Prolog atom text');
   return SIMPLE_ATOM.test(value) ? value : `'${value.replaceAll("'", "''")}'`;
 };
 
 /** @param {string} value */
 const quotedString = (value) => {
-  // eslint-disable-next-line no-control-regex
+  // eslint-disable-next-line no-control-regex -- matching control characters is the refusal
   if (/\r|[\u0000-\u001f\u007f]/u.test(value)) throw new Error('unsafe Prolog string text');
   return JSON.stringify(value);
 };
