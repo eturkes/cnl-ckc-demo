@@ -3,7 +3,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { buildImage, saveDiagnostics } from '../tools/kb/produce.mjs';
+import { buildImage, buildQlf, saveDiagnostics } from '../tools/kb/produce.mjs';
 
 const BOOT_TIMEOUT = 120_000;
 const DOCUMENT = (id: string): string => `guideline_document(${id},title,2022).\n`;
@@ -19,6 +19,22 @@ describe('image build', () => {
       const short = payload(['guideline_schema_version(1).\n', DOCUMENT('a')]);
       await expect(buildImage(short)).rejects.toThrow(
         'image build: engine reported 1 documents, build fed 2 payload files',
+      );
+    },
+    BOOT_TIMEOUT,
+  );
+
+  it(
+    'names a payload that halts the engine instead of reporting [object Object]',
+    async () => {
+      const halting = payload([
+        `guideline_schema_version(1).\n${DOCUMENT('a')}:- initialization(halt).\n`,
+      ]);
+      await expect(buildImage(halting)).rejects.toThrow(
+        /^image build: the payload halted the engine \(/u,
+      );
+      await expect(buildQlf(halting)).rejects.toThrow(
+        /^qlf build: the payload halted the engine \(/u,
       );
     },
     BOOT_TIMEOUT,

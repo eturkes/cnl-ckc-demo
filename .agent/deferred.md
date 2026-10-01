@@ -183,12 +183,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   gate run is green again once the load falls (906/906 at avg 7–15). Accept: the full suite
   passes 20 consecutive runs at load avg ≥ 3× cores with no timeout raised, or a user-approved
   gate timeout policy is recorded with its original firing. `pri` med.
-- **A halting payload fails the producer as `[object Object]`** — a payload carrying
-  `:- initialization(halt).` is refused by both `buildImage` and `buildQlf` (fail-closed holds),
-  but Emscripten throws an `ExitStatus` object rather than an `Error`, so the build reports
-  `[object Object]` (`.scratch/agents/researcher-d9/s11-results.json`, `tools/kb/produce.mjs`).
-  Accept: a test over a halting payload copy requires `kb:build`'s refusal to name the halt
-  and its exit status. `pri` low.
 - **Inline-disable reasons have no grader** — `.claude/rules/gate.md`'s `lint` bullet says every
   remaining security exception is one inline disable carrying its reason; `pnpm lint` passes
   whether or not a reason is there, so the registry row reads it by hand. Three non-security

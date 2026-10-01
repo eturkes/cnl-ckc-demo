@@ -91,6 +91,22 @@ const boot = async (factory, args, preRun) => {
   };
 };
 
+/**
+ * Emscripten ends an engine the payload halts by throwing an `ExitStatus` object, not an
+ * `Error`, so it stringified as `[object Object]`; the build names the halt instead.
+ *
+ * @param {string} phase @param {unknown} cause
+ * @returns {Error}
+ */
+const named = (phase, cause) => {
+  if (cause instanceof Error) return cause;
+  const message =
+    typeof cause === 'object' && cause !== null && 'message' in cause && typeof cause.message === 'string'
+      ? cause.message
+      : String(cause);
+  return new Error(`${phase}: the payload halted the engine (${message})`);
+};
+
 // `qsave_program` probes for shared-library support, which a WASM build cannot
 // have. Exactly two Warning lines are that probe's noise; an ERROR carrying the
 // same source location is a genuine save failure and stays fatal.
@@ -184,16 +200,20 @@ const requireEveryDocument = (contract, source, what) => {
  */
 export const buildImage = (source) =>
   withPinnedClock(async () => {
-  const { engine, drain } = await boot(bundle(), ['-q', '-f', SOURCE_PATH], [
-    (module) => writeSource(module, source),
-  ]);
-  failClosed(drain(), 'image build');
-  const contract = readContract(engine);
-  requireLoaded(contract, 'image build');
-  requireEveryDocument(contract, source, 'image build');
-  engine.prolog.query("qsave_program('prolog.pvm').").once();
-  failClosed(saveDiagnostics(drain()), 'image save');
-  return { image: engine.FS.readFile('prolog.pvm'), contract };
+  try {
+    const { engine, drain } = await boot(bundle(), ['-q', '-f', SOURCE_PATH], [
+      (module) => writeSource(module, source),
+    ]);
+    failClosed(drain(), 'image build');
+    const contract = readContract(engine);
+    requireLoaded(contract, 'image build');
+    requireEveryDocument(contract, source, 'image build');
+    engine.prolog.query("qsave_program('prolog.pvm').").once();
+    failClosed(saveDiagnostics(drain()), 'image save');
+    return { image: engine.FS.readFile('prolog.pvm'), contract };
+  } catch (cause) {
+    throw named('image build', cause);
+  }
   });
 
 /**
@@ -205,12 +225,16 @@ export const buildImage = (source) =>
  */
 export const buildQlf = (source) =>
   withPinnedClock(async () => {
-  const { engine, drain } = await boot(bundle(), ['-q'], []);
-  drain();
-  writeSource(engine, source);
-  engine.prolog.query(`qcompile('${SOURCE_PATH}').`).once();
-  failClosed(drain(), 'qlf build');
-  return engine.FS.readFile('prolog.qlf');
+  try {
+    const { engine, drain } = await boot(bundle(), ['-q'], []);
+    drain();
+    writeSource(engine, source);
+    engine.prolog.query(`qcompile('${SOURCE_PATH}').`).once();
+    failClosed(drain(), 'qlf build');
+    return engine.FS.readFile('prolog.qlf');
+  } catch (cause) {
+    throw named('qlf build', cause);
+  }
   });
 
 /**
