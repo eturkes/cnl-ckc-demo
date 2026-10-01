@@ -496,6 +496,41 @@ describe('view states and accessibility', () => {
     }
   });
 
+  it('V13 has zero axe violations with the About panel and the canonical answer open or closed', async () => {
+    controller.solutionIndex = 0;
+    setState({ kind: 'settled', id: ID, result: structuredAnswer() });
+    const disclosure = (selector: string): HTMLDetailsElement => {
+      const found = target.querySelector<HTMLDetailsElement>(selector);
+      if (found === null) throw new Error(`no ${selector} disclosure rendered`);
+      return found;
+    };
+    const about = disclosure('details.about');
+    const explanation = disclosure('details.explanation');
+    const canonical = disclosure('details.canonical');
+    let scanned = 0;
+    for (const aboutOpen of [false, true]) {
+      for (const canonicalOpen of [false, true]) {
+        about.open = aboutOpen;
+        // The canonical form sits inside the explanation, so it is reachable only through it.
+        explanation.open = canonicalOpen;
+        canonical.open = canonicalOpen;
+        flushSync();
+        const name = `about ${aboutOpen ? 'open' : 'closed'}, canonical ${canonicalOpen ? 'open' : 'closed'}`;
+        const scan = await axe.run(target);
+        expect(
+          scan.violations.map((violation) => violation.id),
+          name,
+        ).toEqual([]);
+        expect(
+          scan.incomplete.map((item) => item.id).filter((id) => id !== 'color-contrast'),
+          name,
+        ).toEqual([]);
+        scanned += 1;
+      }
+    }
+    expect(scanned).toBe(4);
+  });
+
   it('V12 formats a recognized guideline id from its own tokens, never from JS vocabulary', () => {
     // The atom fixture above takes `humanizeGuidelineId`'s fallback, so only this
     // case exercises the recognized `'$guideline_id'/5` branch V12 permits.

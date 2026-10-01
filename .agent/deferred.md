@@ -78,9 +78,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   Accept: `tools/visual-qa.mjs` passes `pnpm check` and `pnpm lint`, `pnpm visual-qa`
   exits 0, and its JSON reports `overflow=false` for every state at 320, 375 and
   1280 px. `pri` low.
-- **Axe over the two new disclosures** — u6's `V11` axe sweep predates the About
-  panel and the canonical-answer `<details>`. Accept: a dom test runs `axe.run`
-  with each disclosure open and closed and reports zero violations. `pri` med.
 - **Copy validator reaches only two files** — `tools/copy-check.mjs` grades
   `copy.ts` and `describe.ts` by path, so prose added to a new component escapes
   it. Accept: the validator derives its file set from the source tree, and a new
@@ -391,7 +388,6 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | `wt/test-m1u2` suite never ran here | it runs in-tree, each case red for a contract reason or green |
 | Heap limit is proven by a synthesized outcome alone | a live trip reads `limit: 'heap'` (blocked behind the abort row) |
 | Boot is terminal on failure, unbounded on silence | a failed or hung boot settles bounded as one alert with a retry |
-| The axe sweep predates the About panel + `<details>` | a dom test runs `axe.run` with each disclosure open + closed |
 | `copy:check` grades two files by path | its file set derives from the source tree; a 30-word sentence anywhere fails |
 | Wordmark, forbidden claims, descriptor + fallback stacks rest on one reading | each decided by a committed check |
 | The inference budget re-arms per solution | a goal whose total exceeds budget reaches `limit:'inference'`, or the bound is contracted |
