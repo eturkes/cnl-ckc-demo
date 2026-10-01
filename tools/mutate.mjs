@@ -106,11 +106,14 @@ for (const { label, edits, check } of chosen) {
   }
 }
 
+// Only a refusal kills: exit status 1. A signal (`null`) or another status means the check
+// crashed or was interrupted, which proves nothing about the mutant.
 const width = Math.max(...rows.map(({ label }) => label.length));
 for (const { label, rc } of rows) {
-  const verdict = rc === 0 ? 'GREEN — the check does not bind' : 'RED — killed';
+  const verdict =
+    rc === 1 ? 'RED — killed' : rc === 0 ? 'GREEN — the check does not bind' : 'INCONCLUSIVE';
   process.stdout.write(`${label.padEnd(width)}  rc=${String(rc)}  ${verdict}\n`);
 }
-const killed = rows.filter(({ rc }) => rc !== 0).length;
+const killed = rows.filter(({ rc }) => rc === 1).length;
 process.stdout.write(`mutate: ${String(killed)}/${String(rows.length)} mutants killed\n`);
 process.exitCode = killed === rows.length ? 0 : 1;

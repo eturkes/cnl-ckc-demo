@@ -117,4 +117,25 @@ describe('question deep links', () => {
     expect(history.length).toBe(before + 2);
     expect(engine.asks).toBe(0);
   });
+
+  it('drops an unknown id restored from history in place, without a new entry', async () => {
+    history.replaceState(null, '', '/?q=drop-table');
+    history.pushState(null, '', '/?q=opioid-safety');
+    const demo = render();
+    await settle();
+    expect(demo.selected).toBe('opioid-safety');
+    const before = history.length;
+    await travel(() => {
+      history.back();
+    });
+    expect(demo.selected).toBeNull();
+    expect(linked()).toBeNull();
+    expect(history.length).toBe(before);
+    // A push would have discarded the forward entry; a replace keeps it.
+    await travel(() => {
+      history.forward();
+    });
+    expect(demo.selected).toBe('opioid-safety');
+    expect(engine.asks).toBe(0);
+  });
 });

@@ -576,7 +576,7 @@ const main = () => {
       `${compared} ja keys at parity, ${String(joins)} catalog joins whole sentences or declared, no component literal ` +
       `beyond the brand mark, ` +
       `${WORDMARK.length} wordmark pins shipped, ` +
-      `${shell} shell strings match index.html, ${controls.length} controls fired`,
+      `${shell} shell strings match index.html; controls: ${controls.join(', ')}`,
   );
 };
 

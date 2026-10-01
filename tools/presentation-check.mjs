@@ -447,7 +447,7 @@ const main = async () => {
     `presentation: ${FACES.length} faces pinned and installed, ${LICENCES.length} licences ` +
       `byte-equal, ${contained} text surfaces contained, ${STACKS.length} role font stacks pinned, ` +
       `${read.length} Japanese subsets exact to ${CATALOG}, ` +
-      `${controls.length} controls fired`,
+      `controls: ${controls.join(', ')}`,
   );
 };
 

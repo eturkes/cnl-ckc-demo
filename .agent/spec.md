@@ -201,7 +201,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `0465faa` d25 the inference budget bounds the whole request (`meteredGoal`, terminal record, display after close).
 - [x] `9d1eecb` d26 smoke refuses a build stale against the bag's input digest.
 - [x] `8fc8173` d11 u2 suite ported: 16 merged green, 20 covered, 2 red → rows (d12 float, new find improper-list tail).
-- [ ] d45 20 consecutive full-suite runs passed 1014/1014 each (load 4.6–23.5) — closed by the commit that adds this line.
+- [x] `4dc9179` d45 20 consecutive full-suite runs passed 1014/1014 each (load 4.6–23.5).
 - [x] `0273a6a` d27 `pnpm mutate`: committed 45-mutant table + runner, 45/45 killed.
 - [x] `34d9d7e` d36 `kb/generated` joins the answer-oracle scan, with its own firing input.
 - [x] `da39355` d31 a hung boot settles one typed `boot` error after one recreate; row text corrected from `worker` (d56 clause).
@@ -261,8 +261,10 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `d533775` find: a halting payload's build refusal names the halt and its exit.
 - [ ] find (dict re-encoding) owes a ruling: the wrapper cannot build a tagged dict from JS; refuse dicts in `createEncoder`, or patch upstream.
 - [ ] find (inline-disable reasons) owes a ruling: two directives now carry reasons; the third is in T9-frozen `provenance.mjs`.
+- [ ] find (heavy-load timeouts) owes a heavier run or a timeout ruling: 20 runs passed at load ≤23.5, short of the ≥24 bar.
+- [ ] find (failed reset) owes approval to change P4.4 (`engine-recovery`) + P1.1 (`engine-budgets`): only a heap recreation boots under the deadline; a failed replacement stays live.
 - [ ] new-find rows, in queue order.
-- [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
+- [ ] Close: 4 lenses × 2 reviewers, round-2 re-review all pass; 46/46 mutants killed under the exit-1 rule — closed by the commit that adds this line.
 
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open
   review ids, whose checks stay in `.agent/archive/review-expedited.md`.

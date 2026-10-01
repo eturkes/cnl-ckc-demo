@@ -601,6 +601,8 @@ await withBuiltSite({ tool: 'browser', fail, nested: NESTED, refuse }, async (si
 
     // E26, leg 2 — dev server, the mode every contributor runs and no check drove.
     dev = await devServer();
+    // `fail` exits the process and skips every `finally`; the group kill must still run.
+    process.once('exit', dev.stop);
     const devPage = await browser.newPage({ viewport: { width: 1280, height: 900 } });
     devPage.on('pageerror', (error) => {
       raised ??= `dev server raised ${error.message}`;

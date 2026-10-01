@@ -443,6 +443,12 @@ if (process.argv.includes('--seed')) {
     },
     () => gradeIndex(queue.replace('\n## Index — ', `\n${plantedRow}\n## Index — `)),
   );
+  const firstIndexLine = /^\| \*\*high\*\* .*$/mu.exec(queue)?.[0] ?? '';
+  const repeatedIndex = requireFiring(
+    'claims:check',
+    { mutation: 'the first index line repeated', expect: ['repeats or reorders its lines'] },
+    () => gradeIndex(queue.replace(firstIndexLine, `${firstIndexLine}\n${firstIndexLine}`)),
+  );
 
   // A command holding an escaped pipe must come back from the seed's merge byte-identical.
   const pipedAt = registry.split('\n').findIndex((line) => ROW.test(line));
@@ -479,7 +485,7 @@ if (process.argv.includes('--seed')) {
       `claims:check ok — ${String(rows.length)} claims covered (${split}), ` +
         `every row adjudicated, ${String(deferredRows(registry).length)} deferrals cited; ` +
         `queue index current; controls: ${control}, ${unseeded}, ${reseeded}, ${uncited}, ` +
-        `${dangling}, ${staleIndex}\n`,
+        `${dangling}, ${staleIndex}, ${repeatedIndex}\n`,
     );
   }
 }

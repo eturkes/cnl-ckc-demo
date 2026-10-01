@@ -19,7 +19,7 @@ const taskItems = (spec) => {
   return spec
     .slice(start, end)
     .split('\n')
-    .filter((line) => line.startsWith('- '));
+    .filter((line) => /^[-*+] /u.test(line));
 };
 
 /** @param {string} spec @returns {string[]} */
@@ -54,6 +54,14 @@ const controls = [
       expect: ['an open unit is not a "- [ ]" row'],
     },
     () => gradeTasks(spec.replace(open, open.replace('- [ ] ', '- '))),
+  ),
+  requireFiring(
+    'spec:check',
+    {
+      mutation: 'an open unit written with a star bullet',
+      expect: ['an open unit is not a "- [ ]" row'],
+    },
+    () => gradeTasks(spec.replace(open, open.replace('- [ ] ', '* [ ] '))),
   ),
   requireFiring(
     'spec:check',

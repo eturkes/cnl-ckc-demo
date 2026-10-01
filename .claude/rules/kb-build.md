@@ -103,8 +103,10 @@ Clause counts: version 337, document 337, entity 1834, cardinality 1834, event 1
 
 ## Legacy export lane
 
-`pnpm kb:export-check` (`tools/kb/export-check.mjs`) proves the compiled KB still answers the
-upstream export exactly. It is a diagnostic lane, separate from the catalog above.
+The legacy export lane — `tests/legacy-export-lane.test.ts`, required by `binding:check` — proves
+the compiled KB still answers the upstream export exactly; `pnpm kb:export-check`
+(`tools/kb/export-check.mjs`) is its early preflight, refusing a bag whose exported query set
+drifted. It is a diagnostic lane, separate from the catalog above.
 
 - `tools/kb/exports.mjs` declares the four exported query ids in `EXPORTED` and refuses any
   bag whose exported set differs, naming every offender. Goal TEXT stays derived from the

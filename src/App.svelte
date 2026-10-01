@@ -61,7 +61,12 @@
   });
   $effect(() => {
     const restore = () => {
-      demo.select(questionFromUrl(location.href));
+      const id = questionFromUrl(location.href);
+      // An unknown `?q=` restored from history is dropped in place, never pushed as a new entry.
+      if (id === null && new URL(location.href).searchParams.has('q')) {
+        history.replaceState(null, '', urlForQuestion(location.href, null));
+      }
+      demo.select(id);
     };
     addEventListener('popstate', restore);
     return () => {

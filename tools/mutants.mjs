@@ -43,7 +43,7 @@ export const MUTANTS = [
     edits: [
       {
         path: 'src/engine/client.ts',
-        old: "heap outcome before its replacement engine has re-verified the contract.\n        if (response.limit === 'heap') await this.reset('heap exhausted; engine discarded');\n",
+        old: "heap outcome before its replacement engine has re-verified the contract.\n        if (response.limit === 'heap') await this.#recreate();\n",
         new: 'heap outcome before its replacement engine has re-verified the contract.\n',
       },
     ],

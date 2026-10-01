@@ -282,7 +282,7 @@ export class EngineClient {
         // reuse is unsound (D9). Awaited rather than fired off like the wall-clock
         // deadline, because here the caller is still on the stack and must not see a
         // heap outcome before its replacement engine has re-verified the contract.
-        if (response.limit === 'heap') await this.reset('heap exhausted; engine discarded');
+        if (response.limit === 'heap') await this.#recreate();
         return { kind: 'limit', limit: response.limit, solutions: response.solutions };
       case 'cancelled':
         return { kind: 'cancelled', solutions: response.solutions };
@@ -334,7 +334,7 @@ export class EngineClient {
       case 'failure':
         return { kind: 'failure' };
       case 'limit':
-        if (response.limit === 'heap') await this.reset('heap exhausted; engine discarded');
+        if (response.limit === 'heap') await this.#recreate();
         return { kind: 'limit', limit: response.limit };
       case 'cancelled':
         return { kind: 'cancelled' };
@@ -397,13 +397,22 @@ export class EngineClient {
    * Single-flighted so concurrent triggers produce one termination.
    */
   async reset(reason = 'client reset the worker'): Promise<BootOutcome> {
-    this.#resetting ??= this.#hardReset(reason).finally(() => {
+    return this.#reset(reason, false);
+  }
+
+  /** A heap recreation's caller awaits the replacement, so its boot runs under the boot deadline. */
+  #recreate(): Promise<BootOutcome> {
+    return this.#reset('heap exhausted; engine discarded', true);
+  }
+
+  #reset(reason: string, bounded: boolean): Promise<BootOutcome> {
+    this.#resetting ??= this.#hardReset(reason, bounded).finally(() => {
       this.#resetting = undefined;
     });
     return this.#resetting;
   }
 
-  async #hardReset(reason: string): Promise<BootOutcome> {
+  async #hardReset(reason: string, bounded: boolean): Promise<BootOutcome> {
     if (this.#disposed) {
       return { kind: 'error', error: { code: 'worker', message: 'client is disposed' } };
     }
@@ -414,9 +423,12 @@ export class EngineClient {
     // it a second time when it respawns; only monotonicity is load-bearing.
     this.#generation += 1;
     this.#abort(reason);
-    // An explicit reset retains its original semantics: one requested replacement,
-    // distinct from `boot()`'s automatic retry policy.
-    return asBoot(await this.#send({ kind: 'boot' }));
+    // One replacement, no automatic retry, unlike `boot()`. Bounded = the boot deadline retires a
+    // hung replacement. An explicit or wall-clock reset keeps the unbounded boot and a replacement
+    // that answers with an error, which m1u3 P1.1 and P4.4 pin (queue row `A failed reset…`).
+    return bounded
+      ? (await this.#bootAttempt()).outcome
+      : asBoot(await this.#send({ kind: 'boot' }));
   }
 
   /** Drop the worker and every promise it still owes. Terminal: there is no respawn. */

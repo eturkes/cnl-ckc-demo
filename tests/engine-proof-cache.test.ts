@@ -122,6 +122,22 @@ describe('generation-scoped proof cache', () => {
     await expect(hit).rejects.toThrow(/engine discarded/u);
   }, 120_000);
 
+  it('a consult that poisons the engine while a query yields ends that query too', async () => {
+    let drains = 0;
+    const own = counted(image, () => {
+      if (drains === 0) return [];
+      drains -= 1;
+      return drains === 0 ? ['ERROR: planted diagnostic'] : [];
+    });
+    await own.session.boot(image);
+    const running = own.session.solve('between(1, 3, X).', PROOF_BUDGET_MAX);
+    drains = 2;
+    expect(() => {
+      own.session.consult('proof_cache_poison_marker.');
+    }).toThrow(/diagnostics/u);
+    await expect(running).rejects.toThrow(/engine discarded/u);
+  }, 120_000);
+
   it('a mutating query empties the cache: the next prove reads the engine as it now is', async () => {
     const own = counted(image);
     await own.session.boot(image);

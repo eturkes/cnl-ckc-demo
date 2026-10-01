@@ -4,7 +4,7 @@
 // redeclare it.
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { cp, mkdtemp, rm } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { homedir, tmpdir } from 'node:os';
@@ -181,6 +181,12 @@ export const serve = (root, log, refuse = () => false) =>
 export const withBuiltSite = async ({ tool, fail, nested, refuse }, scenario) => {
   execFileSync('pnpm', ['build'], { cwd: ROOT, stdio: ['ignore', 2, 2] });
   const root = await mkdtemp(join(tmpdir(), `cnl-ckc-${tool}-`));
+  // A lane's `fail` exits the process, skipping the `finally` below; the root still goes, and
+  // Playwright reaps the browser it launched.
+  const removeRoot = () => {
+    rmSync(root, { recursive: true, force: true });
+  };
+  process.once('exit', removeRoot);
   /** @type {LogEntry[]} */
   const log = [];
   const server = await serve(root, log, refuse);
@@ -199,9 +205,11 @@ export const withBuiltSite = async ({ tool, fail, nested, refuse }, scenario) =>
         ? `${cause.name}: ${cause.message.split('\n')[0] ?? ''}`
         : String(cause);
   } finally {
-    await browser?.close();
+    // A browser that refuses to close still leaves the server and the root to clean.
+    await browser?.close().catch(() => undefined);
     server.close();
     await rm(root, { recursive: true, force: true });
+    process.removeListener('exit', removeRoot);
   }
   return fail(thrown);
 };

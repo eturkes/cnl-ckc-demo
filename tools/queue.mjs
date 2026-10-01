@@ -66,10 +66,16 @@ export const gradeIndex = (queue) => {
   const want = indexTable(rows).split('\n');
   const { start, end } = tableSpan(queue);
   const have = queue.slice(start, end).split('\n');
-  return [
-    ...want.filter((line) => !have.includes(line)).map((line) => `queue index lacks ${line}`),
-    ...have.filter((line) => !want.includes(line)).map((line) => `queue index carries ${line}`),
-  ].map((line) => `${line}; run pnpm queue:index`);
+  const lacks = want.filter((line) => !have.includes(line)).map((line) => `lacks ${line}`);
+  const carries = have.filter((line) => !want.includes(line)).map((line) => `carries ${line}`);
+  // Same lines in another order or count: a duplicate or a reordered index is stale too.
+  const order =
+    lacks.length === 0 && carries.length === 0 && have.join('\n') !== want.join('\n')
+      ? ['repeats or reorders its lines']
+      : [];
+  return [...lacks, ...carries, ...order].map(
+    (line) => `queue index ${line}; run pnpm queue:index`,
+  );
 };
 
 if (process.argv[1]?.endsWith('queue.mjs')) {

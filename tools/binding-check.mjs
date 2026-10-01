@@ -361,7 +361,7 @@ const fail = (message) => failures.push(message);
  * Reported inside the run, not after it: the scratch cleanup runs in a `finally`, and a
  * value assigned there for a later read is what `no-useless-assignment` refuses.
  *
- * @param {number} graded @param {number} lifecycle @param {number} meaning @param {number} controls
+ * @param {number} graded @param {number} lifecycle @param {number} meaning @param {string[]} controls
  */
 const report = (graded, lifecycle, meaning, controls) => {
   if (failures.length > 0) {
@@ -374,7 +374,7 @@ const report = (graded, lifecycle, meaning, controls) => {
       `binding:check ok — ${String(graded)} required binding cases passed ` +
         `across ${String(REQUIRED.length)} suites, ${String(lifecycle)} lifecycle cases ` +
         `across ${String(LIFECYCLE.length)} suites, ${String(meaning)} graph-meaning cases ` +
-        `across ${String(MEANING.length)} declared rows, ${String(controls)} controls fired\n`,
+        `across ${String(MEANING.length)} declared rows; controls: ${controls.join(', ')}\n`,
     );
   }
 };
@@ -467,7 +467,7 @@ try {
       { mutation: 'the MEANING table emptied', expect: ['MEANING table is empty'] },
       () => gradeTable([], 'MEANING', suites).failures,
     ),
-  ].length;
+  ];
 
   report(inventory.graded, lifecycle.graded, meaning.graded, controls);
 } finally {

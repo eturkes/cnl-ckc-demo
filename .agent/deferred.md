@@ -60,9 +60,9 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   never fires and `EngineClient` keeps the dead worker: every later query fails — aborting again
   or, run to run, reporting a heap limit from a runtime left with no memory — breaching u3 P3.4
   (M1 review R45). Unreachable from M1's six bounded catalog goals;
-  free-text intake is what makes it reachable. Accept: an aborted runtime reaches the client
+  an ad-hoc goal path is what makes it reachable (`.agent/spec.md` `Decisions` MAIN). Accept: an aborted runtime reaches the client
   as its own terminal state that recreates the worker without a caller `reset()`, proven by a
-  browser probe whose next query reports 337 documents. `pri` high, gated on free-text intake.
+  browser probe whose next query reports 337 documents. `pri` high, gated on an ad-hoc goal path.
 - **Font stack fallbacks and copy reach are unowned** — `presentation:check` grades faces,
   licences and containment, but D7's h1 wordmark, the framing copy's forbidden claims, the
   descriptor humanizer's rendered output and the three role tokens' system fallback stacks
@@ -190,11 +190,24 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   register R1, `.scratch/agents/reviewer-il-1.md`). No shipped answer term carries a dict.
   Accept: a decoded dict re-encodes as a structural variant — standalone and as an improper-list
   tail — graded by Prolog `=@=` in `tests/engine-term-identity.test.ts`. `pri` low. **Owes a
-  ruling**: no JS value can re-enter swipl-wasm 8.0.7 as a TAGGED dict. `toProlog` sets a dict
-  tag only when `data.constructor.name !== 'Object'`, but that check sits inside the
-  `case "Object"` arm, so it never fires; an instance of a class named after the tag falls to
-  the `default` arm and enters as a `<js>(N,tag)` blob (measured). Choices: `createEncoder`
+  ruling**: swipl-wasm 8.0.7 has no supported way to re-enter a TAGGED dict. `toProlog` sets a
+  dict tag only when `data.constructor.name !== 'Object'`, but that check sits inside the
+  `case "Object"` arm; an instance of a class named after the tag falls to the `default` arm and
+  enters as a `<js>(N,tag)` blob (measured). Only a `constructor` getter answering `Object` on
+  the first read and the tag on the second gets through (closing review D-2), which leans on the
+  wrapper's read order. Choices: `createEncoder`
   refuses a dict, failing closed instead of re-entering it untagged, or an upstream patch.
+- **A failed reset keeps its replacement worker** — a heap recreation boots its replacement
+  under the boot deadline, but an explicit or wall-clock `EngineClient.reset()` boots it
+  unbounded, and a replacement that answers its boot with an error (a contract mismatch, a
+  rejected image fetch) stays live, unlike `boot()`, which retires a failed worker so the next
+  request rebuilds (closing review A3). Two graded cases pin that: `tests/engine-recovery.test.ts`
+  P4.4 asserts the failed replacement stays (`spawned[1]?.terminated === false`), and
+  `tests/engine-budgets.test.ts` P1.1 asserts no timer stays armed after a consult deadline
+  (`armed.size` 0), which a bounded replacement boot breaks. Accept: every reset boots under the
+  boot deadline and retires a failed replacement, the next request spawns a fresh worker, and
+  P4.4's and P1.1's last assertions change by the user's approval with their original firing
+  recorded. `pri` low.
 
 ## Index — one line per `high` + `med` row
 

@@ -372,6 +372,8 @@ export class EngineSession {
         // The only point where a posted cancel can land, and the only point where
         // elapsed time is observable: `next()` itself is synchronous and uninterruptible.
         await yieldToEvents();
+        // A consult that poisoned the engine during the yield discards this run too.
+        this.#require();
         if (this.#cancelling) {
           stopped = 'cancelled';
           break;

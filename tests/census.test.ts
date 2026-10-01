@@ -171,6 +171,36 @@ beforeAll(async () => {
   );
   derived.set('clinical.rules', count('findall(x,clinical_rule(_,_,_),L),length(L,N).'));
   derived.set('clinical.premises', count('findall(x,clinical_premise(_,_,_,_),L),length(L,N).'));
+  // A shape = the premise literal with its per-sentence skolem replaced by `_H`.
+  const premises = decodeOnce(
+    engine.prolog
+      .query('findall(p(D,S,T),(clinical_premise(D,S,_,L),term_string(L,T)),Ps).')
+      .once(),
+  );
+  const rows = premises.kind === 'bindings' ? premises.bindings.Ps : undefined;
+  if (rows?.kind !== 'list') throw new Error('no premise rows');
+  const shapes = new Map<string, Set<string>>();
+  for (const row of rows.items) {
+    if (row.kind !== 'compound') throw new Error('malformed premise row');
+    const [doc, sentence, text] = row.args as [PlTerm, PlTerm, PlTerm];
+    if (text.kind !== 'string') throw new Error('premise text is not a string');
+    const shape = text.value.replace(/'\$clinical_hypothetical'\([^()]*\)/gu, '_H');
+    const where = `${JSON.stringify(doc)}/${JSON.stringify(sentence)}`;
+    shapes.set(shape, (shapes.get(shape) ?? new Set()).add(where));
+  }
+  derived.set('clinical.premiseShapes', shapes.size);
+  derived.set(
+    'clinical.premiseSentences',
+    new Set([...shapes.values()].flatMap((s) => [...s])).size,
+  );
+  derived.set(
+    'clinical.shape.cardinality',
+    shapes.get('guideline_cardinality(actual,_H,na,eq,1)')?.size ?? 0,
+  );
+  derived.set(
+    'clinical.shape.entity',
+    shapes.get('guideline_entity(actual,_H,clinician,countable)')?.size ?? 0,
+  );
   // Read off the stored gate heads: calling a gate demands the premises it cites.
   const gates = decodeOnce(
     engine.prolog.query('findall(g(D,S,Ls),clause(clinical_gate(D,S,_,Ls),_),G).').once(),
@@ -378,6 +408,10 @@ const CENSUS: Row[] = [
     anchor: 'A clinical premise is universal-instantiation scaffolding',
     figures: [
       fig('raw premises', `${N} raw`, 'clinical.premises'),
+      fig('premise shapes', `normalize to ${N} shapes`, 'clinical.premiseShapes'),
+      fig('cardinality shape', `sit in ${N} and`, 'clinical.shape.cardinality'),
+      fig('entity shape', `and ${N} of the`, 'clinical.shape.entity'),
+      fig('premise sentences', `of the ${N} sentences`, 'clinical.premiseSentences'),
       fig('conditions', `carries ${N} distinct conditions`, 'intake.conditions'),
       fig('rules', `over ${N} rules`, 'intake.rules'),
       fig('unconditional rules', `${N} of them unconditional`, 'intake.unconditional'),
