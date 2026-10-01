@@ -10,12 +10,15 @@
 // the check cannot drift from the knowledge base it claims to reproduce.
 
 import { execFileSync } from 'node:child_process';
-import { cp, mkdtemp, rm } from 'node:fs/promises';
+import { readdirSync } from 'node:fs';
+import { appendFile, cp, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { expectedAnswer } from './answer-oracle.mjs';
 import { failWith, launch, serve } from './browser.mjs';
+import { FALLBACK_REQUEST, FULL_ENGINE_MARKER, fallbackSplit } from './bundle.mjs';
+import { requireFiring } from './control.mjs';
 import { ROOT } from './kb/paths.mjs';
 
 const QUESTION = 'when-to-use-opioids';
@@ -26,6 +29,24 @@ const fail = failWith('smoke');
 
 // Never trust a leftover dist tree: this check proves the current source.
 execFileSync('pnpm', ['build'], { cwd: ROOT, stdio: 'inherit' });
+
+const split = fallbackSplit(join(ROOT, 'dist'));
+if (split.failures.length > 0) fail(`QLF fallback split: ${split.failures.join('; ')}`);
+// Control: the real build with the full engine's marker appended to its worker chunk.
+const leaked = await mkdtemp(join(tmpdir(), 'cnl-ckc-split-'));
+await cp(join(ROOT, 'dist'), leaked, { recursive: true });
+const worker = readdirSync(join(leaked, 'assets')).find((name) => /^worker-.+\.js$/u.test(name));
+if (worker === undefined) fail('the build carries no worker chunk');
+await appendFile(join(leaked, 'assets', worker), `\n// ${FULL_ENGINE_MARKER}\n`);
+const splitControl = requireFiring(
+  'smoke',
+  {
+    mutation: 'the full engine marker appended to the worker chunk',
+    expect: [`eager chunk ${worker}`],
+  },
+  () => fallbackSplit(leaked).failures,
+);
+await rm(leaked, { recursive: true, force: true });
 
 const expected = expectedAnswer(QUESTION, fail);
 const root = await mkdtemp(join(tmpdir(), 'cnl-ckc-smoke-'));
@@ -133,6 +154,11 @@ try {
   if (focusTop < 50 || focusTop > 180)
     fail(`the answer evidence focus did not land below the header (${String(focusTop)}px)`);
 
+  const fallback = log.filter((entry) => FALLBACK_REQUEST.test(entry.path));
+  if (fallback.length > 0) {
+    fail(`a sound image took the QLF fallback: ${fallback.map((e) => e.path).join(', ')}`);
+  }
+
   const broken = log.filter((entry) => entry.status !== 200 && entry.path.startsWith(`/${NESTED}`));
   if (broken.length > 0) fail(`nested assets missing: ${broken.map((e) => e.path).join(', ')}`);
   if (raised !== undefined) fail(raised);
@@ -141,7 +167,8 @@ try {
   console.log(
     `smoke: ok — ${url} combined ${String(expected.rows)} Prolog solutions into ` +
       `${String(bullets)} cited deterministic statements, ` +
-      `${served} nested requests served`,
+      `${served} nested requests served, none of them the lazy QLF fallback (${String(split.chunk)}); ` +
+      `control: ${splitControl}`,
   );
 } finally {
   await browser?.close();

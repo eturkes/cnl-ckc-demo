@@ -67,6 +67,11 @@ export type ImageLoader = (image: Uint8Array) => Promise<Engine>;
 
 export interface SessionOptions {
   loadImage: ImageLoader;
+  /**
+   * Boots the QLF fallback engine. Called only after the saved state failed to boot, because
+   * it costs the full 6.2 MB engine plus the QLF that a sound image never needs.
+   */
+  loadFallback?: () => Promise<Engine>;
   /** Values the build recorded; the booted engine must agree with them. */
   expected: EngineContract;
   /**
@@ -259,9 +264,37 @@ export class EngineSession {
     return this.#booting;
   }
 
+  /**
+   * Boot the saved state; on ANY failure of that path, boot the fallback instead.
+   *
+   * The image's own diagnostics are drained first, so a FATAL line from the failed load can
+   * never fail the fallback's check. Both failing reports both: either cause alone would hide
+   * whether the fallback was ever attempted.
+   */
   async #bootOnce(image: Uint8Array): Promise<EngineContract> {
-    const engine = await this.#options.loadImage(image);
-    this.#failClosed(engine, 'image load', TOLERATED);
+    const { loadFallback, drain } = this.#options;
+    try {
+      return this.#adopt(await this.#options.loadImage(image), 'image load', TOLERATED);
+    } catch (cause) {
+      if (loadFallback === undefined) throw cause;
+      // A rejected load says only `Aborted()`; the reason is in its FATAL lines.
+      const lines = drain?.() ?? [];
+      const failed = [message(cause), ...lines.map((line) => line.trim())].filter(Boolean);
+      try {
+        return this.#adopt(await loadFallback(), 'fallback load');
+      } catch (fallback) {
+        if (!(fallback instanceof Error)) throw fallback;
+        fallback.message =
+          `saved state failed (${failed.join(' / ')}); ` +
+          `QLF fallback failed (${fallback.message})`;
+        throw fallback;
+      }
+    }
+  }
+
+  /** Accept an engine only once it is diagnostic-free and agrees with the manifest. */
+  #adopt(engine: Engine, phase: string, tolerated?: RegExp): EngineContract {
+    this.#failClosed(engine, phase, tolerated);
     const contract = readContract(engine);
     const { expected } = this.#options;
     if (
