@@ -89,12 +89,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   (M1 review X16). Accept: as above against u7's 34 predicates. `pri` low — u7 is a `docs`
   tier unit whose claims are now carried by `copy:check`, `contrast:check` and
   `presentation:check`, so a red suite buys less here than on a kernel unit.
-- **Built-site browser prologue is duplicated** — `tools/smoke.mjs` and
-  `tools/browser-check.mjs` each repeat the temp-root, `cp dist`, launch, `pageerror` and
-  teardown sequence although `tools/browser.mjs` already owns `serve`, `launch` and
-  `failWith` (M1 review X19). Accept: one `withBuiltSite` helper in `tools/browser.mjs`
-  leaves each script its scenario alone, and both success paths plus both negative controls
-  still hold. `pri` low.
 - **Comments carry provenance and restate purpose** — ten file headers say what their module
   is rather than why it is peculiar, and eight comment sites cite review rows instead of
   stating a timeless constraint (M1 review X20); this session's own new headers are in

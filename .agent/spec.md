@@ -232,7 +232,8 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] d28 the source-label grammar is stated in `.claude/rules/ui.md` `Copy`; the humanizer test cites it.
 - [ ] d17 owes a ruling: answers rendered as they arrive change the accepted answer panel mid-run.
 - [x] d33 `copy:check` grades a keyed literal once, under its key (378 → 251 graded strings).
-- [ ] `low`: d34 d35 d38 d39 d41 d42 d43 d47
+- [x] d38 `withBuiltSite` (`tools/browser.mjs`) owns build, serve, launch and teardown for smoke, browser:check and visual-qa.
+- [ ] `low`: d34 d35 d39 d41 d42 d43 d47
   d55 d56 d57 d58 d59 d60 d61 d62 d63
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 

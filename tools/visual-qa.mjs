@@ -4,14 +4,12 @@
 // `browser:check` measures 320 px alone, in both locales; this walk adds the wider viewports,
 // every catalog question's answer, a cancelled run, the graph and a failed boot.
 
-import { execFileSync } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
-import { cp, mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { cp } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { questionOf } from './answer-oracle.mjs';
-import { failWith, launch, OVERFLOW_PROBE, serve } from './browser.mjs';
+import { failWith, OVERFLOW_PROBE, withBuiltSite } from './browser.mjs';
 import { ROOT } from './kb/paths.mjs';
 
 const WIDTHS = [320, 375, 1280];
@@ -147,32 +145,20 @@ const bootError = async (browser, url, width) => {
   await page.close();
 };
 
-// Never trust a leftover dist tree: this walk measures the current source.
-execFileSync('pnpm', ['build'], { cwd: ROOT, stdio: ['ignore', 'ignore', 'inherit'] });
 mkdirSync(OUT, { recursive: true });
-const root = await mkdtemp(join(tmpdir(), 'cnl-ckc-visual-qa-'));
-/** @type {import('./browser.mjs').LogEntry[]} */
-const log = [];
-const server = await serve(root, log);
-/** @type {import('./browser.mjs').Browser | undefined} */
-let browser;
-try {
-  await cp(join(ROOT, 'dist'), join(root, BUILT), { recursive: true });
-  await cp(join(ROOT, 'dist'), join(root, IMAGELESS), {
-    recursive: true,
-    filter: (source) => !/\/kb-[^/]+\.pvm$/u.test(source),
-  });
-  browser = await launch(fail);
-  const origin = `http://127.0.0.1:${String(server.port)}`;
-  for (const width of WIDTHS) {
-    await walk(browser, `${origin}/${BUILT}/`, width);
-    await bootError(browser, `${origin}/${IMAGELESS}/`, width);
-  }
-} finally {
-  await browser?.close();
-  server.close();
-  await rm(root, { recursive: true, force: true });
-}
+await withBuiltSite(
+  { tool: 'visual-qa', fail, nested: BUILT },
+  async ({ root, origin, browser }) => {
+    await cp(join(ROOT, 'dist'), join(root, IMAGELESS), {
+      recursive: true,
+      filter: (source) => !/\/kb-[^/]+\.pvm$/u.test(source),
+    });
+    for (const width of WIDTHS) {
+      await walk(browser, `${origin}/${BUILT}/`, width);
+      await bootError(browser, `${origin}/${IMAGELESS}/`, width);
+    }
+  },
+);
 
 const overflowing = Object.entries(states).filter(([, state]) => state.overflow);
 console.log(JSON.stringify({ widths: WIDTHS, states }, null, 1));

@@ -12,14 +12,13 @@
 //
 // Outside `pnpm gate` on the `pnpm smoke` precedent: it needs a real browser.
 
-import { execFileSync, spawn } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { copyFile, cp, mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { copyFile, cp, mkdir, rename, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { expectedAnswer, questionOf } from './answer-oracle.mjs';
-import { failWith, launch, OVERFLOW_PROBE, serve } from './browser.mjs';
+import { failWith, OVERFLOW_PROBE, withBuiltSite } from './browser.mjs';
 import {
   CATALOG,
   cmapOf,
@@ -564,184 +563,169 @@ const offlineLeg = async (browser, url) => {
   return { documents: reported, refused, version };
 };
 
-// Never trust a leftover dist tree: this check proves the current source.
-execFileSync('pnpm', ['build'], { cwd: ROOT, stdio: 'inherit' });
-
-const root = await mkdtemp(join(tmpdir(), 'cnl-ckc-browser-'));
+/** The served temp root and its request log, bound once `withBuiltSite` has made them. */
+let root = '';
 /** @type {import('./browser.mjs').LogEntry[]} */
-const log = [];
-const server = await serve(root, log, (path) => offlineDown && path.startsWith(`/${OFFLINE}`));
-/** @type {import('./browser.mjs').Browser | undefined} */
-let browser;
-/** @type {{ url: string, stop: () => void } | undefined} */
-let dev;
+let log = [];
 /** @type {string | undefined} */
 let raised;
-/** @type {string | undefined} */
-let thrown;
 
-try {
-  await cp(join(ROOT, 'dist'), join(root, NESTED), { recursive: true });
-  browser = await launch(fail);
+const refuse = (/** @type {string} */ path) => offlineDown && path.startsWith(`/${OFFLINE}`);
+await withBuiltSite({ tool: 'browser', fail, nested: NESTED, refuse }, async (site) => {
+  ({ root, log } = site);
+  const { browser, origin } = site;
+  /** @type {{ url: string, stop: () => void } | undefined} */
+  let dev;
+  try {
+    // E26, leg 1 — built output, nested path, the deployment the project ships.
+    const builtPage = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+    builtPage.on('pageerror', (error) => {
+      raised ??= `built output raised ${error.message}`;
+    });
+    const builtUrl = site.url;
+    await builtPage.goto(builtUrl, { waitUntil: 'load', timeout: TIMEOUT });
+    const builtDocuments = await readDocuments(builtPage, 'built');
+    if (log.some((entry) => /semantic-graph-.+\.json$/u.test(entry.path))) {
+      fail('built: semantic graph data loaded before activation');
+    }
+    if (log.some((entry) => /cytoscape(?:-fcose|\.esm)-.+\.js$/u.test(entry.path))) {
+      fail('built: graph renderer loaded before activation');
+    }
+    await builtPage.locator('[data-action="explore-graph"]').click();
+    await builtPage.waitForSelector('.graph-shell .counts', { timeout: TIMEOUT });
+    if (!log.some((entry) => /semantic-graph-.+\.json$/u.test(entry.path))) {
+      fail('built: graph activation requested no semantic graph data');
+    }
+    if (!log.some((entry) => /cytoscape(?:-fcose|\.esm)-.+\.js$/u.test(entry.path))) {
+      fail('built: graph activation requested no visual renderer');
+    }
 
-  // E26, leg 1 — built output, nested path, the deployment the project ships.
-  const builtPage = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-  builtPage.on('pageerror', (error) => {
-    raised ??= `built output raised ${error.message}`;
-  });
-  const builtUrl = `http://127.0.0.1:${String(server.port)}/${NESTED}/`;
-  await builtPage.goto(builtUrl, { waitUntil: 'load', timeout: TIMEOUT });
-  const builtDocuments = await readDocuments(builtPage, 'built');
-  if (log.some((entry) => /semantic-graph-.+\.json$/u.test(entry.path))) {
-    fail('built: semantic graph data loaded before activation');
-  }
-  if (log.some((entry) => /cytoscape(?:-fcose|\.esm)-.+\.js$/u.test(entry.path))) {
-    fail('built: graph renderer loaded before activation');
-  }
-  await builtPage.locator('[data-action="explore-graph"]').click();
-  await builtPage.waitForSelector('.graph-shell .counts', { timeout: TIMEOUT });
-  if (!log.some((entry) => /semantic-graph-.+\.json$/u.test(entry.path))) {
-    fail('built: graph activation requested no semantic graph data');
-  }
-  if (!log.some((entry) => /cytoscape(?:-fcose|\.esm)-.+\.js$/u.test(entry.path))) {
-    fail('built: graph activation requested no visual renderer');
-  }
+    // E26, leg 2 — dev server, the mode every contributor runs and no check drove.
+    dev = await devServer();
+    const devPage = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+    devPage.on('pageerror', (error) => {
+      raised ??= `dev server raised ${error.message}`;
+    });
+    await devPage.goto(dev.url, { waitUntil: 'load', timeout: TIMEOUT });
+    const devDocuments = await readDocuments(devPage, 'dev');
 
-  // E26, leg 2 — dev server, the mode every contributor runs and no check drove.
-  dev = await devServer();
-  const devPage = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-  devPage.on('pageerror', (error) => {
-    raised ??= `dev server raised ${error.message}`;
-  });
-  await devPage.goto(dev.url, { waitUntil: 'load', timeout: TIMEOUT });
-  const devDocuments = await readDocuments(devPage, 'dev');
+    for (const [mode, reported] of [
+      ['built', builtDocuments],
+      ['dev', devDocuments],
+    ]) {
+      if (reported !== documents) {
+        fail(
+          `${String(mode)} reported ${String(reported)} documents, manifest records ${String(documents)}`,
+        );
+      }
+    }
 
-  for (const [mode, reported] of [
-    ['built', builtDocuments],
-    ['dev', devDocuments],
-  ]) {
-    if (reported !== documents) {
+    // U7-19 — the containment `pnpm presentation:check` asserts in CSS, measured in
+    // layout at the narrowest supported viewport, once per locale. The static check
+    // cannot see a box that overflows for a reason other than an unbroken word, and
+    // Japanese has no word spaces to break at.
+    const english = await narrowSweep(browser, builtUrl, 'en');
+    const japanese = await narrowSweep(browser, builtUrl, 'ja');
+    if (japanese.question !== english.question) {
       fail(
-        `${String(mode)} reported ${String(reported)} documents, manifest records ${String(documents)}`,
+        `the locales selected different first questions: ${english.question}, ${japanese.question}`,
       );
     }
-  }
-
-  // U7-19 — the containment `pnpm presentation:check` asserts in CSS, measured in
-  // layout at the narrowest supported viewport, once per locale. The static check
-  // cannot see a box that overflows for a reason other than an unbroken word, and
-  // Japanese has no word spaces to break at.
-  const english = await narrowSweep(browser, builtUrl, 'en');
-  const japanese = await narrowSweep(browser, builtUrl, 'ja');
-  if (japanese.question !== english.question) {
-    fail(
-      `the locales selected different first questions: ${english.question}, ${japanese.question}`,
-    );
-  }
-  const { question, expectedCanonical } = english;
-  // R40 — cancel delivery between solutions, in a real browser.
-  const probe = /** @type {Record<string, unknown>} */ (await devPage.evaluate(CANCEL_PROBE));
-  if (typeof probe.error === 'string') fail(`cancel probe: ${probe.error}`);
-  const solutions = Number(probe.solutions);
-  if (probe.kind !== 'cancelled') {
-    fail(`cancel probe settled ${String(probe.kind)} with ${String(solutions)} solutions`);
-  }
-  // Between solutions, not before the first and not after the last: a run that
-  // proved nothing would not show delivery, and one that hit its cap never yielded
-  // to the cancel at all.
-  if (solutions < 1) fail('cancel arrived before any solution was proven');
-  if (solutions >= Number(probe.cap)) fail('run stopped at its answer cap, not at the cancel');
-  if (probe.after !== 'limit' && probe.after !== 'solutions') {
-    fail(`engine unusable after a cooperative cancel: ${String(probe.after)}`);
-  }
-  if (Number(probe.documents) !== documents) fail('worker booted a different corpus');
-
-  // A hostile goal killed by the client's deadline, and the engine that replaced it.
-  const kill = /** @type {Record<string, unknown>} */ (await devPage.evaluate(KILL_PROBE));
-  if (typeof kill.error === 'string') fail(`kill probe: ${kill.error}`);
-  if (kill.kind !== 'limit' || kill.limit !== 'wall-clock') {
-    fail(`hostile goal settled ${String(kill.kind)}/${String(kill.limit)}, not a wall-clock kill`);
-  }
-  if (kill.atSettle !== 2 || kill.spawned !== 2) {
-    fail(
-      `expected the deadline to respawn exactly one worker, saw ${String(kill.atSettle)} at ` +
-        `settle and ${String(kill.spawned)} after the reset`,
-    );
-  }
-  if (kill.recreated !== 'booted' || kill.documents !== documents) {
-    fail(
-      `recreated engine reported ${String(kill.recreated)} with ${String(kill.documents)} documents`,
-    );
-  }
-  if (kill.after !== String(documents)) {
-    fail(
-      `recreated engine answered ${String(kill.after)}, expected ${String(documents)} documents`,
-    );
-  }
-  if (raised !== undefined) fail(raised);
-
-  // Control on the lane's face grader: a build whose Japanese files are gone must be refused.
-  const faceless = join(root, FACELESS);
-  await cp(join(ROOT, 'dist'), faceless, { recursive: true });
-  for (const name of readdirSync(join(faceless, 'assets'))) {
-    if (JAPANESE_FACE.test(`/assets/${name}`)) {
-      await rename(join(faceless, 'assets', name), join(faceless, 'assets', `${name}.renamed`));
+    const { question, expectedCanonical } = english;
+    // R40 — cancel delivery between solutions, in a real browser.
+    const probe = /** @type {Record<string, unknown>} */ (await devPage.evaluate(CANCEL_PROBE));
+    if (typeof probe.error === 'string') fail(`cancel probe: ${probe.error}`);
+    const solutions = Number(probe.solutions);
+    if (probe.kind !== 'cancelled') {
+      fail(`cancel probe settled ${String(probe.kind)} with ${String(solutions)} solutions`);
     }
+    // Between solutions, not before the first and not after the last: a run that
+    // proved nothing would not show delivery, and one that hit its cap never yielded
+    // to the cancel at all.
+    if (solutions < 1) fail('cancel arrived before any solution was proven');
+    if (solutions >= Number(probe.cap)) fail('run stopped at its answer cap, not at the cancel');
+    if (probe.after !== 'limit' && probe.after !== 'solutions') {
+      fail(`engine unusable after a cooperative cancel: ${String(probe.after)}`);
+    }
+    if (Number(probe.documents) !== documents) fail('worker booted a different corpus');
+
+    // A hostile goal killed by the client's deadline, and the engine that replaced it.
+    const kill = /** @type {Record<string, unknown>} */ (await devPage.evaluate(KILL_PROBE));
+    if (typeof kill.error === 'string') fail(`kill probe: ${kill.error}`);
+    if (kill.kind !== 'limit' || kill.limit !== 'wall-clock') {
+      fail(
+        `hostile goal settled ${String(kill.kind)}/${String(kill.limit)}, not a wall-clock kill`,
+      );
+    }
+    if (kill.atSettle !== 2 || kill.spawned !== 2) {
+      fail(
+        `expected the deadline to respawn exactly one worker, saw ${String(kill.atSettle)} at ` +
+          `settle and ${String(kill.spawned)} after the reset`,
+      );
+    }
+    if (kill.recreated !== 'booted' || kill.documents !== documents) {
+      fail(
+        `recreated engine reported ${String(kill.recreated)} with ${String(kill.documents)} documents`,
+      );
+    }
+    if (kill.after !== String(documents)) {
+      fail(
+        `recreated engine answered ${String(kill.after)}, expected ${String(documents)} documents`,
+      );
+    }
+    if (raised !== undefined) fail(raised);
+
+    // Control on the lane's face grader: a build whose Japanese files are gone must be refused.
+    const faceless = join(root, FACELESS);
+    await cp(join(ROOT, 'dist'), faceless, { recursive: true });
+    for (const name of readdirSync(join(faceless, 'assets'))) {
+      if (JAPANESE_FACE.test(`/assets/${name}`)) {
+        await rename(join(faceless, 'assets', name), join(faceless, 'assets', `${name}.renamed`));
+      }
+    }
+    const facelessPage = await browser.newPage({ viewport: { width: NARROW, height: 720 } });
+    await facelessPage.goto(`${origin}/${FACELESS}/`, {
+      waitUntil: 'load',
+      timeout: TIMEOUT,
+    });
+    await facelessPage.waitForSelector(READY, { timeout: TIMEOUT });
+    await facelessPage.locator('[data-action="language-switch"]').click();
+    await facelessPage.waitForSelector('html[lang="ja"]', { timeout: TIMEOUT });
+    if (await facelessPage.evaluate(FACE_SETTLED)) {
+      fail('control did not fire: a build without its Japanese woff2 still loaded the face');
+    }
+
+    const offline = await offlineLeg(browser, `${origin}/${OFFLINE}/`);
+    if (offline.documents !== documents) {
+      fail(`offline second visit reported ${String(offline.documents)} documents`);
+    }
+
+    const parity = await faceParity(browser, join(root, PARITY), `${origin}/${PARITY}/`);
+
+    const broken = log.filter(
+      (entry) => entry.status !== 200 && entry.path.startsWith(`/${NESTED}`),
+    );
+    if (broken.length > 0) fail(`nested assets missing: ${broken.map((e) => e.path).join(', ')}`);
+
+    console.log(
+      `browser-check: ok — dev ${dev.url} and built ${builtUrl} both report ${String(documents)} ` +
+        `documents; graph and evidence stay lazy; ${String(narrowStates)} states fit ` +
+        `${String(NARROW)}px across both locales; ` +
+        `${question} rendered the bag's ${String(expectedCanonical.rows)}-row canonical answer ` +
+        `byte for byte in both locales; cancel delivered after ${String(solutions)} ` +
+        `of up to ${String(probe.cap)} solutions in ${Number(probe.elapsed).toFixed(0)} ms, ` +
+        `engine still ${String(probe.after)}; a hostile goal was killed at ` +
+        `${Number(kill.settled).toFixed(0)} ms and its replacement engine reported ` +
+        `${String(kill.documents)} documents ${Number(kill.cycle).toFixed(0)} ms in; both Japanese subsets rasterize ` +
+        `${String(parity)} catalog code points identically to their originals; a second visit ` +
+        `booted ${String(offline.documents)} documents with ${String(offline.refused)} requests ` +
+        `severed, and a renamed PVM left no stale copy cached once ${CACHE_PREFIX}${offline.version} ` +
+        `activated; controls: a build ` +
+        `without its Japanese woff2 refused, a cut without AUTOFIT rasterized differently, the ` +
+        `same rename under the old sw.js kept the stale PVM, a build with no sw.js did not boot ` +
+        `offline`,
+    );
+  } finally {
+    dev?.stop();
   }
-  const facelessPage = await browser.newPage({ viewport: { width: NARROW, height: 720 } });
-  await facelessPage.goto(`http://127.0.0.1:${String(server.port)}/${FACELESS}/`, {
-    waitUntil: 'load',
-    timeout: TIMEOUT,
-  });
-  await facelessPage.waitForSelector(READY, { timeout: TIMEOUT });
-  await facelessPage.locator('[data-action="language-switch"]').click();
-  await facelessPage.waitForSelector('html[lang="ja"]', { timeout: TIMEOUT });
-  if (await facelessPage.evaluate(FACE_SETTLED)) {
-    fail('control did not fire: a build without its Japanese woff2 still loaded the face');
-  }
-
-  const offline = await offlineLeg(browser, `http://127.0.0.1:${String(server.port)}/${OFFLINE}/`);
-  if (offline.documents !== documents) {
-    fail(`offline second visit reported ${String(offline.documents)} documents`);
-  }
-
-  const parity = await faceParity(
-    browser,
-    join(root, PARITY),
-    `http://127.0.0.1:${String(server.port)}/${PARITY}/`,
-  );
-
-  const broken = log.filter((entry) => entry.status !== 200 && entry.path.startsWith(`/${NESTED}`));
-  if (broken.length > 0) fail(`nested assets missing: ${broken.map((e) => e.path).join(', ')}`);
-
-  console.log(
-    `browser-check: ok — dev ${dev.url} and built ${builtUrl} both report ${String(documents)} ` +
-      `documents; graph and evidence stay lazy; ${String(narrowStates)} states fit ` +
-      `${String(NARROW)}px across both locales; ` +
-      `${question} rendered the bag's ${String(expectedCanonical.rows)}-row canonical answer ` +
-      `byte for byte in both locales; cancel delivered after ${String(solutions)} ` +
-      `of up to ${String(probe.cap)} solutions in ${Number(probe.elapsed).toFixed(0)} ms, ` +
-      `engine still ${String(probe.after)}; a hostile goal was killed at ` +
-      `${Number(kill.settled).toFixed(0)} ms and its replacement engine reported ` +
-      `${String(kill.documents)} documents ${Number(kill.cycle).toFixed(0)} ms in; both Japanese subsets rasterize ` +
-      `${String(parity)} catalog code points identically to their originals; a second visit ` +
-      `booted ${String(offline.documents)} documents with ${String(offline.refused)} requests ` +
-      `severed, and a renamed PVM left no stale copy cached once ${CACHE_PREFIX}${offline.version} ` +
-      `activated; controls: a build ` +
-      `without its Japanese woff2 refused, a cut without AUTOFIT rasterized differently, the ` +
-      `same rename under the old sw.js kept the stale PVM, a build with no sw.js did not boot ` +
-      `offline`,
-  );
-} catch (cause) {
-  // A browser timeout or a launcher fault must read as this check's own one-line
-  // failure, not as an uncaught rejection trailing a Node banner.
-  thrown =
-    cause instanceof Error ? `${cause.name}: ${cause.message.split('\n')[0]}` : String(cause);
-} finally {
-  await browser?.close();
-  dev?.stop();
-  server.close();
-  await rm(root, { recursive: true, force: true });
-}
-
-if (thrown !== undefined) fail(thrown);
+});

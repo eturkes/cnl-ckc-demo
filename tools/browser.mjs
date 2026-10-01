@@ -1,16 +1,17 @@
-// Shared plumbing for the checks that need a real browser.
-//
-// `smoke.mjs` and `browser-check.mjs` both serve static files from a temporary
-// root, resolve the launcher out of the pnpm global store and drive the same
-// slice of the page API. That slice is declared here once; the launcher ships no
-// types, so every consumer would otherwise redeclare it.
+// Shared plumbing for the checks that need a real browser: `smoke`, `browser:check` and
+// `visual-qa` each run a scenario inside `withBuiltSite` and drive the slice of the page API
+// declared here once — the launcher ships no types, so every consumer would otherwise
+// redeclare it.
 
-import { existsSync, readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { cp, mkdtemp, rm } from 'node:fs/promises';
 import { createServer } from 'node:http';
-import { homedir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { extname, join, normalize } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { readdirSync } from 'node:fs';
+
+import { ROOT } from './kb/paths.mjs';
 
 /**
  * @typedef {object} Locator
@@ -155,3 +156,52 @@ export const serve = (root, log, refuse = () => false) =>
       });
     });
   });
+
+/**
+ * @typedef {object} BuiltSite
+ * @property {string} root the served temp directory; a scenario adds its own copies here
+ * @property {string} origin `http://127.0.0.1:<port>`
+ * @property {string} url the nested build's URL
+ * @property {LogEntry[]} log every request the server saw
+ * @property {Browser} browser
+ */
+
+/**
+ * Build, serve a copy of `dist/` at a nested path under a temp root, launch the browser, run
+ * the scenario, and tear down whatever it threw. Never trust a leftover dist tree: every lane
+ * proves the current source. A throw becomes the tool's own one-line failure, not an uncaught
+ * rejection trailing a Node banner. Build output goes to stderr, so stdout stays the lane's own.
+ *
+ * @template T
+ * @param {{ tool: string, fail: (message: string) => never, nested: string,
+ *   refuse?: (path: string) => boolean }} options
+ * @param {(site: BuiltSite) => Promise<T>} scenario
+ * @returns {Promise<T>}
+ */
+export const withBuiltSite = async ({ tool, fail, nested, refuse }, scenario) => {
+  execFileSync('pnpm', ['build'], { cwd: ROOT, stdio: ['ignore', 2, 2] });
+  const root = await mkdtemp(join(tmpdir(), `cnl-ckc-${tool}-`));
+  /** @type {LogEntry[]} */
+  const log = [];
+  const server = await serve(root, log, refuse);
+  /** @type {Browser | undefined} */
+  let browser;
+  /** @type {string} */
+  let thrown;
+  try {
+    await cp(join(ROOT, 'dist'), join(root, nested), { recursive: true });
+    browser = await launch(fail);
+    const origin = `http://127.0.0.1:${String(server.port)}`;
+    return await scenario({ root, origin, url: `${origin}/${nested}/`, log, browser });
+  } catch (cause) {
+    thrown =
+      cause instanceof Error
+        ? `${cause.name}: ${cause.message.split('\n')[0] ?? ''}`
+        : String(cause);
+  } finally {
+    await browser?.close();
+    server.close();
+    await rm(root, { recursive: true, force: true });
+  }
+  return fail(thrown);
+};
