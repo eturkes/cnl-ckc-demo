@@ -11,8 +11,8 @@ binding:check → build`
 **rerun the gate rather than quoting a total**; a durable exact total re-stales itself.
 
 **`pnpm gate` green is not `release:check` green.** A report of a gate-only run names
-`kb:reproduce`, `smoke`, `browser:check`, `graph:check`, `readme:check` and `test:browser` as
-not-run, by name — the six `release:check` adds — and `binding:replay`, which is out of both. A step that a diff cannot
+`kb:reproduce`, `smoke`, `browser:check`, `graph:check`, `readme:check`, `test:browser` and
+`engine:probe` as not-run, by name — the seven `release:check` adds — and `binding:replay`, which is out of both. A step that a diff cannot
 reach is still reported that way (`a0d43e2` names `pnpm gate` itself not-run, with the reason
 each step misses the edited files). `none` is the sentinel when nothing was skipped, which is
 what keeps an omitted category distinguishable from an empty one.
@@ -144,6 +144,7 @@ committed state:
 | command | what it alone proves |
 |---|---|
 | `pnpm kb:reproduce` | byte-reproducibility of pvm + qlf + catalog across two forced builds |
+| `pnpm engine:probe` | the engine lifecycle in a real browser: R38 cap + deadline end an unbounded goal; R39 a worker stuck in one step ended by the main-thread deadline with the main thread free; R41 five reset cycles each killing a hostile loop, dropping consulted state and booting the manifest's corpus; R42 a failing consult poisons its engine and a reset clears it; R45 the runaway-`assertz` abort, the dead engine and recovery by reset. Control: a cycle without its reset must be refused |
 | `pnpm test:browser` | the combobox predicates jsdom can only stub — S1/S7 from Chromium's accessibility tree, K5 on the real clock, K8/K10/P2/P3 under real key and pointer input with focus read after each, B1 through the native `scrollIntoView`, B3 axe with real layout (`tests/question-combobox.browser.test.ts`) |
 | `pnpm smoke` | built output answers in a real browser against bag bytes read at run time, and the served saved state is current with the bag's input digest |
 | `pnpm readme:check` | the README's `## Run locally` path from a clean clone of HEAD: every non-keyed `sh` line rc 0, both servers answering, the booted preview engine, `kb:build` and the bag manifest agreeing on the document count, and the clone's module count equal to a reference build of the same tree. It refuses a dirty tree, and its one deviation from the README text is a sandbox `--install-directory` on `corepack enable` |
@@ -213,7 +214,7 @@ headroom, not a tight fit. **Never wrap this command in an outer `timeout` to pa
 regression** — the budget message names the phase, and a wall-clock kill does not.
 
 `pnpm release:check` = `gate && kb:reproduce && smoke && browser:check && graph:check &&
-readme:check && test:browser`.
+readme:check && test:browser && engine:probe`.
 
 ## CI
 

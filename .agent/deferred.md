@@ -136,7 +136,8 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   (`.claude/rules/waves.md`); deleting a branch makes seven claim families non-rerunnable
   from committed state (M1 review X24). Accept: one typed browser harness in `tools/` covers
   all five rows, and the `res-m1-*` probes are either ported with their commands or every
-  durable claim resting on them is pruned. `pri` med.
+  durable claim resting on them is pruned. `pri` med. **Browser half done**: `pnpm engine:probe` (`tools/engine-probe.mjs`)
+  grades R38, R39, R41, R42 and R45 in a real browser on every run. Owes the `res-m1-*` half.
 
 - **Owned PDF viewer** — M2 u7 ships a native `<iframe>` at `#page=N`, so the viewer is a
   black box: no assertion can read the displayed page, and the passage cannot be

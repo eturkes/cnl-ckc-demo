@@ -61,7 +61,8 @@ failures before it was wired.
   `existence_error(source_sink,library(time))`; `call_with_time_limit/2` and `alarm/4` raise
   procedure existence errors.
 - Prolog limits do not bound a query: `repeat` under the full wrapper emitted 100000 answers
-  in 452.232 ms with `D=1`, `I=true`. The JS answer cap and deadline terminate it.
+  in 452.232 ms with `D=1`, `I=true`. The JS answer cap and deadline terminate it — `pnpm
+  engine:probe` R38 re-derives both in a real browser.
 - `answer-cap` is reported only after the driver proves one solution past the cap and
   discards it: a run holding exactly `answerCap` answers is honest exhaustion and reports
   `solutions`. Hitting the cap therefore costs one extra solution step.
@@ -82,7 +83,9 @@ failures before it was wired.
 
 - **A worker timer cannot fire inside a synchronous step**: an in-worker 25 ms timer never
   fired across 249.80 ms of `repeat,fail`, while a main-thread 25 ms one fired at 25.97 ms.
-  The hard deadline is main-thread only, at `wallClockMs + 500 ms`.
+  The hard deadline is main-thread only, at `wallClockMs + 500 ms`: `pnpm engine:probe` R39
+  ends a worker stuck in one step at that deadline while a 25 ms main-thread interval keeps
+  firing.
 - `solve` yields a MACROTASK between solutions; a microtask yield admits no posted message
   and cannot deliver a cancel. Granularity = 50.11 ms worst step over 80 sampled Node steps
   on the real KB — a sample maximum, never benchmarked per catalog goal. Browser delivery is
@@ -90,9 +93,9 @@ failures before it was wired.
 - Cancellation surface = a trailing optional `AbortSignal` on `EngineClient.query` and
   `AnswerService.ask`. `EngineClient`'s correlation id stays private.
 - Hard cancel: terminate 2.7–3.5 ms; terminate→respawn→boot 181.75–223.96 ms **in Node**. In
-  a real browser the same cycle costs 526.4–1732.5 ms, median 641.6 over 5/5 cycles — any UI
-  claim must use the browser figure. Each cycle drops the overlay and re-reads 337 documents
-  from the replacement engine. Post-termination worker CPU stays unmeasured. `pnpm
+  a real browser the same cycle costs several hundred ms, and any UI claim must use the browser
+  figure: `pnpm engine:probe` R41 runs five cycles each time and prints their range. Each cycle
+  drops the overlay and re-reads the manifest's documents from the replacement engine. Post-termination worker CPU stays unmeasured. `pnpm
   browser:check` kills a hostile `repeat,fail` through the client deadline in a real browser on
   every run: exactly one respawn by the time the caller resumes, and the replacement reports the
   manifest's document count.
@@ -100,7 +103,8 @@ failures before it was wired.
   `resource_error(memory)`: the allocator prints FATAL `Could not allocate memory: Out of
   memory` and the WASM runtime aborts, reaching the caller as `{code:'prolog', message:
   'Aborted(). Build with -sASSERTIONS for more info.'}` — ~6.3 s from a fresh engine in Node,
-  ~12 s in a browser. That engine never answers again: the next query aborts again or, when the
+  ~10–12 s in a browser (`pnpm engine:probe` R45, which also pins the dead engine and its
+  recovery by reset). That engine never answers again: the next query aborts again or, when the
   runtime survived with no memory, raises `resource_error(memory)` and reports `limit:'heap'` —
   which one varies run to run. The runaway itself never reports `heap`, so the recreation that
   outcome triggers never runs for it. `readOutcome` still maps

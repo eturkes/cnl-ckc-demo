@@ -208,8 +208,9 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `69e7110` d37 every protocol discriminant (5 request + 9 response = 14) clones; per-row non-cloneable mutant refused.
 - [x] `ec37224` d30 `pnpm test:browser`: the nine jsdom-stubbed combobox predicates in real Chromium.
 - [ ] d32 stacks + wordmark decided; owes the user the forbidden-claim set and the descriptor-rendering ruling.
+- [ ] d40 `pnpm engine:probe` grades R38/R39/R41/R42/R45; owes the `res-m1-*` probes (port or prune).
 - [ ] d29 `high` WASM abort — waits: an ad-hoc goal path (`Decisions` MAIN).
-- [ ] `med`: d40 d44 d46 d48 d49 d50 d51 d52 d53 d54
+- [ ] `med`: d44 d46 d48 d49 d50 d51 d52 d53 d54
 - [ ] `low`: d1 d3 d5 d6 d8 d9 d12 d15 d17 d20 d22 d28 d33 d34 d35 d38 d39 d41 d42 d43 d47
   d55 d56 d57 d58 d59 d60 d61 d62 d63
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
