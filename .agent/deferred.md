@@ -208,14 +208,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   reader-relative labels). m5u12 ruled the first, second and fourth for the shipped side, so
   24/24 needs edits to the teammate's oracle beyond the lookups — the user rules which.
 
-- **Two registry rows say `deferred` and cite no queue row** — review row `C5`.
-  `docs/claims.md:72` (R003) and `:89` (R020) name `none` as the command and `deferred — …` as
-  the disposition, but neither cites a `.agent/deferred.md` row and no row covers either
-  subject. `.agent/contracts/m5u15.md:39-41` R2 requires the citation, so the pair is honest in
-  shape and untracked in substance: nothing will ever re-derive the catalog-fragment claim or
-  the proof-RPC failure copy. Accept: both subjects carry a queue row with its own acceptance
-  check, both dispositions cite it by name, and `claims:check` refuses a `deferred` disposition
-  that names no row. `pri` med.
 - **u13's firing record names no base revision** — review row `C6`.
   `.agent/contracts/m5u13.md:102` records the perturbation, the reproducing command, rc 1 and
   the assertion text, but no revision to apply them to, and `0d5f4c1` omits base `3c4c17c` from
@@ -309,6 +301,41 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   figure is either reported by a committed benchmark command named beside it, or reworded to the
   bound it guarantees (for example "one solution step") and its registry row re-adjudicated.
   `pri` low.
+- **Catalog-fragment composition has no checker** — `.claude/rules/i18n.md` forbids building a
+  string by joining catalog fragments outside the declared before/after pairs
+  (`LABELS.graphSelected{Before,After}`, `TEXT.graphHighlightOrigin{Before,After}`), and the
+  registry row for u14 A03 rests on that rule alone. Accept: a committed check refuses a
+  component that concatenates two catalog values outside the declared pairs, shipped with a
+  planted concatenation that reddens it. `pri` low.
+- **Proof-RPC failure copy has no driving test** — `TEXT.traceFailure` (u14 A21) renders only
+  when the proof RPC fails, and no test drives that path. Accept: a dom test fails the ladder's
+  proof request and asserts the rendered `traceFailure` copy in both locales. `pri` low.
+- **Engine runtime-behaviour claims have no committed probe** — `.claude/rules/engine.md` states
+  behaviours measured once by hand: `JSON.stringify` corrupting `'$guideline_id'/5` and `1r3`,
+  `Query.close()` being load-bearing (8 cascading failures without it), no in-Prolog wall clock
+  (`threads=false`, `library(time)` absent), the 1 GiB / 2 GiB ceilings with ~119 MB RSS, and
+  the bundle-byte + header facts. Accept: each is re-derived by a committed test or probe named
+  beside it, or reworded to what a committed check proves, and its registry row re-adjudicated.
+  `pri` low.
+- **Proof-probe traps and clause identity have no committed rerun** — `.claude/rules/proof.md`
+  records the `assertz((Head) :- Body)` parse trap, the permission error that bypasses the
+  `printErr` drain, and the 10,321-clause identity (unique `L`, exact text recovery, 68 trace
+  nodes); the census pins the count alone. Accept: a committed test demonstrates each trap and
+  the identity properties, or the rule text drops what no check proves. `pri` low.
+- **Package byte figures have no committed size check** — `.claude/rules/i18n.md` and
+  `kb-build.md` state exact package byte sizes (the BIZ UDPGothic weights, the swipl-bundle
+  variants). The packages are exact-pinned, so the bytes are stable. Accept: `tests/census.test.ts`
+  pins each figure from the installed package files, or the rules drop it. `pri` low.
+- **Hand-run mutants and probes have no committed harness** — six registry rows rest on a
+  mutation or probe run once and restored: the TypeScript 7 lint break, the rejected listbox
+  click handler, the worktree `kb/generated` symlink failure, the u6 pre-lane byte comparison,
+  the u7 gate mutants and the u9 canvas source controls. Accept: each joins `tools/mutants.mjs`
+  (or a committed probe) and its registry row re-adjudicates to `true` on that command. `pri` low.
+- **Upstream and design claims have no in-repo grader** — the registry's rows for the upstream
+  export recipe, the sibling `ui.py` port source, the ≈1K-node analysis-tier priority, the
+  "every human-facing string lives in `src/i18n/`" rule and the u6 catalog-consistency pass
+  rest on judgment alone. Accept: each re-adjudicates to `true` on a committed command, to
+  `historical`, or the rule is reworded to what a committed check proves. `pri` low.
 
 ## Index — one line per `high` + `med` row
 
@@ -324,7 +351,6 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | Two tests time out under parallel execution | both pass 20 consecutive full-suite runs at the committed worker count |
 | 71 operator contexts have no edge, 64 of them negation | the 71 carry edges with the moved counts recorded, or a check proves no shown path skips an edgeless negation context |
 | The projection oracle lives on a branch alone | its label lookups match on `relation`, 24/24 green in-tree, joined to a declared register |
-| Two registry rows say `deferred` and cite no queue row | both subjects carry a queue row, both dispositions cite it, `claims:check` refuses an uncited `deferred` |
 
 ## Accepted-open
 

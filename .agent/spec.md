@@ -200,7 +200,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `3f76af8` d24 `copy:check` walks `src/` and grades every component's literal prose.
 - [x] `0465faa` d25 the inference budget bounds the whole request (`meteredGoal`, terminal record, display after close).
 - [x] `9d1eecb` d26 smoke refuses a build stale against the bag's input digest.
-- [x] d11 u2 suite ported: 16 merged green, 20 covered, 2 red → rows (d12 float, new find improper-list tail).
+- [x] `8fc8173` d11 u2 suite ported: 16 merged green, 20 covered, 2 red → rows (d12 float, new find improper-list tail).
 - [ ] d45 fix committed (scan-only spawns, per-state V11, serialized axe); 20-run proof owed under lower load.
 - [x] `0273a6a` d27 `pnpm mutate`: committed 45-mutant table + runner, 45/45 killed.
 - [x] `34d9d7e` d36 `kb/generated` joins the answer-oracle scan, with its own firing input.
@@ -216,9 +216,9 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [ ] d50 owes a ruling: 3 lookup fixes give 19/24; 24/24 needs oracle edits beyond them.
 - [x] `0e1e5e0` d51 each of the 38 contradicting shortcuts is justified by its own clause (`tests/graph-shortcut-justification.test.ts`).
 - [x] `ebf066e` d52 `graph:check` binds each spanning reading to its edge by id, both directions; the fallback list can expand to every incident relation.
-- [x] d53 each `kb:asset-check` root table refuses an emptied table by its own name.
+- [x] `d07faac` d53 each `kb:asset-check` root table refuses an emptied table by its own name.
 - [ ] d29 `high` WASM abort — waits: an ad-hoc goal path (`Decisions` MAIN).
-- [ ] `med`: d54
+- [x] d54 every `deferred` registry row cites a live queue row; `claims:check` refuses an uncited or dangling one (7 rows added).
 - [ ] `low`: d1 d3 d5 d6 d8 d9 d12 d15 d17 d20 d22 d28 d33 d34 d35 d38 d39 d41 d42 d43 d47
   d55 d56 d57 d58 d59 d60 d61 d62 d63
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.

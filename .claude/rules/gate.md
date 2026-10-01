@@ -83,7 +83,9 @@ Step semantics a reader cannot get from the script name:
   verdict to its neighbour, and the shown cell stops at 150 characters, so a cell-keyed merge
   kept a verdict across an edit past the cut. Prettier owns `docs/`, so the row block ships under `prettier-ignore` — at a
   150-char claim cell, column padding rewrites every row and `format:check` never agrees with
-  the seed again.
+  the seed again. A `deferred` disposition must cite its queue row as ``(queue row `<title>`)``
+  naming a live `.agent/deferred.md` title (m5u15 R2), so pruning a row reddens the gate until
+  every registry row citing it is re-adjudicated.
 - **The stable censuses the rules state are graded, not trusted.** `tests/census.test.ts` (run by
   `binding:check` with the rest of the suite, after `kb:build`) holds a `CENSUS` table: each row
   anchors one claim unit in `.claude/rules/`, parses each figure out of its text and compares it
@@ -132,7 +134,7 @@ effect of the unit whose grader it loosens.
 | `contrast:check` | `--text` collapsed onto `--surface` | the pair loop re-run on the perturbed token map, must report `1:1` |
 | `presentation:check` | one `@font-face` renamed out of `app.css`; each shipped licence compared against the next package's; `overflow-wrap` stripped from every component style; `--font-code`'s generic family dropped from `app.css`; the `STACKS` table emptied | one per declared table, in process |
 | `binding:check` | a required case no suite defines; a required suite the run never loaded; the `REQUIRED` table emptied; the `LIFECYCLE` table emptied; the `MEANING` table emptied | the inventory loop re-run over the gate's OWN suite report, so none costs a second vitest; the last three feed `gradeTable` the real table emptied, through the same function the real one goes through |
-| `claims:check` | the claim set re-derived from ONE rules file, contracts dropped; the first rules claim the cell cuts short, lengthened past the cut | its own `gradeRegistry` over the real registry, in process; the short set must be refused by row count, because a sweep that silently stopped reading would otherwise agree with any registry it could still match. The lengthened claim must be refused unseeded by its anchor, then come back `unknown` from the seed's own merge — the append the old text-keyed seed carried a verdict across |
+| `claims:check` | the claim set re-derived from ONE rules file, contracts dropped; the first rules claim the cell cuts short, lengthened past the cut; one `deferred` citation stripped; its queue row pruned | its own `gradeRegistry` over the real registry, in process; the short set must be refused by row count, because a sweep that silently stopped reading would otherwise agree with any registry it could still match. The lengthened claim must be refused unseeded by its anchor, then come back `unknown` from the seed's own merge — the append the old text-keyed seed carried a verdict across. Then `gradeDeferrals` twice: the first cited `deferred` row with its citation stripped, and the queue with that row's title renamed — each must name the row id |
 | `smoke` | the same build served with its hashed `kb-*.pvm` removed; the manifest input digest altered; one served pvm byte flipped | the stripped copy loads in its own page and the lane's boot grader must name `boot-error instead of ready`; the two staleness controls run in process |
 | `browser:check` | the same build served with its Japanese `woff2` files renamed | the lane's face grader (`document.fonts.load` of a Japanese glyph) must report the face never loaded |
 | `kb:reproduce` | one asset digest changed in the second manifest | the equality seam re-run on the perturbed clone |

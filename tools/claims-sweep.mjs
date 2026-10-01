@@ -294,6 +294,38 @@ export const gradeRegistry = (rows, registry) => {
   return failures;
 };
 
+const QUEUE = '.agent/deferred.md';
+const CITATION = /queue row `([^`]+)`/u;
+
+/** @param {string} registry */
+const deferredRows = (registry) =>
+  registry
+    .split('\n')
+    .map((line) => ROW.exec(line))
+    .filter((match) => match !== null)
+    .filter((match) => (match[7] ?? '').trim().startsWith('deferred'));
+
+/**
+ * m5u15 R2: `deferred` is an honest answer only while it names the queue row that will re-derive
+ * the claim. Pruning that row leaves the citation dangling, so a closed row reddens here until its
+ * registry rows are re-adjudicated.
+ *
+ * @param {string} registry @param {string} queue
+ * @returns {string[]}
+ */
+export const gradeDeferrals = (registry, queue) => {
+  const titles = new Set([...queue.matchAll(/^- \*\*(.+?)\*\*/gmu)].map((match) => match[1]));
+  return deferredRows(registry).flatMap((match) => {
+    const title = CITATION.exec(match[7] ?? '')?.[1];
+    if (title !== undefined && titles.has(title)) return [];
+    const why =
+      title === undefined
+        ? 'cites no queue row'
+        : `cites queue row "${title}", absent from ${QUEUE}`;
+    return [`${match[1] ?? '?'} (${match[3] ?? '?'}) is deferred but ${why}`];
+  });
+};
+
 /**
  * The first rules claim the shown cell cuts short, lengthened past the cut in memory — the
  * shape of an appended branch citation, which is the edit the cell-keyed merge used to miss.
@@ -377,7 +409,30 @@ if (process.argv.includes('--seed')) {
     () => gradeRegistry(edited, table(edited, registry)),
   );
 
-  const failures = gradeRegistry(rows, registry);
+  const queue = readFileSync(QUEUE, 'utf8');
+  const [victim] = deferredRows(registry);
+  const cited = CITATION.exec(victim?.[7] ?? '')?.[1];
+  if (victim === undefined || cited === undefined) {
+    throw new Error('no cited deferred row, so the citation controls grade nothing');
+  }
+  const uncited = requireFiring(
+    'claims:check',
+    {
+      mutation: `${victim[1] ?? ''} citation stripped`,
+      expect: [`${victim[1] ?? ''} `, 'cites no queue row'],
+    },
+    () => gradeDeferrals(registry.replace(victim[0], victim[0].replace(CITATION, '')), queue),
+  );
+  const dangling = requireFiring(
+    'claims:check',
+    {
+      mutation: `queue row "${cited}" pruned`,
+      expect: [`${victim[1] ?? ''} `, `absent from ${QUEUE}`],
+    },
+    () => gradeDeferrals(registry, queue.replace(`**${cited}**`, '**control**')),
+  );
+
+  const failures = [...gradeRegistry(rows, registry), ...gradeDeferrals(registry, queue)];
   if (failures.length > 0) {
     process.stderr.write(`claims:check failed — ${failures.join('; ')}\n`);
     process.exitCode = 1;
@@ -391,7 +446,8 @@ if (process.argv.includes('--seed')) {
       .join(', ');
     process.stdout.write(
       `claims:check ok — ${String(rows.length)} claims covered (${split}), ` +
-        `every row adjudicated; controls: ${control}, ${unseeded}, ${reseeded}\n`,
+        `every row adjudicated, ${String(deferredRows(registry).length)} deferrals cited; ` +
+        `controls: ${control}, ${unseeded}, ${reseeded}, ${uncited}, ${dangling}\n`,
     );
   }
 }
