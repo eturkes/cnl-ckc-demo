@@ -156,13 +156,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   reader-relative labels). m5u12 ruled the first, second and fourth for the shipped side, so
   24/24 needs edits to the teammate's oracle beyond the lookups — the user rules which.
 
-- **`spec.md` `Tasks` has no mechanical owner** — nothing refuses a spec whose open unit is not
-  a `- [ ]` row, whose ticked row carries no SHA, or whose last line stops pointing at
-  `.agent/deferred.md`. The template refresh proved `Deferred` → `Tasks` preservation with a
-  scratch-local script, `.scratch/refresh/unit-ids.py` (old ids vs `Tasks` ∪ `Phase`, backticked
-  spans + numbers, two planted-loss controls rc 1). Accept: one committed command grades that
-  layout inside `pnpm gate`, and each of the three planted defects reddens it by name. `pri`
-  low.
 - **`waves.md` `Report grading` and the `reviewer` role disagree on verdicts** — the law's
   `--verdict` form wants the finding cell to open `pass:` or `fail(low|med|high):`, while
   `~/.claude/agents/reviewer.md` writes `pass` | `finding` with severity `blocker` | `major` |

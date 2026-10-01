@@ -208,7 +208,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `69e7110` d37 every protocol discriminant (5 request + 9 response = 14) clones; per-row non-cloneable mutant refused.
 - [x] `ec37224` d30 `pnpm test:browser`: the nine jsdom-stubbed combobox predicates in real Chromium.
 - [ ] d32 stacks + wordmark decided; owes the user the forbidden-claim set and the descriptor-rendering ruling.
-- [x] d40 `pnpm engine:probe` grades R38/R39/R41/R42/R45; the `res-m1-*` claims are ported (JSON corruption, stack flag, direct eval, axe contrast, engine split in smoke), covered, or pruned.
+- [x] `f40ce36` d40 `pnpm engine:probe` grades R38/R39/R41/R42/R45; the `res-m1-*` claims are ported (JSON corruption, stack flag, direct eval, axe contrast, engine split in smoke), covered, or pruned.
 - [x] `524dad6` d44 `tests/census.test.ts` grades every stable census the rules state against its derivation.
 - [x] `1193641` d46 smoke + browser:check each refuse a mutation their own lane runs (pvm-stripped copy, renamed woff2).
 - [x] `3032246` d48 every shipped bound names an owner in the rules; the 60-relation cap surfaces its truncation.
@@ -218,33 +218,34 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `ebf066e` d52 `graph:check` binds each spanning reading to its edge by id, both directions; the fallback list can expand to every incident relation.
 - [x] `d07faac` d53 each `kb:asset-check` root table refuses an emptied table by its own name.
 - [ ] d29 `high` WASM abort — waits: an ad-hoc goal path (`Decisions` MAIN).
-- [x] d54 every `deferred` registry row cites a live queue row; `claims:check` refuses an uncited or dangling one (7 rows added).
-- [x] d1 the Japanese face ships as a catalog-exact subset (2,654,740 B → 193,444 B), raster-identical to the original.
+- [x] `e9465b9` d54 every `deferred` registry row cites a live queue row; `claims:check` refuses an uncited or dangling one (7 rows added).
+- [x] `9b793fd` d1 the Japanese face ships as a catalog-exact subset (2,654,740 B → 193,444 B), raster-identical to the original.
 - [ ] d3 contract drafted (`.agent/contracts/mnt-d3.md`: J1 ceilings, J2 terms, J3 final form, 3 copy edits); owes approval.
 - [ ] d5 owes a ruling: phased boot status replaces the accepted status line's boot text.
-- [x] d6 the URL carries the selected catalog id; reload and back/forward select it and never run.
-- [x] d8 a service worker precaches the boot set; a second visit boots offline; a renamed PVM evicts the stale cache.
-- [x] d9 both u1 wave-1 reports validate (25/25, 12/12), re-derived at today's tree; new row: halting payload reports `[object Object]`.
+- [x] `3f99fd1` d6 the URL carries the selected catalog id; reload and back/forward select it and never run.
+- [x] `424b394` d8 a service worker precaches the boot set; a second visit boots offline; a renamed PVM evicts the stale cache.
+- [x] `6e558cd` d9 both u1 wave-1 reports validate (25/25, 12/12), re-derived at today's tree; new row: halting payload reports `[object Object]`.
 - [ ] d12 owes a ruling: a fourth undeclared surface (`prolog.get_float` override, measured working) or Prolog-side float paths.
-- [x] d15 u3 port merged (8 green); its P3.3 case caught `0465faa`'s unbounded display → the deadline bounds every answer and proof display.
-- [x] d20 `kb:asset-check` refuses an oracle path assembled from its two bare segments.
-- [x] d22 `pnpm visual-qa`: 39 states at 320/375/1280 px, none overflows, planted-overflow control.
-- [x] d28 the source-label grammar is stated in `.claude/rules/ui.md` `Copy`; the humanizer test cites it.
+- [x] `91d22b7` d15 u3 port merged (8 green); its P3.3 case caught `0465faa`'s unbounded display → the deadline bounds every answer and proof display.
+- [x] `768742e` d20 `kb:asset-check` refuses an oracle path assembled from its two bare segments.
+- [x] `1dc006f` d22 `pnpm visual-qa`: 39 states at 320/375/1280 px, none overflows, planted-overflow control.
+- [x] `2b4a2b6` d28 the source-label grammar is stated in `.claude/rules/ui.md` `Copy`; the humanizer test cites it.
 - [ ] d17 owes a ruling: answers rendered as they arrive change the accepted answer panel mid-run.
-- [x] d33 `copy:check` grades a keyed literal once, under its key (378 → 251 graded strings).
-- [x] d38 `withBuiltSite` (`tools/browser.mjs`) owns build, serve, launch and teardown for smoke, browser:check and visual-qa.
+- [x] `03a0184` d33 `copy:check` grades a keyed literal once, under its key (378 → 251 graded strings).
+- [x] `0cdaa0f` d38 `withBuiltSite` (`tools/browser.mjs`) owns build, serve, launch and teardown for smoke, browser:check and visual-qa.
 - [ ] d39 seven what-only headers deleted (AnswerPanel's already gone), eight provenance sites restated; owes a ruling on `serialize.ts` + `humanize.ts`, byte-frozen by T9.
-- [x] d34 m1u5 matrix 26/26: 19 covered, 6 ported green (`tests/m1u5-port.dom.test.ts`), 1 superseded, 0 red.
+- [x] `7f7a2aa` d34 m1u5 matrix 26/26: 19 covered, 6 ported green (`tests/m1u5-port.dom.test.ts`), 1 superseded, 0 red.
 - [ ] d41 owes a ruling: an owned PDF viewer replaces the accepted ladder's iframe (+504,727 B gzip PDF.js).
 - [ ] d42 session proof cache on `wip/d42` under review.
 - [ ] d43 owes a ruling: a document-first provenance view is a new surface with a layout entry point.
-- [x] d47 `pnpm queue:index` derives the queue index; `claims:check` refuses a stale one by line.
-- [x] d35 m1u7 matrix 34/34: 16 covered, 13 ported green (`tests/m1u7-port{,.dom}.test.ts`), 5 superseded, 0 red.
-- [x] d55 u13's firing record names base `3c4c17c` (reproduced there: rc 1, same assertion); the phrasing census is gone from the tree.
-- [x] d56 both rows graded on their own checks: `Boot-error recovery` by `88af76b` (d21), `Boot carries no deadline` by `da39355` (d31, text corrected to `boot`).
-- [x] d57 the `lint` bullet names `advice.ts`'s config exception and why it cannot be inline; R073 adjudicated afresh (deferred to a new grader row).
-- [x] d58 a registry cell may hold `\|`; claims:check re-seeds a piped copy and requires it back byte-identical.
-- [ ] `low`: d59 d60 d61 d62 d63, then the new-find rows.
+- [x] `bdd2ae4` d47 `pnpm queue:index` derives the queue index; `claims:check` refuses a stale one by line.
+- [x] `2089c73` d35 m1u7 matrix 34/34: 16 covered, 13 ported green (`tests/m1u7-port{,.dom}.test.ts`), 5 superseded, 0 red.
+- [x] `737c6d6` d55 u13's firing record names base `3c4c17c` (reproduced there: rc 1, same assertion); the phrasing census is gone from the tree.
+- [x] `e0c4f1b` d56 both rows graded on their own checks: `Boot-error recovery` by `88af76b` (d21), `Boot carries no deadline` by `da39355` (d31, text corrected to `boot`).
+- [x] `50b580f` d57 the `lint` bullet names `advice.ts`'s config exception and why it cannot be inline; R073 adjudicated afresh (deferred to a new grader row).
+- [x] `05df8e9` d58 a registry cell may hold `\|`; claims:check re-seeds a piped copy and requires it back byte-identical.
+- [ ] d59 `spec:check` in the gate (open rows `- [ ]`, ticked rows carry SHAs, pointer last) — closed by the commit that adds this line; the next commit ticks it.
+- [ ] `low`: d60 d61 d62 d63, then the new-find rows.
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open
