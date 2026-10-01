@@ -36,7 +36,7 @@ const ENGINE_OWNER = 'src/engine/worker.ts';
  */
 const ACCEPTED_UNDECLARED = {
   Query: ['[Symbol.iterator]', 'close'],
-  Prolog: ['Compound', 'List', 'Rational', 'String', 'Var'],
+  Prolog: ['Compound', 'Rational', 'String', 'Var'],
 };
 
 /** `terms.ts`'s whole export surface, so no decode path escapes the P3 trap battery. */

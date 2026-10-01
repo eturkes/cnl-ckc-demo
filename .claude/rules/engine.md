@@ -11,7 +11,7 @@ paths:
 
 - Decode happens **JS-side, inside the worker**. Native values never reach the protocol
   boundary and never re-enter a query; re-encoding rebuilds through the engine's own
-  `Compound`/`List`/`Rational`/`String`/`Var` constructors.
+  `Compound`/`Rational`/`String`/`Var` constructors.
 - **`JSON.stringify` over an engine value is a corruption path**: `'$guideline_id'/5`
   re-enters as arity 1 with `ref([1])`, and `1r3` serializes as `3r1`. Production code must
   never do it. `tests/engine-runtime-facts.test.ts` re-derives both, beside the encoder path
@@ -44,7 +44,7 @@ paths:
 
 Production calls three undeclared `swipl-wasm` surfaces, all load-bearing and all ruled
 acceptable: `query[Symbol.iterator]()` and `query.close?()` (`common.d.ts` `Query` declares
-`next`/`once` alone), and the `Compound`/`List`/`Rational`/`String`/`Var` constructors off
+`next`/`once` alone), and the `Compound`/`Rational`/`String`/`Var` constructors off
 `prolog` (`Prolog` declares `call`/`forEach`/`query` alone). The package under-declares its
 own surface → the package stays exact-pinned and every bump re-verifies these against the
 shipped `.d.ts`. `engine:check` pins the allowlist.

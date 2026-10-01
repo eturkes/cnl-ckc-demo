@@ -30,7 +30,6 @@ export type PlBindings = Record<string, PlTerm>;
 /** Constructors the engine exposes on `prolog`; re-encoding goes only through these. */
 export interface PrologConstructors {
   Compound: new (functor: string, ...args: unknown[]) => unknown;
-  List: new (items: unknown[], tail?: unknown) => unknown;
   Rational: new (numerator: PlInteger, denominator: PlInteger) => unknown;
   String: new (value: string) => unknown;
   /** The argument is a sharing NAME, not the decoded id; see `createEncoder`. */
@@ -159,7 +158,12 @@ export function createEncoder(constructors: PrologConstructors): (term: PlTerm) 
       case 'list':
         return term.items.map(encode);
       case 'improper-list':
-        return new constructors.List(term.items.map(encode), encode(term.tail));
+        // Built cell by cell: the wrapper's `List` tests `if (tail)`, so an atom `''` or an
+        // integer `0` tail would collapse to `[]`.
+        return term.items.reduceRight(
+          (tail: unknown, item) => new constructors.Compound('[|]', encode(item), tail),
+          encode(term.tail),
+        );
       case 'compound':
         return new constructors.Compound(term.functor, ...term.args.map(encode));
       case 'variable': {
