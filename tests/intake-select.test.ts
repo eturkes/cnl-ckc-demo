@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+
 import { describe, expect, it } from 'vitest';
 
 import { NOUL_YES, select } from '../src/intake/select.js';
@@ -140,30 +143,65 @@ describe('S1 deterministic selector', () => {
   });
 });
 
+/** The differential's generated inputs: rule order, triggers, pain, probabilities and gaps. */
+function* generated(seed: number, count: number) {
+  const next = random(seed);
+  for (let iteration = 0; iteration < count; iteration++) {
+    const vocab = vocabulary();
+    const remaining = [...vocab.rules];
+    vocab.rules = [];
+    const shuffled = [];
+    while (remaining.length > 0) {
+      const [rule] = remaining.splice(Math.floor(next() * remaining.length), 1);
+      if (rule !== undefined && next() >= 0.2) shuffled.push(rule);
+    }
+    vocab.rules = shuffled;
+    const input = judgment(pick(next, PAINS));
+    input.conditions = Object.fromEntries(
+      vocab.conditions.map(({ id }) => [id, pick(next, VALUES)]),
+    );
+    input.sections = Object.fromEntries(vocab.sections.map(({ id }) => [id, pick(next, VALUES)]));
+    const chunks = extractCandidates(description(next));
+    input.terms = chunks.candidates.map((candidate) => ({
+      ...candidate,
+      value: pick(next, VALUES),
+    }));
+    input.overflow = chunks.overflow;
+    yield { iteration, vocab, input };
+  }
+}
+
 describe('ORACLE-S independent selector differential', () => {
+  it('refuses a selector that reads one fixed trigger id per kind (review INT-F1)', async () => {
+    // The real module's source with the per-rule lookup swapped for the first trigger, built
+    // in memory; its imports are type-only, so the transpiled module stands alone.
+    const ts = createRequire(import.meta.url)('typescript') as typeof import('typescript');
+    const source = readFileSync(new URL('../src/intake/select.ts', import.meta.url), 'utf8');
+    const lookup = '      trigger.id,\n    );';
+    expect(source.split(lookup)).toHaveLength(2);
+    const mutated = source.replace(
+      lookup,
+      "      trigger.kind === 'condition' ? 'c01' : 's1',\n    );",
+    );
+    const { outputText } = ts.transpileModule(mutated, {
+      compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+    });
+    // eslint-disable-next-line no-unsanitized/method -- this repo's own select.ts, one fixed edit
+    const mutant = (await import(
+      `data:text/javascript;base64,${Buffer.from(outputText).toString('base64')}`
+    )) as { select: typeof select };
+    const caught = [...generated(0x16c002, 750)].find(
+      ({ vocab, input }) =>
+        JSON.stringify(mutant.select(vocab, input)) !== JSON.stringify(reference(vocab, input)),
+    );
+    expect(
+      caught?.iteration,
+      'the differential agreed with a fixed-trigger selector',
+    ).toBeDefined();
+  });
+
   it('agrees over 750 generated rule orders, triggers, pain subsets, probabilities and gaps', () => {
-    const next = random(0x16c002);
-    for (let iteration = 0; iteration < 750; iteration++) {
-      const vocab = vocabulary();
-      const remaining = [...vocab.rules];
-      vocab.rules = [];
-      const shuffled = [];
-      while (remaining.length > 0) {
-        const [rule] = remaining.splice(Math.floor(next() * remaining.length), 1);
-        if (rule !== undefined && next() >= 0.2) shuffled.push(rule);
-      }
-      vocab.rules = shuffled;
-      const input = judgment(pick(next, PAINS));
-      input.conditions = Object.fromEntries(
-        vocab.conditions.map(({ id }) => [id, pick(next, VALUES)]),
-      );
-      input.sections = Object.fromEntries(vocab.sections.map(({ id }) => [id, pick(next, VALUES)]));
-      const chunks = extractCandidates(description(next));
-      input.terms = chunks.candidates.map((candidate) => ({
-        ...candidate,
-        value: pick(next, VALUES),
-      }));
-      input.overflow = chunks.overflow;
+    for (const { iteration, vocab, input } of generated(0x16c002, 750)) {
       const before = structuredClone({ vocab, input });
       const actual = select(vocab, input);
       expect(actual, `seed 0x16c002 iteration ${String(iteration)}`).toEqual(

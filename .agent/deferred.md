@@ -167,12 +167,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   lets many clients jointly spend the API key, so a public Worker likely needs a per-client
   bucket AND a global spend bucket. Already in place: `ALLOWED_ORIGINS` is a `wrangler.jsonc`
   var, so naming the published page is configuration, not code.
-- **The selector's trigger-id mutant has no gate-resident control** — review INT-F1 showed the
-  ORACLE-S differential passed a selector that read one fixed trigger id; the fixture now varies
-  ids and the mutant dies, but the only proof is `wt/reviewer-3` `40fd9d6`
-  `tests/zz-review-intake-mutation.test.ts`, which spawns nested vitest runs. Accept: a gate
-  step or `binding:check` control plants that mutant and requires the selector suites to fail,
-  naming the case. `pri` low.
 - **A section "yes" selects every pain-compatible unconditional rule of that section** — 95 of
   the 97 derived
   rules the held-out gold does not list are section-triggered (`.claude/rules/proof.md`), so
