@@ -95,12 +95,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   owned viewer replaces the accepted ladder's native `<iframe>`, a visible change the spec
   reserves, and PDF.js — the one measured renderer — costs +504,727 B gzip. Node 24 has lifted
   the engine-range objection; the size and the visual change remain the user's call.
-- **Generation-scoped proof cache** — every selection re-proves, and the worst measured
-  synchronous proof step is 291.419 ms, which no cooperative cancel can interrupt.
-  Re-selecting a solution already proved in the same session pays that cost again.
-  Accept: re-selecting a proved solution issues no meta-interpreter call and returns the
-  byte-identical proof; a changed KB input hash empties the cache, proven by a test that
-  rebuilds the image and reads a miss. `pri` low.
 - **Corpus-wide provenance browser** — the M2 ladder resolves the SELECTED solution alone,
   so the other 336 documents' coverage rows, regions and alignment are reachable only by
   asking a question that reaches them. Accept: a document-first view lists every document's

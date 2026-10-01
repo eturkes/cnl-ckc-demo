@@ -236,6 +236,13 @@ export class EngineSession {
   readonly #deferred = new Set<string>();
   /** A failed runtime load leaves clauses resident, so its engine is never reused. */
   #poisoned: string | undefined;
+  /**
+   * Proofs this engine already derived, by goal + selected bindings + budget. A session holds
+   * one image for its whole life, and every request that can change the engine — any `solve`
+   * goal, any `consult` — clears the map on entry and exit, so a hit is a proof the loaded
+   * knowledge base still derives. The meta-interpreter itself only reads clauses.
+   */
+  readonly #proofs = new Map<string, ProofStep[]>();
   readonly #options: SessionOptions;
 
   constructor(options: SessionOptions) {
@@ -318,6 +325,8 @@ export class EngineSession {
       );
     }
 
+    // Any goal may assert or retract, so no earlier proof survives a query, before or after.
+    this.#proofs.clear();
     const restore = this.#lowerStack(engine, budget.stackBytes);
     this.#active = id;
     this.#cancelling = this.#deferred.delete(id);
@@ -377,6 +386,7 @@ export class EngineSession {
       restore();
       this.#active = undefined;
       this.#cancelling = false;
+      this.#proofs.clear();
     }
 
     // Rendered only once the query closed: a display call is an engine query, and run between
@@ -419,6 +429,38 @@ export class EngineSession {
     const spec = proofBudget(validateBudget(budget));
     const { goal, selected } = readProofInput(input);
     assertGoalAvoidsReserved(goal);
+    // The budget is part of the key: a tighter budget re-derives, so a budget trip still trips.
+    // Length-prefixed parts, so no part can forge a boundary; the serialization ban in `src/`
+    // (kb:asset-check) rules out a JSON-encoded key here.
+    const key = [
+      goal,
+      ...Object.entries(selected ?? {})
+        .sort(([a], [b]) => (a < b ? -1 : 1))
+        .flat(),
+      ...Object.entries(spec).flat().map(String),
+    ]
+      .map((part) => `${String(part.length)}:${part}`)
+      .join('');
+    const cached = this.#proofs.get(key);
+    if (cached !== undefined) {
+      // The derivation path's cancel admission, kept: a cancel posted ahead of this request or
+      // directly behind it still settles it as `cancelled`.
+      this.#active = id;
+      this.#cancelling = this.#deferred.delete(id);
+      try {
+        await yieldToEvents();
+        if (this.#cancelling) return { kind: 'cancelled' };
+        // A consult that poisoned the engine during the yield ends this request too.
+        this.#require();
+        // A solve or consult that ran during the yield cleared the map: derive afresh below.
+        if (this.#proofs.get(key) === cached) {
+          return { kind: 'proof', steps: structuredClone(cached) };
+        }
+      } finally {
+        this.#active = undefined;
+        this.#cancelling = false;
+      }
+    }
 
     // Parse independently before wrapping. `term_string/2` otherwise turns bad
     // syntax into a zero-solution proof, indistinguishable from an honest failure.
@@ -479,6 +521,8 @@ export class EngineSession {
       // client watchdog can interrupt the worker.
       await yieldToEvents();
       if (this.#cancelling) stopped = 'cancelled';
+      // A consult that poisoned the engine during the yield discards it for this request too.
+      if (stopped === undefined) this.#require();
       if (stopped === undefined) {
         const step = iterator.next();
         if (step.value !== undefined) {
@@ -517,7 +561,9 @@ export class EngineSession {
     if (proof === undefined) return { kind: 'failure' };
     try {
       const late = (): boolean => Date.now() - started > spec.wallClockMs;
-      return { kind: 'proof', steps: this.#proofSteps(engine, proof, late) };
+      const steps = this.#proofSteps(engine, proof, late);
+      this.#proofs.set(key, structuredClone(steps));
+      return { kind: 'proof', steps };
     } catch (cause) {
       if (cause instanceof LateRender) return { kind: 'limit', limit: 'wall-clock' };
       throw cause;
@@ -537,6 +583,8 @@ export class EngineSession {
     const { drain } = this.#options;
     if (drain === undefined) throw new ConsultFailure('runtime loading needs a diagnostic sink');
     if (engine.FS === undefined) throw new ConsultFailure('engine exposes no filesystem');
+    // Any load may change what the knowledge base derives, so no earlier proof survives it.
+    this.#proofs.clear();
     drain();
     engine.FS.writeFile(CONSULT_PATH, source);
     const result = decodeOnce(engine.prolog.query(`consult('${CONSULT_PATH}').`).once());

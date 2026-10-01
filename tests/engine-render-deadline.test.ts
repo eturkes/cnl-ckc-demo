@@ -155,8 +155,9 @@ describe('display rendering under the request deadline', () => {
       (await session.prove({ constrainedGoal: 'guideline_schema_version(1).' }, budget)).kind,
     ).toBe('proof');
     at(20);
+    // Another goal: the arm above cached its proof, and a cache hit renders nothing.
     expect(
-      await session.prove({ constrainedGoal: 'guideline_schema_version(1).' }, budget),
+      await session.prove({ constrainedGoal: 'guideline_schema_version(_).' }, budget),
     ).toEqual({
       kind: 'limit',
       limit: 'wall-clock',

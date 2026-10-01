@@ -79,6 +79,13 @@ failures before it was wired.
   before it return, and the request reports `limit:'wall-clock'` unless an earlier stop already
   holds — that stop keeps its kind, because `heap` is what makes the client recreate the
   worker. `tests/engine-render-deadline.test.ts`.
+- **A proof is cached per session**, keyed by goal + selected bindings + clamped budget, so
+  re-selecting a proved solution runs no meta-interpreter call and returns a copy of the same
+  proof. Every `solve` (any goal may assert or retract) and every `consult` clears the cache on
+  entry and exit; a hit re-checks the map and the engine after its cancel-admission yield, so a
+  query, load or poisoning that lands mid-request is never answered from a stale entry. The
+  meta-interpreter reads clauses alone, so a derivation never mutates. A recreated worker is a
+  new session, hence a new cache. `tests/engine-proof-cache.test.ts`.
 - The wrapper reserves `BudgetDepth_`, `BudgetInference_`, `BudgetResource_`,
   `BudgetStart_`, `BudgetNow_`, `BudgetSpent_` and `BudgetFinal_`; a goal naming one is
   rejected.
