@@ -263,9 +263,10 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [ ] find (inline-disable reasons) owes a ruling: two directives now carry reasons; the third is in T9-frozen `provenance.mjs`.
 - [ ] find (heavy-load timeouts) owes a heavier run or a timeout ruling: 20 runs passed at load ≤23.5, short of the ≥24 bar.
 - [ ] find (failed reset) owes approval to change P4.4 (`engine-recovery`) + P1.1 (`engine-budgets`): only a heap recreation boots under the deadline; a failed replacement stays live.
-- [ ] find: a refactor staled mutant R09's anchor with the gate green → `tests/mutant-anchors.test.ts` grades every anchor in the gate — closed by the commit that adds this line.
+- [x] `aefae8c` find: a refactor staled mutant R09's anchor with the gate green → `tests/mutant-anchors.test.ts` grades every anchor in the gate.
+- [ ] find: a heap recreation that joined an in-flight reset waited on its unbounded boot → it arms its own boot deadline — closed by the commit that adds this line.
 - [ ] new-find rows, in queue order.
-- [ ] Close: 4 lenses × 2 reviewers, round-2 re-review all pass; 46/46 mutants killed under the exit-1 rule — closed by the commit that adds this line.
+- [x] `28c37bc` Close: 4 lenses × 2 reviewers, round-2 re-review all pass; 46/46 mutants killed under the exit-1 rule.
 
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open
   review ids, whose checks stay in `.agent/archive/review-expedited.md`.

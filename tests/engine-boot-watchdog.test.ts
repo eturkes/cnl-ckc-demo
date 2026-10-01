@@ -117,4 +117,36 @@ describe('boot watchdog', () => {
       client.dispose();
     }
   });
+
+  it('bounds a heap recreation that joins a reset already in flight', async () => {
+    const workers: HungWorker[] = [];
+    const clock = new Clock();
+    const client = new EngineClient({
+      spawn: () => {
+        const worker = new HungWorker();
+        workers.push(worker);
+        return worker as unknown as Worker;
+      },
+      schedule: clock.schedule,
+      cancelSchedule: clock.cancel,
+    });
+    try {
+      const querying = client.query('true.', { ...BUDGET_MAX, wallClockMs: 1000, answerCap: 1 });
+      const request = workers[0]?.seen[0];
+      if (request?.kind !== 'query') throw new Error('no query was posted');
+      workers[0]?.reply({ id: request.id, kind: 'limit', limit: 'heap', solutions: [] });
+      // An explicit reset lands before the heap continuation, which then joins it.
+      void client.reset('explicit reset before the heap continuation');
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(workers).toHaveLength(2);
+      expect([...clock.armed.values()].map(({ ms }) => ms)).toEqual([30_000]);
+      clock.fire();
+      expect(await querying).toMatchObject({ kind: 'limit', limit: 'heap' });
+      expect(workers[1]?.terminated).toBe(true);
+      expect(clock.armed.size).toBe(0);
+    } finally {
+      client.dispose();
+    }
+  });
 });

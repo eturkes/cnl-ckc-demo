@@ -130,11 +130,12 @@ leaves its frame open, and every later query then resolves outside the KB:
   stays rejected and a retry on that worker can only fail again; `EngineClient.boot()` resolving
   an error terminates the worker, and the next `boot()` — the UI's Retry — spawns a fresh one.
   The hung-boot watchdog keeps its own single automatic recreation.
-- `EngineClient.query` awaits that recreation on `limit:'heap'`, so a caller never sees a heap
-  outcome before its replacement engine re-verified the contract. The replacement boots under
-  `BOOT_DEADLINE_MS`, so a hung one settles a typed `boot` error and is retired. The wall-clock
-  deadline fires its reset instead, because there the caller is already settled; that reset and an
-  explicit one boot unbounded (queue row `A failed reset keeps its replacement worker`).
+- `EngineClient.query` awaits that recreation on `limit:'heap'`, so a caller sees its heap
+  outcome only once the replacement verified the contract or failed. The wait is bounded by
+  `BOOT_DEADLINE_MS`, which retires a hung replacement — a reset already in flight included,
+  when the recreation joins it. The wall-clock deadline fires its reset instead, because there
+  the caller is already settled; that reset and an explicit one boot unbounded (queue row
+  `A failed reset keeps its replacement worker`).
 
 ## Hosting
 

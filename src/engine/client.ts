@@ -402,7 +402,15 @@ export class EngineClient {
 
   /** A heap recreation's caller awaits the replacement, so its boot runs under the boot deadline. */
   #recreate(): Promise<BootOutcome> {
-    return this.#reset('heap exhausted; engine discarded', true);
+    const joined = this.#resetting;
+    if (joined === undefined) return this.#reset('heap exhausted; engine discarded', true);
+    // A reset already in flight may boot unbounded; joining it must not strand this caller.
+    const timer = this.#options.schedule(() => {
+      this.#retire('worker retired after boot deadline for a heap recreation');
+    }, BOOT_DEADLINE_MS);
+    return joined.finally(() => {
+      this.#options.cancelSchedule(timer);
+    });
   }
 
   #reset(reason: string, bounded: boolean): Promise<BootOutcome> {
