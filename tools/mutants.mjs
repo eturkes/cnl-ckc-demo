@@ -204,6 +204,17 @@ export const MUTANTS = [
     check: { test: 'tests/demo-controller.dom.test.ts', name: 'recognized guideline id' },
   },
   {
+    label: 'ui listbox click handler without its compiler exemption',
+    edits: [
+      {
+        path: 'src/questions/QuestionCombobox.svelte',
+        old: '    <!-- svelte-ignore a11y_click_events_have_key_events -->\n    <ul\n',
+        new: '    <ul\n',
+      },
+    ],
+    check: ['pnpm', 'check'],
+  },
+  {
     label: 'L28 dead public member revived',
     edits: [
       {

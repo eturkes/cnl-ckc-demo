@@ -183,11 +183,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   gate run is green again once the load falls (906/906 at avg 7–15). Accept: the full suite
   passes 20 consecutive runs at load avg ≥ 3× cores with no timeout raised, or a user-approved
   gate timeout policy is recorded with its original firing. `pri` med.
-- **Hand-run mutants and probes have no committed harness** — six registry rows rest on a
-  mutation or probe run once and restored: the TypeScript 7 lint break, the rejected listbox
-  click handler, the worktree `kb/generated` symlink failure, the u6 pre-lane byte comparison,
-  the u7 gate mutants and the u9 canvas source controls. Accept: each joins `tools/mutants.mjs`
-  (or a committed probe) and its registry row re-adjudicates to `true` on that command. `pri` low.
 - **Upstream and design claims have no in-repo grader** — the registry's rows for the upstream
   export recipe, the sibling `ui.py` port source, the ≈1K-node analysis-tier priority, the
   "every human-facing string lives in `src/i18n/`" rule and the u6 catalog-consistency pass

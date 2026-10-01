@@ -439,6 +439,21 @@ try {
     ),
     requireFiring(
       'binding:check',
+      { mutation: 'the first required case reported skipped', expect: ['" skipped'] },
+      () => {
+        const [first] = REQUIRED;
+        const name = first?.cases[0];
+        const skipped = suites.map((file) => ({
+          ...file,
+          assertionResults: file.assertionResults.map((entry) =>
+            entry.fullName === name ? { ...entry, status: 'skipped' } : entry,
+          ),
+        }));
+        return first === undefined ? [] : gradeInventory([first], skipped).failures;
+      },
+    ),
+    requireFiring(
+      'binding:check',
       { mutation: 'the REQUIRED table emptied', expect: ['REQUIRED table is empty'] },
       () => gradeTable([], 'REQUIRED', suites).failures,
     ),
