@@ -53,8 +53,9 @@ paints that value — `graph:check`'s `palette` rule is what decides that half
 
 ## Copy
 
-**Every human-facing string lives in `src/i18n/`** — `src/demo/copy.ts` retains invariant data
-alone. The locale seam, its consumer pattern and the payload boundary are in
+**Every human-facing string lives in `src/i18n/`** — `copy:check` refuses any literal text node
+or labelling attribute a component renders, the `CNL / CKC` brand mark aside, and
+`src/demo/copy.ts` retains invariant data alone. The locale seam, its consumer pattern and the payload boundary are in
 `.claude/rules/i18n.md`.
 
 `tools/copy-check.mjs` is static — there is no TS runner here. It grades `src/i18n/en.ts`

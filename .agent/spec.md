@@ -256,7 +256,8 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `84a55cd` find: clause identity and the three probe traps pinned by `tests/proof-identity.test.ts`.
 - [x] `5143f3e` find: the remaining package byte figures (literata spread, latin faces) pinned by the census; "eight" faces corrected to six.
 - [x] `a9bf242` find: improper lists re-encode with falsy tails intact and long lists iteratively.
-- [ ] find: hand-run mutants and probes — two committed (listbox mutant, skipped-case control), one test (TS peer cap), three historical — closed by the commit that adds this line.
+- [x] `5da1e02` find: hand-run mutants and probes — two committed (listbox mutant, skipped-case control), one test (TS peer cap), three historical.
+- [ ] find: upstream and design claims disposed; `copy:check` refuses a component literal beyond the brand mark — closed by the commit that adds this line.
 - [ ] new-find rows, in queue order.
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 

@@ -405,6 +405,24 @@ const gradeComposition = (files, en, ja) => {
   return { failures, joins };
 };
 
+/** The one literal a component may render: the brand mark `WORDMARK` pins. */
+const BRAND = 'CNL / CKC';
+
+/**
+ * Every human-facing string lives in `src/i18n/`: a component renders catalog values, never a
+ * literal text node or labelling attribute, the brand mark aside.
+ *
+ * @param {{path: string, source: string}[]} files @returns {string[]}
+ */
+const gradeLiterals = (files) =>
+  files
+    .filter(({ path }) => path.endsWith('.svelte'))
+    .flatMap(({ path, source }) =>
+      componentText(source)
+        .filter((text) => text !== BRAND)
+        .map((text) => `${path}: human-facing literal ${JSON.stringify(text)} outside src/i18n`),
+    );
+
 const main = () => {
   const en = readFileSync(join(ROOT, EN), 'utf8');
   const ja = readFileSync(join(ROOT, JA), 'utf8');
@@ -472,6 +490,18 @@ const main = () => {
     ),
     requireFiring(
       'copy',
+      {
+        mutation: 'a component rendering a literal label added to the real set',
+        expect: ['src/zz-literal.svelte: human-facing literal "Hello reader" outside src/i18n'],
+      },
+      () =>
+        gradeLiterals([
+          ...sources,
+          { path: 'src/zz-literal.svelte', source: '<p>Hello reader</p>' },
+        ]),
+    ),
+    requireFiring(
+      'copy',
       { mutation: 'the FILLER table emptied', expect: ['FILLER table is empty'] },
       () => gradeFiller([]),
     ),
@@ -532,7 +562,7 @@ const main = () => {
   failures.push(...componentFailures);
   failures.push(...checkWordmark((file) => readFileSync(join(ROOT, file), 'utf8')));
   const { failures: joinFailures, joins } = gradeComposition(sources, en, ja);
-  failures.push(...joinFailures);
+  failures.push(...joinFailures, ...gradeLiterals(sources));
   const compared = checkParity(failures, en, ja);
   const shell = checkShell(failures, en, html);
 
@@ -543,7 +573,8 @@ const main = () => {
   }
   console.log(
     `copy: ${graded} en strings pass, ${componentFiles} components carry no over-long or filler prose, ` +
-      `${compared} ja keys at parity, ${String(joins)} catalog joins whole sentences or declared, ` +
+      `${compared} ja keys at parity, ${String(joins)} catalog joins whole sentences or declared, no component literal ` +
+      `beyond the brand mark, ` +
       `${WORDMARK.length} wordmark pins shipped, ` +
       `${shell} shell strings match index.html, ${controls.length} controls fired`,
   );

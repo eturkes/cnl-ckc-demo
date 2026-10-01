@@ -183,11 +183,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   gate run is green again once the load falls (906/906 at avg 7–15). Accept: the full suite
   passes 20 consecutive runs at load avg ≥ 3× cores with no timeout raised, or a user-approved
   gate timeout policy is recorded with its original firing. `pri` med.
-- **Upstream and design claims have no in-repo grader** — the registry's rows for the upstream
-  export recipe, the sibling `ui.py` port source, the ≈1K-node analysis-tier priority, the
-  "every human-facing string lives in `src/i18n/`" rule and the u6 catalog-consistency pass
-  rest on judgment alone. Accept: each re-adjudicates to `true` on a committed command, to
-  `historical`, or the rule is reworded to what a committed check proves. `pri` low.
 - **A halting payload fails the producer as `[object Object]`** — a payload carrying
   `:- initialization(halt).` is refused by both `buildImage` and `buildQlf` (fail-closed holds),
   but Emscripten throws an `ExitStatus` object rather than an `Error`, so the build reports
