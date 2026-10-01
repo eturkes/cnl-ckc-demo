@@ -50,8 +50,9 @@ own surface → the package stays exact-pinned and every bump re-verifies these 
 shipped `.d.ts`. `engine:check` pins the allowlist.
 
 **`Query.close()` is load-bearing.** Abandoning an iterator on a cap, cancel or deadline
-leaves the frame open and every later query returns `failure` — measured as 8 cascading
-failures before it was wired.
+leaves its frame open, and every later query then resolves outside the KB:
+`guideline_schema_version(V)` reports an unknown `system:` procedure instead of binding
+(`tests/engine-runtime-facts.test.ts`).
 
 ## Budgets
 
@@ -60,7 +61,7 @@ failures before it was wired.
   the step that overflows; `depth_limit_exceeded`; `inference_limit_exceeded`.
 - **No in-Prolog wall clock.** The build reports `threads=false`; `library(time)` raises
   `existence_error(source_sink,library(time))`; `call_with_time_limit/2` and `alarm/4` raise
-  procedure existence errors.
+  procedure existence errors (`tests/engine-runtime-facts.test.ts`).
 - Prolog limits do not bound a query: `repeat` under the full wrapper answers forever without
   tripping one. The JS answer cap and deadline terminate it — `pnpm engine:probe` R38
   re-derives both in a real browser.

@@ -251,7 +251,8 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [ ] d63 owes the user: no filter of the shipped selection lifts precision at 143/163 recall (measured offline); a lift needs a request change under the selection-model ruling + a live billed probe.
 - [x] `4c37c0a` find: engine timing figures reworded to the bounds they guarantee, browser figures cited to `engine:probe`.
 - [x] `65d9afb` find: `copy:check` refuses a component joining catalog fragments outside the declared pairs.
-- [ ] find: a dom test fails the proof request and reads `TEXT.traceFailure` in both locales — closed by the commit that adds this line.
+- [x] `bb27a1a` find: a dom test fails the proof request and reads `TEXT.traceFailure` in both locales.
+- [ ] find: the wall-clock absence and `Query.close()` facts re-derived by tests — closed by the commit that adds this line.
 - [ ] new-find rows, in queue order.
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 

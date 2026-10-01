@@ -18,12 +18,17 @@ const ID = "'$guideline_id'(product,doc,1,ref(1),[])";
 
 let engine: Engine;
 
-beforeAll(async () => {
+/** A fresh engine over the shipped image, for facts that leave an engine altered. */
+const loadFresh = async (): Promise<Engine> => {
   const factory = require('swipl-wasm/dist/loadImageDefault.js') as
     | ((bytes: Uint8Array) => (options?: Record<string, unknown>) => Promise<Engine>)
     | { default: (bytes: Uint8Array) => (options?: Record<string, unknown>) => Promise<Engine> };
   const load = typeof factory === 'function' ? factory : factory.default;
-  engine = await load(image)({});
+  return load(image)({});
+};
+
+beforeAll(async () => {
+  engine = await loadFresh();
 }, 120_000);
 
 /** One binding of a goal, as the native value swipl-wasm hands back. */
@@ -58,6 +63,40 @@ describe('engine runtime facts', () => {
 
   it('starts the saved image at a 1 GiB unified stack limit', () => {
     expect(native('current_prolog_flag(stack_limit, L).', 'L')).toBe(1073741824);
+  });
+
+  it('has no in-Prolog wall clock: no threads, no library(time), no timer predicates', async () => {
+    const fresh = await loadFresh();
+    const caught = (goal: string): string => {
+      const result = fresh.prolog.query(`catch(${goal}, E, true), term_string(E, S).`).once() as {
+        S?: { v?: string };
+      };
+      return result.S?.v ?? '';
+    };
+    expect(
+      (fresh.prolog.query('current_prolog_flag(threads, X).').once() as Record<string, unknown>).X,
+    ).toBe('false');
+    expect(caught('use_module(library(time))')).toContain(
+      'existence_error(source_sink,library(time))',
+    );
+    expect(caught('call_with_time_limit(1, true)')).toContain(
+      'existence_error(procedure,call_with_time_limit/2)',
+    );
+    expect(caught('alarm(1, true, _, [])')).toContain('existence_error(procedure,alarm/4)');
+  });
+
+  it('needs Query.close(): an abandoned frame leaves later queries outside the KB', async () => {
+    const read = async (close: boolean): Promise<unknown> => {
+      const fresh = await loadFresh();
+      const query = fresh.prolog.query('between(1,3,X).') as unknown as Iterable<unknown> & {
+        close?: () => void;
+      };
+      query[Symbol.iterator]().next();
+      if (close) query.close?.();
+      return fresh.prolog.query('guideline_schema_version(V).').once();
+    };
+    expect(await read(true)).toMatchObject({ V: 1 });
+    expect(await read(false)).toMatchObject({ error: true });
   });
 
   it('ships a loader that calls direct eval', () => {

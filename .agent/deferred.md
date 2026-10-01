@@ -190,12 +190,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   gate run is green again once the load falls (906/906 at avg 7–15). Accept: the full suite
   passes 20 consecutive runs at load avg ≥ 3× cores with no timeout raised, or a user-approved
   gate timeout policy is recorded with its original firing. `pri` med.
-- **Engine runtime-behaviour claims have no committed probe** — `.claude/rules/engine.md` states
-  two behaviours measured once by hand: `Query.close()` being load-bearing (8 cascading
-  failures without it) and no in-Prolog wall clock (`threads=false`, `library(time)` absent,
-  `call_with_time_limit/2` and `alarm/4` missing). Accept: each is re-derived by a committed
-  test or probe named beside it, or reworded to what a committed check proves, and its
-  registry row re-adjudicated. `pri` low.
 - **Proof-probe traps and clause identity have no committed rerun** — `.claude/rules/proof.md`
   records the `assertz((Head) :- Body)` parse trap, the permission error that bypasses the
   `printErr` drain, and the 10,321-clause identity (unique `L`, exact text recovery, 68 trace
