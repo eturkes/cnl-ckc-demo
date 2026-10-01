@@ -156,15 +156,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   reader-relative labels). m5u12 ruled the first, second and fourth for the shipped side, so
   24/24 needs edits to the teammate's oracle beyond the lookups — the user rules which.
 
-- **u13's firing record names no base revision** — review row `C6`.
-  `.agent/contracts/m5u13.md:102` records the perturbation, the reproducing command, rc 1 and
-  the assertion text, but no revision to apply them to, and `0d5f4c1` omits base `3c4c17c` from
-  its body. `.claude/rules/waves.md` wants both halves. The other four contracts from u11 on
-  carry a substantive witness, `m5u15.md:62-68` in different WORDS than the declared form —
-  which is the second half of this row: the census in the old `.agent/spec.md` measured the
-  PHRASING `at base <sha>`, so it under-reported substance and re-staled itself on every
-  commit. Accept: `m5u13.md`'s record names its base revision; the coverage claim is re-derived
-  by a command rather than written down as a total, or it is dropped. `pri` low.
 - **Two queue rows may already be satisfied** — review row `C10`.
   `Boot-error recovery` (`:92`) and `Boot carries no deadline` (`:157`) both look closed in the
   tree: `src/demo/RunControls.svelte:53` ships the retry control and `src/engine/client.ts:40`
