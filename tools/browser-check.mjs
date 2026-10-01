@@ -100,11 +100,14 @@ const readDocuments = async (page, mode) => {
   if ((await page.locator(ERRORED).count()) > 0) {
     fail(`${mode}: engine reached boot-error instead of ready`);
   }
-  // The count ships inside a `<details>`, whose body is not visible until it opens.
-  await page.locator('details.about summary').click();
-  const text = (await page.locator('details.about').textContent()) ?? '';
-  const reported = /reports (\d+) compiled documents/.exec(text)?.[1];
-  if (reported === undefined) fail(`${mode}: About panel states no document count`);
+  // The count ships inside a closed `<details>`, so wait for the node, not its visibility.
+  // It is read from the attribute the panel binds, never parsed out of a localized sentence.
+  const corpus = page.locator('details.about [data-documents]');
+  await corpus.waitFor({ state: 'attached', timeout: TIMEOUT });
+  const reported = await corpus.getAttribute('data-documents');
+  if (reported === null || !/^\d+$/u.test(reported)) {
+    fail(`${mode}: About panel carries no document count: ${String(reported)}`);
+  }
   return Number(reported);
 };
 
@@ -236,6 +239,99 @@ const CANCEL_PROBE = `(async () => {
   }
 })()`;
 
+/**
+ * One locale's pass over every interaction state at the narrowest viewport.
+ *
+ * Each leg opens its own page, and each page is its own browser context, so the
+ * lazy-load assertions read only the requests that leg made. The Japanese leg
+ * switches language before the first state, so every state is measured in the
+ * script with no word spaces; the English leg proves its whole run never fetched
+ * the Japanese face.
+ *
+ * @param {import('./browser.mjs').Browser} browser
+ * @param {string} builtUrl
+ * @param {'en' | 'ja'} lang
+ * @returns {Promise<{ question: string, expectedCanonical: { serialized: string, rows: number } }>}
+ */
+const narrowSweep = async (browser, builtUrl, lang) => {
+  const since = log.length;
+  /** @type {(pattern: RegExp) => boolean} */
+  const requested = (pattern) => log.slice(since).some((entry) => pattern.test(entry.path));
+  const page = await browser.newPage({ viewport: { width: NARROW, height: 720 } });
+  page.on('pageerror', (error) => {
+    raised ??= `narrow ${lang} viewport raised ${error.message}`;
+  });
+  await page.goto(builtUrl, { waitUntil: 'load', timeout: TIMEOUT });
+  await page.waitForSelector(READY, { timeout: TIMEOUT });
+  if (lang === 'ja') {
+    await page.locator('[data-action="language-switch"]').click();
+    await page.waitForSelector('html[lang="ja"]', { timeout: TIMEOUT });
+    await page.waitForFunction(FACE_LOADED, undefined, { timeout: TIMEOUT });
+    if (!requested(JAPANESE_FACE)) {
+      fail('Japanese rendered without the Japanese face; the interface is in fallback glyphs');
+    }
+  }
+  await fitsNarrow(page, `${lang} idle`);
+  await page.locator('[role="combobox"]').click();
+  await fitsNarrow(page, `${lang} listbox open`);
+  // E9 — the oracle follows the page's own selection, so the option's id is read before the
+  // click closes the listbox rather than the question being written down here.
+  const firstOption = page.locator('[role="option"]:first-of-type');
+  const question = questionOf(await firstOption.getAttribute('id'), fail);
+  const expectedCanonical = expectedAnswer(question, fail);
+  await firstOption.click();
+  await page.locator('[data-action="run"]').click();
+  // Engine-authored text is the whole risk, so measure once it is on screen.
+  await page.waitForSelector('section[aria-labelledby] .answer-point', { timeout: TIMEOUT });
+  await fitsNarrow(page, `${lang} answers rendered`);
+  await page.locator('.explanation > summary').click();
+  await fitsNarrow(page, `${lang} sources open`);
+  await page.locator('.canonical summary').click();
+  await fitsNarrow(page, `${lang} canonical form open`);
+  // Payload never translates, and the canonical answer is the claim the demo makes.
+  await canonicalMatches(page, `${lang} ${question}`, expectedCanonical.serialized);
+  await page.waitForSelector('details.ladder > summary', { timeout: TIMEOUT });
+  if (requested(/assets\/cdc[^/]+\.json$/u)) {
+    fail(`${lang}: provenance evidence loaded before its disclosure opened`);
+  }
+  if (requested(/assets\/guideline-[^/]+\.pdf$/u)) {
+    fail(`${lang}: guideline PDF loaded before its viewer was requested`);
+  }
+  await page.locator('details.ladder > summary').click();
+  await page.waitForSelector('.ladder .disclosures', { timeout: TIMEOUT });
+  if (!requested(/assets\/cdc[^/]+\.json$/u)) {
+    fail(`${lang}: opening the provenance ladder requested no document evidence`);
+  }
+  const pageHref = await page.locator('.page-actions a').getAttribute('href');
+  if (
+    pageHref === null ||
+    !/\/some\/nested\/assets\/guideline-[^#]+\.pdf#page=\d+$/u.test(pageHref)
+  ) {
+    fail(`${lang}: physical-page link is not nested-host safe: ${String(pageHref)}`);
+  }
+  await fitsNarrow(page, `${lang} provenance open`);
+  await page.locator('[data-action="load-page-viewer"]').click();
+  await page.waitForSelector('.ladder iframe', { timeout: TIMEOUT });
+  if (!requested(/assets\/guideline-[^/]+\.pdf$/u)) {
+    fail(`${lang}: opening the guideline viewer requested no PDF`);
+  }
+  await fitsNarrow(page, `${lang} guideline viewer open`);
+  await page.locator('details.about summary').click();
+  await fitsNarrow(page, `${lang} about open`);
+  if (lang === 'en') {
+    // Every disclosure is open, the widest this page ever gets, and still no Japanese
+    // glyph may have been needed.
+    const faces = /** @type {{declared: number, loaded: number}} */ (
+      await page.evaluate(FACE_PROBE)
+    );
+    if (faces.declared !== 2) fail(`${String(faces.declared)} Japanese faces declared, expected 2`);
+    if (faces.loaded !== 0 || requested(JAPANESE_FACE)) {
+      fail('an English page fetched the Japanese face; its unicode-range no longer gates it');
+    }
+  }
+  return { question, expectedCanonical };
+};
+
 // Never trust a leftover dist tree: this check proves the current source.
 execFileSync('pnpm', ['build'], { cwd: ROOT, stdio: 'inherit' });
 
@@ -270,7 +366,7 @@ try {
   if (log.some((entry) => /cytoscape(?:-fcose|\.esm)-.+\.js$/u.test(entry.path))) {
     fail('built: graph renderer loaded before activation');
   }
-  await builtPage.getByRole('button', { name: 'Explore graph' }).click();
+  await builtPage.locator('[data-action="explore-graph"]').click();
   await builtPage.waitForSelector('.graph-shell .counts', { timeout: TIMEOUT });
   if (!log.some((entry) => /semantic-graph-.+\.json$/u.test(entry.path))) {
     fail('built: graph activation requested no semantic graph data');
@@ -300,84 +396,17 @@ try {
   }
 
   // U7-19 — the containment `pnpm presentation:check` asserts in CSS, measured in
-  // layout at the narrowest supported viewport. The static check cannot see a box
-  // that overflows for a reason other than an unbroken word.
-  const narrowPage = await browser.newPage({ viewport: { width: NARROW, height: 720 } });
-  narrowPage.on('pageerror', (error) => {
-    raised ??= `narrow viewport raised ${error.message}`;
-  });
-  await narrowPage.goto(builtUrl, { waitUntil: 'load', timeout: TIMEOUT });
-  await narrowPage.waitForSelector(READY, { timeout: TIMEOUT });
-  await fitsNarrow(narrowPage, 'idle');
-  await narrowPage.locator('[role="combobox"]').click();
-  await fitsNarrow(narrowPage, 'listbox open');
-  // E9 — the oracle follows the page's own selection, so the option's id is read before the
-  // click closes the listbox rather than the question being written down here.
-  const firstOption = narrowPage.locator('[role="option"]:first-of-type');
-  const question = questionOf(await firstOption.getAttribute('id'), fail);
-  const expectedCanonical = expectedAnswer(question, fail);
-  await firstOption.click();
-  await narrowPage.getByRole('button', { name: 'Run' }).click();
-  // Engine-authored text is the whole risk, so measure once it is on screen.
-  await narrowPage.waitForSelector('section[aria-labelledby] .answer-point', {
-    timeout: TIMEOUT,
-  });
-  await fitsNarrow(narrowPage, 'answers rendered');
-  await narrowPage.locator('.explanation > summary').click();
-  await fitsNarrow(narrowPage, 'sources open');
-  await narrowPage.locator('.canonical summary').click();
-  await fitsNarrow(narrowPage, 'canonical form open');
-  await canonicalMatches(narrowPage, `english ${question}`, expectedCanonical.serialized);
-  await narrowPage.waitForSelector('details.ladder > summary', { timeout: TIMEOUT });
-  if (log.some((entry) => /assets\/cdc[^/]+\.json$/u.test(entry.path))) {
-    fail('provenance evidence loaded before its disclosure opened');
+  // layout at the narrowest supported viewport, once per locale. The static check
+  // cannot see a box that overflows for a reason other than an unbroken word, and
+  // Japanese has no word spaces to break at.
+  const english = await narrowSweep(browser, builtUrl, 'en');
+  const japanese = await narrowSweep(browser, builtUrl, 'ja');
+  if (japanese.question !== english.question) {
+    fail(
+      `the locales selected different first questions: ${english.question}, ${japanese.question}`,
+    );
   }
-  if (log.some((entry) => /assets\/guideline-[^/]+\.pdf$/u.test(entry.path))) {
-    fail('guideline PDF loaded before its viewer was requested');
-  }
-  await narrowPage.locator('details.ladder > summary').click();
-  await narrowPage.waitForSelector('.ladder .disclosures', { timeout: TIMEOUT });
-  if (!log.some((entry) => /assets\/cdc[^/]+\.json$/u.test(entry.path))) {
-    fail('opening the provenance ladder requested no document evidence');
-  }
-  const pageHref = await narrowPage.locator('.page-actions a').getAttribute('href');
-  if (
-    pageHref === null ||
-    !/\/some\/nested\/assets\/guideline-[^#]+\.pdf#page=\d+$/u.test(pageHref)
-  ) {
-    fail(`physical-page link is not nested-host safe: ${String(pageHref)}`);
-  }
-  await fitsNarrow(narrowPage, 'provenance open');
-  await narrowPage.getByRole('button', { name: 'Load page viewer' }).click();
-  await narrowPage.waitForSelector('.ladder iframe', { timeout: TIMEOUT });
-  await narrowPage.locator('.ladder iframe').waitFor({ timeout: TIMEOUT });
-  if (!log.some((entry) => /assets\/guideline-[^/]+\.pdf$/u.test(entry.path))) {
-    fail('opening the guideline viewer requested no PDF');
-  }
-  await fitsNarrow(narrowPage, 'guideline viewer open');
-  await narrowPage.locator('details.about summary').click();
-  await fitsNarrow(narrowPage, 'about open');
-
-  // The Japanese interface, measured where jsdom cannot reach: a language with no
-  // word spaces, at the narrowest viewport, with every disclosure already open —
-  // the widest this page ever gets. The seam itself is a unit test's job.
-  const before = /** @type {{declared: number, loaded: number}} */ (
-    await narrowPage.evaluate(FACE_PROBE)
-  );
-  if (before.declared !== 2) fail(`${String(before.declared)} Japanese faces declared, expected 2`);
-  if (before.loaded !== 0 || log.some((entry) => JAPANESE_FACE.test(entry.path))) {
-    fail('an English page fetched the Japanese face; its unicode-range no longer gates it');
-  }
-  await narrowPage.getByRole('button', { name: 'Show this demo in Japanese' }).click();
-  await narrowPage.waitForSelector('html[lang="ja"]', { timeout: TIMEOUT });
-  await narrowPage.waitForFunction(FACE_LOADED, undefined, { timeout: TIMEOUT });
-  if (!log.some((entry) => JAPANESE_FACE.test(entry.path))) {
-    fail('Japanese rendered without the Japanese face; the interface is in fallback glyphs');
-  }
-  await fitsNarrow(narrowPage, 'japanese, every disclosure open');
-  // Payload never translates, and the canonical answer is the claim the demo makes.
-  await canonicalMatches(narrowPage, `japanese ${question}`, expectedCanonical.serialized);
-
+  const { question, expectedCanonical } = english;
   // R40 — cancel delivery between solutions, in a real browser.
   const probe = /** @type {Record<string, unknown>} */ (await devPage.evaluate(CANCEL_PROBE));
   if (typeof probe.error === 'string') fail(`cancel probe: ${probe.error}`);
@@ -402,7 +431,7 @@ try {
   console.log(
     `browser-check: ok — dev ${dev.url} and built ${builtUrl} both report ${String(documents)} ` +
       `documents; graph and evidence stay lazy; ${String(narrowStates)} states fit ` +
-      `${String(NARROW)}px, the last of them Japanese; ` +
+      `${String(NARROW)}px across both locales; ` +
       `${question} rendered the bag's ${String(expectedCanonical.rows)}-row canonical answer ` +
       `byte for byte in both locales; cancel delivered after ${String(solutions)} ` +
       `of up to ${String(probe.cap)} solutions in ${Number(probe.elapsed).toFixed(0)} ms, ` +

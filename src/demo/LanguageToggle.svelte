@@ -22,6 +22,7 @@
 
 <button
   type="button"
+  data-action="language-switch"
   aria-pressed={japanese}
   aria-label={t.LABELS.languageSwitchAria}
   lang="en"

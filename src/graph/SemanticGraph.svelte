@@ -344,8 +344,11 @@
   {#if phase === 'inactive'}
     <div class="activation">
       <p>{t.DESCRIPTIONS.graphIntro}</p>
-      <button class="primary" type="button" onclick={() => void activate()}
-        >{t.LABELS.graphExplore}</button
+      <button
+        class="primary"
+        data-action="explore-graph"
+        type="button"
+        onclick={() => void activate()}>{t.LABELS.graphExplore}</button
       >
       <p class="load-note">{t.DESCRIPTIONS.graphLoadNote}</p>
     </div>

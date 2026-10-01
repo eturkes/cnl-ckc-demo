@@ -181,9 +181,20 @@ unreachable until an ad-hoc goal path exists — which the free-text ruling decl
 
 # Tasks
 
-No open unit; the next work arrives as a MAINTAIN request.
+MAINTAIN request: work every `.agent/deferred.md` row in rank order (`high` → `med` → `low`,
+queue order within a rank); one unit + commit per row, gate green at each, row pruned in its
+closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 
-- Queue → `.agent/deferred.md`: 63 rows, each with its acceptance check, plus the accepted-open
+- [x] `24bbb5d` d0 find: 4 live advisories reddened `audit:check` → lockfile bump.
+- [x] d2 browser lanes steer by `data-action` handles, narrow sweep in both locales.
+- [ ] d29 `high` WASM abort — waits: an ad-hoc goal path (`Decisions` MAIN).
+- [ ] `med`: d4 d7 d10 d11 d13 d14 d16 d18 d19 d21 d23 d24 d25 d26 d27 d30 d31 d32 d36
+  d37 d40 d44 d45 d46 d48 d49 d50 d51 d52 d53 d54
+- [ ] `low`: d1 d3 d5 d6 d8 d9 d12 d15 d17 d20 d22 d28 d33 d34 d35 d38 d39 d41 d42 d43 d47
+  d55 d56 d57 d58 d59 d60 d61 d62 d63
+- [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
+
+- Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open
   review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 # Phase

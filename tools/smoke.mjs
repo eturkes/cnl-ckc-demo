@@ -51,7 +51,7 @@ try {
 
   await page.locator('[role="combobox"]').click();
   await page.locator(`[role="option"][id$="-option-${QUESTION}"]`).click();
-  await page.getByRole('button', { name: 'Run' }).click();
+  await page.locator('[data-action="run"]').click();
 
   const points = page.locator('section[aria-labelledby] .answer-point');
   await page.waitForSelector('section[aria-labelledby] .answer-point', { timeout: 45_000 });
@@ -97,7 +97,7 @@ try {
   const graphAsset = /semantic-graph-.+\.json$/u;
   if (log.some((entry) => graphAsset.test(entry.path)))
     fail('the semantic graph loaded before the proof-to-graph action');
-  const findInGraph = page.getByRole('button', { name: /Find in graph/iu });
+  const findInGraph = page.locator('[data-action="find-in-graph"]');
   await findInGraph.waitFor({ timeout: 45_000 });
   await findInGraph.click();
   const graphFocus = page.locator('.graph-shell .evidence-focus');
@@ -121,7 +121,7 @@ try {
   if (selectedKind !== 'Primary concept') fail('the graph did not mark its primary focus');
   const nodeIndex = (await page.locator('.graph-shell .node-index').textContent()) ?? '';
   if (/\bshould\b/iu.test(nodeIndex)) fail('the concept map exposed a grammatical modality node');
-  if ((await page.getByRole('button', { name: 'Explore graph' }).count()) !== 0)
+  if ((await page.locator('[data-action="explore-graph"]').count()) !== 0)
     fail('the proof-to-graph action stopped at the graph activation prompt');
   if (!log.some((entry) => graphAsset.test(entry.path)))
     fail('the proof-to-graph action requested no semantic graph data');

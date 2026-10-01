@@ -135,7 +135,7 @@ committed state:
 |---|---|
 | `pnpm kb:reproduce` | byte-reproducibility of pvm + qlf + catalog across two forced builds |
 | `pnpm smoke` | built output answers in a real browser against bag bytes read at run time |
-| `pnpm browser:check` | 337 documents on dev + built output, every 320 px interaction state incl. Japanese, that `unicode-range` keeps the Japanese face off an English page, browser cancel delivery, and the rendered canonical answer byte-equal to `tools/answer-oracle.mjs` in BOTH locales |
+| `pnpm browser:check` | 337 documents on dev + built output, every 320 px interaction state in BOTH locales, that `unicode-range` keeps the Japanese face off an English page, browser cancel delivery, and the rendered canonical answer byte-equal to `tools/answer-oracle.mjs` in BOTH locales |
 | `pnpm graph:check` | the renderer-neutral edge-view contract R1-R7 (`.agent/contracts/m5u8.md`) against the SHIPPED `mountGraphCanvas`, over 14 fixtures x 2 viewports, plus C1-C12 (`m5u10.md`) against the SHIPPED `SemanticGraph.svelte` over 2 devices x 2 views + both fallbacks |
 | `pnpm binding:replay` | that `clinical-binding` E2 is load-bearing: the same erasure is invisible at `a944fca` and drops exactly one document now |
 | `pnpm intake:probe` | live model accuracy on the 30 held-out intake descriptions: re-posts every recorded request, rewrites `tests/intake/replay.json`, re-derives `report.json`. Keyed (`~/.config/typesafe/key`) and billed, so it never runs in a gate; the gate replays the recording (`tests/intake-replay.test.ts`) |

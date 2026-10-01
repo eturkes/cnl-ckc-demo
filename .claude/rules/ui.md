@@ -115,6 +115,10 @@ is why attribution and nonendorsement cannot live inside the About disclosure.
 request log, drives chromiumfish, and compares the rendered canonical text against the answer
 read out of the vendored bag **at run time** through `verifyBag`.
 
+- **Both browser lanes steer by locale-independent handles alone**: `data-action` on the
+  `run`, `find-in-graph`, `load-page-viewer`, `explore-graph` and `language-switch` controls, and
+  the About count read from `data-documents`. An accessible name is copy, so a lane that
+  selects by one breaks on a reworded string with a timeout instead of a diff.
 - It keys on `[role="option"][id$="-option-<questionId>"]`; option ids are
   `${uid}-option-${questionId}` and render in `QUESTION_IDS` order.
 - It must open the canonical-answer disclosure before reading it — a `<details>` body is not

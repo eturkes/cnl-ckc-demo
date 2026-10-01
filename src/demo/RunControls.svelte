@@ -44,8 +44,13 @@
 </script>
 
 <div class="controls">
-  <button class="run" bind:this={runEl} type="button" disabled={!canRun} onclick={onRun}
-    >{t.LABELS.run}</button
+  <button
+    class="run"
+    data-action="run"
+    bind:this={runEl}
+    type="button"
+    disabled={!canRun}
+    onclick={onRun}>{t.LABELS.run}</button
   >
   <button class="cancel" bind:this={cancelEl} type="button" disabled={!busy} onclick={onCancel}
     >{t.LABELS.cancel}</button

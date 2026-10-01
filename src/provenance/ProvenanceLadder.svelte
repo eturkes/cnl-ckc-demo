@@ -145,6 +145,7 @@
     {#if documentId !== undefined}
       <button
         class="graph-link"
+        data-action="find-in-graph"
         type="button"
         onclick={() => {
           onGraphFocus({
@@ -282,7 +283,7 @@
             <h3>{t.LABELS.guidelinePage}</h3>
             <p>{t.TEXT.passagePage(evidence.region.page)}</p>
             <div class="page-actions">
-              <button type="button" onclick={() => (pageOpen = true)}
+              <button type="button" data-action="load-page-viewer" onclick={() => (pageOpen = true)}
                 >{t.LABELS.loadPageViewer}</button
               >
               <a href={pageHref} target="_blank" rel="noreferrer">{t.LABELS.openPageTab}</a>

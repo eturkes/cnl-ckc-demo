@@ -14,13 +14,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   declared safety set; `presentation:check` regrades it from the catalog, so a glyph added
   to `ja.ts` without a rebuild fails the gate; `browser:check`'s Japanese pass still finds
   every face `loaded`. `pri` low.
-- **`smoke` and `browser:check` steer by English accessible name** — `Explore graph`,
-  `Load page viewer`, `Run` and `/reports (\d+) compiled documents/` are read straight out
-  of the rendered English UI, so a reworded English string breaks a browser check with a
-  45 s timeout rather than a diff. Neither tool can drive the Japanese UI at all except
-  through the one toggle click `browser:check` now makes. Accept: both tools select by a
-  locale-independent handle, the About count is read from an attribute rather than parsed
-  out of a sentence, and `browser:check` runs its narrow sweep in both locales. `pri` med.
 - **Japanese copy has no register grader** — `copy:check` decides parity alone; the ≤20/≤25
   word limits cannot port to a language without word spaces, so nothing mechanical holds
   `ja.ts` to です・ます or to a length. Accept: a Japanese-side rule set the gate can decide
@@ -422,7 +415,6 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | defect | accept |
 | --- | --- |
 | **high** A WASM abort strands the worker | abort = own terminal state, worker recreated, next query reports 337 docs |
-| Browser tools steer by English accessible names | locale-independent handles, count from an attribute, both locales |
 | README install path is hand-verified | a script clones HEAD, runs only the README commands, asserts rc 0 + counts |
 | A QLF fallback import doubles the engine | it loads only on saved-state failure; an untaken fallback ships no bytes |
 | `wt/test-m1u2` + `wt/test-m1u4` suites never ran here | both run in-tree, each case red for a contract reason or green |

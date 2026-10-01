@@ -34,7 +34,7 @@
   <p>{t.DESCRIPTIONS.fixedCatalog}</p>
   <p>{t.DESCRIPTIONS.projection}</p>
   {#if corpus}
-    <p>{corpus}</p>
+    <p data-documents={documents}>{corpus}</p>
   {/if}
   <p>{t.DESCRIPTIONS.unreviewed}</p>
 
