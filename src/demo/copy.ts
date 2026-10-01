@@ -1,5 +1,3 @@
-// GUIDELINE and FONT_LICENCES are locale-invariant reference data, not prose.
-
 export const GUIDELINE = {
   title: 'CDC Clinical Practice Guideline for Prescribing Opioids for Pain — United States, 2022',
   html: 'https://www.cdc.gov/mmwr/volumes/71/rr/rr7103a1.htm',

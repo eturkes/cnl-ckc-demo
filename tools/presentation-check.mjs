@@ -1,5 +1,4 @@
-// `pnpm presentation:check` — the presentation invariants u7 argued in prose and
-// no gate step owned (M1 review U7-19, U7-20, U7-26).
+// `pnpm presentation:check` — presentation invariants a gate step must own.
 //
 // Every claim here was true when a reviewer read the files by hand and would stay
 // true silently if it stopped being so: a font pin loosened to a range, a face

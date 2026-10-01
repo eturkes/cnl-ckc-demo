@@ -91,7 +91,10 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   stating a timeless constraint (M1 review X20); this session's own new headers are in
   scope. Accept: the ten what-only headers are gone, the eight provenance sites read as
   current constraints with no row or history reference, and the adjacent why comments
-  survive byte-for-byte. `pri` low.
+  survive byte-for-byte. `pri` low. **Eight of ten headers and all eight sites done; owes a
+  ruling on the last two**: `src/questions/serialize.ts` and `humanize.ts` are byte-frozen
+  against `22053ef` by `tests/clinical-records.test.ts` T9, an answer-path frozen surface, so
+  deleting either header line is a grader change — unfreeze them, or let the headers stand.
 - **Browser and research evidence is branch-only** — five browser claims (R38, R39, R41,
   R42, R45) rest on `tools/probe-u3.mjs` at `wt/rev-m1u3-4` `48008d3` (derived from
   `tools/smoke.mjs`; `node tools/probe-u3.mjs <ROW>` drives built output in a real browser

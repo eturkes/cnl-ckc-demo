@@ -1,6 +1,3 @@
-// Budget validation, the Prolog wrapper that carries the engine-side limits, and
-// the classification of what that wrapper reports back.
-//
 // Limits are read out of decoded term structure, never out of message text: the
 // native exception path collapses a Prolog error to a message string, so anything
 // classified from text is classified from the one representation that loses shape.

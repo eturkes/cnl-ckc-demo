@@ -1,12 +1,11 @@
 #!/usr/bin/env node
-// The two browser claims `pnpm smoke` does not reach (M1 review E26, R40).
+// Browser claims `pnpm smoke` does not reach.
 //
-// E26 — u2's accept clause names BOTH deployment modes, dev server and built
-// output, and only the built one was ever driven. Both are checked here against
-// the SAME expectation, read out of the build manifest rather than written down.
+// Both deployment modes, dev server and built output, are checked against the
+// SAME expectation, read out of the build manifest rather than written down.
 //
-// R40 — cooperative cancel is delivered between solutions, measured in Node and
-// asserted nowhere in a browser. The dev server is what makes that provable: it
+// Cooperative cancel must be delivered between solutions in a real browser, not
+// only in Node. The dev server is what makes that provable: it
 // serves modules, so the page can drive `EngineClient` against a real module
 // worker instead of guessing at a UI race.
 //

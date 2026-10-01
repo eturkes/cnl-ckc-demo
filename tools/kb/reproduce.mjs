@@ -1,5 +1,3 @@
-// `pnpm kb:reproduce` — prove the producer is idempotent by building twice.
-//
 // Kept out of `pnpm gate` because each forced build costs a full compile; the
 // claim it backs is durable, so it must stay rerunnable from committed state.
 //

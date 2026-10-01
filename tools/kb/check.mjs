@@ -64,7 +64,7 @@ const SIBLING = new RegExp(`${['\\.\\.', 'cnl-ckc'].join('/')}(?![\\w.-])`);
 /**
  * JSON round-tripping an engine value is the one measured corruption path:
  * `'$guideline_id'/5` re-enters as arity 1 with `ref([1])` and `1r3` flips to `3r1`
- * (u2 P3.12). The rule was comment-only, so a new call shipped silently. `src/` is
+ * (u2 P3.12). `src/` is
  * the app the engine runs in and carries no legitimate use; `tools/` writes real
  * JSON artifacts and is out of scope. Assembled from parts so this scanner is not
  * itself a match.

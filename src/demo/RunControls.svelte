@@ -1,6 +1,4 @@
 <script lang="ts">
-  // Run controls plus the demo's only two live regions.
-  //
   // Both regions are mounted here from the first render and never mirror each
   // other: ARIA22 requires a live region to pre-exist its update, and a message
   // that reaches both `status` and `alert` is announced twice.

@@ -1,4 +1,4 @@
-// Deterministic checks for u3's four forbidden-surface predicates (M1 review R35).
+// Deterministic checks for the engine's four forbidden-surface predicates (m1u3 P6.2-P6.5).
 //
 // P6.2-P6.5 are decidable by a script, and CLAUDE.md Engineering gives every
 // tool-decidable rule to a deterministic check. Until this step existed they held
@@ -31,7 +31,7 @@ const ENGINE_OWNER = 'src/engine/worker.ts';
 /**
  * Members production code takes off `swipl-wasm` that its `.d.ts` does not declare.
  *
- * Load-bearing and accepted at M1 review R26, which is also why the package is
+ * Load-bearing and ruled acceptable, which is also why the package is
  * exact-pinned: a version bump must re-verify each one against the shipped types.
  */
 const ACCEPTED_UNDECLARED = {
@@ -251,9 +251,8 @@ for (const [type, used] of /** @type {[keyof typeof ACCEPTED_UNDECLARED, string[
 
 // P6.5 — the decode boundary's export surface is pinned.
 //
-// u3's own predicate reads "unchanged by this unit", which expires with the unit. The
-// durable property it protected is that every decode and encode path stays inside the
-// P3 trap battery, and a new export is exactly how one would escape it.
+// The pin keeps every decode and encode path inside the P3 trap battery, and a new
+// export is exactly how one would escape it.
 const termsExports = [...termsSource.matchAll(/^export (?:type|interface|class|function) (\w+)/gm)]
   .map((m) => m[1] ?? '')
   .sort();

@@ -1,5 +1,3 @@
-// Clinician-facing catalog generated from the verified bag.
-//
 // `clinicalArtifacts` owns the deliberately curated question topics, but every
 // answer statement and source coordinate is re-read from the bag on each build.
 // The resulting goals run `clinical_advice/3`, which the PVM carries as a single derivation

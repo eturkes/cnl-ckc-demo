@@ -1,5 +1,3 @@
-// The demo's one answer path: a catalog id in, a live Prolog result out.
-//
 // The goal that id names is not a bare knowledge-base query. It carries the
 // question's clinical context as explicit premises, because a guideline clause is
 // universally quantified over clinicians and the `actual` world holds no clinician

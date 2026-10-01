@@ -1,6 +1,6 @@
 <script lang="ts">
-  // Select-only APG combobox over the clinician-facing catalog. Contract =
-  // `.agent/archive/contracts/m1u5.md`; predicate ids appear on the rules they encode.
+  // Select-only APG combobox over the clinician-facing catalog. An id such as `K5` names the
+  // `.agent/archive/contracts/m1u5.md` predicate the rule beside it encodes.
   //
   // Host is a `div`, not a readonly `<input>` (D1): an input announces "read only
   // edit" for a widget that accepts no text and raises a mobile keyboard. The

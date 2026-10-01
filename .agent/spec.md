@@ -233,7 +233,8 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [ ] d17 owes a ruling: answers rendered as they arrive change the accepted answer panel mid-run.
 - [x] d33 `copy:check` grades a keyed literal once, under its key (378 → 251 graded strings).
 - [x] d38 `withBuiltSite` (`tools/browser.mjs`) owns build, serve, launch and teardown for smoke, browser:check and visual-qa.
-- [ ] `low`: d34 d35 d39 d41 d42 d43 d47
+- [ ] d39 seven what-only headers deleted (AnswerPanel's already gone), eight provenance sites restated; owes a ruling on `serialize.ts` + `humanize.ts`, byte-frozen by T9.
+- [ ] `low`: d34 d35 d41 d42 d43 d47
   d55 d56 d57 d58 d59 d60 d61 d62 d63
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 

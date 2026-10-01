@@ -1,5 +1,3 @@
-// Reader-facing text for every controller state and every answer row.
-//
 // Copy lives here rather than in a template so it is testable as data and so the
 // components stay free of the member accesses ESLint cannot type through a
 // `.svelte` import. Each of the six `AnswerResult` kinds keeps its own wording:
