@@ -198,14 +198,15 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `88af76b` d21 a failed boot retires its own worker, so Retry rebuilds the engine.
 - [x] `34e791b` d23 V13 axe sweep: About panel + canonical answer, open and closed.
 - [x] `3f76af8` d24 `copy:check` walks `src/` and grades every component's literal prose.
-- [x] d25 the inference budget bounds the whole request (`meteredGoal`, terminal record, display after close).
+- [x] `0465faa` d25 the inference budget bounds the whole request (`meteredGoal`, terminal record, display after close).
 - [x] `9d1eecb` d26 smoke refuses a build stale against the bag's input digest.
 - [x] d11 u2 suite ported: 16 merged green, 20 covered, 2 red → rows (d12 float, new find improper-list tail).
 - [ ] d45 fix committed (scan-only spawns, per-state V11, serialized axe); 20-run proof owed under lower load.
 - [x] `0273a6a` d27 `pnpm mutate`: committed 45-mutant table + runner, 45/45 killed.
+- [x] d36 `kb/generated` joins the answer-oracle scan, with its own firing input.
 - [ ] d29 `high` WASM abort — waits: an ad-hoc goal path (`Decisions` MAIN).
-- [ ] `med`: d30 d31 d32 d36
-  d37 d40 d44 d45 d46 d48 d49 d50 d51 d52 d53 d54
+- [ ] `med`: d30 d31 d32
+  d37 d40 d44 d46 d48 d49 d50 d51 d52 d53 d54
 - [ ] `low`: d1 d3 d5 d6 d8 d9 d12 d15 d17 d20 d22 d28 d33 d34 d35 d38 d39 d41 d42 d43 d47
   d55 d56 d57 d58 d59 d60 d61 d62 d63
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.

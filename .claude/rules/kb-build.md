@@ -141,7 +141,8 @@ upstream export exactly. It is a diagnostic lane, separate from the catalog abov
 - Committed `queries/answers/*.pl` and `queries/traces/*.pl` are **regression oracles only,
   never response data**. The export lane byte-matches all four committed answers on every
   gate run.
-- Forbidden-reach check = a byte scan over `src`, `tools`, `vite.config.ts`, `index.html` in
+- Forbidden-reach check = a byte scan over `src`, `tools`, `worker`, `vite.config.ts`, `index.html`
+  and the runtime-loaded `kb/generated` assets in
   `kb:asset-check`. ESLint cannot do it: core `no-restricted-imports` visits import and
   export declarations only, so `import()` and `fs.readFile` escape it. `tests/` is out of
   scope on purpose — reading committed answers is what makes them oracles.

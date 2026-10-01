@@ -37,9 +37,10 @@ const SCAN_ROOTS = [
  * Roots the answer-oracle ban covers. `tests/` is absent on purpose: a regression
  * test proves live output against the committed answers, which is exactly what
  * makes them oracles. Production reading them would make the demo's answers
- * indistinguishable from a lookup.
+ * indistinguishable from a lookup. `kb/generated` is in: the runtime loads those assets, so
+ * an oracle path inside one is production reach the source scan alone would never see.
  */
-const PRODUCTION_ROOTS = ['src', 'tools', 'worker', 'vite.config.ts', 'index.html'];
+const PRODUCTION_ROOTS = ['src', 'tools', 'worker', 'vite.config.ts', 'index.html', 'kb/generated'];
 /**
  * Assembled from parts so this scanner is not itself a match. A byte scan sees a
  * static import, a dynamic `import()` and an `fs` read alike, which an ESLint
@@ -297,10 +298,37 @@ for (const { paths } of boundScanRoots) {
   }
 }
 
-for (const root of PRODUCTION_ROOTS) {
-  for (const path of walk(join(ROOT, root))) {
-    if (ANSWERS.test(readFileSync(path, 'latin1'))) fail(`answer-oracle reach in ${relative(ROOT, path)}`);
-  }
+/**
+ * @param {readonly string[]} roots
+ * @param {(path: string) => string} read
+ * @returns {string[]}
+ */
+const answerReach = (roots, read) =>
+  roots.flatMap((root) =>
+    walk(join(ROOT, root))
+      .filter((path) => ANSWERS.test(read(path)))
+      .map((path) => `answer-oracle reach in ${relative(ROOT, path)}`),
+  );
+/** @param {string} path @returns {string} latin1 keeps bytes 1:1 with chars, binary assets included */
+const latin1 = (path) => readFileSync(path, 'latin1');
+const reach = answerReach(PRODUCTION_ROOTS, latin1);
+for (const problem of reach) fail(problem);
+let reachControlFired = 0;
+const plantedAsset = join(GENERATED_DIR, 'question-catalog.json');
+if (reach.length === 0) {
+  // The real generated tree, one asset read as if the build had written an oracle path into it.
+  requireFiring(
+    'kb:asset-check',
+    {
+      mutation: 'an oracle path read into kb/generated/question-catalog.json',
+      expect: ['answer-oracle reach in kb/generated/question-catalog.json'],
+    },
+    () =>
+      answerReach(PRODUCTION_ROOTS, (path) =>
+        path === plantedAsset ? `${latin1(path)}${['queries', 'answers'].join('/')}` : latin1(path),
+      ),
+  );
+  reachControlFired = 1;
 }
 
 for (const root of SERIALIZE_ROOTS) {
@@ -345,7 +373,7 @@ if (failures.length > 0) {
   process.stdout.write(
     `kb:asset-check ok — ${assets.length} assets verified, catalog re-derived from the bag, ` +
       `sibling-path scan clean over ${SCAN_ROOTS.length} roots, ` +
-      `answer-oracle scan clean over ${PRODUCTION_ROOTS.length} roots, ` +
+      `answer-oracle scan clean over ${PRODUCTION_ROOTS.length} roots (${String(reachControlFired)} control fired), ` +
       `JSON-serialization scan clean over ${SERIALIZE_ROOTS.length} root, ` +
       `${questions.length} question sentences absent from ${QUESTION_ROOTS.length} roots, ` +
       `${String(controlsFired)} SCAN_ROOTS control fired, ` +
