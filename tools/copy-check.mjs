@@ -38,6 +38,15 @@ const checkWordmark = (read) =>
     ({ file, text }) => `${file}: wordmark ${JSON.stringify(text)} is not shipped`,
   );
 
+/**
+ * The two before/after pairs `.claude/rules/i18n.md` declares: each wraps a `<code>` element a
+ * returned string cannot carry.
+ */
+const DECLARED_PAIRS = [
+  ['LABELS.graphSelectedBefore', 'LABELS.graphSelectedAfter'],
+  ['TEXT.graphHighlightOriginBefore', 'TEXT.graphHighlightOriginAfter'],
+];
+
 /** Words the project bans outright. */
 const FILLER = ['simply', 'robust', 'seamlessly', 'leverage'];
 
@@ -273,6 +282,16 @@ const components = (dir) =>
       return name.endsWith('.svelte') ? [path] : [];
     });
 
+/** @param {string} dir @returns {string[]} every `.ts` module under `dir` */
+const walkTs = (dir) =>
+  readdirSync(dir)
+    .sort()
+    .flatMap((name) => {
+      const path = join(dir, name);
+      if (statSync(path).isDirectory()) return walkTs(path);
+      return name.endsWith('.ts') ? [path] : [];
+    });
+
 /**
  * The literal prose a component renders: its markup text nodes plus the human-facing attribute
  * values, with script, style, comments and every `{…}` expression removed. Tags are segment
@@ -340,6 +359,52 @@ const gradeFiller = (filler) =>
     ? ['FILLER table is empty, so the English register grades no banned word']
     : [];
 
+/**
+ * A catalog value's source slice ends a sentence when its last quoted character is terminal
+ * punctuation.
+ *
+ * @param {string | undefined} slice
+ */
+const endsSentence = (slice) => /[.!?。！？](?:'|`)\s*\)?\s*,?\s*$/u.test(slice ?? '');
+
+/**
+ * No string may be built by joining catalog fragments (`.claude/rules/i18n.md`): two catalog
+ * references a component renders side by side, or joins with `+` or one template literal, must
+ * be a declared before/after pair, or the first must end a sentence in BOTH locales — two whole
+ * sentences keep each language's own order.
+ *
+ * @param {{path: string, source: string}[]} files @param {string} en @param {string} ja
+ * @returns {{failures: string[], joins: number}}
+ */
+const gradeComposition = (files, en, ja) => {
+  /** @param {string} source @param {string} key */
+  const slice = (source, key) => {
+    const [name = '', member = ''] = key.split('.');
+    return entries(bucket(source, EN, name)).get(member);
+  };
+  const REF = '(?:t|messages\\.current)\\.((?:LABELS|TEXT|DESCRIPTIONS|INSTRUCTIONS)\\.\\w+)';
+  const adjacent = [
+    new RegExp(`\\{${REF}[^}]*\\}[^<{}\\n]*\\{${REF}`, 'gu'),
+    new RegExp(`${REF}(?:\\([^)]*\\))?\\s*\\+\\s*${REF}`, 'gu'),
+    new RegExp(`\\$\\{${REF}[^}\`]*\\}[^\`]*?\\$\\{${REF}`, 'gu'),
+  ];
+  /** @type {string[]} */
+  const failures = [];
+  let joins = 0;
+  for (const { path, source } of files) {
+    for (const pattern of adjacent) {
+      for (const [, first = '', second = ''] of source.matchAll(pattern)) {
+        joins += 1;
+        const declared = DECLARED_PAIRS.some(([a, b]) => a === first && b === second);
+        if (declared || (endsSentence(slice(en, first)) && endsSentence(slice(ja, first))))
+          continue;
+        failures.push(`${path}: joins catalog fragments ${first} + ${second}`);
+      }
+    }
+  }
+  return { failures, joins };
+};
+
 const main = () => {
   const en = readFileSync(join(ROOT, EN), 'utf8');
   const ja = readFileSync(join(ROOT, JA), 'utf8');
@@ -349,6 +414,9 @@ const main = () => {
     source: readFileSync(path, 'utf8'),
   }));
   const planted = `<p>${Array.from({ length: 30 }, (_, i) => `word${String(i)}`).join(' ')}.</p>`;
+  const sources = components(join(ROOT, 'src'))
+    .concat(walkTs(join(ROOT, 'src')))
+    .map((path) => ({ path: relative(ROOT, path), source: readFileSync(path, 'utf8') }));
   const keyed = literals(bucket(en, EN, 'DESCRIPTIONS')).find(
     ({ key, text }) => key !== '<literal>' && en.includes(`'${text}'`),
   );
@@ -385,6 +453,22 @@ const main = () => {
         ).failures;
         return found.length === 1 ? found : [];
       },
+    ),
+    requireFiring(
+      'copy',
+      {
+        mutation: 'a component joining two catalog labels added to the real set',
+        expect: ['src/zz-join.svelte: joins catalog fragments LABELS.run + LABELS.cancel'],
+      },
+      () =>
+        gradeComposition(
+          [
+            ...sources,
+            { path: 'src/zz-join.svelte', source: '<p>{t.LABELS.run} {t.LABELS.cancel}</p>' },
+          ],
+          en,
+          ja,
+        ).failures,
     ),
     requireFiring(
       'copy',
@@ -447,6 +531,8 @@ const main = () => {
   const { failures: componentFailures, graded: componentFiles } = gradeComponents(files, FILLER);
   failures.push(...componentFailures);
   failures.push(...checkWordmark((file) => readFileSync(join(ROOT, file), 'utf8')));
+  const { failures: joinFailures, joins } = gradeComposition(sources, en, ja);
+  failures.push(...joinFailures);
   const compared = checkParity(failures, en, ja);
   const shell = checkShell(failures, en, html);
 
@@ -457,7 +543,8 @@ const main = () => {
   }
   console.log(
     `copy: ${graded} en strings pass, ${componentFiles} components carry no over-long or filler prose, ` +
-      `${compared} ja keys at parity, ${WORDMARK.length} wordmark pins shipped, ` +
+      `${compared} ja keys at parity, ${String(joins)} catalog joins whole sentences or declared, ` +
+      `${WORDMARK.length} wordmark pins shipped, ` +
       `${shell} shell strings match index.html, ${controls.length} controls fired`,
   );
 };

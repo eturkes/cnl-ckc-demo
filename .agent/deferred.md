@@ -190,12 +190,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   gate run is green again once the load falls (906/906 at avg 7–15). Accept: the full suite
   passes 20 consecutive runs at load avg ≥ 3× cores with no timeout raised, or a user-approved
   gate timeout policy is recorded with its original firing. `pri` med.
-- **Catalog-fragment composition has no checker** — `.claude/rules/i18n.md` forbids building a
-  string by joining catalog fragments outside the declared before/after pairs
-  (`LABELS.graphSelected{Before,After}`, `TEXT.graphHighlightOrigin{Before,After}`), and the
-  registry row for u14 A03 rests on that rule alone. Accept: a committed check refuses a
-  component that concatenates two catalog values outside the declared pairs, shipped with a
-  planted concatenation that reddens it. `pri` low.
 - **Proof-RPC failure copy has no driving test** — `TEXT.traceFailure` (u14 A21) renders only
   when the proof RPC fails, and no test drives that path. Accept: a dom test fails the ladder's
   proof request and asserts the rendered `traceFailure` copy in both locales. `pri` low.

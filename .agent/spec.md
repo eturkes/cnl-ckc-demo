@@ -249,7 +249,8 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [ ] d61 owes the user: the Worker deploy (account, route, secret) and a per-client + global limiter ruling.
 - [x] `75e6073` d62 the selector suite plants the fixed-trigger mutant in memory and requires ORACLE-S to catch it.
 - [ ] d63 owes the user: no filter of the shipped selection lifts precision at 143/163 recall (measured offline); a lift needs a request change under the selection-model ruling + a live billed probe.
-- [ ] find: engine timing figures reworded to the bounds they guarantee, browser figures cited to `engine:probe` — closed by the commit that adds this line.
+- [x] `4c37c0a` find: engine timing figures reworded to the bounds they guarantee, browser figures cited to `engine:probe`.
+- [ ] find: `copy:check` refuses a component joining catalog fragments outside the declared pairs — closed by the commit that adds this line.
 - [ ] new-find rows, in queue order.
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 
