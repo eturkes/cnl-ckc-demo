@@ -56,8 +56,8 @@ alone. The locale seam, its consumer pattern and the payload boundary are in
 `.claude/rules/i18n.md`.
 
 `tools/copy-check.mjs` is static — there is no TS runner here. It grades `src/i18n/en.ts`
-(`INSTRUCTIONS` ≤20 words/sentence, the other three buckets ≤25) and holds `ja.ts` at key
-parity. A period between digits is not a sentence boundary, so `License 1.1.` is one sentence;
+(`INSTRUCTIONS` ≤20 words/sentence, the other three buckets ≤25), holds `ja.ts` at key
+parity, and grades the literal prose of every `.svelte` file under `src/` at ≤25. A period between digits is not a sentence boundary, so `License 1.1.` is one sentence;
 the sentinel is `U+E000` because a control character trips ESLint `no-control-regex`.
 
 **The seven question strings are payload, not copy.** They are generated from the compiled

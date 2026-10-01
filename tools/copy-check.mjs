@@ -15,8 +15,8 @@
 //
 // Usage: node tools/copy-check.mjs
 
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
 
 import { requireFiring } from './control.mjs';
 import { ROOT } from './kb/paths.mjs';
@@ -25,6 +25,8 @@ import { ROOT } from './kb/paths.mjs';
 const FILLER = ['simply', 'robust', 'seamlessly', 'leverage'];
 
 const EN = 'src/i18n/en.ts';
+/** The longest sentence a component may render, the same as the `DESCRIPTIONS` bucket. */
+const COMPONENT_LIMIT = 25;
 const JA = 'src/i18n/ja.ts';
 
 /**
@@ -235,6 +237,79 @@ const gradeEnglish = (source, buckets, filler) => {
 };
 
 /**
+ * Every component under `src/`, found by walking the tree rather than listed by path, so a
+ * component added tomorrow is graded the day it lands.
+ *
+ * @param {string} dir @returns {string[]}
+ */
+const components = (dir) =>
+  readdirSync(dir)
+    .sort()
+    .flatMap((name) => {
+      const path = join(dir, name);
+      if (statSync(path).isDirectory()) return components(path);
+      return name.endsWith('.svelte') ? [path] : [];
+    });
+
+/**
+ * The literal prose a component renders: its markup text nodes plus the human-facing attribute
+ * values, with script, style, comments and every `{…}` expression removed. Tags are segment
+ * boundaries, so two adjacent labels never merge into one long sentence.
+ *
+ * @param {string} source @returns {string[]}
+ */
+const componentText = (source) => {
+  let markup = source
+    .replace(/<script[\s\S]*?<\/script>/g, ' ')
+    .replace(/<style[\s\S]*?<\/style>/g, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ');
+  const attributes = [
+    ...markup.matchAll(/\b(?:aria-label|aria-description|title|alt|placeholder)="([^"{}]+)"/g),
+  ].map(([, value]) => value ?? '');
+  let previous;
+  do {
+    previous = markup;
+    markup = markup.replace(/\{[^{}]*\}/g, '\n');
+  } while (markup !== previous);
+  return [...markup.split(/<[^>]*>/), ...attributes]
+    .map((text) => text.replace(/\s+/g, ' ').trim())
+    .filter((text) => /\p{L}{2,}/u.test(text));
+};
+
+/**
+ * Prose written straight into a component escapes the catalog grader, so it takes the same
+ * register here: the `DESCRIPTIONS` limit and the filler sweep.
+ *
+ * @param {{path: string, source: string}[]} files @param {string[]} filler
+ * @returns {{failures: string[], graded: number}}
+ */
+const gradeComponents = (files, filler) => {
+  if (files.length === 0) {
+    return {
+      failures: ['no .svelte component found under src, so component copy grades nothing'],
+      graded: 0,
+    };
+  }
+  /** @type {string[]} */
+  const failures = [];
+  for (const { path, source } of files) {
+    for (const text of componentText(source)) {
+      for (const sentence of sentences(text)) {
+        const n = words(sentence);
+        if (n > COMPONENT_LIMIT) {
+          failures.push(`${path}: ${n} words, limit ${COMPONENT_LIMIT} — "${sentence}"`);
+        }
+      }
+      for (const word of filler) {
+        if (new RegExp(`\\b${word}\\b`, 'i').test(text))
+          failures.push(`${path}: banned word "${word}"`);
+      }
+    }
+  }
+  return { failures, graded: files.length };
+};
+
+/**
  * @param {readonly string[]} filler
  * @returns {string[]}
  */
@@ -247,6 +322,11 @@ const main = () => {
   const en = readFileSync(join(ROOT, EN), 'utf8');
   const ja = readFileSync(join(ROOT, JA), 'utf8');
   const html = readFileSync(join(ROOT, 'index.html'), 'utf8');
+  const files = components(join(ROOT, 'src')).map((path) => ({
+    path: relative(ROOT, path),
+    source: readFileSync(path, 'utf8'),
+  }));
+  const planted = `<p>${Array.from({ length: 30 }, (_, i) => `word${String(i)}`).join(' ')}.</p>`;
 
   // One control per grader, each breaking the input this grader reads. `en` standing in for
   // `ja` is the parity mutation: every value is then byte-identical to its English source.
@@ -281,6 +361,21 @@ const main = () => {
     ),
     requireFiring(
       'copy',
+      {
+        mutation: 'a component carrying a 30-word sentence added to the real set',
+        expect: ['src/zz-control.svelte: 30 words, limit 25'],
+      },
+      () =>
+        gradeComponents([...files, { path: 'src/zz-control.svelte', source: planted }], FILLER)
+          .failures,
+    ),
+    requireFiring(
+      'copy',
+      { mutation: 'the derived component set emptied', expect: ['no .svelte component found'] },
+      () => gradeComponents([], FILLER).failures,
+    ),
+    requireFiring(
+      'copy',
       { mutation: 'the shell title prefixed', expect: ['documentTitle differs from'] },
       () => {
         /** @type {string[]} */
@@ -294,6 +389,8 @@ const main = () => {
   const failures = gradeFiller(FILLER);
   const { failures: englishFailures, graded } = gradeEnglish(en, BUCKETS, FILLER);
   failures.push(...englishFailures);
+  const { failures: componentFailures, graded: componentFiles } = gradeComponents(files, FILLER);
+  failures.push(...componentFailures);
   const compared = checkParity(failures, en, ja);
   const shell = checkShell(failures, en, html);
 
@@ -303,7 +400,8 @@ const main = () => {
     process.exit(1);
   }
   console.log(
-    `copy: ${graded} en strings pass, ${compared} ja keys at parity, ` +
+    `copy: ${graded} en strings pass, ${componentFiles} components carry no over-long or filler prose, ` +
+      `${compared} ja keys at parity, ` +
       `${shell} shell strings match index.html, ${controls.length} controls fired`,
   );
 };

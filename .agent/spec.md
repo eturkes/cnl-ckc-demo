@@ -196,9 +196,10 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `e78551f` d16 `browser:check` kills a hostile goal by the client deadline; one respawn reports 337 documents.
 - [x] `07899e0` d19 closed on its own check: archived `m1u4.md` D6 records why `query_sha256` stays out of the runtime; the export lane re-derives the whole envelope.
 - [ ] d21 fix parked on `wip/d21-boot-retry` (retire the worker after a failed boot): tester-d21 + review pending.
-- [x] d23 V13 axe sweep: About panel + canonical answer, open and closed.
+- [x] `34e791b` d23 V13 axe sweep: About panel + canonical answer, open and closed.
+- [x] d24 `copy:check` walks `src/` and grades every component's literal prose.
 - [ ] d29 `high` WASM abort — waits: an ad-hoc goal path (`Decisions` MAIN).
-- [ ] `med`: d11 d24 d25 d26 d27 d30 d31 d32 d36
+- [ ] `med`: d11 d25 d26 d27 d30 d31 d32 d36
   d37 d40 d44 d45 d46 d48 d49 d50 d51 d52 d53 d54
 - [ ] `low`: d1 d3 d5 d6 d8 d9 d12 d15 d17 d20 d22 d28 d33 d34 d35 d38 d39 d41 d42 d43 d47
   d55 d56 d57 d58 d59 d60 d61 d62 d63

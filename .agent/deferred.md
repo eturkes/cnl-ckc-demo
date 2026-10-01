@@ -78,11 +78,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   Accept: `tools/visual-qa.mjs` passes `pnpm check` and `pnpm lint`, `pnpm visual-qa`
   exits 0, and its JSON reports `overflow=false` for every state at 320, 375 and
   1280 px. `pri` low.
-- **Copy validator reaches only two files** — `tools/copy-check.mjs` grades
-  `copy.ts` and `describe.ts` by path, so prose added to a new component escapes
-  it. Accept: the validator derives its file set from the source tree, and a new
-  component carrying a 30-word sentence fails the gate. `pri` med.
-
 - **Inference budget re-arms per solution** — `call_with_inference_limit/3` is
   applied per solution, so the inference budget bounds one step and not the whole
   request: 50 solutions of ~800 inferences each pass a 3000 limit, while one
@@ -388,7 +383,6 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | `wt/test-m1u2` suite never ran here | it runs in-tree, each case red for a contract reason or green |
 | Heap limit is proven by a synthesized outcome alone | a live trip reads `limit: 'heap'` (blocked behind the abort row) |
 | Boot is terminal on failure, unbounded on silence | a failed or hung boot settles bounded as one alert with a retry |
-| `copy:check` grades two files by path | its file set derives from the source tree; a 30-word sentence anywhere fails |
 | Wordmark, forbidden claims, descriptor + fallback stacks rest on one reading | each decided by a committed check |
 | The inference budget re-arms per solution | a goal whose total exceeds budget reaches `limit:'inference'`, or the bound is contracted |
 | `pnpm smoke` stays rc 0 on a stale `dist/` | it fails on a `dist/` stale against the KB input hash, `dist/` intact |
