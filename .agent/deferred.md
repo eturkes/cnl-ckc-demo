@@ -22,11 +22,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   phases the runtime supplies: image fetch (bytes only where the response streams them),
   `loadImageDefault`, contract verification; the worker protocol gains a `progress` response,
   which joins the d37 clone table.
-- **Finish the u1 wave-1 reports** — `map-m1u1` (17/25 rows) and
-  `spike-m1u1-det` (9/12) were stopped at the reserve. Their sources
-  `.scratch/agents/{map-m1u1,spike-m1u1-det}.md` must survive until this closes. Accept: both
-  reports pass `node tools/validate-report.mjs` with rc 0, or the open rows are re-derived and their
-  findings folded into `.claude/rules/`. `pri` low.
 - **QLF fallback delivery path** — the fallback needs the 6.2 MB `swipl-bundle`,
   so a naive import would double the shipped engine. Accept: the fallback engine
   loads only when the saved state fails, and a production build that never takes
@@ -329,6 +324,12 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   "every human-facing string lives in `src/i18n/`" rule and the u6 catalog-consistency pass
   rest on judgment alone. Accept: each re-adjudicates to `true` on a committed command, to
   `historical`, or the rule is reworded to what a committed check proves. `pri` low.
+- **A halting payload fails the producer as `[object Object]`** — a payload carrying
+  `:- initialization(halt).` is refused by both `buildImage` and `buildQlf` (fail-closed holds),
+  but Emscripten throws an `ExitStatus` object rather than an `Error`, so the build reports
+  `[object Object]` (`.scratch/agents/researcher-d9/s11-results.json`, `tools/kb/produce.mjs`).
+  Accept: a test over a halting payload copy requires `kb:build`'s refusal to name the halt
+  and its exit status. `pri` low.
 
 ## Index — one line per `high` + `med` row
 

@@ -224,7 +224,8 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [ ] d5 owes a ruling: phased boot status replaces the accepted status line's boot text.
 - [x] d6 the URL carries the selected catalog id; reload and back/forward select it and never run.
 - [x] d8 a service worker precaches the boot set; a second visit boots offline; a renamed PVM evicts the stale cache.
-- [ ] `low`: d9 d12 d15 d17 d20 d22 d28 d33 d34 d35 d38 d39 d41 d42 d43 d47
+- [x] d9 both u1 wave-1 reports validate (25/25, 12/12), re-derived at today's tree; new row: halting payload reports `[object Object]`.
+- [ ] `low`: d12 d15 d17 d20 d22 d28 d33 d34 d35 d38 d39 d41 d42 d43 d47
   d55 d56 d57 d58 d59 d60 d61 d62 d63
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 
