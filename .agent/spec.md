@@ -238,7 +238,8 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [ ] d41 owes a ruling: an owned PDF viewer replaces the accepted ladder's iframe (+504,727 B gzip PDF.js).
 - [ ] d42 session proof cache on `wip/d42` under review.
 - [ ] d43 owes a ruling: a document-first provenance view is a new surface with a layout entry point.
-- [ ] `low`: d35 d47
+- [x] d47 `pnpm queue:index` derives the queue index; `claims:check` refuses a stale one by line.
+- [ ] `low`: d35
   d55 d56 d57 d58 d59 d60 d61 d62 d63
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 

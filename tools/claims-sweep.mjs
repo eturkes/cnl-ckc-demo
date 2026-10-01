@@ -13,6 +13,7 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { requireFiring } from './control.mjs';
+import { gradeIndex, QUEUE } from './queue.mjs';
 
 const REGISTRY = 'docs/claims.md';
 
@@ -294,7 +295,6 @@ export const gradeRegistry = (rows, registry) => {
   return failures;
 };
 
-const QUEUE = '.agent/deferred.md';
 const CITATION = /queue row `([^`]+)`/u;
 
 /** @param {string} registry */
@@ -432,7 +432,21 @@ if (process.argv.includes('--seed')) {
     () => gradeDeferrals(registry, queue.replace(`**${cited}**`, '**control**')),
   );
 
-  const failures = [...gradeRegistry(rows, registry), ...gradeDeferrals(registry, queue)];
+  const plantedRow = '- **ZZ control row** — planted. Accept: never. `pri` med.\n';
+  const staleIndex = requireFiring(
+    'claims:check',
+    {
+      mutation: 'a med queue row added without pnpm queue:index',
+      expect: ['lacks | ZZ control row'],
+    },
+    () => gradeIndex(queue.replace('\n## Index — ', `\n${plantedRow}\n## Index — `)),
+  );
+
+  const failures = [
+    ...gradeRegistry(rows, registry),
+    ...gradeDeferrals(registry, queue),
+    ...gradeIndex(queue),
+  ];
   if (failures.length > 0) {
     process.stderr.write(`claims:check failed — ${failures.join('; ')}\n`);
     process.exitCode = 1;
@@ -447,7 +461,8 @@ if (process.argv.includes('--seed')) {
     process.stdout.write(
       `claims:check ok — ${String(rows.length)} claims covered (${split}), ` +
         `every row adjudicated, ${String(deferredRows(registry).length)} deferrals cited; ` +
-        `controls: ${control}, ${unseeded}, ${reseeded}, ${uncited}, ${dangling}\n`,
+        `queue index current; controls: ${control}, ${unseeded}, ${reseeded}, ${uncited}, ` +
+        `${dangling}, ${staleIndex}\n`,
     );
   }
 }
