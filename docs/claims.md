@@ -89,7 +89,7 @@ kb:reproduce` and `pnpm binding:replay` are outside it too.
 | R017 | shipped | `src/i18n/en.ts:175` | cc9ea9f87e1e | u14 A17 `proofAbsent` | `pnpm binding:check` | true |
 | R018 | shipped | `src/i18n/en.ts:234` | adfa6ea1d99b | u14 A19 | `pnpm binding:check` | true |
 | R019 | shipped | `src/i18n/en.ts:238` | 41e0abab68db | u14 A20 `answerYesSummary` | `pnpm binding:check` | true |
-| R020 | shipped | `src/i18n/en.ts:280` | 8f40a1763adf | u14 A21 `traceFailure` | none | deferred — no test drives the proof-RPC failure copy (queue row `Proof-RPC failure copy has no driving test`) |
+| R020 | shipped | `src/i18n/en.ts:280` | 8f40a1763adf | u14 A21 `traceFailure` | `pnpm exec vitest run tests/trace-failure.dom.test.ts` | true |
 | R021 | shipped | `src/i18n/en.ts:286` | c7dd21313b5d | u14 A22 | `npx vitest run tests/provenance-ladder.dom.test.ts` | true |
 | R022 | shipped | `src/i18n/en.ts:290` | 9ff31b2e4060 | u14 A23 `proofNegationCount` | `npx vitest run tests/provenance-ladder.dom.test.ts` | true |
 | R023 | shipped | `src/i18n/en.ts:292` | 5d7b88aca514 | u14 A24 `clauseJoin` | `pnpm binding:check` | true |
