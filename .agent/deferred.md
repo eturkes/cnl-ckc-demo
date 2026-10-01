@@ -53,14 +53,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   streaming as cheap (0.0414 vs 0.0345 ms/query) and useful for early answers.
   Accept: solutions render as they arrive, and a queued cancel still cannot
   interrupt an in-flight synchronous `next()`. `pri` low.
-- **Humanizer label test asserts its own artifact** — `tests/questions-live.test.ts:294`
-  matches `/^\S+ — sentence \d+, \w+ \d+$/u`, a grammar that exists only in
-  `src/questions/humanize.ts`, so the expectation comes from the artifact under test.
-  D8 constrains only what the humanizer may not know, so no external oracle exists
-  (M1 review c20 register). Accept: the contract states the label grammar and the test
-  cites it, or the test drops the shape assertion and keeps the `not.toContain` gloss
-  checks that carry the real force. `pri` low.
-
 - **Browser WASM abort leaves a dead session** — a runaway `assertz` aborts the WASM runtime
   — in Node too at swipl-wasm 8.0.7, pinned live by `tests/engine-heap.test.ts`, which is the
   fix's red witness — and surfaces as `{code:'prolog', message:'Aborted()...'}`, so `limit:'heap'`

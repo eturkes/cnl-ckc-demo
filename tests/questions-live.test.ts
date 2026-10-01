@@ -368,6 +368,7 @@ describe('answer humanizer', () => {
     const display = solution.display.Source as string;
     const text = humanizeGuidelineId(term, display);
     expect(text).not.toBe(display);
+    // The label grammar is law in `.claude/rules/ui.md` `Copy`, not this module's own output.
     expect(text).toMatch(/^\S+ — sentence \d+, \w+ \d+$/u);
   });
 

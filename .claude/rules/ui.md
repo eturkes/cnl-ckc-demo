@@ -65,6 +65,12 @@ the sentinel is `U+E000` because a control character trips ESLint `no-control-re
 goals, and rewriting one would make the displayed question differ from the question that runs.
 The copy validator does not grade them.
 
+**A guideline-id source label = `<DocId> — sentence <Sentence>, <locator functor> <n>`**,
+built from the five fields of `'$guideline_id'(Role,DocId,Sentence,Locator,Deps)` alone
+(`humanizeGuidelineId`, m1u4 D8 + P4): no CDC atom, prefix or token gloss. Any other shape
+renders the engine's own display text. `tests/questions-live.test.ts` `answer humanizer` grades
+a live answer against this grammar.
+
 The bag labels all 337 documents `unreviewed`. Upstream counts
 `approved`/`rejected`/`contested`/`stale`/`unreviewed`, so the label means **no adjudication
 decision was recorded** — never that a check failed. Say so wherever it surfaces.
