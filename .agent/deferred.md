@@ -162,7 +162,11 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   local caller and wrong for a public one. Accept: a deployed Worker answers every W1–W6 case of
   `tests/intake-worker.test.ts` from its own origin, the limiter keys per client
   (`CF-Connecting-IP`), `ALLOWED_ORIGINS` names the published page alone, and the published
-  page reaches it under its `connect-src`. `pri` low.
+  page reaches it under its `connect-src`. `pri` low. **Owes the user**: the deploy itself
+  (account, route, the key as a Worker secret) and a limiter ruling — a per-client key alone
+  lets many clients jointly spend the API key, so a public Worker likely needs a per-client
+  bucket AND a global spend bucket. Already in place: `ALLOWED_ORIGINS` is a `wrangler.jsonc`
+  var, so naming the published page is configuration, not code.
 - **The selector's trigger-id mutant has no gate-resident control** — review INT-F1 showed the
   ORACLE-S differential passed a selector that read one fixed trigger id; the fixture now varies
   ids and the mutant dies, but the only proof is `wt/reviewer-3` `40fd9d6`

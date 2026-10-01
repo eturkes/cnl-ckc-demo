@@ -245,8 +245,9 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `50b580f` d57 the `lint` bullet names `advice.ts`'s config exception and why it cannot be inline; R073 adjudicated afresh (deferred to a new grader row).
 - [x] `05df8e9` d58 a registry cell may hold `\|`; claims:check re-seeds a piped copy and requires it back byte-identical.
 - [x] `da89fd6` d59 `spec:check` in the gate: open rows `- [ ]`, ticked rows carry SHAs, pointer last.
-- [ ] d60 `--verdict` admits the reviewer role's vocabulary; waves.md names the brief's one vocabulary — closed by the commit that adds this line.
-- [ ] `low`: d61 d62 d63, then the new-find rows.
+- [x] `c73a1f2` d60 `--verdict` admits the reviewer role's vocabulary; waves.md names the brief's one vocabulary.
+- [ ] d61 owes the user: the Worker deploy (account, route, secret) and a per-client + global limiter ruling.
+- [ ] `low`: d62 d63, then the new-find rows.
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open
