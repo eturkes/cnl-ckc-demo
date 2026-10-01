@@ -156,12 +156,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   reader-relative labels). m5u12 ruled the first, second and fourth for the shipped side, so
   24/24 needs edits to the teammate's oracle beyond the lookups — the user rules which.
 
-- **`waves.md` `Report grading` and the `reviewer` role disagree on verdicts** — the law's
-  `--verdict` form wants the finding cell to open `pass:` or `fail(low|med|high):`, while
-  `~/.claude/agents/reviewer.md` writes `pass` | `finding` with severity `blocker` | `major` |
-  `minor`. A reviewer following its role fails the repo's grader. Accept: `waves.md` names the
-  one vocabulary a reviewer brief carries, and a role-format verdict table grades clean under
-  `node tools/validate-report.mjs --verdict`. `pri` low.
 - **The judgment Worker runs locally alone** — user ruling deferred the Cloudflare deploy and
   stopped Pages publishing, so free-text intake exists only under `pnpm intake:dev` + Vite's
   proxy. `worker/index.ts` spends one global limiter bucket (`key: 'intake'`), correct for one

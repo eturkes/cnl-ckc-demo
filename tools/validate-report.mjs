@@ -30,7 +30,12 @@ const UNIT_COLS = [
 /** `-` is the seeded contract's truthful spelling for "no flags" and "no dependencies". */
 const OPTIONAL_UNIT_COLS = new Set(['flags', 'depends']);
 const TIERS = new Set(['kernel', 'data', 'docs']);
-const VERDICT = /^(?:pass|fail\((?:low|med|high)\)):/u;
+/**
+ * The brief vocabulary (`pass:` / `fail(low|med|high):`) or the `reviewer` role's own (`pass` /
+ * `finding … (blocker|major|minor)`), so a reviewer following its role grades clean.
+ */
+const VERDICT =
+  /^(?:pass:|fail\((?:low|med|high)\):|pass\b|finding\b[^|]*?\((?:blocker|major|minor)\))/u;
 
 /**
  * Split one table row into trimmed cells.

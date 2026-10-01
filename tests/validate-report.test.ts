@@ -24,6 +24,19 @@ describe('validate-report', () => {
     expect(piped).toEqual(plain);
   });
 
+  it('grades the reviewer role vocabulary as clean as the brief vocabulary', () => {
+    for (const finding of [
+      'pass — every display checks the deadline before the next one starts',
+      'finding F1 (major): the deadline is checked per solution, so later displays still run',
+      'finding F2, F3 (blocker): a cached hit returns a proof the current engine cannot derive',
+    ]) {
+      expect(grade(finding), finding).toEqual({ filled: 1, errors: [] });
+    }
+    expect(
+      grade('finding F1: the severity is missing, so the verdict cannot be ranked').errors,
+    ).not.toEqual([]);
+  });
+
   it('refuses a seeded all-unknown skeleton', () => {
     const seeded = gradeReport({ name: 'r.md', text: report('unknown'), ids: ['R1'] });
     expect(seeded.filled).toBe(0);

@@ -86,8 +86,11 @@ are this repo's deltas.
 ## Report grading
 
 `node tools/validate-report.mjs <report.md> [--units N] [--verdict]` grades wave reports. Rows
-are `| id | finding | evidence |`, and `--verdict` folds the verdict into the finding cell,
-which must open `pass:` or `fail(low|med|high):`. The `evidence` cell is where the global
+are `| id | finding | evidence |`, and `--verdict` folds the verdict into the finding cell. A
+reviewer brief carries ONE vocabulary: the cell opens `pass:` or `fail(low|med|high):`. The
+grader also admits the `reviewer` role's own form — `pass`, or `finding <ids> (blocker|major|minor)`
+— read as blocker = high, major = med, minor = low, so a reviewer following its role grades
+clean. The `evidence` cell is where the global
 evidence bar lands — a red test, or the disputed bytes in `/usr/bin/rg -Fn` form plus
 `file:line` — so harvest rematches a row without opening its detail section. Grading needs a
 sibling `<stem>.ids`. A seeded all-`unknown` skeleton exits 1 — that is what makes it a

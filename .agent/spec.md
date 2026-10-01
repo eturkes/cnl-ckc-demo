@@ -244,8 +244,9 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `e0c4f1b` d56 both rows graded on their own checks: `Boot-error recovery` by `88af76b` (d21), `Boot carries no deadline` by `da39355` (d31, text corrected to `boot`).
 - [x] `50b580f` d57 the `lint` bullet names `advice.ts`'s config exception and why it cannot be inline; R073 adjudicated afresh (deferred to a new grader row).
 - [x] `05df8e9` d58 a registry cell may hold `\|`; claims:check re-seeds a piped copy and requires it back byte-identical.
-- [ ] d59 `spec:check` in the gate (open rows `- [ ]`, ticked rows carry SHAs, pointer last) — closed by the commit that adds this line; the next commit ticks it.
-- [ ] `low`: d60 d61 d62 d63, then the new-find rows.
+- [x] `da89fd6` d59 `spec:check` in the gate: open rows `- [ ]`, ticked rows carry SHAs, pointer last.
+- [ ] d60 `--verdict` admits the reviewer role's vocabulary; waves.md names the brief's one vocabulary — closed by the commit that adds this line.
+- [ ] `low`: d61 d62 d63, then the new-find rows.
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open
