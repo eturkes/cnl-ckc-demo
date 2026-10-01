@@ -2,7 +2,7 @@
 
 import axe from 'axe-core';
 import { flushSync, mount, unmount } from 'svelte';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import App from '../src/App.svelte';
 import type { BootOutcome } from '../src/engine/client.js';
@@ -211,6 +211,30 @@ const buttonNamed = (name: RegExp): HTMLButtonElement => {
 const radios = (): HTMLInputElement[] => [
   ...target.querySelectorAll<HTMLInputElement>('input[type="radio"]'),
 ];
+
+/**
+ * axe-core runs one scan at a time. A case that overran its timeout leaves its scan running, and
+ * the next case's own `axe.run` then throws `Axe is already running` — one slow state used to
+ * fail every axe case after it. Each scan therefore waits for the one before it.
+ */
+let lastScan: Promise<unknown> = Promise.resolve();
+const scanAxe = (context: HTMLElement): Promise<axe.AxeResults> => {
+  const scan = lastScan.then(
+    () => axe.run(context),
+    () => axe.run(context),
+  );
+  lastScan = scan.catch(() => undefined);
+  return scan;
+};
+
+// axe-core builds its rule set on the first scan; paying that once here keeps it out of the first
+// case's own budget.
+beforeAll(async () => {
+  const warm = document.body.appendChild(document.createElement('div'));
+  warm.textContent = 'warm-up';
+  await scanAxe(warm);
+  warm.remove();
+});
 
 beforeEach(() => {
   target = document.body.appendChild(document.createElement('div'));
@@ -465,35 +489,33 @@ describe('view states and accessibility', () => {
     }
   });
 
-  it('V11 has zero axe violations or non-contrast incomplete checks in every state', async () => {
-    const cases: readonly [string, DemoState][] = [
-      ['booting', { kind: 'booting' }],
-      ['boot-error', { kind: 'boot-error', error: { code: 'boot', message: 'boot failed' } }],
-      ['idle', { kind: 'idle', contract: CONTRACT }],
-      ['running', { kind: 'running', id: ID }],
-      ['cancelling', { kind: 'cancelling', id: ID }],
-      ['answer', { kind: 'settled', id: ID, result: answer(ID, 2, 'axe') }],
-      ['structured answer', { kind: 'settled', id: ID, result: structuredAnswer() }],
-      ['failure', { kind: 'settled', id: ID, result: failure(ID) }],
-      ['limit', { kind: 'settled', id: ID, result: limited('answer-cap', 1) }],
-      ['cancelled', { kind: 'settled', id: ID, result: cancelled(1) }],
-      ['error', { kind: 'settled', id: ID, result: failed('axe error') }],
-    ];
-
-    for (const [name, state] of cases) {
-      controller.solutionIndex =
-        state.kind === 'settled' && state.result.kind === 'answer' ? 0 : -1;
-      setState(state);
-      const scan = await axe.run(target);
-      expect(
-        scan.violations.map((violation) => violation.id),
-        name,
-      ).toEqual([]);
-      expect(
-        scan.incomplete.map((item) => item.id).filter((id) => id !== 'color-contrast'),
-        name,
-      ).toEqual([]);
-    }
+  // One case per state, not one loop: 11 axe passes in a single case shared one 5000 ms budget
+  // and overran it whenever the machine was busy, and an overrun axe pass then broke the next
+  // case's own run with `Axe is already running`.
+  it.each<[string, DemoState]>([
+    ['booting', { kind: 'booting' }],
+    ['boot-error', { kind: 'boot-error', error: { code: 'boot', message: 'boot failed' } }],
+    ['idle', { kind: 'idle', contract: CONTRACT }],
+    ['running', { kind: 'running', id: ID }],
+    ['cancelling', { kind: 'cancelling', id: ID }],
+    ['answer', { kind: 'settled', id: ID, result: answer(ID, 2, 'axe') }],
+    ['structured answer', { kind: 'settled', id: ID, result: structuredAnswer() }],
+    ['failure', { kind: 'settled', id: ID, result: failure(ID) }],
+    ['limit', { kind: 'settled', id: ID, result: limited('answer-cap', 1) }],
+    ['cancelled', { kind: 'settled', id: ID, result: cancelled(1) }],
+    ['error', { kind: 'settled', id: ID, result: failed('axe error') }],
+  ])('V11 has zero axe violations or non-contrast incomplete checks: %s', async (name, state) => {
+    controller.solutionIndex = state.kind === 'settled' && state.result.kind === 'answer' ? 0 : -1;
+    setState(state);
+    const scan = await scanAxe(target);
+    expect(
+      scan.violations.map((violation) => violation.id),
+      name,
+    ).toEqual([]);
+    expect(
+      scan.incomplete.map((item) => item.id).filter((id) => id !== 'color-contrast'),
+      name,
+    ).toEqual([]);
   });
 
   it('V13 has zero axe violations with the About panel and the canonical answer open or closed', async () => {
@@ -516,7 +538,7 @@ describe('view states and accessibility', () => {
         canonical.open = canonicalOpen;
         flushSync();
         const name = `about ${aboutOpen ? 'open' : 'closed'}, canonical ${canonicalOpen ? 'open' : 'closed'}`;
-        const scan = await axe.run(target);
+        const scan = await scanAxe(target);
         expect(
           scan.violations.map((violation) => violation.id),
           name,

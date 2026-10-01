@@ -201,6 +201,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [ ] d25 fix on `wip/d25-inference` (whole-request inference meter): review round 1 found the trailing-failure gap.
 - [x] `9d1eecb` d26 smoke refuses a build stale against the bag's input digest.
 - [x] d11 u2 suite ported: 16 merged green, 20 covered, 2 red → rows (d12 float, new find improper-list tail).
+- [ ] d45 fix committed (scan-only spawns, per-state V11, serialized axe); 20-run proof owed under lower load.
 - [ ] d29 `high` WASM abort — waits: an ad-hoc goal path (`Decisions` MAIN).
 - [ ] `med`: d27 d30 d31 d32 d36
   d37 d40 d44 d45 d46 d48 d49 d50 d51 d52 d53 d54

@@ -1,7 +1,12 @@
 // `pnpm kb:asset-check` — prove the generated artifacts still match a manifest
 // that still matches the vendored bag. Verifies only; never rebuilds.
 //
-// Usage: node tools/kb/check.mjs
+// Usage: node tools/kb/check.mjs [--scan-only]
+//
+// `--scan-only` runs the source scans alone. `tests/kb-reach.test.ts` spawns this check once per
+// planted input, and re-deriving every asset from the bag is most of each run's CPU: on a loaded
+// machine that work pushed those cases past vitest's 5000 ms timeout while grading nothing they
+// plant. The gate's own `kb:asset-check` step runs the full check.
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -129,8 +134,11 @@ let scopeRecordsValidated = 0;
 let intakeControlsFired = 0;
 let intakeRulesValidated = 0;
 
+const scanOnly = process.argv.includes('--scan-only');
 const manifest = loadManifest();
-if (manifest === undefined) {
+if (scanOnly) {
+  // The scans below need no verified asset.
+} else if (manifest === undefined) {
   fail(`no manifest at ${relative(ROOT, join(GENERATED_DIR, 'kb-manifest.json'))}; run pnpm kb:build`);
 } else {
   if (manifest.assets.length === 0) fail('manifest records no assets');
@@ -274,7 +282,7 @@ if (manifest === undefined) {
   }
 }
 
-if (manifest !== undefined) {
+if (manifest !== undefined && !scanOnly) {
   const expected = new Set(['kb-manifest.json', ...manifest.assets.map((entry) => entry.path)]);
   for (const path of walk(GENERATED_DIR)) {
     const generatedPath = relative(GENERATED_DIR, path);
@@ -327,6 +335,11 @@ for (const root of QUESTION_ROOTS) {
 if (failures.length > 0) {
   process.stderr.write(`kb:asset-check failed —\n${failures.map((line) => `  ${line}`).join('\n')}\n`);
   process.exitCode = 1;
+} else if (scanOnly) {
+  process.stdout.write(
+    `kb:asset-check --scan-only ok — sibling-path, answer-oracle, JSON-serialization and ` +
+      `question-text scans clean, ${String(controlsFired)} SCAN_ROOTS control fired; assets not verified\n`,
+  );
 } else {
   const assets = /** @type {NonNullable<typeof manifest>} */ (manifest).assets;
   process.stdout.write(

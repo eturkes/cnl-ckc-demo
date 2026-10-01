@@ -214,7 +214,13 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   order/parallelism sensitive rather than broken. A flaky gate step erodes every
   claim the gate carries. Accept: the two tests pass 20 consecutive full-suite
   runs at the committed worker count, with the shared resource they contend on
-  named in the fix. `pri` med.
+  named in the fix. `pri` med. **Fix landed, proof owed.** The shared resource is CPU, spent
+  by the tests' own work: each `kb-reach` case spawned a full `kb:asset-check` (5.64 s wall
+  loaded) to grade a source scan, now `--scan-only` (0.92 s); V11 ran 11 axe scans in one 5000 ms
+  case, now one case per state, scans serialized (axe-core runs one at a time, so an overrun
+  cascaded as `Axe is already running` into every later case) and axe warmed in a hook. Owes the
+  20-run proof: at external load avg 27–33 on 8 cores, 5 runs before the serialization lost all
+  11 V11 states twice to that cascade, and every run timed out other suites (next row).
 - **`smoke` + `browser:check` ship no firing input** — both are browser lanes outside
   `pnpm gate`, and `.claude/rules/gate.md` `Firing inputs` carries them as its two open rows,
   so each reports a count it has never proved it can refuse. Accept: each reddens on a
@@ -371,6 +377,14 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   on `wt/tester-d11` `6529dea`. Accept: `createEncoder` builds improper-list cells without
   `toList` (e.g. as `'[|]'/2` compounds), so `[a|'']`, `[a|0]` and the two generated nested terms
   re-query as structural variants, with that witness green in a merged suite. `pri` low.
+- **Live suites time out under heavy external CPU load** — at load avg 27–33 on 8 cores (other
+  sessions' builds), each full-suite run failed 1–20 tests beyond the two the row above names:
+  `graph-live` "produces a concept-first answer map" (7784 ms against 5000), live clinical proofs
+  exceeding the shipped 1000 ms proof budget, `engine-u2-port` round trips, and the axe sweeps of
+  `question-combobox.dom` B3, `provenance-ladder.dom` C9, `semantic-graph.dom` and `intake-panel`
+  U6. A gate run is green again once the load falls (906/906 at avg 7–15). Accept: the full suite
+  passes 20 consecutive runs at load avg ≥ 3× cores with no timeout raised, or a user-approved
+  gate timeout policy is recorded with its original firing. `pri` med.
 
 ## Index — one line per `high` + `med` row
 
