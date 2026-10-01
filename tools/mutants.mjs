@@ -208,8 +208,8 @@ export const MUTANTS = [
     edits: [
       {
         path: 'src/demo/DemoController.svelte.ts',
-        old: '  select(id: QuestionId): void {',
-        new: "  get solutions(): readonly PlSolution[] {\n    return this.state.kind === 'settled' ? solutionsOf(this.state.result) : [];\n  }\n\n  select(id: QuestionId): void {",
+        old: '  select(id: QuestionId | null): void {',
+        new: "  get solutions(): readonly PlSolution[] {\n    return this.state.kind === 'settled' ? solutionsOf(this.state.result) : [];\n  }\n\n  select(id: QuestionId | null): void {",
       },
     ],
     check: { test: 'tests/demo-api.test.ts', name: 'declared controller members' },
