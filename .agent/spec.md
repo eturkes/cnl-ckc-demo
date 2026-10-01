@@ -226,7 +226,9 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] d8 a service worker precaches the boot set; a second visit boots offline; a renamed PVM evicts the stale cache.
 - [x] d9 both u1 wave-1 reports validate (25/25, 12/12), re-derived at today's tree; new row: halting payload reports `[object Object]`.
 - [ ] d12 owes a ruling: a fourth undeclared surface (`prolog.get_float` override, measured working) or Prolog-side float paths.
-- [ ] `low`: d15 d17 d20 d22 d28 d33 d34 d35 d38 d39 d41 d42 d43 d47
+- [ ] d15 port lands with a fix: `0465faa` left display unbounded by the deadline (m1u3 P3.3 red); fix on `wip/d15` under review.
+- [x] d20 `kb:asset-check` refuses an oracle path assembled from its two bare segments.
+- [ ] `low`: d17 d22 d28 d33 d34 d35 d38 d39 d41 d42 d43 d47
   d55 d56 d57 d58 d59 d60 d61 d62 d63
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 

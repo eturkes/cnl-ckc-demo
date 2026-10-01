@@ -103,6 +103,8 @@ const REQUIRED = Object.freeze([
       'forbidden answer-oracle reach fails kb:asset-check on a static import',
       'forbidden answer-oracle reach fails kb:asset-check on a dynamic import',
       'forbidden answer-oracle reach fails kb:asset-check on a filesystem read',
+      'forbidden answer-oracle reach fails kb:asset-check on a joined path',
+      'forbidden answer-oracle reach fails kb:asset-check on a concatenated path',
       'JSON serialization ban over src/ fails kb:asset-check on a serializing call',
       'catalog question text ban over src/ and tests/ fails kb:asset-check on a copied question sentence',
     ],

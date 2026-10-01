@@ -53,9 +53,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   streaming as cheap (0.0414 vs 0.0345 ms/query) and useful for early answers.
   Accept: solutions render as they arrive, and a queued cancel still cannot
   interrupt an in-flight synchronous `next()`. `pri` low.
-- **Assembled-path evasion** — the answer-oracle scan matches a literal `queries/answers`;
-  a path concatenated at runtime slips past. Accept: a production fixture that assembles
-  the path from parts fails `kb:asset-check`. `pri` low.
 - **Typed port of the visual-QA walker** — the state walker lives only on
   `wt/map-m1u7` `124e34d` and fails `svelte-check` with 64 implicit-any errors,
   so u7's 11-state evidence comes from an out-of-tree script. `pnpm browser:check`

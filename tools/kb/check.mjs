@@ -42,12 +42,17 @@ const SCAN_ROOTS = [
  */
 const PRODUCTION_ROOTS = ['src', 'tools', 'worker', 'vite.config.ts', 'index.html', 'kb/generated'];
 /**
- * Assembled from parts so this scanner is not itself a match. A byte scan sees a
- * static import, a dynamic `import()` and an `fs` read alike, which an ESLint
- * import rule cannot — the core rule visits import and export declarations only.
- * A path assembled at runtime evades it; nothing in this repo assembles one.
+ * A byte scan sees a static import, a dynamic `import()` and an `fs` read alike, which an
+ * ESLint import rule cannot — the core rule visits import and export declarations only.
+ * Written without either bare segment as a string literal, so ASSEMBLED does not match it.
  */
-const ANSWERS = new RegExp(['queries', 'answers'].join('/'));
+const ANSWERS = /quer(?:ies)\/answers/u;
+/**
+ * A path assembled at run time from its two segments (concatenated, joined, or a template
+ * head) slips past ANSWERS, so source holding BOTH bare segments as string literals reaches
+ * the oracles too. Comments strip first: their code spans quote paths without building one.
+ */
+const ASSEMBLED = [/(['"`])\/?queries\/?(?:\1|\$\{)/u, /(?:['"`]|\})\/?answers[/'"`]/u];
 /**
  * The export boundary: the knowledge base arrives as a vendored bag, never as a
  * path into the neighbouring source project. Assembled from parts so this
@@ -343,8 +348,16 @@ for (const { paths } of boundScanRoots) {
 const answerReach = (roots, read) =>
   roots.flatMap((root) =>
     walk(join(ROOT, root))
-      .filter((path) => ANSWERS.test(read(path)))
-      .map((path) => `answer-oracle reach in ${relative(ROOT, path)}`),
+      .flatMap((path) => {
+        const text = read(path);
+        if (ANSWERS.test(text)) return [`answer-oracle reach in ${relative(ROOT, path)}`];
+        const code = /\.(?:[cm]?[jt]s|svelte)$/u.test(path)
+          ? text.replace(/\/\*[\s\S]*?\*\//gu, '').replace(/(^|[^:'"`\\])\/\/.*$/gmu, '$1')
+          : text;
+        return ASSEMBLED.every((segment) => segment.test(code))
+          ? [`answer-oracle path assembled in ${relative(ROOT, path)}`]
+          : [];
+      }),
   );
 /** @param {string} path @returns {string} latin1 keeps bytes 1:1 with chars, binary assets included */
 const latin1 = (path) => readFileSync(path, 'latin1');
@@ -362,7 +375,7 @@ if (reach.length === 0 && !brokenTables.has('PRODUCTION_ROOTS')) {
     },
     () =>
       answerReach(PRODUCTION_ROOTS, (path) =>
-        path === plantedAsset ? `${latin1(path)}${['queries', 'answers'].join('/')}` : latin1(path),
+        path === plantedAsset ? `${latin1(path)}${'quer'}ies/answers` : latin1(path),
       ),
   );
   reachControlFired = 1;

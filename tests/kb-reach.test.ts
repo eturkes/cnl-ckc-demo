@@ -17,7 +17,8 @@ import { QUESTION_CATALOG, QUESTION_IDS } from '../src/questions/catalog.js';
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const CONTROL = join(ROOT, 'src', 'zz-forbidden-reach-control.ts');
 // Assembled at run time so this file is not itself a literal reach the scan must skip.
-const ORACLE = ['queries', 'answers'].join('/') + '/category-a-recommendations.pl';
+const SEGMENTS = ['queries', 'answers'] as const;
+const ORACLE = SEGMENTS.join('/') + '/category-a-recommendations.pl';
 
 const assetCheck = (): { status: number; output: string } => {
   try {
@@ -60,6 +61,20 @@ describe('forbidden answer-oracle reach', () => {
     const { status, output } = assetCheck();
     expect(status).not.toBe(0);
     expect(output).toContain('answer-oracle reach in src/zz-forbidden-reach-control.ts');
+  });
+
+  // Each segment alone, so no literal path exists for the byte scan to find.
+  it.each([
+    ['joined path', `export const path = ['${SEGMENTS[0]}', '${SEGMENTS[1]}'].join('/');\n`],
+    [
+      'concatenated path',
+      `export const path = (name: string) => '${SEGMENTS[0]}' + '/${SEGMENTS[1]}/' + name;\n`,
+    ],
+  ])('fails kb:asset-check on a %s', (_form, source) => {
+    writeFileSync(CONTROL, source);
+    const { status, output } = assetCheck();
+    expect(status).not.toBe(0);
+    expect(output).toContain('answer-oracle path assembled in src/zz-forbidden-reach-control.ts');
   });
 });
 
