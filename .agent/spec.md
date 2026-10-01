@@ -201,7 +201,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `0465faa` d25 the inference budget bounds the whole request (`meteredGoal`, terminal record, display after close).
 - [x] `9d1eecb` d26 smoke refuses a build stale against the bag's input digest.
 - [x] `8fc8173` d11 u2 suite ported: 16 merged green, 20 covered, 2 red → rows (d12 float, new find improper-list tail).
-- [ ] d45 fix committed (scan-only spawns, per-state V11, serialized axe); 20-run proof owed under lower load.
+- [ ] d45 20 consecutive full-suite runs passed 1014/1014 each (load 4.6–23.5) — closed by the commit that adds this line.
 - [x] `0273a6a` d27 `pnpm mutate`: committed 45-mutant table + runner, 45/45 killed.
 - [x] `34d9d7e` d36 `kb/generated` joins the answer-oracle scan, with its own firing input.
 - [x] `da39355` d31 a hung boot settles one typed `boot` error after one recreate; row text corrected from `worker` (d56 clause).

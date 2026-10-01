@@ -103,19 +103,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   document-first view is a new surface beside the accepted answer panel, ladder and graph, and
   its entry point changes the accepted page layout — where it lives and how it is reached is
   the user's call.
-- **Two tests time out under parallel execution** — `pnpm test` passed 291/293
-  with two 5-second timeouts (`V11 has zero axe`, `fails kb:asset-check on a
-  static import`); both pass when rerun in isolation, so the suite is
-  order/parallelism sensitive rather than broken. A flaky gate step erodes every
-  claim the gate carries. Accept: the two tests pass 20 consecutive full-suite
-  runs at the committed worker count, with the shared resource they contend on
-  named in the fix. `pri` med. **Fix landed, proof owed.** The shared resource is CPU, spent
-  by the tests' own work: each `kb-reach` case spawned a full `kb:asset-check` (5.64 s wall
-  loaded) to grade a source scan, now `--scan-only` (0.92 s); V11 ran 11 axe scans in one 5000 ms
-  case, now one case per state, scans serialized (axe-core runs one at a time, so an overrun
-  cascaded as `Axe is already running` into every later case) and axe warmed in a hook. Owes the
-  20-run proof: at external load avg 27–33 on 8 cores, 5 runs before the serialization lost all
-  11 V11 states twice to that cascade, and every run timed out other suites (next row).
 - **71 operator contexts have no edge in the shipped graph** — 64 negation (`-`) and 7 `can`,
   i.e. 41% of the corpus's 156 negation contexts, sit as operator-context nodes nothing
   connects. They are the body-level scopes like `guideline_operator(actual, C, -)` whose
@@ -182,7 +169,11 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   ~13 against 590–812 ms alone) and the `intake-chunker` 750-description property (5070 ms). A
   gate run is green again once the load falls (906/906 at avg 7–15). Accept: the full suite
   passes 20 consecutive runs at load avg ≥ 3× cores with no timeout raised, or a user-approved
-  gate timeout policy is recorded with its original firing. `pri` med.
+  gate timeout policy is recorded with its original firing. `pri` med. **Owes the user**: 20
+  consecutive `pnpm test` runs then passed 1014/1014 each with no timeout, at load avg 4.6–23.5 on
+  8 cores (`.scratch/maint/runs20/summary.txt`) — up to 2.9× cores, short of the 3× this check
+  names and of the 27–33 that broke the earlier runs. Either a run at ≥ 24 sustained (the
+  machine is shared with the user's other sessions) or a gate timeout ruling.
 - **Inline-disable reasons have no grader** — `.claude/rules/gate.md`'s `lint` bullet says every
   remaining security exception is one inline disable carrying its reason; `pnpm lint` passes
   whether or not a reason is there, so the registry row reads it by hand. Three non-security
@@ -216,7 +207,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 | u3 heap limit is unit-tested only | a committed test drives real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate |
 | **high** Browser WASM abort leaves a dead session | an aborted runtime reaches the client as its own terminal state that recreates the worker without a caller `reset()`, proven by a browser probe whose next query reports 337 documents |
 | Font stack fallbacks and copy reach are unowned | each of the four is decided by a committed check — wordmark and forbidden-claim literals in `copy:check`, descriptor rendering in a dom test, fallback stacks in `presentation:check` |
-| Two tests time out under parallel execution | the two tests pass 20 consecutive full-suite runs at the committed worker count, with the shared resource they contend on named in the fix |
 | 71 operator contexts have no edge in the shipped graph | either the 71 contexts carry an edge and `tests/kb-derived-assets.test.ts` records the moved counts with the original firing, or a committed check proves no shown path can skip a negation context that has no edge |
 | The independent projection oracle lives on a branch alone | the three lookups match on `relation`, the suite runs 24/24 green against the shipped model from the primary tree, and it joins a declared `binding:check` register |
 | Live suites time out under heavy external CPU load | the full suite passes 20 consecutive runs at load avg ≥ 3× cores with no timeout raised, or a user-approved gate timeout policy is recorded with its original firing |
