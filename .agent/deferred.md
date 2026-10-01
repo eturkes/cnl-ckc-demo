@@ -46,9 +46,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   unreachable live until that row classifies the abort. The fast live half is committed —
   `tests/engine-heap.test.ts` drives the trip in ~1 s behind a 1900 MB `_malloc` reserve and
   pins today's abort; it owes only the `limit: 'heap'` read.
-- **u3 red suite completion** — `test-m1u3` partially filled its 35-case skeleton,
-  committed at `22c8b97` on `wt/test-m1u3`. Accept: the cases MAIN's 31 do not cover run
-  in the primary tree, red for a contract reason or green. `pri` low.
 - **Solution streaming** — u2 delivers one batch per query. Both spikes measured
   streaming as cheap (0.0414 vs 0.0345 ms/query) and useful for early answers.
   Accept: solutions render as they arrive, and a queued cancel still cannot

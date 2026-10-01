@@ -226,7 +226,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] d8 a service worker precaches the boot set; a second visit boots offline; a renamed PVM evicts the stale cache.
 - [x] d9 both u1 wave-1 reports validate (25/25, 12/12), re-derived at today's tree; new row: halting payload reports `[object Object]`.
 - [ ] d12 owes a ruling: a fourth undeclared surface (`prolog.get_float` override, measured working) or Prolog-side float paths.
-- [ ] d15 port lands with a fix: `0465faa` left display unbounded by the deadline (m1u3 P3.3 red); fix on `wip/d15` under review.
+- [x] d15 u3 port merged (8 green); its P3.3 case caught `0465faa`'s unbounded display → the deadline bounds every answer and proof display.
 - [x] d20 `kb:asset-check` refuses an oracle path assembled from its two bare segments.
 - [x] d22 `pnpm visual-qa`: 39 states at 320/375/1280 px, none overflows, planted-overflow control.
 - [x] d28 the source-label grammar is stated in `.claude/rules/ui.md` `Copy`; the humanizer test cites it.

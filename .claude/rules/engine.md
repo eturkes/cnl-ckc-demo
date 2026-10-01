@@ -73,6 +73,11 @@ failures before it was wired.
   discarding that record. The total counts the goal plus the wrapper's few inferences; answers
   are rendered only after the query closes, so no display call enters it. Proofs keep the
   per-step `wrapGoal`.
+- **The wall-clock deadline bounds display rendering too** (m1u3 P3.3), answers and proof steps
+  alike: the first display that ends past it stops rendering, only solutions rendered whole
+  before it return, and the request reports `limit:'wall-clock'` unless an earlier stop already
+  holds — that stop keeps its kind, because `heap` is what makes the client recreate the
+  worker. `tests/engine-render-deadline.test.ts`.
 - The wrapper reserves `BudgetDepth_`, `BudgetInference_`, `BudgetResource_`,
   `BudgetStart_`, `BudgetNow_`, `BudgetSpent_` and `BudgetFinal_`; a goal naming one is
   rejected.

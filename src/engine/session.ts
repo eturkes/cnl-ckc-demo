@@ -380,13 +380,24 @@ export class EngineSession {
     }
 
     // Rendered only once the query closed: a display call is an engine query, and run between
-    // solutions its inferences would land in the request's metered total.
-    const solutions: PlSolution[] = found.map((bindings) => ({
-      bindings,
-      display: Object.fromEntries(
-        Object.entries(bindings).map(([name, term]) => [name, this.#display(engine, encode(term))]),
-      ),
-    }));
+    // solutions its inferences would land in the request's metered total. The deadline still
+    // bounds the whole request (m1u3 P3.3): rendering stops at the first display that ends past
+    // it, and only solutions rendered whole before it return.
+    const late = (): boolean => Date.now() - started > budget.wallClockMs;
+    const solutions: PlSolution[] = [];
+    try {
+      for (const bindings of found) {
+        const display: Record<string, string> = {};
+        for (const [name, term] of Object.entries(bindings)) {
+          display[name] = this.#display(engine, encode(term), late);
+        }
+        solutions.push({ bindings, display });
+      }
+    } catch (cause) {
+      if (!(cause instanceof LateRender)) throw cause;
+      // An earlier stop keeps its kind: `heap` is what makes the client recreate the worker.
+      stopped ??= 'wall-clock';
+    }
     if (stopped === 'cancelled') return { kind: 'cancelled', solutions };
     if (stopped !== undefined) return { kind: 'limit', limit: stopped, solutions };
     return solutions.length === 0 ? { kind: 'failure' } : { kind: 'solutions', solutions };
@@ -492,7 +503,7 @@ export class EngineSession {
             }
           }
         }
-        if (Date.now() - started > spec.wallClockMs) stopped = 'wall-clock';
+        if (Date.now() - started > spec.wallClockMs) stopped ??= 'wall-clock';
       }
     } finally {
       query.close?.();
@@ -504,7 +515,13 @@ export class EngineSession {
     if (stopped === 'cancelled') return { kind: 'cancelled' };
     if (stopped !== undefined) return { kind: 'limit', limit: stopped };
     if (proof === undefined) return { kind: 'failure' };
-    return { kind: 'proof', steps: this.#proofSteps(engine, proof) };
+    try {
+      const late = (): boolean => Date.now() - started > spec.wallClockMs;
+      return { kind: 'proof', steps: this.#proofSteps(engine, proof, late) };
+    } catch (cause) {
+      if (cause instanceof LateRender) return { kind: 'limit', limit: 'wall-clock' };
+      throw cause;
+    }
   }
 
   /**
@@ -604,7 +621,7 @@ export class EngineSession {
    * granted as a query-local premise, `naf/1` was proved absent. Every arm is
    * decoded — dropping one would under-report what the derivation actually used.
    */
-  #proofSteps(engine: Engine, term: PlTerm): ProofStep[] {
+  #proofSteps(engine: Engine, term: PlTerm, late: () => boolean): ProofStep[] {
     if (term.kind !== 'list') throw new DecodeError('proof tree is not a list');
     const display = createEncoder(engine.prolog);
     const steps: ProofStep[] = [];
@@ -615,7 +632,7 @@ export class EngineSession {
         if (head?.kind !== 'compound') throw new DecodeError('assumption carries an invalid head');
         steps.push({
           kind: 'assumption',
-          head: this.#display(engine, display(head)),
+          head: this.#display(engine, display(head), late),
           predicate: `${head.functor}/${head.args.length}`,
         });
         continue;
@@ -623,7 +640,7 @@ export class EngineSession {
       if (item.functor === 'naf' && item.args.length === 1) {
         const goal = item.args[0];
         if (goal === undefined) throw new DecodeError('negation carries no goal');
-        steps.push({ kind: 'negation', goal: this.#display(engine, display(goal)) });
+        steps.push({ kind: 'negation', goal: this.#display(engine, display(goal), late) });
         continue;
       }
       if (item.functor !== 'node' || item.args.length !== 3) {
@@ -645,10 +662,10 @@ export class EngineSession {
       steps.push({
         kind: 'clause',
         line: asSafeLine(lineTerm.args[0]),
-        head: this.#display(engine, display(head)),
+        head: this.#display(engine, display(head), late),
         predicate: `${head.functor}/${head.args.length}`,
         ...(provenance ?? {}),
-        children: this.#proofSteps(engine, children),
+        children: this.#proofSteps(engine, children, late),
       });
     }
     return steps;
@@ -668,8 +685,11 @@ export class EngineSession {
     throw new ConsultFailure(`${phase} emitted diagnostics: ${lines.join(' / ')}`);
   }
 
-  /** Ask the engine to render a term; never assemble display text in JS. */
-  #display(engine: Engine, encoded: unknown): string {
+  /**
+   * Ask the engine to render a term; never assemble display text in JS. A render that ends
+   * past the request's deadline throws `LateRender`, so the request stops at that display.
+   */
+  #display(engine: Engine, encoded: unknown, late: () => boolean): string {
     const raw = engine.prolog.query(`term_string(T,S,${DISPLAY_OPTIONS}).`, { T: encoded }).once();
     const result = decodeOnce(raw);
     if (result.kind !== 'bindings') throw new PrologFailure('term_string/3 produced no binding');
@@ -677,8 +697,14 @@ export class EngineSession {
     if (text?.kind !== 'string' && text?.kind !== 'atom') {
       throw new DecodeError('term_string/3 did not return text');
     }
+    if (late()) throw new LateRender();
     return text.value;
   }
+}
+
+/** A display ended past the request's deadline; caught inside the session, never sent. */
+class LateRender extends Error {
+  override name = 'LateRender';
 }
 
 export class ContractMismatch extends Error {
