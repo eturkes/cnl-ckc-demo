@@ -96,13 +96,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   Tab and pointer input in Chromium, reads focus after each, reads the AX tree for S1/S7,
   wraps native `scrollIntoView` to record receiver and arguments while preserving it,
   exercises K5 on both sides of 500 ms, and runs axe closed and open. `pri` med.
-- **Boot carries no deadline** — `EngineClient.boot()` arms no timer, so a worker that never
-  answers `boot` leaves the caller pending forever; `query` and `consult` are the only
-  bounded requests (M1 review E10, excluded from that fix on purpose). A naive deadline
-  loops, because the boot failure path calls `reset()`, which boots again. Accept: a hung
-  boot settles as `{ kind: 'error', code: 'worker' }` inside a bounded wall clock, the
-  recovery attempts one recreate at most, and a worker stub that never replies proves
-  both. `pri` med.
 - **Font stack fallbacks and copy reach are unowned** — `presentation:check` grades faces,
   licences and containment, but D7's h1 wordmark, the framing copy's forbidden claims, the
   descriptor humanizer's rendered output and the three role tokens' system fallback stacks
@@ -369,7 +362,6 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | **high** A WASM abort strands the worker, in Node too | abort = own terminal state, worker recreated, next query reports 337 docs |
 | A QLF fallback import doubles the engine | it loads only on saved-state failure; an untaken fallback ships no bytes |
 | Heap limit is proven by a synthesized outcome alone | a live trip reads `limit: 'heap'` (blocked behind the abort row) |
-| A hung boot is unbounded | a hung boot settles bounded with one recreate at most |
 | Wordmark, forbidden claims, descriptor + fallback stacks rest on one reading | each decided by a committed check |
 | One of twelve protocol arms is clone-tested | all 12 discriminants clone + deep-compare; a mutant reddens it |
 | Five browser claims + two probes live only on `wt/` branches | one typed `tools/` harness covers all five; probes port or claims prune |
