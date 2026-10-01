@@ -19,6 +19,10 @@ paths:
 - Wrapper ABI, undocumented and read off the package: `$t:'s'` string, `'r'` rational, `'v'`
   variable, `'l'` improper list, `'t'` compound whose args sit in a ONE-ELEMENT envelope at
   `value[value.functor][0]`; `$tag` dicts. An unrecognized tag fails closed.
+- An improper list re-encodes as `List(prefix, '[|]'(last, Tail))`: the wrapper's `List` tests
+  `if (tail)`, so an atom `''` or integer `0` tail passed straight to it collapses to `[]`,
+  while a chain of `'[|]'/2` compounds recurses per cell and overflows on a long list.
+  `tests/engine-term-identity.test.ts` grades 115 literal variants plus 10,000-cell lists.
 - Integral floats decode as `integer`: SWI's `1.0` and `1` both arrive as JS `1`. The corpus
   has no floats.
 - Display text = `term_string/3` with `[quoted(true),numbervars(true),ignore_ops(true)]`,

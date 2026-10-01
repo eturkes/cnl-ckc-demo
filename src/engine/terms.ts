@@ -158,8 +158,18 @@ export function createEncoder(constructors: PrologConstructors): (term: PlTerm) 
         return new constructors.Rational(term.numerator, term.denominator);
       case 'list':
         return term.items.map(encode);
-      case 'improper-list':
-        return new constructors.List(term.items.map(encode), encode(term.tail));
+      case 'improper-list': {
+        // The wrapper's `List` tests `if (tail)`, so an atom `''` or an integer `0` tail would
+        // collapse to `[]`. The last cell is therefore a `'[|]'/2` compound, never falsy, while
+        // `List` keeps building the prefix iteratively — a chain of compounds recurses per cell
+        // and overflows the stack on a long list.
+        const items = term.items.map(encode);
+        const last = items.pop();
+        const tail = encode(term.tail);
+        return last === undefined
+          ? tail
+          : new constructors.List(items, new constructors.Compound('[|]', last, tail));
+      }
       case 'compound':
         return new constructors.Compound(term.functor, ...term.args.map(encode));
       case 'variable': {

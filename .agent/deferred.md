@@ -173,13 +173,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   recall; only where no condition fired at all: 51/109, 51/163; condition rules alone: 37/39,
   37/163. A lift therefore needs new per-rule judgment signal — a request change, which the
   user's selection-model ruling governs — and a live billed `pnpm intake:probe` to score it.
-- **Improper-list encode drops a falsy tail** — swipl-wasm 8.0.7's `toList` tests `if(tail)`,
-  so a tail that is the atom `''` or the integer `0` becomes `[]`: `createEncoder` turns `[a|'']`
-  and `[a|0]` into `[a]`, breaking u2 P3.7 decode→encode→re-query identity on 4 of 115 literal
-  variants. No shipped answer term carries such a tail. Red witness `tests/zz-u2-red.test.ts:125`
-  on `wt/tester-d11` `6529dea`. Accept: `createEncoder` builds improper-list cells without
-  `toList` (e.g. as `'[|]'/2` compounds), so `[a|'']`, `[a|0]` and the two generated nested terms
-  re-query as structural variants, with that witness green in a merged suite. `pri` low.
 - **Live suites time out under heavy external CPU load** — at load avg 27–33 on 8 cores (other
   sessions' builds), each full-suite run failed 1–20 tests beyond the two the row above names:
   `graph-live` "produces a concept-first answer map" (7784 ms against 5000), live clinical proofs
@@ -213,6 +206,12 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   the last byte-frozen by T9). Accept: a committed check (an ESLint directive-description rule
   or a scan in the gate) refuses an `eslint-disable` with no stated reason, with its firing
   input, and the frozen file's directive handled by ruling. `pri` low.
+- **A decoded dict re-encodes without its tag** — `createEncoder` turns `tag{a:0}` into a plain
+  object whose `$tag` key the wrapper reads as an ordinary dict key, leaving the real tag
+  unbound: `_{'$tag':tag,a:0}` is no variant of `tag{a:0}`, alone or as a list tail (reviewer-il-1
+  register R1, `.scratch/agents/reviewer-il-1.md`). No shipped answer term carries a dict.
+  Accept: a decoded dict re-encodes as a structural variant — standalone and as an improper-list
+  tail — graded by Prolog `=@=` in `tests/engine-term-identity.test.ts`. `pri` low.
 
 ## Index — one line per `high` + `med` row
 
