@@ -109,7 +109,10 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   so the other 336 documents' coverage rows, regions and alignment are reachable only by
   asking a question that reaches them. Accept: a document-first view lists every document's
   coverage rows and opens each one's passage and page through the same resolver the ladder
-  uses, adding no eager asset fetch to the answer path. `pri` low.
+  uses, adding no eager asset fetch to the answer path. `pri` low. **Owes a ruling**: a
+  document-first view is a new surface beside the accepted answer panel, ladder and graph, and
+  its entry point changes the accepted page layout — where it lives and how it is reached is
+  the user's call.
 - **Two tests time out under parallel execution** — `pnpm test` passed 291/293
   with two 5-second timeouts (`V11 has zero axe`, `fails kb:asset-check on a
   static import`); both pass when rerun in isolation, so the suite is
