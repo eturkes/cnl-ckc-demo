@@ -84,11 +84,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   5000-deep step trips at 1000 (M1 review R06). Accept: a multi-solution goal
   whose total inferences exceed the budget reaches `limit: 'inference'`, or the
   contract records that the bound is per-step by design. `pri` med.
-- **Smoke negative control is weak** — removing `kb/generated/kb.pvm` alone
-  leaves `pnpm smoke` at rc 0, because it rebuilds only when `dist/` is missing
-  and otherwise serves the stale hashed asset (M1 review A100). Accept: the smoke
-  fails when the served `dist/` is stale against the current KB input hash, and
-  the control is exercised without deleting `dist/`. `pri` med.
 - **Mutation harness is scratch-local** — `.scratch/verify-fixes.py` is what proves the
   M1-review fix tests bind to their fixes (45 mutants, 45/45 RED), but it is gitignored,
   so the claim does not rerun from committed state. Each mutant restores one pre-fix
@@ -385,7 +380,6 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | Boot is terminal on failure, unbounded on silence | a failed or hung boot settles bounded as one alert with a retry |
 | Wordmark, forbidden claims, descriptor + fallback stacks rest on one reading | each decided by a committed check |
 | The inference budget re-arms per solution | a goal whose total exceeds budget reaches `limit:'inference'`, or the bound is contracted |
-| `pnpm smoke` stays rc 0 on a stale `dist/` | it fails on a `dist/` stale against the KB input hash, `dist/` intact |
 | `verify-fixes.py` (45/45 RED) is gitignored | a committed mutant-table runner; one command replays the kills from a clean checkout |
 | The answer-oracle scan skips `kb/generated` | the literal planted in a generated file gives `kb:asset-check` rc 1; restoring rc 0 |
 | One of twelve protocol arms is clone-tested | all 12 discriminants clone + deep-compare; a mutant reddens it |

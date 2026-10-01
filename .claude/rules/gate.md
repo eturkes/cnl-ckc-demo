@@ -140,7 +140,7 @@ committed state:
 | command | what it alone proves |
 |---|---|
 | `pnpm kb:reproduce` | byte-reproducibility of pvm + qlf + catalog across two forced builds |
-| `pnpm smoke` | built output answers in a real browser against bag bytes read at run time |
+| `pnpm smoke` | built output answers in a real browser against bag bytes read at run time, and the served saved state is current with the bag's input digest |
 | `pnpm readme:check` | the README's `## Run locally` path from a clean clone of HEAD: every non-keyed `sh` line rc 0, both servers answering, the booted preview engine, `kb:build` and the bag manifest agreeing on the document count, and the clone's module count equal to a reference build of the same tree. It refuses a dirty tree, and its one deviation from the README text is a sandbox `--install-directory` on `corepack enable` |
 | `pnpm browser:check` | 337 documents on dev + built output, every 320 px interaction state in BOTH locales, that `unicode-range` keeps the Japanese face off an English page, browser cancel delivery, a hostile goal killed by the client deadline with exactly one respawn whose engine reports the manifest's document count, and the rendered canonical answer byte-equal to `tools/answer-oracle.mjs` in BOTH locales |
 | `pnpm graph:check` | the renderer-neutral edge-view contract R1-R7 (`.agent/contracts/m5u8.md`) against the SHIPPED `mountGraphCanvas`, over 14 fixtures x 2 viewports, plus C1-C12 (`m5u10.md`) against the SHIPPED `SemanticGraph.svelte` over 2 devices x 2 views + both fallbacks |

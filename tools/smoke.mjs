@@ -10,13 +10,16 @@
 // the check cannot drift from the knowledge base it claims to reproduce.
 
 import { execFileSync } from 'node:child_process';
+import { readdirSync, readFileSync } from 'node:fs';
 import { cp, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { expectedAnswer } from './answer-oracle.mjs';
 import { failWith, launch, serve } from './browser.mjs';
-import { ROOT } from './kb/paths.mjs';
+import { requireFiring } from './control.mjs';
+import { sha256, verifyBag } from './kb/bag.mjs';
+import { loadManifest, payloadSource, ROOT } from './kb/paths.mjs';
 
 const QUESTION = 'when-to-use-opioids';
 const NESTED = 'some/nested';
@@ -24,8 +27,75 @@ const NESTED = 'some/nested';
 /** @type {(message: string) => never} */
 const fail = failWith('smoke');
 
+/**
+ * Why the served build is stale against the bag, if it is.
+ *
+ * `pnpm build` copies whatever `kb/generated` holds, so a skipped `pnpm kb:build` ships a page
+ * that boots and answers from an older knowledge base. The manifest must record the input digest
+ * the bag yields NOW, and the served saved state must be the bytes that manifest records.
+ *
+ * @param {string} dist
+ * @param {string} inputDigest
+ * @param {import('./kb/paths.mjs').KbManifest} manifest
+ * @param {(path: string) => Uint8Array} [read]
+ * @returns {string[]}
+ */
+const staleness = (dist, inputDigest, manifest, read = (path) => readFileSync(path)) => {
+  /** @type {string[]} */
+  const failures = [];
+  if (manifest.input.sha256 !== inputDigest) {
+    failures.push(
+      `kb/generated was built from input ${manifest.input.sha256.slice(0, 12)}, ` +
+        `the bag now yields ${inputDigest.slice(0, 12)}; run pnpm kb:build`,
+    );
+  }
+  const record = manifest.assets.find((asset) => asset.kind === 'pvm');
+  const served = readdirSync(join(dist, 'assets')).filter((name) => /^kb-.+\.pvm$/u.test(name));
+  const [pvm] = served;
+  if (record === undefined || pvm === undefined || served.length !== 1) {
+    failures.push(`expected one served saved state, found ${String(served.length)}`);
+  } else if (sha256(read(join(dist, 'assets', pvm))) !== record.sha256) {
+    failures.push(`served ${pvm} is not the saved state the manifest records`);
+  }
+  return failures;
+};
+
 // Never trust a leftover dist tree: this check proves the current source.
 execFileSync('pnpm', ['build'], { cwd: ROOT, stdio: 'inherit' });
+
+const manifest = loadManifest();
+if (manifest === undefined) fail('no build manifest; run pnpm kb:build');
+const bags = readdirSync(join(ROOT, 'kb')).filter((name) => name.endsWith('.tar.gz'));
+if (bags.length !== 1) fail(`expected one vendored bag in kb/, found ${String(bags.length)}`);
+const { files } = verifyBag(readFileSync(join(ROOT, 'kb', /** @type {string} */ (bags[0]))));
+const inputDigest = sha256(Buffer.from(payloadSource(files).source, 'utf8'));
+const dist = join(ROOT, 'dist');
+const staleControls = [
+  requireFiring(
+    'smoke',
+    { mutation: 'the manifest input digest altered', expect: ['was built from input'] },
+    () =>
+      staleness(dist, inputDigest, {
+        ...manifest,
+        input: { ...manifest.input, sha256: `0${manifest.input.sha256.slice(1)}` },
+      }),
+  ),
+  requireFiring(
+    'smoke',
+    {
+      mutation: 'one byte of the served saved state flipped',
+      expect: ['is not the saved state the manifest records'],
+    },
+    () =>
+      staleness(dist, inputDigest, manifest, (path) => {
+        const bytes = new Uint8Array(readFileSync(path));
+        bytes[0] = (bytes[0] ?? 0) ^ 0xff;
+        return bytes;
+      }),
+  ),
+];
+const stale = staleness(dist, inputDigest, manifest);
+if (stale.length > 0) fail(`stale build: ${stale.join('; ')}`);
 
 const expected = expectedAnswer(QUESTION, fail);
 const root = await mkdtemp(join(tmpdir(), 'cnl-ckc-smoke-'));
@@ -141,7 +211,8 @@ try {
   console.log(
     `smoke: ok — ${url} combined ${String(expected.rows)} Prolog solutions into ` +
       `${String(bullets)} cited deterministic statements, ` +
-      `${served} nested requests served`,
+      `${served} nested requests served, saved state current with bag input ` +
+      `${inputDigest.slice(0, 12)}; controls: ${staleControls.join(', ')}`,
   );
 } finally {
   await browser?.close();

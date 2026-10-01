@@ -123,9 +123,10 @@ read out of the vendored bag **at run time** through `verifyBag`.
   `${uid}-option-${questionId}` and render in `QUESTION_IDS` order.
 - It must open the canonical-answer disclosure before reading it — a `<details>` body is not
   visible, so a visibility wait times out at 45 s.
-- Negative control, run by hand and NOT shipped: removing BOTH `kb/generated/kb.pvm` and
-  `dist/` gives rc 1, thrown by the `pnpm build` step. Removing the pvm alone leaves rc 0,
-  because the smoke rebuilds only when `dist/` is missing and otherwise serves the stale hashed
-  asset — so that control proves the build path, never a `waitForSelector` timeout. The firing
-  input this lane owes is a served `dist` copy stripped of the hashed pvm; it is a
+- **Smoke refuses a build stale against the bag.** `pnpm build` copies whatever
+  `kb/generated` holds, so a skipped `pnpm kb:build` ships a page that boots and answers from an
+  older knowledge base. After its own build, smoke requires the manifest's input digest to equal
+  the digest the verified bag yields now and the served saved state to hash to the manifest's pvm
+  record. Its two in-process controls alter that digest and flip one served pvm byte. The
+  lane-level firing input it still owes is a served `dist` copy stripped of the hashed pvm, a
   `.agent/deferred.md` row.
