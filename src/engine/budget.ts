@@ -28,7 +28,15 @@ export const BUDGET_MAX: BudgetSpec = {
 const FIELDS = Object.keys(BUDGET_MAX) as (keyof BudgetSpec)[];
 
 /** Variables the wrapper owns. A goal naming one is rejected, never silently shadowed. */
-const RESERVED = ['BudgetDepth_', 'BudgetInference_', 'BudgetResource_'] as const;
+const RESERVED = [
+  'BudgetDepth_',
+  'BudgetInference_',
+  'BudgetResource_',
+  'BudgetStart_',
+  'BudgetNow_',
+  'BudgetSpent_',
+  'BudgetFinal_',
+] as const;
 
 // Word-boundary match over the raw goal text. It can only over-reject — a reserved
 // name inside a quoted atom trips it too — and over-rejection is the safe direction.
@@ -87,8 +95,28 @@ export const wrapGoal = (goal: string, budget: BudgetSpec): string =>
   `BudgetDepth_),${budget.inferences},BudgetInference_),` +
   `error(resource_error(BudgetResource_),_),true).`;
 
+/**
+ * `wrapGoal` plus a meter on the whole request's inferences.
+ *
+ * `call_with_inference_limit/3` re-arms on backtracking, so alone it bounds one solution step:
+ * 20 solutions of ~200 inferences each pass a 500 limit. `BudgetSpent_` carries the request's
+ * running total to every solution, and one terminal record (`BudgetFinal_ = true`) carries it
+ * once the goal is exhausted, so search that fails after the last answer is metered too. The
+ * total counts the goal plus the wrapper's own few inferences; the driver renders nothing into
+ * the engine until the query closes, so no other call can enter it. The per-step limit still
+ * stops a single runaway step inside the engine.
+ */
+export const meteredGoal = (goal: string, budget: BudgetSpec): string =>
+  `statistics(inferences,BudgetStart_),` +
+  `(${wrapGoal(goal, budget).slice(0, -1)},BudgetFinal_=false;BudgetFinal_=true),` +
+  `statistics(inferences,BudgetNow_),BudgetSpent_ is BudgetNow_-BudgetStart_.`;
+
 export type Outcome =
-  | { kind: 'solution'; bindings: PlBindings }
+  /**
+   * `spent` = the request's inferences so far, and `final` marks the record that follows
+   * exhaustion; both exist only under `meteredGoal`.
+   */
+  | { kind: 'solution'; bindings: PlBindings; spent: number | undefined; final: boolean }
   | { kind: 'limit'; limit: LimitKind }
   /** A resource error the wrapper caught but this build has no limit state for. */
   | { kind: 'resource'; resource: string };
@@ -119,5 +147,12 @@ export function readOutcome(bindings: PlBindings): Outcome {
   for (const [name, term] of Object.entries(bindings)) {
     if (!(RESERVED as readonly string[]).includes(name)) user[name] = term;
   }
-  return { kind: 'solution', bindings: user };
+  const spent = bindings.BudgetSpent_;
+  const final = bindings.BudgetFinal_;
+  return {
+    kind: 'solution',
+    bindings: user,
+    spent: spent?.kind === 'integer' ? Number(spent.value) : undefined,
+    final: final?.kind === 'atom' && final.value === 'true',
+  };
 }

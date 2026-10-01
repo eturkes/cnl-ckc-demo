@@ -10,6 +10,7 @@
 import {
   assertGoalAvoidsReserved,
   BudgetError,
+  meteredGoal,
   readOutcome,
   validateBudget,
   wrapGoal,
@@ -34,6 +35,7 @@ import {
   createEncoder,
   decodeOnce,
   DecodeError,
+  type PlBindings,
   type PlTerm,
   type PrologConstructors,
 } from './terms.js';
@@ -321,8 +323,8 @@ export class EngineSession {
     this.#cancelling = this.#deferred.delete(id);
     const started = Date.now();
     const encode = createEncoder(engine.prolog);
-    const solutions: PlSolution[] = [];
-    const query = engine.prolog.query(wrapGoal(goal, budget));
+    const found: PlBindings[] = [];
+    const query = engine.prolog.query(meteredGoal(goal, budget));
     const iterator = query[Symbol.iterator]();
     // A cancel held from before dispatch settles the run without proving a solution:
     // the caller asked to stop before any answer existed.
@@ -341,17 +343,19 @@ export class EngineSession {
               stopped = outcome.limit;
             } else if (outcome.kind === 'resource') {
               throw new PrologFailure(`unclassified resource error: ${outcome.resource}`);
-            } else if (solutions.length >= budget.answerCap) {
+            } else if (outcome.spent !== undefined && outcome.spent > budget.inferences) {
+              // The whole request outspent its budget across steps that each stayed inside it;
+              // the solution or exhaustion that crossed the line is discarded with the run.
+              stopped = 'inference';
+            } else if (outcome.final) {
+              // Exhausted inside budget: the terminal record carries the total and no answer.
+            } else if (found.length >= budget.answerCap) {
               // Proving one solution past the cap and discarding it is the only thing
               // that separates a truncated run from a run holding exactly `answerCap`
               // answers, which owes the caller honest exhaustion instead.
               stopped = 'answer-cap';
             } else {
-              const display: Record<string, string> = {};
-              for (const [name, term] of Object.entries(outcome.bindings)) {
-                display[name] = this.#display(engine, encode(term));
-              }
-              solutions.push({ bindings: outcome.bindings, display });
+              found.push(outcome.bindings);
             }
           }
         }
@@ -375,6 +379,14 @@ export class EngineSession {
       this.#cancelling = false;
     }
 
+    // Rendered only once the query closed: a display call is an engine query, and run between
+    // solutions its inferences would land in the request's metered total.
+    const solutions: PlSolution[] = found.map((bindings) => ({
+      bindings,
+      display: Object.fromEntries(
+        Object.entries(bindings).map(([name, term]) => [name, this.#display(engine, encode(term))]),
+      ),
+    }));
     if (stopped === 'cancelled') return { kind: 'cancelled', solutions };
     if (stopped !== undefined) return { kind: 'limit', limit: stopped, solutions };
     return solutions.length === 0 ? { kind: 'failure' } : { kind: 'solutions', solutions };

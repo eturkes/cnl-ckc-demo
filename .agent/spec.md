@@ -195,10 +195,10 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `060c0f7` d18 u4 suite ported: 4 merged green, 3 covered, 1 input retired (P1.10 held by T13).
 - [x] `e78551f` d16 `browser:check` kills a hostile goal by the client deadline; one respawn reports 337 documents.
 - [x] `07899e0` d19 closed on its own check: archived `m1u4.md` D6 records why `query_sha256` stays out of the runtime; the export lane re-derives the whole envelope.
-- [x] d21 a failed boot retires its own worker, so Retry rebuilds the engine.
+- [x] `88af76b` d21 a failed boot retires its own worker, so Retry rebuilds the engine.
 - [x] `34e791b` d23 V13 axe sweep: About panel + canonical answer, open and closed.
 - [x] `3f76af8` d24 `copy:check` walks `src/` and grades every component's literal prose.
-- [ ] d25 fix on `wip/d25-inference` (whole-request inference meter): review round 1 found the trailing-failure gap.
+- [x] d25 the inference budget bounds the whole request (`meteredGoal`, terminal record, display after close).
 - [x] `9d1eecb` d26 smoke refuses a build stale against the bag's input digest.
 - [x] d11 u2 suite ported: 16 merged green, 20 covered, 2 red → rows (d12 float, new find improper-list tail).
 - [ ] d45 fix committed (scan-only spawns, per-state V11, serialized axe); 20-run proof owed under lower load.

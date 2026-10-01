@@ -16,13 +16,13 @@ export const MUTANTS = [
     edits: [
       {
         path: 'src/engine/session.ts',
-        old: "            } else if (solutions.length >= budget.answerCap) {\n              // Proving one solution past the cap and discarding it is the only thing\n              // that separates a truncated run from a run holding exactly `answerCap`\n              // answers, which owes the caller honest exhaustion instead.\n              stopped = 'answer-cap';\n            } else {",
+        old: "            } else if (found.length >= budget.answerCap) {\n              // Proving one solution past the cap and discarding it is the only thing\n              // that separates a truncated run from a run holding exactly `answerCap`\n              // answers, which owes the caller honest exhaustion instead.\n              stopped = 'answer-cap';\n            } else {",
         new: '            } else {',
       },
       {
         path: 'src/engine/session.ts',
         old: '        if (stopped !== undefined || step.done === true) break;',
-        new: "        if (stopped !== undefined || step.done === true) break;\n        if (solutions.length >= budget.answerCap) {\n          stopped = 'answer-cap';\n          break;\n        }",
+        new: "        if (stopped !== undefined || step.done === true) break;\n        if (found.length >= budget.answerCap) {\n          stopped = 'answer-cap';\n          break;\n        }",
       },
     ],
     check: { test: 'tests/engine-budgets.test.ts', name: 'exact-fit cap' },

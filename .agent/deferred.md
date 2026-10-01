@@ -72,12 +72,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   Accept: `tools/visual-qa.mjs` passes `pnpm check` and `pnpm lint`, `pnpm visual-qa`
   exits 0, and its JSON reports `overflow=false` for every state at 320, 375 and
   1280 px. `pri` low.
-- **Inference budget re-arms per solution** — `call_with_inference_limit/3` is
-  applied per solution, so the inference budget bounds one step and not the whole
-  request: 50 solutions of ~800 inferences each pass a 3000 limit, while one
-  5000-deep step trips at 1000 (M1 review R06). Accept: a multi-solution goal
-  whose total inferences exceed the budget reaches `limit: 'inference'`, or the
-  contract records that the bound is per-step by design. `pri` med.
 - **Humanizer label test asserts its own artifact** — `tests/questions-live.test.ts:294`
   matches `/^\S+ — sentence \d+, \w+ \d+$/u`, a grammar that exists only in
   `src/questions/humanize.ts`, so the expectation comes from the artifact under test.
@@ -383,7 +377,6 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | Heap limit is proven by a synthesized outcome alone | a live trip reads `limit: 'heap'` (blocked behind the abort row) |
 | A hung boot is unbounded | a hung boot settles bounded with one recreate at most |
 | Wordmark, forbidden claims, descriptor + fallback stacks rest on one reading | each decided by a committed check |
-| The inference budget re-arms per solution | a goal whose total exceeds budget reaches `limit:'inference'`, or the bound is contracted |
 | The answer-oracle scan skips `kb/generated` | the literal planted in a generated file gives `kb:asset-check` rc 1; restoring rc 0 |
 | One of twelve protocol arms is clone-tested | all 12 discriminants clone + deep-compare; a mutant reddens it |
 | Five browser claims + two probes live only on `wt/` branches | one typed `tools/` harness covers all five; probes port or claims prune |

@@ -20,8 +20,8 @@ export interface EngineContract {
 export type LimitKind = 'stack' | 'depth' | 'inference' | 'wall-clock' | 'answer-cap' | 'heap';
 
 /**
- * Bounds one query. Prolog enforces `stackBytes`, `depth` and `inferences`; the JS
- * driver enforces `wallClockMs` and `answerCap`.
+ * Bounds one query. Prolog enforces `stackBytes`, `depth` and each step's `inferences`; the
+ * JS driver enforces the request-wide `inferences` total, `wallClockMs` and `answerCap`.
  *
  * The split is not stylistic. This build reports `threads=false` and has no
  * `library(time)`, `call_with_time_limit/2` or `alarm/4`, so no in-engine clock

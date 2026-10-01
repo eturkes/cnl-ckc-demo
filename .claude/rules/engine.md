@@ -54,7 +54,7 @@ failures before it was wired.
 
 ## Budgets
 
-- Split enforcement. Prolog owns stack/depth/inference: `stack_limit` reducible
+- Split enforcement. Prolog owns stack, depth and each step's inferences: `stack_limit` reducible
   1073741824 → 8388608 B, catchable `error(resource_error(stack),stack_overflow{…})` in
   0.681 ms; `depth_limit_exceeded`; `inference_limit_exceeded`. Cost +0.346 ms / +0.30%.
 - **No in-Prolog wall clock.** The build reports `threads=false`; `library(time)` raises
@@ -65,8 +65,16 @@ failures before it was wired.
 - `answer-cap` is reported only after the driver proves one solution past the cap and
   discards it: a run holding exactly `answerCap` answers is honest exhaustion and reports
   `solutions`. Hitting the cap therefore costs one extra solution step.
-- The wrapper reserves `BudgetDepth_`, `BudgetInference_`, `BudgetResource_`; a goal naming
-  one is rejected.
+- **The inference budget bounds the whole request.** `call_with_inference_limit/3` re-arms on
+  backtracking, so alone it bounds one step. `meteredGoal` reports the request's running total
+  (`BudgetSpent_`) with every answer and once more after exhaustion (`BudgetFinal_ = true`),
+  and the driver stops at the first record past the budget with `limit:'inference'`,
+  discarding that record. The total counts the goal plus the wrapper's few inferences; answers
+  are rendered only after the query closes, so no display call enters it. Proofs keep the
+  per-step `wrapGoal`.
+- The wrapper reserves `BudgetDepth_`, `BudgetInference_`, `BudgetResource_`,
+  `BudgetStart_`, `BudgetNow_`, `BudgetSpent_` and `BudgetFinal_`; a goal naming one is
+  rejected.
 - Engine ceilings: unified stack limit 1 GiB (reducible), Emscripten heap ceiling 2 GiB, RSS
   ~119 MB steady. Asserted state persists across queries in one engine.
 
