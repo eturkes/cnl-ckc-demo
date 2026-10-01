@@ -380,13 +380,25 @@ export class EngineSession {
     }
 
     // Rendered only once the query closed: a display call is an engine query, and run between
-    // solutions its inferences would land in the request's metered total.
-    const solutions: PlSolution[] = found.map((bindings) => ({
-      bindings,
-      display: Object.fromEntries(
-        Object.entries(bindings).map(([name, term]) => [name, this.#display(engine, encode(term))]),
-      ),
-    }));
+    // solutions its inferences would land in the request's metered total. The deadline still
+    // bounds the whole request (m1u3 P3.3), so rendering stops at the first display that ends
+    // past it; a cancel keeps its own outcome.
+    const solutions: PlSolution[] = [];
+    for (const bindings of found) {
+      solutions.push({
+        bindings,
+        display: Object.fromEntries(
+          Object.entries(bindings).map(([name, term]) => [
+            name,
+            this.#display(engine, encode(term)),
+          ]),
+        ),
+      });
+      if (Date.now() - started > budget.wallClockMs) {
+        if (stopped !== 'cancelled') stopped = 'wall-clock';
+        break;
+      }
+    }
     if (stopped === 'cancelled') return { kind: 'cancelled', solutions };
     if (stopped !== undefined) return { kind: 'limit', limit: stopped, solutions };
     return solutions.length === 0 ? { kind: 'failure' } : { kind: 'solutions', solutions };

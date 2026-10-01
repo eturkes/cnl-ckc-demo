@@ -71,8 +71,9 @@ failures before it was wired.
   (`BudgetSpent_`) with every answer and once more after exhaustion (`BudgetFinal_ = true`),
   and the driver stops at the first record past the budget with `limit:'inference'`,
   discarding that record. The total counts the goal plus the wrapper's few inferences; answers
-  are rendered only after the query closes, so no display call enters it. Proofs keep the
-  per-step `wrapGoal`.
+  are rendered only after the query closes, so no display call enters it. The wall-clock
+  deadline still bounds that rendering: a display ending past it stops rendering and reports
+  `limit:'wall-clock'` (a cancel keeps `cancelled`). Proofs keep the per-step `wrapGoal`.
 - The wrapper reserves `BudgetDepth_`, `BudgetInference_`, `BudgetResource_`,
   `BudgetStart_`, `BudgetNow_`, `BudgetSpent_` and `BudgetFinal_`; a goal naming one is
   rejected.
