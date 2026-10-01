@@ -172,7 +172,13 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   rules the held-out gold does not list are section-triggered (`.claude/rules/proof.md`), so
   derived-rule precision on the 30 held-out cases is 143/240. Accept: an intake change lifts
   precision on `pnpm intake:probe` without lowering recall below 143/163, re-derived through
-  `tests/intake-replay.test.ts`. `pri` low.
+  `tests/intake-replay.test.ts`. `pri` low. **Owes the user**: measured offline over the recorded
+  judgments, no filter of the shipped selection can meet the check — holding recall at 143/163
+  means dropping zero true positives, and 106 of them are section-triggered beside the 95 false
+  positives. Section rules only where no condition of that section fired: 67/144 precision, 67/163
+  recall; only where no condition fired at all: 51/109, 51/163; condition rules alone: 37/39,
+  37/163. A lift therefore needs new per-rule judgment signal — a request change, which the
+  user's selection-model ruling governs — and a live billed `pnpm intake:probe` to score it.
 - **Improper-list encode drops a falsy tail** — swipl-wasm 8.0.7's `toList` tests `if(tail)`,
   so a tail that is the atom `''` or the integer `0` becomes `[]`: `createEncoder` turns `[a|'']`
   and `[a|0]` into `[a]`, breaking u2 P3.7 decode→encode→re-query identity on 4 of 115 literal

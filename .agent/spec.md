@@ -247,8 +247,9 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `da89fd6` d59 `spec:check` in the gate: open rows `- [ ]`, ticked rows carry SHAs, pointer last.
 - [x] `c73a1f2` d60 `--verdict` admits the reviewer role's vocabulary; waves.md names the brief's one vocabulary.
 - [ ] d61 owes the user: the Worker deploy (account, route, secret) and a per-client + global limiter ruling.
-- [ ] d62 the selector suite plants the fixed-trigger mutant in memory and requires ORACLE-S to catch it — closed by the commit that adds this line.
-- [ ] `low`: d63, then the new-find rows.
+- [x] `75e6073` d62 the selector suite plants the fixed-trigger mutant in memory and requires ORACLE-S to catch it.
+- [ ] d63 owes the user: no filter of the shipped selection lifts precision at 143/163 recall (measured offline); a lift needs a request change under the selection-model ruling + a live billed probe.
+- [ ] new-find rows, in queue order.
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open
