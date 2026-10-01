@@ -38,14 +38,12 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   so a naive import would double the shipped engine. Accept: the fallback engine
   loads only when the saved state fails, and a production build that never takes
   the fallback ships no bytes of it. `pri` med.
-- **u2 red suite** — `test-m1u2` delivered 4 committed batches on branch
-  `wt/test-m1u2` (worktree at the pre-u2 commit, so it never ran). Accept: the
-  suite runs in the primary tree, every case is red for a contract reason or
-  green, and the cases MAIN's own suite does not already cover are merged. `pri` med.
 - **Integral floats decode as integers** — SWI's `1.0` and `1` both arrive as JS
   `1`, so `decodeTerm` reports `integer`. The shipped corpus has no floats.
   Accept: a float binding decodes as `float`, proven on a goal returning `1.0`,
-  without adding a per-binding engine call to the common path. `pri` low.
+  without adding a per-binding engine call to the common path. `pri` low. Red witness:
+  `tests/zz-u2-red.test.ts:107` on `wt/tester-d11` `6529dea` — `1.0`, `0.0` and `-1.0` decode
+  as `integer` while live `float(X)` succeeds.
 - **u3 heap limit is unit-tested only** — `P2.7` is covered by `readOutcome` over a
   synthesized `resource_error(memory)`, not a live trip. Accept: a committed test drives
   real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate. `pri` med.
@@ -366,6 +364,13 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   derived-rule precision on the 30 held-out cases is 143/240. Accept: an intake change lifts
   precision on `pnpm intake:probe` without lowering recall below 143/163, re-derived through
   `tests/intake-replay.test.ts`. `pri` low.
+- **Improper-list encode drops a falsy tail** — swipl-wasm 8.0.7's `toList` tests `if(tail)`,
+  so a tail that is the atom `''` or the integer `0` becomes `[]`: `createEncoder` turns `[a|'']`
+  and `[a|0]` into `[a]`, breaking u2 P3.7 decode→encode→re-query identity on 4 of 115 literal
+  variants. No shipped answer term carries such a tail. Red witness `tests/zz-u2-red.test.ts:125`
+  on `wt/tester-d11` `6529dea`. Accept: `createEncoder` builds improper-list cells without
+  `toList` (e.g. as `'[|]'/2` compounds), so `[a|'']`, `[a|0]` and the two generated nested terms
+  re-query as structural variants, with that witness green in a merged suite. `pri` low.
 
 ## Index — one line per `high` + `med` row
 
@@ -375,7 +380,6 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | --- | --- |
 | **high** A WASM abort strands the worker, in Node too | abort = own terminal state, worker recreated, next query reports 337 docs |
 | A QLF fallback import doubles the engine | it loads only on saved-state failure; an untaken fallback ships no bytes |
-| `wt/test-m1u2` suite never ran here | it runs in-tree, each case red for a contract reason or green |
 | Heap limit is proven by a synthesized outcome alone | a live trip reads `limit: 'heap'` (blocked behind the abort row) |
 | Boot is terminal on failure, unbounded on silence | a failed or hung boot settles bounded as one alert with a retry |
 | Wordmark, forbidden claims, descriptor + fallback stacks rest on one reading | each decided by a committed check |
