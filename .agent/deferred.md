@@ -20,12 +20,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   — a per-sentence character ceiling, a fixed-terminology table drawn from
   `.claude/rules/i18n.md`, and one sentence-final-form check — with a positive control per
   rule. `pri` low.
-- **README setup path has no mechanical owner** — the ordered install/build path is a
-  durable human-facing claim verified once by hand (M1 review X23) and re-stales on any
-  `package.json`, lockfile or `tools/kb/` change. Accept: one script clones HEAD into a
-  scratch dir, runs only the README's commands, and asserts rc 0 plus the document and
-  module counts; it sits beside `smoke` and `browser:check` outside `pnpm gate`, because
-  it needs a clean clone. `pri` med.
 - **Phased boot telemetry** — replace the single boot spinner with ordered
   progress phases. Accept: each phase emits one accessible status event in
   order, and no percentage is reported that the runtime does not supply. `pri` low.
@@ -415,7 +409,6 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | defect | accept |
 | --- | --- |
 | **high** A WASM abort strands the worker | abort = own terminal state, worker recreated, next query reports 337 docs |
-| README install path is hand-verified | a script clones HEAD, runs only the README commands, asserts rc 0 + counts |
 | A QLF fallback import doubles the engine | it loads only on saved-state failure; an untaken fallback ships no bytes |
 | `wt/test-m1u2` + `wt/test-m1u4` suites never ran here | both run in-tree, each case red for a contract reason or green |
 | Heap limit + hard kill are proven in Node alone | a browser run exhausts the heap + kills a hostile goal, reporting 337 docs |

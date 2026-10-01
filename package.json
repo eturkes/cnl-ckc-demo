@@ -40,10 +40,11 @@
     "kb:reproduce": "node tools/kb/reproduce.mjs",
     "lint": "eslint . --max-warnings=0",
     "presentation:check": "node tools/presentation-check.mjs",
+    "readme:check": "node tools/readme-check.mjs",
     "claims:check": "node tools/claims-sweep.mjs",
     "claims:seed": "node tools/claims-sweep.mjs --seed",
     "preview": "vite preview",
-    "release:check": "pnpm gate && pnpm kb:reproduce && pnpm smoke && pnpm browser:check && pnpm graph:check",
+    "release:check": "pnpm gate && pnpm kb:reproduce && pnpm smoke && pnpm browser:check && pnpm graph:check && pnpm readme:check",
     "secret:check": "node tools/secret-check.mjs",
     "smoke": "node tools/smoke.mjs",
     "test": "vitest run"

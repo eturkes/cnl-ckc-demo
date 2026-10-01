@@ -11,8 +11,8 @@ binding:check → build`
 **rerun the gate rather than quoting a total**; a durable exact total re-stales itself.
 
 **`pnpm gate` green is not `release:check` green.** A report of a gate-only run names
-`kb:reproduce`, `smoke`, `browser:check` and `graph:check` as not-run, by name — the four
-`release:check` adds — and `binding:replay`, which is out of both. A step that a diff cannot
+`kb:reproduce`, `smoke`, `browser:check`, `graph:check` and `readme:check` as not-run, by
+name — the five `release:check` adds — and `binding:replay`, which is out of both. A step that a diff cannot
 reach is still reported that way (`a0d43e2` names `pnpm gate` itself not-run, with the reason
 each step misses the edited files). `none` is the sentinel when nothing was skipped, which is
 what keeps an omitted category distinguishable from an empty one.
@@ -117,6 +117,7 @@ effect of the unit whose grader it loosens.
 | `binding:check` | a required case no suite defines; a required suite the run never loaded; the `REQUIRED` table emptied; the `LIFECYCLE` table emptied; the `MEANING` table emptied | the inventory loop re-run over the gate's OWN suite report, so none costs a second vitest; the last three feed `gradeTable` the real table emptied, through the same function the real one goes through |
 | `claims:check` | the claim set re-derived from ONE rules file, contracts dropped | its own `gradeRegistry` over the real registry, in process; the short set must be refused by row count, because a sweep that silently stopped reading would otherwise agree with any registry it could still match |
 | `kb:reproduce` | one asset digest changed in the second manifest | the equality seam re-run on the perturbed clone |
+| `readme:check` | the real README with `## Run locally` renamed; the reference module count off by one | both graders re-run in process before the clone, the second over the measured counts; end to end, a committed README missing its `pnpm kb:build` line exits 1 at `pnpm build` |
 | `graph:check` | one edge's `line-style` set to `dashed` in the mounted graph; `SEPARATION_PX` set to 0 | `dashControl` requires a 0 → 1 → 0 reading off the live renderer; R1 requires the probe-reported cutoff to be exactly 3 px AND a fixed absolute boundary pair where 2 px collapses and 3 px separates — at 0 every coincident midpoint reads distinct, so R1 passed vacuously while the renderer regressed |
 | `graph:check` termination | a planted non-terminating page, `tools/graph-probe/hang.html` | `GRAPH_CHECK_CONTROL=non-terminating-page node tools/graph-check.mjs` drives the REAL campaign against that page and must exit 1 naming `control/non-terminating-page` — 10.252 s measured — so a lane that cannot finish is refused BY NAME instead of by wall clock, which is the whole distinction a timeout kill destroys |
 | `graph:check` scope readings | one scope element dropped from a rendered label; the scope reordered; the negation dash removed; one scope element dropped from the fallback reading; each of `CANVAS_SCOPE_READINGS`, `FALLBACK_SCOPE_READINGS` and `SPANNING_SCOPE_READINGS` emptied | each refusal must NAME the case and the edge — a dropped canvas `may` reads `expected … ordered scope [should, may]`, a removed dash reads `dashed=false` — because a count alone cannot say WHICH reading regressed; each emptied table must refuse by its own table name, since the other controls survive on the two tables they do not empty and a vacuous `0 readings` would otherwise pass |
@@ -135,6 +136,7 @@ committed state:
 |---|---|
 | `pnpm kb:reproduce` | byte-reproducibility of pvm + qlf + catalog across two forced builds |
 | `pnpm smoke` | built output answers in a real browser against bag bytes read at run time |
+| `pnpm readme:check` | the README's `## Run locally` path from a clean clone of HEAD: every non-keyed `sh` line rc 0, both servers answering, the booted preview engine, `kb:build` and the bag manifest agreeing on the document count, and the clone's module count equal to a reference build of the same tree. It refuses a dirty tree, and its one deviation from the README text is a sandbox `--install-directory` on `corepack enable` |
 | `pnpm browser:check` | 337 documents on dev + built output, every 320 px interaction state in BOTH locales, that `unicode-range` keeps the Japanese face off an English page, browser cancel delivery, and the rendered canonical answer byte-equal to `tools/answer-oracle.mjs` in BOTH locales |
 | `pnpm graph:check` | the renderer-neutral edge-view contract R1-R7 (`.agent/contracts/m5u8.md`) against the SHIPPED `mountGraphCanvas`, over 14 fixtures x 2 viewports, plus C1-C12 (`m5u10.md`) against the SHIPPED `SemanticGraph.svelte` over 2 devices x 2 views + both fallbacks |
 | `pnpm binding:replay` | that `clinical-binding` E2 is load-bearing: the same erasure is invisible at `a944fca` and drops exactly one document now |
@@ -199,7 +201,8 @@ healthy committed-state run is 43.916 s with no outer timeout, so the budget is 
 headroom, not a tight fit. **Never wrap this command in an outer `timeout` to paper over a
 regression** — the budget message names the phase, and a wall-clock kill does not.
 
-`pnpm release:check` = `gate && kb:reproduce && smoke && browser:check && graph:check`.
+`pnpm release:check` = `gate && kb:reproduce && smoke && browser:check && graph:check &&
+readme:check`.
 
 ## CI
 
