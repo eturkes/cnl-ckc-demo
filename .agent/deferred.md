@@ -156,17 +156,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   reader-relative labels). m5u12 ruled the first, second and fourth for the shipped side, so
   24/24 needs edits to the teammate's oracle beyond the lookups — the user rules which.
 
-- **`gate.md`'s static-analysis bullet overstates its own completeness** — MAIN finding,
-  security-vocabulary lane. The `lint` bullet ends `Every remaining exception is one inline
-  disable carrying its reason`, which is false: `eslint.config.js:54` turns
-  `security/detect-unsafe-regex` off for `src/questions/advice.ts` through per-file CONFIG,
-  over a `src/**` path the same bullet says keeps its rules on. The config's own comment gives
-  the sound reason — `advice.ts` is byte-frozen against `22053ef` by `clinical-records` T9 — and
-  that reason is exactly what the law file omits. All 11 genuine inline disables DO carry
-  theirs. `docs/claims.md:135` R066 rules the whole bullet `true` on receipt `pnpm lint`, which
-  passes either way and cannot reach the sentence. Accept: the bullet names the `advice.ts`
-  config exception and why it cannot be inline, and `pnpm claims:seed` re-derives R066 so the
-  re-worded claim is adjudicated afresh. `pri` low.
 - **A registry command cell cannot hold a pipe** — `tools/claims-sweep.mjs` parses the
   `command` and `disposition` cells as `([^|]*)`, so a command carrying an escaped `\|` grades
   clean under `claims:check` but loses its verdict on the next `claims:seed`: the claim key
@@ -271,6 +260,13 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   `[object Object]` (`.scratch/agents/researcher-d9/s11-results.json`, `tools/kb/produce.mjs`).
   Accept: a test over a halting payload copy requires `kb:build`'s refusal to name the halt
   and its exit status. `pri` low.
+- **Inline-disable reasons have no grader** — `.claude/rules/gate.md`'s `lint` bullet says every
+  remaining security exception is one inline disable carrying its reason; `pnpm lint` passes
+  whether or not a reason is there, so the registry row reads it by hand. Three non-security
+  disables carry none (`tools/clinical-reference.mjs:227,234`, `tools/kb/provenance.mjs:70`,
+  the last byte-frozen by T9). Accept: a committed check (an ESLint directive-description rule
+  or a scan in the gate) refuses an `eslint-disable` with no stated reason, with its firing
+  input, and the frozen file's directive handled by ruling. `pri` low.
 
 ## Index — one line per `high` + `med` row
 

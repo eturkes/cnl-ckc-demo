@@ -33,7 +33,10 @@ Step semantics a reader cannot get from the script name:
   `security/detect-object-injection` is off project-wide (150 findings, all typed lookups it
   cannot see the index signature for); the fs/regexp/require path rules are off for
   `tools/**` and `tests/**`, which take no untrusted input, and stay on for `src/**`. Every
-  remaining exception is one inline disable carrying its reason.
+  remaining exception is one inline disable carrying its reason, except one per-file CONFIG
+  exception: `security/detect-unsafe-regex` is off for `src/questions/advice.ts` in
+  `eslint.config.js`, because T9 freezes that file's bytes against `22053ef` and an inline
+  disable would change them; the config comment carries the regex's linearity argument.
 - `kb:build` subsumes the retired `kb:verify` — it proves the vendored bag against its
   `.sha256` sidecar before parsing, in memory, never extracting.
 - `kb:export-check` (`tools/kb/export-check.mjs`) is the legacy export lane's `EXPORTED`
