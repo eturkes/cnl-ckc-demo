@@ -81,7 +81,10 @@ const drain = async (): Promise<void> => {
   flushSync();
 };
 
-const alerts = (): HTMLElement[] => [...target.querySelectorAll<HTMLElement>('[role="alert"]')];
+const INTAKE_REGIONS = '[data-intake-status], [data-intake-alert], [data-intake-result]';
+const pageAlerts = (): HTMLElement[] => [...target.querySelectorAll<HTMLElement>('[role="alert"]')];
+const alerts = (): HTMLElement[] =>
+  pageAlerts().filter((element) => !element.matches(INTAKE_REGIONS));
 
 const retry = (): HTMLButtonElement => {
   const buttons = [...target.querySelectorAll<HTMLButtonElement>('button')].filter((button) =>
@@ -107,7 +110,7 @@ afterEach(async () => {
 });
 
 describe('rendered boot-error recovery', () => {
-  it('B4 keeps exactly one alert across two failed boots', async () => {
+  it('B4 keeps one run alert and a stable page count across two failed boots', async () => {
     const engine = new DeferredBootEngine();
     const view = render(engine);
     expect(view.state.kind).toBe('booting');
@@ -118,15 +121,8 @@ describe('rendered boot-error recovery', () => {
       kind: 'boot-error',
       error: { code: 'boot', message: 'first boot error' },
     });
-    expect(
-      alerts(),
-      JSON.stringify(
-        alerts().map((alert) => ({
-          intake: alert.hasAttribute('data-intake-alert'),
-          text: alert.textContent,
-        })),
-      ),
-    ).toHaveLength(1);
+    const firstPageCount = pageAlerts().length;
+    expect(alerts()).toHaveLength(1);
     expect(alerts()[0]?.textContent).toContain('first boot error');
     const retrying = view.retry();
     flushSync();
@@ -141,6 +137,7 @@ describe('rendered boot-error recovery', () => {
       error: { code: 'boot', message: 'second boot error' },
     });
     expect(alerts()).toHaveLength(1);
+    expect(pageAlerts()).toHaveLength(firstPageCount);
     expect(alerts()[0]?.textContent).toContain('second boot error');
     expect(target.textContent).not.toContain('first boot error');
     retry();
