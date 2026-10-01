@@ -15,7 +15,13 @@ import { mount, tick, unmount } from 'svelte';
 
 import '../../src/app.css';
 import SemanticGraph from '../../src/graph/SemanticGraph.svelte';
-import type { GraphFocus, SemanticGraphNode } from '../../src/graph/model.js';
+import {
+  graphRelationLabel,
+  parseSemanticGraph,
+  SemanticGraphModel,
+  type GraphFocus,
+  type SemanticGraphNode,
+} from '../../src/graph/model.js';
 
 import { maybeCy, type CyLike } from './cy.js';
 
@@ -499,6 +505,11 @@ export interface PaletteFallbackReading {
 export interface ScopeFallbackReading {
   forward: string[];
   reverse: string[];
+  /** The same rows keyed by the edge each renders, so a grader binds a reading to its edge. */
+  forwardRows: { edgeId: string; text: string }[];
+  reverseRows: { edgeId: string; text: string }[];
+  /** Each row edge's label as the shipped model composes it from the asset, at either end. */
+  expected: Record<string, { forward: string; reverse: string }>;
 }
 
 const selectSearchResult = async (label: string): Promise<void> => {
@@ -512,7 +523,7 @@ const selectSearchResult = async (label: string): Promise<void> => {
   );
 };
 
-const relationTexts = (peer: string): string[] =>
+const relationRows = (peer: string): { edgeId: string; text: string }[] =>
   all('.relations li').flatMap((row) => {
     const peerButton = [...row.querySelectorAll('button')].find(
       (candidate) => labelOf(candidate) === peer,
@@ -521,7 +532,7 @@ const relationTexts = (peer: string): string[] =>
     const copy = row.cloneNode(true);
     if (!(copy instanceof HTMLElement)) throw new Error('probe: relation row clone is not HTML');
     for (const control of copy.querySelectorAll('button, small')) control.remove();
-    return [labelOf(copy)];
+    return [{ edgeId: row.getAttribute('data-edge-id') ?? '', text: labelOf(copy) }];
   });
 
 const api = {
@@ -611,10 +622,40 @@ const api = {
       for (const token of GRAPH_TOKENS) host.style.setProperty(token, 'initial');
       await activate();
       await waitFor('the canvas fallback', () => one('.canvas-error'));
+      // Past the relation cap the declared edge sits beyond the first rows; expand first.
+      const expandAll = async (): Promise<void> => {
+        const more = one('[data-action="show-all-relations"]');
+        if (more instanceof HTMLButtonElement) {
+          more.click();
+          await tick();
+        }
+      };
       await selectSearchResult(source);
-      const forward = relationTexts(target);
+      await expandAll();
+      const forwardRows = relationRows(target);
       await selectSearchResult(target);
-      return { forward, reverse: relationTexts(source) };
+      await expandAll();
+      const reverseRows = relationRows(source);
+      const model = new SemanticGraphModel(
+        parseSemanticGraph((await (await fetch(props.graphUrl)).json()) as unknown),
+      );
+      const expected: ScopeFallbackReading['expected'] = {};
+      for (const { edgeId } of [...forwardRows, ...reverseRows]) {
+        const edge = model.edge(edgeId);
+        if (edge !== undefined) {
+          expected[edgeId] = {
+            forward: graphRelationLabel(edge, edge.source),
+            reverse: graphRelationLabel(edge, edge.target),
+          };
+        }
+      }
+      return {
+        forward: forwardRows.map(({ text }) => text),
+        reverse: reverseRows.map(({ text }) => text),
+        forwardRows,
+        reverseRows,
+        expected,
+      };
     } finally {
       if (objectUrl !== undefined) URL.revokeObjectURL(objectUrl);
     }

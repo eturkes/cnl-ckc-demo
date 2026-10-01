@@ -201,6 +201,7 @@ export const LABELS = {
   graphEyebrow: 'グラフ',
   graphHeading: '意味知識グラフ',
   graphExplore: 'グラフを探索',
+  graphShowAllRelations: 'すべての関係を表示',
   graphLoading: '意味グラフを読み込んでいます。',
   graphTryAgain: '再試行',
   graphAnswerMap: '回答マップ',

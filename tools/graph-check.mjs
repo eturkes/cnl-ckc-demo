@@ -221,7 +221,6 @@ const SPANNING_SCOPE_READINGS = [
     completeScope: ['-', 'should'],
   },
 ];
-const PARTIAL_SCOPE_DISCLOSURE = /\b(?:incomplete|partial|scope omitted|scope spans)\b/iu;
 const BOUND_DISCLOSURE =
   /\b(?:more|additional|partial|limit|outside|hidden|not shown|expand|depth)\b/iu;
 
@@ -443,26 +442,24 @@ const gradeScopeReadings = (rows, table, gradeDash) => {
 };
 
 /**
- * @param {{ caseId: string, edgeId: string, relation: string, completeScope: string[], rendered: string | null }[]} rows
+ * Each declared spanning reading must come from the row that renders ITS edge — bound by
+ * `data-edge-id`, never by matching label text — in both directions, and read exactly the label
+ * the shipped model composes from the asset for a reader at that end.
+ *
+ * @param {{ caseId: string, edgeId: string, direction: string, rendered: string | null, expected: string | undefined }[]} rows
  */
 const gradeSpanningScope = (rows) => {
   /** @type {string[]} */
   const out = [];
   if (rows.length === 0) return ['SPANNING_SCOPE_READINGS is empty, so edge:512:12 was not graded'];
   for (const row of rows) {
-    if (row.rendered === null) continue;
-    const complete = scopePattern({
-      caseId: row.caseId,
-      edgeId: row.edgeId,
-      relation: row.relation,
-      scope: row.completeScope,
-      rendered: row.rendered,
-      dashed: undefined,
-      required: false,
-    }).test(row.rendered);
-    if (!complete && !PARTIAL_SCOPE_DISCLOSURE.test(row.rendered)) {
+    if (row.rendered === null) {
+      out.push(`${row.caseId}/${row.edgeId}: no ${row.direction} row renders the declared edge`);
+    } else if (row.expected === undefined) {
+      out.push(`${row.caseId}/${row.edgeId}: the asset carries no such edge`);
+    } else if (row.rendered !== row.expected) {
       out.push(
-        `${row.caseId}/${row.edgeId}: rendered ${JSON.stringify(row.rendered)} as whole scope; require [${row.completeScope.join(', ')}], explicit partial-scope disclosure, or no row`,
+        `${row.caseId}/${row.edgeId}: rendered ${JSON.stringify(row.rendered)}, expected ${JSON.stringify(row.expected)}`,
       );
     }
   }
@@ -649,7 +646,7 @@ const readings = [];
 const canvasScopeReadings = [];
 /** @type {ScopeReading[]} */
 const fallbackScopeReadings = [];
-/** @type {{ caseId: string, edgeId: string, relation: string, completeScope: string[], rendered: string | null }[]} */
+/** @type {{ caseId: string, edgeId: string, direction: string, rendered: string | null, expected: string | undefined }[]} */
 const spanningScopeReadings = [];
 /** @type {(import('./graph-probe/app.svelte.js').InteractionReading & { device: string })[]} */
 const components = [];
@@ -881,16 +878,40 @@ try {
     const spanning = /** @type {import('./graph-probe/app.svelte.js').ScopeFallbackReading} */ (
       await run('scopeFallback(null, "outweigh", "consider")')
     );
-    const declaredSpanning = SPANNING_SCOPE_READINGS.map((expected) => {
-      const rows = expected.direction === 'forward' ? spanning.forward : spanning.reverse;
+    const declaredSpanning = SPANNING_SCOPE_READINGS.map((declared) => {
+      const forward = declared.direction === 'forward';
+      const rows = forward ? spanning.forwardRows : spanning.reverseRows;
+      const labels = spanning.expected[declared.edgeId];
       return {
-        caseId: `${expected.caseId}:${device.name}`,
-        edgeId: expected.edgeId,
-        relation: expected.relation,
-        completeScope: expected.completeScope,
-        rendered: rows.find((reading) => reading.startsWith(expected.relation)) ?? null,
+        caseId: `${declared.caseId}:${device.name}`,
+        edgeId: declared.edgeId,
+        direction: declared.direction,
+        rendered: rows.find(({ edgeId }) => edgeId === declared.edgeId)?.text ?? null,
+        expected: labels === undefined ? undefined : forward ? labels.forward : labels.reverse,
       };
     });
+    // Controls, on the real readings: a reading taken from another edge's row, and a reverse
+    // reading gone missing, must each be refused by the declared edge's id.
+    const [first] = declaredSpanning;
+    const otherRow = spanning.forwardRows.find(({ edgeId }) => edgeId !== first?.edgeId);
+    if (first !== undefined && otherRow !== undefined) {
+      require_(
+        gradeSpanningScope([{ ...first, rendered: otherRow.text }]).some((line) =>
+          line.startsWith(`${first.caseId}/${first.edgeId}: rendered`),
+        ),
+        'control',
+        'a spanning reading taken from another edge was not refused by the declared edge id',
+      );
+    }
+    require_(
+      gradeSpanningScope(
+        declaredSpanning.map((row) =>
+          row.direction === 'reverse' ? { ...row, rendered: null } : row,
+        ),
+      ).some((line) => line.includes('no reverse row renders the declared edge')),
+      'control',
+      'a missing reverse spanning row was not refused by the declared edge id',
+    );
     recordScopeErrors(gradeSpanningScope(declaredSpanning), 'V6');
     spanningScopeReadings.push(...declaredSpanning);
     fallbacks.push({ device: device.name, ...load, ...palette, scoped, spanning });

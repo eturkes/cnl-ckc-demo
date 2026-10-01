@@ -125,7 +125,6 @@
       ? []
       : edgeViews.filter((edge) => edge.source === selectedId || edge.target === selectedId),
   );
-  const relations = $derived(relationPool.slice(0, FALLBACK_RELATION_LIMIT));
   const completeRelationPool = $derived(
     model === null || selectedId === null
       ? []
@@ -138,6 +137,14 @@
           },
           route,
         ),
+  );
+  // The node whose relation list the reader expanded; another selection collapses it. Expanded,
+  // the list is every incident relation the truncation notice counts, not just the neighborhood's.
+  let expandedFor = $state<string | null>(null);
+  const relations = $derived(
+    expandedFor !== null && expandedFor === selectedId
+      ? completeRelationPool
+      : relationPool.slice(0, FALLBACK_RELATION_LIMIT),
   );
   const relationCap = $derived(edgeCapDisclosure(relations, completeRelationPool));
   const canExpand = $derived(
@@ -566,6 +573,11 @@
               relationCap.splitRelations,
             )}
           </p>
+          <button
+            type="button"
+            data-action="show-all-relations"
+            onclick={() => (expandedFor = selectedId)}>{t.LABELS.graphShowAllRelations}</button
+          >
         {/if}
       {/if}
 

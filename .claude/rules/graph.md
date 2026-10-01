@@ -184,5 +184,5 @@ Each bound is owned here; changing one is a decision this table records, never a
 | `DEFAULT_EDGE_LIMIT` (`model.ts`) | 480 | edge cap for a neighborhood or answer subgraph; the view discloses the cut through its truncation flags |
 | `MAX_ANSWER_GRAPH_LIMIT` (`model.ts`) | 72 | ceiling of the answer map's "show more" ladder (`DEFAULT_ANSWER_GRAPH_LIMIT` steps) |
 | `SEARCH_RESULT_LIMIT` (`SemanticGraph.svelte`) + `search`/`searchConcepts` `limit = 24` (`model.ts`) | 24 | one screen of search results; a longer list is a query to refine, not a list to scroll |
-| `FALLBACK_RELATION_LIMIT` (`SemanticGraph.svelte`) | 60 | direct-relationship list cap; the cut is surfaced in place by `TEXT.graphRelationsTruncated` (shown of total, omitted rows, split scope variants) |
+| `FALLBACK_RELATION_LIMIT` (`SemanticGraph.svelte`) | 60 | direct-relationship list cap; the cut is surfaced in place by `TEXT.graphRelationsTruncated` (shown of total, omitted rows, split scope variants), and `LABELS.graphShowAllRelations` expands the list to every incident relation the notice counts — not just the neighborhood's |
 | `PADDING` (`canvas.ts`) | 32 px | fit margin, so a node label at the canvas edge is never clipped by the box |

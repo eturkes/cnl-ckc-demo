@@ -220,6 +220,7 @@ export const LABELS = {
   graphEyebrow: 'Graph',
   graphHeading: 'Semantic knowledge graph',
   graphExplore: 'Explore graph',
+  graphShowAllRelations: 'Show all relationships',
   graphLoading: 'Loading the semantic graph.',
   graphTryAgain: 'Try again',
   graphAnswerMap: 'Answer map',

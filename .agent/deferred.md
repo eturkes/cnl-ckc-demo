@@ -208,19 +208,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   reader-relative labels). m5u12 ruled the first, second and fourth for the shipped side, so
   24/24 needs edits to the teammate's oracle beyond the lookups — the user rules which.
 
-- **`graph:check`'s spanning-scope grader is edge-blind** — review row `G3`.
-  `SPANNING_SCOPE_READINGS` declares `edge:512:12`, but the probe returns label TEXT only, so
-  `tools/graph-check.mjs:891` takes the first label carrying the same relation and never binds
-  the declared edge. At `44406bd` both forward readings graded
-  `condition supports · negated → should` while the declared edge reads
-  `condition supports · negated → negated · should`, and both reverse readings were `null`,
-  which `gradeSpanningScope` accepts and still counts — so the summary says four readings
-  passed when none of the four was the declared one. `.claude/rules/gate.md` claims each
-  refusal NAMES the case and the edge; that claim is what fails here. Accept: the probe returns
-  `data-edge-id`; the grader requires a non-null row in BOTH directions and compares each exact
-  asset-derived reader-relative label; a wrong edge and a missing reverse row each redden BY
-  ID. Red witness `tests/rev-graph-g3.test.ts:20` at `wt/rev-graph` `ace618a`, all 4 readings.
-  `pri` med.
 - **Three `kb:asset-check` root tables grade nothing when emptied** — review row `C2`.
   `SCAN_ROOTS` is guarded, but `PRODUCTION_ROOTS`, `SERIALIZE_ROOTS` and `QUESTION_ROOTS`
   (`tools/kb/check.mjs:28`) each exit 0 with the table never named, while the step still prints
@@ -345,7 +332,6 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | Two tests time out under parallel execution | both pass 20 consecutive full-suite runs at the committed worker count |
 | 71 operator contexts have no edge, 64 of them negation | the 71 carry edges with the moved counts recorded, or a check proves no shown path skips an edgeless negation context |
 | The projection oracle lives on a branch alone | its label lookups match on `relation`, 24/24 green in-tree, joined to a declared register |
-| `graph:check`'s spanning-scope grader is edge-blind | probe returns `data-edge-id`; both directions non-null; a wrong edge and a missing reverse row redden by id |
 | Three `kb:asset-check` root tables grade nothing when emptied | each refuses an emptied table by its own name; the success line names every control that fired |
 | Two registry rows say `deferred` and cite no queue row | both subjects carry a queue row, both dispositions cite it, `claims:check` refuses an uncited `deferred` |
 
