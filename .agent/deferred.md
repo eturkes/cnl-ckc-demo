@@ -156,13 +156,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   reader-relative labels). m5u12 ruled the first, second and fourth for the shipped side, so
   24/24 needs edits to the teammate's oracle beyond the lookups — the user rules which.
 
-- **A registry command cell cannot hold a pipe** — `tools/claims-sweep.mjs` parses the
-  `command` and `disposition` cells as `([^|]*)`, so a command carrying an escaped `\|` grades
-  clean under `claims:check` but loses its verdict on the next `claims:seed`: the claim key
-  swallows half the command and the row drops to `unknown`. Measured on R209 with
-  `git show HEAD:CLAUDE.md \| cmp - CLAUDE.md`: check rc 0, seed → `unknown | unknown`, check
-  rc 1. Accept: a row whose command holds `\|` survives `claims:seed` byte-identical, or
-  `claims:check` refuses the pipe by row id. `pri` low.
 - **`spec.md` `Tasks` has no mechanical owner** — nothing refuses a spec whose open unit is not
   a `- [ ]` row, whose ticked row carries no SHA, or whose last line stops pointing at
   `.agent/deferred.md`. The template refresh proved `Deferred` → `Tasks` preservation with a

@@ -243,7 +243,8 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] d55 u13's firing record names base `3c4c17c` (reproduced there: rc 1, same assertion); the phrasing census is gone from the tree.
 - [x] d56 both rows graded on their own checks: `Boot-error recovery` by `88af76b` (d21), `Boot carries no deadline` by `da39355` (d31, text corrected to `boot`).
 - [x] d57 the `lint` bullet names `advice.ts`'s config exception and why it cannot be inline; R073 adjudicated afresh (deferred to a new grader row).
-- [ ] `low`: d58 d59 d60 d61 d62 d63, then the new-find rows.
+- [x] d58 a registry cell may hold `\|`; claims:check re-seeds a piped copy and requires it back byte-identical.
+- [ ] `low`: d59 d60 d61 d62 d63, then the new-find rows.
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open

@@ -32,8 +32,10 @@ const HEADER =
  * One registry row: id, source, anchor, hash, the shown claim cell, command, disposition.
  * Whitespace-tolerant, so a formatter that decides to pad this table cannot redden the gate.
  */
+// The command and disposition cells admit an escaped `\|` as content, so a piped command
+// survives the seed's merge; the claim cell takes everything before them.
 const ROW =
-  /^\|\s*(R\d+)\s*\|\s*([a-z]+)\s*\|\s*`([^`]*)`\s*\|\s*([0-9a-f]+)\s*\|(.*)\|([^|]*)\|([^|]*)\|$/u;
+  /^\|\s*(R\d+)\s*\|\s*([a-z]+)\s*\|\s*`([^`]*)`\s*\|\s*([0-9a-f]+)\s*\|(.*)(?<!\\)\|((?:[^|\\]|\\.)*)(?<!\\)\|((?:[^|\\]|\\.)*)\|$/u;
 
 /**
  * The merge key: a digest of the FULL claim unit. The shown cell is cut at 150 characters, so
@@ -442,10 +444,25 @@ if (process.argv.includes('--seed')) {
     () => gradeIndex(queue.replace('\n## Index — ', `\n${plantedRow}\n## Index — `)),
   );
 
+  // A command holding an escaped pipe must come back from the seed's merge byte-identical.
+  const pipedAt = registry.split('\n').findIndex((line) => ROW.test(line));
+  const piped = registry
+    .split('\n')
+    .map((line, index) =>
+      index === pipedAt
+        ? line.replace(/\| ([^|]*) \| ([^|]*) \|$/u, '| `true \\| cat` | $2 |')
+        : line,
+    );
+  const pipedRow = piped[pipedAt] ?? '';
+  const pipeHeld = table(rows, piped.join('\n')).split('\n').includes(pipedRow);
+
   const failures = [
     ...gradeRegistry(rows, registry),
     ...gradeDeferrals(registry, queue),
     ...gradeIndex(queue),
+    ...(pipeHeld
+      ? []
+      : [`a command cell holding \\| does not survive pnpm claims:seed: ${pipedRow}`]),
   ];
   if (failures.length > 0) {
     process.stderr.write(`claims:check failed — ${failures.join('; ')}\n`);

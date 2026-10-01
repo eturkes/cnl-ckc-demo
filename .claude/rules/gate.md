@@ -90,7 +90,9 @@ Step semantics a reader cannot get from the script name:
   naming a live `.agent/deferred.md` title (m5u15 R2), so pruning a row reddens the gate until
   every registry row citing it is re-adjudicated. It also grades the queue's `## Index` against
   the table `pnpm queue:index` derives from the rows (`tools/queue.mjs`): a `high`/`med` row
-  added, re-ranked or pruned without a rewrite fails by its line.
+  added, re-ranked or pruned without a rewrite fails by its line. A command or disposition cell
+  may hold an escaped `\|`; every run re-seeds a copy of the real registry whose first command
+  carries one and requires that row back byte-identical.
 - **The stable censuses the rules state are graded, not trusted.** `tests/census.test.ts` (run by
   `binding:check` with the rest of the suite, after `kb:build`) holds a `CENSUS` table: each row
   anchors one claim unit in `.claude/rules/`, parses each figure out of its text and compares it
