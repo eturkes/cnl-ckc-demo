@@ -192,8 +192,9 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [ ] d10 blocked: owes the user's reading of "ships no bytes"; work parked on `wip/d10-fallback`.
 - [x] `5af7982` d13 `tools/validate-report.mjs`: committed port, escaped pipe = content.
 - [ ] d14 blocked behind d29: real heap exhaustion aborts in Node too at swipl-wasm 8.0.7; live harness committed, `limit: 'heap'` read owed.
+- [x] d18 u4 suite ported: 4 merged green, 3 covered, 1 input retired (P1.10 held by T13).
 - [ ] d29 `high` WASM abort — waits: an ad-hoc goal path (`Decisions` MAIN).
-- [ ] `med`: d11 d16 d18 d19 d21 d23 d24 d25 d26 d27 d30 d31 d32 d36
+- [ ] `med`: d11 d16 d19 d21 d23 d24 d25 d26 d27 d30 d31 d32 d36
   d37 d40 d44 d45 d46 d48 d49 d50 d51 d52 d53 d54
 - [ ] `low`: d1 d3 d5 d6 d8 d9 d12 d15 d17 d20 d22 d28 d33 d34 d35 d38 d39 d41 d42 d43 d47
   d55 d56 d57 d58 d59 d60 d61 d62 d63

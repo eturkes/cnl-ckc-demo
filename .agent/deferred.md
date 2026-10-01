@@ -64,10 +64,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   streaming as cheap (0.0414 vs 0.0345 ms/query) and useful for early answers.
   Accept: solutions render as they arrive, and a queued cancel still cannot
   interrupt an in-flight synchronous `next()`. `pri` low.
-- **u4 red suite** — `test-m1u4` authored a diff-blind suite on branch `wt/test-m1u4`
-  from `.agent/contracts/m1u4.md`; MAIN reached the reserve before harvest. Accept: the
-  suite runs in the primary tree, every case is red for a contract reason or green, and
-  the cases MAIN's 18 do not cover are merged. `pri` med.
 - **Full answer-artifact reproduction** — u4 binds the byte claim to the `result/1`
   argument; both spikes also reproduced the whole 734-byte committed file. Accept: the
   service emits the complete `'$guideline_answers'` envelope, or the contract records why
@@ -399,7 +395,7 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | --- | --- |
 | **high** A WASM abort strands the worker, in Node too | abort = own terminal state, worker recreated, next query reports 337 docs |
 | A QLF fallback import doubles the engine | it loads only on saved-state failure; an untaken fallback ships no bytes |
-| `wt/test-m1u2` + `wt/test-m1u4` suites never ran here | both run in-tree, each case red for a contract reason or green |
+| `wt/test-m1u2` suite never ran here | it runs in-tree, each case red for a contract reason or green |
 | Heap limit + hard kill are proven in Node alone | a browser run exhausts the heap + kills a hostile goal, reporting 337 docs |
 | The byte claim binds the `solutions([...])` substring alone | the whole envelope ships, or the contract says why not |
 | Boot is terminal on failure, unbounded on silence | a failed or hung boot settles bounded as one alert with a retry |
