@@ -241,7 +241,8 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] d47 `pnpm queue:index` derives the queue index; `claims:check` refuses a stale one by line.
 - [x] d35 m1u7 matrix 34/34: 16 covered, 13 ported green (`tests/m1u7-port{,.dom}.test.ts`), 5 superseded, 0 red.
 - [x] d55 u13's firing record names base `3c4c17c` (reproduced there: rc 1, same assertion); the phrasing census is gone from the tree.
-- [ ] `low`: d56 d57 d58 d59 d60 d61 d62 d63, then the new-find rows.
+- [x] d56 both rows graded on their own checks: `Boot-error recovery` by `88af76b` (d21), `Boot carries no deadline` by `da39355` (d31, text corrected to `boot`).
+- [ ] `low`: d57 d58 d59 d60 d61 d62 d63, then the new-find rows.
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open

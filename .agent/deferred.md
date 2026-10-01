@@ -156,15 +156,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   reader-relative labels). m5u12 ruled the first, second and fourth for the shipped side, so
   24/24 needs edits to the teammate's oracle beyond the lookups — the user rules which.
 
-- **Two queue rows may already be satisfied** — review row `C10`.
-  `Boot-error recovery` (`:92`) and `Boot carries no deadline` (`:157`) both look closed in the
-  tree: `src/demo/RunControls.svelte:53` ships the retry control and `src/engine/client.ts:40`
-  arms `BOOT_DEADLINE_MS`. Neither row was ever graded against its OWN acceptance text, and the
-  second's text expects a hung boot to settle as `code: 'worker'` while `client.ts:221` emits
-  `code: 'boot'` — so the row and the implementation disagree on the settled value and one of
-  them is wrong. Accept: each row's acceptance check is run as written and the row closes on
-  its own result, or its text is corrected to the value the contract actually owns and then
-  run. `pri` low.
 - **`gate.md`'s static-analysis bullet overstates its own completeness** — MAIN finding,
   security-vocabulary lane. The `lint` bullet ends `Every remaining exception is one inline
   disable carrying its reason`, which is false: `eslint.config.js:54` turns
