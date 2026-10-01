@@ -23,3 +23,7 @@ dist/
 .claude/settings.local.json
 .claude/.headroom_wrap_marker.json
 CLAUDE.local.md
+
+# vitest browser-mode failure screenshots
+.vitest-attachments
+tests/__screenshots__

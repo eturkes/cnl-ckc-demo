@@ -45,10 +45,11 @@
     "claims:check": "node tools/claims-sweep.mjs",
     "claims:seed": "node tools/claims-sweep.mjs --seed",
     "preview": "vite preview",
-    "release:check": "pnpm gate && pnpm kb:reproduce && pnpm smoke && pnpm browser:check && pnpm graph:check && pnpm readme:check",
+    "release:check": "pnpm gate && pnpm kb:reproduce && pnpm smoke && pnpm browser:check && pnpm graph:check && pnpm readme:check && pnpm test:browser",
     "secret:check": "node tools/secret-check.mjs",
     "smoke": "node tools/smoke.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:browser": "node tools/browser-tests.mjs"
   },
   "dependencies": {
     "@fontsource-variable/atkinson-hyperlegible-mono": "5.3.0",
@@ -65,6 +66,7 @@
     "@secretlint/secretlint-rule-preset-recommend": "^13.0.6",
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "@types/node": "^26.4.0",
+    "@vitest/browser-playwright": "4.1.11",
     "axe-core": "^4.13.0",
     "eslint": "^10.9.1",
     "eslint-plugin-no-unsanitized": "^4.1.5",
@@ -72,6 +74,7 @@
     "eslint-plugin-svelte": "^3.23.0",
     "globals": "^17.11.0",
     "jsdom": "^30.1.1",
+    "playwright": "1.63.0",
     "prettier": "^3.9.6",
     "prettier-plugin-svelte": "^4.1.1",
     "secretlint": "^13.0.6",

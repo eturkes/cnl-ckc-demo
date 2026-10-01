@@ -69,10 +69,19 @@ template reads as unsafe → derive the value in the script block instead.
 
 ## Vitest
 
-Two projects. `tests/**/*.dom.test.ts` runs under jsdom with `resolve.conditions:
-['browser']`; without that condition svelte resolves to `index-server.js` and `mount` throws
-`lifecycle_function_unavailable`. The node project excludes that glob so `swipl-wasm` keeps
-its node entry.
+Two projects, plus a third that exists only under `VITEST_BROWSER=1`. `tests/**/*.dom.test.ts`
+runs under jsdom with `resolve.conditions: ['browser']`; without that condition svelte resolves
+to `index-server.js` and `mount` throws `lifecycle_function_unavailable`. The node project
+excludes that glob and `tests/**/*.browser.test.ts`, so `swipl-wasm` keeps its node entry.
+
+- `browser` = `tests/**/*.browser.test.ts` in real Chromium through `@vitest/browser-playwright`,
+  run by `pnpm test:browser`, which points it at the chromiumfish binary — the gate and CI never
+  load a browser driver, and `vite.config.ts` imports the provider only under that flag.
+- `@vitest/browser-playwright` peers on the EXACT installed `vitest`; the Dependabot
+  `dev-toolchain` group moves both in one PR for minor and patch, and a major bump moves both by
+  hand. `playwright` is exact-pinned to the `playwright-core` chromiumfish itself drives.
+- Server-side browser commands live in `tests/support/`; `axCombobox` reads Chromium's own
+  accessibility tree over CDP.
 
 Live-engine tests run in the node project: one non-parallel worker, real saved image.
 

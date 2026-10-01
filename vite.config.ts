@@ -3,6 +3,39 @@ import { fileURLToPath, URL } from 'node:url';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vitest/config';
 
+// Real Chromium, outside `pnpm gate`: `pnpm test:browser` sets VITEST_BROWSER and points
+// VITEST_CHROMIUM at the chromiumfish binary. Loaded only then, so `vite dev`, `vite build` and
+// the gate's suite never import a browser driver.
+const browserProject =
+  process.env.VITEST_BROWSER === '1'
+    ? await (async () => {
+        const { playwright } = await import('@vitest/browser-playwright');
+        const { axCombobox } = await import('./tests/support/ax-commands.js');
+        return {
+          extends: true as const,
+          resolve: { conditions: ['browser'] },
+          // Pre-bundled up front: discovering axe-core mid-run made Vite reload the test page.
+          optimizeDeps: { include: ['axe-core'] },
+          test: {
+            name: 'browser',
+            include: ['tests/**/*.browser.test.ts'],
+            browser: {
+              enabled: true,
+              headless: true,
+              provider: playwright({
+                launchOptions:
+                  process.env.VITEST_CHROMIUM === undefined
+                    ? {}
+                    : { executablePath: process.env.VITEST_CHROMIUM },
+              }),
+              instances: [{ browser: 'chromium' as const }],
+              commands: { axCombobox },
+            },
+          },
+        };
+      })()
+    : undefined;
+
 // `wrangler.jsonc` `dev.port`.
 const INTAKE_PROXY = 'http://127.0.0.1:8791';
 
@@ -35,7 +68,7 @@ export default defineConfig({
           name: 'node',
           environment: 'node',
           include: ['tests/**/*.test.ts'],
-          exclude: ['tests/**/*.dom.test.ts'],
+          exclude: ['tests/**/*.dom.test.ts', 'tests/**/*.browser.test.ts'],
         },
       },
       {
@@ -46,6 +79,7 @@ export default defineConfig({
         resolve: { conditions: ['browser'] },
         test: { name: 'dom', environment: 'jsdom', include: ['tests/**/*.dom.test.ts'] },
       },
+      ...(browserProject === undefined ? [] : [browserProject]),
     ],
   },
 });

@@ -89,14 +89,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   free-text intake is what makes it reachable. Accept: an aborted runtime reaches the client
   as its own terminal state that recreates the worker without a caller `reset()`, proven by a
   browser probe whose next query reports 337 documents. `pri` high, gated on free-text intake.
-- **Combobox predicates are jsdom-only** — 9 of u5's 26 predicates rest on behavior jsdom
-  stubs: S1/S7 (accessible name, activedescendant announcement), K5 (real timer scheduling
-  and key repeat), K8/K10/P2/P3 (native focus traversal, `focusout.relatedTarget` ordering,
-  mousedown prevention), B1 (`scrollIntoView` visibility), B3 (axe without layout or canvas)
-  (M1 review I26). Accept: one `tests/question-combobox.browser.test.ts` drives real keyboard,
-  Tab and pointer input in Chromium, reads focus after each, reads the AX tree for S1/S7,
-  wraps native `scrollIntoView` to record receiver and arguments while preserving it,
-  exercises K5 on both sides of 500 ms, and runs axe closed and open. `pri` med.
 - **Font stack fallbacks and copy reach are unowned** — `presentation:check` grades faces,
   licences and containment, but D7's h1 wordmark, the framing copy's forbidden claims, the
   descriptor humanizer's rendered output and the three role tokens' system fallback stacks
@@ -363,7 +355,6 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | Five browser claims + two probes live only on `wt/` branches | one typed `tools/` harness covers all five; probes port or claims prune |
 | The `.claude/rules/` censuses have no mechanical owner | one script re-derives each from `kb/generated` + `dist`, naming mismatches |
 | Two tests time out under parallel execution | both pass 20 consecutive full-suite runs at the committed worker count |
-| 9 of u5's 26 combobox predicates rest on jsdom stubs | a Chromium test drives real input, reads the AX tree, runs axe |
 | `smoke` + `browser:check` ship no firing input | each reddens on a mutation its own lane runs, and joins gate.md `Firing inputs` |
 | Ten shipped bounds have no owner | each names an owner whose search returns rc 0; the 60-relation cap surfaces truncation or is contract-owned |
 | 71 operator contexts have no edge, 64 of them negation | the 71 carry edges with the moved counts recorded, or a check proves no shown path skips an edgeless negation context |
