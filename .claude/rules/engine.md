@@ -84,7 +84,10 @@ failures before it was wired.
 - Hard cancel: terminate 2.7–3.5 ms; terminate→respawn→boot 181.75–223.96 ms **in Node**. In
   a real browser the same cycle costs 526.4–1732.5 ms, median 641.6 over 5/5 cycles — any UI
   claim must use the browser figure. Each cycle drops the overlay and re-reads 337 documents
-  from the replacement engine. Post-termination worker CPU stays unmeasured.
+  from the replacement engine. Post-termination worker CPU stays unmeasured. `pnpm
+  browser:check` kills a hostile `repeat,fail` through the client deadline in a real browser on
+  every run: exactly one respawn by the time the caller resumes, and the replacement reports the
+  manifest's document count.
 - **Heap exhaustion aborts the runtime in BOTH hosts.** A runaway `assertz` never raises
   `resource_error(memory)`: the allocator prints FATAL `Could not allocate memory: Out of
   memory` and the WASM runtime aborts, reaching the caller as `{code:'prolog', message:

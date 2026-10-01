@@ -332,6 +332,55 @@ const narrowSweep = async (browser, builtUrl, lang) => {
   return { question, expectedCanonical };
 };
 
+/**
+ * A hostile goal only termination can stop: `repeat,fail` never yields a solution, so the
+ * worker sits inside one synchronous `next()` and no cooperative cancel or soft deadline can
+ * land. The client's main-thread deadline must kill that worker and boot a replacement.
+ * Spawns are counted through a `Worker` subclass, because the client constructs the global.
+ */
+const KILL_PROBE = `(async () => {
+  const Native = globalThis.Worker;
+  let spawned = 0;
+  globalThis.Worker = class extends Native {
+    constructor(...args) {
+      super(...args);
+      spawned += 1;
+    }
+  };
+  const { EngineClient } = await import('/src/engine/client.ts');
+  const { BUDGET_MAX } = await import('/src/engine/budget.ts');
+  const client = new EngineClient();
+  try {
+    const booted = await client.boot();
+    if (booted.kind !== 'booted') return { error: 'boot returned ' + booted.kind };
+    const started = performance.now();
+    const outcome = await client.query('repeat,fail.', { ...BUDGET_MAX, wallClockMs: 300 });
+    const settled = performance.now() - started;
+    const atSettle = spawned;
+    // Joins the recreation the deadline already started; single-flight keeps it at one.
+    const recreated = await client.reset();
+    const cycle = performance.now() - started;
+    const after = await client.query('findall(D,guideline_document(D,_,_),Ds),length(Ds,N).', {
+      ...BUDGET_MAX,
+      answerCap: 1,
+    });
+    return {
+      kind: outcome.kind,
+      limit: outcome.limit,
+      settled,
+      cycle,
+      atSettle,
+      spawned,
+      recreated: recreated.kind,
+      documents: recreated.kind === 'booted' ? recreated.contract.documents : -1,
+      after: after.kind === 'solutions' ? after.solutions[0].display.N : after.kind,
+    };
+  } finally {
+    client.dispose();
+    globalThis.Worker = Native;
+  }
+})()`;
+
 // Never trust a leftover dist tree: this check proves the current source.
 execFileSync('pnpm', ['build'], { cwd: ROOT, stdio: 'inherit' });
 
@@ -423,6 +472,29 @@ try {
     fail(`engine unusable after a cooperative cancel: ${String(probe.after)}`);
   }
   if (Number(probe.documents) !== documents) fail('worker booted a different corpus');
+
+  // A hostile goal killed by the client's deadline, and the engine that replaced it.
+  const kill = /** @type {Record<string, unknown>} */ (await devPage.evaluate(KILL_PROBE));
+  if (typeof kill.error === 'string') fail(`kill probe: ${kill.error}`);
+  if (kill.kind !== 'limit' || kill.limit !== 'wall-clock') {
+    fail(`hostile goal settled ${String(kill.kind)}/${String(kill.limit)}, not a wall-clock kill`);
+  }
+  if (kill.atSettle !== 2 || kill.spawned !== 2) {
+    fail(
+      `expected the deadline to respawn exactly one worker, saw ${String(kill.atSettle)} at ` +
+        `settle and ${String(kill.spawned)} after the reset`,
+    );
+  }
+  if (kill.recreated !== 'booted' || kill.documents !== documents) {
+    fail(
+      `recreated engine reported ${String(kill.recreated)} with ${String(kill.documents)} documents`,
+    );
+  }
+  if (kill.after !== String(documents)) {
+    fail(
+      `recreated engine answered ${String(kill.after)}, expected ${String(documents)} documents`,
+    );
+  }
   if (raised !== undefined) fail(raised);
 
   const broken = log.filter((entry) => entry.status !== 200 && entry.path.startsWith(`/${NESTED}`));
@@ -435,7 +507,9 @@ try {
       `${question} rendered the bag's ${String(expectedCanonical.rows)}-row canonical answer ` +
       `byte for byte in both locales; cancel delivered after ${String(solutions)} ` +
       `of up to ${String(probe.cap)} solutions in ${Number(probe.elapsed).toFixed(0)} ms, ` +
-      `engine still ${String(probe.after)}`,
+      `engine still ${String(probe.after)}; a hostile goal was killed at ` +
+      `${Number(kill.settled).toFixed(0)} ms and its replacement engine reported ` +
+      `${String(kill.documents)} documents ${Number(kill.cycle).toFixed(0)} ms in`,
   );
 } catch (cause) {
   // A browser timeout or a launcher fault must read as this check's own one-line

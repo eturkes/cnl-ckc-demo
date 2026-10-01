@@ -57,9 +57,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
 - **u3 red suite completion** — `test-m1u3` partially filled its 35-case skeleton,
   committed at `22c8b97` on `wt/test-m1u3`. Accept: the cases MAIN's 31 do not cover run
   in the primary tree, red for a contract reason or green. `pri` low.
-- **Browser hard-kill proof** — every terminate/recreate number comes from Node
-  `worker_threads`; the product ships browser `Worker.terminate()`. Accept: a browser run
-  kills a hostile goal and reports the recreated engine at 337 documents. `pri` med.
 - **Solution streaming** — u2 delivers one batch per query. Both spikes measured
   streaming as cheap (0.0414 vs 0.0345 ms/query) and useful for early answers.
   Accept: solutions render as they arrive, and a queued cancel still cannot
@@ -396,7 +393,7 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | **high** A WASM abort strands the worker, in Node too | abort = own terminal state, worker recreated, next query reports 337 docs |
 | A QLF fallback import doubles the engine | it loads only on saved-state failure; an untaken fallback ships no bytes |
 | `wt/test-m1u2` suite never ran here | it runs in-tree, each case red for a contract reason or green |
-| Heap limit + hard kill are proven in Node alone | a browser run exhausts the heap + kills a hostile goal, reporting 337 docs |
+| Heap limit is proven by a synthesized outcome alone | a live trip reads `limit: 'heap'` (blocked behind the abort row) |
 | The byte claim binds the `solutions([...])` substring alone | the whole envelope ships, or the contract says why not |
 | Boot is terminal on failure, unbounded on silence | a failed or hung boot settles bounded as one alert with a retry |
 | The axe sweep predates the About panel + `<details>` | a dom test runs `axe.run` with each disclosure open + closed |
