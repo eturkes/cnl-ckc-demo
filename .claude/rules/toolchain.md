@@ -65,6 +65,14 @@ template reads as unsafe → derive the value in the script block instead.
 - Alias `@kb` → `kb/generated`; `base: './'`; `worker.format: 'es'`; `cacheDir: '.vite'`.
 - The literal `new Worker(new URL('./worker.ts', import.meta.url), {type:'module'})` form is
   what makes Vite emit a separate worker bundle.
+- **Offline caching = `dist/sw.js`, written by the `offlineCache` plugin in `closeBundle`** from
+  the files on disk (`tools/offline-sw.mjs`) — `generateBundle` misses the worker-emitted PVM.
+  The cache name hashes the whole file list, so any renamed asset (a changed KB input renames the
+  PVM) activates a new cache and deletes the old. Install precaches the boot set: every
+  `assets/` file outside `LAZY`, which holds the graph, renderer, PDF, provenance chunks and
+  Japanese faces — precaching those would put the Japanese face on an English page. `src/main.ts`
+  registers in production builds alone. `pnpm browser:check` grades the offline second visit and
+  the invalidation.
 - `cacheDir` must resolve against the project root. Worktrees reach the toolchain through a
   `node_modules` symlink, so the default `node_modules/.vite` is ONE physical directory
   shared by every tree.

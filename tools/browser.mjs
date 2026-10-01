@@ -25,6 +25,7 @@ import { readdirSync } from 'node:fs';
  *
  * @typedef {object} Page
  * @property {(url: string, options?: object) => Promise<unknown>} goto
+ * @property {(options?: object) => Promise<unknown>} reload
  * @property {(selector: string, options?: object) => Promise<unknown>} waitForSelector
  * @property {(fn: string, arg?: unknown, options?: object) => Promise<unknown>} waitForFunction
  * @property {(selector: string) => Locator} locator
@@ -99,12 +100,18 @@ export const launch = async (fail) => {
  *
  * @param {string} root
  * @param {LogEntry[]} log
+ * @param {(path: string) => boolean} [refuse] severs the connection instead, as a lost network does
  * @returns {Promise<{ port: number, close: () => void }>}
  */
-export const serve = (root, log) =>
+export const serve = (root, log, refuse = () => false) =>
   new Promise((resolve) => {
     const server = createServer((request, response) => {
       const path = normalize(decodeURI((request.url ?? '/').split('?')[0] ?? '/'));
+      if (refuse(path)) {
+        log.push({ path, status: 0 });
+        request.socket.destroy();
+        return;
+      }
       const file = join(root, path.endsWith('/') ? `${path}index.html` : path);
       const ok = file.startsWith(root) && existsSync(file);
       log.push({ path, status: ok ? 200 : 404 });

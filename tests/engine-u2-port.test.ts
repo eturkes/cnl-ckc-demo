@@ -515,7 +515,8 @@ describe('P1/P5 live contract port', () => {
     // `kb/generated` would race every suite the gate runs beside this one.
     const copy = mkdtempSync(join(tmpdir(), 'u2-absent-'));
     try {
-      for (const entry of ['src', 'tests']) {
+      // `tools` because `vite.config.ts` imports its service-worker generator from there.
+      for (const entry of ['src', 'tests', 'tools']) {
         cpSync(join(ROOT, entry), join(copy, entry), { recursive: true });
       }
       for (const file of ['package.json', 'tsconfig.json', 'svelte.config.js', 'vite.config.ts']) {

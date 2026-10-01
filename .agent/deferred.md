@@ -22,9 +22,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   phases the runtime supplies: image fetch (bytes only where the response streams them),
   `loadImageDefault`, contract verification; the worker protocol gains a `progress` response,
   which joins the d37 clone table.
-- **Offline asset caching** — service worker over the hashed runtime assets.
-  Accept: a second visit boots with the network offline, and a changed KB input
-  hash invalidates every stale PVM asset. `pri` low.
 - **Finish the u1 wave-1 reports** — `map-m1u1` (17/25 rows) and
   `spike-m1u1-det` (9/12) were stopped at the reserve. Their sources
   `.scratch/agents/{map-m1u1,spike-m1u1-det}.md` must survive until this closes. Accept: both

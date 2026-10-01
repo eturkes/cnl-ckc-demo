@@ -13,7 +13,7 @@
 // Outside `pnpm gate` on the `pnpm smoke` precedent: it needs a real browser.
 
 import { execFileSync, spawn } from 'node:child_process';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { copyFile, cp, mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -31,11 +31,15 @@ import {
   SUBSETS,
 } from './fonts.mjs';
 import { loadManifest, ROOT } from './kb/paths.mjs';
+import { CACHE_PREFIX, plan, serviceWorker } from './offline-sw.mjs';
 
 const NESTED = 'some/nested';
 /** The face firing input: the same build with its Japanese woff2 files renamed away. */
 const FACELESS = 'some/faceless';
 const PARITY = 'some/parity';
+/** Served by the same server, which severs every request under it while `offlineDown` holds. */
+const OFFLINE = 'some/offline';
+let offlineDown = false;
 const READY = '[data-engine="ready"]';
 const ERRORED = '[data-engine="error"]';
 const TIMEOUT = 60_000;
@@ -476,13 +480,117 @@ const faceParity = async (browser, dir, url) => {
   return [...drawn].length;
 };
 
+/**
+ * Asks the page's registration for an update, waits for any new worker to settle, and lists
+ * every app cache by the file names it holds.
+ */
+const CACHE_PROBE = `(async () => {
+  const registration = await navigator.serviceWorker.ready;
+  await registration.update();
+  const next = registration.installing ?? registration.waiting;
+  if (next !== null) {
+    await new Promise((resolve) => {
+      const settled = () => {
+        if (next.state === 'activated' || next.state === 'redundant') resolve();
+      };
+      next.addEventListener('statechange', settled);
+      settled();
+    });
+  }
+  const report = {};
+  for (const key of await caches.keys()) {
+    const cache = await caches.open(key);
+    report[key] = (await cache.keys()).map((request) => request.url.split('/').pop());
+  }
+  return report;
+})()`;
+
+/**
+ * Offline caching: a second visit boots with every request severed, and a renamed PVM — what a
+ * changed KB input does to the file list — leaves no cache holding the old one once the
+ * regenerated worker activates. Control: the same rename under the OLD `sw.js` must leave it.
+ *
+ * @param {import('./browser.mjs').Browser} browser
+ * @param {string} url the offline copy's URL
+ * @returns {Promise<{ documents: number, refused: number, version: string }>}
+ */
+const offlineLeg = async (browser, url) => {
+  // Control: the same severed reload of a build with no worker to register must not boot.
+  const bare = join(root, `${OFFLINE}-bare`);
+  await cp(join(ROOT, 'dist'), bare, { recursive: true });
+  await rm(join(bare, 'sw.js'));
+  const barePage = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  await barePage.goto(`${new URL(url).origin}/${OFFLINE}-bare/`, {
+    waitUntil: 'load',
+    timeout: TIMEOUT,
+  });
+  await readDocuments(barePage, 'offline control first visit');
+  offlineDown = true;
+  const bareBooted = await barePage.reload({ waitUntil: 'load', timeout: TIMEOUT }).then(
+    () => barePage.locator(READY).count(),
+    () => 0,
+  );
+  offlineDown = false;
+  await barePage.close();
+  if (bareBooted > 0) fail('control did not fire: a severed reload booted with no service worker');
+
+  const dir = join(root, OFFLINE);
+  await cp(join(ROOT, 'dist'), dir, { recursive: true });
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  page.on('pageerror', (error) => {
+    raised ??= `offline leg raised ${error.message}`;
+  });
+  await page.goto(url, { waitUntil: 'load', timeout: TIMEOUT });
+  await readDocuments(page, 'offline first visit');
+  await page.evaluate('navigator.serviceWorker.ready.then(() => true)');
+
+  const since = log.length;
+  offlineDown = true;
+  await page.reload({ waitUntil: 'load', timeout: TIMEOUT });
+  const reported = await readDocuments(page, 'offline second visit');
+  offlineDown = false;
+  const refused = log.slice(since).filter((entry) => entry.status === 0).length;
+  if (refused === 0) fail('offline second visit: no request was severed, so nothing was offline');
+
+  const files = readdirSync(dir, { recursive: true, withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name !== 'sw.js')
+    .map((entry) => join(entry.parentPath, entry.name).slice(dir.length + 1));
+  const stale = files.find((file) => /^assets\/kb-[^/]+\.pvm$/u.test(file));
+  if (stale === undefined) fail('offline leg: the build ships no PVM');
+  const renamed = 'assets/kb-offline00.pvm';
+  await cp(join(dir, stale), join(dir, renamed));
+  const staleName = stale.slice('assets/'.length);
+  const holding = (/** @type {Record<string, string[]>} */ report) =>
+    Object.entries(report).filter(
+      ([key, names]) => key.startsWith(CACHE_PREFIX) && names.includes(staleName),
+    );
+
+  const unchanged = /** @type {Record<string, string[]>} */ (await page.evaluate(CACHE_PROBE));
+  if (holding(unchanged).length === 0) {
+    fail('control did not fire: with sw.js unchanged no cache held the stale PVM');
+  }
+
+  const next = [...files.filter((file) => file !== stale), renamed];
+  writeFileSync(join(dir, 'sw.js'), serviceWorker(next));
+  const report = /** @type {Record<string, string[]>} */ (await page.evaluate(CACHE_PROBE));
+  const { version } = plan(next);
+  const kept = holding(report);
+  if (kept.length > 0)
+    fail(`a changed PVM left the stale one cached in ${kept.map(([key]) => key).join(', ')}`);
+  if (!(report[`${CACHE_PREFIX}${version}`] ?? []).includes('kb-offline00.pvm')) {
+    fail(`the regenerated worker's cache ${CACHE_PREFIX}${version} does not hold the new PVM`);
+  }
+  await page.close();
+  return { documents: reported, refused, version };
+};
+
 // Never trust a leftover dist tree: this check proves the current source.
 execFileSync('pnpm', ['build'], { cwd: ROOT, stdio: 'inherit' });
 
 const root = await mkdtemp(join(tmpdir(), 'cnl-ckc-browser-'));
 /** @type {import('./browser.mjs').LogEntry[]} */
 const log = [];
-const server = await serve(root, log);
+const server = await serve(root, log, (path) => offlineDown && path.startsWith(`/${OFFLINE}`));
 /** @type {import('./browser.mjs').Browser | undefined} */
 let browser;
 /** @type {{ url: string, stop: () => void } | undefined} */
@@ -612,6 +720,11 @@ try {
     fail('control did not fire: a build without its Japanese woff2 still loaded the face');
   }
 
+  const offline = await offlineLeg(browser, `http://127.0.0.1:${String(server.port)}/${OFFLINE}/`);
+  if (offline.documents !== documents) {
+    fail(`offline second visit reported ${String(offline.documents)} documents`);
+  }
+
   const parity = await faceParity(
     browser,
     join(root, PARITY),
@@ -631,8 +744,13 @@ try {
       `engine still ${String(probe.after)}; a hostile goal was killed at ` +
       `${Number(kill.settled).toFixed(0)} ms and its replacement engine reported ` +
       `${String(kill.documents)} documents ${Number(kill.cycle).toFixed(0)} ms in; both Japanese subsets rasterize ` +
-      `${String(parity)} catalog code points identically to their originals; controls: a build ` +
-      `without its Japanese woff2 refused, a cut without AUTOFIT rasterized differently`,
+      `${String(parity)} catalog code points identically to their originals; a second visit ` +
+      `booted ${String(offline.documents)} documents with ${String(offline.refused)} requests ` +
+      `severed, and a renamed PVM left no stale copy cached once ${CACHE_PREFIX}${offline.version} ` +
+      `activated; controls: a build ` +
+      `without its Japanese woff2 refused, a cut without AUTOFIT rasterized differently, the ` +
+      `same rename under the old sw.js kept the stale PVM, a build with no sw.js did not boot ` +
+      `offline`,
   );
 } catch (cause) {
   // A browser timeout or a launcher fault must read as this check's own one-line

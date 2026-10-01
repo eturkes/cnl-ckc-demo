@@ -1,7 +1,25 @@
 import { fileURLToPath, URL } from 'node:url';
 
 import { svelte } from '@sveltejs/vite-plugin-svelte';
+import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
+
+import { writeServiceWorker } from './tools/offline-sw.mjs';
+
+/** Reads the written build, so worker-emitted assets (the PVM) are listed too. */
+const offlineCache = (): Plugin => {
+  let outDir = 'dist';
+  return {
+    name: 'offline-cache',
+    apply: 'build',
+    configResolved(config) {
+      outDir = config.build.outDir;
+    },
+    closeBundle() {
+      writeServiceWorker(outDir);
+    },
+  };
+};
 
 // Real Chromium, outside `pnpm gate`: `pnpm test:browser` sets VITEST_BROWSER and points
 // VITEST_CHROMIUM at the chromiumfish binary. Loaded only then, so `vite dev`, `vite build` and
@@ -40,7 +58,7 @@ const browserProject =
 const INTAKE_PROXY = 'http://127.0.0.1:8791';
 
 export default defineConfig({
-  plugins: [svelte()],
+  plugins: [svelte(), offlineCache()],
   // Relative base keeps the built demo working under a nested static path.
   base: './',
   // Worktrees reach the toolchain through a `node_modules` symlink, so the default
