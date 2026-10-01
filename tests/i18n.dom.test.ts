@@ -118,7 +118,7 @@ describe('the language toggle', () => {
   });
 
   // The label is ASCII in both locales on purpose: 日本語 in the header would make
-  // an English visitor fetch the 1.3 MB Japanese face to render three characters.
+  // an English visitor fetch the Japanese face to render three characters.
   it('keeps its own label free of the glyphs that would pull the Japanese face', () => {
     // Escaped, never literal: a range written out starts at an ideographic space,
     // which is the `no-irregular-whitespace` no editor can show you. The two ranges

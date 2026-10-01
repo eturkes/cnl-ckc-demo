@@ -13,18 +13,29 @@
 // Outside `pnpm gate` on the `pnpm smoke` precedent: it needs a real browser.
 
 import { execFileSync, spawn } from 'node:child_process';
-import { readdirSync } from 'node:fs';
-import { cp, mkdtemp, rename, rm } from 'node:fs/promises';
+import { readdirSync, readFileSync } from 'node:fs';
+import { copyFile, cp, mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { expectedAnswer, questionOf } from './answer-oracle.mjs';
 import { failWith, launch, serve } from './browser.mjs';
+import {
+  CATALOG,
+  cmapOf,
+  cut,
+  expectedPoints,
+  originalPath,
+  rangeOf,
+  shippedUrl,
+  SUBSETS,
+} from './fonts.mjs';
 import { loadManifest, ROOT } from './kb/paths.mjs';
 
 const NESTED = 'some/nested';
 /** The face firing input: the same build with its Japanese woff2 files renamed away. */
 const FACELESS = 'some/faceless';
+const PARITY = 'some/parity';
 const READY = '[data-engine="ready"]';
 const ERRORED = '[data-engine="error"]';
 const TIMEOUT = 60_000;
@@ -198,8 +209,8 @@ const JAPANESE_FACE = /biz-udpgothic-japanese-\d+-normal[^/]*\.woff2$/u;
 
 /**
  * The two Japanese `@font-face` rows and how many the browser has actually fetched.
- * `unicode-range` is the whole font budget — 2.6 MB that an English visitor must
- * never pay — and `document.fonts` is where that is decidable, because a declared
+ * `unicode-range` is the whole font budget — bytes an English visitor must never
+ * pay — and `document.fonts` is where that is decidable, because a declared
  * face stays `unloaded` until a glyph inside its range needs rendering.
  */
 const FACE_PROBE = `(async () => {
@@ -395,6 +406,76 @@ const KILL_PROBE = `(async () => {
   }
 })()`;
 
+/**
+ * Each shipped subset against the package face it was cut from, drawn in this browser: the
+ * catalog's code points must rasterize byte-identically at each weight. Control: the same cut
+ * without `AUTOFIT` must differ, since FreeType's CJK hinting reads those glyphs.
+ *
+ * @param {import('./browser.mjs').Browser} browser
+ * @param {string} dir served directory @param {string} url its URL
+ * @returns {Promise<number>} code points drawn
+ */
+const faceParity = async (browser, dir, url) => {
+  const css = readFileSync(join(ROOT, 'src/app.css'), 'utf8');
+  const catalog = readFileSync(join(ROOT, CATALOG), 'utf8');
+  await mkdir(dir, { recursive: true });
+  let drawn = '';
+  /** @type {string[]} */
+  const rules = [];
+  for (const subset of SUBSETS) {
+    const original = await cmapOf(originalPath(subset));
+    const points = expectedPoints(catalog, rangeOf(css, shippedUrl(subset)), original, {
+      autofit: false,
+    });
+    drawn = String.fromCodePoint(...points);
+    const weight = String(subset.weight);
+    await copyFile(originalPath(subset), join(dir, `original-${weight}.woff2`));
+    await copyFile(join(ROOT, subset.shipped), join(dir, `subset-${weight}.woff2`));
+    await writeFile(join(dir, `bare-${weight}.woff2`), await cut(subset, points));
+    for (const family of ['original', 'subset', 'bare']) {
+      rules.push(
+        `@font-face{font-family:${family};font-weight:${weight};src:url('${family}-${weight}.woff2')}`,
+      );
+    }
+  }
+  await writeFile(
+    join(dir, 'index.html'),
+    `<!doctype html><style>${rules.join('')}p{width:640px;margin:0;font-size:16px}</style><p id="t"></p>`,
+  );
+  const page = await browser.newPage({ viewport: { width: 700, height: 900 } });
+  await page.goto(url, { waitUntil: 'load', timeout: TIMEOUT });
+  /** @type {Record<string, Buffer>} */
+  const shots = {};
+  for (const { weight } of SUBSETS) {
+    for (const family of ['original', 'subset', 'bare']) {
+      await page.evaluate(
+        `(async () => {
+          const t = document.getElementById('t');
+          t.textContent = ${JSON.stringify(drawn)};
+          t.style.font = '${String(weight)} 16px ${family}';
+          await document.fonts.load('${String(weight)} 16px ${family}', t.textContent);
+          await document.fonts.ready;
+        })()`,
+      );
+      shots[`${family}-${String(weight)}`] = await page.locator('#t').screenshot();
+    }
+  }
+  await page.close();
+  for (const { weight } of SUBSETS) {
+    const original = shots[`original-${String(weight)}`];
+    if (
+      original === undefined ||
+      !original.equals(shots[`subset-${String(weight)}`] ?? Buffer.of())
+    ) {
+      fail(`the ${String(weight)} subset rasterizes differently from the face it was cut from`);
+    }
+    if (original.equals(shots[`bare-${String(weight)}`] ?? Buffer.of())) {
+      fail(`control did not fire: a ${String(weight)} cut without AUTOFIT rasterized identically`);
+    }
+  }
+  return [...drawn].length;
+};
+
 // Never trust a leftover dist tree: this check proves the current source.
 execFileSync('pnpm', ['build'], { cwd: ROOT, stdio: 'inherit' });
 
@@ -531,6 +612,12 @@ try {
     fail('control did not fire: a build without its Japanese woff2 still loaded the face');
   }
 
+  const parity = await faceParity(
+    browser,
+    join(root, PARITY),
+    `http://127.0.0.1:${String(server.port)}/${PARITY}/`,
+  );
+
   const broken = log.filter((entry) => entry.status !== 200 && entry.path.startsWith(`/${NESTED}`));
   if (broken.length > 0) fail(`nested assets missing: ${broken.map((e) => e.path).join(', ')}`);
 
@@ -543,7 +630,9 @@ try {
       `of up to ${String(probe.cap)} solutions in ${Number(probe.elapsed).toFixed(0)} ms, ` +
       `engine still ${String(probe.after)}; a hostile goal was killed at ` +
       `${Number(kill.settled).toFixed(0)} ms and its replacement engine reported ` +
-      `${String(kill.documents)} documents ${Number(kill.cycle).toFixed(0)} ms in; control: a build without its Japanese woff2 refused`,
+      `${String(kill.documents)} documents ${Number(kill.cycle).toFixed(0)} ms in; both Japanese subsets rasterize ` +
+      `${String(parity)} catalog code points identically to their originals; controls: a build ` +
+      `without its Japanese woff2 refused, a cut without AUTOFIT rasterized differently`,
   );
 } catch (cause) {
   // A browser timeout or a launcher fault must read as this check's own one-line

@@ -14,7 +14,7 @@
 // Untranslated on purpose: question strings, ACE renderings, canonical Prolog
 // values, document ids, review labels and engine error messages. Those are payload.
 // `LABELS.languageSwitch` is ASCII in both locales so the English page never pulls
-// the 1.3 MB Japanese face to render three characters.
+// the Japanese face to render three characters.
 
 import type { Messages } from './en.js';
 

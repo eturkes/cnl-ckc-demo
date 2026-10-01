@@ -17,6 +17,15 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { requireFiring } from './control.mjs';
+import {
+  CATALOG,
+  cmapOf,
+  expectedPoints,
+  originalPath,
+  rangeOf,
+  shippedUrl,
+  SUBSETS,
+} from './fonts.mjs';
 import { ROOT } from './kb/paths.mjs';
 
 const CSS = join(ROOT, 'src/app.css');
@@ -241,12 +250,16 @@ const checkFaces = (failures, css) => {
     }
     // The declared row is matched on the FILE name, so `-latin-ext-` cannot be
     // read as `-latin-`: the trailing separator is part of the marker.
-    const row = FACES.find((f) => src.startsWith(`${f.scope}/${f.pkg}/`) && src.includes(f.marker));
+    // A shipped subset is graded as the package face it was cut from.
+    const original = SUBSETS.find((subset) => shippedUrl(subset) === src)?.original ?? src;
+    const row = FACES.find(
+      (f) => original.startsWith(`${f.scope}/${f.pkg}/`) && original.includes(f.marker),
+    );
     if (row === undefined) {
       failures.push(`${src}: no declared face — only a declared subset may ship`);
       continue;
     }
-    const file = src;
+    const file = original;
     const key = `${row.pkg} ${row.subset}`;
     if (seen.has(key)) failures.push(`${key}: declared twice`);
     seen.add(key);
@@ -269,6 +282,30 @@ const checkFaces = (failures, css) => {
   // eslint-disable-next-line security/detect-unsafe-regex
   const remote = /url\(\s*['"]?(?:https?:)?\/\//.exec(css);
   if (remote !== null) failures.push(`remote url in app.css: ${remote[0]}`);
+};
+
+/**
+ * Each shipped Japanese subset against the code points the catalog text reaches.
+ *
+ * @param {string[]} failures @param {string} css @param {string} text the catalog source
+ * @param {{shipped: string, original: Set<number>, cmap: Set<number>}[]} read
+ */
+const checkSubsets = (failures, css, text, read) => {
+  const hex = (/** @type {number} */ point) =>
+    `U+${point.toString(16).toUpperCase().padStart(4, '0')}`;
+  for (const { shipped, original, cmap } of read) {
+    const expected = expectedPoints(text, rangeOf(css, shippedUrl({ shipped })), original);
+    const missing = expected.filter((point) => !cmap.has(point));
+    const extra = [...cmap].filter((point) => !expected.includes(point));
+    if (missing.length > 0) {
+      failures.push(
+        `${shipped} lacks ${missing.map(hex).join(' ')}, which ${CATALOG} uses; run pnpm font:subset`,
+      );
+    }
+    if (extra.length > 0) {
+      failures.push(`${shipped} carries ${extra.map(hex).join(' ')}, which nothing reaches`);
+    }
+  }
 };
 
 /** @param {string[]} failures @param {typeof LICENCES} rows */
@@ -316,8 +353,23 @@ const collect = (grade) => () => {
   return found;
 };
 
-const main = () => {
+const main = async () => {
   const css = readFileSync(CSS, 'utf8');
+  const text = readFileSync(join(ROOT, CATALOG), 'utf8');
+  const read = await Promise.all(
+    SUBSETS.map(async (subset) => ({
+      shipped: subset.shipped,
+      original: await cmapOf(originalPath(subset)),
+      cmap: await cmapOf(join(ROOT, subset.shipped)),
+    })),
+  );
+  // A kanji the original maps and the catalog never uses: added to the catalog text, the
+  // committed subset must be refused as stale by that code point.
+  const planted = [...(read[0]?.original ?? [])].find(
+    (point) => point >= 0x4e00 && point <= 0x9fff && !read[0]?.cmap.has(point),
+  );
+  if (planted === undefined) throw new Error('no kanji outside the subset to plant');
+  const plantedHex = `U+${planted.toString(16).toUpperCase()}`;
 
   // One control per declared table, each breaking the input that table grades.
   const controls = [
@@ -355,6 +407,14 @@ const main = () => {
     ),
     requireFiring(
       'presentation',
+      {
+        mutation: `${plantedHex} added to ${CATALOG} without pnpm font:subset`,
+        expect: [`lacks ${plantedHex}, which ${CATALOG} uses`],
+      },
+      collect((found) => checkSubsets(found, css, `${text}${String.fromCodePoint(planted)}`, read)),
+    ),
+    requireFiring(
+      'presentation',
       { mutation: 'the STACKS table emptied', expect: ['STACKS table is empty'] },
       collect((found) => checkStacks(found, css, [])),
     ),
@@ -373,6 +433,7 @@ const main = () => {
   /** @type {string[]} */
   const failures = [];
   checkFaces(failures, css);
+  checkSubsets(failures, css, text, read);
   checkLicences(failures, LICENCES);
   checkContainment(failures);
   checkStacks(failures, css, STACKS);
@@ -386,8 +447,9 @@ const main = () => {
   console.log(
     `presentation: ${FACES.length} faces pinned and installed, ${LICENCES.length} licences ` +
       `byte-equal, ${contained} text surfaces contained, ${STACKS.length} role font stacks pinned, ` +
+      `${read.length} Japanese subsets exact to ${CATALOG}, ` +
       `${controls.length} controls fired`,
   );
 };
 
-main();
+await main();

@@ -62,7 +62,7 @@
   }
 
   /* An exchange arrow, not `あ` or a script sample: a Japanese glyph in the header
-     would pull a 1.3 MB face onto the English page for one character, and routing
+     would pull the Japanese face onto the English page for one character, and routing
      it to a system font instead trades that for tofu on a host with no CJK family.
      `ThemeToggle` already relies on system fallback for `☀`/`☾`. */
   [aria-hidden='true'] {

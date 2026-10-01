@@ -7,13 +7,6 @@ evidence gap under a durable claim, `low` = a feature or a tidy-up. A row closes
 acceptance check and leaves in that commit; the index at the foot collapses the `high` +
 `med` set to one line each.
 
-- **The Japanese face ships whole** — 2,654,740 B across two static weights, because a
-  monolithic subset is the only delivery with zero tofu risk and no new build step. A
-  build-time subset over the glyphs `ja.ts` actually uses measures ≈25 KB. Accept: the
-  shipped woff2 carries exactly the code points reachable from `src/i18n/ja.ts` plus a
-  declared safety set; `presentation:check` regrades it from the catalog, so a glyph added
-  to `ja.ts` without a rebuild fails the gate; `browser:check`'s Japanese pass still finds
-  every face `loaded`. `pri` low.
 - **Japanese copy has no register grader** — `copy:check` decides parity alone; the ≤20/≤25
   word limits cannot port to a language without word spaces, so nothing mechanical holds
   `ja.ts` to です・ます or to a length. Accept: a Japanese-side rule set the gate can decide
@@ -322,10 +315,10 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   `printErr` drain, and the 10,321-clause identity (unique `L`, exact text recovery, 68 trace
   nodes); the census pins the count alone. Accept: a committed test demonstrates each trap and
   the identity properties, or the rule text drops what no check proves. `pri` low.
-- **Package byte figures have no committed size check** — `.claude/rules/i18n.md` and
-  `kb-build.md` state exact package byte sizes (the BIZ UDPGothic weights, the swipl-bundle
-  variants). The packages are exact-pinned, so the bytes are stable. Accept: `tests/census.test.ts`
-  pins each figure from the installed package files, or the rules drop it. `pri` low.
+- **Package byte figures have no committed size check** — `.claude/rules/kb-build.md` states
+  exact package byte sizes (the swipl-bundle variants). The packages are exact-pinned, so the
+  bytes are stable. Accept: `tests/census.test.ts` pins each figure from the installed package
+  files, or the rules drop it. `pri` low.
 - **Hand-run mutants and probes have no committed harness** — six registry rows rest on a
   mutation or probe run once and restored: the TypeScript 7 lint break, the rejected listbox
   click handler, the worktree `kb/generated` symlink failure, the u6 pre-lane byte comparison,

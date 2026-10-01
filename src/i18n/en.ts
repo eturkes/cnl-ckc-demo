@@ -155,8 +155,8 @@ export const DESCRIPTIONS = {
  *
  * `languageSwitch` is ASCII in BOTH locales on purpose. Naming the target language
  * in its own script would put Japanese glyphs on the English page, and the browser
- * would fetch the 1,319,288 B Japanese face to render three characters nobody in
- * English mode asked for.
+ * would fetch the Japanese face to render three characters nobody in English mode
+ * asked for.
  */
 export const LABELS = {
   brandHome: 'CNL CKC demo home',

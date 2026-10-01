@@ -21,6 +21,7 @@ import { readdirSync } from 'node:fs';
  * @property {(name: string) => Promise<string | null>} getAttribute
  * @property {() => Promise<string | null>} textContent
  * @property {(options?: object) => Promise<void>} waitFor
+ * @property {() => Promise<Buffer>} screenshot
  *
  * @typedef {object} Page
  * @property {(url: string, options?: object) => Promise<unknown>} goto
@@ -31,6 +32,7 @@ import { readdirSync } from 'node:fs';
  * @property {(event: string, handler: (value: Error) => void) => void} on
  * @property {(fn: string, arg?: unknown) => Promise<unknown>} evaluate
  * @property {(options: { path: string }) => Promise<unknown>} screenshot
+ * @property {() => Promise<void>} close
  *
  * @typedef {object} Browser
  * @property {(options?: object) => Promise<Page>} newPage
