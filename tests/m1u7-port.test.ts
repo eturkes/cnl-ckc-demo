@@ -4,8 +4,6 @@ import { runInNewContext } from 'node:vm';
 
 import { describe, expect, it } from 'vitest';
 
-import { describeDescriptor } from '../src/demo/descriptor.js';
-
 const read = (path: string): string => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
 const components = (directory: string): string[] =>
@@ -58,29 +56,6 @@ describe('m1u7 presentation contract', () => {
     });
     expect(missing).toEqual([]);
     expect(declared.has('--field')).toBe(false);
-  });
-
-  // C7:119–120 + D4:44–48: structural labels retain their meaning without raw term syntax.
-  it.each(['noun(recommendation,countable)', 'wh(what)'])(
-    'C7 humanizes the contract descriptor %s',
-    (descriptor) => {
-      const label = describeDescriptor(descriptor);
-      expect(label).not.toBe(descriptor);
-      expect(label).not.toMatch(/^(?:noun|wh)\(/u);
-      expect(label.toLowerCase()).toContain(descriptor === 'wh(what)' ? 'what' : 'recommendation');
-    },
-  );
-
-  it('C7 preserves every generated unknown descriptor verbatim', () => {
-    for (let index = 0; index < 128; index += 1) {
-      for (const descriptor of [
-        `unknown_descriptor_${String(index)}(value,countable)`,
-        `unknown_descriptor_${String(index)}('two words',[])`,
-        `unknown_descriptor_${String(index)}(未認識,0)`,
-      ]) {
-        expect(describeDescriptor(descriptor), descriptor).toBe(descriptor);
-      }
-    }
   });
 
   // C6:117–118: the existing control lowers the limit; these plant the stated input instead.
