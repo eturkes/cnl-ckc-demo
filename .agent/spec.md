@@ -195,14 +195,14 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `060c0f7` d18 u4 suite ported: 4 merged green, 3 covered, 1 input retired (P1.10 held by T13).
 - [x] `e78551f` d16 `browser:check` kills a hostile goal by the client deadline; one respawn reports 337 documents.
 - [x] `07899e0` d19 closed on its own check: archived `m1u4.md` D6 records why `query_sha256` stays out of the runtime; the export lane re-derives the whole envelope.
-- [ ] d21 fix parked on `wip/d21-boot-retry` (retire the worker after a failed boot): tester-d21 + review pending.
+- [x] d21 a failed boot retires its own worker, so Retry rebuilds the engine.
 - [x] `34e791b` d23 V13 axe sweep: About panel + canonical answer, open and closed.
 - [x] `3f76af8` d24 `copy:check` walks `src/` and grades every component's literal prose.
 - [ ] d25 fix on `wip/d25-inference` (whole-request inference meter): review round 1 found the trailing-failure gap.
 - [x] `9d1eecb` d26 smoke refuses a build stale against the bag's input digest.
 - [x] d11 u2 suite ported: 16 merged green, 20 covered, 2 red → rows (d12 float, new find improper-list tail).
 - [ ] d45 fix committed (scan-only spawns, per-state V11, serialized axe); 20-run proof owed under lower load.
-- [x] d27 `pnpm mutate`: committed 45-mutant table + runner, 45/45 killed.
+- [x] `0273a6a` d27 `pnpm mutate`: committed 45-mutant table + runner, 45/45 killed.
 - [ ] d29 `high` WASM abort — waits: an ad-hoc goal path (`Decisions` MAIN).
 - [ ] `med`: d30 d31 d32 d36
   d37 d40 d44 d45 d46 d48 d49 d50 d51 d52 d53 d54

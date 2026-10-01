@@ -220,27 +220,41 @@ export class EngineClient {
       kind: 'error',
       error: { code: 'boot', message: `boot exceeded ${BOOT_DEADLINE_MS} ms` },
     });
+    this.#retire(`worker retired after boot deadline for ${id}`);
+  }
+
+  /** Drop the current worker so the next request spawns a fresh one. */
+  #retire(reason: string): void {
     this.#worker?.terminate();
     this.#worker = undefined;
     this.#generation += 1;
-    this.#abort(`worker retired after boot deadline for ${id}`);
+    this.#abort(reason);
   }
 
-  async #bootAttempt(): Promise<{ outcome: BootOutcome; timedOut: boolean }> {
+  async #bootAttempt(): Promise<{ outcome: BootOutcome; timedOut: boolean; generation: number }> {
     let timedOut = false;
-    const response = await this.#send({ kind: 'boot' }, BOOT_DEADLINE_MS, undefined, (id) => {
+    const sent = this.#send({ kind: 'boot' }, BOOT_DEADLINE_MS, undefined, (id) => {
       timedOut = true;
       this.#onBootDeadline(id);
     });
-    return { outcome: asBoot(response), timedOut };
+    // `#send` spawns synchronously, so this is the worker the boot was posted to.
+    const generation = this.#generation;
+    return { outcome: asBoot(await sent), timedOut, generation };
   }
 
   async boot(): Promise<BootOutcome> {
     const first = await this.#bootAttempt();
-    if (!first.timedOut || this.#disposed) return first.outcome;
-    // Exactly one automatic recreation. A second timeout retires that worker and
-    // returns its typed boot error; it never enters an unbounded respawn loop.
-    return (await this.#bootAttempt()).outcome;
+    // Exactly one automatic recreation, on a hung boot only. A second timeout retires that
+    // worker and returns its typed boot error; it never enters an unbounded respawn loop.
+    const { outcome, generation } =
+      first.timedOut && !this.#disposed ? await this.#bootAttempt() : first;
+    // A worker that failed its boot keeps what failed it — the worker caches the image fetch,
+    // so a rejected one stays rejected — and a retry on it can only fail again. Retiring it is
+    // what makes a retry rebuild the engine. Only that worker: a reset or retry may already
+    // have replaced it, and its fresh worker is not this boot's to retire.
+    if (outcome.kind === 'error' && !this.#disposed && generation === this.#generation)
+      this.#retire('worker retired after a failed boot');
+    return outcome;
   }
 
   async query(goal: string, budget: BudgetSpec, signal?: AbortSignal): Promise<QueryOutcome> {

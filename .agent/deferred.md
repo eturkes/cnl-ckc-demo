@@ -62,10 +62,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
 - **Assembled-path evasion** — the answer-oracle scan matches a literal `queries/answers`;
   a path concatenated at runtime slips past. Accept: a production fixture that assembles
   the path from parts fails `kb:asset-check`. `pri` low.
-- **Boot-error recovery** — u6 ruled `boot-error` terminal (contract m1u6 Q7): the state
-  renders in the alert with no Retry, so a transient PVM fetch failure needs a page
-  reload. Accept: a failed boot offers a retry control that rebuilds the engine, and a
-  second failure still reports one alert rather than accumulating them. `pri` med.
 - **Typed port of the visual-QA walker** — the state walker lives only on
   `wt/map-m1u7` `124e34d` and fails `svelte-check` with 64 implicit-any errors,
   so u7's 11-state evidence comes from an out-of-tree script. `pnpm browser:check`
@@ -385,7 +381,7 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | **high** A WASM abort strands the worker, in Node too | abort = own terminal state, worker recreated, next query reports 337 docs |
 | A QLF fallback import doubles the engine | it loads only on saved-state failure; an untaken fallback ships no bytes |
 | Heap limit is proven by a synthesized outcome alone | a live trip reads `limit: 'heap'` (blocked behind the abort row) |
-| Boot is terminal on failure, unbounded on silence | a failed or hung boot settles bounded as one alert with a retry |
+| A hung boot is unbounded | a hung boot settles bounded with one recreate at most |
 | Wordmark, forbidden claims, descriptor + fallback stacks rest on one reading | each decided by a committed check |
 | The inference budget re-arms per solution | a goal whose total exceeds budget reaches `limit:'inference'`, or the bound is contracted |
 | The answer-oracle scan skips `kb/generated` | the literal planted in a generated file gives `kb:asset-check` rc 1; restoring rc 0 |

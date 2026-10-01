@@ -97,6 +97,10 @@ failures before it was wired.
   `resource_error(memory)` for a build that raises it. `pnpm exec vitest run
   tests/engine-heap.test.ts` pins both halves in ~1 s by reserving 1900 MB with one untouched
   `_malloc` first. Open `pri high` row in `.agent/deferred.md`.
+- **A failed boot retires its worker.** The worker caches its image fetch, so a rejected fetch
+  stays rejected and a retry on that worker can only fail again; `EngineClient.boot()` resolving
+  an error terminates the worker, and the next `boot()` — the UI's Retry — spawns a fresh one.
+  The hung-boot watchdog keeps its own single automatic recreation.
 - `EngineClient.query` awaits that recreation on `limit:'heap'`, so a caller never sees a heap
   outcome before its replacement engine re-verified the contract. The wall-clock deadline
   fires its reset instead, because there the caller is already settled.
