@@ -82,16 +82,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   5000-deep step trips at 1000 (M1 review R06). Accept: a multi-solution goal
   whose total inferences exceed the budget reaches `limit: 'inference'`, or the
   contract records that the bound is per-step by design. `pri` med.
-- **Mutation harness is scratch-local** — `.scratch/verify-fixes.py` is what proves the
-  M1-review fix tests bind to their fixes (45 mutants, 45/45 RED), but it is gitignored,
-  so the claim does not rerun from committed state. Each mutant restores one pre-fix
-  behaviour, reruns that fix's closing test and must print RED; a mutant whose closing check
-  is a GATE STEP passes its argv in place of the test-file name. Rerun =
-  `python3 -P .scratch/verify-fixes.py [<substring>]`; it restores every file it touches, and
-  two mutants once came back GREEN on real defects in the fix under test — **run it before
-  believing a fix**. It must survive until this closes. Accept: a committed mutation runner
-  takes a mutant table, restores every file it touches, and a documented command reproduces
-  the full kill result from a clean checkout. `pri` med.
 - **Humanizer label test asserts its own artifact** — `tests/questions-live.test.ts:294`
   matches `/^\S+ — sentence \d+, \w+ \d+$/u`, a grammar that exists only in
   `src/questions/humanize.ts`, so the expectation comes from the artifact under test.
@@ -398,7 +388,6 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | Boot is terminal on failure, unbounded on silence | a failed or hung boot settles bounded as one alert with a retry |
 | Wordmark, forbidden claims, descriptor + fallback stacks rest on one reading | each decided by a committed check |
 | The inference budget re-arms per solution | a goal whose total exceeds budget reaches `limit:'inference'`, or the bound is contracted |
-| `verify-fixes.py` (45/45 RED) is gitignored | a committed mutant-table runner; one command replays the kills from a clean checkout |
 | The answer-oracle scan skips `kb/generated` | the literal planted in a generated file gives `kb:asset-check` rc 1; restoring rc 0 |
 | One of twelve protocol arms is clone-tested | all 12 discriminants clone + deep-compare; a mutant reddens it |
 | Five browser claims + two probes live only on `wt/` branches | one typed `tools/` harness covers all five; probes port or claims prune |

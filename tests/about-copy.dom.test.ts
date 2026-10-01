@@ -45,6 +45,12 @@ describe('E03 corpus size comes from the engine', () => {
     expect(text).toContain(DESCRIPTIONS.unreviewed);
   });
 
+  it('renders a count other than the corpus size, so a written-in number cannot pass', () => {
+    const text = render(41).textContent ?? '';
+    expect(text).toContain('41 compiled documents');
+    expect(text).not.toMatch(/\b337\b/u);
+  });
+
   it('states no count before the engine reports one', () => {
     const text = render(undefined).textContent ?? '';
     // The font licence version keeps digits in the panel, so the check is that the

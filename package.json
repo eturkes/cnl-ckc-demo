@@ -39,6 +39,7 @@
     "kb:build": "node tools/kb/build.mjs",
     "kb:reproduce": "node tools/kb/reproduce.mjs",
     "lint": "eslint . --max-warnings=0",
+    "mutate": "node tools/mutate.mjs",
     "presentation:check": "node tools/presentation-check.mjs",
     "readme:check": "node tools/readme-check.mjs",
     "claims:check": "node tools/claims-sweep.mjs",
