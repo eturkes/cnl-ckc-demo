@@ -20,6 +20,7 @@
   import { proofClauses, type GraphFocus as ProvenanceGraphFocus } from './provenance/model.js';
   import { QUESTION_CATALOG, type QuestionId } from './questions/catalog.js';
   import QuestionCombobox from './questions/QuestionCombobox.svelte';
+  import { questionFromUrl, urlForQuestion } from './questions/link.js';
 
   interface Props {
     /** Injected by tests; the shipped app lets `App` build and own the default. */
@@ -48,6 +49,25 @@
   let graphSelection = $state.raw<SemanticGraphNode | null>(null);
   let graphRegion = $state<HTMLElement>();
   let answerRegion = $state<HTMLElement>();
+
+  const linkedQuestion = questionFromUrl(location.href);
+  if (linkedQuestion !== null) demo.select(linkedQuestion);
+  // The first write replaces, so a stripped unknown `?q=` adds no history entry.
+  let linked = false;
+  $effect(() => {
+    const next = urlForQuestion(location.href, demo.selected);
+    if (next !== location.href) history[linked ? 'pushState' : 'replaceState'](null, '', next);
+    linked = true;
+  });
+  $effect(() => {
+    const restore = () => {
+      demo.select(questionFromUrl(location.href));
+    };
+    addEventListener('popstate', restore);
+    return () => {
+      removeEventListener('popstate', restore);
+    };
+  });
 
   $effect(() => () => {
     if (injected === undefined) demo.dispose();

@@ -138,7 +138,7 @@ export class DemoController {
     void this.#boot();
   }
 
-  select(id: QuestionId): void {
+  select(id: QuestionId | null): void {
     this.selected = id;
   }
 

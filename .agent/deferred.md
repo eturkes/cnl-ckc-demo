@@ -22,9 +22,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   phases the runtime supplies: image fetch (bytes only where the response streams them),
   `loadImageDefault`, contract verification; the worker protocol gains a `progress` response,
   which joins the d37 clone table.
-- **Question deep-links + history** — encode the selected catalog ID in the URL.
-  Accept: reload and back/forward restore only a catalog ID, and never start a
-  run without an explicit user action. `pri` low.
 - **Offline asset caching** — service worker over the hashed runtime assets.
   Accept: a second visit boots with the network offline, and a changed KB input
   hash invalidates every stale PVM asset. `pri` low.

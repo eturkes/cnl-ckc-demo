@@ -77,7 +77,12 @@ export default defineConfig({
         // and `mount` throws there. Scoping the condition to this project keeps the
         // node suite on swipl-wasm's node entry.
         resolve: { conditions: ['browser'] },
-        test: { name: 'dom', environment: 'jsdom', include: ['tests/**/*.dom.test.ts'] },
+        test: {
+          name: 'dom',
+          environment: 'jsdom',
+          include: ['tests/**/*.dom.test.ts'],
+          setupFiles: ['tests/support/dom-setup.ts'],
+        },
       },
       ...(browserProject === undefined ? [] : [browserProject]),
     ],

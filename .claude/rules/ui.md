@@ -95,6 +95,14 @@ is why attribution and nonendorsement cannot live inside the About disclosure.
 - Disabling a focused button drops focus to `body`, so whether Cancel held focus must be read
   in `$effect.pre` and acted on in `$effect`.
 
+## Deep links
+
+- The URL carries the selected catalog id alone (`?q=`, `src/questions/link.ts`). Load and
+  `popstate` SELECT and never run; an id outside `QUESTION_IDS` is dropped by `replaceState`,
+  so it adds no history entry; each later selection pushes one. `tests/question-link.dom.test.ts`.
+- App reads `?q=` on mount, so `tests/support/dom-setup.ts` resets the URL before every dom
+  test; without it one suite's selection preselects the next suite's question.
+
 ## Accessibility
 
 - `svelte-check --fail-on-warnings` is the ONLY a11y linter here: `eslint-plugin-svelte` ships
