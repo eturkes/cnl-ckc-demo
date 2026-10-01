@@ -276,17 +276,20 @@ export class EngineSession {
     try {
       return this.#adopt(await this.#options.loadImage(image), 'image load', TOLERATED);
     } catch (cause) {
-      if (loadFallback === undefined) throw cause;
-      // A rejected load says only `Aborted()`; the reason is in its FATAL lines.
+      // A rejected load says only `Aborted()`; the reason is in its FATAL lines. Draining them
+      // also keeps them out of the next engine's own diagnostic check, here or on a retry.
       const lines = drain?.() ?? [];
+      if (loadFallback === undefined) throw cause;
       const failed = [message(cause), ...lines.map((line) => line.trim())].filter(Boolean);
       try {
         return this.#adopt(await loadFallback(), 'fallback load');
       } catch (fallback) {
-        if (!(fallback instanceof Error)) throw fallback;
-        fallback.message =
+        drain?.();
+        const both =
           `saved state failed (${failed.join(' / ')}); ` +
-          `QLF fallback failed (${fallback.message})`;
+          `QLF fallback failed (${message(fallback)})`;
+        if (!(fallback instanceof Error)) throw new Error(both, { cause: fallback });
+        fallback.message = both;
         throw fallback;
       }
     }

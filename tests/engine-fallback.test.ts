@@ -355,6 +355,47 @@ describe('mnt-d10 QLF fallback', () => {
     await expect(session.solve('true.', BUDGET_MAX)).rejects.toThrow(/not booted/i);
   });
 
+  it('F4 a non-Error fallback rejection still names both failures', async () => {
+    const session = createSession({
+      loadImage: () => Promise.reject(new Error('d10 image unavailable')),
+      // A rejection value that is not an Error carries no message to extend.
+      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+      loadFallback: () => Promise.reject('d10 raw fallback refusal'),
+      expected: manifest.contract,
+    });
+    const response = await session.handle({ id: 'd10-raw', kind: 'boot' }, pvm);
+    expect(response).toMatchObject({ id: 'd10-raw', kind: 'error' });
+    if (response.kind !== 'error') throw new Error('boot returned no error');
+    expect(response.error.message).toContain('d10 image unavailable');
+    expect(response.error.message).toContain('d10 raw fallback refusal');
+  });
+
+  it(
+    'F3 a fallback that failed loudly leaves nothing to fail the next sound boot',
+    async () => {
+      const diagnostics: string[] = [];
+      const calls = { image: 0, fallback: 0 };
+      const session = createSession({
+        loadImage: async (bytes) => {
+          calls.image += 1;
+          if (calls.image === 1) throw new Error('d10 transient image failure');
+          return imageLoader(diagnostics)(bytes);
+        },
+        loadFallback: () => {
+          calls.fallback += 1;
+          diagnostics.push('FATAL ERROR: d10 fallback could not load');
+          return Promise.reject(new Error('d10 fallback unavailable'));
+        },
+        drain: drain(diagnostics),
+        expected: manifest.contract,
+      });
+      await expect(session.boot(pvm)).rejects.toThrow(/d10 fallback unavailable/u);
+      expect(await session.boot(pvm)).toEqual(manifest.contract);
+      expect(calls).toEqual({ image: 2, fallback: 1 });
+    },
+    TIMEOUT,
+  );
+
   it('F4 both loaders failing yields one correlated handle error naming both', async () => {
     const { session, calls } = bothFail();
     const response = await session.handle({ id: 'd10-both', kind: 'boot' }, pvm);

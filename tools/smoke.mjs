@@ -10,8 +10,8 @@
 // the check cannot drift from the knowledge base it claims to reproduce.
 
 import { execFileSync } from 'node:child_process';
-import { readdirSync } from 'node:fs';
-import { appendFile, cp, mkdtemp, rm } from 'node:fs/promises';
+import { readdirSync, readFileSync } from 'node:fs';
+import { cp, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -32,21 +32,41 @@ execFileSync('pnpm', ['build'], { cwd: ROOT, stdio: 'inherit' });
 
 const split = fallbackSplit(join(ROOT, 'dist'));
 if (split.failures.length > 0) fail(`QLF fallback split: ${split.failures.join('; ')}`);
-// Control: the real build with the full engine's marker appended to its worker chunk.
-const leaked = await mkdtemp(join(tmpdir(), 'cnl-ckc-split-'));
-await cp(join(ROOT, 'dist'), leaked, { recursive: true });
-const worker = readdirSync(join(leaked, 'assets')).find((name) => /^worker-.+\.js$/u.test(name));
-if (worker === undefined) fail('the build carries no worker chunk');
-await appendFile(join(leaked, 'assets', worker), `\n// ${FULL_ENGINE_MARKER}\n`);
-const splitControl = requireFiring(
-  'smoke',
-  {
-    mutation: 'the full engine marker appended to the worker chunk',
-    expect: [`eager chunk ${worker}`],
-  },
-  () => fallbackSplit(leaked).failures,
-);
-await rm(leaked, { recursive: true, force: true });
+// Controls, each a one-chunk edit of the real build in memory: the full engine's bytes inside the
+// worker chunk, and the entry statically importing the full engine's own chunk.
+const dist = join(ROOT, 'dist');
+const worker = readdirSync(join(dist, 'assets')).find((name) => /^worker-.+\.js$/u.test(name));
+const entry = /src="\.\/assets\/([^"]+\.js)"/u.exec(
+  readFileSync(join(dist, 'index.html'), 'utf8'),
+)?.[1];
+if (worker === undefined || entry === undefined || split.chunk === undefined) {
+  fail('the build carries no worker, entry or full-engine chunk');
+}
+const engineChunk = split.chunk;
+const splitControls = [
+  requireFiring(
+    'smoke',
+    {
+      mutation: 'the full engine marker appended to the worker chunk',
+      expect: [`eager chunk ${worker}`],
+    },
+    () =>
+      fallbackSplit(dist, (name, code) =>
+        name === worker ? `${code}\n// ${FULL_ENGINE_MARKER}\n` : code,
+      ).failures,
+  ),
+  requireFiring(
+    'smoke',
+    {
+      mutation: 'the entry statically importing the full engine chunk',
+      expect: [`eager chunk ${engineChunk}`],
+    },
+    () =>
+      fallbackSplit(dist, (name, code) =>
+        name === entry ? `import"./${engineChunk}";${code}` : code,
+      ).failures,
+  ),
+];
 
 const expected = expectedAnswer(QUESTION, fail);
 const root = await mkdtemp(join(tmpdir(), 'cnl-ckc-smoke-'));
@@ -168,7 +188,7 @@ try {
     `smoke: ok — ${url} combined ${String(expected.rows)} Prolog solutions into ` +
       `${String(bullets)} cited deterministic statements, ` +
       `${served} nested requests served, none of them the lazy QLF fallback (${String(split.chunk)}); ` +
-      `control: ${splitControl}`,
+      `controls: ${splitControls.join(', ')}`,
   );
 } finally {
   await browser?.close();

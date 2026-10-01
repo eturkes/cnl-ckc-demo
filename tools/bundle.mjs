@@ -13,20 +13,33 @@ export const FULL_ENGINE_MARKER = 'library/lists.pl';
 export const FALLBACK_REQUEST = /\/assets\/(?:swipl-bundle-[^/]+\.js|kb-[^/]+\.qlf)$/u;
 
 /**
+ * The chunks a built chunk loads eagerly: every specifier after a bare `import` or a `from`, which
+ * covers `import "x"`, `import … from "x"` and `export … from "x"`. A dynamic `import(…)` puts a
+ * parenthesis before its specifier, so it never matches.
+ *
+ * @param {string} code @returns {string[]}
+ */
+const staticImports = (code) =>
+  [...code.matchAll(/\b(?:import|from)\s*["'`]\.\/([^"'`]+\.js)["'`]/gu)].map(
+    ([, name]) => name ?? '',
+  );
+
+/**
  * Where the QLF fallback sits in a build, or why it sits wrong.
  *
  * The fallback is insurance a sound image never takes, so its 6.2 MB engine must stay out of
- * every chunk a sound session loads: the entry `index.html` names and the engine worker that
- * entry spawns. It must still be present — lazily, through a dynamic `import()` — or the
- * fallback could not be taken at all.
+ * every chunk a sound session loads: the entry `index.html` names, the engine worker that entry
+ * spawns, and everything either one statically imports. It must still be present — lazily,
+ * through a dynamic `import()` from one of those chunks — or the fallback could not be taken.
  *
  * @param {string} dist
+ * @param {(name: string, code: string) => string} [edit] rewrites one chunk in memory, for the controls
  * @returns {{ failures: string[], chunk: string | undefined }}
  */
-export const fallbackSplit = (dist) => {
+export const fallbackSplit = (dist, edit = (_name, code) => code) => {
   const assets = join(dist, 'assets');
   /** @type {(name: string) => string} */
-  const read = (name) => readFileSync(join(assets, name), 'latin1');
+  const read = (name) => edit(name, readFileSync(join(assets, name), 'latin1'));
   const chunks = readdirSync(assets).filter((name) => name.endsWith('.js'));
   const carriers = chunks.filter((name) => read(name).includes(FULL_ENGINE_MARKER));
   const entry = /src="\.\/assets\/([^"]+\.js)"/u.exec(
@@ -41,18 +54,23 @@ export const fallbackSplit = (dist) => {
   if (carriers.length !== 1) {
     failures.push(`${String(carriers.length)} chunks carry the full engine, expected 1`);
   }
-  for (const eager of [entry, worker]) {
-    if (eager !== undefined && carriers.includes(eager)) {
-      failures.push(`eager chunk ${eager} carries the full engine`);
-    }
+  /** @type {Set<string>} */
+  const eager = new Set();
+  const pending = [entry, worker].filter((name) => name !== undefined);
+  for (let name = pending.pop(); name !== undefined; name = pending.pop()) {
+    if (eager.has(name) || !chunks.includes(name)) continue;
+    eager.add(name);
+    pending.push(...staticImports(read(name)));
+  }
+  for (const name of eager) {
+    if (carriers.includes(name)) failures.push(`eager chunk ${name} carries the full engine`);
   }
   const [chunk] = carriers;
   if (
     chunk !== undefined &&
-    worker !== undefined &&
-    !read(worker).includes(`import(\`./${chunk}\`)`)
+    ![...eager].some((name) => read(name).includes(`import(\`./${chunk}\`)`))
   ) {
-    failures.push(`the worker reaches ${chunk} by no dynamic import`);
+    failures.push(`no eager chunk reaches ${chunk} by a dynamic import`);
   }
   return { failures, chunk };
 };
