@@ -95,16 +95,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   ruling on the last two**: `src/questions/serialize.ts` and `humanize.ts` are byte-frozen
   against `22053ef` by `tests/clinical-records.test.ts` T9, an answer-path frozen surface, so
   deleting either header line is a grader change — unfreeze them, or let the headers stand.
-- **Browser and research evidence is branch-only** — five browser claims (R38, R39, R41,
-  R42, R45) rest on `tools/probe-u3.mjs` at `wt/rev-m1u3-4` `48008d3` (derived from
-  `tools/smoke.mjs`; `node tools/probe-u3.mjs <ROW>` drives built output in a real browser
-  after copying it into `tools/`), and two probes on `res-m1-*` branches
-  (`.claude/rules/waves.md`); deleting a branch makes seven claim families non-rerunnable
-  from committed state (M1 review X24). Accept: one typed browser harness in `tools/` covers
-  all five rows, and the `res-m1-*` probes are either ported with their commands or every
-  durable claim resting on them is pruned. `pri` med. **Browser half done**: `pnpm engine:probe` (`tools/engine-probe.mjs`)
-  grades R38, R39, R41, R42 and R45 in a real browser on every run. Owes the `res-m1-*` half.
-
 - **Owned PDF viewer** — M2 u7 ships a native `<iframe>` at `#page=N`, so the viewer is a
   black box: no assertion can read the displayed page, and the passage cannot be
   highlighted inside the PDF. PDF.js was rejected on cost — +504727 B gzip, 34.78 MB
@@ -277,12 +267,11 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   when the proof RPC fails, and no test drives that path. Accept: a dom test fails the ladder's
   proof request and asserts the rendered `traceFailure` copy in both locales. `pri` low.
 - **Engine runtime-behaviour claims have no committed probe** — `.claude/rules/engine.md` states
-  behaviours measured once by hand: `JSON.stringify` corrupting `'$guideline_id'/5` and `1r3`,
-  `Query.close()` being load-bearing (8 cascading failures without it), no in-Prolog wall clock
-  (`threads=false`, `library(time)` absent), the 1 GiB / 2 GiB ceilings with ~119 MB RSS, and
-  the bundle-byte + header facts. Accept: each is re-derived by a committed test or probe named
-  beside it, or reworded to what a committed check proves, and its registry row re-adjudicated.
-  `pri` low.
+  two behaviours measured once by hand: `Query.close()` being load-bearing (8 cascading
+  failures without it) and no in-Prolog wall clock (`threads=false`, `library(time)` absent,
+  `call_with_time_limit/2` and `alarm/4` missing). Accept: each is re-derived by a committed
+  test or probe named beside it, or reworded to what a committed check proves, and its
+  registry row re-adjudicated. `pri` low.
 - **Proof-probe traps and clause identity have no committed rerun** — `.claude/rules/proof.md`
   records the `assertz((Head) :- Body)` parse trap, the permission error that bypasses the
   `printErr` drain, and the 10,321-clause identity (unique `L`, exact text recovery, 68 trace
@@ -319,7 +308,6 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | A QLF fallback import doubles the engine | it loads only on saved-state failure; an untaken fallback ships no bytes |
 | Heap limit is proven by a synthesized outcome alone | a live trip reads `limit: 'heap'` (blocked behind the abort row) |
 | Wordmark, forbidden claims, descriptor + fallback stacks rest on one reading | each decided by a committed check |
-| Five browser claims + two probes live only on `wt/` branches | one typed `tools/` harness covers all five; probes port or claims prune |
 | Two tests time out under parallel execution | both pass 20 consecutive full-suite runs at the committed worker count |
 | 71 operator contexts have no edge, 64 of them negation | the 71 carry edges with the moved counts recorded, or a check proves no shown path skips an edgeless negation context |
 | The projection oracle lives on a branch alone | its label lookups match on `relation`, 24/24 green in-tree, joined to a declared register |

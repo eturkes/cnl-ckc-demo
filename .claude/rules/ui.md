@@ -42,7 +42,7 @@ a declared contrast pair. `--border` must clear 3:1 against `--surface` in both 
 `contrast:check` owns that ruling, so read the ratio from the check rather than the hex.
 
 `tools/contrast.mjs` grades a DECLARED pair table, not the DOM — jsdom has no canvas, so
-axe-core reports every `color-contrast` result as `incomplete`. It floors the ratio rather
+axe-core reports every `color-contrast` result as `incomplete` (`tests/axe-contrast.dom.test.ts`). It floors the ratio rather
 than rounding, and it fails when a colour token appears in no pair.
 
 The graph canvas draws its own text, so a node label takes NORMAL against its fill while the
@@ -111,15 +111,13 @@ is why attribution and nonendorsement cannot live inside the About disclosure.
 
 ## Accessibility
 
-- `svelte-check --fail-on-warnings` is the ONLY a11y linter here: `eslint-plugin-svelte` ships
-  86 rules and zero `a11y-*` ones.
+- `svelte-check --fail-on-warnings` is the a11y linter here.
 - The compiler rejects a click handler on `role="listbox"`
   (`a11y_click_events_have_key_events`) because it cannot see that an aria-activedescendant
   widget keeps its keyboard path on the combobox. One scoped `svelte-ignore` carries that;
   delegating the click to the listbox also replaces six per-option handlers with one.
-- **The combobox is hand-authored — keep it that way.** A component library was measured
-  working and rejected: a required `@internationalized/date` peer, 7 runtime packages, a popup
-  portalled outside the app root, and +10 s on the dom project.
+- **The combobox is hand-authored — keep it that way.** A component library was rejected for
+  it.
 - APG's select-only example commits the active option on blur. This widget **cancels**
   instead, matching a native `select`, because a selection starts a Prolog run.
 - Svelte 5 `unmount()` returns a promise → `void unmount(app)` in tests.

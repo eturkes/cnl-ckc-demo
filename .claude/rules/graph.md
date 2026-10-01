@@ -24,9 +24,7 @@ imports; it is a pure module. The whole seam is one line:
 of 81,924 B graph surface = **15.0%**; 39 of 1,070 lines in `SemanticGraph.svelte` are
 canvas-coupled. Keep that adapter shape — it is what makes a renderer swap cheap.
 
-**The stale dependency is the layout engine, not the renderer.** `cytoscape-fcose` 2.2.0 ships
-no types (hence `src/graph/cytoscape-fcose.d.ts`); `cytoscape` core is current, MIT, zero
-dependencies.
+`cytoscape-fcose` ships no types, so `src/graph/cytoscape-fcose.d.ts` declares its module.
 
 **Renderer ruling (user, binding): Cytoscape stays; `vis-network` is rejected.** The u8 spike
 measured it at half the label size at both viewports, with labels suppressed outright on the

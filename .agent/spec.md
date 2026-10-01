@@ -208,7 +208,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `69e7110` d37 every protocol discriminant (5 request + 9 response = 14) clones; per-row non-cloneable mutant refused.
 - [x] `ec37224` d30 `pnpm test:browser`: the nine jsdom-stubbed combobox predicates in real Chromium.
 - [ ] d32 stacks + wordmark decided; owes the user the forbidden-claim set and the descriptor-rendering ruling.
-- [ ] d40 `pnpm engine:probe` grades R38/R39/R41/R42/R45; owes the `res-m1-*` probes (port or prune).
+- [x] d40 `pnpm engine:probe` grades R38/R39/R41/R42/R45; the `res-m1-*` claims are ported (JSON corruption, stack flag, direct eval, axe contrast, engine split in smoke), covered, or pruned.
 - [x] `524dad6` d44 `tests/census.test.ts` grades every stable census the rules state against its derivation.
 - [x] `1193641` d46 smoke + browser:check each refuse a mutation their own lane runs (pvm-stripped copy, renamed woff2).
 - [x] `3032246` d48 every shipped bound names an owner in the rules; the 60-relation cap surfaces its truncation.

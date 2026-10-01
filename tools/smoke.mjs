@@ -75,6 +75,39 @@ const staleness = (dist, inputDigest, manifest, read = (path) => readFileSync(pa
   return failures;
 };
 
+/** Strings only the swipl-wasm bundle carries: an engine export and the Emscripten wasm handle. */
+const ENGINE_MARKERS = ['PL_new_term_ref', 'wasmBinary'];
+
+/**
+ * The engine rides the worker chunk alone: no chunk `index.html` loads carries an engine
+ * marker, and exactly one worker chunk carries them all, beside the hashed PVM it fetches.
+ *
+ * @param {string} dist
+ * @param {(path: string) => string} [read]
+ * @returns {string[]}
+ */
+const engineSplit = (dist, read = (path) => readFileSync(path, 'latin1')) => {
+  /** @type {string[]} */
+  const failures = [];
+  const entries = [
+    ...read(join(dist, 'index.html')).matchAll(/(?:src|href)="\.\/(assets\/[^"]+\.js)"/gu),
+  ].map((match) => match[1] ?? '');
+  if (entries.length === 0) failures.push('index.html loads no entry chunk');
+  for (const entry of entries) {
+    const hit = ENGINE_MARKERS.find((marker) => read(join(dist, entry)).includes(marker));
+    if (hit !== undefined) failures.push(`entry chunk ${entry} carries engine code (${hit})`);
+  }
+  const workers = readdirSync(join(dist, 'assets')).filter(
+    (name) =>
+      /^worker-.+\.js$/u.test(name) &&
+      ENGINE_MARKERS.every((marker) => read(join(dist, 'assets', name)).includes(marker)),
+  );
+  if (workers.length !== 1) {
+    failures.push(`expected one worker chunk carrying the engine, found ${String(workers.length)}`);
+  }
+  return failures;
+};
+
 const expected = expectedAnswer(QUESTION, fail);
 
 await withBuiltSite(
@@ -111,6 +144,21 @@ await withBuiltSite(
           }),
       ),
     ];
+    const worker = readdirSync(join(dist, 'assets')).find((name) => /^worker-.+\.js$/u.test(name));
+    staleControls.push(
+      requireFiring(
+        'smoke',
+        { mutation: 'the worker chunk read as the entry chunk', expect: ['carries engine code'] },
+        () =>
+          engineSplit(dist, (path) =>
+            /\/assets\/index-[^/]+\.js$/u.test(path) && worker !== undefined
+              ? readFileSync(join(dist, 'assets', worker), 'latin1')
+              : readFileSync(path, 'latin1'),
+          ),
+      ),
+    );
+    const split = engineSplit(dist);
+    if (split.length > 0) fail(`engine split: ${split.join('; ')}`);
     const stale = staleness(dist, inputDigest, manifest);
     if (stale.length > 0) fail(`stale build: ${stale.join('; ')}`);
 

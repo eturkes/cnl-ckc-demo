@@ -99,9 +99,7 @@ recovers 10321/10321, and the line+newline hash resolves all 68 committed trace 
 `clause/2` injects `user:` into rule bodies, `fullstop(true)` adds a trailing space, and
 operator handling compacts either way. Ship no bespoke canonical renderer.
 
-Committed trace artifacts carry **no** proof-dependency edges — every sampled clause node has
-an empty child list, so a proof tree drawn from them would be fabricated. Proofs come from
-the live meta-interpreter.
+Proofs come from the live meta-interpreter, never from committed trace artifacts.
 
 ## Source-fragment / antecedent records (`clinical.mjs`)
 

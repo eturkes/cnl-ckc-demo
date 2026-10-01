@@ -12,9 +12,10 @@ paths:
 - Decode happens **JS-side, inside the worker**. Native values never reach the protocol
   boundary and never re-enter a query; re-encoding rebuilds through the engine's own
   `Compound`/`List`/`Rational`/`String`/`Var` constructors.
-- **`JSON.stringify` over an engine value is a measured corruption path**: `'$guideline_id'/5`
+- **`JSON.stringify` over an engine value is a corruption path**: `'$guideline_id'/5`
   re-enters as arity 1 with `ref([1])`, and `1r3` serializes as `3r1`. Production code must
-  never do it.
+  never do it. `tests/engine-runtime-facts.test.ts` re-derives both, beside the encoder path
+  that re-enters intact.
 - Wrapper ABI, undocumented and read off the package: `$t:'s'` string, `'r'` rational, `'v'`
   variable, `'l'` improper list, `'t'` compound whose args sit in a ONE-ELEMENT envelope at
   `value[value.functor][0]`; `$tag` dicts. An unrecognized tag fails closed.
@@ -81,8 +82,9 @@ failures before it was wired.
 - The wrapper reserves `BudgetDepth_`, `BudgetInference_`, `BudgetResource_`,
   `BudgetStart_`, `BudgetNow_`, `BudgetSpent_` and `BudgetFinal_`; a goal naming one is
   rejected.
-- Engine ceilings: unified stack limit 1 GiB (reducible), Emscripten heap ceiling 2 GiB, RSS
-  ~119 MB steady. Asserted state persists across queries in one engine.
+- The saved image starts at a 1 GiB unified stack limit, reducible
+  (`tests/engine-runtime-facts.test.ts`). Asserted state persists across queries in one engine
+  (`pnpm engine:probe` R41).
 
 ## Cancellation
 
@@ -129,9 +131,11 @@ failures before it was wired.
 Node has no DOM `Worker`, so `EngineSession` holds the logic behind an injected image loader
 and `worker.ts` is message plumbing only. Tests drive the session.
 
-The main chunk carries 0 engine bytes; the worker chunk plus a hashed `kb-<hash>.pvm` carry
-it. No COOP/COEP is needed, but `loadImageDefault` uses direct `eval` → a strict CSP host is
-a live risk.
+The engine rides the worker chunk alone, beside a hashed `kb-<hash>.pvm`: no chunk
+`index.html` loads carries an engine marker (`pnpm smoke`, with the worker chunk read as the
+entry as its firing input). No COOP/COEP is needed — smoke boots the built worker from a plain
+static server. `loadImageDefault` calls direct `eval`, so a strict CSP host would have to allow
+it (`tests/engine-runtime-facts.test.ts`).
 
 ## Shipped bounds
 

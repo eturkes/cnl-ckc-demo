@@ -52,10 +52,10 @@ that concatenation's sha256 as the build input.
   the build phase (`withPinnedClock`) makes two forced builds byte-identical. Without the pin
   only ~4 bytes differ, but deflate amplifies them to ~389K differing bytes. Proof =
   `pnpm kb:reproduce`, which also covers the catalog.
-- **Engine split**: building needs `swipl-bundle` (6.2 MB, carries the library); loading a
-  saved state needs `swipl-bundle-no-data` (2.6 MB). The QLF fallback cannot use the small
-  engine, so choosing it costs 6.2 MB + a 2.2 MB artifact against 2.6 MB + ~0.45 MB — it is
-  insurance against image-format rot, never a size win.
+- **Engine split**: building needs `swipl-bundle`, which carries the library; loading a saved
+  state needs the smaller `swipl-bundle-no-data`. The QLF fallback cannot use the small
+  engine, so it costs the large engine plus a QLF several times the PVM — insurance against
+  image-format rot, never a size win.
 - **Do NOT use `generateImageBuffer`**: it saves without checking the consult result and
   without capturing stderr, so a broken payload still yields an image. `tools/kb/produce.mjs`
   re-implements its four steps, asserts the contract inside the building engine, and fails
@@ -65,9 +65,8 @@ that concatenation's sha256 as the build input.
 - `payloadSource` assembles payload → clinical helper → proof source, in that order. The
   `PAYLOAD` regex admits `data/guidelines/*/pl/*.pl` only, so the bag's `queries/` tree is
   **not** in the PVM.
-- Corpus load, measured: 337-file consult 2806 ms · concatenated source 3299 ms ·
-  `load_string` 3578 ms · QLF 213 ms + 724 ms boot · **saved PVM 335 ms boot+load**. PVM is
-  the shipping form, QLF the fallback.
+- The saved PVM is the shipping form, QLF the fallback: the PVM boots without consulting the
+  corpus at all.
 
 ## Schema predicates
 
