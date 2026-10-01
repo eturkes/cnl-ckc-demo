@@ -30,6 +30,7 @@ export type PlBindings = Record<string, PlTerm>;
 /** Constructors the engine exposes on `prolog`; re-encoding goes only through these. */
 export interface PrologConstructors {
   Compound: new (functor: string, ...args: unknown[]) => unknown;
+  List: new (items: unknown[], tail?: unknown) => unknown;
   Rational: new (numerator: PlInteger, denominator: PlInteger) => unknown;
   String: new (value: string) => unknown;
   /** The argument is a sharing NAME, not the decoded id; see `createEncoder`. */
@@ -157,13 +158,18 @@ export function createEncoder(constructors: PrologConstructors): (term: PlTerm) 
         return new constructors.Rational(term.numerator, term.denominator);
       case 'list':
         return term.items.map(encode);
-      case 'improper-list':
-        // Built cell by cell: the wrapper's `List` tests `if (tail)`, so an atom `''` or an
-        // integer `0` tail would collapse to `[]`.
-        return term.items.reduceRight(
-          (tail: unknown, item) => new constructors.Compound('[|]', encode(item), tail),
-          encode(term.tail),
-        );
+      case 'improper-list': {
+        // The wrapper's `List` tests `if (tail)`, so an atom `''` or an integer `0` tail would
+        // collapse to `[]`. The last cell is therefore a `'[|]'/2` compound, never falsy, while
+        // `List` keeps building the prefix iteratively — a chain of compounds recurses per cell
+        // and overflows the stack on a long list.
+        const items = term.items.map(encode);
+        const last = items.pop();
+        const tail = encode(term.tail);
+        return last === undefined
+          ? tail
+          : new constructors.List(items, new constructors.Compound('[|]', last, tail));
+      }
       case 'compound':
         return new constructors.Compound(term.functor, ...term.args.map(encode));
       case 'variable': {

@@ -117,3 +117,10 @@ it('P3.7 round-trips decode to encode to re-query as an identity', async () => {
   }
   expect(violations).toEqual([]);
 });
+
+it('P3.7 holds for a long improper list, falsy tail included, without deep recursion', () => {
+  for (const tail of ['tail', "''", '0']) {
+    const literal = `[${Array.from({ length: 10_000 }, () => 'a').join(',')}|${tail}]`;
+    expect(variants(literal, termOf(literal)), `10,000 cells | ${tail}`).toBe(true);
+  }
+});
