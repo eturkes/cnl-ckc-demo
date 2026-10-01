@@ -121,6 +121,62 @@ const CONTAINMENT = [
   },
 ];
 
+/**
+ * The three role tokens' font stacks, family by family. Each opens with its self-hosted latin
+ * face and the Japanese face — `unicode-range` keeps the latter off latin text, so order is
+ * what renders latin in the face chosen for it — then system faces for a failed font load,
+ * and ends in the generic family that names the role when every face is missing.
+ */
+const STACKS = [
+  {
+    token: '--font-ui',
+    stack: [
+      "'Atkinson Hyperlegible Next'",
+      "'BIZ UDPGothic'",
+      'ui-sans-serif',
+      "'Segoe UI'",
+      'system-ui',
+      'sans-serif',
+    ],
+  },
+  {
+    token: '--font-prose',
+    stack: ["'Literata'", "'BIZ UDPGothic'", "'Iowan Old Style'", 'Palatino', 'Georgia', 'serif'],
+  },
+  {
+    token: '--font-code',
+    stack: [
+      "'Atkinson Hyperlegible Mono'",
+      "'BIZ UDPGothic'",
+      'ui-monospace',
+      "'SFMono-Regular'",
+      'Menlo',
+      'monospace',
+    ],
+  },
+];
+
+/**
+ * @param {string[]} failures @param {string} css @param {typeof STACKS} declared
+ */
+const checkStacks = (failures, css, declared) => {
+  if (declared.length === 0) {
+    failures.push('STACKS table is empty, so no role token fallback stack is graded');
+    return;
+  }
+  for (const { token, stack } of declared) {
+    const value = new RegExp(`${token}:\\s*([^;]+);`).exec(css)?.[1];
+    if (value === undefined) {
+      failures.push(`${token}: not declared in src/app.css`);
+      continue;
+    }
+    const shipped = value.split(',').map((family) => family.trim());
+    if (shipped.join(', ') !== stack.join(', ')) {
+      failures.push(`${token}: ships [${shipped.join(', ')}], STACKS pins [${stack.join(', ')}]`);
+    }
+  }
+};
+
 /** Values that actually break an unbreakable token; `normal` and `initial` do not. */
 const WRAPS = new Set(['anywhere', 'break-word']);
 
@@ -292,6 +348,19 @@ const main = () => {
     requireFiring(
       'presentation',
       {
+        mutation: "--font-code's generic family dropped from app.css",
+        expect: ['--font-code: ships ['],
+      },
+      collect((found) => checkStacks(found, css.replace(/Menlo,\s*monospace;/u, 'Menlo;'), STACKS)),
+    ),
+    requireFiring(
+      'presentation',
+      { mutation: 'the STACKS table emptied', expect: ['STACKS table is empty'] },
+      collect((found) => checkStacks(found, css, [])),
+    ),
+    requireFiring(
+      'presentation',
+      {
         mutation: 'overflow-wrap stripped from every component style',
         expect: ['has no overflow-wrap'],
       },
@@ -306,6 +375,7 @@ const main = () => {
   checkFaces(failures, css);
   checkLicences(failures, LICENCES);
   checkContainment(failures);
+  checkStacks(failures, css, STACKS);
 
   if (failures.length > 0) {
     console.error(`presentation: ${failures.length} failure(s)`);
@@ -315,7 +385,8 @@ const main = () => {
   const contained = CONTAINMENT.reduce((n, { selectors }) => n + selectors.length, 0);
   console.log(
     `presentation: ${FACES.length} faces pinned and installed, ${LICENCES.length} licences ` +
-      `byte-equal, ${contained} text surfaces contained, ${controls.length} controls fired`,
+      `byte-equal, ${contained} text surfaces contained, ${STACKS.length} role font stacks pinned, ` +
+      `${controls.length} controls fired`,
   );
 };
 

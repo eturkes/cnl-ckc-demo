@@ -206,10 +206,10 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `34d9d7e` d36 `kb/generated` joins the answer-oracle scan, with its own firing input.
 - [x] `da39355` d31 a hung boot settles one typed `boot` error after one recreate; row text corrected from `worker` (d56 clause).
 - [x] `69e7110` d37 every protocol discriminant (5 request + 9 response = 14) clones; per-row non-cloneable mutant refused.
-- [x] d30 `pnpm test:browser`: the nine jsdom-stubbed combobox predicates in real Chromium.
+- [x] `ec37224` d30 `pnpm test:browser`: the nine jsdom-stubbed combobox predicates in real Chromium.
+- [ ] d32 stacks + wordmark decided; owes the user the forbidden-claim set and the descriptor-rendering ruling.
 - [ ] d29 `high` WASM abort — waits: an ad-hoc goal path (`Decisions` MAIN).
-- [ ] `med`: d32
-  d40 d44 d46 d48 d49 d50 d51 d52 d53 d54
+- [ ] `med`: d40 d44 d46 d48 d49 d50 d51 d52 d53 d54
 - [ ] `low`: d1 d3 d5 d6 d8 d9 d12 d15 d17 d20 d22 d28 d33 d34 d35 d38 d39 d41 d42 d43 d47
   d55 d56 d57 d58 d59 d60 d61 d62 d63
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.

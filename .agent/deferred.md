@@ -95,7 +95,13 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   still rest on one reviewer reading them (M1 review U7-26, partly closed). Accept: each of
   the four is decided by a committed check — wordmark and forbidden-claim literals in
   `copy:check`, descriptor rendering in a dom test, fallback stacks in
-  `presentation:check`. `pri` med.
+  `presentation:check`. `pri` med. **Two of four decided**: the role tokens' stacks
+  (`presentation:check` `STACKS`) and the accepted wordmark (`copy:check` `WORDMARK` — D7's
+  verbatim was superseded by the accepted workbench redesign `3ed0c31`). **Owes the user two
+  rulings**: (a) the forbidden-claim set — M1's were the trace and graph claims, both shipped
+  features now; proposal: no shipped string names a milestone, unit or review id (`M1`–`M5`,
+  `u12`, `R045`, `U7-26`); (b) descriptor rendering — no component renders `describeDescriptor`'s
+  output any more, so retire the item, or remove the dead `descriptor` field it feeds.
 - **`copy:check` double-grades a keyed literal** — a mutated string fails twice, once
   under its record key and once as an identical `<literal>` row, so a one-string mutant
   reports two failures and a reader cannot count real defects (M1 review U7 register

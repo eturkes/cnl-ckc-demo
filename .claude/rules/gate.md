@@ -64,7 +64,9 @@ Step semantics a reader cannot get from the script name:
   may stay untranslated, are in `.claude/rules/i18n.md`. A third grades every `.svelte` file it
   finds by walking `src/`: the literal prose a component renders — markup text nodes and
   human-facing attribute values, expressions stripped — at the 25-word limit plus the filler
-  sweep, so prose written into a new component instead of the catalog cannot escape it.
+  sweep, so prose written into a new component instead of the catalog cannot escape it. A
+  `WORDMARK` table pins the accepted wordmark: both catalog values, the `<h1>` that renders it
+  and the `CNL / CKC` brand mark.
 - `claims:check` (`tools/claims-sweep.mjs`) grades COVERAGE of `docs/claims.md`, never truth.
   No tool here can decide whether a sentence is true, so judgment stays in the committed
   registry and the check owns what a tool can decide: it re-derives the claim set from the tree
@@ -82,9 +84,10 @@ Step semantics a reader cannot get from the script name:
   kept a verdict across an edit past the cut. Prettier owns `docs/`, so the row block ships under `prettier-ignore` — at a
   150-char claim cell, column padding rewrites every row and `format:check` never agrees with
   the seed again.
-- `presentation:check` (`tools/presentation-check.mjs`) grades three DECLARED tables against
+- `presentation:check` (`tools/presentation-check.mjs`) grades four DECLARED tables against
   source alone — no build, no browser: `@font-face` rows, shipped OFL texts against each
-  package `LICENSE`, and the selectors rendering engine-authored text. Rule bodies match
+  package `LICENSE`, the selectors rendering engine-authored text, and the three role tokens'
+  font stacks family by family (`STACKS`). Rule bodies match
   brace-free ⇒ only leaf rules match and `@media` never matches alone; CSS comments strip
   first, so a documented rule carries its comment in its selector list.
 
@@ -117,9 +120,9 @@ effect of the unit whose grader it loosens.
 | `kb:asset-check` answer-oracle reach | the real `kb/generated` tree with `question-catalog.json` read as carrying an oracle path | `answerReach` re-run in process over every production root, refusing with `answer-oracle reach in kb/generated/question-catalog.json`; a producer that wrote the path into an asset keeps its digests consistent, so only this scan names it |
 | `kb:asset-check` `SCAN_ROOTS` | one declared root replaced by a path that does not exist | each root binds its paths and rejects zero files, so the refusal names `SCAN_ROOTS` and the root; `walk()` returning `[]` used to leave the success line reading `clean over 6 roots` |
 | `kb:asset-check` `scopes` | the REAL emitted `scopes` table sliced to zero | `validateSemanticGraphAsset(model)` re-run on the emptied table through `requireFiring`, refusing with `scopes table is empty, so graph scope validation grades no record`; it also refuses an unresolvable `edge.scope` index and an operator edge carrying none |
-| `copy:check` | the shipped English graded at limit 0 against a filler list holding `the`; `en.ts` read as the Japanese catalog; the shell `<title>` prefixed; the `FILLER` table emptied; a component carrying a 30-word sentence added to the real component set; that set emptied | one per grader, in process, over the real catalogs and components; the emptied table must exit 1 naming `FILLER`, because the other controls survive on their own synthetic filler; the planted component must be refused by its path |
+| `copy:check` | the shipped English graded at limit 0 against a filler list holding `the`; `en.ts` read as the Japanese catalog; the shell `<title>` prefixed; the `FILLER` table emptied; a component carrying a 30-word sentence added to the real component set; that set emptied; the English wordmark with one letter changed | one per grader, in process, over the real catalogs and components; the emptied table must exit 1 naming `FILLER`, because the other controls survive on their own synthetic filler; the planted component must be refused by its path |
 | `contrast:check` | `--text` collapsed onto `--surface` | the pair loop re-run on the perturbed token map, must report `1:1` |
-| `presentation:check` | one `@font-face` renamed out of `app.css`; each shipped licence compared against the next package's; `overflow-wrap` stripped from every component style | one per declared table, in process |
+| `presentation:check` | one `@font-face` renamed out of `app.css`; each shipped licence compared against the next package's; `overflow-wrap` stripped from every component style; `--font-code`'s generic family dropped from `app.css`; the `STACKS` table emptied | one per declared table, in process |
 | `binding:check` | a required case no suite defines; a required suite the run never loaded; the `REQUIRED` table emptied; the `LIFECYCLE` table emptied; the `MEANING` table emptied | the inventory loop re-run over the gate's OWN suite report, so none costs a second vitest; the last three feed `gradeTable` the real table emptied, through the same function the real one goes through |
 | `claims:check` | the claim set re-derived from ONE rules file, contracts dropped; the first rules claim the cell cuts short, lengthened past the cut | its own `gradeRegistry` over the real registry, in process; the short set must be refused by row count, because a sweep that silently stopped reading would otherwise agree with any registry it could still match. The lengthened claim must be refused unseeded by its anchor, then come back `unknown` from the seed's own merge — the append the old text-keyed seed carried a verdict across |
 | `kb:reproduce` | one asset digest changed in the second manifest | the equality seam re-run on the perturbed clone |

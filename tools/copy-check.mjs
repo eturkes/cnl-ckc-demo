@@ -21,6 +21,23 @@ import { join, relative } from 'node:path';
 import { requireFiring } from './control.mjs';
 import { ROOT } from './kb/paths.mjs';
 
+/**
+ * The wordmark the accepted surface ships, pinned so a rewording is a decision rather than a
+ * drift: each catalog's value, the `<h1>` that renders it, and the brand mark beside it.
+ */
+const WORDMARK = [
+  { file: 'src/i18n/en.ts', text: "wordmark: 'Clinical Knowledge Compiler'," },
+  { file: 'src/i18n/ja.ts', text: "wordmark: '臨床知識コンパイラ'," },
+  { file: 'src/App.svelte', text: '<h1 id="page-title">{t.DESCRIPTIONS.wordmark}</h1>' },
+  { file: 'src/App.svelte', text: '<span>CNL / CKC</span>' },
+];
+
+/** @param {(file: string) => string} read @returns {string[]} */
+const checkWordmark = (read) =>
+  WORDMARK.filter(({ file, text }) => !read(file).includes(text)).map(
+    ({ file, text }) => `${file}: wordmark ${JSON.stringify(text)} is not shipped`,
+  );
+
 /** Words the project bans outright. */
 const FILLER = ['simply', 'robust', 'seamlessly', 'leverage'];
 
@@ -376,6 +393,19 @@ const main = () => {
     ),
     requireFiring(
       'copy',
+      {
+        mutation: 'the English wordmark with one letter changed',
+        expect: ['src/i18n/en.ts: wordmark "wordmark: \'Clinical Knowledge Compiler\',"'],
+      },
+      () =>
+        checkWordmark((file) =>
+          file === EN
+            ? en.replace('Clinical Knowledge Compiler', 'Clinical Knowledge Compilers')
+            : readFileSync(join(ROOT, file), 'utf8'),
+        ),
+    ),
+    requireFiring(
+      'copy',
       { mutation: 'the shell title prefixed', expect: ['documentTitle differs from'] },
       () => {
         /** @type {string[]} */
@@ -391,6 +421,7 @@ const main = () => {
   failures.push(...englishFailures);
   const { failures: componentFailures, graded: componentFiles } = gradeComponents(files, FILLER);
   failures.push(...componentFailures);
+  failures.push(...checkWordmark((file) => readFileSync(join(ROOT, file), 'utf8')));
   const compared = checkParity(failures, en, ja);
   const shell = checkShell(failures, en, html);
 
@@ -401,7 +432,7 @@ const main = () => {
   }
   console.log(
     `copy: ${graded} en strings pass, ${componentFiles} components carry no over-long or filler prose, ` +
-      `${compared} ja keys at parity, ` +
+      `${compared} ja keys at parity, ${WORDMARK.length} wordmark pins shipped, ` +
       `${shell} shell strings match index.html, ${controls.length} controls fired`,
   );
 };
