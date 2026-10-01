@@ -19,7 +19,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { expectedAnswer, questionOf } from './answer-oracle.mjs';
-import { failWith, launch, serve } from './browser.mjs';
+import { failWith, launch, OVERFLOW_PROBE, serve } from './browser.mjs';
 import {
   CATALOG,
   cmapOf,
@@ -128,26 +128,6 @@ const readDocuments = async (page, mode) => {
   }
   return Number(reported);
 };
-
-/**
- * Widest element crossing the right viewport edge, plus the document's own scroll
- * width. Reported by tag and class so a regression names the surface that broke,
- * and measured on live boxes because `overflow-wrap` only shows in layout.
- */
-const OVERFLOW_PROBE = `(() => {
-  const root = document.documentElement;
-  const limit = root.clientWidth;
-  let worst;
-  for (const el of document.querySelectorAll('body *')) {
-    const right = el.getBoundingClientRect().right;
-    // Sub-pixel rounding puts a full-width box a hair past its container.
-    if (right <= limit + 0.5) continue;
-    if (worst === undefined || right > worst.right) {
-      worst = { right, at: el.tagName.toLowerCase() + '.' + (el.getAttribute('class') ?? '') };
-    }
-  }
-  return { limit, scrollWidth: root.scrollWidth, worst };
-})()`;
 
 /** States measured, counted rather than written down: adding one must not restate it. */
 let narrowStates = 0;

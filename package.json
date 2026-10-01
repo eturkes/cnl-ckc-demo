@@ -43,6 +43,7 @@
     "mutate": "node tools/mutate.mjs",
     "presentation:check": "node tools/presentation-check.mjs",
     "font:subset": "node tools/font-subset.mjs",
+    "visual-qa": "node tools/visual-qa.mjs",
     "readme:check": "node tools/readme-check.mjs",
     "claims:check": "node tools/claims-sweep.mjs",
     "claims:seed": "node tools/claims-sweep.mjs --seed",

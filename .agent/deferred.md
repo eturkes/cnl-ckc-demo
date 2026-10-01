@@ -53,16 +53,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   streaming as cheap (0.0414 vs 0.0345 ms/query) and useful for early answers.
   Accept: solutions render as they arrive, and a queued cancel still cannot
   interrupt an in-flight synchronous `next()`. `pri` low.
-- **Typed port of the visual-QA walker** — the state walker lives only on
-  `wt/map-m1u7` `124e34d` and fails `svelte-check` with 64 implicit-any errors,
-  so u7's 11-state evidence comes from an out-of-tree script. `pnpm browser:check`
-  now measures five states at 320 px, which covers the narrow-viewport risk the
-  walker was filed for; what stays unported is 375/1280 px and the other six states.
-  Regeneration until then: copy the 548-line script into `tools/` and run it; it drives a
-  real browser at 320/375/1280 px, writes PNGs to `.probe/` and JSON to stdout.
-  Accept: `tools/visual-qa.mjs` passes `pnpm check` and `pnpm lint`, `pnpm visual-qa`
-  exits 0, and its JSON reports `overflow=false` for every state at 320, 375 and
-  1280 px. `pri` low.
 - **Humanizer label test asserts its own artifact** — `tests/questions-live.test.ts:294`
   matches `/^\S+ — sentence \d+, \w+ \d+$/u`, a grammar that exists only in
   `src/questions/humanize.ts`, so the expectation comes from the artifact under test.

@@ -52,8 +52,13 @@
     disabled={!canRun}
     onclick={onRun}>{t.LABELS.run}</button
   >
-  <button class="cancel" bind:this={cancelEl} type="button" disabled={!busy} onclick={onCancel}
-    >{t.LABELS.cancel}</button
+  <button
+    class="cancel"
+    data-action="cancel"
+    bind:this={cancelEl}
+    type="button"
+    disabled={!busy}
+    onclick={onCancel}>{t.LABELS.cancel}</button
   >
   {#if showRetry}
     <button bind:this={retryEl} type="button" class="retry" onclick={onRetry}
