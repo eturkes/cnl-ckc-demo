@@ -190,11 +190,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   gate run is green again once the load falls (906/906 at avg 7–15). Accept: the full suite
   passes 20 consecutive runs at load avg ≥ 3× cores with no timeout raised, or a user-approved
   gate timeout policy is recorded with its original firing. `pri` med.
-- **Proof-probe traps and clause identity have no committed rerun** — `.claude/rules/proof.md`
-  records the `assertz((Head) :- Body)` parse trap, the permission error that bypasses the
-  `printErr` drain, and the 10,321-clause identity (unique `L`, exact text recovery, 68 trace
-  nodes); the census pins the count alone. Accept: a committed test demonstrates each trap and
-  the identity properties, or the rule text drops what no check proves. `pri` low.
 - **Package byte figures have no committed size check** — `.claude/rules/kb-build.md` states
   exact package byte sizes (the swipl-bundle variants). The packages are exact-pinned, so the
   bytes are stable. Accept: `tests/census.test.ts` pins each figure from the installed package

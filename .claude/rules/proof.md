@@ -92,8 +92,8 @@ boot+consult). Runtime `consult` buys nothing and is fail-open — it is rejecte
 ## Clause identity
 
 Identity = `clause/3` reference → `clause_property(Ref, file(…) + line_count(L))`. All 10321
-`L` values are unique against the deterministic concatenated payload, exact clause text
-recovers 10321/10321, and the line+newline hash resolves all 68 committed trace nodes.
+`L` values are unique, and the provenance chunks' exact clause text recovers 10321/10321 of them
+(`tests/proof-identity.test.ts`; the census pins both counts).
 
 **Rendering `clause/2` output reproduces the committed `clause_sha256` 0/10321 times**:
 `clause/2` injects `user:` into rule bodies, `fullstop(true)` adds a trailing space, and
@@ -198,11 +198,13 @@ dynamic and supplies a whole new proof.
 
 Three probe traps, each producing a **vacuous pass**:
 
-- `assertz((Head) :- Body)` parses as a `:-`/2 term rather than a clause → write
-  `assertz((Head :- Body))`.
-- A failed query makes `.once()` return `false`, so `String(missing.State)` reads
-  `"undefined"` and the row silently skips → make the probe's `once` throw on a failed query,
-  and count the rows it actually graded.
-- An `assertz` permission error never reaches JS as `$error` — it prints to real stderr,
-  outside the `printErr` drain, and the call returns normally → read the refusal from
-  `catch/3` inside Prolog.
+- `assertz((Head) :- A, B)` splits at the body comma into `assertz/2`, so nothing is asserted
+  → write `assertz((Head :- A, B))`.
+- A failed query makes `.once()` return `{success: false}` with no bindings, so
+  `String(missing.State)` reads `"undefined"` and the row silently skips → make the probe's
+  `once` throw on a failed query, and count the rows it actually graded.
+- An `assertz` permission error comes back from `.once()` as a plain `{error: true}` object —
+  never thrown, never `$error` — and also prints to stderr → read the refusal from `catch/3`
+  inside Prolog.
+
+`tests/proof-identity.test.ts` pins all three.
