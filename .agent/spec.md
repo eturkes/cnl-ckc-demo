@@ -230,7 +230,8 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] d20 `kb:asset-check` refuses an oracle path assembled from its two bare segments.
 - [x] d22 `pnpm visual-qa`: 39 states at 320/375/1280 px, none overflows, planted-overflow control.
 - [x] d28 the source-label grammar is stated in `.claude/rules/ui.md` `Copy`; the humanizer test cites it.
-- [ ] `low`: d17 d33 d34 d35 d38 d39 d41 d42 d43 d47
+- [ ] d17 owes a ruling: answers rendered as they arrive change the accepted answer panel mid-run.
+- [ ] `low`: d33 d34 d35 d38 d39 d41 d42 d43 d47
   d55 d56 d57 d58 d59 d60 d61 d62 d63
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 

@@ -52,7 +52,11 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
 - **Solution streaming** — u2 delivers one batch per query. Both spikes measured
   streaming as cheap (0.0414 vs 0.0345 ms/query) and useful for early answers.
   Accept: solutions render as they arrive, and a queued cancel still cannot
-  interrupt an in-flight synchronous `next()`. `pri` low.
+  interrupt an in-flight synchronous `next()`. `pri` low. **Owes a ruling**: rendering each
+  solution as it arrives changes the accepted answer panel during a run — a visible change the
+  spec reserves. The cost on the engine side is a `solutions` progress response per answer
+  (joining the d37 clone table), and each partial answer still renders only once its own
+  display passes the request deadline.
 - **Browser WASM abort leaves a dead session** — a runaway `assertz` aborts the WASM runtime
   — in Node too at swipl-wasm 8.0.7, pinned live by `tests/engine-heap.test.ts`, which is the
   fix's red witness — and surfaces as `{code:'prolog', message:'Aborted()...'}`, so `limit:'heap'`
