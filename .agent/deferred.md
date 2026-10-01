@@ -208,14 +208,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   reader-relative labels). m5u12 ruled the first, second and fourth for the shipped side, so
   24/24 needs edits to the teammate's oracle beyond the lookups — the user rules which.
 
-- **Three `kb:asset-check` root tables grade nothing when emptied** — review row `C2`.
-  `SCAN_ROOTS` is guarded, but `PRODUCTION_ROOTS`, `SERIALIZE_ROOTS` and `QUESTION_ROOTS`
-  (`tools/kb/check.mjs:28`) each exit 0 with the table never named, while the step still prints
-  its count — the exact shape `.claude/rules/gate.md` `Firing inputs` forbids, and the shape the
-  `SCAN_ROOTS` row was added to close. Accept: each of the three refuses an emptied table by its
-  OWN name through `requireFiring`, and the step's success line names every control that fired.
-  Red witness `tests/review-assurance-c2.red.test.ts` at `wt/rev-assurance` `5c97965`, which
-  mutates the real checker rather than a copy. `pri` med.
 - **Two registry rows say `deferred` and cite no queue row** — review row `C5`.
   `docs/claims.md:72` (R003) and `:89` (R020) name `none` as the command and `deferred — …` as
   the disposition, but neither cites a `.agent/deferred.md` row and no row covers either
@@ -332,7 +324,6 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | Two tests time out under parallel execution | both pass 20 consecutive full-suite runs at the committed worker count |
 | 71 operator contexts have no edge, 64 of them negation | the 71 carry edges with the moved counts recorded, or a check proves no shown path skips an edgeless negation context |
 | The projection oracle lives on a branch alone | its label lookups match on `relation`, 24/24 green in-tree, joined to a declared register |
-| Three `kb:asset-check` root tables grade nothing when emptied | each refuses an emptied table by its own name; the success line names every control that fired |
 | Two registry rows say `deferred` and cite no queue row | both subjects carry a queue row, both dispositions cite it, `claims:check` refuses an uncited `deferred` |
 
 ## Accepted-open

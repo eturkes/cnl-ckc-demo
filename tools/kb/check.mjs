@@ -103,10 +103,47 @@ const gradeScanRoots = (roots) => {
   );
 };
 
+/**
+ * A scan root table must name roots, and each root must bind paths: an emptied table, or a
+ * root that walks to nothing, scans nothing while its line in the success message still reads
+ * clean.
+ *
+ * @param {string} name @param {readonly string[]} roots
+ * @returns {string[]}
+ */
+const gradeRootTable = (name, roots) => {
+  if (roots.length === 0) return [`${name} table is empty, so its scan grades no root`];
+  return bindScanRoots(roots).flatMap(({ root, paths }) =>
+    paths.length === 0 ? [`${name} entry "${root}" yielded no paths`] : [],
+  );
+};
+
 /** @type {string[]} */
 const failures = [];
 /** @param {string} message */
 const fail = (message) => failures.push(message);
+
+const ROOT_TABLES = /** @type {const} */ ([
+  ['PRODUCTION_ROOTS', PRODUCTION_ROOTS],
+  ['SERIALIZE_ROOTS', SERIALIZE_ROOTS],
+  ['QUESTION_ROOTS', QUESTION_ROOTS],
+]);
+/** @type {string[]} */
+const rootTableControls = [];
+/** Tables that already failed, so a scan control over them is not asked to fire. */
+const brokenTables = new Set();
+for (const [name, roots] of ROOT_TABLES) {
+  const problems = gradeRootTable(name, roots);
+  if (problems.length > 0) brokenTables.add(name);
+  for (const problem of problems) fail(problem);
+  rootTableControls.push(
+    requireFiring(
+      'kb:asset-check',
+      { mutation: `${name} emptied`, expect: [`${name} table is empty`] },
+      () => gradeRootTable(name, []),
+    ),
+  );
+}
 
 const boundScanRoots = bindScanRoots(SCAN_ROOTS);
 const scanFailures = gradeScanRoots(boundScanRoots);
@@ -315,7 +352,7 @@ const reach = answerReach(PRODUCTION_ROOTS, latin1);
 for (const problem of reach) fail(problem);
 let reachControlFired = 0;
 const plantedAsset = join(GENERATED_DIR, 'question-catalog.json');
-if (reach.length === 0) {
+if (reach.length === 0 && !brokenTables.has('PRODUCTION_ROOTS')) {
   // The real generated tree, one asset read as if the build had written an oracle path into it.
   requireFiring(
     'kb:asset-check',
@@ -366,7 +403,8 @@ if (failures.length > 0) {
 } else if (scanOnly) {
   process.stdout.write(
     `kb:asset-check --scan-only ok — sibling-path, answer-oracle, JSON-serialization and ` +
-      `question-text scans clean, ${String(controlsFired)} SCAN_ROOTS control fired; assets not verified\n`,
+      `question-text scans clean, ${String(controlsFired)} SCAN_ROOTS control fired, ` +
+      `controls: ${rootTableControls.join(', ')}; assets not verified\n`,
   );
 } else {
   const assets = /** @type {NonNullable<typeof manifest>} */ (manifest).assets;
@@ -376,7 +414,7 @@ if (failures.length > 0) {
       `answer-oracle scan clean over ${PRODUCTION_ROOTS.length} roots (${String(reachControlFired)} control fired), ` +
       `JSON-serialization scan clean over ${SERIALIZE_ROOTS.length} root, ` +
       `${questions.length} question sentences absent from ${QUESTION_ROOTS.length} roots, ` +
-      `${String(controlsFired)} SCAN_ROOTS control fired, ` +
+      `${String(controlsFired)} SCAN_ROOTS control fired, controls: ${rootTableControls.join(', ')}, ` +
       `${String(scopeRecordsValidated)} graph scopes verified, ` +
       `${String(scopeControlsFired)} scopes control fired, ` +
       `${String(intakeRulesValidated)} intake rules verified, ` +
