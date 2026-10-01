@@ -83,8 +83,9 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
 - **Browser WASM abort leaves a dead session** — a runaway `assertz` aborts the WASM runtime
   — in Node too at swipl-wasm 8.0.7, pinned live by `tests/engine-heap.test.ts`, which is the
   fix's red witness — and surfaces as `{code:'prolog', message:'Aborted()...'}`, so `limit:'heap'`
-  never fires and `EngineClient` keeps the dead worker: every later query returns the same
-  abort, breaching u3 P3.4 (M1 review R45). Unreachable from M1's six bounded catalog goals;
+  never fires and `EngineClient` keeps the dead worker: every later query fails — aborting again
+  or, run to run, reporting a heap limit from a runtime left with no memory — breaching u3 P3.4
+  (M1 review R45). Unreachable from M1's six bounded catalog goals;
   free-text intake is what makes it reachable. Accept: an aborted runtime reaches the client
   as its own terminal state that recreates the worker without a caller `reset()`, proven by a
   browser probe whose next query reports 337 documents. `pri` high, gated on free-text intake.

@@ -3,12 +3,13 @@
 // At the pinned swipl-wasm a runaway `assertz` never raises `resource_error(memory)`: the
 // allocator fails with a FATAL `Out of memory` and the WASM runtime aborts, in Node as in a
 // browser. The client has no terminal state for an aborted runtime yet, so this pins today's
-// behaviour — the abort surfaces as a `prolog` error and the engine stays dead — and flips
-// the day the abort is classified and the worker recreated.
+// behaviour — the abort surfaces as a `prolog` error and the engine never answers again — and
+// flips the day the abort is classified and the worker recreated.
 //
 // A fresh engine takes ~6.3 s to exhaust its 2 GiB ceiling. Reserving most of that ceiling
 // with one untouched `_malloc` first leaves ~100 MB of headroom, so the same trip lands in
-// under a second without committing the reserved pages.
+// under a second alone — not a bound to assert, since a loaded full-suite run stretched it
+// past 13 s — without committing the reserved pages.
 
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -56,24 +57,25 @@ beforeAll(async () => {
 const budget = { ...BUDGET_MAX, wallClockMs: 30_000 };
 
 describe('live heap exhaustion', () => {
-  it('aborts the runtime instead of reporting limit heap, in under 5 s', async () => {
-    const started = performance.now();
+  it('aborts the runtime instead of reporting limit heap', async () => {
     const response = await session.handle(
       { id: 'h1', kind: 'query', goal: RUNAWAY, budget },
       new Uint8Array(),
     );
-    expect(performance.now() - started).toBeLessThan(5_000);
     expect(response).toMatchObject({ kind: 'error', error: { code: 'prolog' } });
     expect(response.kind === 'error' ? response.error.message : '').toMatch(/^Aborted\(\)/u);
     expect(diagnostics.join('\n')).toMatch(/Out of memory/u);
   }, 30_000);
 
-  it('leaves an engine whose every later query aborts too', async () => {
+  it('leaves an engine that never answers again', async () => {
     const response = await session.handle(
       { id: 'h2', kind: 'query', goal: DOCUMENTS, budget },
       new Uint8Array(),
     );
-    expect(response).toMatchObject({ kind: 'error', error: { code: 'prolog' } });
-    expect(response.kind === 'error' ? response.error.message : '').toMatch(/^Aborted\(\)/u);
+    // Which failure depends on where the allocator gave out, and it varies run to run: the
+    // runtime aborts again, or it survives with no memory and raises `resource_error(memory)`.
+    const aborted = response.kind === 'error' && /^Aborted\(\)/u.test(response.error.message);
+    const exhausted = response.kind === 'limit' && response.limit === 'heap';
+    expect(aborted || exhausted, JSON.stringify(response).slice(0, 200)).toBe(true);
   });
 });

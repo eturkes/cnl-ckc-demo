@@ -100,11 +100,13 @@ failures before it was wired.
   `resource_error(memory)`: the allocator prints FATAL `Could not allocate memory: Out of
   memory` and the WASM runtime aborts, reaching the caller as `{code:'prolog', message:
   'Aborted(). Build with -sASSERTIONS for more info.'}` — ~6.3 s from a fresh engine in Node,
-  ~12 s in a browser. Every later query on that engine aborts too, and `limit:'heap'` is
-  unreachable live, so the heap-triggered recreation never runs. `readOutcome` still maps
+  ~12 s in a browser. That engine never answers again: the next query aborts again or, when the
+  runtime survived with no memory, raises `resource_error(memory)` and reports `limit:'heap'` —
+  which one varies run to run. The runaway itself never reports `heap`, so the recreation that
+  outcome triggers never runs for it. `readOutcome` still maps
   `resource_error(memory)` for a build that raises it. `pnpm exec vitest run
-  tests/engine-heap.test.ts` pins both halves in ~1 s by reserving 1900 MB with one untouched
-  `_malloc` first. Open `pri high` row in `.agent/deferred.md`.
+  tests/engine-heap.test.ts` pins both halves, ~1 s alone, by reserving 1900 MB with one
+  untouched `_malloc` first. Open `pri high` row in `.agent/deferred.md`.
 - **A failed boot retires its worker.** The worker caches its image fetch, so a rejected fetch
   stays rejected and a retry on that worker can only fail again; `EngineClient.boot()` resolving
   an error terminates the worker, and the next `boot()` — the UI's Retry — spawns a fresh one.
