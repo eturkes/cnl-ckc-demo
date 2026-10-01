@@ -85,15 +85,14 @@ are this repo's deltas.
 
 ## Report grading
 
-`.scratch/validate-report.py` grades wave reports: `--units N`, `--verdict`. Rows are
-`| id | finding | evidence |`, and `--verdict` folds the verdict into the finding cell, which
-must open `pass:` or `fail(low|med|high):`. The `evidence` cell is where the global evidence
-bar lands — a red test, or the disputed bytes in `/usr/bin/rg -Fn` form plus `file:line` — so
-harvest rematches a row without opening its detail section. Grading needs a sibling
-`<stem>.ids`. A seeded
-all-`unknown` skeleton exits 1 — that is what makes it a deliverable-first counter. The Units
-table admits `-` in the `flags` and `depends` columns only; every other column rejects it.
-Scratch-local encoding → port scheduled as a `.agent/deferred.md` row.
+`node tools/validate-report.mjs <report.md> [--units N] [--verdict]` grades wave reports. Rows
+are `| id | finding | evidence |`, and `--verdict` folds the verdict into the finding cell,
+which must open `pass:` or `fail(low|med|high):`. The `evidence` cell is where the global
+evidence bar lands — a red test, or the disputed bytes in `/usr/bin/rg -Fn` form plus
+`file:line` — so harvest rematches a row without opening its detail section. Grading needs a
+sibling `<stem>.ids`. A seeded all-`unknown` skeleton exits 1 — that is what makes it a
+deliverable-first counter. The Units table admits `-` in the `flags` and `depends` columns
+only; every other column rejects it. A `\|` inside a cell is content, never a delimiter.
 
 `.agent/review.md` is hand-maintained after its first shape; the committed ledger is the
 source, and a generator is re-derived only for a bulk reshape.

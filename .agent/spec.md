@@ -188,9 +188,11 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `24bbb5d` d0 find: 4 live advisories reddened `audit:check` → lockfile bump.
 - [x] `b919283` d2 browser lanes steer by `data-action` handles, narrow sweep in both locales.
 - [x] `6c77126` d4 `pnpm readme:check`: README setup path from a clean clone, in `release:check`.
-- [x] d7 `claims:seed` keys on a full-claim digest; `claims:check` refuses a stale digest.
+- [x] `b6f2a54` d7 `claims:seed` keys on a full-claim digest; `claims:check` refuses a stale digest.
+- [ ] d10 blocked: owes the user's reading of "ships no bytes"; work parked on `wip/d10-fallback`.
+- [x] d13 `tools/validate-report.mjs`: committed port, escaped pipe = content.
 - [ ] d29 `high` WASM abort — waits: an ad-hoc goal path (`Decisions` MAIN).
-- [ ] `med`: d10 d11 d13 d14 d16 d18 d19 d21 d23 d24 d25 d26 d27 d30 d31 d32 d36
+- [ ] `med`: d11 d14 d16 d18 d19 d21 d23 d24 d25 d26 d27 d30 d31 d32 d36
   d37 d40 d44 d45 d46 d48 d49 d50 d51 d52 d53 d54
 - [ ] `low`: d1 d3 d5 d6 d8 d9 d12 d15 d17 d20 d22 d28 d33 d34 d35 d38 d39 d41 d42 d43 d47
   d55 d56 d57 d58 d59 d60 d61 d62 d63

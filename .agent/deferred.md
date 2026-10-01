@@ -32,7 +32,7 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
 - **Finish the u1 wave-1 reports** — `map-m1u1` (17/25 rows) and
   `spike-m1u1-det` (9/12) were stopped at the reserve. Their sources
   `.scratch/agents/{map-m1u1,spike-m1u1-det}.md` must survive until this closes. Accept: both
-  reports pass `validate-report.py` with rc 0, or the open rows are re-derived and their
+  reports pass `node tools/validate-report.mjs` with rc 0, or the open rows are re-derived and their
   findings folded into `.claude/rules/`. `pri` low.
 - **QLF fallback delivery path** — the fallback needs the 6.2 MB `swipl-bundle`,
   so a naive import would double the shipped engine. Accept: the fallback engine
@@ -46,11 +46,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   `1`, so `decodeTerm` reports `integer`. The shipped corpus has no floats.
   Accept: a float binding decodes as `float`, proven on a goal returning `1.0`,
   without adding a per-binding engine call to the common path. `pri` low.
-- **Report validator splits on escaped pipes** — `.scratch/validate-report.py`
-  `cells()` raw-splits on `|`, so a `\|` inside a finding shifts the evidence
-  column. It must survive until this closes; its interface is in
-  `.claude/rules/waves.md`. Accept: a finding containing an escaped pipe grades identically
-  to one without, and the fix ships with the validator's port into the repo. `pri` med.
 - **u3 heap limit is unit-tested only** — `P2.7` is covered by `readOutcome` over a
   synthesized `resource_error(memory)`, not a live trip. Accept: a committed test drives
   real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate. `pri` med.
@@ -369,7 +364,7 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   `~/.claude/agents/reviewer.md` writes `pass` | `finding` with severity `blocker` | `major` |
   `minor`. A reviewer following its role fails the repo's grader. Accept: `waves.md` names the
   one vocabulary a reviewer brief carries, and a role-format verdict table grades clean under
-  `.scratch/validate-report.py --verdict` or its committed port. `pri` low.
+  `node tools/validate-report.mjs --verdict`. `pri` low.
 - **The judgment Worker runs locally alone** — user ruling deferred the Cloudflare deploy and
   stopped Pages publishing, so free-text intake exists only under `pnpm intake:dev` + Vite's
   proxy. `worker/index.ts` spends one global limiter bucket (`key: 'intake'`), correct for one
@@ -407,7 +402,7 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | Wordmark, forbidden claims, descriptor + fallback stacks rest on one reading | each decided by a committed check |
 | The inference budget re-arms per solution | a goal whose total exceeds budget reaches `limit:'inference'`, or the bound is contracted |
 | `pnpm smoke` stays rc 0 on a stale `dist/` | it fails on a `dist/` stale against the KB input hash, `dist/` intact |
-| `verify-fixes.py` (45/45 RED) + `validate-report.py` are gitignored | both port in; an escaped pipe grades the same; one command replays the kills |
+| `verify-fixes.py` (45/45 RED) is gitignored | a committed mutant-table runner; one command replays the kills from a clean checkout |
 | The answer-oracle scan skips `kb/generated` | the literal planted in a generated file gives `kb:asset-check` rc 1; restoring rc 0 |
 | One of twelve protocol arms is clone-tested | all 12 discriminants clone + deep-compare; a mutant reddens it |
 | Five browser claims + two probes live only on `wt/` branches | one typed `tools/` harness covers all five; probes port or claims prune |
