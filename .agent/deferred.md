@@ -95,7 +95,10 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   unpacked, and an engine range that excluded the Node 20 then pinned. Accept: an owned viewer
   renders the coverage row's physical page, a browser check reads the rendered page number
   and the highlighted region from the DOM, `pnpm gate` still runs under the pinned runtime, and the
-  viewer's bytes load only after the user activates the page. `pri` low.
+  viewer's bytes load only after the user activates the page. `pri` low. **Owes a ruling**: an
+  owned viewer replaces the accepted ladder's native `<iframe>`, a visible change the spec
+  reserves, and PDF.js — the one measured renderer — costs +504,727 B gzip. Node 24 has lifted
+  the engine-range objection; the size and the visual change remain the user's call.
 - **Generation-scoped proof cache** — every selection re-proves, and the worst measured
   synchronous proof step is 291.419 ms, which no cooperative cancel can interrupt.
   Re-selecting a solution already proved in the same session pays that cost again.
