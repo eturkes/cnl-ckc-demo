@@ -67,14 +67,16 @@ Step semantics a reader cannot get from the script name:
   registry and the check owns what a tool can decide: it re-derives the claim set from the tree
   — u14's adjudicated shipped rows, `.agent/spec.md` `Artifacts`, `.claude/rules/`,
   `.agent/contracts/m5u*.md` acceptance rows — and refuses a registry that has drifted from it
-  by row count, by row anchor, or by leaving a row unadjudicated. A claim unit is a bullet with
+  by row count, by row anchor, by a row whose `hash` no longer digests its claim, or by leaving
+  a row unadjudicated. A claim unit is a bullet with
   its continuations, a table row or a paragraph; raw lines would split one assertion in two.
   Adding a claim to any of those sources therefore reddens the gate until the registry answers
   it, which is the whole point — and editing THIS file is itself such an addition, so the check
   is self-referential by construction. `pnpm claims:seed` re-derives the row set when a source
-  moves and carries every adjudicated cell forward, keyed on the claim TEXT: ids and line
-  anchors are re-issued on every run, so an id-keyed merge would hand one claim's verdict to
-  its neighbour. Prettier owns `docs/`, so the row block ships under `prettier-ignore` — at a
+  moves and carries every adjudicated cell forward, keyed on a digest of the FULL claim text:
+  ids and line anchors are re-issued on every run, so an id-keyed merge would hand one claim's
+  verdict to its neighbour, and the shown cell stops at 150 characters, so a cell-keyed merge
+  kept a verdict across an edit past the cut. Prettier owns `docs/`, so the row block ships under `prettier-ignore` — at a
   150-char claim cell, column padding rewrites every row and `format:check` never agrees with
   the seed again.
 - `presentation:check` (`tools/presentation-check.mjs`) grades three DECLARED tables against
@@ -115,7 +117,7 @@ effect of the unit whose grader it loosens.
 | `contrast:check` | `--text` collapsed onto `--surface` | the pair loop re-run on the perturbed token map, must report `1:1` |
 | `presentation:check` | one `@font-face` renamed out of `app.css`; each shipped licence compared against the next package's; `overflow-wrap` stripped from every component style | one per declared table, in process |
 | `binding:check` | a required case no suite defines; a required suite the run never loaded; the `REQUIRED` table emptied; the `LIFECYCLE` table emptied; the `MEANING` table emptied | the inventory loop re-run over the gate's OWN suite report, so none costs a second vitest; the last three feed `gradeTable` the real table emptied, through the same function the real one goes through |
-| `claims:check` | the claim set re-derived from ONE rules file, contracts dropped | its own `gradeRegistry` over the real registry, in process; the short set must be refused by row count, because a sweep that silently stopped reading would otherwise agree with any registry it could still match |
+| `claims:check` | the claim set re-derived from ONE rules file, contracts dropped; the first rules claim the cell cuts short, lengthened past the cut | its own `gradeRegistry` over the real registry, in process; the short set must be refused by row count, because a sweep that silently stopped reading would otherwise agree with any registry it could still match. The lengthened claim must be refused unseeded by its anchor, then come back `unknown` from the seed's own merge — the append the old text-keyed seed carried a verdict across |
 | `kb:reproduce` | one asset digest changed in the second manifest | the equality seam re-run on the perturbed clone |
 | `readme:check` | the real README with `## Run locally` renamed; the reference module count off by one | both graders re-run in process before the clone, the second over the measured counts; end to end, a committed README missing its `pnpm kb:build` line exits 1 at `pnpm build` |
 | `graph:check` | one edge's `line-style` set to `dashed` in the mounted graph; `SEPARATION_PX` set to 0 | `dashControl` requires a 0 → 1 → 0 reading off the live renderer; R1 requires the probe-reported cutoff to be exactly 3 px AND a fixed absolute boundary pair where 2 px collapses and 3 px separates — at 0 every coincident midpoint reads distinct, so R1 passed vacuously while the renderer regressed |

@@ -8,6 +8,7 @@
 // Usage: node tools/claims-sweep.mjs [--seed]
 // `--seed` writes the all-`unknown` skeleton; without it the registry is graded.
 
+import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -23,8 +24,26 @@ const REGISTRY = 'docs/claims.md';
  */
 const HEADER =
   '<!-- prettier-ignore -->\n' +
-  '| id | source | at | claim | command | disposition |\n' +
-  '| --- | --- | --- | --- | --- | --- |';
+  '| id | source | at | hash | claim | command | disposition |\n' +
+  '| --- | --- | --- | --- | --- | --- | --- |';
+
+/**
+ * One registry row: id, source, anchor, hash, the shown claim cell, command, disposition.
+ * Whitespace-tolerant, so a formatter that decides to pad this table cannot redden the gate.
+ */
+const ROW =
+  /^\|\s*(R\d+)\s*\|\s*([a-z]+)\s*\|\s*`([^`]*)`\s*\|\s*([0-9a-f]+)\s*\|(.*)\|([^|]*)\|([^|]*)\|$/u;
+
+/**
+ * The merge key: a digest of the FULL claim unit. The shown cell is cut at 150 characters, so
+ * keying on it carried a verdict across any edit past the cut — an appended branch citation
+ * kept its old ruling under a command that never verified the new one.
+ *
+ * @param {string} text @returns {string}
+ */
+const digest = (text) => createHash('sha256').update(text).digest('hex').slice(0, 12);
+/** @typedef {{source: string, at: string, hash: string, claim: string}} Claim */
+
 const RULES_DIR = '.claude/rules';
 const CONTRACT_DIR = '.agent/contracts';
 
@@ -38,17 +57,19 @@ const CONTRACT_SKIP = new Set(['m5u14.md', 'm5u15.md']);
  * A claim unit is a bullet with its continuation lines, a table row, or a paragraph. Line
  * granularity would split one assertion across rows and count its second half as a new claim.
  *
- * @param {string} text @returns {{line: number, text: string}[]}
+ * @param {string} text @returns {{line: number, lines: number, text: string}[]}
  */
 const units = (text) => {
-  /** @type {{line: number, text: string}[]} */
+  /** @type {{line: number, lines: number, text: string}[]} */
   const out = [];
   /** @type {string[]} */
   let buffer = [];
   let start = 0;
   let fenced = false;
   const flush = () => {
-    if (buffer.length > 0) out.push({ line: start, text: buffer.join(' ').trim() });
+    if (buffer.length > 0) {
+      out.push({ line: start, lines: buffer.length, text: buffer.join(' ').trim() });
+    }
     buffer = [];
   };
   text.split('\n').forEach((raw, index) => {
@@ -67,7 +88,7 @@ const units = (text) => {
     if (trimmed.startsWith('|')) {
       flush();
       // A separator row carries no claim, only the table's shape.
-      if (!/^\|[\s:|-]+\|$/u.test(trimmed)) out.push({ line, text: trimmed });
+      if (!/^\|[\s:|-]+\|$/u.test(trimmed)) out.push({ line, lines: 1, text: trimmed });
       return;
     }
     if (/^[-*] /u.test(trimmed)) {
@@ -123,32 +144,36 @@ const cell = (text) => settle(text.replace(/\|/gu, '\\|').slice(0, 150).trim());
 /**
  * Re-derive the whole claim set, in registry order.
  *
- * @param {{rules?: string[], contracts?: string[]}} [override] source lists, for the control
- * @returns {{source: string, at: string, claim: string}[]}
+ * @param {{rules?: string[], contracts?: string[], read?: (path: string) => string}} [override]
+ *   source lists and file reader, for the controls
+ * @returns {Claim[]}
  */
 export const claimSet = (override = {}) => {
-  /** @type {{source: string, at: string, claim: string}[]} */
+  /** @type {Claim[]} */
   const rows = [];
+  const read = override.read ?? ((/** @type {string} */ path) => readFileSync(path, 'utf8'));
 
   // 1. Shipped copy — u14 adjudicated it; `not a claim` rows are excluded by that ruling.
-  for (const line of readFileSync(SHIPPED, 'utf8').split('\n')) {
+  for (const line of read(SHIPPED).split('\n')) {
     const row = /^\| (A\d\d) \| `([^`]*)` \| `([^`]*)` \| ([a-z ]+) \|/u.exec(line);
     if (row === null) continue;
     const [, id, at, key, disposition] = row;
     if (id === undefined || at === undefined || disposition === undefined) continue;
     if (disposition.trim() === 'not a claim') continue;
-    rows.push({
-      source: 'shipped',
-      at,
-      claim: `u14 ${id}${key === undefined || key === '' ? '' : ` \`${key}\``}`,
-    });
+    const claim = `u14 ${id}${key === undefined || key === '' ? '' : ` \`${key}\``}`;
+    rows.push({ source: 'shipped', at, hash: digest(claim), claim });
   }
 
   // 2. The spec's own `Artifacts` — the run commands the project promises a reader.
-  const artifacts = /# Artifacts\n([\s\S]*?)\n# /u.exec(readFileSync('.agent/spec.md', 'utf8'));
+  const artifacts = /# Artifacts\n([\s\S]*?)\n# /u.exec(read('.agent/spec.md'));
   for (const line of (artifacts?.[1] ?? '').split('\n')) {
     if (line.trim().startsWith('- ')) {
-      rows.push({ source: 'spec', at: '.agent/spec.md Artifacts', claim: cell(line.trim()) });
+      rows.push({
+        source: 'spec',
+        at: '.agent/spec.md Artifacts',
+        hash: digest(line.trim()),
+        claim: cell(line.trim()),
+      });
     }
   }
 
@@ -160,9 +185,14 @@ export const claimSet = (override = {}) => {
       .sort();
   for (const file of rules) {
     const path = join(RULES_DIR, file);
-    for (const unit of units(readFileSync(path, 'utf8'))) {
+    for (const unit of units(read(path))) {
       if (claimlike(unit.text)) {
-        rows.push({ source: 'rules', at: `${path}:${unit.line}`, claim: cell(unit.text) });
+        rows.push({
+          source: 'rules',
+          at: `${path}:${unit.line}`,
+          hash: digest(unit.text),
+          claim: cell(unit.text),
+        });
       }
     }
   }
@@ -175,12 +205,17 @@ export const claimSet = (override = {}) => {
       .sort();
   for (const file of contracts) {
     const path = join(CONTRACT_DIR, file);
-    for (const unit of units(readFileSync(path, 'utf8'))) {
+    for (const unit of units(read(path))) {
       if (
         /^\| [A-Z][0-9]+[a-z]? \|/u.test(unit.text) ||
         /^- \*\*[A-Z][0-9]+[a-z]? /u.test(unit.text)
       ) {
-        rows.push({ source: 'contract', at: `${path}:${unit.line}`, claim: cell(unit.text) });
+        rows.push({
+          source: 'contract',
+          at: `${path}:${unit.line}`,
+          hash: digest(unit.text),
+          claim: cell(unit.text),
+        });
       }
     }
   }
@@ -190,29 +225,27 @@ export const claimSet = (override = {}) => {
 /**
  * Carry every adjudicated cell forward onto the re-derived set.
  *
- * Keyed on the claim TEXT, never on the row id or the line number: editing any source file
- * renumbers every row below it, and an id-keyed merge would silently reassign one claim's
- * verdict to its neighbour. A claim whose text is unchanged keeps its ruling; a genuinely new
- * claim arrives `unknown` and reddens the gate until someone answers it.
+ * Keyed on the digest of the FULL claim text, never on the row id, the line number or the
+ * shown cell: editing any source file renumbers every row below it, an id-keyed merge would
+ * hand one claim's verdict to its neighbour, and the shown cell is cut short. A claim whose
+ * text is unchanged keeps its ruling; any edit, however far past the cut, arrives `unknown`
+ * and reddens the gate until someone answers it.
  *
- * @param {{source: string, at: string, claim: string}[]} rows @param {string} registry
+ * @param {Claim[]} rows @param {string} registry
  * @returns {string}
  */
-const table = (rows, registry) => {
-  // NUL joins the key halves and splits the cell pair: it is the one byte a Markdown table
-  // cell cannot carry, so a claim containing the delimiter cannot forge a neighbour's key.
+export const table = (rows, registry) => {
+  // NUL joins the key halves: it is the one byte a Markdown table cell cannot carry.
   /** @type {Map<string, string[][]>} */
   const kept = new Map();
   for (const line of registry.split('\n')) {
-    const found = /^\|\s*R\d+\s*\|\s*([a-z]+)\s*\|\s*`[^`]*`\s*\|(.*)\|([^|]*)\|([^|]*)\|$/u.exec(
-      line,
-    );
+    const found = ROW.exec(line);
     if (found === null) continue;
     // An `unknown` cell is the absence of a ruling, so it must not claim the slot a
     // partition file fills: skipping it is what lets `--seed` fold harvested work in.
-    if ((found[4] ?? '').trim() === 'unknown') continue;
-    const key = `${found[1] ?? ''}\u0000${settle(found[2] ?? '')}`;
-    const cells = [(found[3] ?? '').trim(), (found[4] ?? '').trim()];
+    if ((found[7] ?? '').trim() === 'unknown') continue;
+    const key = `${found[2] ?? ''}\u0000${found[4] ?? ''}`;
+    const cells = [(found[6] ?? '').trim(), (found[7] ?? '').trim()];
     kept.set(key, [...(kept.get(key) ?? []), cells]);
   }
   /** @param {string | undefined} value @returns {string} */
@@ -220,16 +253,17 @@ const table = (rows, registry) => {
   return rows
     .map((row, index) => {
       const id = `R${String(index + 1).padStart(3, '0')}`;
-      const [command, disposition] = kept.get(`${row.source}\u0000${row.claim}`)?.shift() ?? [];
-      return `| ${id} | ${row.source} | \`${row.at}\` | ${row.claim} | ${held(command)} | ${held(disposition)} |`;
+      const [command, disposition] = kept.get(`${row.source}\u0000${row.hash}`)?.shift() ?? [];
+      return `| ${id} | ${row.source} | \`${row.at}\` | ${row.hash} | ${row.claim} | ${held(command)} | ${held(disposition)} |`;
     })
     .join('\n');
 };
 
 /**
- * Grade the registry against the re-derived set: same rows, in order, none unadjudicated.
+ * Grade the registry against the re-derived set: same rows, in order, each carrying the
+ * digest of the claim it adjudicated, none unadjudicated.
  *
- * @param {{source: string, at: string, claim: string}[]} rows @param {string} registry
+ * @param {Claim[]} rows @param {string} registry
  * @returns {string[]}
  */
 export const gradeRegistry = (rows, registry) => {
@@ -237,10 +271,7 @@ export const gradeRegistry = (rows, registry) => {
   const failures = [];
   const found = registry
     .split('\n')
-    // Whitespace-tolerant: a formatter that decides to pad this table must not redden the gate.
-    .map((line) =>
-      /^\|\s*(R\d+)\s*\|\s*([a-z]+)\s*\|\s*`([^`]*)`\s*\|(.*)\|([^|]*)\|([^|]*)\|$/u.exec(line),
-    )
+    .map((line) => ROW.exec(line))
     .filter((match) => match !== null);
   if (found.length === 0) return ['registry holds no rows, so the claim set grades nothing'];
   if (found.length !== rows.length) {
@@ -250,11 +281,41 @@ export const gradeRegistry = (rows, registry) => {
     const at = found[index]?.[3];
     if (at !== row.at) {
       failures.push(`row ${index + 1} is anchored at ${at ?? 'nothing'}, expected ${row.at}`);
+    } else if (found[index]?.[4] !== row.hash) {
+      // An in-place edit keeps the anchor, so only the digest can see it.
+      failures.push(`row ${index + 1} (${row.at}) adjudicated other text; run pnpm claims:seed`);
     }
   });
-  const open = found.filter((match) => (match[5] ?? '').trim() === 'unknown').length;
-  if (open > 0) failures.push(`${open} rows are unadjudicated`);
+  const open = found.filter((match) => (match[7] ?? '').trim() === 'unknown');
+  if (open.length > 0) {
+    const where = open.map((match) => match[3] ?? '?').join(', ');
+    failures.push(`${String(open.length)} rows are unadjudicated: ${where}`);
+  }
   return failures;
+};
+
+/**
+ * The first rules claim the shown cell cuts short, lengthened past the cut in memory — the
+ * shape of an appended branch citation, which is the edit the cell-keyed merge used to miss.
+ *
+ * @returns {{at: string, read: (path: string) => string}}
+ */
+const pastTheCut = () => {
+  for (const file of readdirSync(RULES_DIR).sort()) {
+    const path = join(RULES_DIR, file);
+    const text = readFileSync(path, 'utf8');
+    const unit = units(text).find((u) => claimlike(u.text) && cell(u.text).length < u.text.length);
+    if (unit === undefined) continue;
+    const lines = text.split('\n');
+    const last = unit.line + unit.lines - 2;
+    lines[last] = `${lines[last] ?? ''} (control)`;
+    const edited = lines.join('\n');
+    return {
+      at: `${path}:${String(unit.line)}`,
+      read: (target) => (target === path ? edited : readFileSync(target, 'utf8')),
+    };
+  }
+  throw new Error('no rules claim runs past the cell cut, so the edit controls grade nothing');
 };
 
 const rows = claimSet();
@@ -299,7 +360,24 @@ if (process.argv.includes('--seed')) {
       ),
   );
 
-  const failures = gradeRegistry(rows, readFileSync(REGISTRY, 'utf8'));
+  const registry = readFileSync(REGISTRY, 'utf8');
+  const edit = pastTheCut();
+  const edited = claimSet({ read: edit.read });
+  const unseeded = requireFiring(
+    'claims:check',
+    {
+      mutation: `${edit.at} lengthened past the cell cut`,
+      expect: [`(${edit.at}) adjudicated other text`],
+    },
+    () => gradeRegistry(edited, registry),
+  );
+  const reseeded = requireFiring(
+    'claims:check',
+    { mutation: 'that edit re-seeded', expect: ['unadjudicated: ', edit.at] },
+    () => gradeRegistry(edited, table(edited, registry)),
+  );
+
+  const failures = gradeRegistry(rows, registry);
   if (failures.length > 0) {
     process.stderr.write(`claims:check failed — ${failures.join('; ')}\n`);
     process.exitCode = 1;
@@ -313,7 +391,7 @@ if (process.argv.includes('--seed')) {
       .join(', ');
     process.stdout.write(
       `claims:check ok — ${String(rows.length)} claims covered (${split}), ` +
-        `every row adjudicated; control: ${control}\n`,
+        `every row adjudicated; controls: ${control}, ${unseeded}, ${reseeded}\n`,
     );
   }
 }

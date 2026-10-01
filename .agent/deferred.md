@@ -26,18 +26,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
 - **Question deep-links + history** — encode the selected catalog ID in the URL.
   Accept: reload and back/forward restore only a catalog ID, and never start a
   run without an explicit user action. `pri` low.
-- **`claims:seed` carries a verdict across an edit past the claim-cell truncation** — the
-  registry stores a truncated claim and the seed re-keys on that stored text, so an edit
-  BEYOND the cut silently preserves the old `disposition` and `command`. Hit live: appending
-  `wt/res-nl-intake` `ae608ff` to the `waves.md` evidence-branch bullet left R215 reading
-  `true` under a command that verified only the four older SHAs. Caught by eye, not by the
-  gate. **Hit live a SECOND time on that same row**: appending `wt/res-u16-shape` `490dfcf` to
-  the same bullet re-seeded 380 rows with **zero** `unknown`, R215 still `true` under the
-  five-SHA command, and only the seven line anchors below it moved. Both occurrences were
-  repaired by hand-editing the command cell, which is not a fix.
-  Accept: the seed keys on the FULL claim text (hash it if the cell must stay short), so
-  any edit to a claim drops its verdict to `unknown`; firing input = this exact append,
-  re-seeded, which must leave the row unadjudicated. `pri` med.
 - **Offline asset caching** — service worker over the hashed runtime assets.
   Accept: a second visit boots with the network offline, and a changed KB input
   hash invalidates every stale PVM asset. `pri` low.
@@ -434,7 +422,6 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | `graph:check`'s spanning-scope grader is edge-blind | probe returns `data-edge-id`; both directions non-null; a wrong edge and a missing reverse row redden by id |
 | Three `kb:asset-check` root tables grade nothing when emptied | each refuses an emptied table by its own name; the success line names every control that fired |
 | Two registry rows say `deferred` and cite no queue row | both subjects carry a queue row, both dispositions cite it, `claims:check` refuses an uncited `deferred` |
-| `claims:seed` keeps a verdict when a claim is edited past the stored cell's truncation | the seed keys on full claim text, so any edit drops the row to `unknown`; the `waves.md` branch-list append re-seeds unadjudicated |
 
 ## Accepted-open
 
