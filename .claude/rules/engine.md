@@ -127,3 +127,11 @@ and `worker.ts` is message plumbing only. Tests drive the session.
 The main chunk carries 0 engine bytes; the worker chunk plus a hashed `kb-<hash>.pvm` carry
 it. No COOP/COEP is needed, but `loadImageDefault` uses direct `eval` → a strict CSP host is
 a live risk.
+
+## Shipped bounds
+
+| bound | value | why |
+|---|---|---|
+| `HARD_GRACE_MS` (`client.ts`) | 500 ms | slack between the worker's soft deadline and the client's hard one, so a soft trip reports with its engine intact before termination answers |
+| `BOOT_DEADLINE_MS` (`client.ts`) | 30 000 ms | per boot attempt; one automatic recreate on a hung boot, then a typed `boot` error |
+| `DEFERRED_CANCELS` (`session.ts`) | 8 | held early cancels; one query runs at a time, so only the newest can still be in flight |

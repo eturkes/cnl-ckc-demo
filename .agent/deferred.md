@@ -174,16 +174,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   and 25 such rows reduce to 22 index lines, so some queue items share a line or have none.
   Accept: one command derives the index from the queue rows, and a `high`/`med` row added
   without its line fails; the regenerated index round-trips to the same row set. `pri` low.
-- **Twelve shipped bounds have no owner** — a legitimate change updates the constant instead
-  of being refused. Worst first: `src/graph/SemanticGraph.svelte:106`
-  `relationPool.slice(0, 60)`, which truncates a node's relation list with no indication, then
-  `model.ts:3,4,6,465,496`, `SemanticGraph.svelte:111,153`, `canvas.ts:267`,
-  `QuestionCombobox.svelte:25`, `client.ts:40,50`, `session.ts:108`,
-  `DemoController.svelte.ts:34`. Owner search rc=1 each; `DEFAULT_NEIGHBOR_LIMIT` control
-  rc=0. The graph subset is u11→u13 scope and lands there. Accept: each names an owner in
-  `.claude/rules/` or `.agent/contracts/` whose search returns rc 0, and the 60-relation cap
-  either surfaces its truncation or is contract-owned. `pri` med.
-
 - **71 operator contexts have no edge in the shipped graph** — 64 negation (`-`) and 7 `can`,
   i.e. 41% of the corpus's 156 negation contexts, sit as operator-context nodes nothing
   connects. They are the body-level scopes like `guideline_operator(actual, C, -)` whose
@@ -352,7 +342,6 @@ Defect and acceptance check. Full text is above in this file; the `low` rows are
 | Wordmark, forbidden claims, descriptor + fallback stacks rest on one reading | each decided by a committed check |
 | Five browser claims + two probes live only on `wt/` branches | one typed `tools/` harness covers all five; probes port or claims prune |
 | Two tests time out under parallel execution | both pass 20 consecutive full-suite runs at the committed worker count |
-| Ten shipped bounds have no owner | each names an owner whose search returns rc 0; the 60-relation cap surfaces truncation or is contract-owned |
 | 71 operator contexts have no edge, 64 of them negation | the 71 carry edges with the moved counts recorded, or a check proves no shown path skips an edgeless negation context |
 | The projection oracle lives on a branch alone | its label lookups match on `relation`, 24/24 green in-tree, joined to a declared register |
 | 38 shortcut edges join scopes that contradict rather than nest | each carries a source-derived justification, or the synthesis declines to emit it and the moved counts are recorded with the original firing |

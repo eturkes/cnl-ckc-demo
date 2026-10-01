@@ -173,3 +173,16 @@ Four forms on the resolved pair: `<rel> · <near>`, `<rel>`, `<rel> · <near> �
 trimmed or composed across ends — `[-]` against `[-, should]` writes both sides in full,
 because eliding the repeat would render a nested pair identically to a divergent one, and the
 38 contradicting cases are where that would lie.
+
+## Shipped bounds
+
+Each bound is owned here; changing one is a decision this table records, never a silent edit.
+
+| bound | value | why |
+|---|---|---|
+| `MAX_NEIGHBOR_LIMIT` (`model.ts`) | 240 | ceiling of the neighborhood "show more" ladder (`DEFAULT_NEIGHBOR_LIMIT` steps); past it the fCoSE layout stops reading at the canvas box |
+| `DEFAULT_EDGE_LIMIT` (`model.ts`) | 480 | edge cap for a neighborhood or answer subgraph; the view discloses the cut through its truncation flags |
+| `MAX_ANSWER_GRAPH_LIMIT` (`model.ts`) | 72 | ceiling of the answer map's "show more" ladder (`DEFAULT_ANSWER_GRAPH_LIMIT` steps) |
+| `SEARCH_RESULT_LIMIT` (`SemanticGraph.svelte`) + `search`/`searchConcepts` `limit = 24` (`model.ts`) | 24 | one screen of search results; a longer list is a query to refine, not a list to scroll |
+| `FALLBACK_RELATION_LIMIT` (`SemanticGraph.svelte`) | 60 | direct-relationship list cap; the cut is surfaced in place by `TEXT.graphRelationsTruncated` (shown of total, omitted rows, split scope variants) |
+| `PADDING` (`canvas.ts`) | 32 px | fit margin, so a node label at the canvas edge is never clipped by the box |

@@ -130,3 +130,10 @@ read out of the vendored bag **at run time** through `verifyBag`.
   record. Its two in-process controls alter that digest and flip one served pvm byte, and its
   lane-level firing input serves the same build stripped of the hashed pvm, which the boot grader
   must refuse.
+
+## Shipped bounds
+
+| bound | value | why |
+|---|---|---|
+| `TYPEAHEAD_MS` (`QuestionCombobox.svelte`) | 500 ms | the typeahead buffer's life, the APG figure; `pnpm test:browser` K5 grades both sides of it |
+| `DEMO_BUDGET` (`DemoController.svelte.ts`) | 5 000 000 inferences, 5 000 ms | one prepared question's request-wide budget; shipped catalog peaks sit orders of magnitude below it |
