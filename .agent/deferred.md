@@ -79,11 +79,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   features now; proposal: no shipped string names a milestone, unit or review id (`M1`–`M5`,
   `u12`, `R045`, `U7-26`); (b) descriptor rendering — no component renders `describeDescriptor`'s
   output any more, so retire the item, or remove the dead `descriptor` field it feeds.
-- **`copy:check` double-grades a keyed literal** — a mutated string fails twice, once
-  under its record key and once as an identical `<literal>` row, so a one-string mutant
-  reports two failures and a reader cannot count real defects (M1 review U7 register
-  REG-01, `tools/copy-check.mjs:23-126`). Accept: one mutated string produces exactly one
-  failure line naming its record key. `pri` low.
 - **u5 red suite never existed** — u5 shipped with no `test-m1u5` diff-blind suite, and the
   roadmap's `NOT verified` clause had no register entry (M1 review X16). Accept: a suite
   authored from `.agent/contracts/m1u5.md` alone runs in the primary tree, every case red

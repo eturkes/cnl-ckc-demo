@@ -88,14 +88,19 @@ const literals = (source) => {
   const entry =
     // eslint-disable-next-line security/detect-unsafe-regex
     /(?:^|\n)\s*(?:\/\*\*[\s\S]*?\*\/\s*)?([\w]+):\s*((?:'(?:[^'\\]|\\.)*'(?:\s*\+)?\s*)+)/g;
-  for (const [, key, group] of body.matchAll(entry)) {
-    if (key === undefined || group === undefined) continue;
+  let rest = body;
+  for (const match of body.matchAll(entry)) {
+    const [whole, key, group] = match;
+    if (key === undefined || group === undefined || match.index === undefined) continue;
     const text = [...group.matchAll(/'((?:[^'\\]|\\.)*)'/g)].map(([, s]) => s ?? '').join('');
     out.push({ key, text });
+    // Blanked for the standalone pass, so a keyed value grades once, under its key.
+    const start = match.index + whole.length - group.length;
+    rest = `${rest.slice(0, start)}${' '.repeat(group.length)}${rest.slice(start + group.length)}`;
   }
   // Standalone literals, which is how `TEXT`'s arrow bodies and every template
   // piece are reached — the entry pattern above sees quoted values alone.
-  for (const [, text] of body.matchAll(/(?:^|[^\w'])(?:'|`)((?:[^'`\\\n]|\\.){12,})(?:'|`)/g)) {
+  for (const [, text] of rest.matchAll(/(?:^|[^\w'])(?:'|`)((?:[^'`\\\n]|\\.){12,})(?:'|`)/g)) {
     if (text !== undefined) out.push({ key: '<literal>', text });
   }
   return out;
@@ -344,6 +349,10 @@ const main = () => {
     source: readFileSync(path, 'utf8'),
   }));
   const planted = `<p>${Array.from({ length: 30 }, (_, i) => `word${String(i)}`).join(' ')}.</p>`;
+  const keyed = literals(bucket(en, EN, 'DESCRIPTIONS')).find(
+    ({ key, text }) => key !== '<literal>' && en.includes(`'${text}'`),
+  );
+  if (keyed === undefined) throw new Error(`${EN}: DESCRIPTIONS holds no single-literal value`);
 
   // One control per grader, each breaking the input this grader reads. `en` standing in for
   // `ja` is the parity mutation: every value is then byte-identical to its English source.
@@ -360,6 +369,22 @@ const main = () => {
           BUCKETS.map(({ name }) => ({ name, limit: 0 })),
           ['the'],
         ).failures,
+    ),
+    requireFiring(
+      'copy',
+      {
+        mutation: `one keyed DESCRIPTIONS value given the banned word "${FILLER[0] ?? ''}"`,
+        expect: [`DESCRIPTIONS.${keyed.key}: banned word "${FILLER[0] ?? ''}"`],
+      },
+      // Exactly one line, by key: a second, keyless line for the same string is the double grade.
+      () => {
+        const found = gradeEnglish(
+          en.replace(`'${keyed.text}'`, `'${keyed.text} ${FILLER[0] ?? ''}'`),
+          BUCKETS,
+          FILLER,
+        ).failures;
+        return found.length === 1 ? found : [];
+      },
     ),
     requireFiring(
       'copy',
