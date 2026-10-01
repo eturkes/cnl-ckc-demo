@@ -17,7 +17,11 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   MAIN's numbers and a visible text change, so no production edit precedes the ruling.
 - **Phased boot telemetry** — replace the single boot spinner with ordered
   progress phases. Accept: each phase emits one accessible status event in
-  order, and no percentage is reported that the runtime does not supply. `pri` low.
+  order, and no percentage is reported that the runtime does not supply. `pri` low. **Owes a
+  ruling**: the phases replace the accepted status line's boot text, a visible change. The
+  phases the runtime supplies: image fetch (bytes only where the response streams them),
+  `loadImageDefault`, contract verification; the worker protocol gains a `progress` response,
+  which joins the d37 clone table.
 - **Question deep-links + history** — encode the selected catalog ID in the URL.
   Accept: reload and back/forward restore only a catalog ID, and never start a
   run without an explicit user action. `pri` low.

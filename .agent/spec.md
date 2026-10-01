@@ -221,7 +221,8 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] d54 every `deferred` registry row cites a live queue row; `claims:check` refuses an uncited or dangling one (7 rows added).
 - [x] d1 the Japanese face ships as a catalog-exact subset (2,654,740 B → 193,444 B), raster-identical to the original.
 - [ ] d3 contract drafted (`.agent/contracts/mnt-d3.md`: J1 ceilings, J2 terms, J3 final form, 3 copy edits); owes approval.
-- [ ] `low`: d5 d6 d8 d9 d12 d15 d17 d20 d22 d28 d33 d34 d35 d38 d39 d41 d42 d43 d47
+- [ ] d5 owes a ruling: phased boot status replaces the accepted status line's boot text.
+- [ ] `low`: d6 d8 d9 d12 d15 d17 d20 d22 d28 d33 d34 d35 d38 d39 d41 d42 d43 d47
   d55 d56 d57 d58 d59 d60 d61 d62 d63
 - [ ] Close: closing diff → every `reviewer` lens; `pnpm gate` on a clean tree.
 
