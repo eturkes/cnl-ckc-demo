@@ -86,22 +86,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   document-first view is a new surface beside the accepted answer panel, ladder and graph, and
   its entry point changes the accepted page layout — where it lives and how it is reached is
   the user's call.
-- **The independent projection oracle lives on a branch alone** — u12's differential ran
-  `tests/graph-projection.oracle.test.ts` (branch `wt/orc-proj` `1a893b1`) against the shipped
-  model: 19 passed / 5 failed, every failure adjudicated for the shipped side. Three of the
-  five are one stale lookup — the oracle finds an edge by `label === 'argument 1'`, while
-  `label` is now relation + ordered scope per `.agent/contracts/m5u8.md:90-97`. It does not
-  ship in u12 because editing a teammate's oracle until it passes and then grading the
-  projection with it grades a check MAIN bent. Accept: the three lookups match on `relation`,
-  the suite runs 24/24 green against the shipped model from the primary tree, and it joins a
-  declared `binding:check` register. `pri` med. **Owes a ruling**: with exactly the three lookups moved to
-  `relation` (8 lines) the oracle runs 19/24 at `6b1a5cf`; the 5 still red are P2 counts (stale
-  `2630/1584` against today's `2668/1912`), P2 order (its fixture trips the scopes sortedness
-  invariant), P3 modal force, P3 shortcut omission (wants `edge:512:12` absent, which P6
-  forbids) and "names a directed support relation from its target perspective" (predates u13's
-  reader-relative labels). m5u12 ruled the first, second and fourth for the shipped side, so
-  24/24 needs edits to the teammate's oracle beyond the lookups — the user rules which.
-
 - **The judgment Worker runs locally alone** — user ruling deferred the Cloudflare deploy and
   stopped Pages publishing, so free-text intake exists only under `pnpm intake:dev` + Vite's
   proxy. `worker/index.ts` spends one global limiter bucket (`key: 'intake'`), correct for one
@@ -192,7 +176,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 | --- | --- |
 | u3 heap limit is unit-tested only | a committed test drives real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate |
 | **high** Browser WASM abort leaves a dead session | an aborted runtime reaches the client as its own terminal state that recreates the worker without a caller `reset()`, proven by a browser probe whose next query reports 337 documents |
-| The independent projection oracle lives on a branch alone | the three lookups match on `relation`, the suite runs 24/24 green against the shipped model from the primary tree, and it joins a declared `binding:check` register |
 | Live suites time out under heavy external CPU load | the full suite passes 20 consecutive runs at load avg ≥ 3× cores with no timeout raised, or a user-approved gate timeout policy is recorded with its original firing |
 
 ## Accepted-open

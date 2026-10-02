@@ -212,8 +212,8 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `524dad6` d44 `tests/census.test.ts` grades every stable census the rules state against its derivation.
 - [x] `1193641` d46 smoke + browser:check each refuse a mutation their own lane runs (pvm-stripped copy, renamed woff2).
 - [x] `3032246` d48 every shipped bound names an owner in the rules; the 60-relation cap surfaces its truncation.
-- [ ] d49 the 71 orphan contexts record their body literals; the body-relation dedup keys on scope (+16 edges); `MEANING` O1–O4 prove none is shown through another world — closed by the commit that adds this line.
-- [ ] d50 owes a ruling: 3 lookup fixes give 19/24; 24/24 needs oracle edits beyond them.
+- [x] `85e51fc` d49 the 71 orphan contexts record their body literals; the body-relation dedup keys on scope (+16 edges); `MEANING` O1–O4 prove none is shown through another world.
+- [ ] d50 retired by user ruling: the shipped graders cover the projection; `wt/orc-proj` `1a893b1` stays as evidence — closed by the commit that adds this line.
 - [x] `0e1e5e0` d51 each of the 38 contradicting shortcuts is justified by its own clause (`tests/graph-shortcut-justification.test.ts`).
 - [x] `ebf066e` d52 `graph:check` binds each spanning reading to its edge by id, both directions; the fallback list can expand to every incident relation.
 - [x] `d07faac` d53 each `kb:asset-check` root table refuses an emptied table by its own name.
