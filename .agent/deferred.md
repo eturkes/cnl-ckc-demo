@@ -109,20 +109,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   recall; only where no condition fired at all: 51/109, 51/163; condition rules alone: 37/39,
   37/163. A lift therefore needs new per-rule judgment signal — a request change, which the
   user's selection-model ruling governs — and a live billed `pnpm intake:probe` to score it.
-- **Live suites time out under heavy external CPU load** — at load avg 27–33 on 8 cores (other
-  sessions' builds), each full-suite run failed 1–20 tests beyond the two the row above names:
-  `graph-live` "produces a concept-first answer map" (7784 ms against 5000), live clinical proofs
-  exceeding the shipped 1000 ms proof budget, `engine-u2-port` round trips, and the axe sweeps of
-  `question-combobox.dom` B3, `provenance-ladder.dom` C9, `semantic-graph.dom` and `intake-panel`
-  U6; later also `engine-heap` "aborts the runtime … in under 5 s" (13 488 ms in a full run at avg
-  ~13 against 590–812 ms alone) and the `intake-chunker` 750-description property (5070 ms). A
-  gate run is green again once the load falls (906/906 at avg 7–15). Accept: the full suite
-  passes 20 consecutive runs at load avg ≥ 3× cores with no timeout raised, or a user-approved
-  gate timeout policy is recorded with its original firing. `pri` med. **Owes the user**: 20
-  consecutive `pnpm test` runs then passed 1014/1014 each with no timeout, at load avg 4.6–23.5 on
-  8 cores (`4dc9179` body) — up to 2.9× cores, short of the 3× this check
-  names and of the 27–33 that broke the earlier runs. Either a run at ≥ 24 sustained (the
-  machine is shared with the user's other sessions) or a gate timeout ruling.
 - **Inline-disable reasons have no grader** — `.claude/rules/gate.md`'s `lint` bullet says every
   remaining security exception is one inline disable carrying its reason; `pnpm lint` passes
   whether or not a reason is there, so the registry row reads it by hand. Three non-security
@@ -176,7 +162,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 | --- | --- |
 | u3 heap limit is unit-tested only | a committed test drives real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate |
 | **high** Browser WASM abort leaves a dead session | an aborted runtime reaches the client as its own terminal state that recreates the worker without a caller `reset()`, proven by a browser probe whose next query reports 337 documents |
-| Live suites time out under heavy external CPU load | the full suite passes 20 consecutive runs at load avg ≥ 3× cores with no timeout raised, or a user-approved gate timeout policy is recorded with its original firing |
 
 ## Accepted-open
 

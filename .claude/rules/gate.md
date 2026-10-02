@@ -265,6 +265,12 @@ once starve the CPU into spurious `Test timed out in 5000ms` failures — `kb-re
 spawns `kb:asset-check` subprocesses, and `demo-controller.dom`'s axe sweep. Nothing is
 wrong with the tree. The decisive rerun follows `TaskStop`.
 
+**The suite's load envelope (user ruling).** 20 consecutive full runs passed 1014/1014 at load
+avg 4.6–23.5 on 8 cores (`4dc9179` body); runs at 27–33 timed out 1–20 live tests. That
+measured envelope is the accepted bar — ≤ 2.9× cores — and no per-test timeout was raised
+for load. A red gate under heavier external load is load, not the tree: rerun it once the load
+falls.
+
 A gate backing a durable claim must rerun from committed state. A scratch-local validator is
 a temporary encoding → record its regeneration path beside the gate invocation here, and
 schedule the port as a `.agent/deferred.md` row.

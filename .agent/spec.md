@@ -213,7 +213,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `1193641` d46 smoke + browser:check each refuse a mutation their own lane runs (pvm-stripped copy, renamed woff2).
 - [x] `3032246` d48 every shipped bound names an owner in the rules; the 60-relation cap surfaces its truncation.
 - [x] `85e51fc` d49 the 71 orphan contexts record their body literals; the body-relation dedup keys on scope (+16 edges); `MEANING` O1–O4 prove none is shown through another world.
-- [ ] d50 retired by user ruling: the shipped graders cover the projection; `wt/orc-proj` `1a893b1` stays as evidence — closed by the commit that adds this line.
+- [x] `fce2f9b` d50 retired by user ruling: the shipped graders cover the projection; `wt/orc-proj` `1a893b1` stays as evidence.
 - [x] `0e1e5e0` d51 each of the 38 contradicting shortcuts is justified by its own clause (`tests/graph-shortcut-justification.test.ts`).
 - [x] `ebf066e` d52 `graph:check` binds each spanning reading to its edge by id, both directions; the fallback list can expand to every incident relation.
 - [x] `d07faac` d53 each `kb:asset-check` root table refuses an emptied table by its own name.
@@ -261,7 +261,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `d533775` find: a halting payload's build refusal names the halt and its exit.
 - [ ] find (dict re-encoding) owes a ruling: the wrapper offers no supported way to build a tagged dict from JS; refuse dicts in `createEncoder`, or patch upstream.
 - [ ] find (inline-disable reasons) owes a ruling: two directives now carry reasons; the third is in T9-frozen `provenance.mjs`.
-- [ ] find (heavy-load timeouts) owes a heavier run or a timeout ruling: 20 runs passed at load ≤23.5, short of the ≥24 bar.
+- [ ] find (heavy-load timeouts) closed by user ruling: the measured 2.9× envelope (20/20 runs at load ≤23.5) is the bar — closed by the commit that adds this line.
 - [ ] find (failed reset) owes approval to change P4.4 (`engine-recovery`) + P1.1 (`engine-budgets`): only a heap recreation boots under the deadline; a failed replacement stays live.
 - [x] `aefae8c` find: a refactor staled mutant R09's anchor with the gate green → `tests/mutant-anchors.test.ts` grades every anchor in the gate.
 - [x] `8c186d2` find: a heap recreation that joined an in-flight reset waited on its unbounded boot → it arms its own boot deadline.
