@@ -144,7 +144,7 @@ describe('static semantic graph asset', () => {
       expect(graph.model.stats.byEdgeKind[kind], kind).toBeGreaterThanOrEqual(minimum);
     }
     expect(graph.model.stats.byEdgeKind).toEqual({
-      argument: 3805,
+      argument: 3821,
       cardinality: 1834,
       entity: 1834,
       event: 1254,
@@ -157,7 +157,7 @@ describe('static semantic graph asset', () => {
       documents: 337,
       clauses: 10_321,
       nodes: 2901,
-      edges: 20_964,
+      edges: 20_980,
     });
   });
 

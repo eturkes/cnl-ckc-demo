@@ -101,11 +101,11 @@ server refuses, and a `--graph-*` palette set to `initial`). The mocked suite ca
     fill off its neighbour's label outline.
   - The legend swatches in `SemanticGraph.svelte` read the same tokens, so legend and canvas
     cannot drift.
-- The graph carries **0 self-edges of 20,964**, so `canvas.ts` filters none.
+- The graph carries **0 self-edges of 20,980**, so `canvas.ts` filters none.
 
 ## Data shape
 
-- Deterministic full graph = **2,901 typed nodes / 20,964 typed edges**, extracted by static
+- Deterministic full graph = **2,901 typed nodes / 20,980 typed edges**, extracted by static
   `clause/2` sweep. Runtime predicate calls expose only the derivable minority.
 - Explicit edge schemas = 7 (`entity/4`, `cardinality/5`, `event/3`, `arg/4`, `pp/4`,
   `property/4`, `operator/3`), plus **9,804 `implies` edges**. That single figure hides two
@@ -135,7 +135,12 @@ first), which is the user's edge-state ruling made real in `src/graph/model.ts`.
   edges the projection now admits (`relation !== 'na eq 1'`), 12 of which carry scope.
 - Modal census, unchanged by u12: 156 `-` (negation), 857 `should`, 156 `may`, 85 `can`,
   9 `must` = **1,263 operator contexts**, of which 71 carry no edge at all and stay orphaned by
-  user ruling.
+  user ruling. Each of the 71 records the body literals in its world (`scopes[].literals`), and
+  `tests/graph-orphan-scopes.test.ts` (`MEANING`) proves every relation literal rides an edge
+  of its own world. The body-relation dedup keys on that world: a relation asserted plainly and
+  under a negation in one sentence is two edges, +16 `argument` (`.agent/contracts/mnt-d49.md`).
+  The `condition supports` dedup stays scope-blind — queue row `Condition-supports dedup is
+  scope-blind`.
 
 **u13 closed the SHOWN edge.** `EdgeView` (`src/graph/view.ts`) carries `scope`, `farScope` and
 the composed `label`, and both renderers show them. `m5u8.md:90-97` declares the type, amended

@@ -22,8 +22,10 @@ export const GRAPH_ASSET_PATH = 'graph/semantic-graph.json';
  * @typedef {'-' | 'should' | 'may' | 'can' | 'must'} ScopeOperator
  * @typedef {{ outer: string, operator: ScopeOperator, document: string,
  *   sentence: number | null, reference: string }} ScopeDefinition
+ * @typedef {{ line: number, index: number, predicate: string, edge: string | null }} ScopeLiteral
  * @typedef {{ id: string, chain: string[], operator: ScopeOperator,
- *   document: string, sentence: number | null, reference: string }} ScopeRecord
+ *   document: string, sentence: number | null, reference: string,
+ *   literals?: ScopeLiteral[] }} ScopeRecord
  * @typedef {import('./provenance.mjs').ClauseSite} ClauseSite
  */
 
@@ -158,6 +160,8 @@ export const validateSemanticGraphAsset = (value) => {
   /** @type {string[]} */
   const failures = [];
   const ids = new Set();
+  /** @type {{ at: string, literals: unknown }[]} */
+  const literalRefs = [];
   const operatorCounts = new Map(SCOPE_OPERATORS.map((operator) => [operator, 0]));
   let previousId;
   for (const [index, scope] of scopes.entries()) {
@@ -166,10 +170,13 @@ export const validateSemanticGraphAsset = (value) => {
       failures.push(`${at} must be an object`);
       continue;
     }
-    const fields = Object.keys(scope).sort();
+    const fields = Object.keys(scope)
+      .filter((field) => field !== 'literals')
+      .sort();
     if (fields.join(',') !== SCOPE_FIELDS.join(',')) {
       failures.push(`${at} fields ${fields.join(',')}, expected ${SCOPE_FIELDS.join(',')}`);
     }
+    if ('literals' in scope) literalRefs.push({ at, literals: scope.literals });
     const { id, chain, operator, document, sentence, reference } = scope;
     if (typeof id !== 'string' || id.trim() === '') failures.push(`${at}.id must be non-empty text`);
     else {
@@ -238,6 +245,28 @@ export const validateSemanticGraphAsset = (value) => {
     }
   }
   if (scopedEdges === 0) failures.push('edges carry zero scope references');
+  const edgeIds = new Set(edges.map((edge) => (isRecord(edge) ? edge.id : undefined)));
+  for (const { at, literals } of literalRefs) {
+    if (!Array.isArray(literals) || literals.length === 0) {
+      failures.push(`${at}.literals must be a non-empty array`);
+      continue;
+    }
+    for (const [index, literal] of literals.entries()) {
+      const where = `${at}.literals[${String(index)}]`;
+      if (
+        !isRecord(literal) ||
+        Object.keys(literal).sort().join(',') !== 'edge,index,line,predicate' ||
+        !Number.isSafeInteger(literal.line) ||
+        !Number.isSafeInteger(literal.index) ||
+        typeof literal.predicate !== 'string' ||
+        (literal.edge !== null && typeof literal.edge !== 'string')
+      ) {
+        failures.push(`${where} must be { line, index, predicate, edge }`);
+      } else if (literal.edge !== null && !edgeIds.has(literal.edge)) {
+        failures.push(`${where}.edge ${String(literal.edge)} names no edge`);
+      }
+    }
+  }
   return failures;
 };
 
@@ -394,8 +423,15 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
 
   /** @type {Map<string, number>} */
   const edgeKinds = new Map();
-  /** @type {Set<string>} */
-  const emittedConditions = new Set();
+  /** Each shown body relation's dedup key → the id of the edge that shows it. */
+  /** @type {Map<string, string>} */
+  const emittedConditions = new Map();
+  /** `<line>:<body index>` → the edge showing that body literal's relation. */
+  /** @type {Map<string, string>} */
+  const literalEdges = new Map();
+  /** The scope index a call's world resolves to, the way `emit` resolves an edge's scope. */
+  const world = (/** @type {ClauseSite} */ clause, /** @type {{ args: string[] }} */ call) =>
+    scopeIndexes.get(scopeKey(clause.document, clause.sentence, call.args[0] ?? '')) ?? -1;
   const emit = (
     /** @type {ClauseSite} */ clause,
     /** @type {number} */ ordinal,
@@ -515,11 +551,19 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
           /** @type {string} */ target,
           /** @type {string} */ label,
         ) => {
-          const key = [clause.document, clause.sentence ?? 0, kind, source, target, label].join(
+          // The world joins the key: a relation asserted under a negation and plainly in one
+          // sentence is two claims, and a scope-blind key showed the negated one as the plain.
+          const key = [clause.document, clause.sentence ?? 0, kind, source, target, label, world(clause, call)].join(
             '\u0000',
           );
-          if (emittedConditions.has(key)) return;
-          emittedConditions.add(key);
+          const shown = emittedConditions.get(key);
+          if (shown !== undefined) {
+            literalEdges.set(`${String(clause.line)}:${String(index)}`, shown);
+            return;
+          }
+          const id = `edge:${String(clause.line)}:${String(index + 2)}`;
+          emittedConditions.set(key, id);
+          literalEdges.set(`${String(clause.line)}:${String(index)}`, id);
           emit(clause, index + 2, kind, source, target, label, call.name, call);
         };
         if (call.name === 'guideline_arg' || call.name === 'guideline_pp') {
@@ -590,7 +634,7 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
             'condition supports',
           ].join('\u0000');
           if (emittedConditions.has(key)) continue;
-          emittedConditions.add(key);
+          emittedConditions.set(key, `edge:${String(clause.line)}:${String(clause.body.length + index + 2)}`);
           emit(
             clause,
             clause.body.length + index + 2,
@@ -617,6 +661,28 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
         args[0] ?? '',
       );
       emit(clause, 1, 'implies', context, headNode, `condition implies ${clause.predicate}`);
+    }
+  }
+
+  // An operator context whose node no edge touches records the body literals inside it, so a
+  // check over the asset can prove each one still shows its operator (`mnt-d49.md`).
+  const incident = new Set(edges.flatMap((edge) => [edge.source, edge.target]));
+  const orphans = new Set(
+    scopes.flatMap((scope, index) =>
+      incident.has(operatorId(scope.document, scope.sentence, scope.reference)) ? [] : [index],
+    ),
+  );
+  for (const clause of parsedClauses) {
+    for (const [index, call] of clause.body.entries()) {
+      const scope = world(clause, call);
+      if (!orphans.has(scope)) continue;
+      const record = /** @type {ScopeRecord} */ (scopes[scope]);
+      (record.literals ??= []).push({
+        line: clause.line,
+        index,
+        predicate: call.name,
+        edge: literalEdges.get(`${String(clause.line)}:${String(index)}`) ?? null,
+      });
     }
   }
 

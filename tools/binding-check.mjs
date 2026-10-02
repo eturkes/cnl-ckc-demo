@@ -301,6 +301,16 @@ const MEANING = Object.freeze([
       'semantic graph source fidelity review keeps every prepared answer highlight inside its cited source contribution',
     ],
   },
+  {
+    suite: 'tests/graph-orphan-scopes.test.ts',
+    why: 'a negation or modal context with no edge of its own still rides every relation it scopes',
+    cases: [
+      'orphan operator contexts O1 records a literal set on exactly the 71 contexts no edge touches',
+      'orphan operator contexts O2 shows each orphan operator on at least one edge',
+      'orphan operator contexts O3 shows no orphan literal through an edge of another world',
+      'orphan operator contexts O4 matches the literal set re-derived from the bag',
+    ],
+  },
 ]);
 
 const VITEST = join(ROOT, 'node_modules', 'vitest', 'vitest.mjs');

@@ -86,24 +86,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   document-first view is a new surface beside the accepted answer panel, ladder and graph, and
   its entry point changes the accepted page layout — where it lives and how it is reached is
   the user's call.
-- **71 operator contexts have no edge in the shipped graph** — 64 negation (`-`) and 7 `can`,
-  i.e. 41% of the corpus's 156 negation contexts, sit as operator-context nodes nothing
-  connects. They are the body-level scopes like `guideline_operator(actual, C, -)` whose
-  identity binds at query time, with entities asserted inside `C`. u11 measured them and
-  emitted 71 covering body edges; **the user ruled leave them orphaned**, so the edge
-  population stays at 20,964 total / 1,193 operator and u11's S3 relaxed to one-way linkage
-  with the unreferenced-record count pinned. The cost is that a projection can draw a direct
-  edge past a negation the KB asserts, which is what `wt/rev-sem-2`'s hidden-negation reds
-  describe. Accept: either the 71 contexts carry an edge and `tests/kb-derived-assets.test.ts`
-  records the moved counts with the original firing, or a committed check proves no shown path
-  can skip a negation context that has no edge. `pri` med. **Owes a ruling** (the check's predicate is unwritten
-  acceptance): the 71 orphans sit in 60 sentences holding 268 shown edges, 116 of them without a
-  negation, mostly legitimately positive — so a sentence-level predicate cannot decide "skips".
-  A sound check needs the body literals each orphan scopes, which the shipped asset does not
-  record: either the producer emits that literal set (asset change, edge population untouched)
-  or the 71 covering edges return, which the standing ruling declines. The two concrete reds
-  (`graph-semantics.review.test.ts:78`, `:103`) already ship green in the `MEANING` register.
-
 - **The independent projection oracle lives on a branch alone** — u12's differential ran
   `tests/graph-projection.oracle.test.ts` (branch `wt/orc-proj` `1a893b1`) against the shipped
   model: 19 passed / 5 failed, every failure adjudicated for the shipped side. Three of the
@@ -191,6 +173,15 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   boot deadline and retires a failed replacement, the next request spawns a fresh worker, and
   P4.4's and P1.1's last assertions change by the user's approval with their original firing
   recorded. `pri` low.
+- **Condition-supports dedup is scope-blind** — `tools/kb/graph.mjs` keys the synthesized
+  `condition supports` shortcut on document, sentence, source event and head alone. 17 body
+  events inside a negation therefore merge their shortcut into a twin from another world. The
+  body-relation dedup keys on scope since mnt-d49. Keying this one too emits the 17 (edges
+  20,980 → 20,997), and every one has endpoint scopes that contradict: 38 → 55 contradicting
+  shortcuts, none of the 17 justified by `tests/graph-shortcut-justification.test.ts`.
+  Accept: either the dedup keys on scope and the justification suite justifies all 55 by their
+  own clauses, with the moved counts recorded; or a committed check proves each merged negated
+  support has an unnegated twin support in its own sentence. `pri` low.
 
 ## Index — one line per `high` + `med` row
 
@@ -201,7 +192,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 | --- | --- |
 | u3 heap limit is unit-tested only | a committed test drives real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate |
 | **high** Browser WASM abort leaves a dead session | an aborted runtime reaches the client as its own terminal state that recreates the worker without a caller `reset()`, proven by a browser probe whose next query reports 337 documents |
-| 71 operator contexts have no edge in the shipped graph | either the 71 contexts carry an edge and `tests/kb-derived-assets.test.ts` records the moved counts with the original firing, or a committed check proves no shown path can skip a negation context that has no edge |
 | The independent projection oracle lives on a branch alone | the three lookups match on `relation`, the suite runs 24/24 green against the shipped model from the primary tree, and it joins a declared `binding:check` register |
 | Live suites time out under heavy external CPU load | the full suite passes 20 consecutive runs at load avg ≥ 3× cores with no timeout raised, or a user-approved gate timeout policy is recorded with its original firing |
 

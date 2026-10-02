@@ -48,11 +48,11 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   unit. Report honesty is unwaived. Binding → `.claude/rules/stack.md`.
 - **Orphan operator contexts stay orphaned.** 71 operator-context nodes carry no edge — 64
   negation, 7 `can`, i.e. 41% of the corpus's 156 negation contexts — the body-level scopes
-  whose identity binds at query time. u11 measured them and could close the gap with 71 added
-  body edges; the ruling is to leave the shipped edge population untouched at 20,964 total /
-  1,193 operator. u11's S3 is therefore ONE-WAY: every operator-bearing edge resolves to
-  exactly one scope record, an unreferenced record is legal, and the unreferenced count is
-  pinned so it cannot drift. Queued in `.agent/deferred.md`.
+  whose identity binds at query time. They gain no covering edges; each records its body
+  literals instead, and the body-relation dedup keys on scope (mnt-d49 ruling), so the shipped
+  population is 20,980 total / 1,193 operator. u11's S3 is ONE-WAY: every operator-bearing edge
+  resolves to exactly one scope record, an unreferenced record is legal, and the unreferenced
+  count is pinned so it cannot drift.
 - **Security lane.** Live `pnpm audit` in the gate, no allowlist; static analysis = ESLint
   security rules only, no CodeQL/Semgrep; the `.agent/deferred.md` defects stay deferred into
   MAINTAIN. Wiring → `.claude/rules/gate.md`.
@@ -207,12 +207,12 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `da39355` d31 a hung boot settles one typed `boot` error after one recreate; row text corrected from `worker` (d56 clause).
 - [x] `69e7110` d37 every protocol discriminant (5 request + 9 response = 14) clones; per-row non-cloneable mutant refused.
 - [x] `ec37224` d30 `pnpm test:browser`: the nine jsdom-stubbed combobox predicates in real Chromium.
-- [ ] d32 `copy:check` `INTERNAL_ID` refuses a catalog string naming a milestone, unit or review id; the dead `descriptor` cell + `describeDescriptor` are gone — closed by the commit that adds this line.
+- [x] `f380d61` d32 `copy:check` `INTERNAL_ID` refuses a catalog string naming a milestone, unit or review id; the dead `descriptor` cell + `describeDescriptor` are gone.
 - [x] `f40ce36` d40 `pnpm engine:probe` grades R38/R39/R41/R42/R45; the `res-m1-*` claims are ported (JSON corruption, stack flag, direct eval, axe contrast, engine split in smoke), covered, or pruned.
 - [x] `524dad6` d44 `tests/census.test.ts` grades every stable census the rules state against its derivation.
 - [x] `1193641` d46 smoke + browser:check each refuse a mutation their own lane runs (pvm-stripped copy, renamed woff2).
 - [x] `3032246` d48 every shipped bound names an owner in the rules; the 60-relation cap surfaces its truncation.
-- [ ] d49 owes a ruling: the predicate needs orphan-scoped literals the asset lacks (measured: 116/268 unnegated edges in 60 sentences).
+- [ ] d49 the 71 orphan contexts record their body literals; the body-relation dedup keys on scope (+16 edges); `MEANING` O1–O4 prove none is shown through another world — closed by the commit that adds this line.
 - [ ] d50 owes a ruling: 3 lookup fixes give 19/24; 24/24 needs oracle edits beyond them.
 - [x] `0e1e5e0` d51 each of the 38 contradicting shortcuts is justified by its own clause (`tests/graph-shortcut-justification.test.ts`).
 - [x] `ebf066e` d52 `graph:check` binds each spanning reading to its edge by id, both directions; the fallback list can expand to every incident relation.

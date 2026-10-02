@@ -56,7 +56,8 @@ Step semantics a reader cannot get from the script name:
   ruling: the registers stay apart so neither a lifecycle nor a meaning row dilutes the
   non-negotiable one. `MEANING` declares all nine cases of
   `tests/graph-semantics.review.test.ts` across four `why` rows naming the same suite, which
-  is what lets one suite carry four distinct claims. `gradeTable` refuses an EMPTY table by
+  is what lets one suite carry four distinct claims, plus a fifth row holding the four
+  `tests/graph-orphan-scopes.test.ts` cases (mnt-d49 O1–O4). `gradeTable` refuses an EMPTY table by
   name, and the control feeds it the real table emptied.
 - `engine:check` (`tools/engine-check.mjs`) decides budget-required signatures, `.query`/
   `.ask` call-site arity, exactly one `swipl-wasm` importer (`src/engine/worker.ts` — the
