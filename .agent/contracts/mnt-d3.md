@@ -1,8 +1,8 @@
-# mnt-d3 — Japanese register grader (draft, owes user approval)
+# mnt-d3 — Japanese register grader (approved by the user as drafted)
 
 Row: `.agent/deferred.md` `Japanese copy has no register grader`. The row names the three rule
-kinds; the numbers, the term table and the copy edits below are MAIN's, so they wait for the
-user before any production edit. Tier: `docs`.
+kinds; the numbers, the term table and the copy edits below are MAIN's, approved by the user as
+drafted. J4 (no `：`) grades the punctuation clause the same `i18n.md` bullet states. Tier: `docs`.
 
 ## Unit of measure
 

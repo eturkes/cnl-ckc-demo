@@ -406,6 +406,92 @@ const gradeComposition = (files, en, ja) => {
 };
 
 /**
+ * Japanese register (`.agent/contracts/mnt-d3.md`). J1 sentence ceilings in units: one
+ * character, except an ASCII word run and a `${…}` interpolation count one each.
+ * `INSTRUCTIONS` mirrors the English 20-word imperative at about 2 characters a word; the
+ * rest follows the 50–60 字 re-check point of 公用文作成の考え方 (2022).
+ */
+const JA_LIMITS = new Map([
+  ['INSTRUCTIONS', 40],
+  ['DESCRIPTIONS', 60],
+  ['LABELS', 60],
+  ['TEXT', 60],
+]);
+
+/** J2: an English source naming the pattern carries the fixed Japanese term (`i18n.md`). */
+const JA_TERMS = [
+  ['knowledge base', '知識ベース'],
+  ['compiled', 'コンパイル済み'],
+  ['controlled natural language', '制御自然言語'],
+  ['proof', '証明'],
+  ['citation', '出典'],
+  ['clause', '節'],
+  ['concept', '概念'],
+  ['relationship', '関係'],
+];
+
+/** J3: a sentence ending in hiragana ends in a です・ます form; answer words are exempt. */
+const POLITE =
+  /(?:ます|ません|ました|ませんでした|です|でした|でしょう|ましょう|ください|はい|いいえ)$/u;
+
+/** Every quoted or template string body in a source slice. @param {string} slice @returns {string[]} */
+const stringBodies = (slice) =>
+  [...slice.matchAll(/'((?:[^'\\]|\\.)*)'|`((?:[^`\\]|\\.)*)`/g)].map(
+    ([, quoted, template]) => quoted ?? template ?? '',
+  );
+
+/** @param {string} sentence @returns {number} */
+const jaUnits = (sentence) =>
+  [...sentence.replace(/\$\{[^}]*\}/g, 'X').replace(/[A-Za-z0-9][A-Za-z0-9 .\-/]*/g, 'W')].length;
+
+/**
+ * J1–J3 over the Japanese catalog. A sentence runs up to and including `。`, `！` or `？`; a
+ * trailing run with no terminator is a label, which keeps its dictionary form.
+ *
+ * @param {string} en @param {string} ja @param {Map<string, number>} limits
+ * @param {string[][]} terms @returns {{failures: string[], graded: number}}
+ */
+const gradeJapanese = (en, ja, limits, terms) => {
+  /** @type {string[]} */
+  const failures = [];
+  let graded = 0;
+  for (const { name } of BUCKETS) {
+    const limit = limits.get(name) ?? 0;
+    const english = entries(bucket(en, EN, name));
+    for (const [key, slice] of entries(bucket(ja, JA, name))) {
+      const at = `${JA} ${name}.${key}`;
+      const bodies = stringBodies(slice);
+      for (const body of bodies) {
+        for (const [sentence] of body.matchAll(/[^。！？]*[。！？]/gu)) {
+          graded += 1;
+          const units = jaUnits(sentence.trim());
+          if (units > limit) failures.push(`${at}: ${String(units)} units, limit ${String(limit)}`);
+          const core = sentence
+            .trim()
+            .slice(0, -1)
+            .replace(/（[^）]*）$/u, '');
+          if (/[\u3040-\u309f]$/u.test(core) && !POLITE.test(core)) {
+            failures.push(`${at}: plain-form ending in ${JSON.stringify(sentence.trim())}`);
+          }
+        }
+      }
+      const source = stringBodies(english.get(key) ?? '')
+        .join(' ')
+        .toLowerCase();
+      const target = bodies.join('');
+      // `i18n.md`: a label and its value are separated by an ASCII `: `, never `：`.
+      if (target.includes('：')) failures.push(`${at}: fullwidth colon ：, write ": "`);
+      for (const [pattern = '', term = ''] of terms) {
+        if (source.includes(pattern) && !target.includes(term)) {
+          failures.push(`${at}: "${pattern}" must read ${term}`);
+        }
+      }
+    }
+  }
+  return { failures, graded };
+};
+
+/**
  * Internal ids no shipped string may name (user ruling): milestones, units, claim-registry rows
  * and review rows — `M1`–`M5`, `u12`, `R045`, `U7-26`. Components render catalog values alone
  * and `index.html` mirrors `DESCRIPTIONS`, so the two catalogs are every shipped string.
@@ -587,6 +673,47 @@ const main = () => {
     ),
     requireFiring(
       'copy',
+      { mutation: 'the Japanese ceilings set to 0', expect: [`${JA} INSTRUCTIONS.`, 'limit 0'] },
+      () =>
+        gradeJapanese(en, ja, new Map([...JA_LIMITS].map(([name]) => [name, 0])), JA_TERMS)
+          .failures,
+    ),
+    requireFiring(
+      'copy',
+      {
+        mutation: 'every 知識ベース in the Japanese catalog read as ナレッジベース',
+        expect: ['"knowledge base" must read 知識ベース'],
+      },
+      () =>
+        gradeJapanese(en, ja.replaceAll('知識ベース', 'ナレッジベース'), JA_LIMITS, JA_TERMS)
+          .failures,
+    ),
+    requireFiring(
+      'copy',
+      {
+        mutation: 'the first ": " in a Japanese string read as ：',
+        expect: ['fullwidth colon'],
+      },
+      () => {
+        const labelled =
+          BUCKETS.flatMap(({ name }) => stringBodies(bucket(ja, JA, name))).find((body) =>
+            body.includes(': '),
+          ) ?? '';
+        return gradeJapanese(
+          en,
+          ja.replace(labelled, labelled.replace(': ', '：')),
+          JA_LIMITS,
+          JA_TERMS,
+        ).failures;
+      },
+    ),
+    requireFiring(
+      'copy',
+      { mutation: 'the first します。 read as する。', expect: ['plain-form ending in'] },
+      () => gradeJapanese(en, ja.replace('します。', 'する。'), JA_LIMITS, JA_TERMS).failures,
+    ),
+    requireFiring(
+      'copy',
       { mutation: 'the shell title prefixed', expect: ['documentTitle differs from'] },
       () => {
         /** @type {string[]} */
@@ -611,6 +738,13 @@ const main = () => {
   ]);
   failures.push(...idFailures);
   const compared = checkParity(failures, en, ja);
+  const { failures: registerFailures, graded: jaSentences } = gradeJapanese(
+    en,
+    ja,
+    JA_LIMITS,
+    JA_TERMS,
+  );
+  failures.push(...registerFailures);
   const shell = checkShell(failures, en, html);
 
   if (failures.length > 0) {
@@ -620,7 +754,7 @@ const main = () => {
   }
   console.log(
     `copy: ${graded} en strings pass, ${componentFiles} components carry no over-long or filler prose, ` +
-      `${compared} ja keys at parity, ${String(joins)} catalog joins whole sentences or declared, no component literal ` +
+      `${compared} ja keys at parity, ${String(jaSentences)} ja sentences within J1–J3 and no fullwidth colon, ${String(joins)} catalog joins whole sentences or declared, no component literal ` +
       `beyond the brand mark, ` +
       `${WORDMARK.length} wordmark pins shipped, ${String(idStrings)} catalog strings name no internal id, ` +
       `${shell} shell strings match index.html; controls: ${controls.join(', ')}`,

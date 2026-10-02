@@ -44,7 +44,7 @@ export const DESCRIPTIONS = {
   heroEyebrow: '制御自然言語 · Prolog · WebAssembly',
 
   lede:
-    'CDCガイドラインをコンパイルした版に対して、用意された質問を実行します。' +
+    'コンパイル済みのCDCガイドラインに対して、用意された質問を実行します。' +
     'ブラウザは実行のたびに、ガイドラインと質問が与える臨床的文脈から各回答を証明します。' +
     'すべての回答はその出典まで追跡できます。',
 
@@ -66,7 +66,7 @@ export const DESCRIPTIONS = {
     'エンジンは構造化された制御自然言語の節を返しました。固定の描画規則が、その条件、法性、否定、動作、限定を保持します。',
 
   answerAssembly:
-    '証明されたすべての推奨事項を1つの回答にまとめます。番号付きの引用が、描画された各記述と出典との対応を保ちます。',
+    '証明されたすべての推奨事項を1つの回答にまとめます。番号付きの出典が、描画された各記述と原文との関係を保ちます。',
 
   sourcePassage: 'これはガイドライン自体の原文です。同じProlog結果がそのまま保持しています。',
   sourceUnavailable:
@@ -289,7 +289,7 @@ export const TEXT = {
   sourceOrdinal: (index: number) => `出典${String(index)}`,
   sourceCount: (n: number) => `出典${String(n)}件`,
 
-  traceIdle: () => '引用を選択すると、回答のその部分を追跡します。',
+  traceIdle: () => '出典を選択すると、回答のその部分を追跡します。',
   traceLoading: () => '選択された出典の寄与を再証明しています。',
   traceFailure: () => '選択された出典の寄与を再証明できませんでした。',
   traceCancelled: () => '証明トレースを中止しました。',

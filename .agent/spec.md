@@ -220,7 +220,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [ ] d29 `high` WASM abort — waits: an ad-hoc goal path (`Decisions` MAIN).
 - [x] `e9465b9` d54 every `deferred` registry row cites a live queue row; `claims:check` refuses an uncited or dangling one (7 rows added).
 - [x] `9b793fd` d1 the Japanese face ships as a catalog-exact subset (2,654,740 B → 193,444 B), raster-identical to the original.
-- [ ] d3 contract drafted (`.agent/contracts/mnt-d3.md`: J1 ceilings, J2 terms, J3 final form, 3 copy edits); owes approval.
+- [ ] d3 `copy:check` grades Japanese register J1–J4 (`mnt-d3.md`, approved); 3 copy edits — closed by the commit that adds this line.
 - [ ] d5 owes a ruling: phased boot status replaces the accepted status line's boot text.
 - [x] `3f99fd1` d6 the URL carries the selected catalog id; reload and back/forward select it and never run.
 - [x] `424b394` d8 a service worker precaches the boot set; a second visit boots offline; a renamed PVM evicts the stale cache.
@@ -261,7 +261,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `d533775` find: a halting payload's build refusal names the halt and its exit.
 - [ ] find (dict re-encoding) owes a ruling: the wrapper offers no supported way to build a tagged dict from JS; refuse dicts in `createEncoder`, or patch upstream.
 - [ ] find (inline-disable reasons) owes a ruling: two directives now carry reasons; the third is in T9-frozen `provenance.mjs`.
-- [ ] find (heavy-load timeouts) closed by user ruling: the measured 2.9× envelope (20/20 runs at load ≤23.5) is the bar — closed by the commit that adds this line.
+- [x] `5bc686e` find (heavy-load timeouts) closed by user ruling: the measured 2.9× envelope (20/20 runs at load ≤23.5) is the bar.
 - [ ] find (failed reset) owes approval to change P4.4 (`engine-recovery`) + P1.1 (`engine-budgets`): only a heap recreation boots under the deadline; a failed replacement stays live.
 - [x] `aefae8c` find: a refactor staled mutant R09's anchor with the gate green → `tests/mutant-anchors.test.ts` grades every anchor in the gate.
 - [x] `8c186d2` find: a heap recreation that joined an in-flight reset waited on its unbounded boot → it arms its own boot deadline.

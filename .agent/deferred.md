@@ -7,14 +7,6 @@ evidence gap under a durable claim, `low` = a feature or a tidy-up. A row closes
 acceptance check and leaves in that commit; the index at the foot collapses the `high` +
 `med` set to one line each.
 
-- **Japanese copy has no register grader** — `copy:check` decides parity alone; the ≤20/≤25
-  word limits cannot port to a language without word spaces, so nothing mechanical holds
-  `ja.ts` to です・ます or to a length. Accept: a Japanese-side rule set the gate can decide
-  — a per-sentence character ceiling, a fixed-terminology table drawn from
-  `.claude/rules/i18n.md`, and one sentence-final-form check — with a positive control per
-  rule. `pri` low. **Owes approval of the contract** `.agent/contracts/mnt-d3.md`: its J1
-  ceilings (40 / 60 units), J2 term table and the three Japanese copy edits J2 forces are
-  MAIN's numbers and a visible text change, so no production edit precedes the ruling.
 - **Phased boot telemetry** — replace the single boot spinner with ordered
   progress phases. Accept: each phase emits one accessible status event in
   order, and no percentage is reported that the runtime does not supply. `pri` low. **Owes a
