@@ -9,8 +9,7 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
 
 - **Phased boot telemetry** — replace the single boot spinner with ordered
   progress phases. Accept: each phase emits one accessible status event in
-  order, and no percentage is reported that the runtime does not supply. `pri` low. **Owes a
-  ruling**: the phases replace the accepted status line's boot text, a visible change. The
+  order, and no percentage is reported that the runtime does not supply. `pri` low. **User ruling**: approved — the phases replace the boot status text; visual unit: before/after captures at 320 and 1280 px in both locales plus `pnpm visual-qa`, reviewed by the user after the commit. **Background**: the phases replace the accepted status line's boot text, a visible change. The
   phases the runtime supplies: image fetch (bytes only where the response streams them),
   `loadImageDefault`, contract verification; the worker protocol gains a `progress` response,
   which joins the d37 clone table.
@@ -19,7 +18,7 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   Accept: a float binding decodes as `float`, proven on a goal returning `1.0`,
   without adding a per-binding engine call to the common path. `pri` low. Red witness:
   `tests/zz-u2-red.test.ts:107` on `wt/tester-d11` `6529dea` — `1.0`, `0.0` and `-1.0` decode
-  as `integer` while live `float(X)` succeeds. **Owes a ruling on the means**: swipl-wasm's
+  as `integer` while live `float(X)` succeeds. **User ruling**: leave as is — close this row as a declared limit (`.claude/rules/engine.md` already states it) and add no fourth undeclared surface. **Background**: swipl-wasm's
   `toJSON` has no float option, so the zero-call fix overrides `prolog.get_float` on the
   instance (its one caller is `toJSON`'s `PL_FLOAT` arm) to return `{$t:'f',v}` — measured:
   `X is 1.0, Y = f(2.0,[3.0])` decodes every float, nested ones included, with no added call.
@@ -37,7 +36,7 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
 - **Solution streaming** — u2 delivers one batch per query. Both spikes measured
   streaming as cheap (0.0414 vs 0.0345 ms/query) and useful for early answers.
   Accept: solutions render as they arrive, and a queued cancel still cannot
-  interrupt an in-flight synchronous `next()`. `pri` low. **Owes a ruling**: rendering each
+  interrupt an in-flight synchronous `next()`. `pri` low. **User ruling**: approved; visual unit: before/after captures at 320 and 1280 px in both locales plus `pnpm visual-qa`, reviewed by the user after the commit. **Background**: rendering each
   solution as it arrives changes the accepted answer panel during a run — a visible change the
   spec reserves. The cost on the engine side is a `solutions` progress response per answer
   (joining the d37 clone table), and each partial answer still renders only once its own
@@ -56,8 +55,8 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   stating a timeless constraint (M1 review X20); this session's own new headers are in
   scope. Accept: the ten what-only headers are gone, the eight provenance sites read as
   current constraints with no row or history reference, and the adjacent why comments
-  survive byte-for-byte. `pri` low. **Eight of ten headers and all eight sites done; owes a
-  ruling on the last two**: `src/questions/serialize.ts` and `humanize.ts` are byte-frozen
+  survive byte-for-byte. `pri` low. **Eight of ten headers and all eight sites done. User ruling: unfreeze the last two in T9
+  and delete their header lines. Background**: `src/questions/serialize.ts` and `humanize.ts` are byte-frozen
   against `22053ef` by `tests/clinical-records.test.ts` T9, an answer-path frozen surface, so
   deleting either header line is a grader change — unfreeze them, or let the headers stand.
 - **Owned PDF viewer** — M2 u7 ships a native `<iframe>` at `#page=N`, so the viewer is a
@@ -66,7 +65,7 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   unpacked, and an engine range that excluded the Node 20 then pinned. Accept: an owned viewer
   renders the coverage row's physical page, a browser check reads the rendered page number
   and the highlighted region from the DOM, `pnpm gate` still runs under the pinned runtime, and the
-  viewer's bytes load only after the user activates the page. `pri` low. **Owes a ruling**: an
+  viewer's bytes load only after the user activates the page. `pri` low. **User ruling**: approved — PDF.js, lazy, +504,727 B gzip; visual unit: before/after captures at 320 and 1280 px in both locales plus `pnpm visual-qa`, reviewed by the user after the commit. **Background**: an
   owned viewer replaces the accepted ladder's native `<iframe>`, a visible change the spec
   reserves, and PDF.js — the one measured renderer — costs +504,727 B gzip. Node 24 has lifted
   the engine-range objection; the size and the visual change remain the user's call.
@@ -74,7 +73,7 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   so the other 336 documents' coverage rows, regions and alignment are reachable only by
   asking a question that reaches them. Accept: a document-first view lists every document's
   coverage rows and opens each one's passage and page through the same resolver the ladder
-  uses, adding no eager asset fetch to the answer path. `pri` low. **Owes a ruling**: a
+  uses, adding no eager asset fetch to the answer path. `pri` low. **User ruling**: approved — a third view in the explore area beside the graph and its list fallback; visual unit: before/after captures at 320 and 1280 px in both locales plus `pnpm visual-qa`, reviewed by the user after the commit. **Background**: a
   document-first view is a new surface beside the accepted answer panel, ladder and graph, and
   its entry point changes the accepted page layout — where it lives and how it is reached is
   the user's call.
@@ -84,7 +83,7 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   local caller and wrong for a public one. Accept: a deployed Worker answers every W1–W6 case of
   `tests/intake-worker.test.ts` from its own origin, the limiter keys per client
   (`CF-Connecting-IP`), `ALLOWED_ORIGINS` names the published page alone, and the published
-  page reaches it under its `connect-src`. `pri` low. **Owes the user**: the deploy itself
+  page reaches it under its `connect-src`. `pri` low. **User ruling**: stay local — the deploy stays deferred, and this row stays open and owed to the user. **Background**: the deploy itself
   (account, route, the key as a Worker secret) and a limiter ruling — a per-client key alone
   lets many clients jointly spend the API key, so a public Worker likely needs a per-client
   bucket AND a global spend bucket. Already in place: `ALLOWED_ORIGINS` is a `wrangler.jsonc`
@@ -94,7 +93,7 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   rules the held-out gold does not list are section-triggered (`.claude/rules/proof.md`), so
   derived-rule precision on the 30 held-out cases is 143/240. Accept: an intake change lifts
   precision on `pnpm intake:probe` without lowering recall below 143/163, re-derived through
-  `tests/intake-replay.test.ts`. `pri` low. **Owes the user**: measured offline over the recorded
+  `tests/intake-replay.test.ts`. `pri` low. **User ruling**: approved — contract `.agent/contracts/mnt-d63.md`: 22 per-rule Nouls, and ONE billed `pnpm intake:probe` scores policies A and B on the same responses. **Background**: measured offline over the recorded
   judgments, no filter of the shipped selection can meet the check — holding recall at 143/163
   means dropping zero true positives, and 106 of them are section-triggered beside the 95 false
   positives. Section rules only where no condition of that section fired: 67/144 precision, 67/163
@@ -107,7 +106,7 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   disables carry none (`tools/clinical-reference.mjs:227,234`, `tools/kb/provenance.mjs:70`,
   the last byte-frozen by T9). Accept: a committed check (an ESLint directive-description rule
   or a scan in the gate) refuses an `eslint-disable` with no stated reason, with its firing
-  input, and the frozen file's directive handled by ruling. `pri` low. **Owes a ruling**: the two
+  input, and the frozen file's directive handled by ruling. `pri` low. **User ruling**: unfreeze `tools/kb/provenance.mjs` in T9 so line 70's directive gains its reason, then ship the grader. **Background**: the two
   `tools/clinical-reference.mjs` directives now carry their reason; the third,
   `tools/kb/provenance.mjs:70`, sits in a file T9 freezes against `22053ef`, so a gate check would
   either exempt it by name or need the file unfrozen.
@@ -116,8 +115,7 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   unbound: `_{'$tag':tag,a:0}` is no variant of `tag{a:0}`, alone or as a list tail (reviewer-il-1
   register R1, `a9bf242` body). No shipped answer term carries a dict.
   Accept: a decoded dict re-encodes as a structural variant — standalone and as an improper-list
-  tail — graded by Prolog `=@=` in `tests/engine-term-identity.test.ts`. `pri` low. **Owes a
-  ruling**: swipl-wasm 8.0.7 has no supported way to re-enter a TAGGED dict. `toProlog` sets a
+  tail — graded by Prolog `=@=` in `tests/engine-term-identity.test.ts`. `pri` low. **User ruling**: `createEncoder` refuses a dict and fails closed. **Background**: swipl-wasm 8.0.7 has no supported way to re-enter a TAGGED dict. `toProlog` sets a
   dict tag only when `data.constructor.name !== 'Object'`, but that check sits inside the
   `case "Object"` arm; an instance of a class named after the tag falls to the `default` arm and
   enters as a `<js>(N,tag)` blob (measured). Only a `constructor` getter answering `Object` on
@@ -134,7 +132,7 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   (`armed.size` 0), which a bounded replacement boot breaks. Accept: every reset boots under the
   boot deadline and retires a failed replacement, the next request spawns a fresh worker, and
   P4.4's and P1.1's last assertions change by the user's approval with their original firing
-  recorded. `pri` low.
+  recorded. `pri` low. **User ruling**: approved — change both assertions.
 - **Condition-supports dedup is scope-blind** — `tools/kb/graph.mjs` keys the synthesized
   `condition supports` shortcut on document, sentence, source event and head alone. 17 body
   events inside a negation therefore merge their shortcut into a twin from another world. The

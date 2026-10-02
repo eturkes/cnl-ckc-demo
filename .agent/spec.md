@@ -185,6 +185,30 @@ MAINTAIN request: work every `.agent/deferred.md` row in rank order (`high` → 
 queue order within a rank); one unit + commit per row, gate green at each, row pruned in its
 closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 
+- [ ] Resume note — session paused by the user after `906d069`; the next session deletes this row once oriented.
+  - Finish line in force: the original request's Met-when. Every row is closed by its own check in
+    its own commit, recorded as blocked on the user, or waiting on its trigger. The full gate passes
+    on a clean tree at the closing commit, and the final message lists SHAs, owed parts, rows added,
+    gate + skipped/not-run checks, teammates, advisor calls (`none`), the unconfirmed, `git status`
+    and the closing SHA.
+  - User rulings from the AskUserQuestion round sit in each `.agent/deferred.md` row's **User
+    ruling** and on the open rows below. The d49 and d63 contracts are approved
+    (`.agent/contracts/mnt-d49.md` landed in `85e51fc`; `mnt-d63.md` here).
+  - Committed since `70c8507`: d10 `bbb4f24`, d32 `f380d61`, d49 `85e51fc`, d50 `fce2f9b`, heavy-load
+    `5bc686e`, d3 `906d069`. Uncommitted: none. No snapshot branch: nothing was in flight.
+  - Teammates: none running; every reviewer/tester of this run is stopped and harvested. No
+    teammate branch carries open work. Kept evidence: `wip/d10-fallback` `8363849`, `wt/tester-d10`
+    `9adb2b2`, `wip/d15` `96ed050`, `wt/orc-proj` `1a893b1`.
+  - Next action: d5 (phased boot). Protocol `progress` response (non-terminal, joins the d37 clone
+    table). The worker posts `fetch`, and the session posts `load` + `verify` around
+    `loadImage`/`readContract`. `EngineClient.boot(onProgress?)` routes it, and `DemoController`
+    carries the phase into the status line with one accessible status event per phase, in order.
+    Report bytes only when the fetch exposes `Content-Length`. Take captures before the first edit.
+    Then queue order: d12 → d17 → d39 → d41 → d43 → d63 → inline-disable → dict → failed reset →
+    condition-supports → Close-2.
+  - Scratch helpers (gitignored, may be recreated): `.scratch/maint/prune.py '<title>'` (prune a
+    queue row) and `.scratch/maint/adj.sh` (`adj RNNN '<cmd>' <disposition>`).
+
 - [x] `24bbb5d` d0 find: 4 live advisories reddened `audit:check` → lockfile bump.
 - [x] `b919283` d2 browser lanes steer by `data-action` handles, narrow sweep in both locales.
 - [x] `6c77126` d4 `pnpm readme:check`: README setup path from a clean clone, in `release:check`.
@@ -220,24 +244,24 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [ ] d29 `high` WASM abort — waits: an ad-hoc goal path (`Decisions` MAIN).
 - [x] `e9465b9` d54 every `deferred` registry row cites a live queue row; `claims:check` refuses an uncited or dangling one (7 rows added).
 - [x] `9b793fd` d1 the Japanese face ships as a catalog-exact subset (2,654,740 B → 193,444 B), raster-identical to the original.
-- [ ] d3 `copy:check` grades Japanese register J1–J4 (`mnt-d3.md`, approved); 3 copy edits — closed by the commit that adds this line.
-- [ ] d5 owes a ruling: phased boot status replaces the accepted status line's boot text.
+- [x] `906d069` d3 `copy:check` grades Japanese register J1–J4 (`mnt-d3.md`, approved); 3 copy edits.
+- [ ] d5 approved (user): phased boot status replaces the status line's boot text — visual unit, captures + `visual-qa`.
 - [x] `3f99fd1` d6 the URL carries the selected catalog id; reload and back/forward select it and never run.
 - [x] `424b394` d8 a service worker precaches the boot set; a second visit boots offline; a renamed PVM evicts the stale cache.
 - [x] `6e558cd` d9 both u1 wave-1 reports validate (25/25, 12/12), re-derived at today's tree; new row: halting payload reports `[object Object]`.
-- [ ] d12 owes a ruling: a fourth undeclared surface (`prolog.get_float` override, measured working) or Prolog-side float paths.
+- [ ] d12 ruled (user): leave as is — close as a declared limit, records only.
 - [x] `91d22b7` d15 u3 port merged (8 green); its P3.3 case caught `0465faa`'s unbounded display → the deadline bounds every answer and proof display.
 - [x] `768742e` d20 `kb:asset-check` refuses an oracle path assembled from its two bare segments.
 - [x] `1dc006f` d22 `pnpm visual-qa`: 39 states at 320/375/1280 px, none overflows, planted-overflow control.
 - [x] `2b4a2b6` d28 the source-label grammar is stated in `.claude/rules/ui.md` `Copy`; the humanizer test cites it.
-- [ ] d17 owes a ruling: answers rendered as they arrive change the accepted answer panel mid-run.
+- [ ] d17 approved (user): solutions render as they arrive — visual unit, captures + `visual-qa`.
 - [x] `03a0184` d33 `copy:check` grades a keyed literal once, under its key (378 → 251 graded strings).
 - [x] `0cdaa0f` d38 `withBuiltSite` (`tools/browser.mjs`) owns build, serve, launch and teardown for smoke, browser:check and visual-qa.
-- [ ] d39 seven what-only headers deleted (AnswerPanel's already gone), eight provenance sites restated; owes a ruling on `serialize.ts` + `humanize.ts`, byte-frozen by T9.
+- [ ] d39 ruled (user): unfreeze the `serialize.ts` + `humanize.ts` header lines in T9 and delete them (the other 8 headers + 8 sites done).
 - [x] `7f7a2aa` d34 m1u5 matrix 26/26: 19 covered, 6 ported green (`tests/m1u5-port.dom.test.ts`), 1 superseded, 0 red.
-- [ ] d41 owes a ruling: an owned PDF viewer replaces the accepted ladder's iframe (+504,727 B gzip PDF.js).
+- [ ] d41 approved (user): an owned lazy PDF.js viewer replaces the ladder's iframe (+504,727 B gzip) — visual unit, captures + `visual-qa`.
 - [x] `a067cdc` d42 session proof cache: re-selection runs no meta-interpreter call; solve/consult/poison invalidate.
-- [ ] d43 owes a ruling: a document-first provenance view is a new surface with a layout entry point.
+- [ ] d43 approved (user): the document-first provenance browser = a third view beside the graph and its list fallback — visual unit, captures + `visual-qa`.
 - [x] `bdd2ae4` d47 `pnpm queue:index` derives the queue index; `claims:check` refuses a stale one by line.
 - [x] `2089c73` d35 m1u7 matrix 34/34: 16 covered, 13 ported green (`tests/m1u7-port{,.dom}.test.ts`), 5 superseded, 0 red.
 - [x] `737c6d6` d55 u13's firing record names base `3c4c17c` (reproduced there: rc 1, same assertion); the phrasing census is gone from the tree.
@@ -246,9 +270,9 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `05df8e9` d58 a registry cell may hold `\|`; claims:check re-seeds a piped copy and requires it back byte-identical.
 - [x] `da89fd6` d59 `spec:check` in the gate: open rows `- [ ]`, ticked rows carry SHAs, pointer last.
 - [x] `c73a1f2` d60 `--verdict` admits the reviewer role's vocabulary; waves.md names the brief's one vocabulary.
-- [ ] d61 owes the user: the Worker deploy (account, route, secret) and a per-client + global limiter ruling.
+- [ ] d61 ruled (user): stay local — stays open, owed to the user (deploy + limiter).
 - [x] `75e6073` d62 the selector suite plants the fixed-trigger mutant in memory and requires ORACLE-S to catch it.
-- [ ] d63 owes the user: no filter of the shipped selection lifts precision at 143/163 recall (measured offline); a lift needs a request change under the selection-model ruling + a live billed probe.
+- [ ] d63 approved (user): contract `.agent/contracts/mnt-d63.md` — 22 per-rule Nouls, ONE billed `pnpm intake:probe` (key `~/.config/typesafe/key`) scores policies A/B.
 - [x] `4c37c0a` find: engine timing figures reworded to the bounds they guarantee, browser figures cited to `engine:probe`.
 - [x] `65d9afb` find: `copy:check` refuses a component joining catalog fragments outside the declared pairs.
 - [x] `bb27a1a` find: a dom test fails the proof request and reads `TEXT.traceFailure` in both locales.
@@ -259,10 +283,12 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `5da1e02` find: hand-run mutants and probes — two committed (listbox mutant, skipped-case control), one test (TS peer cap), three historical.
 - [x] `a4795fe` find: upstream and design claims disposed; `copy:check` refuses a component literal beyond the brand mark.
 - [x] `d533775` find: a halting payload's build refusal names the halt and its exit.
-- [ ] find (dict re-encoding) owes a ruling: the wrapper offers no supported way to build a tagged dict from JS; refuse dicts in `createEncoder`, or patch upstream.
-- [ ] find (inline-disable reasons) owes a ruling: two directives now carry reasons; the third is in T9-frozen `provenance.mjs`.
+- [ ] find (dict re-encoding) ruled (user): `createEncoder` refuses a dict and fails closed.
+- [ ] find (inline-disable reasons) ruled (user): unfreeze `tools/kb/provenance.mjs` in T9, give line 70 its reason, ship the grader.
 - [x] `5bc686e` find (heavy-load timeouts) closed by user ruling: the measured 2.9× envelope (20/20 runs at load ≤23.5) is the bar.
-- [ ] find (failed reset) owes approval to change P4.4 (`engine-recovery`) + P1.1 (`engine-budgets`): only a heap recreation boots under the deadline; a failed replacement stays live.
+- [ ] find (failed reset) approved (user): change P4.4 (`engine-recovery`) + P1.1 (`engine-budgets`); every reset boots under the deadline and retires a failed replacement.
+- [ ] find (condition-supports dedup is scope-blind): new row from d49, `pri` low — fund after the named rows (its second acceptance arm needs no ruling).
+- [ ] Close-2: the closing diff since `70c8507` → every `reviewer` lens; `pnpm gate` on a clean tree; final report per the request's Met-when.
 - [x] `aefae8c` find: a refactor staled mutant R09's anchor with the gate green → `tests/mutant-anchors.test.ts` grades every anchor in the gate.
 - [x] `8c186d2` find: a heap recreation that joined an in-flight reset waited on its unbounded boot → it arms its own boot deadline.
 - [x] `28c37bc` Close: 4 lenses × 2 reviewers, round-2 re-review all pass; 46/46 mutants killed under the exit-1 rule.
