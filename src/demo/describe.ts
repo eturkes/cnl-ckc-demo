@@ -11,7 +11,6 @@ import { presentAnswerTerm } from '../questions/humanize.js';
 import type { AnswerResult } from '../questions/service.js';
 
 import type { DemoState } from './DemoController.svelte.js';
-import { describeDescriptor } from './descriptor.js';
 
 export interface StateDescription {
   /** Polite live-region text. Empty means there is nothing to announce yet. */
@@ -26,8 +25,6 @@ export interface StateDescription {
 
 export interface AnswerCell {
   variable: string;
-  /** Reader-facing label for this column, formatted from its ACE descriptor. */
-  descriptor: string;
   text: string;
 }
 
@@ -159,7 +156,7 @@ export const answerRows = (id: QuestionId, solutions: readonly PlSolution[]): An
   // summary. Mapping its N solutions would emit N unlabelled radios.
   if (projection.length === 0) return [];
   return solutions.map((solution) => {
-    const presented = projection.map(({ variable, descriptor }) => {
+    const presented = projection.map(({ variable }) => {
       const display = solution.display[variable] ?? '';
       const binding = solution.bindings[variable];
       const presentation =
@@ -167,11 +164,7 @@ export const answerRows = (id: QuestionId, solutions: readonly PlSolution[]): An
           ? { text: display, items: [], structured: false as const }
           : presentAnswerTerm(binding, display);
       return {
-        cell: {
-          variable,
-          descriptor: describeDescriptor(descriptor),
-          text: presentation.text,
-        },
+        cell: { variable, text: presentation.text },
         presentation,
       };
     });

@@ -405,6 +405,31 @@ const gradeComposition = (files, en, ja) => {
   return { failures, joins };
 };
 
+/**
+ * Internal ids no shipped string may name (user ruling): milestones, units, claim-registry rows
+ * and review rows — `M1`–`M5`, `u12`, `R045`, `U7-26`. Components render catalog values alone
+ * and `index.html` mirrors `DESCRIPTIONS`, so the two catalogs are every shipped string.
+ */
+const INTERNAL_ID = /\b(?:M[1-5]|u\d{1,2}[a-h]?|R\d{3}|U\d+-\d+)\b/u;
+
+/** @param {{path: string, source: string}[]} catalogs @returns {{failures: string[], graded: number}} */
+const gradeInternalIds = (catalogs) => {
+  const found = catalogs.flatMap(({ path, source }) =>
+    BUCKETS.flatMap(({ name }) =>
+      literals(bucket(source, path, name)).map(({ key, text }) => ({
+        at: `${path} ${name}.${key}`,
+        hit: INTERNAL_ID.exec(text)?.[0],
+      })),
+    ),
+  );
+  return {
+    failures: found.flatMap(({ at, hit }) =>
+      hit === undefined ? [] : [`${at}: names internal id ${hit}`],
+    ),
+    graded: found.length,
+  };
+};
+
 /** The one literal a component may render: the brand mark `WORDMARK` pins. */
 const BRAND = 'CNL / CKC';
 
@@ -545,6 +570,23 @@ const main = () => {
     ),
     requireFiring(
       'copy',
+      {
+        mutation: `one keyed DESCRIPTIONS value naming unit u12`,
+        expect: [`${EN} DESCRIPTIONS.${keyed.key}: names internal id u12`],
+      },
+      () =>
+        gradeInternalIds([
+          {
+            path: EN,
+            source: en.replace(
+              `${keyed.key}: '${keyed.text}'`,
+              `${keyed.key}: '${keyed.text} (u12)'`,
+            ),
+          },
+        ]).failures,
+    ),
+    requireFiring(
+      'copy',
       { mutation: 'the shell title prefixed', expect: ['documentTitle differs from'] },
       () => {
         /** @type {string[]} */
@@ -563,6 +605,11 @@ const main = () => {
   failures.push(...checkWordmark((file) => readFileSync(join(ROOT, file), 'utf8')));
   const { failures: joinFailures, joins } = gradeComposition(sources, en, ja);
   failures.push(...joinFailures, ...gradeLiterals(sources));
+  const { failures: idFailures, graded: idStrings } = gradeInternalIds([
+    { path: EN, source: en },
+    { path: JA, source: ja },
+  ]);
+  failures.push(...idFailures);
   const compared = checkParity(failures, en, ja);
   const shell = checkShell(failures, en, html);
 
@@ -575,7 +622,7 @@ const main = () => {
     `copy: ${graded} en strings pass, ${componentFiles} components carry no over-long or filler prose, ` +
       `${compared} ja keys at parity, ${String(joins)} catalog joins whole sentences or declared, no component literal ` +
       `beyond the brand mark, ` +
-      `${WORDMARK.length} wordmark pins shipped, ` +
+      `${WORDMARK.length} wordmark pins shipped, ${String(idStrings)} catalog strings name no internal id, ` +
       `${shell} shell strings match index.html; controls: ${controls.join(', ')}`,
   );
 };

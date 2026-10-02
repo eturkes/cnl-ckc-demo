@@ -59,19 +59,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   an ad-hoc goal path is what makes it reachable (`.agent/spec.md` `Decisions` MAIN). Accept: an aborted runtime reaches the client
   as its own terminal state that recreates the worker without a caller `reset()`, proven by a
   browser probe whose next query reports 337 documents. `pri` high, gated on an ad-hoc goal path.
-- **Font stack fallbacks and copy reach are unowned** — `presentation:check` grades faces,
-  licences and containment, but D7's h1 wordmark, the framing copy's forbidden claims, the
-  descriptor humanizer's rendered output and the three role tokens' system fallback stacks
-  still rest on one reviewer reading them (M1 review U7-26, partly closed). Accept: each of
-  the four is decided by a committed check — wordmark and forbidden-claim literals in
-  `copy:check`, descriptor rendering in a dom test, fallback stacks in
-  `presentation:check`. `pri` med. **Two of four decided**: the role tokens' stacks
-  (`presentation:check` `STACKS`) and the accepted wordmark (`copy:check` `WORDMARK` — D7's
-  verbatim was superseded by the accepted workbench redesign `3ed0c31`). **Owes the user two
-  rulings**: (a) the forbidden-claim set — M1's were the trace and graph claims, both shipped
-  features now; proposal: no shipped string names a milestone, unit or review id (`M1`–`M5`,
-  `u12`, `R045`, `U7-26`); (b) descriptor rendering — no component renders `describeDescriptor`'s
-  output any more, so retire the item, or remove the dead `descriptor` field it feeds.
 - **Comments carry provenance and restate purpose** — ten file headers say what their module
   is rather than why it is peculiar, and eight comment sites cite review rows instead of
   stating a timeless constraint (M1 review X20); this session's own new headers are in
@@ -214,7 +201,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 | --- | --- |
 | u3 heap limit is unit-tested only | a committed test drives real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate |
 | **high** Browser WASM abort leaves a dead session | an aborted runtime reaches the client as its own terminal state that recreates the worker without a caller `reset()`, proven by a browser probe whose next query reports 337 documents |
-| Font stack fallbacks and copy reach are unowned | each of the four is decided by a committed check — wordmark and forbidden-claim literals in `copy:check`, descriptor rendering in a dom test, fallback stacks in `presentation:check` |
 | 71 operator contexts have no edge in the shipped graph | either the 71 contexts carry an edge and `tests/kb-derived-assets.test.ts` records the moved counts with the original firing, or a committed check proves no shown path can skip a negation context that has no edge |
 | The independent projection oracle lives on a branch alone | the three lookups match on `relation`, the suite runs 24/24 green against the shipped model from the primary tree, and it joins a declared `binding:check` register |
 | Live suites time out under heavy external CPU load | the full suite passes 20 consecutive runs at load avg ≥ 3× cores with no timeout raised, or a user-approved gate timeout policy is recorded with its original firing |

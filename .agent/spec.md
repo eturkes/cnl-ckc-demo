@@ -189,7 +189,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `b919283` d2 browser lanes steer by `data-action` handles, narrow sweep in both locales.
 - [x] `6c77126` d4 `pnpm readme:check`: README setup path from a clean clone, in `release:check`.
 - [x] `b6f2a54` d7 `claims:seed` keys on a full-claim digest; `claims:check` refuses a stale digest.
-- [ ] d10 QLF fallback under the user's transfer reading: a failed saved state boots `swipl-bundle` + `kb.qlf`; a sound session fetches neither, precache included — closed by the commit that adds this line.
+- [x] `bbb4f24` d10 QLF fallback under the user's transfer reading: a failed saved state boots `swipl-bundle` + `kb.qlf`; a sound session fetches neither, precache included.
 - [x] `5af7982` d13 `tools/validate-report.mjs`: committed port, escaped pipe = content.
 - [ ] d14 blocked behind d29: real heap exhaustion aborts in Node too at swipl-wasm 8.0.7; live harness committed, `limit: 'heap'` read owed.
 - [x] `060c0f7` d18 u4 suite ported: 4 merged green, 3 covered, 1 input retired (P1.10 held by T13).
@@ -207,7 +207,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `da39355` d31 a hung boot settles one typed `boot` error after one recreate; row text corrected from `worker` (d56 clause).
 - [x] `69e7110` d37 every protocol discriminant (5 request + 9 response = 14) clones; per-row non-cloneable mutant refused.
 - [x] `ec37224` d30 `pnpm test:browser`: the nine jsdom-stubbed combobox predicates in real Chromium.
-- [ ] d32 stacks + wordmark decided; owes the user the forbidden-claim set and the descriptor-rendering ruling.
+- [ ] d32 `copy:check` `INTERNAL_ID` refuses a catalog string naming a milestone, unit or review id; the dead `descriptor` cell + `describeDescriptor` are gone — closed by the commit that adds this line.
 - [x] `f40ce36` d40 `pnpm engine:probe` grades R38/R39/R41/R42/R45; the `res-m1-*` claims are ported (JSON corruption, stack flag, direct eval, axe contrast, engine split in smoke), covered, or pruned.
 - [x] `524dad6` d44 `tests/census.test.ts` grades every stable census the rules state against its derivation.
 - [x] `1193641` d46 smoke + browser:check each refuse a mutation their own lane runs (pvm-stripped copy, renamed woff2).
