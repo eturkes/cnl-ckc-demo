@@ -22,10 +22,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   phases the runtime supplies: image fetch (bytes only where the response streams them),
   `loadImageDefault`, contract verification; the worker protocol gains a `progress` response,
   which joins the d37 clone table.
-- **QLF fallback delivery path** — the fallback needs the 6.2 MB `swipl-bundle`,
-  so a naive import would double the shipped engine. Accept: the fallback engine
-  loads only when the saved state fails, and a production build that never takes
-  the fallback ships no bytes of it. `pri` med.
 - **Integral floats decode as integers** — SWI's `1.0` and `1` both arrive as JS
   `1`, so `decodeTerm` reports `integer`. The shipped corpus has no floats.
   Accept: a float binding decodes as `float`, proven on a goal returning `1.0`,
@@ -216,7 +212,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 
 | defect | accept |
 | --- | --- |
-| QLF fallback delivery path | the fallback engine loads only when the saved state fails, and a production build that never takes the fallback ships no bytes of it |
 | u3 heap limit is unit-tested only | a committed test drives real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate |
 | **high** Browser WASM abort leaves a dead session | an aborted runtime reaches the client as its own terminal state that recreates the worker without a caller `reset()`, proven by a browser probe whose next query reports 337 documents |
 | Font stack fallbacks and copy reach are unowned | each of the four is decided by a committed check — wordmark and forbidden-claim literals in `copy:check`, descriptor rendering in a dom test, fallback stacks in `presentation:check` |

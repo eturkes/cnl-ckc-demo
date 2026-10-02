@@ -18,6 +18,7 @@ import { join } from 'node:path';
 
 import { expectedAnswer, questionOf } from './answer-oracle.mjs';
 import { failWith, OVERFLOW_PROBE, withBuiltSite } from './browser.mjs';
+import { FALLBACK_REQUEST } from './bundle.mjs';
 import {
   CATALOG,
   cmapOf,
@@ -35,6 +36,8 @@ const NESTED = 'some/nested';
 /** The face firing input: the same build with its Japanese woff2 files renamed away. */
 const FACELESS = 'some/faceless';
 const PARITY = 'some/parity';
+/** A copy of the build whose saved state is truncated, so only the QLF fallback can boot. */
+const FALLBACK = 'some/fallback';
 /** Served by the same server, which severs every request under it while `offlineDown` holds. */
 const OFFLINE = 'some/offline';
 let offlineDown = false;
@@ -703,6 +706,49 @@ await withBuiltSite({ tool: 'browser', fail, nested: NESTED, refuse }, async (si
 
     const parity = await faceParity(browser, join(root, PARITY), `${origin}/${PARITY}/`);
 
+    // Every leg above booted a sound saved state, so none of them may have taken the fallback.
+    const taken = log.filter((entry) => FALLBACK_REQUEST.test(entry.path));
+    if (taken.length > 0) {
+      fail(`a sound image took the QLF fallback: ${taken.map((e) => e.path).join(', ')}`);
+    }
+    // A saved state that cannot load must boot the QLF fallback and still answer byte for byte.
+    const fallbackRoot = join(root, FALLBACK);
+    await cp(join(ROOT, 'dist'), fallbackRoot, { recursive: true });
+    const pvm = readdirSync(join(fallbackRoot, 'assets')).find((name) =>
+      /^kb-.+\.pvm$/u.test(name),
+    );
+    if (pvm === undefined) fail('built output carries no saved state');
+    const pvmPath = join(fallbackRoot, 'assets', pvm);
+    await writeFile(pvmPath, readFileSync(pvmPath).subarray(0, 1000));
+    const since = log.length;
+    const fallbackPage = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+    fallbackPage.on('pageerror', (error) => {
+      raised ??= `fallback leg raised ${error.message}`;
+    });
+    await fallbackPage.goto(`${origin}/${FALLBACK}/`, { waitUntil: 'load', timeout: TIMEOUT });
+    const fallbackDocuments = await readDocuments(fallbackPage, 'fallback');
+    if (fallbackDocuments !== documents) {
+      fail(
+        `fallback reported ${String(fallbackDocuments)} documents, manifest records ${String(documents)}`,
+      );
+    }
+    const fetched = log
+      .slice(since)
+      .filter((entry) => entry.status === 200 && FALLBACK_REQUEST.test(entry.path));
+    if (fetched.length !== 2) {
+      fail(`a truncated saved state fetched ${String(fetched.length)} of the 2 fallback assets`);
+    }
+    await fallbackPage.locator('[role="combobox"]').click();
+    await fallbackPage.locator(`[role="option"][id$="-option-${question}"]`).click();
+    await fallbackPage.locator('[data-action="run"]').click();
+    await fallbackPage.waitForSelector('section[aria-labelledby] .answer-point', {
+      timeout: TIMEOUT,
+    });
+    await fallbackPage.locator('.explanation > summary').click();
+    await fallbackPage.locator('.canonical summary').click();
+    await canonicalMatches(fallbackPage, `fallback ${question}`, expectedCanonical.serialized);
+    if (raised !== undefined) fail(raised);
+
     const broken = log.filter(
       (entry) => entry.status !== 200 && entry.path.startsWith(`/${NESTED}`),
     );
@@ -724,7 +770,7 @@ await withBuiltSite({ tool: 'browser', fail, nested: NESTED, refuse }, async (si
         `activated; controls: a build ` +
         `without its Japanese woff2 refused, a cut without AUTOFIT rasterized differently, the ` +
         `same rename under the old sw.js kept the stale PVM, a build with no sw.js did not boot ` +
-        `offline`,
+        `offline; a truncated saved state booted the QLF fallback, which answered byte for byte`,
     );
   } finally {
     dev?.stop();

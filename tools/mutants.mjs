@@ -241,8 +241,8 @@ export const MUTANTS = [
     edits: [
       {
         path: 'src/engine/session.ts',
-        old: '    this.#booting ??= this.#bootOnce(image).finally(() => {\n      this.#booting = undefined;\n    });\n    return this.#booting;\n  }\n\n  async #bootOnce(image: Uint8Array): Promise<EngineContract> {',
-        new: '    return this.#bootOnce(image);\n  }\n\n  async #bootOnce(image: Uint8Array): Promise<EngineContract> {',
+        old: '    this.#booting ??= this.#bootOnce(image).finally(() => {\n      this.#booting = undefined;\n    });\n    return this.#booting;\n',
+        new: '    return this.#bootOnce(image);\n',
       },
     ],
     check: { test: 'tests/engine-session.test.ts', name: 'loads the image once' },

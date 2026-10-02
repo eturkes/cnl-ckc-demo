@@ -189,7 +189,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `b919283` d2 browser lanes steer by `data-action` handles, narrow sweep in both locales.
 - [x] `6c77126` d4 `pnpm readme:check`: README setup path from a clean clone, in `release:check`.
 - [x] `b6f2a54` d7 `claims:seed` keys on a full-claim digest; `claims:check` refuses a stale digest.
-- [ ] d10 blocked: owes the user's reading of "ships no bytes"; work parked on `wip/d10-fallback`.
+- [ ] d10 QLF fallback under the user's transfer reading: a failed saved state boots `swipl-bundle` + `kb.qlf`; a sound session fetches neither, precache included — closed by the commit that adds this line.
 - [x] `5af7982` d13 `tools/validate-report.mjs`: committed port, escaped pipe = content.
 - [ ] d14 blocked behind d29: real heap exhaustion aborts in Node too at swipl-wasm 8.0.7; live harness committed, `limit: 'heap'` read owed.
 - [x] `060c0f7` d18 u4 suite ported: 4 merged green, 3 covered, 1 input retired (P1.10 held by T13).

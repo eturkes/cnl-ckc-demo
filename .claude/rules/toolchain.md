@@ -69,8 +69,9 @@ template reads as unsafe → derive the value in the script block instead.
   the files on disk (`tools/offline-sw.mjs`) — `generateBundle` misses the worker-emitted PVM.
   The cache name hashes the whole file list, so any renamed asset (a changed KB input renames the
   PVM) activates a new cache and deletes the old. Install precaches the boot set: every
-  `assets/` file outside `LAZY`, which holds the graph, renderer, PDF, provenance chunks and
-  Japanese faces — precaching those would put the Japanese face on an English page. `src/main.ts`
+  `assets/` file outside `LAZY`, which holds the graph, renderer, PDF, provenance chunks,
+  Japanese faces and the QLF fallback — precaching those would put the Japanese face on an
+  English page and fetch the 6.2 MB fallback engine a sound session never takes. `src/main.ts`
   registers in production builds alone. `pnpm browser:check` grades the offline second visit and
   the invalidation.
 - `cacheDir` must resolve against the project root. Worktrees reach the toolchain through a

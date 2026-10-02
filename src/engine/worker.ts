@@ -6,6 +6,7 @@ import loadImageModule from 'swipl-wasm/dist/loadImageDefault.js';
 
 import manifest from '@kb/kb-manifest.json';
 import pvmUrl from '@kb/kb.pvm?url';
+import qlfUrl from '@kb/kb.qlf?url';
 
 import { WORKER_FAILURE_ID, type EngineRequest, type EngineResponse } from './protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from './session.js';
@@ -37,8 +38,38 @@ const drain = (): string[] => diagnostics.splice(0, diagnostics.length);
 
 const loadImage: ImageLoader = async (image) => loadImageDefault(image)(sink);
 
+type EngineFactory = (options: Record<string, unknown>) => Promise<Engine>;
+
+/**
+ * The QLF fallback, taken only after the saved state failed to boot. Its engine is the full
+ * `swipl-bundle` (6.2 MB, the library the QLF needs) and arrives through a dynamic import, so
+ * a session that boots the saved state fetches neither it nor the QLF.
+ */
+const loadFallback = async (): Promise<Engine> => {
+  const [bundle, qlf] = await Promise.all([
+    import('swipl-wasm/dist/swipl/swipl-bundle.js'),
+    fetchAsset(qlfUrl),
+  ]);
+  const imported: unknown = bundle.default;
+  const factory = (
+    typeof imported === 'function' ? imported : (imported as { default: unknown }).default
+  ) as EngineFactory;
+  const engine = await factory({
+    ...sink,
+    arguments: ['-q'],
+    preRun: [
+      (module: { FS: { writeFile(path: string, data: Uint8Array): void } }) => {
+        module.FS.writeFile('kb.qlf', qlf);
+      },
+    ],
+  });
+  engine.prolog.query("consult('kb.qlf').").once();
+  return engine;
+};
+
 const session = new EngineSession({
   loadImage,
+  loadFallback,
   drain,
   expected: {
     schemaVersion: manifest.contract.schemaVersion,
@@ -49,11 +80,13 @@ const session = new EngineSession({
 let image: Promise<Uint8Array> | undefined;
 
 /** `fetch` resolves on 404 and 500, so the status check is what makes this fail closed. */
-const fetchImage = async (): Promise<Uint8Array> => {
-  const response = await fetch(pvmUrl);
-  if (!response.ok) throw new Error(`saved state ${pvmUrl} returned HTTP ${response.status}`);
+async function fetchAsset(url: string): Promise<Uint8Array> {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`${url} returned HTTP ${response.status}`);
   return new Uint8Array(await response.arrayBuffer());
-};
+}
+
+const fetchImage = (): Promise<Uint8Array> => fetchAsset(pvmUrl);
 
 const post = (response: EngineResponse): void => {
   self.postMessage(response);

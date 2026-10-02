@@ -15,6 +15,7 @@ import { join } from 'node:path';
 
 import { expectedAnswer } from './answer-oracle.mjs';
 import { failWith, withBuiltSite } from './browser.mjs';
+import { FALLBACK_REQUEST, FULL_ENGINE_MARKER, fallbackSplit } from './bundle.mjs';
 import { requireFiring } from './control.mjs';
 import { sha256, verifyBag } from './kb/bag.mjs';
 import { loadManifest, payloadSource, ROOT } from './kb/paths.mjs';
@@ -159,6 +160,40 @@ await withBuiltSite(
     );
     const split = engineSplit(dist);
     if (split.length > 0) fail(`engine split: ${split.join('; ')}`);
+    const fallback = fallbackSplit(dist);
+    if (fallback.failures.length > 0) fail(`QLF fallback split: ${fallback.failures.join('; ')}`);
+    const entryChunk = /src="\.\/assets\/([^"]+\.js)"/u.exec(
+      readFileSync(join(dist, 'index.html'), 'utf8'),
+    )?.[1];
+    const engineChunk = fallback.chunk;
+    if (worker === undefined || entryChunk === undefined || engineChunk === undefined) {
+      fail('the build carries no worker, entry or full-engine chunk');
+    }
+    // Each control edits one chunk of the real build in memory.
+    staleControls.push(
+      requireFiring(
+        'smoke',
+        {
+          mutation: 'the full engine marker appended to the worker chunk',
+          expect: [`eager chunk ${worker}`],
+        },
+        () =>
+          fallbackSplit(dist, (name, code) =>
+            name === worker ? `${code}\n// ${FULL_ENGINE_MARKER}\n` : code,
+          ).failures,
+      ),
+      requireFiring(
+        'smoke',
+        {
+          mutation: 'the entry statically importing the full engine chunk',
+          expect: [`eager chunk ${engineChunk}`],
+        },
+        () =>
+          fallbackSplit(dist, (name, code) =>
+            name === entryChunk ? `import"./${engineChunk}";${code}` : code,
+          ).failures,
+      ),
+    );
     const stale = staleness(dist, inputDigest, manifest);
     if (stale.length > 0) fail(`stale build: ${stale.join('; ')}`);
 
@@ -272,6 +307,11 @@ await withBuiltSite(
     if (focusTop < 50 || focusTop > 180)
       fail(`the answer evidence focus did not land below the header (${String(focusTop)}px)`);
 
+    const taken = log.filter((entry) => FALLBACK_REQUEST.test(entry.path));
+    if (taken.length > 0) {
+      fail(`a sound image took the QLF fallback: ${taken.map((e) => e.path).join(', ')}`);
+    }
+
     const broken = log.filter(
       (entry) => entry.status !== 200 && entry.path.startsWith(`/${NESTED}`),
     );
@@ -282,7 +322,8 @@ await withBuiltSite(
     console.log(
       `smoke: ok — ${url} combined ${String(expected.rows)} Prolog solutions into ` +
         `${String(bullets)} cited deterministic statements, ` +
-        `${served} nested requests served, saved state current with bag input ` +
+        `${served} nested requests served, none of them the lazy QLF fallback (${engineChunk}), ` +
+        `saved state current with bag input ` +
         `${inputDigest.slice(0, 12)}; controls: ${staleControls.join(', ')}, a pvm-stripped copy refused at boot`,
     );
   },

@@ -142,6 +142,14 @@ leaves its frame open, and every later query then resolves outside the KB:
 Node has no DOM `Worker`, so `EngineSession` holds the logic behind an injected image loader
 and `worker.ts` is message plumbing only. Tests drive the session.
 
+**QLF fallback** (`.agent/contracts/mnt-d10.md`). A saved state that fails to boot — the load
+rejects, emits a diagnostic, or disagrees with the manifest — boots the full `swipl-bundle` plus
+`kb.qlf` instead, through `SessionOptions.loadFallback`; a failed PVM fetch stays a `boot` error.
+The image's diagnostics drain first, and both failing reports both. "Ships no bytes" = transfers
+(user ruling): `dist/` holds the fallback chunk and the QLF, and a sound session fetches neither —
+`tools/bundle.mjs` `fallbackSplit` keeps the full engine out of every eager chunk, and the
+service worker keeps both out of its precache. `tests/engine-fallback.test.ts` F1–F5.
+
 The engine rides the worker chunk alone, beside a hashed `kb-<hash>.pvm`: no chunk
 `index.html` loads carries an engine marker (`pnpm smoke`, with the worker chunk read as the
 entry as its firing input). No COOP/COEP is needed — smoke boots the built worker from a plain

@@ -18,6 +18,9 @@ export const LAZY = [
   /^assets\/guideline-[^/]*\.pdf$/u,
   /^assets\/cdc\d+-opioid-/u,
   /^assets\/biz-udpgothic-/u,
+  // The QLF fallback is insurance a sound image never takes (`tools/bundle.mjs`).
+  /^assets\/swipl-bundle-/u,
+  /^assets\/kb-[^/]+\.qlf$/u,
 ];
 
 /** @param {string[]} files dist-relative paths @returns {{version: string, precache: string[]}} */
