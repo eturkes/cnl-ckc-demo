@@ -193,7 +193,9 @@ export type EngineResponse =
   | { id: string; kind: 'consulted' }
   | { id: string; kind: 'error'; error: EngineError }
   /** Non-terminal: a boot's phase, posted before its `booted` or `error`. */
-  | ({ id: string; kind: 'progress' } & BootProgress);
+  | ({ id: string; kind: 'progress' } & BootProgress)
+  /** Non-terminal: one query answer, posted once rendered, before the query's terminal response. */
+  | { id: string; kind: 'partial'; solution: PlSolution };
 
 /**
  * Every request ends in exactly one terminal response; nothing else settles a caller.
@@ -214,11 +216,21 @@ export const isTerminal = (response: EngineResponse): boolean => {
     case 'error':
       return true;
     case 'progress':
+    case 'partial':
       return false;
     default: {
       const exhaustive: never = response;
       return exhaustive;
     }
+  }
+};
+
+/** Telemetry never decides a request: a throwing listener loses its value, nothing more. */
+export const notify = <T>(listener: ((value: T) => void) | undefined, value: T): void => {
+  try {
+    listener?.(value);
+  } catch {
+    // dropped on purpose
   }
 };
 

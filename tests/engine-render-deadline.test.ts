@@ -1,6 +1,6 @@
-// m1u3 P3.3: the deadline bounds display rendering, which runs after the query closes. A real
-// engine renders every display; the clock advances only when a display returns, so each case
-// reads exactly how many displays ran past the deadline.
+// m1u3 P3.3: the deadline bounds display rendering, which runs between steps as each answer
+// arrives. A real engine renders every display; the clock advances only when a display returns,
+// so each case reads exactly how many displays ran past the deadline.
 
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -139,14 +139,25 @@ describe('display rendering under the request deadline', () => {
     expect(outcome).toEqual({ kind: 'limit', limit: 'wall-clock', solutions: [] });
   });
 
-  it('keeps a heap stop, which recreates the worker, when rendering also runs late', async () => {
-    at(20);
+  it('keeps a heap stop, which recreates the worker, after an answer rendered in time', async () => {
+    at(2);
     const result = await session.solve(
       '(X=shown;throw(error(resource_error(memory),probe))).',
       budget,
     );
     expect(result).toMatchObject({ kind: 'limit', limit: 'heap' });
+    expect(displays).toBe(1);
     expect(await throughClient(result)).toEqual({ limit: 'heap', workers: 2 });
+  });
+
+  it('a render past the deadline stops the run before a later heap step runs', async () => {
+    at(20);
+    const result = await session.solve(
+      '(X=shown;throw(error(resource_error(memory),probe))).',
+      budget,
+    );
+    expect(displays).toBe(1);
+    expect(result).toEqual({ kind: 'limit', limit: 'wall-clock', solutions: [] });
   });
 
   it('bounds proof rendering by the same deadline', async () => {

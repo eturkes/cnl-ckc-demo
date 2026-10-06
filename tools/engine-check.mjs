@@ -63,7 +63,7 @@ const CONTROLS = [
     name: 'P6.2',
     file: 'src/engine/client.ts',
     apply: (text) =>
-      text.replace('goal: string, budget: BudgetSpec, signal', 'goal: string, signal'),
+      text.replace(/goal: string,\s*budget: BudgetSpec,\s*signal/, 'goal: string, signal'),
     expect: 'P6.2 EngineClient.query no longer requires a budget',
   },
   {
@@ -165,15 +165,16 @@ check(files.length > 0, 'engine-check found no sources under src/');
 //
 // Two halves: the two public entry points must REQUIRE a budget, and no call site may
 // omit one. Requiring it in the signature is what a type-checker enforces; scanning the
-// call sites is what catches a caller passing `undefined` through a widened parameter.
+// call sites is what catches a caller passing `undefined` through a widened parameter. Both
+// patterns admit any line breaks and trailing optional parameters after `signal`.
 const clientSource = read(join(SRC, 'engine', 'client.ts'));
 const serviceSource = read(join(SRC, 'questions', 'service.ts'));
 check(
-  /\bquery\(goal: string, budget: BudgetSpec, signal\?: AbortSignal\)/.test(clientSource),
+  /\bquery\(\s*goal: string,\s*budget: BudgetSpec,\s*signal\?: AbortSignal[,)]/.test(clientSource),
   'P6.2 EngineClient.query no longer requires a budget as its second parameter',
 );
 check(
-  /\bask\(\s*id: [^,]+,\s*budget: BudgetSpec,\s*signal\?: AbortSignal,?\s*\)/.test(serviceSource),
+  /\bask\(\s*id: [^,]+,\s*budget: BudgetSpec,\s*signal\?: AbortSignal[,)]/.test(serviceSource),
   'P6.2 AnswerService.ask no longer requires a budget as its second parameter',
 );
 for (const file of files) {

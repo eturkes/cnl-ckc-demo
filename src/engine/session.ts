@@ -15,7 +15,7 @@ import {
   validateBudget,
   wrapGoal,
 } from './budget.js';
-import { PROOF_BUDGET_MAX } from './protocol.js';
+import { notify, PROOF_BUDGET_MAX } from './protocol.js';
 import type {
   BootPhase,
   BudgetSpec,
@@ -36,7 +36,6 @@ import {
   createEncoder,
   decodeOnce,
   DecodeError,
-  type PlBindings,
   type PlTerm,
   type PrologConstructors,
 } from './terms.js';
@@ -275,13 +274,8 @@ export class EngineSession {
    */
   async boot(image: Uint8Array, onPhase?: (phase: BootPhase) => void): Promise<EngineContract> {
     if (this.#engine !== undefined && this.#contract !== undefined) return this.#contract;
-    // Telemetry never decides a boot: a throwing listener loses its phase, nothing more.
     const report = (phase: BootPhase): void => {
-      try {
-        onPhase?.(phase);
-      } catch {
-        // dropped on purpose
-      }
+      notify(onPhase, phase);
     };
     this.#booting ??= this.#bootOnce(image, report).finally(() => {
       this.#booting = undefined;
@@ -376,8 +370,16 @@ export class EngineSession {
     return false;
   }
 
-  /** Run one goal under its budget and return every solution decoded. */
-  async solve(goal: string, budget: BudgetSpec, id = ''): Promise<SolveResult> {
+  /**
+   * Run one goal under its budget and return every solution decoded. Each solution is rendered
+   * between steps and handed to `onSolution` at once, before the run settles.
+   */
+  async solve(
+    goal: string,
+    budget: BudgetSpec,
+    id = '',
+    onSolution?: (solution: PlSolution) => void,
+  ): Promise<SolveResult> {
     const engine = this.#require();
     assertGoalAvoidsReserved(goal);
     // An unparsable goal yields no solution instead of raising, so without this
@@ -395,8 +397,12 @@ export class EngineSession {
     this.#active = id;
     this.#cancelling = this.#deferred.delete(id);
     const started = Date.now();
+    // The deadline bounds display rendering too (m1u3 P3.3): rendering stops at the first display
+    // that ends past it, and only solutions rendered whole before it return or stream.
+    const late = (): boolean => Date.now() - started > budget.wallClockMs;
     const encode = createEncoder(engine.prolog);
-    const found: PlBindings[] = [];
+    const solutions: PlSolution[] = [];
+    let spent = 0;
     const query = engine.prolog.query(meteredGoal(goal, budget));
     const iterator = query[Symbol.iterator]();
     // A cancel held from before dispatch settles the run without proving a solution:
@@ -416,19 +422,26 @@ export class EngineSession {
               stopped = outcome.limit;
             } else if (outcome.kind === 'resource') {
               throw new PrologFailure(`unclassified resource error: ${outcome.resource}`);
-            } else if (outcome.spent !== undefined && outcome.spent > budget.inferences) {
+            } else if ((spent += outcome.spent ?? 0) > budget.inferences) {
               // The whole request outspent its budget across steps that each stayed inside it;
               // the solution or exhaustion that crossed the line is discarded with the run.
               stopped = 'inference';
             } else if (outcome.final) {
-              // Exhausted inside budget: the terminal record carries the total and no answer.
-            } else if (found.length >= budget.answerCap) {
+              // Exhausted inside budget: the terminal record carries the last step and no answer.
+            } else if (solutions.length >= budget.answerCap) {
               // Proving one solution past the cap and discarding it is the only thing
               // that separates a truncated run from a run holding exactly `answerCap`
               // answers, which owes the caller honest exhaustion instead.
               stopped = 'answer-cap';
             } else {
-              found.push(outcome.bindings);
+              // Rendering is an engine query of its own; the meter resumes after it.
+              const display: Record<string, string> = {};
+              for (const [name, term] of Object.entries(outcome.bindings)) {
+                display[name] = this.#display(engine, encode(term), late);
+              }
+              const solution = { bindings: outcome.bindings, display };
+              solutions.push(solution);
+              notify(onSolution, solution);
             }
           }
         }
@@ -442,11 +455,14 @@ export class EngineSession {
           stopped = 'cancelled';
           break;
         }
-        if (Date.now() - started > budget.wallClockMs) {
+        if (late()) {
           stopped = 'wall-clock';
           break;
         }
       }
+    } catch (cause) {
+      if (!(cause instanceof LateRender)) throw cause;
+      stopped = 'wall-clock';
     } finally {
       query.close?.();
       restore();
@@ -455,25 +471,6 @@ export class EngineSession {
       this.#proofs.clear();
     }
 
-    // Rendered only once the query closed: a display call is an engine query, and run between
-    // solutions its inferences would land in the request's metered total. The deadline still
-    // bounds the whole request (m1u3 P3.3): rendering stops at the first display that ends past
-    // it, and only solutions rendered whole before it return.
-    const late = (): boolean => Date.now() - started > budget.wallClockMs;
-    const solutions: PlSolution[] = [];
-    try {
-      for (const bindings of found) {
-        const display: Record<string, string> = {};
-        for (const [name, term] of Object.entries(bindings)) {
-          display[name] = this.#display(engine, encode(term), late);
-        }
-        solutions.push({ bindings, display });
-      }
-    } catch (cause) {
-      if (!(cause instanceof LateRender)) throw cause;
-      // An earlier stop keeps its kind: `heap` is what makes the client recreate the worker.
-      stopped ??= 'wall-clock';
-    }
     if (stopped === 'cancelled') return { kind: 'cancelled', solutions };
     if (stopped !== undefined) return { kind: 'limit', limit: stopped, solutions };
     return solutions.length === 0 ? { kind: 'failure' } : { kind: 'solutions', solutions };
@@ -661,7 +658,7 @@ export class EngineSession {
 
   /**
    * Turn one request into exactly one terminal response; never throws. A boot also hands
-   * `progress` its phases, as non-terminal responses carrying the request's id.
+   * `progress` its phases and a query its answers, as non-terminal responses under its id.
    */
   async handle(
     request: EngineRequest,
@@ -687,7 +684,9 @@ export class EngineSession {
         case 'query': {
           // Revalidated here because the client is not the only thing that can post.
           const budget = validateBudget(request.budget);
-          const solved = await this.solve(request.goal, budget, id);
+          const solved = await this.solve(request.goal, budget, id, (solution) =>
+            progress?.({ id, kind: 'partial', solution }),
+          );
           return solved.kind === 'failure' ? { id, kind: 'failure' } : { id, ...solved };
         }
         case 'proof': {

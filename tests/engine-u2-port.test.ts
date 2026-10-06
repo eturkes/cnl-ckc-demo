@@ -365,6 +365,7 @@ describe('P2 protocol port', () => {
       consulted: true,
       error: true,
       progress: true,
+      partial: true,
     } satisfies Record<EngineResponse['kind'], true>;
     const frames: [EngineRequest, EngineResponse][] = [];
     for (const original of responseRequests()) {
@@ -382,6 +383,16 @@ describe('P2 protocol port', () => {
       (response) => phases.push(response),
     );
     for (const phase of phases) frames.push([bootRequest, phase]);
+    // A query's answers stream beside its terminal response the same way.
+    const queryRequest: EngineRequest = {
+      id: 'table-u2-partial',
+      kind: 'query',
+      goal: 'X = foo(bar,7).',
+      budget: BUDGET_MAX,
+    };
+    const partials: EngineResponse[] = [];
+    await session.handle(queryRequest, image, (response) => partials.push(response));
+    for (const partial of partials) frames.push([queryRequest, partial]);
     const rows = [
       ...new Map(frames.map(([request]) => [`request ${request.kind}`, request])),
       ...new Map(frames.map(([, response]) => [`response ${response.kind}`, response])),

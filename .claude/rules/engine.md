@@ -74,17 +74,26 @@ leaves its frame open, and every later query then resolves outside the KB:
   discards it: a run holding exactly `answerCap` answers is honest exhaustion and reports
   `solutions`. Hitting the cap therefore costs one extra solution step.
 - **The inference budget bounds the whole request.** `call_with_inference_limit/3` re-arms on
-  backtracking, so alone it bounds one step. `meteredGoal` reports the request's running total
-  (`BudgetSpent_`) with every answer and once more after exhaustion (`BudgetFinal_ = true`),
-  and the driver stops at the first record past the budget with `limit:'inference'`,
-  discarding that record. The total counts the goal plus the wrapper's few inferences; answers
-  are rendered only after the query closes, so no display call enters it. Proofs keep the
-  per-step `wrapGoal`.
+  backtracking, so alone it bounds one step. `meteredGoal` reports each step's own inferences
+  (`BudgetSpent_`) with every answer and once more after exhaustion (`BudgetFinal_ = true`);
+  the driver sums them and stops at the first record past the budget with `limit:'inference'`,
+  discarding that record. A step is metered from the moment the engine resumes the goal — the
+  resume point is stamped into the `BudgetMeter_` global on backtracking — so the display
+  render between steps never enters the total, which counts the goal plus the wrapper's few
+  inferences per step. Proofs keep the per-step `wrapGoal`.
+- **Answers stream** (d17): `solve` renders each answer between steps and hands it at once to
+  its listener, which `handle` posts as a non-terminal `partial` under the query's id;
+  `EngineClient.query(…, onSolution)` and `AnswerService.ask(…, onSolution)` deliver them, a
+  partial for any other request = a protocol violation. A `solutions`, `limit` or `cancelled`
+  terminal carries every answer it streamed; an `error` terminal carries none and fails closed;
+  the client's hard watchdog, which never hears a terminal, settles with the answers streamed
+  before the stuck step. `tests/solution-streaming.test.ts`, rendered `tests/solution-streaming.dom.test.ts`.
 - **The wall-clock deadline bounds display rendering too** (m1u3 P3.3), answers and proof steps
-  alike: the first display that ends past it stops rendering, only solutions rendered whole
-  before it return, and the request reports `limit:'wall-clock'` unless an earlier stop already
-  holds — that stop keeps its kind, because `heap` is what makes the client recreate the
-  worker. `tests/engine-render-deadline.test.ts`.
+  alike: the first display that ends past it stops rendering and the run, only solutions
+  rendered whole before it return or stream, and the request reports `limit:'wall-clock'`. An
+  answer renders before the next step runs, so a later stop — `heap` included, which makes the
+  client recreate the worker — always lands after the last render and keeps its kind.
+  `tests/engine-render-deadline.test.ts`.
 - **A proof is cached per session**, keyed by goal + selected bindings + clamped budget, so
   re-selecting a proved solution runs no meta-interpreter call and returns a copy of the same
   proof. Every `solve` (any goal may assert or retract) clears the cache on entry and exit, every
@@ -93,8 +102,8 @@ leaves its frame open, and every later query then resolves outside the KB:
   meta-interpreter reads clauses alone, so a derivation never mutates. A recreated worker is a
   new session, hence a new cache. `tests/engine-proof-cache.test.ts`.
 - The wrapper reserves `BudgetDepth_`, `BudgetInference_`, `BudgetResource_`,
-  `BudgetStart_`, `BudgetNow_`, `BudgetSpent_` and `BudgetFinal_`; a goal naming one is
-  rejected.
+  `BudgetStart_`, `BudgetNow_`, `BudgetSpent_`, `BudgetFinal_`, `BudgetResume_`, `BudgetMark_`
+  and the `BudgetMeter_` global key; a goal naming one is rejected.
 - The saved image starts at a 1 GiB unified stack limit, reducible
   (`tests/engine-runtime-facts.test.ts`). Asserted state persists across queries in one engine
   (`pnpm engine:probe` R41).
@@ -107,8 +116,9 @@ leaves its frame open, and every later query then resolves outside the KB:
   firing.
 - `solve` yields a MACROTASK between solutions; a microtask yield admits no posted message
   and cannot deliver a cancel. Granularity = one solution step: a cancel lands between steps,
-  never inside one. Browser delivery is proven by `pnpm browser:check`.
-- Cancellation surface = a trailing optional `AbortSignal` on `EngineClient.query` and
+  never inside one, and the step it waited for still streams its answer. Browser delivery is
+  proven by `pnpm browser:check`.
+- Cancellation surface = an optional `AbortSignal` after the budget on `EngineClient.query` and
   `AnswerService.ask`. `EngineClient`'s correlation id stays private.
 - Hard cancel = terminate → respawn → boot. Any UI claim about its cost must use the browser
   figure: `pnpm engine:probe` R41 runs five cycles each time and prints their range. Each cycle
@@ -140,7 +150,7 @@ leaves its frame open, and every later query then resolves outside the KB:
 
 ## Boot phases
 
-- `progress` = the protocol's one NON-terminal response: a boot's phase under the boot's id,
+- `progress` = a NON-terminal response (beside a query's `partial`): a boot's phase under its id,
   posted before its `booted` or `error`. The worker reports `fetch` once the image's headers pass
   the status check; the session reports `load` before `loadImage` and `verify` before each
   contract read, so a saved state that loads reports `verify`, and a failed one goes on to

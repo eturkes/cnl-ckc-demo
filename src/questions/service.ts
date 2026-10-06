@@ -28,9 +28,10 @@ export type AnswerResult =
   | { kind: 'failure'; id: QuestionId; serialized: string }
   /**
    * A budget stopped the run. `solutions` holds the prefix the engine proved before
-   * its own soft check, and is EMPTY when the client's hard watchdog fires instead —
-   * that path terminates a worker stuck in an uninterruptible step, so nothing it
-   * proved is recoverable (`engine/client.ts` `#onDeadline`).
+   * its own soft check. When the client's hard watchdog fires instead, it holds only the
+   * answers that streamed before it: that path terminates a worker stuck in an
+   * uninterruptible step, so nothing that step proved is recoverable
+   * (`engine/client.ts` `#onDeadline`).
    */
   | { kind: 'limit'; id: QuestionId; limit: LimitKind; serialized: string; solutions: PlSolution[] }
   | { kind: 'cancelled'; id: QuestionId; serialized: string; solutions: PlSolution[] }
@@ -48,12 +49,17 @@ export class AnswerService {
    *
    * `id` is `unknown` on purpose: free text and unknown ids reach this method as
    * strings from the UI, and both leave through the same rejection without the
-   * engine ever seeing them.
+   * engine ever seeing them. `onSolution` hears each answer as the engine renders it.
    */
-  async ask(id: unknown, budget: BudgetSpec, signal?: AbortSignal): Promise<AnswerResult> {
+  async ask(
+    id: unknown,
+    budget: BudgetSpec,
+    signal?: AbortSignal,
+    onSolution?: (solution: PlSolution) => void,
+  ): Promise<AnswerResult> {
     if (!isQuestionId(id)) return { kind: 'rejected', reason: 'unknown-id' };
     const entry = QUESTION_CATALOG[id];
-    const outcome = await this.#client.query(entry.goal, budget, signal);
+    const outcome = await this.#client.query(entry.goal, budget, signal, onSolution);
     switch (outcome.kind) {
       case 'solutions':
         return {

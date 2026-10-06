@@ -70,6 +70,18 @@
           <div class="assistant-copy">
             {#if busy}
               <p class="working">{t.DESCRIPTIONS.workingAnswer}</p>
+              <!-- Answers stream in as the engine proves them; sources open once the run settles. -->
+              {#if points.length === 1}
+                {#each points as point (point.text)}
+                  <p class="answer-point">{point.text}</p>
+                {/each}
+              {:else if points.length > 1}
+                <ul class="answer-list">
+                  {#each points as point (point.text)}
+                    <li class="answer-point">{point.text}</li>
+                  {/each}
+                </ul>
+              {/if}
             {:else}
               {#if summary !== ''}
                 <p class="summary">{summary}</p>

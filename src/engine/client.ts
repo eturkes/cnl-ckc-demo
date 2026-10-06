@@ -7,7 +7,7 @@
 // main-thread timer fired at 25.97 ms.
 
 import { validateBudget } from './budget.js';
-import { PROOF_BUDGET_MAX, WORKER_FAILURE_ID } from './protocol.js';
+import { notify, PROOF_BUDGET_MAX, WORKER_FAILURE_ID } from './protocol.js';
 import type {
   BootProgress,
   BudgetSpec,
@@ -15,6 +15,7 @@ import type {
   EngineError,
   EngineRequestBody,
   EngineResponse,
+  PlSolution,
   ProofInput,
   ProofOutcome,
   SolveResult,
@@ -50,12 +51,21 @@ const BOOT_DEADLINE_MS = 30_000;
  */
 const CONSULT_DEADLINE_MS = 10_000;
 
+type Listener =
+  | { kind: 'progress'; hear: ((progress: BootProgress) => void) | undefined }
+  | {
+      kind: 'partial';
+      hear: ((solution: PlSolution) => void) | undefined;
+      /** Every answer already streamed, so a watchdog settlement still carries them. */
+      streamed: PlSolution[];
+    };
+
 interface Pending {
   resolve: (response: EngineResponse) => void;
   timer: unknown;
   abort: { signal: AbortSignal; listener: () => void } | undefined;
-  /** A boot's phase listener; any other request reports no progress. */
-  progress: ((progress: BootProgress) => void) | undefined;
+  /** What this request reports before it settles: a boot its phases, a query its answers. */
+  listener: Listener | undefined;
 }
 
 export interface ClientOptions {
@@ -141,14 +151,20 @@ export class EngineClient {
         });
         return;
       }
-      if (response.kind === 'progress') {
-        const { id, kind, ...progress } = response;
-        if (pending.progress === undefined) {
+      if (response.kind === 'progress' || response.kind === 'partial') {
+        const { listener } = pending;
+        if (response.kind === 'progress' && listener?.kind === 'progress') {
+          const { phase, bytes } = response;
+          notify(listener.hear, bytes === undefined ? { phase } : { phase, bytes });
+        } else if (response.kind === 'partial' && listener?.kind === 'partial') {
+          listener.streamed.push(response.solution);
+          notify(listener.hear, response.solution);
+        } else {
           this.onProtocolViolation?.({
             code: 'protocol',
-            message: `${kind} for ${id}, which reports none`,
+            message: `${response.kind} for ${response.id}, which reports none`,
           });
-        } else notify(pending.progress, progress);
+        }
         return;
       }
       this.#settle(response.id, response);
@@ -172,7 +188,7 @@ export class EngineClient {
     deadlineMs?: number,
     signal?: AbortSignal,
     deadline?: (id: string) => void,
-    progress?: (progress: BootProgress) => void,
+    listener?: Listener,
   ): Promise<EngineResponse> {
     const id = `r${++this.#nextId}`;
     // An aborted signal is aborted forever, so a reused one must not boot a worker
@@ -205,7 +221,7 @@ export class EngineClient {
                 void this.cancel(id);
               },
             };
-      this.#pending.set(id, { resolve, timer, abort, progress });
+      this.#pending.set(id, { resolve, timer, abort, listener });
       try {
         worker.postMessage({ ...request, id });
       } catch (cause) {
@@ -223,7 +239,10 @@ export class EngineClient {
   /** The engine outlived its budget inside an uninterruptible step; only termination ends it. */
   #onDeadline(id: string): void {
     if (!this.#pending.has(id)) return;
-    this.#settle(id, { id, kind: 'limit', limit: 'wall-clock', solutions: [] });
+    // Answers that streamed before the stuck step were rendered whole and stay real.
+    const listener = this.#pending.get(id)?.listener;
+    const solutions = listener?.kind === 'partial' ? listener.streamed : [];
+    this.#settle(id, { id, kind: 'limit', limit: 'wall-clock', solutions });
     void this.reset(`wall-clock deadline exceeded for ${id}`);
   }
 
@@ -258,7 +277,7 @@ export class EngineClient {
         timedOut = true;
         this.#onBootDeadline(id);
       },
-      onProgress,
+      { kind: 'progress', hear: onProgress },
     );
     // `#send` spawns synchronously, so this is the worker the boot was posted to.
     const generation = this.#generation;
@@ -283,7 +302,13 @@ export class EngineClient {
     return outcome;
   }
 
-  async query(goal: string, budget: BudgetSpec, signal?: AbortSignal): Promise<QueryOutcome> {
+  /** `onSolution` hears each answer as the worker renders it, before the outcome settles. */
+  async query(
+    goal: string,
+    budget: BudgetSpec,
+    signal?: AbortSignal,
+    onSolution?: (solution: PlSolution) => void,
+  ): Promise<QueryOutcome> {
     let spec: BudgetSpec;
     try {
       spec = validateBudget(budget);
@@ -297,6 +322,8 @@ export class EngineClient {
       { kind: 'query', goal, budget: spec },
       spec.wallClockMs + HARD_GRACE_MS,
       signal,
+      undefined,
+      { kind: 'partial', hear: onSolution, streamed: [] },
     );
     switch (response.kind) {
       case 'solutions':
@@ -319,6 +346,7 @@ export class EngineClient {
       case 'ack':
       case 'consulted':
       case 'progress':
+      case 'partial':
         return {
           kind: 'error',
           error: { code: 'protocol', message: `query answered with ${response.kind}` },
@@ -372,6 +400,7 @@ export class EngineClient {
       case 'ack':
       case 'consulted':
       case 'progress':
+      case 'partial':
         return {
           kind: 'error',
           error: { code: 'protocol', message: `proof answered with ${response.kind}` },
@@ -476,18 +505,6 @@ export class EngineClient {
     this.#abort('client disposed the worker');
   }
 }
-
-/** Telemetry never decides a request: a throwing listener loses its phase, nothing more. */
-const notify = (
-  listener: ((progress: BootProgress) => void) | undefined,
-  progress: BootProgress,
-): void => {
-  try {
-    listener?.(progress);
-  } catch {
-    // dropped on purpose
-  }
-};
 
 const protocolError = (id: string, cause: unknown): EngineResponse => ({
   id,

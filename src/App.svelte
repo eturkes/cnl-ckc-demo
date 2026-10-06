@@ -86,7 +86,11 @@
   const viewState = $derived(demo.state);
   const description = $derived(describeState(viewState));
   const rows = $derived<AnswerRow[]>(
-    viewState.kind === 'settled' ? answerRows(viewState.id, solutionsOf(viewState.result)) : [],
+    viewState.kind === 'settled'
+      ? answerRows(viewState.id, solutionsOf(viewState.result))
+      : viewState.kind === 'running' || viewState.kind === 'cancelling'
+        ? answerRows(viewState.id, viewState.solutions ?? [])
+        : [],
   );
   const serialized = $derived(
     viewState.kind === 'settled' && 'serialized' in viewState.result

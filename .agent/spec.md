@@ -227,7 +227,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `3f99fd1` d6 the URL carries the selected catalog id; reload and back/forward select it and never run.
 - [x] `424b394` d8 a service worker precaches the boot set; a second visit boots offline; a renamed PVM evicts the stale cache.
 - [x] `6e558cd` d9 both u1 wave-1 reports validate (25/25, 12/12), re-derived at today's tree; new row: halting payload reports `[object Object]`.
-- [ ] d12 ruled (user): leave as is — close as a declared limit, records only.
+- [x] `114ad49` d12 ruled (user): leave as is — close as a declared limit, records only.
 - [x] `91d22b7` d15 u3 port merged (8 green); its P3.3 case caught `0465faa`'s unbounded display → the deadline bounds every answer and proof display.
 - [x] `768742e` d20 `kb:asset-check` refuses an oracle path assembled from its two bare segments.
 - [x] `1dc006f` d22 `pnpm visual-qa`: 39 states at 320/375/1280 px, none overflows, planted-overflow control.

@@ -55,7 +55,12 @@ const PROOF_BUDGET: Readonly<BudgetSpec> = Object.freeze({
  */
 export interface DemoEngine {
   boot(onProgress?: (progress: BootProgress) => void): Promise<BootOutcome>;
-  ask(id: unknown, budget: BudgetSpec, signal?: AbortSignal): Promise<AnswerResult>;
+  ask(
+    id: unknown,
+    budget: BudgetSpec,
+    signal?: AbortSignal,
+    onSolution?: (solution: PlSolution) => void,
+  ): Promise<AnswerResult>;
   prove?(input: ProofInput, budget: BudgetSpec, signal?: AbortSignal): Promise<ProofOutcome>;
   derive?(ruleIds: readonly unknown[], signal?: AbortSignal): Promise<IntakeDerivation>;
   dispose(): void;
@@ -67,7 +72,7 @@ export const createDemoEngine = (): DemoEngine => {
   const intake = new IntakeService(client);
   return {
     boot: (onProgress) => client.boot(onProgress),
-    ask: (id, budget, signal) => service.ask(id, budget, signal),
+    ask: (id, budget, signal, onSolution) => service.ask(id, budget, signal, onSolution),
     prove: (input, budget, signal) => client.prove(input, budget, signal),
     derive: (ruleIds, signal) => intake.derive(ruleIds, signal),
     dispose: () => {
@@ -81,8 +86,9 @@ export type DemoState =
   | ({ kind: 'booting' } & Partial<BootProgress>)
   | { kind: 'boot-error'; error: EngineError }
   | { kind: 'idle'; contract: EngineContract }
-  | { kind: 'running'; id: QuestionId }
-  | { kind: 'cancelling'; id: QuestionId }
+  /** `solutions` = the answers streamed so far, absent until the first. */
+  | { kind: 'running'; id: QuestionId; solutions?: readonly PlSolution[] }
+  | { kind: 'cancelling'; id: QuestionId; solutions?: readonly PlSolution[] }
   | { kind: 'settled'; id: QuestionId; result: AnswerResult };
 
 interface ActiveRun {
@@ -161,7 +167,11 @@ export class DemoController {
     const active = this.#active;
     if (active === undefined) return;
     active.controller.abort();
-    this.state = { kind: 'cancelling', id: active.id };
+    const { state } = this;
+    this.state =
+      (state.kind === 'running' || state.kind === 'cancelling') && state.solutions !== undefined
+        ? { kind: 'cancelling', id: active.id, solutions: state.solutions }
+        : { kind: 'cancelling', id: active.id };
     await active.done;
   }
 
@@ -288,10 +298,17 @@ export class DemoController {
     this.solutionIndex = -1;
     this.state = { kind: 'running', id };
 
+    // Only this run's answers, while it is still the live run, reach the view.
+    const stream = (solution: PlSolution): void => {
+      const { state } = this;
+      if (this.#active?.controller !== controller) return;
+      if (state.kind !== 'running' && state.kind !== 'cancelling') return;
+      this.state = { ...state, solutions: [...(state.solutions ?? []), solution] };
+    };
     const dispatch = (): Promise<AnswerResult> =>
       controller.signal.aborted
         ? Promise.resolve(cancelledResult(id))
-        : this.#engine.ask(id, DEMO_BUDGET, controller.signal);
+        : this.#engine.ask(id, DEMO_BUDGET, controller.signal, stream);
 
     // Nothing in flight means the engine call goes out in this same tick; any call still
     // open — a predecessor's iterator or an aborted proof — defers it through the queue,
