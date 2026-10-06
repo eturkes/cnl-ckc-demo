@@ -142,20 +142,23 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   Accept: either the dedup keys on scope and the justification suite justifies all 55 by their
   own clauses, with the moved counts recorded; or a committed check proves each merged negated
   support has an unnegated twin support in its own sentence. `pri` low.
-- **Cap-one re-proof hits `limit` in a full-suite run** — one `binding:check` run (the gate
-  chain after `audit:check`) failed `tests/proof-live.test.ts:122` (`when-to-use-opioids
-  re-proves every selected answer at cap one`: `expected 'limit' to be 'proof'`), 1044/1045.
-  Load avg on 8 cores read 7.05 at launch and 9.44 about two minutes after the run, both inside
-  the ≤ 2.9× envelope `.claude/rules/gate.md` accepts; failure-time load is unconfirmed. The
-  suite file alone then passed 19/19, and the next `binding:check` passed 1045/1045 (load 8.04
-  at launch, 12.09 at its end). The test asserts `result.kind` alone, so the subtype is lost.
-  Accept: the next reproduced trip records its `limit` subtype, and either that case's bound
-  stops depending on host load or 20 consecutive full runs at load ≥ 9 pass it. `pri` med.
 - **The CI registry receipt cannot refute "publishes nothing"** — the `docs/claims.md` row for
   the `.claude/rules/gate.md` `CI` bullet greps `ci.yml` for `pnpm gate`, `pull_request` and
   `deploy`; a planted `pnpm exec wrangler pages publish dist` step leaves that output
   unchanged. Accept: the row's command lists every `run:` + `uses:` step of
   `.github/workflows/ci.yml`, and the planted publish step changes its output. `pri` med.
+- **Selected-row proof case trips `limit` under contention** — `tests/proof-live.test.ts`
+  `binds the selected canonical row rather than returning the first proof` proves under the real
+  clock. With the run and 24 busy loops pinned to one CPU (`taskset -c 0`) it fails
+  `expected 'limit' to be 'proof'` while the cap-one cases beside it pass. It asserts
+  `result.kind` alone, so the subtype is lost. Accept: the case asserts the whole result, so a
+  trip names its `limit` subtype, and it passes under that same pinned contention. `pri` med.
+- **B9 times cached proofs** — `tests/clinical-proof-live.test.ts` B9 claims every selected
+  proof settles inside `PROOF_BUDGET_MAX` (`.agent/contracts/m5u4.md` B9, live timing over all
+  12), but B2 proves the same 12 selections first in the same session, and the per-session proof
+  cache (`src/engine/session.ts` `prove`, `a067cdc`) answers B9 before the meta-interpreter runs.
+  B9 therefore times 12 cache hits. Accept: a whole-file run proves B9 reaches the
+  meta-interpreter for every measured selection before it reads the elapsed time. `pri` med.
 
 ## Index — one line per `high` + `med` row
 
@@ -166,8 +169,9 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 | --- | --- |
 | u3 heap limit is unit-tested only | a committed test drives real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate |
 | **high** Browser WASM abort leaves a dead session | an aborted runtime reaches the client as its own terminal state that recreates the worker without a caller `reset()`, proven by a browser probe whose next query reports 337 documents |
-| Cap-one re-proof hits `limit` in a full-suite run | the next reproduced trip records its `limit` subtype, and either that case's bound stops depending on host load or 20 consecutive full runs at load ≥ 9 pass it |
 | The CI registry receipt cannot refute "publishes nothing" | the row's command lists every `run:` + `uses:` step of `.github/workflows/ci.yml`, and the planted publish step changes its output |
+| Selected-row proof case trips `limit` under contention | the case asserts the whole result, so a trip names its `limit` subtype, and it passes under that same pinned contention |
+| B9 times cached proofs | a whole-file run proves B9 reaches the meta-interpreter for every measured selection before it reads the elapsed time |
 
 ## Accepted-open
 

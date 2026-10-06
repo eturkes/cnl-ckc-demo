@@ -185,30 +185,8 @@ MAINTAIN request: work every `.agent/deferred.md` row in rank order (`high` → 
 queue order within a rank); one unit + commit per row, gate green at each, row pruned in its
 closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 
-- [ ] Resume note — session paused by the user after `906d069`; the next session deletes this row once oriented.
-  - Finish line in force: the original request's Met-when. Every row is closed by its own check in
-    its own commit, recorded as blocked on the user, or waiting on its trigger. The full gate passes
-    on a clean tree at the closing commit, and the final message lists SHAs, owed parts, rows added,
-    gate + skipped/not-run checks, teammates, advisor calls (`none`), the unconfirmed, `git status`
-    and the closing SHA.
-  - User rulings from the AskUserQuestion round sit in each `.agent/deferred.md` row's **User
-    ruling** and on the open rows below. The d49 and d63 contracts are approved
-    (`.agent/contracts/mnt-d49.md` landed in `85e51fc`; `mnt-d63.md` here).
-  - Committed since `70c8507`: d10 `bbb4f24`, d32 `f380d61`, d49 `85e51fc`, d50 `fce2f9b`, heavy-load
-    `5bc686e`, d3 `906d069`. Uncommitted: none. No snapshot branch: nothing was in flight.
-  - Teammates: none running; every reviewer/tester of this run is stopped and harvested. No
-    teammate branch carries open work. Kept evidence: `wip/d10-fallback` `8363849`, `wt/tester-d10`
-    `9adb2b2`, `wip/d15` `96ed050`, `wt/orc-proj` `1a893b1`.
-  - Next action: d5 (phased boot). Protocol `progress` response (non-terminal, joins the d37 clone
-    table). The worker posts `fetch`, and the session posts `load` + `verify` around
-    `loadImage`/`readContract`. `EngineClient.boot(onProgress?)` routes it, and `DemoController`
-    carries the phase into the status line with one accessible status event per phase, in order.
-    Report bytes only when the fetch exposes `Content-Length`. Take captures before the first edit.
-    Then queue order: d12 → d17 → d39 → d41 → d43 → d63 → inline-disable → dict → failed reset →
-    condition-supports → Close-2.
-  - Scratch helpers (gitignored, may be recreated): `.scratch/maint/prune.py '<title>'` (prune a
-    queue row) and `.scratch/maint/adj.sh` (`adj RNNN '<cmd>' <disposition>`).
-
+- [ ] `med` Cap-one re-proof: a pinned-contention trip names `limit: 'wall-clock'`; the case proves under a frozen clock.
+- [ ] `med` CI registry receipt: the registry row lists every `run:` + `uses:` step of `ci.yml`.
 - [x] `24bbb5d` d0 find: 4 live advisories reddened `audit:check` → lockfile bump.
 - [x] `b919283` d2 browser lanes steer by `data-action` handles, narrow sweep in both locales.
 - [x] `6c77126` d4 `pnpm readme:check`: README setup path from a clean clone, in `release:check`.
@@ -288,6 +266,8 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `5bc686e` find (heavy-load timeouts) closed by user ruling: the measured 2.9× envelope (20/20 runs at load ≤23.5) is the bar.
 - [ ] find (failed reset) approved (user): change P4.4 (`engine-recovery`) + P1.1 (`engine-budgets`); every reset boots under the deadline and retires a failed replacement.
 - [ ] find (condition-supports dedup is scope-blind): new row from d49, `pri` low — fund after the named rows (its second acceptance arm needs no ruling).
+- [ ] find (selected-row proof case trips `limit` under contention): `med`, funded after the named rows.
+- [ ] find (B9 times cached proofs): `med`, funded after the named rows.
 - [ ] Close-2: the closing diff since `70c8507` → one `reviewer` covering every lens; `pnpm gate` on a clean tree; final report per the request's Met-when.
 - [x] `aefae8c` find: a refactor staled mutant R09's anchor with the gate green → `tests/mutant-anchors.test.ts` grades every anchor in the gate.
 - [x] `8c186d2` find: a heap recreation that joined an in-flight reset waited on its unbounded boot → it arms its own boot deadline.

@@ -9,7 +9,7 @@ import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { BUDGET_MAX } from '../src/engine/budget.js';
 import { EngineClient } from '../src/engine/client.js';
@@ -117,27 +117,37 @@ describe('compiled proof interpreter', () => {
         selections.set(projectionKey(entry, solution), selectionOf(entry, solution));
       }
 
-      for (const selected of selections.values()) {
-        const result = await session.prove({ goal: entry.goal, selected }, proofBudget);
-        expect(result.kind).toBe('proof');
-        if (result.kind !== 'proof') continue;
-        const steps = clauses(result.steps);
-        expect(steps.length).toBeGreaterThan(0);
-        expect(steps.some((step) => step.document !== undefined)).toBe(true);
-        for (const step of steps) {
-          expect(step.line).toBeGreaterThan(0);
-          expect(step.head).toMatch(/^guideline_/u);
-          const predicate = step.predicate.split('/')[0] as string;
-          expect(combinedLines[step.line - 1]).toMatch(new RegExp(`^${predicate}\\(`, 'u'));
+      // This case grades the proof, not its timing: `clinical-proof-live` derives each clinical
+      // proof cold under the real 1000 ms clock. A frozen clock leaves the deterministic caps
+      // alone binding here, so host load cannot trip `wall-clock`.
+      const frozen = Date.now();
+      const clock = vi.spyOn(Date, 'now').mockReturnValue(frozen);
+      try {
+        for (const selected of selections.values()) {
+          const result = await session.prove({ goal: entry.goal, selected }, proofBudget);
+          // The whole result, so a trip names its `limit` subtype.
+          expect(result).toMatchObject({ kind: 'proof' });
+          if (result.kind !== 'proof') continue;
+          const steps = clauses(result.steps);
+          expect(steps.length).toBeGreaterThan(0);
+          expect(steps.some((step) => step.document !== undefined)).toBe(true);
+          for (const step of steps) {
+            expect(step.line).toBeGreaterThan(0);
+            expect(step.head).toMatch(/^guideline_/u);
+            const predicate = step.predicate.split('/')[0] as string;
+            expect(combinedLines[step.line - 1]).toMatch(new RegExp(`^${predicate}\\(`, 'u'));
+          }
+          // A hypothetical premise must never carry a source line: nothing in the KB
+          // asserts it, and a line would claim the guideline states it.
+          const assumptions = flatten(result.steps).filter((step) => step.kind === 'assumption');
+          expect(assumptions.length).toBeGreaterThan(0);
+          for (const step of assumptions) {
+            expect(step).not.toHaveProperty('line');
+            expect(step.head).toMatch(/^guideline_/u);
+          }
         }
-        // A hypothetical premise must never carry a source line: nothing in the KB
-        // asserts it, and a line would claim the guideline states it.
-        const assumptions = flatten(result.steps).filter((step) => step.kind === 'assumption');
-        expect(assumptions.length).toBeGreaterThan(0);
-        for (const step of assumptions) {
-          expect(step).not.toHaveProperty('line');
-          expect(step.head).toMatch(/^guideline_/u);
-        }
+      } finally {
+        clock.mockRestore();
       }
     },
     LIVE_TEST_TIMEOUT,
