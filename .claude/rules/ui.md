@@ -100,6 +100,9 @@ is why attribution and nonendorsement cannot live inside the About disclosure.
   Cancel enabled during boot.
 - An existence question projects no columns, so `answerRows` returns `[]` for it regardless of
   solution count. Mapping its 12 solutions would emit 12 unlabelled radios.
+- **A run shows its answers as they stream**: `running`/`cancelling` carry the answers streamed
+  so far, and the busy answer region lists their statements without citations, which open once
+  the run settles. Only the live run's stream writes; a retired run's late answer is dropped.
 - **Booting announces each phase once**: the status line shows one status per reported phase —
   start, `fetch`, `load`, then `verify` and/or `fallback` + `verify`, `restart` before a hung
   boot's retry — then ready, a size only where the worker declared one, never a percentage

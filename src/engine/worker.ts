@@ -94,16 +94,16 @@ self.addEventListener('message', (event: MessageEvent<EngineRequest>) => {
   }
   void (async () => {
     try {
-      // Only a boot reports phases, and only the request that starts the fetch reports it.
-      const progress = request.kind === 'boot' ? post : undefined;
+      // Only a boot reports the fetch phase, and only the request that starts the fetch.
       image ??= fetchAsset(pvmUrl, (bytes) => {
-        progress?.(
+        if (request.kind !== 'boot') return;
+        post(
           bytes === undefined
             ? { id: request.id, kind: 'progress', phase: 'fetch' }
             : { id: request.id, kind: 'progress', phase: 'fetch', bytes },
         );
       });
-      post(await session.handle(request, await image, progress));
+      post(await session.handle(request, await image, post));
     } catch (cause) {
       // Reaching here means the image itself is unavailable, so the request can
       // never be served; it still settles rather than hanging its caller.
