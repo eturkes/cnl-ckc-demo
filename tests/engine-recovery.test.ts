@@ -123,7 +123,7 @@ describe('P4 hard-cancel recovery', () => {
       ...manifest.contract,
       documents: manifest.contract.documents + 1,
     };
-    const engine = liveClient([manifest.contract, wrong]);
+    const engine = liveClient([manifest.contract, wrong, manifest.contract]);
     expect(await engine.boot()).toEqual({ kind: 'booted', contract: manifest.contract });
 
     const replacement = await engine.reset('P4.4 hard cancel');
@@ -136,7 +136,13 @@ describe('P4 hard-cancel recovery', () => {
 
     expect(spawned).toHaveLength(2);
     expect(spawned[0]?.terminated).toBe(true);
-    expect(spawned[1]?.terminated).toBe(false);
+    // The failed replacement is retired, like a failed `boot()`'s worker (queue row `A failed
+    // reset…`, user-approved change of this assertion from `false`), so the next boot — the UI's
+    // Retry — spawns a fresh worker instead of reaching an engine that failed its contract.
+    expect(spawned[1]?.terminated).toBe(true);
+    expect(await engine.boot()).toEqual({ kind: 'booted', contract: manifest.contract });
+    expect(spawned).toHaveLength(3);
+    expect(spawned[2]?.terminated).toBe(false);
   }, 180_000);
 
   it('P4.7 settles a request issued during the respawn window typed, not hanging', async () => {

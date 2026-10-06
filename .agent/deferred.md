@@ -56,17 +56,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   section-triggered (37 lost, 0 gained, 82 false positives removed); `rec12:2`–`:4` account for 21
   and `rec05:5` for 6, so the rule question denies the opioid-use-disorder recommendations most.
   Code, replay and report: branch `wt/d63` `cfbe0ad` (never rename).
-- **A failed reset keeps its replacement worker** — a heap recreation boots its replacement
-  under the boot deadline, but an explicit or wall-clock `EngineClient.reset()` boots it
-  unbounded, and a replacement that answers its boot with an error (a contract mismatch, a
-  rejected image fetch) stays live, unlike `boot()`, which retires a failed worker so the next
-  request rebuilds (closing review A3). Two graded cases pin that: `tests/engine-recovery.test.ts`
-  P4.4 asserts the failed replacement stays (`spawned[1]?.terminated === false`), and
-  `tests/engine-budgets.test.ts` P1.1 asserts no timer stays armed after a consult deadline
-  (`armed.size` 0), which a bounded replacement boot breaks. Accept: every reset boots under the
-  boot deadline and retires a failed replacement, the next request spawns a fresh worker, and
-  P4.4's and P1.1's last assertions change by the user's approval with their original firing
-  recorded. `pri` low. **User ruling**: approved — change both assertions.
 - **Condition-supports dedup is scope-blind** — `tools/kb/graph.mjs` keys the synthesized
   `condition supports` shortcut on document, sentence, source event and head alone. 17 body
   events inside a negation therefore merge their shortcut into a twin from another world. The

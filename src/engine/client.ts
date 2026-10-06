@@ -454,30 +454,22 @@ export class EngineClient {
    * Single-flighted so concurrent triggers produce one termination.
    */
   async reset(reason = 'client reset the worker'): Promise<BootOutcome> {
-    return this.#reset(reason, false);
+    return this.#reset(reason);
   }
 
-  /** A heap recreation's caller awaits the replacement, so its boot runs under the boot deadline. */
+  /** A heap recreation's caller awaits the replacement; a reset in flight is joined, not doubled. */
   #recreate(): Promise<BootOutcome> {
-    const joined = this.#resetting;
-    if (joined === undefined) return this.#reset('heap exhausted; engine discarded', true);
-    // A reset already in flight may boot unbounded; joining it must not strand this caller.
-    const timer = this.#options.schedule(() => {
-      this.#retire('worker retired after boot deadline for a heap recreation');
-    }, BOOT_DEADLINE_MS);
-    return joined.finally(() => {
-      this.#options.cancelSchedule(timer);
-    });
+    return this.#reset('heap exhausted; engine discarded');
   }
 
-  #reset(reason: string, bounded: boolean): Promise<BootOutcome> {
-    this.#resetting ??= this.#hardReset(reason, bounded).finally(() => {
+  #reset(reason: string): Promise<BootOutcome> {
+    this.#resetting ??= this.#hardReset(reason).finally(() => {
       this.#resetting = undefined;
     });
     return this.#resetting;
   }
 
-  async #hardReset(reason: string, bounded: boolean): Promise<BootOutcome> {
+  async #hardReset(reason: string): Promise<BootOutcome> {
     if (this.#disposed) {
       return { kind: 'error', error: { code: 'worker', message: 'client is disposed' } };
     }
@@ -488,12 +480,13 @@ export class EngineClient {
     // it a second time when it respawns; only monotonicity is load-bearing.
     this.#generation += 1;
     this.#abort(reason);
-    // One replacement, no automatic retry, unlike `boot()`. Bounded = the boot deadline retires a
-    // hung replacement. An explicit or wall-clock reset keeps the unbounded boot and a replacement
-    // that answers with an error, which m1u3 P1.1 and P4.4 pin (queue row `A failed reset…`).
-    return bounded
-      ? (await this.#bootAttempt()).outcome
-      : asBoot(await this.#send({ kind: 'boot' }));
+    // One replacement under the boot deadline, no automatic retry, unlike `boot()`. A replacement
+    // that answers its boot with an error is retired like a failed `boot()`'s worker, so the next
+    // request spawns a fresh one rather than reaching an engine that never verified its contract.
+    const { outcome, generation } = await this.#bootAttempt();
+    if (outcome.kind === 'error' && !this.#disposed && generation === this.#generation)
+      this.#retire('worker retired after a failed reset');
+    return outcome;
   }
 
   /** Drop the worker and every promise it still owes. Terminal: there is no respawn. */
