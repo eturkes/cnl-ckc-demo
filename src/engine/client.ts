@@ -9,6 +9,7 @@
 import { validateBudget } from './budget.js';
 import { PROOF_BUDGET_MAX, WORKER_FAILURE_ID } from './protocol.js';
 import type {
+  BootProgress,
   BudgetSpec,
   EngineContract,
   EngineError,
@@ -19,7 +20,7 @@ import type {
   SolveResult,
 } from './protocol.js';
 
-export type { ProofInput, ProofOutcome, ProofStep } from './protocol.js';
+export type { BootProgress, ProofInput, ProofOutcome, ProofStep } from './protocol.js';
 
 /** The session's arms plus the one outcome only the client can produce. */
 export type QueryOutcome = SolveResult | { kind: 'error'; error: EngineError };
@@ -53,6 +54,8 @@ interface Pending {
   resolve: (response: EngineResponse) => void;
   timer: unknown;
   abort: { signal: AbortSignal; listener: () => void } | undefined;
+  /** A boot's phase listener; any other request reports no progress. */
+  progress: ((progress: BootProgress) => void) | undefined;
 }
 
 export interface ClientOptions {
@@ -130,11 +133,22 @@ export class EngineClient {
       }
       // An unclaimed id means the two sides disagree about what is in flight;
       // surfacing it beats dropping a response that some caller is awaiting.
-      if (!this.#pending.has(response.id)) {
+      const pending = this.#pending.get(response.id);
+      if (pending === undefined) {
         this.onProtocolViolation?.({
           code: 'protocol',
           message: `response ${response.id} matched no pending request`,
         });
+        return;
+      }
+      if (response.kind === 'progress') {
+        const { id, kind, ...progress } = response;
+        if (pending.progress === undefined) {
+          this.onProtocolViolation?.({
+            code: 'protocol',
+            message: `${kind} for ${id}, which reports none`,
+          });
+        } else notify(pending.progress, progress);
         return;
       }
       this.#settle(response.id, response);
@@ -158,6 +172,7 @@ export class EngineClient {
     deadlineMs?: number,
     signal?: AbortSignal,
     deadline?: (id: string) => void,
+    progress?: (progress: BootProgress) => void,
   ): Promise<EngineResponse> {
     const id = `r${++this.#nextId}`;
     // An aborted signal is aborted forever, so a reused one must not boot a worker
@@ -190,7 +205,7 @@ export class EngineClient {
                 void this.cancel(id);
               },
             };
-      this.#pending.set(id, { resolve, timer, abort });
+      this.#pending.set(id, { resolve, timer, abort, progress });
       try {
         worker.postMessage({ ...request, id });
       } catch (cause) {
@@ -231,23 +246,34 @@ export class EngineClient {
     this.#abort(reason);
   }
 
-  async #bootAttempt(): Promise<{ outcome: BootOutcome; timedOut: boolean; generation: number }> {
+  async #bootAttempt(
+    onProgress?: (progress: BootProgress) => void,
+  ): Promise<{ outcome: BootOutcome; timedOut: boolean; generation: number }> {
     let timedOut = false;
-    const sent = this.#send({ kind: 'boot' }, BOOT_DEADLINE_MS, undefined, (id) => {
-      timedOut = true;
-      this.#onBootDeadline(id);
-    });
+    const sent = this.#send(
+      { kind: 'boot' },
+      BOOT_DEADLINE_MS,
+      undefined,
+      (id) => {
+        timedOut = true;
+        this.#onBootDeadline(id);
+      },
+      onProgress,
+    );
     // `#send` spawns synchronously, so this is the worker the boot was posted to.
     const generation = this.#generation;
     return { outcome: asBoot(await sent), timedOut, generation };
   }
 
-  async boot(): Promise<BootOutcome> {
-    const first = await this.#bootAttempt();
+  /** `onProgress` hears each phase the worker reports, a recreated attempt's after `restart`. */
+  async boot(onProgress?: (progress: BootProgress) => void): Promise<BootOutcome> {
+    const first = await this.#bootAttempt(onProgress);
     // Exactly one automatic recreation, on a hung boot only. A second timeout retires that
     // worker and returns its typed boot error; it never enters an unbounded respawn loop.
-    const { outcome, generation } =
-      first.timedOut && !this.#disposed ? await this.#bootAttempt() : first;
+    const retried = first.timedOut && !this.#disposed;
+    // The retry repeats phases the first attempt already showed, so it opens with its own.
+    if (retried) notify(onProgress, { phase: 'restart' });
+    const { outcome, generation } = retried ? await this.#bootAttempt(onProgress) : first;
     // A worker that failed its boot keeps what failed it — the worker caches the image fetch,
     // so a rejected one stays rejected — and a retry on it can only fail again. Retiring it is
     // what makes a retry rebuild the engine. Only that worker: a reset or retry may already
@@ -292,6 +318,7 @@ export class EngineClient {
       case 'proof':
       case 'ack':
       case 'consulted':
+      case 'progress':
         return {
           kind: 'error',
           error: { code: 'protocol', message: `query answered with ${response.kind}` },
@@ -344,6 +371,7 @@ export class EngineClient {
       case 'solutions':
       case 'ack':
       case 'consulted':
+      case 'progress':
         return {
           kind: 'error',
           error: { code: 'protocol', message: `proof answered with ${response.kind}` },
@@ -448,6 +476,18 @@ export class EngineClient {
     this.#abort('client disposed the worker');
   }
 }
+
+/** Telemetry never decides a request: a throwing listener loses its phase, nothing more. */
+const notify = (
+  listener: ((progress: BootProgress) => void) | undefined,
+  progress: BootProgress,
+): void => {
+  try {
+    listener?.(progress);
+  } catch {
+    // dropped on purpose
+  }
+};
 
 const protocolError = (id: string, cause: unknown): EngineResponse => ({
   id,

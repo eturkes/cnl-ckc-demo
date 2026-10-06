@@ -107,13 +107,36 @@ const describeResult = (entry: CatalogEntry, result: AnswerResult): StateDescrip
   }
 };
 
+/** One sentence per phase; a size only where the worker declared one, never a percentage. */
+const bootStatus = (state: Extract<DemoState, { kind: 'booting' }>): string => {
+  const { TEXT } = messages.current;
+  switch (state.phase) {
+    case undefined:
+      return TEXT.engineStarting();
+    case 'fetch':
+      return TEXT.engineFetching(state.bytes);
+    case 'load':
+      return TEXT.engineLoading();
+    case 'fallback':
+      return TEXT.engineFallback();
+    case 'verify':
+      return TEXT.engineVerifying();
+    case 'restart':
+      return TEXT.engineRestarting();
+    default: {
+      const exhaustive: never = state.phase;
+      return exhaustive;
+    }
+  }
+};
+
 export const describeState = (state: DemoState): StateDescription => {
   const { TEXT } = messages.current;
   switch (state.kind) {
     case 'booting':
       // Not `busy`: booting is not a run, so Cancel stays disabled and the answer
       // region is idle rather than mid-replacement.
-      return { ...blank, status: TEXT.engineStarting(), summary: TEXT.noAnswerYet() };
+      return { ...blank, status: bootStatus(state), summary: TEXT.noAnswerYet() };
     case 'boot-error':
       return {
         ...blank,

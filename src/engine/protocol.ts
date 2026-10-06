@@ -155,6 +155,19 @@ export type ProofOutcome =
  */
 export const WORKER_FAILURE_ID = 'worker-failure';
 
+/**
+ * Where one boot stands: the image `fetch`, the saved-state `load`, contract `verify`, the QLF
+ * `fallback` after a failed saved state (then its own `verify`), and the client's `restart` of a
+ * hung boot, whose attempt reports its phases again. `bytes` = the image's size, present only
+ * when the response declared it.
+ */
+export type BootPhase = 'fetch' | 'load' | 'fallback' | 'verify' | 'restart';
+
+export interface BootProgress {
+  phase: BootPhase;
+  bytes?: number;
+}
+
 /** A request before the client assigns its correlation id. */
 export type EngineRequestBody =
   | { kind: 'boot' }
@@ -178,10 +191,12 @@ export type EngineResponse =
   /** Settles a `cancel` request itself; `accepted` is false for an unknown or already-settled target. */
   | { id: string; kind: 'ack'; accepted: boolean }
   | { id: string; kind: 'consulted' }
-  | { id: string; kind: 'error'; error: EngineError };
+  | { id: string; kind: 'error'; error: EngineError }
+  /** Non-terminal: a boot's phase, posted before its `booted` or `error`. */
+  | ({ id: string; kind: 'progress' } & BootProgress);
 
 /**
- * Every request ends in exactly one of these; nothing else settles a caller.
+ * Every request ends in exactly one terminal response; nothing else settles a caller.
  *
  * The `never` default is the point of the switch: adding a response kind without
  * classifying it here fails to compile rather than silently leaving callers pending.
@@ -198,6 +213,8 @@ export const isTerminal = (response: EngineResponse): boolean => {
     case 'consulted':
     case 'error':
       return true;
+    case 'progress':
+      return false;
     default: {
       const exhaustive: never = response;
       return exhaustive;

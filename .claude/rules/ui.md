@@ -100,6 +100,10 @@ is why attribution and nonendorsement cannot live inside the About disclosure.
   Cancel enabled during boot.
 - An existence question projects no columns, so `answerRows` returns `[]` for it regardless of
   solution count. Mapping its 12 solutions would emit 12 unlabelled radios.
+- **Booting announces each phase once**: the status line shows one status per reported phase —
+  start, `fetch`, `load`, then `verify` and/or `fallback` + `verify`, `restart` before a hung
+  boot's retry — then ready, a size only where the worker declared one, never a percentage
+  (`.claude/rules/engine.md` `Boot phases`).
 - Disabling a focused button drops focus to `body`, so whether Cancel held focus must be read
   in `$effect.pre` and acted on in `$effect`.
 
@@ -131,8 +135,9 @@ request log, drives chromiumfish, and compares the rendered canonical text again
 read out of the vendored bag **at run time** through `verifyBag`.
 
 - **Both browser lanes steer by locale-independent handles alone**: `data-action` on the
-  `run`, `find-in-graph`, `load-page-viewer`, `explore-graph` and `language-switch` controls, and
-  the About count read from `data-documents`. An accessible name is copy, so a lane that
+  `run`, `find-in-graph`, `load-page-viewer`, `explore-graph` and `language-switch` controls,
+  the About count read from `data-documents`, and the boot phase read from `main`'s
+  `data-boot-phase` (`start` until the worker reports one). An accessible name is copy, so a lane that
   selects by one breaks on a reworded string with a timeout instead of a diff.
 - It keys on `[role="option"][id$="-option-<questionId>"]`; option ids are
   `${uid}-option-${questionId}` and render in `QUESTION_IDS` order.

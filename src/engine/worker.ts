@@ -8,6 +8,7 @@ import manifest from '@kb/kb-manifest.json';
 import pvmUrl from '@kb/kb.pvm?url';
 import qlfUrl from '@kb/kb.qlf?url';
 
+import { fetchAsset } from './image.js';
 import { WORKER_FAILURE_ID, type EngineRequest, type EngineResponse } from './protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from './session.js';
 
@@ -79,15 +80,6 @@ const session = new EngineSession({
 
 let image: Promise<Uint8Array> | undefined;
 
-/** `fetch` resolves on 404 and 500, so the status check is what makes this fail closed. */
-async function fetchAsset(url: string): Promise<Uint8Array> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`${url} returned HTTP ${response.status}`);
-  return new Uint8Array(await response.arrayBuffer());
-}
-
-const fetchImage = (): Promise<Uint8Array> => fetchAsset(pvmUrl);
-
 const post = (response: EngineResponse): void => {
   self.postMessage(response);
 };
@@ -102,8 +94,16 @@ self.addEventListener('message', (event: MessageEvent<EngineRequest>) => {
   }
   void (async () => {
     try {
-      image ??= fetchImage();
-      post(await session.handle(request, await image));
+      // Only a boot reports phases, and only the request that starts the fetch reports it.
+      const progress = request.kind === 'boot' ? post : undefined;
+      image ??= fetchAsset(pvmUrl, (bytes) => {
+        progress?.(
+          bytes === undefined
+            ? { id: request.id, kind: 'progress', phase: 'fetch' }
+            : { id: request.id, kind: 'progress', phase: 'fetch', bytes },
+        );
+      });
+      post(await session.handle(request, await image, progress));
     } catch (cause) {
       // Reaching here means the image itself is unavailable, so the request can
       // never be served; it still settles rather than hanging its caller.

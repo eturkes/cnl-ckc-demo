@@ -10,6 +10,7 @@
 
 import { EngineClient, type BootOutcome } from '../engine/client.js';
 import type {
+  BootProgress,
   BudgetSpec,
   EngineContract,
   EngineError,
@@ -53,7 +54,7 @@ const PROOF_BUDGET: Readonly<BudgetSpec> = Object.freeze({
  * proof, the intake derivation by rule id, one dispose. No arbitrary goal crosses it.
  */
 export interface DemoEngine {
-  boot(): Promise<BootOutcome>;
+  boot(onProgress?: (progress: BootProgress) => void): Promise<BootOutcome>;
   ask(id: unknown, budget: BudgetSpec, signal?: AbortSignal): Promise<AnswerResult>;
   prove?(input: ProofInput, budget: BudgetSpec, signal?: AbortSignal): Promise<ProofOutcome>;
   derive?(ruleIds: readonly unknown[], signal?: AbortSignal): Promise<IntakeDerivation>;
@@ -65,7 +66,7 @@ export const createDemoEngine = (): DemoEngine => {
   const service = new AnswerService(client);
   const intake = new IntakeService(client);
   return {
-    boot: () => client.boot(),
+    boot: (onProgress) => client.boot(onProgress),
     ask: (id, budget, signal) => service.ask(id, budget, signal),
     prove: (input, budget, signal) => client.prove(input, budget, signal),
     derive: (ruleIds, signal) => intake.derive(ruleIds, signal),
@@ -76,7 +77,8 @@ export const createDemoEngine = (): DemoEngine => {
 };
 
 export type DemoState =
-  | { kind: 'booting' }
+  /** `phase` absent = the worker has reported nothing yet. */
+  | ({ kind: 'booting' } & Partial<BootProgress>)
   | { kind: 'boot-error'; error: EngineError }
   | { kind: 'idle'; contract: EngineContract }
   | { kind: 'running'; id: QuestionId }
@@ -253,7 +255,11 @@ export class DemoController {
   async #boot(): Promise<void> {
     let outcome: BootOutcome;
     try {
-      outcome = await this.#engine.boot();
+      outcome = await this.#engine.boot((progress) => {
+        if (!this.#disposed && this.state.kind === 'booting') {
+          this.state = { kind: 'booting', ...progress };
+        }
+      });
     } catch (cause) {
       outcome = {
         kind: 'error',

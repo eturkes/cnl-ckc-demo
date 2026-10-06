@@ -305,6 +305,14 @@ export const TEXT = {
   questionRejectedSummary: () => 'The question was rejected.',
 
   engineStarting: () => 'Starting the Prolog engine.',
+  engineFetching: (bytes?: number) =>
+    bytes === undefined
+      ? 'Downloading the compiled knowledge base.'
+      : `Downloading the compiled knowledge base (${String(Math.round(bytes / 1000))} kB).`,
+  engineLoading: () => 'Loading the compiled knowledge base into the Prolog engine.',
+  engineFallback: () => 'The saved engine state did not load. Loading the fallback engine.',
+  engineVerifying: () => 'Checking the loaded knowledge base against the build manifest.',
+  engineRestarting: () => 'The Prolog engine did not start in time. Starting it again.',
   engineFailed: (message: string) => `The Prolog engine did not start. ${message}`,
   engineFailedSummary: () => 'The engine is unavailable. Select Retry to start it again.',
   engineReady: (documents: number, schemaVersion: string) =>
