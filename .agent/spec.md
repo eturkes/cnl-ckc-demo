@@ -235,7 +235,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `04ada8c` d17 approved (user): solutions render as they arrive — visual unit, captures + `visual-qa`; the user review of the captures is owed.
 - [x] `03a0184` d33 `copy:check` grades a keyed literal once, under its key (378 → 251 graded strings).
 - [x] `0cdaa0f` d38 `withBuiltSite` (`tools/browser.mjs`) owns build, serve, launch and teardown for smoke, browser:check and visual-qa.
-- [ ] d39 ruled (user): unfreeze the `serialize.ts` + `humanize.ts` header lines in T9 and delete them (the other 8 headers + 8 sites done).
+- [x] `337aeba` d39 ruled (user): unfreeze the `serialize.ts` + `humanize.ts` header lines in T9 and delete them (the other 8 headers + 8 sites done).
 - [x] `7f7a2aa` d34 m1u5 matrix 26/26: 19 covered, 6 ported green (`tests/m1u5-port.dom.test.ts`), 1 superseded, 0 red.
 - [ ] d41 approved (user): an owned lazy PDF.js viewer replaces the ladder's iframe (+504,727 B gzip) — visual unit, captures + `visual-qa`.
 - [x] `a067cdc` d42 session proof cache: re-selection runs no meta-interpreter call; solve/consult/poison invalidate.
@@ -268,6 +268,8 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [ ] find (condition-supports dedup is scope-blind): new row from d49, `pri` low — fund after the named rows (its second acceptance arm needs no ruling).
 - [ ] find (selected-row proof case trips `limit` under contention): `med`, funded after the named rows.
 - [ ] find (B9 times cached proofs): `med`, funded after the named rows.
+- [ ] find (five coverage passages do not locate on their recorded page): `low`, producer-owned.
+- [ ] find (bundled JavaScript ships without its licence notices): `low`.
 - [ ] Close-2: the closing diff since `70c8507` → one `reviewer` covering every lens; `pnpm gate` on a clean tree; final report per the request's Met-when.
 - [x] `aefae8c` find: a refactor staled mutant R09's anchor with the gate green → `tests/mutant-anchors.test.ts` grades every anchor in the gate.
 - [x] `8c186d2` find: a heap recreation that joined an in-flight reset waited on its unbounded boot → it arms its own boot deadline.

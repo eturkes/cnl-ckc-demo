@@ -16,6 +16,9 @@ export const LAZY = [
   /^assets\/semantic-graph-/u,
   /^assets\/cytoscape/u,
   /^assets\/guideline-[^/]*\.pdf$/u,
+  // PDF.js and its worker load only when the reader opens a page (`ProvenanceLadder.svelte`).
+  /^assets\/pdf-viewer-/u,
+  /^assets\/pdf\.worker\.min-/u,
   /^assets\/cdc\d+-opioid-/u,
   /^assets\/biz-udpgothic-/u,
   // The QLF fallback is insurance a sound image never takes (`tools/bundle.mjs`).

@@ -107,7 +107,9 @@ const walk = async (browser, url, width) => {
       await page.locator('details.ladder > summary').click();
       await page.waitForSelector('.ladder .disclosures', { timeout: TIMEOUT });
       await page.locator('[data-action="load-page-viewer"]').click();
-      await page.waitForSelector('.ladder iframe', { timeout: TIMEOUT });
+      await page.waitForSelector('.ladder .page-viewer[data-state="rendered"]', {
+        timeout: TIMEOUT,
+      });
       await page.locator('details.about summary').click();
       await measure(page, width, 'every disclosure open');
     }
