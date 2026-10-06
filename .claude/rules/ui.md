@@ -110,6 +110,19 @@ is why attribution and nonendorsement cannot live inside the About disclosure.
 - Disabling a focused button drops focus to `body`, so whether Cancel held focus must be read
   in `$effect.pre` and acted on in `$effect`.
 
+## Page viewer
+
+- The ladder's guideline page is drawn by PDF.js (`src/provenance/pdf-viewer.ts`), never a
+  browser's own PDF frame: the canvas paints the coverage row's physical page and PDF.js's
+  transparent text layer carries the marks. Viewer and worker load through `import()` only when
+  the reader selects Load page viewer, and both stay out of the offline precache.
+- The passage is marked where the page's text items hold it (`src/provenance/locate.ts`), compared
+  NFKC-folded with whitespace, soft hyphens and case removed. A passage whose start runs off the
+  page end is marked as continuing; otherwise an unlocated passage marks nothing and says so —
+  never a guess. `tests/passage-locate.test.ts` grades every shipped coverage row.
+- `.page-viewer` carries `data-document`, `data-state`, `data-page` and `data-coverage`, the
+  handles `pnpm browser:check` reads.
+
 ## Deep links
 
 - The URL carries the selected catalog id alone (`?q=`, `src/questions/link.ts`). Load and

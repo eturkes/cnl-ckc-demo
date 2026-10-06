@@ -349,6 +349,14 @@ export const TEXT = {
   reviewStatus: (label: string) => `Review status: ${label}.`,
   passagePage: (page: number) => `The passage maps to physical PDF page ${String(page)}.`,
   pageViewerTitle: (page: number) => `CDC guideline, physical page ${String(page)}`,
+  pageRendering: () => 'Rendering the guideline page.',
+  passageHighlighted: (page: number) => `The passage is highlighted on page ${String(page)}.`,
+  passageContinues: (page: number) =>
+    `The passage starts on page ${String(page)} and continues on page ${String(page + 1)}. ` +
+    'The part on this page is highlighted.',
+  passageNotFound: (page: number) =>
+    `The passage text was not found on page ${String(page)}, so nothing is highlighted.`,
+  pageViewerFailed: (message: string) => `The page viewer could not draw the page. ${message}`,
 
   graphCounts: (concepts: number, links: number) =>
     `${concepts.toLocaleString()} concepts/actions · ${links.toLocaleString()} semantic links`,

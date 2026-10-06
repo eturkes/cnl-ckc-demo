@@ -1,0 +1,47 @@
+/* PDF.js's own text-layer rules (pdfjs-dist/web/pdf_viewer.css), reduced to one page: the canvas
+   paints the glyphs, the transparent spans carry selection and the passage marks. Loaded with the
+   viewer chunk alone. PDF.js sets `--font-height`, `--scale-x` and `--rotate` on each span and
+   sizes the layer from `--total-scale-factor` + `--scale-round-*`, which `renderPage` sets. */
+.page-surface canvas {
+  display: block;
+}
+
+.page-surface .textLayer {
+  --min-font-size: 1;
+  --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size));
+  --min-font-size-inv: calc(1 / var(--min-font-size));
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: clip;
+  line-height: 1;
+  text-align: initial;
+  transform-origin: 0 0;
+  forced-color-adjust: none;
+}
+
+.page-surface .textLayer :is(span, br) {
+  position: absolute;
+  color: transparent;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+}
+
+.page-surface .textLayer > :not(.markedContent),
+.page-surface .textLayer .markedContent span:not(.markedContent) {
+  --font-height: 0;
+  --scale-x: 1;
+  --rotate: 0deg;
+  z-index: 1;
+  font-size: calc(var(--text-scale-factor) * var(--font-height));
+  transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv));
+}
+
+.page-surface .textLayer .markedContent {
+  display: contents;
+}
+
+.page-surface .textLayer .passage {
+  background: color-mix(in srgb, var(--action) 30%, transparent);
+}
