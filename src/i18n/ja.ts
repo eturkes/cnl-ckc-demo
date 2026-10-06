@@ -95,6 +95,14 @@ export const DESCRIPTIONS = {
   graphLoadNote:
     'グラフのデータとレイアウトエンジンは、この操作または回答リンクを選択したときに読み込まれます。',
 
+  corpusIntro:
+    'コンパイル済みのガイドライン文書を、その根拠が記録する対応領域ごとに一覧できます。' +
+    '文書を開くと、原文の一節とガイドラインのページを確認できます。',
+
+  corpusLoadNote: '文書の一覧は、この操作を選択したときに読み込まれます。',
+
+  corpusPassage: 'これはガイドライン自体の原文で、この文書が記録しているとおりです。',
+
   graphDerivation:
     '主要概念は、質問と決定的な回答に含まれる語および意味役割から機械的に順位付けされます。',
 
@@ -203,6 +211,14 @@ export const LABELS = {
   graphExplore: 'グラフを探索',
   graphShowAllRelations: 'すべての関係を表示',
   graphLoading: '意味グラフを読み込んでいます。',
+  corpusEyebrow: '出典',
+  corpusHeading: '文書ごとの対応領域',
+  corpusBrowse: 'すべての文書を一覧',
+  corpusLoading: '文書の一覧を読み込んでいます。',
+  corpusFilter: '文書、領域、セクションで絞り込む',
+  corpusOpen: '開く',
+  corpusClose: '閉じる',
+  corpusDocumentLoading: '文書の根拠を読み込んでいます。',
   graphTryAgain: '再試行',
   graphAnswerMap: '回答マップ',
   graphDerivationSummary: 'このマップの導出方法',
@@ -319,6 +335,15 @@ export const TEXT = {
   passagePage: (page: number) => `この一節はPDFの物理ページ${String(page)}に対応します。`,
   pageViewerTitle: (page: number) => `CDCガイドライン、物理ページ${String(page)}`,
   pageRendering: () => 'ガイドラインのページを描画しています。',
+  corpusCount: (documents: number) =>
+    `コンパイル済み文書${String(documents)}件と、それぞれの対応領域です。`,
+  corpusShown: (shown: number, total: number) =>
+    `${String(total)}件中${String(shown)}件の文書を表示しています。`,
+  corpusOpenDocument: (document: string) => `${document}を開く`,
+  corpusCloseDocument: (document: string) => `${document}を閉じる`,
+  corpusRegionPage: (region: string, page: number) => `領域 ${region}、物理ページ${String(page)}`,
+  corpusFailed: (message: string) => `文書の一覧を読み込めませんでした。${message}`,
+  corpusDocumentFailed: (message: string) => `文書の根拠を読み込めませんでした。${message}`,
   passageHighlighted: (page: number) => `この一節をページ${String(page)}で強調表示しています。`,
   passageContinues: (page: number) =>
     `この一節はページ${String(page)}で始まり、ページ${String(page + 1)}に続きます。` +

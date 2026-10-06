@@ -122,6 +122,16 @@ is why attribution and nonendorsement cannot live inside the About disclosure.
   never a guess. `tests/passage-locate.test.ts` grades every shipped coverage row.
 - `.page-viewer` carries `data-document`, `data-state`, `data-page` and `data-coverage`, the
   handles `pnpm browser:check` reads.
+- `PageViewer.svelte` is the one viewer: the ladder and the corpus browser both mount it.
+
+## Corpus browser
+
+- The explore area's third view (`CorpusBrowser.svelte`), below the graph and its list: every
+  document's coverage row, filterable by document, region or section. Opening one resolves its
+  evidence through the ladder's `loadEvidenceDocument` and its page through `PageViewer`.
+- Nothing loads until the reader selects Browse every document: the list
+  (`corpus-index-*.json`) stays out of the answer path and the offline precache. Its passage note
+  says the wording is the document's record — not a Prolog result's, as the answer panel's does.
 
 ## Deep links
 

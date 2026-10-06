@@ -10,6 +10,8 @@ export type KbAssetKind =
   | 'provenance-index'
   | 'provenance-document'
   | 'source-pdf'
+  /** The corpus browser's document list: id, review label and coverage region per document. */
+  | 'provenance-corpus'
   | 'semantic-graph'
   | 'intake-vocabulary';
 

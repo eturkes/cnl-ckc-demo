@@ -1,6 +1,7 @@
 <script lang="ts">
   import { messages } from '../i18n/locale.svelte.js';
-  import { guidelinePdfUrl, loadEvidenceDocument } from './assets.js';
+  import { loadEvidenceDocument } from './assets.js';
+  import PageViewer from './PageViewer.svelte';
   import {
     alignedSegments,
     proofAssumptions,
@@ -24,13 +25,6 @@
   let evidenceError = $state('');
   let evidenceLoading = $state(false);
   let selectedGroup = $state<number>();
-  let pageOpen = $state(false);
-  let surface = $state<HTMLElement>();
-  let viewer = $state.raw<
-    | { kind: 'rendering' }
-    | { kind: 'rendered'; page: number; coverage: 'whole' | 'continues' | 'none' }
-    | { kind: 'failed'; message: string }
-  >({ kind: 'rendering' });
   let activeRequest: AbortController | undefined;
 
   // The ladder rungs are the SOURCE-BEARING steps: only a resolved clause names a
@@ -73,11 +67,6 @@
       ? []
       : alignedSegments(evidence.source.text, evidence.alignment.spans, 'source'),
   );
-  const pageHref = $derived(
-    evidence === undefined
-      ? guidelinePdfUrl
-      : `${guidelinePdfUrl}#page=${String(evidence.region.page)}`,
-  );
 
   $effect(() => {
     void provenanceState;
@@ -87,64 +76,7 @@
     evidenceError = '';
     evidenceLoading = false;
     selectedGroup = undefined;
-    pageOpen = false;
   });
-
-  // The viewer and PDF.js load only here, once the reader opens the page.
-  $effect(() => {
-    if (!pageOpen || surface === undefined || evidence === undefined) return;
-    const host = surface;
-    const { page } = evidence.region;
-    const passage = evidence.source.text;
-    const controller = new AbortController();
-    viewer = { kind: 'rendering' };
-    void import('./pdf-viewer.js')
-      .then(({ renderPage }) =>
-        // A provenance change during the lazy import retired this render before it began.
-        controller.signal.aborted
-          ? undefined
-          : renderPage(host, guidelinePdfUrl, page, passage, controller.signal),
-      )
-      .then(
-        (rendered) => {
-          if (rendered !== undefined && !controller.signal.aborted) {
-            viewer = { kind: 'rendered', page, coverage: rendered.located.coverage };
-          }
-        },
-        (cause: unknown) => {
-          if (!controller.signal.aborted) {
-            viewer = {
-              kind: 'failed',
-              message: cause instanceof Error ? cause.message : String(cause),
-            };
-          }
-        },
-      );
-    return () => {
-      controller.abort();
-    };
-  });
-
-  const viewerStatus = $derived.by(() => {
-    switch (viewer.kind) {
-      case 'rendering':
-        return t.TEXT.pageRendering();
-      case 'failed':
-        return t.TEXT.pageViewerFailed(viewer.message);
-      case 'rendered':
-        return viewer.coverage === 'whole'
-          ? t.TEXT.passageHighlighted(viewer.page)
-          : viewer.coverage === 'continues'
-            ? t.TEXT.passageContinues(viewer.page)
-            : t.TEXT.passageNotFound(viewer.page);
-      default: {
-        const exhaustive: never = viewer;
-        return exhaustive;
-      }
-    }
-  });
-  const viewerPage = $derived(viewer.kind === 'rendered' ? viewer.page : undefined);
-  const viewerCoverage = $derived(viewer.kind === 'rendered' ? viewer.coverage : undefined);
 
   const loadEvidence = async (): Promise<void> => {
     if (evidence !== undefined || evidenceLoading || documentId === undefined) return;
@@ -344,32 +276,11 @@
           <li>
             <h3>{t.LABELS.guidelinePage}</h3>
             <p>{t.TEXT.passagePage(evidence.region.page)}</p>
-            <div class="page-actions">
-              <button
-                type="button"
-                data-action="load-page-viewer"
-                disabled={pageOpen}
-                onclick={() => (pageOpen = true)}>{t.LABELS.loadPageViewer}</button
-              >
-              <a href={pageHref} target="_blank" rel="noreferrer">{t.LABELS.openPageTab}</a>
-            </div>
-            {#if pageOpen}
-              <div
-                class="page-viewer"
-                data-document={evidence.id}
-                data-state={viewer.kind}
-                data-page={viewerPage}
-                data-coverage={viewerCoverage}
-              >
-                <p class="viewer-status" role="status">{viewerStatus}</p>
-                <div
-                  class="page-surface"
-                  role="group"
-                  aria-label={t.TEXT.pageViewerTitle(evidence.region.page)}
-                  bind:this={surface}
-                ></div>
-              </div>
-            {/if}
+            <PageViewer
+              document={evidence.id}
+              page={evidence.region.page}
+              passage={evidence.source.text}
+            />
           </li>
         {/if}
       </ol>
@@ -426,7 +337,6 @@
   }
 
   .graph-link,
-  .page-actions button,
   .load-error button {
     flex: none;
     border: 1px solid var(--border);
@@ -603,37 +513,8 @@
     margin-bottom: 0;
   }
 
-  .page-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    align-items: center;
-  }
-
-  a {
-    color: var(--action);
-    font-size: 0.82rem;
-  }
-
-  .viewer-status {
-    margin: 0.85rem 0 0;
-    color: var(--text-muted);
-    font-size: 0.82rem;
-    overflow-wrap: anywhere;
-  }
-
-  .page-surface {
-    position: relative;
-    width: 100%;
-    min-height: 8rem;
-    margin-top: 0.5rem;
-    border: 1px solid var(--border);
-    background: white;
-  }
-
   button:focus-visible,
-  summary:focus-visible,
-  a:focus-visible {
+  summary:focus-visible {
     outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
   }

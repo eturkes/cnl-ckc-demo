@@ -24,14 +24,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   an ad-hoc goal path is what makes it reachable (`.agent/spec.md` `Decisions` MAIN). Accept: an aborted runtime reaches the client
   as its own terminal state that recreates the worker without a caller `reset()`, proven by a
   browser probe whose next query reports 337 documents. `pri` high, gated on an ad-hoc goal path.
-- **Corpus-wide provenance browser** — the M2 ladder resolves the SELECTED solution alone,
-  so the other 336 documents' coverage rows, regions and alignment are reachable only by
-  asking a question that reaches them. Accept: a document-first view lists every document's
-  coverage rows and opens each one's passage and page through the same resolver the ladder
-  uses, adding no eager asset fetch to the answer path. `pri` low. **User ruling**: approved — a third view in the explore area beside the graph and its list fallback; visual unit: before/after captures at 320 and 1280 px in both locales plus `pnpm visual-qa`, reviewed by the user after the commit. **Background**: a
-  document-first view is a new surface beside the accepted answer panel, ladder and graph, and
-  its entry point changes the accepted page layout — where it lives and how it is reached is
-  the user's call.
 - **The judgment Worker runs locally alone** — user ruling deferred the Cloudflare deploy and
   stopped Pages publishing, so free-text intake exists only under `pnpm intake:dev` + Vite's
   proxy. `worker/index.ts` spends one global limiter bucket (`key: 'intake'`), correct for one
