@@ -33,6 +33,9 @@ const RESERVED = [
   'BudgetNow_',
   'BudgetSpent_',
   'BudgetFinal_',
+  'BudgetResume_',
+  'BudgetMark_',
+  'BudgetMeter_',
 ] as const;
 
 // Word-boundary match over the raw goal text. It can only over-reject — a reserved
@@ -96,22 +99,25 @@ export const wrapGoal = (goal: string, budget: BudgetSpec): string =>
  * `wrapGoal` plus a meter on the whole request's inferences.
  *
  * `call_with_inference_limit/3` re-arms on backtracking, so alone it bounds one solution step:
- * 20 solutions of ~200 inferences each pass a 500 limit. `BudgetSpent_` carries the request's
- * running total to every solution, and one terminal record (`BudgetFinal_ = true`) carries it
- * once the goal is exhausted, so search that fails after the last answer is metered too. The
- * total counts the goal plus the wrapper's own few inferences; the driver renders nothing into
- * the engine until the query closes, so no other call can enter it. The per-step limit still
- * stops a single runaway step inside the engine.
+ * 20 solutions of ~200 inferences each pass a 500 limit. Each record's `BudgetSpent_` is the
+ * inferences of its own step, from the moment the engine resumed the goal to the record; the
+ * driver sums them. The resume point is stamped into the `BudgetMeter_` global on backtracking,
+ * so whatever runs between steps — every answer's display render — never enters the total. One
+ * terminal record (`BudgetFinal_ = true`) carries the step that exhausted the goal, so search
+ * that fails after the last answer is metered too. The total counts the goal plus the wrapper's
+ * own few inferences per step; the per-step limit still stops a single runaway step.
  */
 export const meteredGoal = (goal: string, budget: BudgetSpec): string =>
-  `statistics(inferences,BudgetStart_),` +
+  `statistics(inferences,BudgetStart_),nb_setval('BudgetMeter_',BudgetStart_),` +
   `(${wrapGoal(goal, budget).slice(0, -1)},BudgetFinal_=false;BudgetFinal_=true),` +
-  `statistics(inferences,BudgetNow_),BudgetSpent_ is BudgetNow_-BudgetStart_.`;
+  `statistics(inferences,BudgetNow_),nb_getval('BudgetMeter_',BudgetResume_),` +
+  `BudgetSpent_ is BudgetNow_-BudgetResume_,` +
+  `(true;statistics(inferences,BudgetMark_),nb_setval('BudgetMeter_',BudgetMark_),fail).`;
 
 export type Outcome =
   /**
-   * `spent` = the request's inferences so far, and `final` marks the record that follows
-   * exhaustion; both exist only under `meteredGoal`.
+   * `spent` = the inferences of this record's own step, and `final` marks the record that
+   * follows exhaustion; both exist only under `meteredGoal`.
    */
   | { kind: 'solution'; bindings: PlBindings; spent: number | undefined; final: boolean }
   | { kind: 'limit'; limit: LimitKind }

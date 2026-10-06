@@ -149,7 +149,8 @@ describe('session boot phases', () => {
       });
       const query: EngineRequest = { id: 'q1', kind: 'query', goal: 'true.', budget: BUDGET_MAX };
       expect(await session.handle(query, pvm, record)).toMatchObject({ kind: 'solutions' });
-      expect(seen).toEqual([]);
+      // A query streams its answers (d17), never a boot phase.
+      expect(seen.filter((response) => response.kind === 'progress')).toEqual([]);
     },
     TIMEOUT,
   );

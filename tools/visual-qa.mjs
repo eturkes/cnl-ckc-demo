@@ -2,7 +2,8 @@
 // measured for horizontal overflow. JSON report on stdout, one PNG per state in `.probe/`,
 // exit 1 when any state overflows. Outside `pnpm gate`: it needs a real browser.
 // `browser:check` measures 320 px alone, in both locales; this walk adds the wider viewports,
-// every boot phase, every catalog question's answer, a cancelled run, the graph and a failed boot.
+// every boot phase, a run mid-stream, every catalog question's answer, a cancelled run, the graph
+// and a failed boot.
 
 import { mkdirSync } from 'node:fs';
 import { cp } from 'node:fs/promises';
@@ -146,7 +147,8 @@ const HOLD_WORKER_MESSAGES = `(() => {
 })()`;
 
 /**
- * Every boot phase status, measured while the worker's next message is held.
+ * Every boot phase status, then a run after its second streamed answer, each measured while the
+ * worker's next message is held.
  *
  * @param {import('./browser.mjs').Browser} browser @param {string} url @param {number} width
  * @returns {Promise<void>}
@@ -167,6 +169,19 @@ const bootPhases = async (browser, url, width) => {
   if (phases.join(' ') !== 'start fetch load verify') {
     fail(`${String(width)}px: boot passed ${phases.join(' ')}`);
   }
+  // Then a run held after its second streamed answer: the busy region with partial statements.
+  await page.locator('[role="combobox"]').click();
+  // Four answers, so the second leaves the run mid-stream.
+  await page.locator('[role="option"][id$="-option-opioid-safety"]').click();
+  await page.locator('[data-action="run"]').click();
+  for (let released = 0; released < 2; released += 1) {
+    await page.waitForFunction('window.__held.length > 0', undefined, { timeout: TIMEOUT });
+    await page.evaluate('window.__held.shift()()');
+  }
+  await page.waitForFunction('window.__held.length > 0', undefined, { timeout: TIMEOUT });
+  const busy = await page.locator('section.answer-region[aria-busy="true"] .answer-point').count();
+  if (busy === 0) fail(`${String(width)}px: no streamed answer showed while the run was busy`);
+  await measure(page, width, 'answer streaming');
   await page.close();
 };
 
