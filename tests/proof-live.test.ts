@@ -163,8 +163,25 @@ describe('selected constraint and typed RPC', () => {
       const second = plain[1];
       if (second === undefined) throw new Error('clinical topic yielded fewer than two rows');
       const selected = selectionOf(entry, second);
-      const result = await session.prove({ goal: entry.goal, selected }, proofBudget);
-      expect(result.kind).toBe('proof');
+      // Graded on the proof, not its timing, like the cap-one cases: a frozen clock leaves the
+      // deterministic caps alone binding, so host load cannot trip `wall-clock`.
+      const clock = vi.spyOn(Date, 'now').mockReturnValue(Date.now());
+      const [result, absent] = await (async () => {
+        try {
+          return [
+            await session.prove({ goal: entry.goal, selected }, proofBudget),
+            await session.prove(
+              { goal: entry.goal, selected: { Answer: '"m2-absent"' } },
+              proofBudget,
+            ),
+          ];
+        } finally {
+          clock.mockRestore();
+        }
+      })();
+      // The whole result, so a trip names its `limit` subtype.
+      expect(result).toMatchObject({ kind: 'proof' });
+      expect(absent).toEqual({ kind: 'failure' });
       if (result.kind !== 'proof') return;
       const source = second.bindings.Source;
       if (source?.kind !== 'compound' || source.args[2]?.kind !== 'integer') {
@@ -173,15 +190,6 @@ describe('selected constraint and typed RPC', () => {
       expect(clauses(result.steps).map((step) => step.sentence)).toContain(
         Number(source.args[2].value),
       );
-
-      const absent = await session.prove(
-        {
-          goal: entry.goal,
-          selected: { Answer: '"m2-absent"' },
-        },
-        proofBudget,
-      );
-      expect(absent).toEqual({ kind: 'failure' });
     },
     LIVE_TEST_TIMEOUT,
   );

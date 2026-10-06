@@ -56,12 +56,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   section-triggered (37 lost, 0 gained, 82 false positives removed); `rec12:2`–`:4` account for 21
   and `rec05:5` for 6, so the rule question denies the opioid-use-disorder recommendations most.
   Code, replay and report: branch `wt/d63` `cfbe0ad` (never rename).
-- **Selected-row proof case trips `limit` under contention** — `tests/proof-live.test.ts`
-  `binds the selected canonical row rather than returning the first proof` proves under the real
-  clock. With the run and 24 busy loops pinned to one CPU (`taskset -c 0`) it fails
-  `expected 'limit' to be 'proof'` while the cap-one cases beside it pass. It asserts
-  `result.kind` alone, so the subtype is lost. Accept: the case asserts the whole result, so a
-  trip names its `limit` subtype, and it passes under that same pinned contention. `pri` med.
 - **B9 times cached proofs** — `tests/clinical-proof-live.test.ts` B9 claims every selected
   proof settles inside `PROOF_BUDGET_MAX` (`.agent/contracts/m5u4.md` B9, live timing over all
   12), but B2 proves the same 12 selections first in the same session, and the per-session proof
@@ -99,7 +93,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 | --- | --- |
 | u3 heap limit is unit-tested only | a committed test drives real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate |
 | **high** Browser WASM abort leaves a dead session | an aborted runtime reaches the client as its own terminal state that recreates the worker without a caller `reset()`, proven by a browser probe whose next query reports 337 documents |
-| Selected-row proof case trips `limit` under contention | the case asserts the whole result, so a trip names its `limit` subtype, and it passes under that same pinned contention |
 | B9 times cached proofs | a whole-file run proves B9 reaches the meta-interpreter for every measured selection before it reads the elapsed time |
 | engine:probe's R41 control no longer fires | the control fires again for a stated cause, `pnpm engine:probe` exits 0, and the cause is recorded beside the lane in `.claude/rules/gate.md` |
 
