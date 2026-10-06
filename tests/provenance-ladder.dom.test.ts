@@ -5,8 +5,19 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { locale } from '../src/i18n/locale.svelte.js';
 import ProvenanceLadder from '../src/provenance/ProvenanceLadder.svelte';
 import type { GraphFocus, ProvenanceState } from '../src/provenance/model.js';
+import type { RenderedPage } from '../src/provenance/pdf-viewer.js';
 
 import { EVIDENCE_FIXTURE } from './provenance-fixture.js';
+
+// jsdom has no canvas, so the lazily imported PDF.js viewer is stood in for; what the ladder hands
+// it — the coverage row's page and passage — is what this suite grades. `browser:check` draws the
+// real page.
+const renderPage = vi.hoisted(() =>
+  vi.fn(async (_surface: HTMLElement, _url: string, page: number): Promise<RenderedPage> =>
+    Promise.resolve({ page, located: { coverage: 'whole', items: [0] } }),
+  ),
+);
+vi.mock('../src/provenance/pdf-viewer.js', () => ({ renderPage }));
 
 let host: HTMLElement | undefined;
 let cleanup: (() => void) | undefined;
@@ -147,9 +158,38 @@ describe('proof-to-source provenance ladder', () => {
       link.textContent?.includes('Open page'),
     );
     expect(pageLink?.href).toContain('#page=42');
+    expect(renderPage).not.toHaveBeenCalled();
     clickNamed(root, 'Load page viewer');
-    await tick();
-    expect(root.querySelector<HTMLIFrameElement>('iframe')?.src).toContain('#page=42');
+    await vi.waitFor(() => {
+      expect(root.querySelector('.page-viewer')?.getAttribute('data-state')).toBe('rendered');
+    });
+    expect(renderPage).toHaveBeenCalledTimes(1);
+    expect(renderPage.mock.calls[0]?.slice(2, 4)).toEqual([42, EVIDENCE_FIXTURE.source.text]);
+    expect(root.querySelector('.page-viewer')?.getAttribute('data-page')).toBe('42');
+    expect(root.querySelector('.viewer-status')?.textContent).toBe(
+      'The passage is highlighted on page 42.',
+    );
+    expect(root.querySelector('iframe')).toBeNull();
+  });
+
+  it.each([
+    ['continues', 'The passage starts on page 42 and continues on page 43.'],
+    ['none', 'The passage text was not found on page 42, so nothing is highlighted.'],
+  ] as const)('says what the viewer located when the passage %s', async (coverage, status) => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => Promise.resolve(new Response(JSON.stringify(EVIDENCE_FIXTURE)))),
+    );
+    renderPage.mockImplementationOnce(async (_surface, _url, page) =>
+      Promise.resolve({ page, located: { coverage, items: [] } }),
+    );
+    const root = render(ready);
+    await openEvidence(root);
+    clickNamed(root, 'Load page viewer');
+    await vi.waitFor(() => {
+      expect(root.querySelector('.page-viewer')?.getAttribute('data-coverage')).toBe(coverage);
+    });
+    expect(root.querySelector('.viewer-status')?.textContent).toContain(status);
   });
 
   it('links the proof to the graph and pairs keyboard-selected alignment spans', async () => {

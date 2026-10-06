@@ -169,6 +169,98 @@ const gradeBootPhases = (recorded) => {
   return undefined;
 };
 
+const PDFJS_VIEWER = /\/assets\/pdf-viewer-[^/]+\.js$/u;
+const PDFJS_WORKER = /\/assets\/pdf\.worker\.min-[^/]+\.mjs$/u;
+
+/** The viewer's own comparison, re-stated: NFKC, no whitespace or soft hyphen, case folded. */
+const foldText = (/** @type {string} */ text) =>
+  [...text]
+    .map((char) => char.normalize('NFKC').toLowerCase())
+    .join('')
+    .replace(/[\s\u00ad]/gu, '');
+
+/**
+ * d41: the page the owned viewer drew and the text it marked, read from the DOM, against the
+ * coverage row on disk.
+ *
+ * @param {{document?: string, page?: string, coverage?: string, marked: string}} shown
+ * @param {{region: {page: number}, source: {text: string}}} evidence
+ * @returns {string | undefined} the defect, or `undefined`
+ */
+const gradeViewer = (shown, evidence) => {
+  if (shown.page !== String(evidence.region.page)) {
+    return `the viewer drew page ${String(shown.page)}, the coverage row records page ${String(evidence.region.page)}`;
+  }
+  if (shown.coverage !== 'whole')
+    return `the viewer located the passage as ${String(shown.coverage)}`;
+  if (!foldText(shown.marked).includes(foldText(evidence.source.text))) {
+    return 'the marked text does not hold the passage';
+  }
+  return undefined;
+};
+
+/**
+ * PDF.js stays unrequested until the reader opens a page; then the first answer's ladder draws
+ * its coverage row's physical page with the passage marked.
+ *
+ * @param {import('./browser.mjs').Browser} browser @param {string} url
+ * @param {import('./browser.mjs').LogEntry[]} log
+ * @returns {Promise<{page: string, document: string, marks: number}>}
+ */
+const pageViewerLeg = async (browser, url, log) => {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  await page.goto(url, { waitUntil: 'load', timeout: TIMEOUT });
+  await page.waitForSelector(READY, { timeout: TIMEOUT });
+  await page.locator('[role="combobox"]').click();
+  await page.locator('[role="option"]').first().click();
+  await page.locator('[data-action="run"]').click();
+  await page.waitForSelector('section.answer-region[aria-busy="false"] .explanation', {
+    timeout: TIMEOUT,
+  });
+  await page.locator('.explanation > summary').click();
+  await page.locator('details.ladder > summary').click();
+  await page.waitForSelector('.ladder .disclosures', { timeout: TIMEOUT });
+  if (log.some((entry) => PDFJS_VIEWER.test(entry.path) || PDFJS_WORKER.test(entry.path))) {
+    fail('page viewer: PDF.js was requested before the reader opened a page');
+  }
+  await page.locator('[data-action="load-page-viewer"]').click();
+  await page.waitForSelector('.ladder .page-viewer:not([data-state="rendering"])', {
+    timeout: TIMEOUT,
+  });
+  const shown =
+    /** @type {{document?: string, page?: string, coverage?: string, state?: string, status: string, marked: string, marks: number}} */ (
+      await page.evaluate(`(() => {
+      const viewer = document.querySelector('.ladder .page-viewer');
+      const marks = [...viewer.querySelectorAll('.textLayer .passage')];
+      return { ...viewer.dataset, status: viewer.querySelector('.viewer-status').textContent,
+        marked: marks.map((mark) => mark.textContent).join(''), marks: marks.length };
+    })()`)
+    );
+  await page.close();
+  if (shown.state !== 'rendered') fail(`page viewer: ${shown.status}`);
+  if (!log.some((entry) => PDFJS_VIEWER.test(entry.path))) {
+    fail('page viewer: opening a page requested no PDF.js chunk');
+  }
+  if (!log.some((entry) => PDFJS_WORKER.test(entry.path))) {
+    fail('page viewer: opening a page requested no PDF.js worker');
+  }
+  /** @type {unknown} */
+  const parsed = JSON.parse(
+    readFileSync(
+      join(ROOT, 'kb', 'generated', 'provenance', 'documents', `${String(shown.document)}.json`),
+      'utf8',
+    ),
+  );
+  const evidence = /** @type {{region: {page: number}, source: {text: string}}} */ (parsed);
+  const defect = gradeViewer(shown, evidence);
+  if (defect !== undefined) fail(`page viewer: ${defect}`);
+  // Control: the same reading with its marks stripped must be refused by the same grader.
+  if (gradeViewer({ ...shown, marked: '' }, evidence) === undefined) {
+    fail('control did not fire: a page viewer with no marked text graded clean');
+  }
+  return { page: String(shown.page), document: String(shown.document), marks: shown.marks };
+};
+
 /** States measured, counted rather than written down: adding one must not restate it. */
 let narrowStates = 0;
 
@@ -360,7 +452,7 @@ const narrowSweep = async (browser, builtUrl, lang) => {
   }
   await fitsNarrow(page, `${lang} provenance open`);
   await page.locator('[data-action="load-page-viewer"]').click();
-  await page.waitForSelector('.ladder iframe', { timeout: TIMEOUT });
+  await page.waitForSelector('.ladder .page-viewer[data-state="rendered"]', { timeout: TIMEOUT });
   if (!requested(/assets\/guideline-[^/]+\.pdf$/u)) {
     fail(`${lang}: opening the guideline viewer requested no PDF`);
   }
@@ -651,6 +743,7 @@ await withBuiltSite({ tool: 'browser', fail, nested: NESTED, refuse }, async (si
     if (!log.some((entry) => /cytoscape(?:-fcose|\.esm)-.+\.js$/u.test(entry.path))) {
       fail('built: graph activation requested no visual renderer');
     }
+    const viewer = await pageViewerLeg(browser, builtUrl, log);
 
     // E26, leg 2 — dev server, the mode every contributor runs and no check drove.
     dev = await devServer();
@@ -807,7 +900,9 @@ await withBuiltSite({ tool: 'browser', fail, nested: NESTED, refuse }, async (si
     console.log(
       `browser-check: ok — dev ${dev.url} and built ${builtUrl} both report ${String(documents)} ` +
         `documents; the built boot announced ${BOOT_PHASES} once each; graph and evidence ` +
-        `stay lazy; ${String(narrowStates)} states fit ` +
+        `stay lazy; PDF.js stayed unrequested until a page opened, then drew ${viewer.document}'s ` +
+        `page ${viewer.page} with ${String(viewer.marks)} marked runs holding its passage; ` +
+        `${String(narrowStates)} states fit ` +
         `${String(NARROW)}px across both locales; ` +
         `${question} rendered the bag's ${String(expectedCanonical.rows)}-row canonical answer ` +
         `byte for byte in both locales; cancel delivered after ${String(solutions)} ` +
@@ -818,7 +913,8 @@ await withBuiltSite({ tool: 'browser', fail, nested: NESTED, refuse }, async (si
         `${String(parity)} catalog code points identically to their originals; a second visit ` +
         `booted ${String(offline.documents)} documents with ${String(offline.refused)} requests ` +
         `severed, and a renamed PVM left no stale copy cached once ${CACHE_PREFIX}${offline.version} ` +
-        `activated; controls: a boot recording without its load phase refused, a build ` +
+        `activated; controls: a boot recording without its load phase refused, a page viewer ` +
+        `with no marked text refused, a build ` +
         `without its Japanese woff2 refused, a cut without AUTOFIT rasterized differently, the ` +
         `same rename under the old sw.js kept the stale PVM, a build with no sw.js did not boot ` +
         `offline; a truncated saved state booted the QLF fallback, which answered byte for byte`,

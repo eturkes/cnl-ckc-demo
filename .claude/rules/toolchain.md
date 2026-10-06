@@ -27,6 +27,10 @@ paths:
   TS 7 breaks `pnpm lint`.
 - `@types/cytoscape` is deprecated and `cytoscape` ships its own types → that types package
   must stay uninstalled.
+- `pdfjs-dist` is **exact-pinned** (the owned page viewer, `src/provenance/pdf-viewer.ts`): the
+  viewer depends on its text-layer API (`TextLayer`, `textDivs`, `textContentItemsStr`) and on
+  `--total-scale-factor` CSS the ladder re-states, so a bump re-runs `pnpm browser:check`'s page
+  viewer leg. Its `legacy` build serves the Node census (`tests/passage-locate.test.ts`).
 - `swipl-wasm` stays **exact-pinned**: production calls three undeclared APIs off it
   (`.claude/rules/engine.md`), so every version bump re-verifies them against the shipped
   `.d.ts`.
@@ -72,8 +76,8 @@ template reads as unsafe → derive the value in the script block instead.
   the files on disk (`tools/offline-sw.mjs`) — `generateBundle` misses the worker-emitted PVM.
   The cache name hashes the whole file list, so any renamed asset (a changed KB input renames the
   PVM) activates a new cache and deletes the old. Install precaches the boot set: every
-  `assets/` file outside `LAZY`, which holds the graph, renderer, PDF, provenance chunks,
-  Japanese faces and the QLF fallback — precaching those would put the Japanese face on an
+  `assets/` file outside `LAZY`, which holds the graph, renderer, PDF, the PDF.js viewer chunk and
+  worker, provenance chunks, Japanese faces and the QLF fallback — precaching those would put the Japanese face on an
   English page and fetch the 6.2 MB fallback engine a sound session never takes. `src/main.ts`
   registers in production builds alone. `pnpm browser:check` grades the offline second visit and
   the invalidation.

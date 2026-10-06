@@ -24,16 +24,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   an ad-hoc goal path is what makes it reachable (`.agent/spec.md` `Decisions` MAIN). Accept: an aborted runtime reaches the client
   as its own terminal state that recreates the worker without a caller `reset()`, proven by a
   browser probe whose next query reports 337 documents. `pri` high, gated on an ad-hoc goal path.
-- **Owned PDF viewer** — M2 u7 ships a native `<iframe>` at `#page=N`, so the viewer is a
-  black box: no assertion can read the displayed page, and the passage cannot be
-  highlighted inside the PDF. PDF.js was rejected on cost — +504727 B gzip, 34.78 MB
-  unpacked, and an engine range that excluded the Node 20 then pinned. Accept: an owned viewer
-  renders the coverage row's physical page, a browser check reads the rendered page number
-  and the highlighted region from the DOM, `pnpm gate` still runs under the pinned runtime, and the
-  viewer's bytes load only after the user activates the page. `pri` low. **User ruling**: approved — PDF.js, lazy, +504,727 B gzip; visual unit: before/after captures at 320 and 1280 px in both locales plus `pnpm visual-qa`, reviewed by the user after the commit. **Background**: an
-  owned viewer replaces the accepted ladder's native `<iframe>`, a visible change the spec
-  reserves, and PDF.js — the one measured renderer — costs +504,727 B gzip. Node 24 has lifted
-  the engine-range objection; the size and the visual change remain the user's call.
 - **Corpus-wide provenance browser** — the M2 ladder resolves the SELECTED solution alone,
   so the other 336 documents' coverage rows, regions and alignment are reachable only by
   asking a question that reaches them. Accept: a document-first view lists every document's
@@ -119,6 +109,19 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   cache (`src/engine/session.ts` `prove`, `a067cdc`) answers B9 before the meta-interpreter runs.
   B9 therefore times 12 cache hits. Accept: a whole-file run proves B9 reaches the
   meta-interpreter for every measured selection before it reads the elapsed time. `pri` med.
+- **Five coverage passages do not locate on their recorded page** — the owned page viewer
+  marks a passage where its page's text holds it (`tests/passage-locate.test.ts`: 319 whole, 13
+  continuing, 5 not found). `cdc2022-opioid-rec06` and `rec07` record page 14, yet each passage
+  sits whole on page 13, where BOX 3 begins. `rec10-imp10`, `s9-01` and `s9-05` differ from their page's text
+  past their first 31–35 characters. Both kinds come from the vendored bag, so the producer
+  (`../cnl-ckc`) owns the fix. Accept: each of the five either locates after a re-vendored bag
+  corrects its region page or passage, or carries a recorded producer reason, and the census in
+  `tests/passage-locate.test.ts` moves with it. `pri` low.
+- **Bundled JavaScript ships without its licence notices** — the build strips licence comments
+  from every bundled chunk (`cytoscape`, MIT; the PDF.js viewer chunk, Apache-2.0); only the
+  copied `pdf.worker.min` keeps its header, and `README.md` `Licences` names the fonts alone.
+  Accept: `dist/` ships a third-party notice holding each bundled package's licence text, and a
+  committed check refuses a bundled package missing from it, with its firing input. `pri` low.
 
 ## Index — one line per `high` + `med` row
 

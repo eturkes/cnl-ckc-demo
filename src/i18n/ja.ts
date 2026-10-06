@@ -318,6 +318,14 @@ export const TEXT = {
   reviewStatus: (label: string) => `レビュー状態: ${label}。`,
   passagePage: (page: number) => `この一節はPDFの物理ページ${String(page)}に対応します。`,
   pageViewerTitle: (page: number) => `CDCガイドライン、物理ページ${String(page)}`,
+  pageRendering: () => 'ガイドラインのページを描画しています。',
+  passageHighlighted: (page: number) => `この一節をページ${String(page)}で強調表示しています。`,
+  passageContinues: (page: number) =>
+    `この一節はページ${String(page)}で始まり、ページ${String(page + 1)}に続きます。` +
+    'このページにある部分を強調表示しています。',
+  passageNotFound: (page: number) =>
+    `ページ${String(page)}でこの一節の本文が見つからないため、強調表示はありません。`,
+  pageViewerFailed: (message: string) => `ページビューアがページを描画できませんでした。${message}`,
 
   graphCounts: (concepts: number, links: number) =>
     `概念・動作 ${concepts.toLocaleString()} 件 · 意味リンク ${links.toLocaleString()} 件`,
