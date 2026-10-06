@@ -19,6 +19,10 @@ paths:
 - Wrapper ABI, undocumented and read off the package: `$t:'s'` string, `'r'` rational, `'v'`
   variable, `'l'` improper list, `'t'` compound whose args sit in a ONE-ELEMENT envelope at
   `value[value.functor][0]`; `$tag` dicts. An unrecognized tag fails closed.
+- **A decoded dict never re-encodes** (user ruling): swipl-wasm 8.0.7 has no supported way to
+  re-enter a TAGGED dict, so `createEncoder` throws `DecodeError` rather than send
+  `_{'$tag':tag,…}`, standalone or nested. No shipped answer term carries a dict.
+  `tests/engine-term-identity.test.ts`.
 - An improper list re-encodes as `List(prefix, '[|]'(last, Tail))`: the wrapper's `List` tests
   `if (tail)`, so an atom `''` or integer `0` tail passed straight to it collapses to `[]`,
   while a chain of `'[|]'/2` compounds recurses per cell and overflows on a long list.

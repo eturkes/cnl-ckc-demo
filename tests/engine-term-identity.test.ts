@@ -9,7 +9,7 @@ import { beforeAll, expect, it } from 'vitest';
 import { BUDGET_MAX } from '../src/engine/budget.js';
 import type { PlSolution } from '../src/engine/protocol.js';
 import { EngineSession, type Engine } from '../src/engine/session.js';
-import { createEncoder, decodeOnce, type PlTerm } from '../src/engine/terms.js';
+import { createEncoder, DecodeError, decodeOnce, type PlTerm } from '../src/engine/terms.js';
 
 const require = createRequire(import.meta.url);
 let engine: Engine;
@@ -123,4 +123,18 @@ it('P3.7 holds for a long improper list, falsy tail included, without deep recur
     const literal = `[${Array.from({ length: 10_000 }, () => 'a').join(',')}|${tail}]`;
     expect(variants(literal, termOf(literal)), `10,000 cells | ${tail}`).toBe(true);
   }
+});
+
+it('refuses to re-encode a decoded dict, standalone or as an improper-list tail (user ruling)', () => {
+  // swipl-wasm has no supported path to re-enter a TAGGED dict: re-encoded, `tag{a:0}` came back
+  // as `_{'$tag':tag,a:0}`, no variant of the original. Refusing it fails closed.
+  const dict = termOf('point{a:0}');
+  expect(dict).toMatchObject({ kind: 'dict', tag: 'point' });
+  const encode = createEncoder(engine.prolog);
+  expect(() => encode(dict)).toThrow(DecodeError);
+  expect(() => encode(dict)).toThrow('a dict cannot re-enter the engine with its tag');
+  const tailed = termOf('[x|point{a:0}]');
+  expect(tailed).toMatchObject({ kind: 'improper-list', tail: { kind: 'dict' } });
+  expect(() => encode(tailed)).toThrow(DecodeError);
+  expect(() => encode(termOf('wrap(point{a:0})'))).toThrow(DecodeError);
 });
