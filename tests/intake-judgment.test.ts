@@ -226,7 +226,7 @@ describe('J1 request-relative response parser', () => {
     }
   });
 
-  it('assembles condition, section and candidate records in request order with overflow', () => {
+  it('assembles condition, section, rule and candidate records in request order with overflow', () => {
     const built = buildRequest(
       vocabulary(),
       Array.from({ length: 18 }, (_, i) => `term${String(i)}`).join(','),
@@ -234,6 +234,7 @@ describe('J1 request-relative response parser', () => {
     const raw = response(built, 'chronic');
     raw.answers.c01 = { type: 'noul', noul: 0.5 };
     raw.answers.s2 = { type: 'noul', noul: 1 };
+    raw.answers.r04 = { type: 'noul', noul: 0.25 };
     raw.answers.t01 = { type: 'noul', noul: 0.75 };
     raw.terms = [{ text: 'not user text', start: 500, end: 900, value: 1 }];
     raw.usage = 'ignored';
@@ -245,6 +246,12 @@ describe('J1 request-relative response parser', () => {
         vocabulary().conditions.map(({ id }) => [id, id === 'c01' ? 0.5 : 0]),
       ),
       sections: { s1: 0, s2: 1, s3: 0, s4: 0 },
+      // mnt-d63: the unconditional rules (every second fixture rule) answer by ordinal.
+      rules: Object.fromEntries(
+        vocabulary().rules.flatMap((rule, index) =>
+          rule.trigger.kind === 'section' ? [[rule.id, index === 3 ? 0.25 : 0]] : [],
+        ),
+      ),
       pain: {
         choice: 'chronic',
         probabilities: Object.fromEntries(

@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 
 import { describe, expect, it } from 'vitest';
 
-import { NOUL_YES, select } from '../src/intake/select.js';
+import { NOUL_YES, SECTION_RULE_POLICY, select } from '../src/intake/select.js';
 import { extractCandidates } from './intake-oracle/chunker.js';
 import {
   description,
@@ -47,15 +47,20 @@ describe('S1 deterministic selector', () => {
     const vocab = vocabulary();
     for (const kind of ['condition', 'section'] as const) {
       const input = judgment('unstated');
+      const expectedRule = vocab.rules.find(
+        (rule) => rule.trigger.kind === kind && rule.painSet.length === 0,
+      );
+      if (expectedRule === undefined) throw new Error(`fixture has no agnostic ${kind} rule`);
       if (kind === 'condition') input.conditions = { ...input.conditions, c01: value };
-      else input.sections = { ...input.sections, s1: value };
+      else {
+        // mnt-d63 policy A: the section and the rule's own question both carry the value.
+        input.sections = { ...input.sections, s1: value };
+        input.rules = { ...input.rules, [expectedRule.id]: value };
+      }
       const actual = select(vocab, input);
       if (value < 0.5)
         expect(actual).toEqual({ kind: 'no-match', pain: 'unstated', gaps: [], overflow: 0 });
       else {
-        const expectedRule = vocab.rules.find(
-          (rule) => rule.trigger.kind === kind && rule.painSet.length === 0,
-        );
         expect(actual).toEqual({
           kind: 'answered',
           pain: 'unstated',
@@ -70,6 +75,25 @@ describe('S1 deterministic selector', () => {
         });
       }
     }
+  });
+
+  it('mnt-d63 a section yes alone no longer selects an unconditional rule its own question denies', () => {
+    expect(SECTION_RULE_POLICY).toBe('and');
+    const vocab = vocabulary();
+    const input = judgment('unstated', 1);
+    input.rules = Object.fromEntries(Object.keys(input.rules).map((id) => [id, 0]));
+    const actual = select(vocab, input);
+    expect(actual.kind).toBe('answered');
+    if (actual.kind !== 'answered') throw new Error('condition rules still answer');
+    expect(actual.matches.every((match) => match.trigger.kind === 'condition')).toBe(true);
+    // Policy B reads the rule's own question alone: section values cannot reach it.
+    input.rules = Object.fromEntries(Object.keys(input.rules).map((id) => [id, 1]));
+    input.sections = Object.fromEntries(Object.keys(input.sections).map((id) => [id, 0]));
+    expect(select(vocab, input, 'and')).toMatchObject({ kind: 'answered' });
+    const b = select(vocab, input, 'rule');
+    expect(b.kind === 'answered' && b.matches.some((match) => match.trigger.kind === 'section')).toBe(
+      true,
+    );
   });
 
   it('unstated is not a wildcard, even when every Noul says yes', () => {

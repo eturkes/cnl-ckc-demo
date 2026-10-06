@@ -100,12 +100,23 @@ export const buildRequest = (
   };
   for (const section of vocabulary.sections)
     questions[section.id] = { type: 'noul', instructions: section.heading };
+  const ruleQuestions: BuiltRequest['ruleQuestions'] = [];
+  for (const [index, rule] of vocabulary.rules.entries()) {
+    if (rule.trigger.kind !== 'section') continue;
+    const id = `r${String(index + 1).padStart(2, '0')}`;
+    ruleQuestions.push({ id, rule: rule.id });
+    questions[id] = { type: 'noul', instructions: rule.text };
+  }
   for (const [index, candidate] of found.candidates.entries())
     questions[`t${String(index + 1).padStart(2, '0')}`] = {
       type: 'noul',
       instructions: { candidate: candidate.text, vocabulary: vocabulary.vocabulary },
     };
-  return { request: { model: 'jev-1.13.0', state: { description }, questions }, ...found };
+  return {
+    request: { model: 'jev-1.13.0', state: { description }, questions },
+    ...found,
+    ruleQuestions,
+  };
 };
 
 const object = (value: unknown): Record<string, unknown> => {

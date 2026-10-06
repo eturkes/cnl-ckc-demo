@@ -34,6 +34,8 @@ export interface BuiltRequest {
   request: JudgmentRequest;
   candidates: Candidate[];
   overflow: number;
+  /** Each rule question's id beside the rule it asks about, in request order. */
+  ruleQuestions: { id: string; rule: string }[];
 }
 
 // CDC 2022's own duration bands; `other` is the hatch that refuses an off-topic description.
@@ -48,6 +50,8 @@ const PAIN_CRITERIA: Record<PainOption, string> = {
 };
 
 const termId = (index: number): string => `t${String(index + 1).padStart(2, '0')}`;
+/** Keyed by the rule's ordinal in the vocabulary, so the id survives a reorder of nothing else. */
+const ruleId = (index: number): string => `r${String(index + 1).padStart(2, '0')}`;
 
 export const buildRequest = (
   vocabulary: IntakeVocabulary,
@@ -91,6 +95,24 @@ export const buildRequest = (
       },
     };
   }
+  // An unconditional rule reaches a description only through its section, so it gets its own
+  // question, quoting its guideline wording (`.agent/contracts/mnt-d63.md`).
+  const ruleQuestions: BuiltRequest['ruleQuestions'] = [];
+  vocabulary.rules.forEach((rule, index) => {
+    if (rule.trigger.kind !== 'section') return;
+    ruleQuestions.push({ id: ruleId(index), rule: rule.id });
+    questions[ruleId(index)] = {
+      type: 'noul',
+      instructions: {
+        task: 'Does `description` raise a decision that `recommendation` addresses?',
+        recommendation: rule.text,
+      },
+      criteria: {
+        true: 'The description raises a decision this recommendation addresses.',
+        false: 'No decision the description raises is addressed by this recommendation.',
+      },
+    };
+  });
   candidates.forEach(({ text }, index) => {
     questions[termId(index)] = {
       type: 'noul',
@@ -112,7 +134,9 @@ export const buildRequest = (
     request: { model: JEV_MODEL, state: { description }, questions },
     candidates,
     overflow,
+    ruleQuestions,
   };
 };
 
 export const termQuestionId = termId;
+export const ruleQuestionId = ruleId;

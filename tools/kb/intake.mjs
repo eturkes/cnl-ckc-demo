@@ -8,6 +8,7 @@
 import { createHash } from 'node:crypto';
 
 import { CLINICAL_QUESTIONS, clinicalArtifacts } from './clinical.mjs';
+import { deriveProvenance } from './provenance.mjs';
 
 export const INTAKE_VOCABULARY_VERSION = 1;
 export const INTAKE_PATH = 'intake-vocabulary.json';
@@ -22,7 +23,8 @@ const DOCUMENT = /^[a-z0-9-]+$/u;
 
 /** @typedef {typeof PAIN_TYPES[number]} PainType */
 /** @typedef {{ kind: 'condition', condition: string } | { kind: 'section', section: string }} IntakeTrigger */
-/** @typedef {{ id: string, document: string, sentence: number, trigger: IntakeTrigger, painSet: PainType[], section: string, question: string, goal: string }} IntakeRule */
+/** @typedef {{ id: string, document: string, sentence: number, trigger: IntakeTrigger, painSet: PainType[], section: string, question: string, goal: string, text: string }} IntakeRule */
+/** @typedef {{ ace: { text: string, sentences: { number: number, text: string }[] }, alignment: { spans: { group: number, side: string, start: number, end: number }[] }, source: { text: string } }} AlignedDocument */
 /** @typedef {{ id: string, heading: string, documents: string[] }} IntakeSection */
 /** @typedef {{ vocabularyVersion: number, digest: string, conditions: { id: string, text: string }[], sections: IntakeSection[], vocabulary: string[], rules: IntakeRule[] }} IntakeVocabulary */
 
@@ -70,6 +72,53 @@ const painMentions = (clause) => {
 /** @param {Set<PainType>} set @returns {PainType[]} */
 const ordered = (set) => PAIN_TYPES.filter((type) => set.has(type));
 
+// A source sentence ends at `.`, `!` or `?` before whitespace or the end of the passage.
+const SOURCE_SENTENCE_END = /[.!?](?=\s|$)/gu;
+
+/**
+ * A rule's own guideline wording, which its judgment question quotes: the source sentence(s)
+ * holding the alignment groups only its ACE sentence carries — all of its groups when none is
+ * its own — so two rules of one document read as their own recommendations, not the whole
+ * passage. Fails closed on a sentence with no aligned source text.
+ *
+ * @param {AlignedDocument} document @param {number} sentence @param {string} id
+ * @returns {string}
+ */
+const rulePassage = (document, sentence, id) => {
+  /** @type {Map<number, [number, number]>} */
+  const ranges = new Map();
+  let cursor = 0;
+  for (const { number, text } of document.ace.sentences) {
+    const start = document.ace.text.indexOf(text, cursor);
+    if (start < 0) throw new Error(`intake: ${id} ACE sentence ${String(number)} is not in its text`);
+    ranges.set(number, [start, start + text.length]);
+    cursor = start + text.length;
+  }
+  /** @param {[number, number] | undefined} range @returns {Set<number>} */
+  const groupsIn = (range) =>
+    new Set(
+      range === undefined
+        ? []
+        : document.alignment.spans
+            .filter((span) => span.side === 'ace' && span.start >= range[0] && span.end <= range[1])
+            .map((span) => span.group),
+    );
+  const own = groupsIn(ranges.get(sentence));
+  const shared = new Set(
+    [...ranges.keys()].filter((number) => number !== sentence).flatMap((number) => [...groupsIn(ranges.get(number))]),
+  );
+  const distinct = new Set([...own].filter((group) => !shared.has(group)));
+  const groups = distinct.size > 0 ? distinct : own;
+  const spans = document.alignment.spans.filter((span) => span.side === 'source' && groups.has(span.group));
+  if (spans.length === 0) throw new Error(`intake: ${id} aligns to no source text`);
+  const from = Math.min(...spans.map((span) => span.start));
+  const to = Math.max(...spans.map((span) => span.end));
+  const ends = [...document.source.text.matchAll(SOURCE_SENTENCE_END)].map((match) => match.index + 1);
+  const start = Math.max(0, ...ends.filter((end) => end <= from));
+  const end = Math.min(document.source.text.length, ...ends.filter((end) => end >= to));
+  return document.source.text.slice(start, end).trim();
+};
+
 /** @param {Omit<IntakeVocabulary, 'digest'>} body */
 export const vocabularyDigest = (body) =>
   createHash('sha256').update(JSON.stringify(body)).digest('hex');
@@ -80,6 +129,10 @@ export const vocabularyDigest = (body) =>
  */
 export const deriveIntakeVocabulary = (files) => {
   const { sentences } = clinicalArtifacts(files);
+  /** @type {Map<string, AlignedDocument>} */
+  const aligned = new Map(
+    deriveProvenance(files).chunks.map((chunk) => [chunk.document, /** @type {AlignedDocument} */ (chunk.model)]),
+  );
   const sections = boxSections(files);
   /** @type {Map<string, string>} */
   const conditionIds = new Map();
@@ -113,8 +166,11 @@ export const deriveIntakeVocabulary = (files) => {
       condition === undefined
         ? { kind: 'section', section: section?.id ?? '' }
         : { kind: 'condition', condition };
+    const id = `${document}:${String(clause.sentence)}`;
+    const evidence = aligned.get(document);
+    if (evidence === undefined) throw new Error(`intake: ${id} has no provenance document`);
     return {
-      id: `${document}:${String(clause.sentence)}`,
+      id,
       document,
       sentence: clause.sentence,
       trigger,
@@ -122,6 +178,7 @@ export const deriveIntakeVocabulary = (files) => {
       section: section?.id ?? '',
       question,
       goal: goalOf(document, clause.sentence),
+      text: rulePassage(evidence, clause.sentence, id),
     };
   });
   const body = {
@@ -196,6 +253,7 @@ export const validateIntakeVocabulary = (model) => {
     }
     if (!questions.has(rule.question)) problems.push(`rule ${rule.id}: unknown question ${rule.question}`);
     if (rule.goal !== goalOf(rule.document, rule.sentence)) problems.push(`rule ${rule.id}: goal drifted`);
+    if (rule.text.trim() === '') problems.push(`rule ${rule.id}: carries no guideline wording`);
   }
   return problems;
 };

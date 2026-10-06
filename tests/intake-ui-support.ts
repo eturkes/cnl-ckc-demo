@@ -48,6 +48,7 @@ export const UI_VOCABULARY: IntakeVocabulary = {
       section: 's1',
       question: QUESTION,
       goal: 'clinical_derive(doc_alpha,1,Rule,Proof)',
+      text: 'guideline wording',
     },
     {
       id: 'doc-beta:2',
@@ -58,6 +59,7 @@ export const UI_VOCABULARY: IntakeVocabulary = {
       section: 's1',
       question: NEXT_QUESTION,
       goal: 'clinical_derive(doc_beta,2,Rule,Proof)',
+      text: 'guideline wording',
     },
     {
       id: 'doc-alpha:3',
@@ -68,6 +70,7 @@ export const UI_VOCABULARY: IntakeVocabulary = {
       section: 's1',
       question: QUESTION,
       goal: 'clinical_derive(doc_alpha,3,Rule,Proof)',
+      text: 'guideline wording',
     },
   ],
 };
@@ -76,6 +79,7 @@ export const judgment = (overrides: Partial<JudgmentResult> = {}): JudgmentResul
   model: 'jev-1.13.0',
   conditions: { c01: 0.83, c02: 0 },
   sections: { s1: 0.91 },
+  rules: { 'doc-beta:2': 0.88 },
   pain: {
     choice: 'acute',
     probabilities: { acute: 1, subacute: 0, chronic: 0, unstated: 0, other: 0 },

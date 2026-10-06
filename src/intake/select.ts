@@ -10,6 +10,13 @@ import type { IntakeVocabulary, PainType } from './vocabulary.js';
 
 export const NOUL_YES = 0.5;
 
+/**
+ * How an unconditional rule's own question meets its section's (`.agent/contracts/mnt-d63.md`):
+ * `and` = both must say yes (policy A), `rule` = its own question alone (policy B).
+ */
+export type SectionRulePolicy = 'and' | 'rule';
+export const SECTION_RULE_POLICY: SectionRulePolicy = 'and';
+
 export interface Gap {
   text: string;
   start: number;
@@ -39,7 +46,11 @@ const valueOf = (table: Readonly<Record<string, number>>, id: string): number =>
   return value;
 };
 
-export const select = (vocabulary: IntakeVocabulary, judgment: JudgmentResult): IntakeOutcome => {
+export const select = (
+  vocabulary: IntakeVocabulary,
+  judgment: JudgmentResult,
+  policy: SectionRulePolicy = SECTION_RULE_POLICY,
+): IntakeOutcome => {
   const pain = judgment.pain.choice;
   if (pain === 'other') return { kind: 'refused' };
   const matches: Match[] = [];
@@ -48,10 +59,12 @@ export const select = (vocabulary: IntakeVocabulary, judgment: JudgmentResult): 
       rule.trigger.kind === 'condition'
         ? { kind: 'condition' as const, id: rule.trigger.condition }
         : { kind: 'section' as const, id: rule.trigger.section };
-    const value = valueOf(
-      trigger.kind === 'condition' ? judgment.conditions : judgment.sections,
-      trigger.id,
-    );
+    let value: number;
+    if (trigger.kind === 'condition') value = valueOf(judgment.conditions, trigger.id);
+    else {
+      const own = valueOf(judgment.rules, rule.id);
+      value = policy === 'and' ? Math.min(valueOf(judgment.sections, trigger.id), own) : own;
+    }
     // `unstated` names no pain type, so it can only meet a rule that names none.
     const compatible = rule.painSet.length === 0 || rule.painSet.includes(pain as PainType);
     if (value >= NOUL_YES && compatible)

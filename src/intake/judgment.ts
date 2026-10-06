@@ -14,6 +14,8 @@ export interface JudgmentResult {
   conditions: Readonly<Record<string, number>>;
   /** Section id → the Noul's value. */
   sections: Readonly<Record<string, number>>;
+  /** Unconditional rule id → its own question's Noul value. */
+  rules: Readonly<Record<string, number>>;
   pain: { choice: PainOption; probabilities: Readonly<Record<string, number>> };
   /** One per candidate, in candidate order. */
   terms: readonly { text: string; start: number; end: number; value: number }[];
@@ -122,6 +124,11 @@ export const parseJudgment = (raw: unknown, built: BuiltRequest): JudgmentResult
     model: raw.model,
     conditions: pick((id) => CONDITION_ID.test(id)),
     sections: pick((id) => SECTION_ID.test(id)),
+    rules: Object.freeze(
+      Object.fromEntries(
+        built.ruleQuestions.map(({ id, rule }) => [rule, values.get(id) as number]),
+      ),
+    ),
     pain,
     terms: Object.freeze(
       built.candidates.map((candidate, index) =>

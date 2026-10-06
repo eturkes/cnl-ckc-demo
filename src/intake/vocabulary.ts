@@ -21,6 +21,8 @@ export interface IntakeRule {
   section: string;
   question: QuestionId;
   goal: string;
+  /** The rule's own guideline wording, which its judgment question quotes. */
+  text: string;
 }
 
 export interface IntakeVocabulary {
@@ -113,7 +115,7 @@ export const parseVocabulary = (raw: unknown): IntakeVocabulary => {
     const item = record(entry, field);
     keys(
       item,
-      ['id', 'document', 'sentence', 'trigger', 'painSet', 'section', 'question', 'goal'],
+      ['id', 'document', 'sentence', 'trigger', 'painSet', 'section', 'question', 'goal', 'text'],
       field,
     );
     const document = text(item.document, `${field}.document`);
@@ -170,6 +172,7 @@ export const parseVocabulary = (raw: unknown): IntakeVocabulary => {
       section,
       question,
       goal,
+      text: text(item.text, `${field}.text`),
     });
   });
   unique(

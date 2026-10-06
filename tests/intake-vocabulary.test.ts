@@ -104,6 +104,7 @@ describe('intake vocabulary contract', () => {
         'question',
         'section',
         'sentence',
+        'text',
         'trigger',
       ]);
       expect(keys(rule.trigger)).toEqual(
@@ -197,9 +198,23 @@ describe('intake vocabulary contract', () => {
     expect(actual.conditions).toEqual(expected.conditions);
     expect(new Set(actual.vocabulary)).toEqual(new Set(expected.vocabulary));
     expect(new Set(actual.vocabulary).size).toBe(actual.vocabulary.length);
-    expect(actual.rules.map(({ painSet: _painSet, goal: _goal, ...identity }) => identity)).toEqual(
-      expected.rules.map(({ painSet: _painSet, goal: _goal, ...identity }) => identity),
-    );
+    expect(
+      actual.rules.map(({ painSet: _painSet, goal: _goal, text: _text, ...identity }) => identity),
+    ).toEqual(expected.rules.map(({ painSet: _painSet, goal: _goal, ...identity }) => identity));
+  });
+
+  it('mnt-d63 every rule quotes guideline wording its own document carries', async () => {
+    const { INTAKE_VOCABULARY: actual } = await subject();
+    for (const rule of actual.rules) {
+      const evidence = JSON.parse(
+        readFileSync(
+          join(ROOT, 'kb', 'generated', 'provenance', 'documents', `${rule.document}.json`),
+          'utf8',
+        ),
+      ) as { source: { text: string } };
+      expect(rule.text.length, rule.id).toBeGreaterThan(40);
+      expect(evidence.source.text, rule.id).toContain(rule.text);
+    }
   });
 
   it('V4 every pain set follows own text then document union with hyphen-bounded types', async () => {

@@ -12,6 +12,10 @@ const BASE_IDS = [
   's3',
   's4',
 ];
+// mnt-d63: one question per unconditional rule, keyed by its ordinal in the vocabulary.
+const RULE_IDS = vocabulary().rules.flatMap((rule, index) =>
+  rule.trigger.kind === 'section' ? [`r${String(index + 1).padStart(2, '0')}`] : [],
+);
 
 describe('Q1 judgment request', () => {
   it.each([
@@ -31,6 +35,7 @@ describe('Q1 judgment request', () => {
       expect(built.overflow).toBe(extracted.overflow);
       expect(Object.keys(built.request.questions)).toEqual([
         ...BASE_IDS,
+        ...RULE_IDS,
         ...extracted.candidates.map((_, index) => `t${String(index + 1).padStart(2, '0')}`),
       ]);
       for (const [id, question] of Object.entries(built.request.questions)) {
@@ -39,6 +44,32 @@ describe('Q1 judgment request', () => {
       }
     },
   );
+
+  it('mnt-d63 asks each unconditional rule whether the description raises the decision it addresses, quoting its wording', () => {
+    const vocab = vocabulary();
+    const { questions } = buildRequest(vocab, 'acute pain after surgery').request;
+    expect(RULE_IDS).toHaveLength(
+      vocab.rules.filter((rule) => rule.trigger.kind === 'section').length,
+    );
+    vocab.rules.forEach((rule, index) => {
+      const question = questions[`r${String(index + 1).padStart(2, '0')}`];
+      if (rule.trigger.kind !== 'section') {
+        expect(question, rule.id).toBeUndefined();
+        return;
+      }
+      expect(question, rule.id).toEqual({
+        type: 'noul',
+        instructions: {
+          task: 'Does `description` raise a decision that `recommendation` addresses?',
+          recommendation: rule.text,
+        },
+        criteria: {
+          true: 'The description raises a decision this recommendation addresses.',
+          false: 'No decision the description raises is addressed by this recommendation.',
+        },
+      });
+    });
+  });
 
   it('exports the pinned model and ordered options', () => {
     expect(JEV_MODEL).toBe('jev-1.13.0');

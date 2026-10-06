@@ -39,6 +39,7 @@ export function vocabulary(): IntakeVocabulary {
           section: 's1',
           question: 'fixture-question' as IntakeRule['question'],
           goal: `clinical_derive('${document}',${String(sentence)},Rule,Proof)`,
+          text: `guideline wording for ${document}:${String(sentence)}`,
         };
       }),
     ),
@@ -73,6 +74,9 @@ export function judgment(pain: PainOption = 'unstated', value = 0): JudgmentResu
     model: 'jev-1.13.0',
     conditions: Object.fromEntries(vocab.conditions.map(({ id }) => [id, value])),
     sections: Object.fromEntries(vocab.sections.map(({ id }) => [id, value])),
+    rules: Object.fromEntries(
+      vocab.rules.flatMap((rule) => (rule.trigger.kind === 'section' ? [[rule.id, value]] : [])),
+    ),
     pain: {
       choice: pain,
       probabilities: Object.fromEntries(PAINS.map((option) => [option, option === pain ? 1 : 0])),

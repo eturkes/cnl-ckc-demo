@@ -155,6 +155,8 @@ export const referenceVocabulary = (): IntakeVocabulary => {
       section: section.id,
       question: question.id as IntakeRule['question'],
       goal: `clinical_derive('${record.document}',${String(record.sentence)},Rule,Proof)`,
+      // The wording is the producer's alignment pick; these suites grade selection, not quotes.
+      text: `guideline wording for ${record.id}`,
     };
   });
   const vocabulary = [
