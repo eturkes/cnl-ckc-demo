@@ -18,9 +18,13 @@ User-ruled, binding on every role.
   `CLAUDE.md` `Engineering` verification integrity binds this repo where the answer path runs,
   and there it binds whole — the overlay recipe in `.claude/rules/proof.md` is what it costs.
   Off that path a thin check, or one that cannot refuse a wrong input, is a demo-tier choice.
-  Strengthening one is scheduled work; `prototype/`, the template's own carve-out, does not
-  exist here. Report honesty is separate and unwaived: a report names what ran, passed and was
-  skipped either way.
+  Strengthening one is scheduled work, and no prototype exists here for the template's
+  PROTOTYPE-law carve-out to cover. Report honesty is separate and unwaived: a report names
+  what ran, passed and was skipped either way.
+- **No prototype tree** — `CLAUDE.md` `Session flow` PROTOTYPE + IMPLEMENT, inapplicable by
+  user ruling. The expedited M2–M4 surfaces played the PROTOTYPE role in place and were
+  redeveloped under M5's gates (`.agent/spec.md` `Decisions`), so `Artifacts` records no
+  prototype path and IMPLEMENT's retire-at-close has nothing to retire.
 
 Package versions live in `package.json` + `pnpm-lock.yaml` — read them there. Constraints
 that bind a version are in `.claude/rules/toolchain.md`.

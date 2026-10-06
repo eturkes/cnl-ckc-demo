@@ -1,7 +1,7 @@
 # Deferral queue
 
 The queue `.agent/spec.md` `Tasks` points at: off-spine improvements, held out of the
-attached state because a queue only grows. Each entry carries the acceptance check that
+attached state because the queue has no size bound. Each entry carries the acceptance check that
 closes it and a `pri` — `high` = a defect reachable in the shipped product, `med` = a gate or
 evidence gap under a durable claim, `low` = a feature or a tidy-up. A row closes on its own
 acceptance check and leaves in that commit; the index at the foot collapses the `high` +
@@ -142,6 +142,20 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   Accept: either the dedup keys on scope and the justification suite justifies all 55 by their
   own clauses, with the moved counts recorded; or a committed check proves each merged negated
   support has an unnegated twin support in its own sentence. `pri` low.
+- **Cap-one re-proof hits `limit` in a full-suite run** — one `binding:check` run (the gate
+  chain after `audit:check`) failed `tests/proof-live.test.ts:122` (`when-to-use-opioids
+  re-proves every selected answer at cap one`: `expected 'limit' to be 'proof'`), 1044/1045.
+  Load avg on 8 cores read 7.05 at launch and 9.44 about two minutes after the run, both inside
+  the ≤ 2.9× envelope `.claude/rules/gate.md` accepts; failure-time load is unconfirmed. The
+  suite file alone then passed 19/19, and the next `binding:check` passed 1045/1045 (load 8.04
+  at launch, 12.09 at its end). The test asserts `result.kind` alone, so the subtype is lost.
+  Accept: the next reproduced trip records its `limit` subtype, and either that case's bound
+  stops depending on host load or 20 consecutive full runs at load ≥ 9 pass it. `pri` med.
+- **The CI registry receipt cannot refute "publishes nothing"** — the `docs/claims.md` row for
+  the `.claude/rules/gate.md` `CI` bullet greps `ci.yml` for `pnpm gate`, `pull_request` and
+  `deploy`; a planted `pnpm exec wrangler pages publish dist` step leaves that output
+  unchanged. Accept: the row's command lists every `run:` + `uses:` step of
+  `.github/workflows/ci.yml`, and the planted publish step changes its output. `pri` med.
 
 ## Index — one line per `high` + `med` row
 
@@ -152,6 +166,8 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 | --- | --- |
 | u3 heap limit is unit-tested only | a committed test drives real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate |
 | **high** Browser WASM abort leaves a dead session | an aborted runtime reaches the client as its own terminal state that recreates the worker without a caller `reset()`, proven by a browser probe whose next query reports 337 documents |
+| Cap-one re-proof hits `limit` in a full-suite run | the next reproduced trip records its `limit` subtype, and either that case's bound stops depending on host load or 20 consecutive full runs at load ≥ 9 pass it |
+| The CI registry receipt cannot refute "publishes nothing" | the row's command lists every `run:` + `uses:` step of `.github/workflows/ci.yml`, and the planted publish step changes its output |
 
 ## Accepted-open
 

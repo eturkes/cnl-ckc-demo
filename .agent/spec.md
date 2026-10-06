@@ -288,7 +288,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `5bc686e` find (heavy-load timeouts) closed by user ruling: the measured 2.9× envelope (20/20 runs at load ≤23.5) is the bar.
 - [ ] find (failed reset) approved (user): change P4.4 (`engine-recovery`) + P1.1 (`engine-budgets`); every reset boots under the deadline and retires a failed replacement.
 - [ ] find (condition-supports dedup is scope-blind): new row from d49, `pri` low — fund after the named rows (its second acceptance arm needs no ruling).
-- [ ] Close-2: the closing diff since `70c8507` → every `reviewer` lens; `pnpm gate` on a clean tree; final report per the request's Met-when.
+- [ ] Close-2: the closing diff since `70c8507` → one `reviewer` covering every lens; `pnpm gate` on a clean tree; final report per the request's Met-when.
 - [x] `aefae8c` find: a refactor staled mutant R09's anchor with the gate green → `tests/mutant-anchors.test.ts` grades every anchor in the gate.
 - [x] `8c186d2` find: a heap recreation that joined an in-flight reset waited on its unbounded boot → it arms its own boot deadline.
 - [x] `28c37bc` Close: 4 lenses × 2 reviewers, round-2 re-review all pass; 46/46 mutants killed under the exit-1 rule.
