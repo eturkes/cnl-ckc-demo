@@ -359,7 +359,7 @@ describe('mnt-d10 QLF fallback', () => {
     const session = createSession({
       loadImage: () => Promise.reject(new Error('d10 image unavailable')),
       // A rejection value that is not an Error carries no message to extend.
-      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- the non-Error rejection under test
       loadFallback: () => Promise.reject('d10 raw fallback refusal'),
       expected: manifest.contract,
     });

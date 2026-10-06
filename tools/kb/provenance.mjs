@@ -67,7 +67,7 @@ const decodeText = (bytes, path) => {
   } catch (error) {
     return refuse('invalid-utf8', `${path}: ${error instanceof Error ? error.message : String(error)}`);
   }
-  // eslint-disable-next-line no-control-regex
+  // eslint-disable-next-line no-control-regex -- matching control characters is the refusal
   if (/[\u0000-\u0008\u000b-\u001f\u007f]/u.test(text)) refuse('unsupported-control', path);
   if (/[\u202a-\u202e\u2066-\u2069]/u.test(text)) refuse('unsupported-bidi', path);
   if (text.includes('\r')) refuse('carriage-return', path);

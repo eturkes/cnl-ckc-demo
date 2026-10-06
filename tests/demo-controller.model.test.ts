@@ -283,7 +283,7 @@ class Differential {
     );
     // `token` here is a monotonic run counter, not a credential — the rule matches on the
     // identifier's name alone and cannot see that.
-    // eslint-disable-next-line security/detect-possible-timing-attacks
+    // eslint-disable-next-line security/detect-possible-timing-attacks -- a run counter, not a credential
     if (next.active?.token === token) this.engine.plan(token, next.active.id);
     const completion = observe(kind === 'run' ? this.controller.run() : this.controller.retry());
     this.model = next;

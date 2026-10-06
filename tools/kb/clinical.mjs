@@ -71,7 +71,7 @@ const encodedAtom = (value) => {
 
 /** JSON strings are valid SWI double-quoted strings for this control-free corpus. @param {string} value */
 const quotedString = (value) => {
-  // eslint-disable-next-line no-control-regex
+  // eslint-disable-next-line no-control-regex -- matching control characters is the refusal
   if (/\r|[\u0000-\u001f\u007f]/u.test(value)) {
     throw new Error('clinical statement contains unsupported control text');
   }

@@ -12,9 +12,9 @@ import { ROOT } from './kb/paths.mjs';
 
 const fail = failWith('test:browser');
 // The launcher module ships no types; its `binaryPath` resolves the installed Chromium.
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- the launcher ships no types
 const launcher = /** @type {{ binaryPath: () => Promise<string> }} */ (
-  // eslint-disable-next-line no-unsanitized/method
+  // eslint-disable-next-line no-unsanitized/method -- a store path this process resolved itself
   await import(`${resolveGlobal('chromiumfish', fail)}/dist/index.js`)
 );
 const chromium = await launcher.binaryPath();

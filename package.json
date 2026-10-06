@@ -68,6 +68,7 @@
     "swipl-wasm": "8.0.7"
   },
   "devDependencies": {
+    "@eslint-community/eslint-plugin-eslint-comments": "^4.8.1",
     "@eslint/js": "^10.0.1",
     "@secretlint/secretlint-rule-preset-recommend": "^13.0.6",
     "@sveltejs/vite-plugin-svelte": "^7.3.0",

@@ -95,7 +95,7 @@ const literals = (source) => {
   // remains is star height, which the rule reads structurally; every iteration is anchored
   // on a quote, so no two of them can match the same span.
   const entry =
-    // eslint-disable-next-line security/detect-unsafe-regex
+    // eslint-disable-next-line security/detect-unsafe-regex -- each iteration anchors on a quote, so matching stays linear
     /(?:^|\n)\s*(?:\/\*\*[\s\S]*?\*\/\s*)?([\w]+):\s*((?:'(?:[^'\\]|\\.)*'(?:\s*\+)?\s*)+)/g;
   let rest = body;
   for (const match of body.matchAll(entry)) {

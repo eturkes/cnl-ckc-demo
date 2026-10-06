@@ -56,16 +56,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   section-triggered (37 lost, 0 gained, 82 false positives removed); `rec12:2`–`:4` account for 21
   and `rec05:5` for 6, so the rule question denies the opioid-use-disorder recommendations most.
   Code, replay and report: branch `wt/d63` `cfbe0ad` (never rename).
-- **Inline-disable reasons have no grader** — `.claude/rules/gate.md`'s `lint` bullet says every
-  remaining security exception is one inline disable carrying its reason; `pnpm lint` passes
-  whether or not a reason is there, so the registry row reads it by hand. Three non-security
-  disables carry none (`tools/clinical-reference.mjs:227,234`, `tools/kb/provenance.mjs:70`,
-  the last byte-frozen by T9). Accept: a committed check (an ESLint directive-description rule
-  or a scan in the gate) refuses an `eslint-disable` with no stated reason, with its firing
-  input, and the frozen file's directive handled by ruling. `pri` low. **User ruling**: unfreeze `tools/kb/provenance.mjs` in T9 so line 70's directive gains its reason, then ship the grader. **Background**: the two
-  `tools/clinical-reference.mjs` directives now carry their reason; the third,
-  `tools/kb/provenance.mjs:70`, sits in a file T9 freezes against `22053ef`, so a gate check would
-  either exempt it by name or need the file unfrozen.
 - **A decoded dict re-encodes without its tag** — `createEncoder` turns `tag{a:0}` into a plain
   object whose `$tag` key the wrapper reads as an ordinary dict key, leaving the real tag
   unbound: `_{'$tag':tag,a:0}` is no variant of `tag{a:0}`, alone or as a list tail (reviewer-il-1

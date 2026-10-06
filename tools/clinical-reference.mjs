@@ -210,7 +210,7 @@ const groundTerms = (terms, replacement) => {
   return terms.map((term) =>
     replaceVariables(term, (token) => {
       // `token` here is a Prolog variable name, not a credential.
-      // eslint-disable-next-line security/detect-possible-timing-attacks
+      // eslint-disable-next-line security/detect-possible-timing-attacks -- a Prolog variable name, not a credential
       if (token === '_') return replacement(ordinal++);
       let grounded = variables.get(token);
       if (grounded === undefined) {

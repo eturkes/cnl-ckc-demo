@@ -464,12 +464,22 @@ describe('clinical records', () => {
       );
     expect(hashes(currentClinical)).toEqual(hashes(baseClinical));
 
-    // Two what-only file headers are unfrozen by user ruling (queue row d39) and deleted; every
-    // other byte of these surfaces holds.
-    const unfrozen: Readonly<Record<string, string>> = {
-      'src/questions/serialize.ts':
-        "// Canonical answer serialization, in the bag's own result grammar.\n//\n",
-      'src/questions/humanize.ts': '// Reader-facing text for a guideline identifier.\n//\n',
+    // Unfrozen by user ruling, each a declared edit of the 22053ef bytes; every other byte of
+    // these surfaces holds. Queue row d39: two what-only headers deleted. Inline-disable row:
+    // the one frozen lint directive states its reason.
+    const unfrozen: Readonly<Record<string, readonly (readonly [string, string])[]>> = {
+      'src/questions/serialize.ts': [
+        ["// Canonical answer serialization, in the bag's own result grammar.\n//\n", ''],
+      ],
+      'src/questions/humanize.ts': [
+        ['// Reader-facing text for a guideline identifier.\n//\n', ''],
+      ],
+      'tools/kb/provenance.mjs': [
+        [
+          '  // eslint-disable-next-line no-control-regex\n',
+          '  // eslint-disable-next-line no-control-regex -- matching control characters is the refusal\n',
+        ],
+      ],
     };
     for (const path of [
       'src/questions/advice.ts',
@@ -477,13 +487,15 @@ describe('clinical records', () => {
       'src/questions/humanize.ts',
       'tools/kb/provenance.mjs',
     ]) {
-      const base = execFileSync('git', ['show', `22053ef:${path}`], {
+      let expected = execFileSync('git', ['show', `22053ef:${path}`], {
         cwd: ROOT,
         encoding: 'utf8',
       });
-      const header = unfrozen[path] ?? '';
-      expect(base.startsWith(header), `${path} base header`).toBe(true);
-      expect(readFileSync(join(ROOT, path), 'utf8'), path).toBe(base.slice(header.length));
+      for (const [from, to] of unfrozen[path] ?? []) {
+        expect(expected.split(from), `${path} declares one edit of ${from}`).toHaveLength(2);
+        expected = expected.replace(from, to);
+      }
+      expect(readFileSync(join(ROOT, path), 'utf8'), path).toBe(expected);
     }
 
     const parsed = CLINICAL_QUESTIONS.flatMap(({ sources }) =>

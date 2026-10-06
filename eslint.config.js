@@ -1,3 +1,4 @@
+import comments from '@eslint-community/eslint-plugin-eslint-comments/configs';
 import js from '@eslint/js';
 import noUnsanitized from 'eslint-plugin-no-unsanitized';
 import security from 'eslint-plugin-security';
@@ -19,6 +20,10 @@ export default ts.config(
   // `eslint-plugin-security` covers the Node-side build scripts.
   security.configs.recommended,
   noUnsanitized.configs.recommended,
+  // Every inline exception states its reason after `--`, at the directive, so a reader never
+  // reconstructs why a rule is off from the lines around it.
+  comments.recommended,
+  { rules: { '@eslint-community/eslint-comments/require-description': 'error' } },
   {
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },

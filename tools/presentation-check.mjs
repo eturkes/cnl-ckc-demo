@@ -278,7 +278,7 @@ const checkFaces = (failures, css) => {
   // Anything the browser would fetch at render time defeats self-hosting.
   // `s?` inside `(?:…)?` reads as star height 2; both quantifiers are bounded at one
   // character, so there is no backtracking to amplify.
-  // eslint-disable-next-line security/detect-unsafe-regex
+  // eslint-disable-next-line security/detect-unsafe-regex -- both quantifiers are bounded at one character
   const remote = /url\(\s*['"]?(?:https?:)?\/\//.exec(css);
   if (remote !== null) failures.push(`remote url in app.css: ${remote[0]}`);
 };
