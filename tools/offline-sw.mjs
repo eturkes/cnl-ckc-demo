@@ -19,6 +19,8 @@ export const LAZY = [
   // PDF.js and its worker load only when the reader opens a page (`ProvenanceLadder.svelte`).
   /^assets\/pdf-viewer-/u,
   /^assets\/pdf\.worker\.min-/u,
+  // The corpus browser's document list loads when the reader opens it (`CorpusBrowser.svelte`).
+  /^assets\/corpus-index-/u,
   /^assets\/cdc\d+-opioid-/u,
   /^assets\/biz-udpgothic-/u,
   // The QLF fallback is insurance a sound image never takes (`tools/bundle.mjs`).

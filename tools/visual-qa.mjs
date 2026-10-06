@@ -2,8 +2,8 @@
 // measured for horizontal overflow. JSON report on stdout, one PNG per state in `.probe/`,
 // exit 1 when any state overflows. Outside `pnpm gate`: it needs a real browser.
 // `browser:check` measures 320 px alone, in both locales; this walk adds the wider viewports,
-// every boot phase, a run mid-stream, every catalog question's answer, a cancelled run, the graph
-// and a failed boot.
+// every boot phase, a run mid-stream, every catalog question's answer, a cancelled run, the graph,
+// the corpus browser with one document open and a failed boot.
 
 import { mkdirSync } from 'node:fs';
 import { cp } from 'node:fs/promises';
@@ -123,6 +123,16 @@ const walk = async (browser, url, width) => {
   await page.locator('[data-action="explore-graph"]').click();
   await page.waitForSelector('.graph-shell .counts', { timeout: TIMEOUT });
   await measure(page, width, 'graph explored');
+
+  await page.locator('[data-action="browse-corpus"]').click();
+  await page.waitForSelector('.corpus-browser [data-documents]', { timeout: TIMEOUT });
+  await measure(page, width, 'corpus listed');
+  await page.locator('.corpus-browser [data-action="open-document"]').first().click();
+  await page.locator('.corpus-document [data-action="load-page-viewer"]').click();
+  await page.waitForSelector('.corpus-document .page-viewer[data-state="rendered"]', {
+    timeout: TIMEOUT,
+  });
+  await measure(page, width, 'corpus document open');
   if (errors.length > 0) fail(`${String(width)}px raised ${errors.join('; ')}`);
 
   // Control: the same probe over a box planted past the viewport must report the overflow.

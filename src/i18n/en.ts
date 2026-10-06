@@ -99,6 +99,14 @@ export const DESCRIPTIONS = {
   graphLoadNote:
     'The graph data and layout engine load when you select this control or an answer link.',
 
+  corpusIntro:
+    'Browse every compiled guideline document by the coverage region its evidence records. ' +
+    'Open a document to read its source passage and to see its guideline page.',
+
+  corpusLoadNote: 'The document list loads when you select this control.',
+
+  corpusPassage: 'This is wording from the guideline itself, as this document records it.',
+
   graphDerivation:
     'The primary concept is ranked mechanically from terms and semantic roles in the question and deterministic answer.',
 
@@ -222,6 +230,14 @@ export const LABELS = {
   graphExplore: 'Explore graph',
   graphShowAllRelations: 'Show all relationships',
   graphLoading: 'Loading the semantic graph.',
+  corpusEyebrow: 'Sources',
+  corpusHeading: 'Coverage by document',
+  corpusBrowse: 'Browse every document',
+  corpusLoading: 'Loading the document list.',
+  corpusFilter: 'Filter by document, region or section',
+  corpusOpen: 'Open',
+  corpusClose: 'Close',
+  corpusDocumentLoading: 'Loading the document evidence.',
   graphTryAgain: 'Try again',
   graphAnswerMap: 'Answer map',
   graphDerivationSummary: 'How this map was derived',
@@ -350,6 +366,16 @@ export const TEXT = {
   passagePage: (page: number) => `The passage maps to physical PDF page ${String(page)}.`,
   pageViewerTitle: (page: number) => `CDC guideline, physical page ${String(page)}`,
   pageRendering: () => 'Rendering the guideline page.',
+  corpusCount: (documents: number) =>
+    `${plural(documents, 'compiled document')}, each with its coverage region.`,
+  corpusShown: (shown: number, total: number) =>
+    `Showing ${String(shown)} of ${String(total)} documents.`,
+  corpusOpenDocument: (document: string) => `Open ${document}`,
+  corpusCloseDocument: (document: string) => `Close ${document}`,
+  corpusRegionPage: (region: string, page: number) =>
+    `Region ${region}, physical page ${String(page)}`,
+  corpusFailed: (message: string) => `The document list did not load. ${message}`,
+  corpusDocumentFailed: (message: string) => `The document evidence did not load. ${message}`,
   passageHighlighted: (page: number) => `The passage is highlighted on page ${String(page)}.`,
   passageContinues: (page: number) =>
     `The passage starts on page ${String(page)} and continues on page ${String(page + 1)}. ` +

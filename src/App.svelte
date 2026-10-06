@@ -7,6 +7,7 @@
   import { messages } from './i18n/locale.svelte.js';
   import LanguageToggle from './demo/LanguageToggle.svelte';
   import RunControls from './demo/RunControls.svelte';
+  import CorpusBrowser from './provenance/CorpusBrowser.svelte';
   import ThemeToggle from './demo/ThemeToggle.svelte';
   import {
     SemanticGraph,
@@ -259,6 +260,7 @@
           {/if}
         </p>
       {/if}
+      <CorpusBrowser />
     </div>
 
     <div id="about">
