@@ -33,6 +33,9 @@ paths:
 - `pnpm.overrides` lifts `undici@>=7.28.0 <7.29.1` to `^7.29.1`: `wrangler` → `miniflare`
   pins `undici` 7.29.0 exactly, inside GHSA-3wwx-pv8p-q78v, and `audit:check` takes no
   allowlist. Drop the override once `miniflare` pins ≥7.29.1 — `pnpm why undici` shows it.
+- `pnpm.overrides` lifts `sharp@<0.35.5` to `^0.35.5`: `miniflare` pins `sharp` 0.35.4
+  exactly, inside GHSA-wq5f-xc86-pv6w. Drop the override once `miniflare` pins ≥0.35.5 —
+  `pnpm why sharp` shows it.
 - Each cap here must also appear in `.github/dependabot.yml`'s `ignore` list, or the weekly
   run reopens the same gate-breaking PR.
 - ESLint config needs `@types/node`, and svelte parsing needs `extraFileExtensions`.
