@@ -56,18 +56,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   section-triggered (37 lost, 0 gained, 82 false positives removed); `rec12:2`–`:4` account for 21
   and `rec05:5` for 6, so the rule question denies the opioid-use-disorder recommendations most.
   Code, replay and report: branch `wt/d63` `cfbe0ad` (never rename).
-- **A decoded dict re-encodes without its tag** — `createEncoder` turns `tag{a:0}` into a plain
-  object whose `$tag` key the wrapper reads as an ordinary dict key, leaving the real tag
-  unbound: `_{'$tag':tag,a:0}` is no variant of `tag{a:0}`, alone or as a list tail (reviewer-il-1
-  register R1, `a9bf242` body). No shipped answer term carries a dict.
-  Accept: a decoded dict re-encodes as a structural variant — standalone and as an improper-list
-  tail — graded by Prolog `=@=` in `tests/engine-term-identity.test.ts`. `pri` low. **User ruling**: `createEncoder` refuses a dict and fails closed. **Background**: swipl-wasm 8.0.7 has no supported way to re-enter a TAGGED dict. `toProlog` sets a
-  dict tag only when `data.constructor.name !== 'Object'`, but that check sits inside the
-  `case "Object"` arm; an instance of a class named after the tag falls to the `default` arm and
-  enters as a `<js>(N,tag)` blob (measured). Only a `constructor` getter answering `Object` on
-  the first read and the tag on the second gets through (closing review D-2), which leans on the
-  wrapper's read order. Choices: `createEncoder`
-  refuses a dict, failing closed instead of re-entering it untagged, or an upstream patch.
 - **A failed reset keeps its replacement worker** — a heap recreation boots its replacement
   under the boot deadline, but an explicit or wall-clock `EngineClient.reset()` boots it
   unbounded, and a replacement that answers its boot with an error (a contract mismatch, a

@@ -181,10 +181,9 @@ export function createEncoder(constructors: PrologConstructors): (term: PlTerm) 
         return new constructors.Var(name);
       }
       case 'dict':
-        return Object.fromEntries([
-          ['$tag', term.tag],
-          ...Object.entries(term.entries).map(([key, item]) => [key, encode(item)] as const),
-        ]);
+        // swipl-wasm sets a dict tag only through a constructor-name check it reads twice, so a
+        // plain object re-enters as `_{'$tag':tag,…}`, no variant of the original. Refused.
+        throw new DecodeError(`a dict cannot re-enter the engine with its tag (${term.tag})`);
       default: {
         // A new `PlTerm` variant must gain an arm here rather than encode as
         // `undefined`, which the wrapper would refuse only at query time.
