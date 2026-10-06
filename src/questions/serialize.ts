@@ -1,5 +1,3 @@
-// Canonical answer serialization, in the bag's own result grammar.
-//
 // The sort is SWI standard order over decoded terms, not a byte sort of rendered
 // text. The two agree on this corpus, where every projected value is a
 // `'$guideline_id'/5` compound of one shape, and diverge as soon as a projection

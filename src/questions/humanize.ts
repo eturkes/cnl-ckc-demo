@@ -1,5 +1,3 @@
-// Reader-facing text for a guideline identifier.
-//
 // Structural only. The document id is opaque schema content — 337 distinct ids
 // whose internal tokens belong to whichever guideline produced them — so glossing
 // `rec` as "recommendation" or `cdc2022-opioid` as a title would hard-code one

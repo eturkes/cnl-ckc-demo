@@ -232,7 +232,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `768742e` d20 `kb:asset-check` refuses an oracle path assembled from its two bare segments.
 - [x] `1dc006f` d22 `pnpm visual-qa`: 39 states at 320/375/1280 px, none overflows, planted-overflow control.
 - [x] `2b4a2b6` d28 the source-label grammar is stated in `.claude/rules/ui.md` `Copy`; the humanizer test cites it.
-- [ ] d17 approved (user): solutions render as they arrive — visual unit, captures + `visual-qa`.
+- [x] `04ada8c` d17 approved (user): solutions render as they arrive — visual unit, captures + `visual-qa`; the user review of the captures is owed.
 - [x] `03a0184` d33 `copy:check` grades a keyed literal once, under its key (378 → 251 graded strings).
 - [x] `0cdaa0f` d38 `withBuiltSite` (`tools/browser.mjs`) owns build, serve, launch and teardown for smoke, browser:check and visual-qa.
 - [ ] d39 ruled (user): unfreeze the `serialize.ts` + `humanize.ts` header lines in T9 and delete them (the other 8 headers + 8 sites done).

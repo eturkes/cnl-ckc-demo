@@ -464,15 +464,26 @@ describe('clinical records', () => {
       );
     expect(hashes(currentClinical)).toEqual(hashes(baseClinical));
 
+    // Two what-only file headers are unfrozen by user ruling (queue row d39) and deleted; every
+    // other byte of these surfaces holds.
+    const unfrozen: Readonly<Record<string, string>> = {
+      'src/questions/serialize.ts':
+        "// Canonical answer serialization, in the bag's own result grammar.\n//\n",
+      'src/questions/humanize.ts': '// Reader-facing text for a guideline identifier.\n//\n',
+    };
     for (const path of [
       'src/questions/advice.ts',
       'src/questions/serialize.ts',
       'src/questions/humanize.ts',
       'tools/kb/provenance.mjs',
     ]) {
-      expect(readFileSync(join(ROOT, path), 'utf8'), path).toBe(
-        execFileSync('git', ['show', `22053ef:${path}`], { cwd: ROOT, encoding: 'utf8' }),
-      );
+      const base = execFileSync('git', ['show', `22053ef:${path}`], {
+        cwd: ROOT,
+        encoding: 'utf8',
+      });
+      const header = unfrozen[path] ?? '';
+      expect(base.startsWith(header), `${path} base header`).toBe(true);
+      expect(readFileSync(join(ROOT, path), 'utf8'), path).toBe(base.slice(header.length));
     }
 
     const parsed = CLINICAL_QUESTIONS.flatMap(({ sources }) =>

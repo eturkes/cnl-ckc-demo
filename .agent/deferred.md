@@ -24,15 +24,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   an ad-hoc goal path is what makes it reachable (`.agent/spec.md` `Decisions` MAIN). Accept: an aborted runtime reaches the client
   as its own terminal state that recreates the worker without a caller `reset()`, proven by a
   browser probe whose next query reports 337 documents. `pri` high, gated on an ad-hoc goal path.
-- **Comments carry provenance and restate purpose** — ten file headers say what their module
-  is rather than why it is peculiar, and eight comment sites cite review rows instead of
-  stating a timeless constraint (M1 review X20); this session's own new headers are in
-  scope. Accept: the ten what-only headers are gone, the eight provenance sites read as
-  current constraints with no row or history reference, and the adjacent why comments
-  survive byte-for-byte. `pri` low. **Eight of ten headers and all eight sites done. User ruling: unfreeze the last two in T9
-  and delete their header lines. Background**: `src/questions/serialize.ts` and `humanize.ts` are byte-frozen
-  against `22053ef` by `tests/clinical-records.test.ts` T9, an answer-path frozen surface, so
-  deleting either header line is a grader change — unfreeze them, or let the headers stand.
 - **Owned PDF viewer** — M2 u7 ships a native `<iframe>` at `#page=N`, so the viewer is a
   black box: no assertion can read the displayed page, and the passage cannot be
   highlighted inside the PDF. PDF.js was rejected on cost — +504727 B gzip, 34.78 MB
