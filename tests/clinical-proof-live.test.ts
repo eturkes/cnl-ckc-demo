@@ -10,6 +10,7 @@ import { join } from 'node:path';
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
+import { BUDGET_MAX } from '../src/engine/budget.js';
 import { PROOF_BUDGET_MAX, type ProofClause, type ProofStep } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
 import { CLINICAL_QUESTIONS } from '../tools/kb/clinical.mjs';
@@ -37,6 +38,18 @@ const loadImage: ImageLoader = async (image) => {
     | { default: (image: Uint8Array) => (options?: Record<string, unknown>) => Promise<Engine> };
   const load = typeof factory === 'function' ? factory : factory.default;
   return load(image)({});
+};
+
+/** Meta-interpreter runs the session under test started — a proof-cache hit starts none. */
+let miRuns = 0;
+const countingLoader: ImageLoader = async (image) => {
+  const engine = await loadImage(image);
+  const query = engine.prolog.query.bind(engine.prolog);
+  engine.prolog.query = (goal: string, bindings?: Record<string, unknown>) => {
+    if (goal.includes('once(((mi(')) miRuns += 1;
+    return query(goal, bindings);
+  };
+  return engine;
 };
 
 const BOOT_TIMEOUT = 120_000;
@@ -76,7 +89,7 @@ const proveDocument = async (id: string, document: string): Promise<ProofStep[]>
 
 beforeAll(async () => {
   const image = new Uint8Array(readFileSync(join(ROOT, 'kb/generated/kb.pvm')));
-  session = new EngineSession({ loadImage, expected: manifest.contract });
+  session = new EngineSession({ loadImage: countingLoader, expected: manifest.contract });
   await session.boot(image);
   oracle = await loadImage(image);
 }, BOOT_TIMEOUT);
@@ -215,10 +228,15 @@ describe('live clinical proof', () => {
   it(
     'B9 every selected proof settles inside the shipped proof budget',
     async () => {
+      // B2 already proved these selections in this session; any `solve` empties the proof cache, so
+      // each proof timed below is a cold meta-interpreter run, not a cached copy.
+      expect((await session.solve('true.', BUDGET_MAX)).kind).toBe('solutions');
       for (const { id, document } of selections) {
+        const before = miRuns;
         const started = Date.now();
         const steps = await proveDocument(id, document);
         const elapsed = Date.now() - started;
+        expect(miRuns, `${document} reached the meta-interpreter`).toBe(before + 1);
         expect(steps.length, document).toBeGreaterThan(0);
         expect(elapsed, `${document} took ${String(elapsed)} ms`).toBeLessThan(
           PROOF_BUDGET_MAX.wallClockMs,

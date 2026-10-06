@@ -56,12 +56,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   section-triggered (37 lost, 0 gained, 82 false positives removed); `rec12:2`–`:4` account for 21
   and `rec05:5` for 6, so the rule question denies the opioid-use-disorder recommendations most.
   Code, replay and report: branch `wt/d63` `cfbe0ad` (never rename).
-- **B9 times cached proofs** — `tests/clinical-proof-live.test.ts` B9 claims every selected
-  proof settles inside `PROOF_BUDGET_MAX` (`.agent/contracts/m5u4.md` B9, live timing over all
-  12), but B2 proves the same 12 selections first in the same session, and the per-session proof
-  cache (`src/engine/session.ts` `prove`, `a067cdc`) answers B9 before the meta-interpreter runs.
-  B9 therefore times 12 cache hits. Accept: a whole-file run proves B9 reaches the
-  meta-interpreter for every measured selection before it reads the elapsed time. `pri` med.
 - **Five coverage passages do not locate on their recorded page** — the owned page viewer
   marks a passage where its page's text holds it (`tests/passage-locate.test.ts`: 319 whole, 13
   continuing, 5 not found). `cdc2022-opioid-rec06` and `rec07` record page 14, yet each passage
@@ -93,7 +87,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 | --- | --- |
 | u3 heap limit is unit-tested only | a committed test drives real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate |
 | **high** Browser WASM abort leaves a dead session | an aborted runtime reaches the client as its own terminal state that recreates the worker without a caller `reset()`, proven by a browser probe whose next query reports 337 documents |
-| B9 times cached proofs | a whole-file run proves B9 reaches the meta-interpreter for every measured selection before it reads the elapsed time |
 | engine:probe's R41 control no longer fires | the control fires again for a stated cause, `pnpm engine:probe` exits 0, and the cause is recorded beside the lane in `.claude/rules/gate.md` |
 
 ## Accepted-open

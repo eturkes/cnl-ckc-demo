@@ -266,7 +266,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `5bc686e` find (heavy-load timeouts) closed by user ruling: the measured 2.9× envelope (20/20 runs at load ≤23.5) is the bar.
 - [x] `935b287` find (failed reset) approved (user): change P4.4 (`engine-recovery`) + P1.1 (`engine-budgets`); every reset boots under the deadline and retires a failed replacement.
 - [ ] find (condition-supports dedup is scope-blind): new row from d49, `pri` low — fund after the named rows (its second acceptance arm needs no ruling).
-- [ ] find (selected-row proof case trips `limit` under contention): `med`, funded after the named rows.
+- [x] `5fd1588` find (selected-row proof case trips `limit` under contention): frozen clock + whole-result assertion.
 - [ ] find (B9 times cached proofs): `med`, funded after the named rows.
 - [ ] find (five coverage passages do not locate on their recorded page): `low`, producer-owned.
 - [ ] find (bundled JavaScript ships without its licence notices): `low`.
