@@ -24,7 +24,8 @@ paths:
   while a chain of `'[|]'/2` compounds recurses per cell and overflows on a long list.
   `tests/engine-term-identity.test.ts` grades 115 literal variants plus 10,000-cell lists.
 - Integral floats decode as `integer`: SWI's `1.0` and `1` both arrive as JS `1`. The corpus
-  has no floats.
+  has no floats. A declared limit (user ruling): recovering the type would take a fourth
+  undeclared surface (`prolog.get_float`). `tests/engine-session.test.ts` pins both halves.
 - Display text = `term_string/3` with `[quoted(true),numbervars(true),ignore_ops(true)]`,
   which matches `write_canonical` on all 7 real answers.
   `print_message` renders `Unknown message:` and is diagnostic-only.

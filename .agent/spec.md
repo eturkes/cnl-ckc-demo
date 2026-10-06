@@ -223,7 +223,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `e9465b9` d54 every `deferred` registry row cites a live queue row; `claims:check` refuses an uncited or dangling one (7 rows added).
 - [x] `9b793fd` d1 the Japanese face ships as a catalog-exact subset (2,654,740 B → 193,444 B), raster-identical to the original.
 - [x] `906d069` d3 `copy:check` grades Japanese register J1–J4 (`mnt-d3.md`, approved); 3 copy edits.
-- [ ] d5 approved (user): phased boot status replaces the status line's boot text — visual unit, captures + `visual-qa`.
+- [x] `d6714d7` d5 approved (user): phased boot status replaces the status line's boot text — visual unit, captures + `visual-qa`; the user review of the captures is owed.
 - [x] `3f99fd1` d6 the URL carries the selected catalog id; reload and back/forward select it and never run.
 - [x] `424b394` d8 a service worker precaches the boot set; a second visit boots offline; a renamed PVM evicts the stale cache.
 - [x] `6e558cd` d9 both u1 wave-1 reports validate (25/25, 12/12), re-derived at today's tree; new row: halting payload reports `[object Object]`.

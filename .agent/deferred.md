@@ -7,18 +7,6 @@ evidence gap under a durable claim, `low` = a feature or a tidy-up. A row closes
 acceptance check and leaves in that commit; the index at the foot collapses the `high` +
 `med` set to one line each.
 
-- **Integral floats decode as integers** — SWI's `1.0` and `1` both arrive as JS
-  `1`, so `decodeTerm` reports `integer`. The shipped corpus has no floats.
-  Accept: a float binding decodes as `float`, proven on a goal returning `1.0`,
-  without adding a per-binding engine call to the common path. `pri` low. Red witness:
-  `tests/zz-u2-red.test.ts:107` on `wt/tester-d11` `6529dea` — `1.0`, `0.0` and `-1.0` decode
-  as `integer` while live `float(X)` succeeds. **User ruling**: leave as is — close this row as a declared limit (`.claude/rules/engine.md` already states it) and add no fourth undeclared surface. **Background**: swipl-wasm's
-  `toJSON` has no float option, so the zero-call fix overrides `prolog.get_float` on the
-  instance (its one caller is `toJSON`'s `PL_FLOAT` arm) to return `{$t:'f',v}` — measured:
-  `X is 1.0, Y = f(2.0,[3.0])` decodes every float, nested ones included, with no added call.
-  That is a FOURTH undeclared surface beside the three `.claude/rules/engine.md` rules
-  acceptable, so `engine:check`'s allowlist widens. The declared-API alternative computes float
-  paths in Prolog inside `meteredGoal` and must subtract that scan from the inference meter.
 - **u3 heap limit is unit-tested only** — `P2.7` is covered by `readOutcome` over a
   synthesized `resource_error(memory)`, not a live trip. Accept: a committed test drives
   real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate. `pri` med.

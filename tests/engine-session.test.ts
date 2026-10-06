@@ -4,7 +4,7 @@
 // object `worker.ts` wraps. Boot costs ~121-335 ms and the category-A goal ~131-220 ms,
 // so one engine is shared across the file.
 
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -14,6 +14,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { BUDGET_MAX } from '../src/engine/budget.js';
 import type { BudgetSpec, PlSolution } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
+import { verifyBag } from '../tools/kb/bag.mjs';
+import { payloadSource } from '../tools/kb/paths.mjs';
 import {
   createEncoder,
   decodeOnce,
@@ -291,6 +293,25 @@ describe('Q corpus census', () => {
 
   it('E27 decodes a genuine float', () => {
     expect(termOf('X is 0.5.')).toEqual({ kind: 'float', value: 0.5 });
+  });
+
+  it('E27 decodes an integral float as integer, a declared limit over a float-free corpus', () => {
+    // swipl-wasm hands `1.0` over as the JS number `1`; recovering the type would take a fourth
+    // undeclared surface (`prolog.get_float`), which the limit declines.
+    expect(termOf('X is 1.0.')).toEqual({ kind: 'integer', value: 1 });
+    expect(termOf('X is -1.0.')).toEqual({ kind: 'integer', value: -1 });
+    const archive = readdirSync(join(ROOT, 'kb')).find((name) => name.endsWith('.tar.gz'));
+    if (archive === undefined) throw new Error('vendored bag is missing');
+    const { source } = payloadSource(verifyBag(readFileSync(join(ROOT, 'kb', archive))).files);
+    const floats = (text: string): string[] =>
+      text
+        .replace(/'(?:[^'\\]|\\.|'')*'|"(?:[^"\\]|\\.|"")*"/gu, "''")
+        .match(/(?<![\w.])\d+\.\d+(?:[eE]|(?![\w.]))/gu) ?? [];
+    expect(floats(`${source}\nguideline_probe('1.5', 2.5, 3.0e2).`), 'planted').toEqual([
+      '2.5',
+      '3.0e',
+    ]);
+    expect(floats(source)).toEqual([]);
   });
 
   it('E27 decodes a variable shared across two arguments as one variable', () => {
