@@ -7,12 +7,6 @@ evidence gap under a durable claim, `low` = a feature or a tidy-up. A row closes
 acceptance check and leaves in that commit; the index at the foot collapses the `high` +
 `med` set to one line each.
 
-- **Phased boot telemetry** — replace the single boot spinner with ordered
-  progress phases. Accept: each phase emits one accessible status event in
-  order, and no percentage is reported that the runtime does not supply. `pri` low. **User ruling**: approved — the phases replace the boot status text; visual unit: before/after captures at 320 and 1280 px in both locales plus `pnpm visual-qa`, reviewed by the user after the commit. **Background**: the phases replace the accepted status line's boot text, a visible change. The
-  phases the runtime supplies: image fetch (bytes only where the response streams them),
-  `loadImageDefault`, contract verification; the worker protocol gains a `progress` response,
-  which joins the d37 clone table.
 - **Integral floats decode as integers** — SWI's `1.0` and `1` both arrive as JS
   `1`, so `decodeTerm` reports `integer`. The shipped corpus has no floats.
   Accept: a float binding decodes as `float`, proven on a goal returning `1.0`,

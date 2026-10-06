@@ -130,6 +130,45 @@ const readDocuments = async (page, mode) => {
   return Number(reported);
 };
 
+/**
+ * Records the run status region from mount on: `[phase, text]` per DOM change, the phase read
+ * off `main`'s `data-boot-phase` handle, else its `data-engine` state.
+ */
+const BOOT_RECORDER = `(() => {
+  window.__bootEvents = [];
+  new MutationObserver((_, watcher) => {
+    const status = document.querySelector('p.status[role="status"]:not([data-intake-status])');
+    if (status === null) return;
+    watcher.disconnect();
+    const record = () => {
+      const main = document.querySelector('main');
+      window.__bootEvents.push([main?.dataset.bootPhase ?? main?.dataset.engine ?? '', status.textContent ?? '']);
+    };
+    record();
+    new MutationObserver(record).observe(status, { childList: true, characterData: true, subtree: true });
+  }).observe(document, { childList: true, subtree: true });
+})()`;
+
+const BOOT_PHASES = 'start → fetch → load → verify → ready';
+
+/**
+ * d5: one status change per phase, in a sound boot's order, no percentage, and a fetch that
+ * names the size the static server declares.
+ *
+ * @param {unknown} recorded
+ * @returns {string | undefined} the defect, or `undefined`
+ */
+const gradeBootPhases = (recorded) => {
+  const events = /** @type {[string, string][]} */ (Array.isArray(recorded) ? recorded : []);
+  const phases = events.map(([phase]) => phase).join(' → ');
+  if (phases !== BOOT_PHASES) return `boot phases read "${phases}", expected "${BOOT_PHASES}"`;
+  const texts = events.map(([, text]) => text);
+  if (new Set(texts).size !== texts.length) return `a boot status repeats: ${texts.join(' | ')}`;
+  if (texts.some((text) => text.includes('%'))) return 'a boot status states a percentage';
+  if (!/\d+ kB/u.test(texts[1] ?? '')) return `the fetch status names no size: ${String(texts[1])}`;
+  return undefined;
+};
+
 /** States measured, counted rather than written down: adding one must not restate it. */
 let narrowStates = 0;
 
@@ -585,8 +624,19 @@ await withBuiltSite({ tool: 'browser', fail, nested: NESTED, refuse }, async (si
       raised ??= `built output raised ${error.message}`;
     });
     const builtUrl = site.url;
+    await builtPage.addInitScript(BOOT_RECORDER);
     await builtPage.goto(builtUrl, { waitUntil: 'load', timeout: TIMEOUT });
     const builtDocuments = await readDocuments(builtPage, 'built');
+    const bootEvents = await builtPage.evaluate('window.__bootEvents');
+    const bootDefect = gradeBootPhases(bootEvents);
+    if (bootDefect !== undefined) fail(`built: ${bootDefect}`);
+    // Control: the same recording with its `load` change removed must be refused by phase.
+    const dropped = /** @type {[string, string][]} */ (bootEvents).filter(
+      ([phase]) => phase !== 'load',
+    );
+    if (!String(gradeBootPhases(dropped)).includes('start → fetch → verify → ready')) {
+      fail('control did not fire: a boot recording without its load phase graded clean');
+    }
     if (log.some((entry) => /semantic-graph-.+\.json$/u.test(entry.path))) {
       fail('built: semantic graph data loaded before activation');
     }
@@ -756,7 +806,8 @@ await withBuiltSite({ tool: 'browser', fail, nested: NESTED, refuse }, async (si
 
     console.log(
       `browser-check: ok — dev ${dev.url} and built ${builtUrl} both report ${String(documents)} ` +
-        `documents; graph and evidence stay lazy; ${String(narrowStates)} states fit ` +
+        `documents; the built boot announced ${BOOT_PHASES} once each; graph and evidence ` +
+        `stay lazy; ${String(narrowStates)} states fit ` +
         `${String(NARROW)}px across both locales; ` +
         `${question} rendered the bag's ${String(expectedCanonical.rows)}-row canonical answer ` +
         `byte for byte in both locales; cancel delivered after ${String(solutions)} ` +
@@ -767,7 +818,7 @@ await withBuiltSite({ tool: 'browser', fail, nested: NESTED, refuse }, async (si
         `${String(parity)} catalog code points identically to their originals; a second visit ` +
         `booted ${String(offline.documents)} documents with ${String(offline.refused)} requests ` +
         `severed, and a renamed PVM left no stale copy cached once ${CACHE_PREFIX}${offline.version} ` +
-        `activated; controls: a build ` +
+        `activated; controls: a boot recording without its load phase refused, a build ` +
         `without its Japanese woff2 refused, a cut without AUTOFIT rasterized differently, the ` +
         `same rename under the old sw.js kept the stale PVM, a build with no sw.js did not boot ` +
         `offline; a truncated saved state booted the QLF fallback, which answered byte for byte`,

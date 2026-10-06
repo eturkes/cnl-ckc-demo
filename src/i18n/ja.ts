@@ -273,6 +273,15 @@ export const TEXT = {
   questionRejectedSummary: () => '質問は受け付けられませんでした。',
 
   engineStarting: () => 'Prologエンジンを起動しています。',
+  engineFetching: (bytes?: number) =>
+    bytes === undefined
+      ? 'コンパイル済み知識ベースをダウンロードしています。'
+      : `コンパイル済み知識ベース（${String(Math.round(bytes / 1000))} kB）をダウンロードしています。`,
+  engineLoading: () => 'コンパイル済み知識ベースをPrologエンジンに読み込んでいます。',
+  engineFallback: () =>
+    '保存済みのエンジン状態を読み込めませんでした。代替エンジンを読み込んでいます。',
+  engineVerifying: () => '読み込んだ知識ベースをビルドマニフェストと照合しています。',
+  engineRestarting: () => 'Prologエンジンが時間内に起動しませんでした。もう一度起動しています。',
   engineFailed: (message: string) => `Prologエンジンが起動しませんでした。${message}`,
   engineFailedSummary: () => 'エンジンを利用できません。「再試行」を選択して起動し直してください。',
   engineReady: (documents: number, schemaVersion: string) =>

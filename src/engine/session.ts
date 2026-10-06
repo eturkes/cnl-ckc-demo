@@ -17,6 +17,7 @@ import {
 } from './budget.js';
 import { PROOF_BUDGET_MAX } from './protocol.js';
 import type {
+  BootPhase,
   BudgetSpec,
   EngineContract,
   EngineError,
@@ -270,10 +271,19 @@ export class EngineSession {
    * Caching the finished engine is not enough. Two boots issued before the first
    * resolves both miss that check and load the image twice, so the in-flight promise
    * is what single-flights them. It clears on settle, leaving a failed boot retryable.
+   * `onPhase` hears the phases of the boot it starts; a joining caller hears none.
    */
-  async boot(image: Uint8Array): Promise<EngineContract> {
+  async boot(image: Uint8Array, onPhase?: (phase: BootPhase) => void): Promise<EngineContract> {
     if (this.#engine !== undefined && this.#contract !== undefined) return this.#contract;
-    this.#booting ??= this.#bootOnce(image).finally(() => {
+    // Telemetry never decides a boot: a throwing listener loses its phase, nothing more.
+    const report = (phase: BootPhase): void => {
+      try {
+        onPhase?.(phase);
+      } catch {
+        // dropped on purpose
+      }
+    };
+    this.#booting ??= this.#bootOnce(image, report).finally(() => {
       this.#booting = undefined;
     });
     return this.#booting;
@@ -286,17 +296,19 @@ export class EngineSession {
    * never fail the fallback's check. Both failing reports both: either cause alone would hide
    * whether the fallback was ever attempted.
    */
-  async #bootOnce(image: Uint8Array): Promise<EngineContract> {
+  async #bootOnce(image: Uint8Array, onPhase: (phase: BootPhase) => void): Promise<EngineContract> {
     const { loadFallback, drain } = this.#options;
     try {
-      return this.#adopt(await this.#options.loadImage(image), 'image load', TOLERATED);
+      onPhase('load');
+      return this.#adopt(await this.#options.loadImage(image), 'image load', onPhase, TOLERATED);
     } catch (cause) {
       // A rejected load says only `Aborted()`; the reason is in its FATAL lines. Draining them
       // also keeps them out of the next engine's own diagnostic check, here or on a retry.
       const lines = drain?.() ?? [];
       if (loadFallback === undefined) throw cause;
       try {
-        return this.#adopt(await loadFallback(), 'fallback load');
+        onPhase('fallback');
+        return this.#adopt(await loadFallback(), 'fallback load', onPhase);
       } catch (fallback) {
         drain?.();
         const failed = [message(cause), ...lines.map((line) => line.trim())].filter(Boolean);
@@ -315,7 +327,13 @@ export class EngineSession {
   }
 
   /** Accept an engine only once it is diagnostic-free and agrees with the manifest. */
-  #adopt(engine: Engine, phase: string, tolerated?: RegExp): EngineContract {
+  #adopt(
+    engine: Engine,
+    phase: string,
+    onPhase: (phase: BootPhase) => void,
+    tolerated?: RegExp,
+  ): EngineContract {
+    onPhase('verify');
     this.#failClosed(engine, phase, tolerated);
     const contract = readContract(engine);
     const { expected } = this.#options;
@@ -641,13 +659,26 @@ export class EngineSession {
     if (result.kind === 'failure') throw new ConsultFailure('runtime load failed');
   }
 
-  /** Turn one request into exactly one response; never throws. */
-  async handle(request: EngineRequest, image: Uint8Array): Promise<EngineResponse> {
+  /**
+   * Turn one request into exactly one terminal response; never throws. A boot also hands
+   * `progress` its phases, as non-terminal responses carrying the request's id.
+   */
+  async handle(
+    request: EngineRequest,
+    image: Uint8Array,
+    progress?: (response: EngineResponse) => void,
+  ): Promise<EngineResponse> {
     const { id } = request;
     try {
       switch (request.kind) {
         case 'boot':
-          return { id, kind: 'booted', contract: await this.boot(image) };
+          return {
+            id,
+            kind: 'booted',
+            contract: await this.boot(image, (phase) =>
+              progress?.({ id, kind: 'progress', phase }),
+            ),
+          };
         case 'cancel':
           return { id, kind: 'ack', accepted: this.requestCancel(request.target) };
         case 'consult':

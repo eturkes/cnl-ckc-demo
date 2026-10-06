@@ -2,7 +2,7 @@
 // measured for horizontal overflow. JSON report on stdout, one PNG per state in `.probe/`,
 // exit 1 when any state overflows. Outside `pnpm gate`: it needs a real browser.
 // `browser:check` measures 320 px alone, in both locales; this walk adds the wider viewports,
-// every catalog question's answer, a cancelled run, the graph and a failed boot.
+// every boot phase, every catalog question's answer, a cancelled run, the graph and a failed boot.
 
 import { mkdirSync } from 'node:fs';
 import { cp } from 'node:fs/promises';
@@ -133,6 +133,43 @@ const walk = async (browser, url, width) => {
   await page.close();
 };
 
+/** Holds every worker→page message until the walk releases it, so each boot phase stays put. */
+const HOLD_WORKER_MESSAGES = `(() => {
+  window.__held = [];
+  const add = Worker.prototype.addEventListener;
+  Worker.prototype.addEventListener = function (type, listener, options) {
+    if (type !== 'message') return add.call(this, type, listener, options);
+    return add.call(this, type, (event) => {
+      window.__held.push(() => listener.call(this, event));
+    }, options);
+  };
+})()`;
+
+/**
+ * Every boot phase status, measured while the worker's next message is held.
+ *
+ * @param {import('./browser.mjs').Browser} browser @param {string} url @param {number} width
+ * @returns {Promise<void>}
+ */
+const bootPhases = async (browser, url, width) => {
+  const page = await browser.newPage({ viewport: { width, height: 900 } });
+  await page.addInitScript(HOLD_WORKER_MESSAGES);
+  await page.goto(url, { waitUntil: 'load', timeout: TIMEOUT });
+  /** @type {string[]} */
+  const phases = [];
+  while ((await page.locator('[data-engine="ready"]').count()) === 0) {
+    await page.waitForFunction('window.__held.length > 0', undefined, { timeout: TIMEOUT });
+    const phase = String(await page.evaluate("document.querySelector('main').dataset.bootPhase"));
+    phases.push(phase);
+    await measure(page, width, `boot ${phase}`);
+    await page.evaluate('window.__held.shift()()');
+  }
+  if (phases.join(' ') !== 'start fetch load verify') {
+    fail(`${String(width)}px: boot passed ${phases.join(' ')}`);
+  }
+  await page.close();
+};
+
 /**
  * @param {import('./browser.mjs').Browser} browser @param {string} url @param {number} width
  * @returns {Promise<void>}
@@ -154,6 +191,7 @@ await withBuiltSite(
       filter: (source) => !/\/kb-[^/]+\.pvm$/u.test(source),
     });
     for (const width of WIDTHS) {
+      await bootPhases(browser, `${origin}/${BUILT}/`, width);
       await walk(browser, `${origin}/${BUILT}/`, width);
       await bootError(browser, `${origin}/${IMAGELESS}/`, width);
     }

@@ -102,6 +102,10 @@
   const engine = $derived(
     viewState.kind === 'booting' ? 'loading' : viewState.kind === 'boot-error' ? 'error' : 'ready',
   );
+  // A locale-independent handle on the boot phase, for the browser lanes.
+  const bootPhase = $derived(
+    viewState.kind === 'booting' ? (viewState.phase ?? 'start') : undefined,
+  );
   const canRun = $derived(demo.selected !== null && booted && !description.busy);
   const showRetry = $derived(
     viewState.kind === 'boot-error' ||
@@ -162,7 +166,7 @@
     </div>
   </header>
 
-  <main id="top" data-engine={engine}>
+  <main id="top" data-engine={engine} data-boot-phase={bootPhase}>
     <section class="hero" aria-labelledby="page-title">
       <div class="hero-copy">
         <p class="eyebrow">{t.DESCRIPTIONS.heroEyebrow}</p>

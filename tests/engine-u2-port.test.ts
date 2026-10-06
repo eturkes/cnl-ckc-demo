@@ -364,6 +364,7 @@ describe('P2 protocol port', () => {
       ack: true,
       consulted: true,
       error: true,
+      progress: true,
     } satisfies Record<EngineResponse['kind'], true>;
     const frames: [EngineRequest, EngineResponse][] = [];
     for (const original of responseRequests()) {
@@ -372,6 +373,15 @@ describe('P2 protocol port', () => {
       frames.push([request, await session.handle(request, image)]);
     }
     frames.push(await proofResponse());
+    // A boot's phases arrive beside its terminal response, so a fresh session supplies one.
+    const bootRequest: EngineRequest = { id: 'table-u2-progress', kind: 'boot' };
+    const phases: EngineResponse[] = [];
+    await new EngineSession({ loadImage, expected: manifest.contract }).handle(
+      bootRequest,
+      image,
+      (response) => phases.push(response),
+    );
+    for (const phase of phases) frames.push([bootRequest, phase]);
     const rows = [
       ...new Map(frames.map(([request]) => [`request ${request.kind}`, request])),
       ...new Map(frames.map(([, response]) => [`response ${response.kind}`, response])),
