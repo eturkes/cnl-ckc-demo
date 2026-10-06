@@ -1,6 +1,12 @@
+import corpusIndexUrl from '@kb/provenance/corpus-index.json?url&no-inline';
 import pdfUrl from '@kb/provenance/guideline.pdf?url&no-inline';
 
-import { parseEvidenceDocument, type EvidenceDocument } from './model.js';
+import {
+  parseCorpusIndex,
+  parseEvidenceDocument,
+  type CorpusEntry,
+  type EvidenceDocument,
+} from './model.js';
 
 const urls = import.meta.glob<string>('@kb/provenance/documents/*.json', {
   eager: true,
@@ -19,6 +25,14 @@ const byId = new Map(
 export const guidelinePdfUrl = pdfUrl;
 
 export const hasEvidenceDocument = (id: string): boolean => byId.has(id);
+
+/** The corpus browser's document list, fetched only when the reader opens the browser. */
+export const loadCorpusIndex = async (signal?: AbortSignal): Promise<CorpusEntry[]> => {
+  const response = await fetch(corpusIndexUrl, signal === undefined ? undefined : { signal });
+  if (!response.ok)
+    throw new Error(`Corpus index request returned HTTP ${String(response.status)}.`);
+  return parseCorpusIndex(await response.json());
+};
 
 export const loadEvidenceDocument = async (
   id: string,

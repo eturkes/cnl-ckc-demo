@@ -9,6 +9,7 @@ import { basename, dirname, join } from 'node:path';
 import { requireFiring } from '../control.mjs';
 import { sha256, verifyBag } from './bag.mjs';
 import { catalogJson, catalogRecords } from './catalog.mjs';
+import { deriveCorpusIndex } from './corpus.mjs';
 import { deriveSemanticGraph, GRAPH_SCHEMA_VERSION } from './graph.mjs';
 import { deriveIntakeVocabulary } from './intake.mjs';
 import { deriveProvenance, PROVENANCE_SCHEMA_VERSION } from './provenance.mjs';
@@ -18,7 +19,7 @@ import { GENERATED_DIR, MANIFEST_PATH, ROOT, loadManifest, payloadSource } from 
 /** @typedef {import('../../src/kb/manifest.ts').KbManifest} KbManifest */
 /** @typedef {import('./produce.mjs').LiveContract} LiveContract */
 
-const MANIFEST_VERSION = 6;
+const MANIFEST_VERSION = 7;
 
 /**
  * Locate the single vendored bag and prove it against its committed sidecar.
@@ -85,6 +86,7 @@ const main = async () => {
   const catalogBytes = Buffer.from(catalogJson(catalog.records), 'utf8');
   const provenance = deriveProvenance(files);
   const graph = deriveSemanticGraph(files, provenance.clauses);
+  const corpus = deriveCorpusIndex(provenance.chunks);
   const intake = deriveIntakeVocabulary(files);
 
   const cached = loadManifest();
@@ -134,6 +136,7 @@ const main = async () => {
   writeGenerated(provenance.index.path, provenance.index.bytes);
   for (const chunk of provenance.chunks) writeGenerated(chunk.path, chunk.bytes);
   writeGenerated(provenance.pdf.path, provenance.pdf.bytes);
+  writeGenerated(corpus.path, corpus.bytes);
   writeGenerated(graph.path, graph.bytes);
   writeGenerated(intake.path, intake.bytes);
 
@@ -141,6 +144,7 @@ const main = async () => {
     asset(provenance.index.bytes, provenance.index.path, 'provenance-index'),
     ...provenance.chunks.map((chunk) => asset(chunk.bytes, chunk.path, 'provenance-document')),
     asset(provenance.pdf.bytes, provenance.pdf.path, 'source-pdf'),
+    asset(corpus.bytes, corpus.path, 'provenance-corpus'),
   ];
 
   /** @type {KbManifest} */

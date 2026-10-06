@@ -19,6 +19,7 @@ import {
   validateSemanticGraphAsset,
   GRAPH_SCHEMA_VERSION,
 } from './graph.mjs';
+import { deriveCorpusIndex } from './corpus.mjs';
 import { deriveIntakeVocabulary, validateIntakeVocabulary } from './intake.mjs';
 import { deriveProvenance, PROVENANCE_SCHEMA_VERSION } from './provenance.mjs';
 import { GENERATED_DIR, ROOT, loadManifest, payloadSource } from './paths.mjs';
@@ -278,6 +279,7 @@ if (scanOnly) {
         fail('manifest graph metadata does not match the bag-derived model');
       }
 
+      const corpus = deriveCorpusIndex(provenance.chunks);
       const derived = [
         { kind: 'provenance-index', path: provenance.index.path, bytes: provenance.index.bytes },
         ...provenance.chunks.map((chunk) => ({
@@ -286,6 +288,7 @@ if (scanOnly) {
           bytes: chunk.bytes,
         })),
         { kind: 'source-pdf', path: provenance.pdf.path, bytes: provenance.pdf.bytes },
+        { kind: 'provenance-corpus', path: corpus.path, bytes: corpus.bytes },
         { kind: 'semantic-graph', path: graph.path, bytes: graph.bytes },
         { kind: 'intake-vocabulary', path: intake.path, bytes: intake.bytes },
       ];
@@ -293,6 +296,7 @@ if (scanOnly) {
         'provenance-index',
         'provenance-document',
         'source-pdf',
+        'provenance-corpus',
         'semantic-graph',
         'intake-vocabulary',
       ]);

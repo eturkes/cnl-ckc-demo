@@ -261,6 +261,86 @@ const pageViewerLeg = async (browser, url, log) => {
   return { page: String(shown.page), document: String(shown.document), marks: shown.marks };
 };
 
+const CORPUS_INDEX = /\/assets\/corpus-index-[^/]+\.json$/u;
+
+/**
+ * An opened corpus document, read from the DOM, against its evidence on disk.
+ *
+ * @param {{document?: string, page?: string, state?: string, passage: string}} shown
+ * @param {{region: {page: number}, source: {text: string}}} evidence
+ * @returns {string | undefined} the defect, or `undefined`
+ */
+const gradeCorpusOpen = (shown, evidence) => {
+  if (shown.state !== 'rendered') return `page viewer ended ${String(shown.state)}`;
+  if (shown.passage !== evidence.source.text) {
+    return `${String(shown.document)} showed a passage its evidence does not hold`;
+  }
+  if (shown.page !== String(evidence.region.page)) {
+    return `drew page ${String(shown.page)}, ${String(shown.document)} records ${String(evidence.region.page)}`;
+  }
+  return undefined;
+};
+
+/**
+ * d43: the corpus browser requests its list only when opened, lists every document the manifest
+ * records, and opens one through the ladder's resolver and page viewer.
+ *
+ * @param {import('./browser.mjs').Browser} browser @param {string} url
+ * @param {import('./browser.mjs').LogEntry[]} log
+ * @returns {Promise<{listed: number, document: string, page: string}>}
+ */
+const corpusLeg = async (browser, url, log) => {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  await page.goto(url, { waitUntil: 'load', timeout: TIMEOUT });
+  await page.waitForSelector(READY, { timeout: TIMEOUT });
+  if (log.some((entry) => CORPUS_INDEX.test(entry.path))) {
+    fail('corpus browser: its document list was requested before the reader opened it');
+  }
+  await page.locator('[data-action="browse-corpus"]').click();
+  await page.waitForSelector('.corpus-browser [data-documents]', { timeout: TIMEOUT });
+  if (!log.some((entry) => CORPUS_INDEX.test(entry.path))) {
+    fail('corpus browser: opening it requested no document list');
+  }
+  const listed = Number(
+    await page.locator('.corpus-browser [data-documents]').getAttribute('data-documents'),
+  );
+  const rows = await page.locator('.corpus-browser [data-action="open-document"]').count();
+  if (listed !== documents || rows !== documents) {
+    fail(
+      `corpus browser: listed ${String(listed)} documents in ${String(rows)} rows, manifest records ${String(documents)}`,
+    );
+  }
+  await page.locator('.corpus-browser [data-action="open-document"]').first().click();
+  await page.waitForSelector('.corpus-document blockquote', { timeout: TIMEOUT });
+  await page.locator('.corpus-document [data-action="load-page-viewer"]').click();
+  await page.waitForSelector('.corpus-document .page-viewer:not([data-state="rendering"])', {
+    timeout: TIMEOUT,
+  });
+  const shown = /** @type {{document?: string, page?: string, state?: string, passage: string}} */ (
+    await page.evaluate(`(() => {
+      const panel = document.querySelector('.corpus-document');
+      return { ...panel.querySelector('.page-viewer').dataset,
+        passage: panel.querySelector('blockquote').textContent };
+    })()`)
+  );
+  await page.close();
+  /** @type {unknown} */
+  const parsed = JSON.parse(
+    readFileSync(
+      join(ROOT, 'kb', 'generated', 'provenance', 'documents', `${String(shown.document)}.json`),
+      'utf8',
+    ),
+  );
+  const evidence = /** @type {{region: {page: number}, source: {text: string}}} */ (parsed);
+  const defect = gradeCorpusOpen(shown, evidence);
+  if (defect !== undefined) fail(`corpus browser: ${defect}`);
+  // Control: the same reading with one character of its passage changed must be refused.
+  if (gradeCorpusOpen({ ...shown, passage: `${shown.passage}.` }, evidence) === undefined) {
+    fail('control did not fire: a corpus passage the evidence does not hold graded clean');
+  }
+  return { listed, document: String(shown.document), page: String(shown.page) };
+};
+
 /** States measured, counted rather than written down: adding one must not restate it. */
 let narrowStates = 0;
 
@@ -744,6 +824,7 @@ await withBuiltSite({ tool: 'browser', fail, nested: NESTED, refuse }, async (si
       fail('built: graph activation requested no visual renderer');
     }
     const viewer = await pageViewerLeg(browser, builtUrl, log);
+    const corpus = await corpusLeg(browser, builtUrl, log);
 
     // E26, leg 2 — dev server, the mode every contributor runs and no check drove.
     dev = await devServer();
@@ -902,6 +983,8 @@ await withBuiltSite({ tool: 'browser', fail, nested: NESTED, refuse }, async (si
         `documents; the built boot announced ${BOOT_PHASES} once each; graph and evidence ` +
         `stay lazy; PDF.js stayed unrequested until a page opened, then drew ${viewer.document}'s ` +
         `page ${viewer.page} with ${String(viewer.marks)} marked runs holding its passage; ` +
+        `the corpus browser fetched its list only when opened, listed ${String(corpus.listed)} ` +
+        `documents and opened ${corpus.document}'s passage and page ${corpus.page}; ` +
         `${String(narrowStates)} states fit ` +
         `${String(NARROW)}px across both locales; ` +
         `${question} rendered the bag's ${String(expectedCanonical.rows)}-row canonical answer ` +
@@ -914,7 +997,7 @@ await withBuiltSite({ tool: 'browser', fail, nested: NESTED, refuse }, async (si
         `booted ${String(offline.documents)} documents with ${String(offline.refused)} requests ` +
         `severed, and a renamed PVM left no stale copy cached once ${CACHE_PREFIX}${offline.version} ` +
         `activated; controls: a boot recording without its load phase refused, a page viewer ` +
-        `with no marked text refused, a build ` +
+        `with no marked text refused, a corpus passage the evidence does not hold refused, a build ` +
         `without its Japanese woff2 refused, a cut without AUTOFIT rasterized differently, the ` +
         `same rename under the old sw.js kept the stale PVM, a build with no sw.js did not boot ` +
         `offline; a truncated saved state booted the QLF fallback, which answered byte for byte`,

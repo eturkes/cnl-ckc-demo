@@ -103,8 +103,12 @@ Clause counts: version 337, document 337, entity 1834, cardinality 1834, event 1
   `provenance.mjs`, `intake.mjs`) leaves the cached asset in place: `node tools/kb/build.mjs
   --force` rebuilds it. `kb:asset-check` re-derives the graph from the bag and refuses the stale
   asset (`manifest metadata differs from fresh derivation`), so the gate stays red until then.
-- `MANIFEST_VERSION` is 6. Bumping it is what stops a cached manifest from lacking a block a
-  new build writes.
+- `MANIFEST_VERSION` is 7. Bumping it is what stops a cached manifest from lacking a block or an
+  asset a new build writes.
+- `provenance/corpus-index.json` (`tools/kb/corpus.mjs`) = each evidence chunk's id, review label
+  and coverage region, sorted by id, derived from the chunks `provenance.mjs` emits; the corpus
+  browser fetches it on activation alone. `kb:asset-check` re-derives it like every derived asset,
+  and `tests/corpus-index.test.ts` re-reads each row from its own chunk.
 
 ## Legacy export lane
 

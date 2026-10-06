@@ -81,6 +81,45 @@ const integer = (value: unknown, at: string): number => {
   return Number(value);
 };
 
+/** One row of the corpus browser: a document and the coverage region its evidence records. */
+export interface CorpusEntry {
+  id: string;
+  label: ReviewLabel;
+  region: { id: string; page: number; section: string };
+}
+
+const REVIEW_LABELS: readonly ReviewLabel[] = [
+  'approved',
+  'rejected',
+  'contested',
+  'stale',
+  'unreviewed',
+];
+
+/** The corpus index, validated like a lazy chunk: a corrupt row fails the list, never a guess. */
+export const parseCorpusIndex = (input: unknown): CorpusEntry[] => {
+  const root = record(input, 'corpus index');
+  if (root.schemaVersion !== 1) throw new Error('corpus index has an unsupported schema');
+  if (!Array.isArray(root.documents)) throw new Error('corpus index lists no documents');
+  return root.documents.map((entry, index): CorpusEntry => {
+    const at = `corpus index document ${String(index)}`;
+    const row = record(entry, at);
+    const region = record(row.region, `${at} region`);
+    if (!REVIEW_LABELS.includes(row.label as ReviewLabel)) {
+      throw new Error(`${at} has an unknown review label`);
+    }
+    return {
+      id: text(row.id, `${at} id`),
+      label: row.label as ReviewLabel,
+      region: {
+        id: text(region.id, `${at} region id`),
+        page: integer(region.page, `${at} page`),
+        section: text(region.section, `${at} section`),
+      },
+    };
+  });
+};
+
 /** Runtime validation keeps a corrupt lazy chunk from being shown as neighbouring evidence. */
 export const parseEvidenceDocument = (input: unknown, expectedId: string): EvidenceDocument => {
   const root = record(input, 'evidence');
@@ -92,14 +131,7 @@ export const parseEvidenceDocument = (input: unknown, expectedId: string): Evide
   const ace = record(root.ace, 'evidence.ace');
   const alignment = record(root.alignment, 'evidence.alignment');
   const projection = record(root.projection, 'evidence.projection');
-  const labels: readonly ReviewLabel[] = [
-    'approved',
-    'rejected',
-    'contested',
-    'stale',
-    'unreviewed',
-  ];
-  if (!labels.includes(root.label as ReviewLabel))
+  if (!REVIEW_LABELS.includes(root.label as ReviewLabel))
     throw new Error('evidence has an unknown review label');
   if (alignment.unit !== 'unicode-code-point' || !Array.isArray(alignment.spans)) {
     throw new Error('evidence alignment has an unsupported shape');
