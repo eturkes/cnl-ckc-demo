@@ -142,11 +142,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   Accept: either the dedup keys on scope and the justification suite justifies all 55 by their
   own clauses, with the moved counts recorded; or a committed check proves each merged negated
   support has an unnegated twin support in its own sentence. `pri` low.
-- **The CI registry receipt cannot refute "publishes nothing"** — the `docs/claims.md` row for
-  the `.claude/rules/gate.md` `CI` bullet greps `ci.yml` for `pnpm gate`, `pull_request` and
-  `deploy`; a planted `pnpm exec wrangler pages publish dist` step leaves that output
-  unchanged. Accept: the row's command lists every `run:` + `uses:` step of
-  `.github/workflows/ci.yml`, and the planted publish step changes its output. `pri` med.
 - **Selected-row proof case trips `limit` under contention** — `tests/proof-live.test.ts`
   `binds the selected canonical row rather than returning the first proof` proves under the real
   clock. With the run and 24 busy loops pinned to one CPU (`taskset -c 0`) it fails
@@ -169,7 +164,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 | --- | --- |
 | u3 heap limit is unit-tested only | a committed test drives real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate |
 | **high** Browser WASM abort leaves a dead session | an aborted runtime reaches the client as its own terminal state that recreates the worker without a caller `reset()`, proven by a browser probe whose next query reports 337 documents |
-| The CI registry receipt cannot refute "publishes nothing" | the row's command lists every `run:` + `uses:` step of `.github/workflows/ci.yml`, and the planted publish step changes its output |
 | Selected-row proof case trips `limit` under contention | the case asserts the whole result, so a trip names its `limit` subtype, and it passes under that same pinned contention |
 | B9 times cached proofs | a whole-file run proves B9 reaches the meta-interpreter for every measured selection before it reads the elapsed time |
 

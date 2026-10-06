@@ -185,7 +185,7 @@ MAINTAIN request: work every `.agent/deferred.md` row in rank order (`high` → 
 queue order within a rank); one unit + commit per row, gate green at each, row pruned in its
 closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 
-- [ ] `med` Cap-one re-proof: a pinned-contention trip names `limit: 'wall-clock'`; the case proves under a frozen clock.
+- [x] `9ade964` `med` Cap-one re-proof: a pinned-contention trip names `limit: 'wall-clock'`; the case proves under a frozen clock.
 - [ ] `med` CI registry receipt: the registry row lists every `run:` + `uses:` step of `ci.yml`.
 - [x] `24bbb5d` d0 find: 4 live advisories reddened `audit:check` → lockfile bump.
 - [x] `b919283` d2 browser lanes steer by `data-action` handles, narrow sweep in both locales.
