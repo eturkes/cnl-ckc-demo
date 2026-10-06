@@ -186,7 +186,7 @@ queue order within a rank); one unit + commit per row, gate green at each, row p
 closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 
 - [x] `9ade964` `med` Cap-one re-proof: a pinned-contention trip names `limit: 'wall-clock'`; the case proves under a frozen clock.
-- [ ] `med` CI registry receipt: the registry row lists every `run:` + `uses:` step of `ci.yml`.
+- [x] `64fb0cc` `med` CI registry receipt: the registry row lists every `run:` + `uses:` step of `ci.yml`.
 - [x] `24bbb5d` d0 find: 4 live advisories reddened `audit:check` → lockfile bump.
 - [x] `b919283` d2 browser lanes steer by `data-action` handles, narrow sweep in both locales.
 - [x] `6c77126` d4 `pnpm readme:check`: README setup path from a clean clone, in `release:check`.

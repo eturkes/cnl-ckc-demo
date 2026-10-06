@@ -35,6 +35,7 @@ import { ROOT } from './kb/paths.mjs';
  * @property {(fn: string, arg?: unknown) => Promise<unknown>} evaluate
  * @property {(options: { path: string }) => Promise<unknown>} screenshot
  * @property {() => Promise<void>} close
+ * @property {(script: string) => Promise<void>} addInitScript
  *
  * @typedef {object} Browser
  * @property {(options?: object) => Promise<Page>} newPage
@@ -140,10 +141,13 @@ export const serve = (root, log, refuse = () => false) =>
         response.writeHead(404).end();
         return;
       }
+      const body = readFileSync(file);
+      // Declared like a static host does: `writeHead` alone sends the body chunked, unsized.
       response.writeHead(200, {
         'content-type': TYPES[extname(file)] ?? 'application/octet-stream',
+        'content-length': body.length,
       });
-      response.end(readFileSync(file));
+      response.end(body);
     });
     server.listen(0, '127.0.0.1', () => {
       const address = server.address();

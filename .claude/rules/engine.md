@@ -137,6 +137,20 @@ leaves its frame open, and every later query then resolves outside the KB:
   the caller is already settled; that reset and an explicit one boot unbounded (queue row
   `A failed reset keeps its replacement worker`).
 
+## Boot phases
+
+- `progress` = the protocol's one NON-terminal response: a boot's phase under the boot's id,
+  posted before its `booted` or `error`. Order: `fetch` (worker, once the image's headers pass
+  the status check), `load` + `verify` (session, before `loadImage` and the contract read), then
+  `fallback` + `verify` again on the QLF path. Only the request that starts the image fetch
+  reports `fetch`, and a boot joining one in flight hears no phase.
+- `bytes` rides `fetch` only on an identity `Content-Length` (`src/engine/image.ts`
+  `declaredBytes`): an encoded length counts the transfer, not the image. No phase carries a
+  percentage.
+- `EngineClient.boot(onProgress)` alone takes them; a recreated attempt reports again. Progress
+  for any other request = a protocol violation, never a settlement. `tests/boot-phases.test.ts`,
+  rendered order `tests/boot-phases.dom.test.ts`, real browser `pnpm browser:check`.
+
 ## Hosting
 
 Node has no DOM `Worker`, so `EngineSession` holds the logic behind an injected image loader
