@@ -47,6 +47,15 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   recall; only where no condition fired at all: 51/109, 51/163; condition rules alone: 37/39,
   37/163. A lift therefore needs new per-rule judgment signal — a request change, which the
   user's selection-model ruling governs — and a live billed `pnpm intake:probe` to score it.
+  **Measured (the approved ONE billed run, `.agent/contracts/mnt-d63.md`)**: 22 per-rule Nouls
+  quoting each unconditional rule's aligned source sentence(s); 36 calls; both policies scored on
+  the same responses. A (section AND rule): precision 106/121, recall 106/163, outcomes 26/30.
+  B (rule alone): 113/140, 113/163, 28/30. Baseline: 143/240, 143/163, 27/30. Neither holds recall
+  ≥ 143/163, so the request change stays off `main` (contract: revert) and the row stays open,
+  owed to the user — a second billed run needs the user's approval. Under A every lost true positive is
+  section-triggered (37 lost, 0 gained, 82 false positives removed); `rec12:2`–`:4` account for 21
+  and `rec05:5` for 6, so the rule question denies the opioid-use-disorder recommendations most.
+  Code, replay and report: branch `wt/d63` `cfbe0ad` (never rename).
 - **Inline-disable reasons have no grader** — `.claude/rules/gate.md`'s `lint` bullet says every
   remaining security exception is one inline disable carrying its reason; `pnpm lint` passes
   whether or not a reason is there, so the registry row reads it by hand. Three non-security

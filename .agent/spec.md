@@ -239,7 +239,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `7f7a2aa` d34 m1u5 matrix 26/26: 19 covered, 6 ported green (`tests/m1u5-port.dom.test.ts`), 1 superseded, 0 red.
 - [x] `9056d3d` d41 approved (user): an owned lazy PDF.js viewer replaces the ladder's iframe (+504,727 B gzip) — visual unit, captures + `visual-qa`; the user review of the captures is owed.
 - [x] `a067cdc` d42 session proof cache: re-selection runs no meta-interpreter call; solve/consult/poison invalidate.
-- [ ] d43 approved (user): the document-first provenance browser = a third view beside the graph and its list fallback — visual unit, captures + `visual-qa`.
+- [x] `db0736f` d43 approved (user): the document-first provenance browser = a third view beside the graph and its list fallback — visual unit, captures + `visual-qa`; the user review of the captures is owed.
 - [x] `bdd2ae4` d47 `pnpm queue:index` derives the queue index; `claims:check` refuses a stale one by line.
 - [x] `2089c73` d35 m1u7 matrix 34/34: 16 covered, 13 ported green (`tests/m1u7-port{,.dom}.test.ts`), 5 superseded, 0 red.
 - [x] `737c6d6` d55 u13's firing record names base `3c4c17c` (reproduced there: rc 1, same assertion); the phrasing census is gone from the tree.
@@ -250,7 +250,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `c73a1f2` d60 `--verdict` admits the reviewer role's vocabulary; waves.md names the brief's one vocabulary.
 - [ ] d61 ruled (user): stay local — stays open, owed to the user (deploy + limiter).
 - [x] `75e6073` d62 the selector suite plants the fixed-trigger mutant in memory and requires ORACLE-S to catch it.
-- [ ] d63 approved (user): contract `.agent/contracts/mnt-d63.md` — 22 per-rule Nouls, ONE billed `pnpm intake:probe` (key `~/.config/typesafe/key`) scores policies A/B.
+- [ ] d63 measured, blocked on the user: the one billed run scored A 106/121 · 106/163 and B 113/140 · 113/163 against 143/240 · 143/163; neither holds recall, so `main` keeps the shipped request (evidence `wt/d63` `cfbe0ad`); a redesign or second run needs the user.
 - [x] `4c37c0a` find: engine timing figures reworded to the bounds they guarantee, browser figures cited to `engine:probe`.
 - [x] `65d9afb` find: `copy:check` refuses a component joining catalog fragments outside the declared pairs.
 - [x] `bb27a1a` find: a dom test fails the proof request and reads `TEXT.traceFailure` in both locales.
