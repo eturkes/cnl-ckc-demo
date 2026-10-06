@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 
 import { parseJudgment } from '../src/intake/judgment.js';
 import { buildRequest, type JudgmentRequest } from '../src/intake/request.js';
-import { select } from '../src/intake/select.js';
+import { SECTION_RULE_POLICY, select, type SectionRulePolicy } from '../src/intake/select.js';
 import type { IntakeDerivation } from '../src/intake/service.js';
 import type { IntakeVocabulary } from '../src/intake/vocabulary.js';
 
@@ -66,6 +66,15 @@ export interface Report {
   summary: {
     byOutcome: Record<Outcome, { n: number; matched: number }>;
     rules: { gold: number; derived: number; truePositive: number };
+    /**
+     * mnt-d63: both section-rule policies scored over the SAME recorded responses, so one
+     * billed run decides between them. `shipped` names the one `select` applies.
+     */
+    policies: {
+      shipped: SectionRulePolicy;
+      and: { derived: number; truePositive: number; outcomesMatched: number };
+      rule: { derived: number; truePositive: number; outcomesMatched: number };
+    };
     spans: Record<SpanVerdict, number> & { n: number };
     forcedFired: string[];
   };
@@ -83,6 +92,7 @@ const arm = async (
   recorded: RecordedArm,
   hatch: boolean,
   derive: (ruleIds: readonly string[]) => Promise<IntakeDerivation>,
+  policy: SectionRulePolicy = SECTION_RULE_POLICY,
 ) => {
   const built = buildRequest(vocabulary, gold.description, { hatch });
   if (requestDigest(built.request) !== recorded.request) {
@@ -91,7 +101,7 @@ const arm = async (
     );
   }
   const judgment = parseJudgment(recorded.response, built);
-  const outcome = select(vocabulary, judgment);
+  const outcome = select(vocabulary, judgment, policy);
   const selected = outcome.kind === 'answered' ? outcome.matches.map(({ ruleId }) => ruleId) : [];
   let derived: string[] = [];
   if (selected.length > 0) {
@@ -167,6 +177,23 @@ export const deriveReport = async (options: {
     cases.push(verdict);
   }
 
+  const policies: Report['summary']['policies'] = {
+    shipped: SECTION_RULE_POLICY,
+    and: { derived: 0, truePositive: 0, outcomesMatched: 0 },
+    rule: { derived: 0, truePositive: 0, outcomesMatched: 0 },
+  };
+  for (const policy of ['and', 'rule'] as const) {
+    for (const item of gold) {
+      const recorded = replay.cases.find(({ id }) => id === item.id);
+      if (recorded === undefined) throw new Error(`${item.id}: no recorded baseline`);
+      const { verdict } = await arm(vocabulary, item, recorded.baseline, true, derive, policy);
+      const golden = new Set(item.ruleIds);
+      policies[policy].derived += verdict.derived.length;
+      policies[policy].truePositive += verdict.derived.filter((id) => golden.has(id)).length;
+      if (verdict.outcome === item.outcome) policies[policy].outcomesMatched += 1;
+    }
+  }
+
   const byOutcome: Report['summary']['byOutcome'] = {
     answered: { n: 0, matched: 0 },
     'no-match': { n: 0, matched: 0 },
@@ -195,6 +222,7 @@ export const deriveReport = async (options: {
     summary: {
       byOutcome,
       rules,
+      policies,
       spans,
       // P5: refused by the hatch, yet answered with a derived rule once the hatch is gone.
       forcedFired: cases

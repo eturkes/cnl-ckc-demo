@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "model": "jev-1.13.0",
-  "vocabulary": "31f6b57f66597566a7c7bc701acc0ba81b9228614552d1e8ec0a76107ef25225",
+  "vocabulary": "7260dddd0359e3777a252fcb00cd778af602cdb164f2a72e9183e1d79caa0b87",
   "cases": [
     {
       "id": "h01",
@@ -13,39 +13,13 @@
       "baseline": {
         "outcome": "answered",
         "pain": "acute",
-        "selected": [
-          "cdc2022-opioid-rec01:2",
-          "cdc2022-opioid-rec01:4",
-          "cdc2022-opioid-rec08:2",
-          "cdc2022-opioid-rec08:3",
-          "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
-        ],
-        "derived": [
-          "cdc2022-opioid-rec01:2",
-          "cdc2022-opioid-rec01:4",
-          "cdc2022-opioid-rec08:2",
-          "cdc2022-opioid-rec08:3",
-          "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
-        ],
+        "selected": ["cdc2022-opioid-rec01:2", "cdc2022-opioid-rec01:4", "cdc2022-opioid-rec08:3"],
+        "derived": ["cdc2022-opioid-rec01:2", "cdc2022-opioid-rec01:4", "cdc2022-opioid-rec08:3"],
         "gaps": ["wrist sprain", "not decided whether"],
         "overflow": 0
       },
       "outcomeMatch": true,
-      "precision": 0.1667,
+      "precision": 0.6667,
       "recall": 1,
       "spans": [
         {
@@ -78,15 +52,7 @@
           "cdc2022-opioid-rec02:7",
           "cdc2022-opioid-rec08:2",
           "cdc2022-opioid-rec08:3",
-          "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
-          "cdc2022-opioid-rec10:4",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec08:4"
         ],
         "derived": [
           "cdc2022-opioid-rec02:2",
@@ -96,21 +62,13 @@
           "cdc2022-opioid-rec02:7",
           "cdc2022-opioid-rec08:2",
           "cdc2022-opioid-rec08:3",
-          "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
-          "cdc2022-opioid-rec10:4",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec08:4"
         ],
         "gaps": ["rotator cuff tendinopathy", "Still deciding whether opioids belong"],
         "overflow": 0
       },
       "outcomeMatch": true,
-      "precision": 0.3125,
+      "precision": 0.625,
       "recall": 1,
       "spans": [
         {
@@ -149,14 +107,7 @@
           "cdc2022-opioid-rec08:2",
           "cdc2022-opioid-rec08:3",
           "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
-          "cdc2022-opioid-rec10:4",
-          "cdc2022-opioid-rec05:4",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec05:4"
         ],
         "derived": [
           "cdc2022-opioid-rec02:2",
@@ -169,20 +120,13 @@
           "cdc2022-opioid-rec08:2",
           "cdc2022-opioid-rec08:3",
           "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
-          "cdc2022-opioid-rec10:4",
-          "cdc2022-opioid-rec05:4",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec05:4"
         ],
         "gaps": ["Chronic pain consultation", "nothing"],
         "overflow": 0
       },
       "outcomeMatch": true,
-      "precision": 0.4444,
+      "precision": 0.7273,
       "recall": 1,
       "spans": []
     },
@@ -194,34 +138,16 @@
         "ruleIds": ["cdc2022-opioid-rec05:5"]
       },
       "baseline": {
-        "outcome": "answered",
+        "outcome": "no-match",
         "pain": "unstated",
-        "selected": [
-          "cdc2022-opioid-rec08:2",
-          "cdc2022-opioid-rec08:3",
-          "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
-        ],
-        "derived": [
-          "cdc2022-opioid-rec08:2",
-          "cdc2022-opioid-rec08:3",
-          "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
-        ],
-        "gaps": ["Opioid medication review", "referral omits", "guidance", "selecting"],
+        "selected": [],
+        "derived": [],
+        "gaps": ["Opioid medication review", "referral omits"],
         "overflow": 0
       },
-      "outcomeMatch": true,
-      "precision": 0.125,
-      "recall": 1,
+      "outcomeMatch": false,
+      "precision": null,
+      "recall": 0,
       "spans": []
     },
     {
@@ -234,41 +160,13 @@
       "baseline": {
         "outcome": "answered",
         "pain": "chronic",
-        "selected": [
-          "cdc2022-opioid-rec07:3",
-          "cdc2022-opioid-rec07:4",
-          "cdc2022-opioid-rec07:5",
-          "cdc2022-opioid-rec08:2",
-          "cdc2022-opioid-rec08:3",
-          "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
-          "cdc2022-opioid-rec10:4",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
-        ],
-        "derived": [
-          "cdc2022-opioid-rec07:3",
-          "cdc2022-opioid-rec07:4",
-          "cdc2022-opioid-rec07:5",
-          "cdc2022-opioid-rec08:2",
-          "cdc2022-opioid-rec08:3",
-          "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
-          "cdc2022-opioid-rec10:4",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
-        ],
+        "selected": ["cdc2022-opioid-rec07:3", "cdc2022-opioid-rec07:4", "cdc2022-opioid-rec07:5"],
+        "derived": ["cdc2022-opioid-rec07:3", "cdc2022-opioid-rec07:4", "cdc2022-opioid-rec07:5"],
         "gaps": [],
         "overflow": 0
       },
       "outcomeMatch": true,
-      "precision": 0.2308,
+      "precision": 1,
       "recall": 1,
       "spans": []
     },
@@ -288,14 +186,7 @@
           "cdc2022-opioid-rec07:5",
           "cdc2022-opioid-rec08:2",
           "cdc2022-opioid-rec08:3",
-          "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
-          "cdc2022-opioid-rec10:4",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec08:4"
         ],
         "derived": [
           "cdc2022-opioid-rec07:2",
@@ -303,20 +194,13 @@
           "cdc2022-opioid-rec07:5",
           "cdc2022-opioid-rec08:2",
           "cdc2022-opioid-rec08:3",
-          "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
-          "cdc2022-opioid-rec10:4",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec08:4"
         ],
         "gaps": ["subacute pain service"],
         "overflow": 0
       },
       "outcomeMatch": true,
-      "precision": 0.2308,
+      "precision": 0.5,
       "recall": 1,
       "spans": []
     },
@@ -390,11 +274,7 @@
           "cdc2022-opioid-rec08:5",
           "cdc2022-opioid-rec09:2",
           "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec09:6"
         ],
         "derived": [
           "cdc2022-opioid-rec03:2",
@@ -406,18 +286,14 @@
           "cdc2022-opioid-rec08:5",
           "cdc2022-opioid-rec09:2",
           "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec09:6"
         ],
-        "gaps": ["severe enough"],
+        "gaps": ["severe enough", "baseline risk/PDMP checks"],
         "overflow": 0
       },
       "outcomeMatch": true,
       "precision": 1,
-      "recall": 0.875,
+      "recall": 0.625,
       "spans": [
         {
           "text": "postoperative",
@@ -482,11 +358,7 @@
           "cdc2022-opioid-rec09:5",
           "cdc2022-opioid-rec09:6",
           "cdc2022-opioid-rec10:2",
-          "cdc2022-opioid-rec10:4",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec10:4"
         ],
         "derived": [
           "cdc2022-opioid-rec02:2",
@@ -507,18 +379,14 @@
           "cdc2022-opioid-rec09:5",
           "cdc2022-opioid-rec09:6",
           "cdc2022-opioid-rec10:2",
-          "cdc2022-opioid-rec10:4",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec10:4"
         ],
         "gaps": [],
         "overflow": 0
       },
       "outcomeMatch": true,
       "precision": 1,
-      "recall": 1,
+      "recall": 0.8261,
       "spans": [
         {
           "text": "hydrocodone",
@@ -579,11 +447,7 @@
           "cdc2022-opioid-rec09:5",
           "cdc2022-opioid-rec09:6",
           "cdc2022-opioid-rec10:3",
-          "cdc2022-opioid-rec10:4",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec10:4"
         ],
         "derived": [
           "cdc2022-opioid-rec02:2",
@@ -604,18 +468,14 @@
           "cdc2022-opioid-rec09:5",
           "cdc2022-opioid-rec09:6",
           "cdc2022-opioid-rec10:3",
-          "cdc2022-opioid-rec10:4",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec10:4"
         ],
         "gaps": ["stage 3 CKD", "never exposed", "Today"],
         "overflow": 0
       },
       "outcomeMatch": true,
       "precision": 1,
-      "recall": 1,
+      "recall": 0.8261,
       "spans": [
         {
           "text": "stage 3 CKD",
@@ -658,44 +518,22 @@
           "cdc2022-opioid-rec04:5",
           "cdc2022-opioid-rec04:7",
           "cdc2022-opioid-rec04:9",
-          "cdc2022-opioid-rec08:2",
-          "cdc2022-opioid-rec08:3",
-          "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
           "cdc2022-opioid-rec10:2",
-          "cdc2022-opioid-rec10:4",
-          "cdc2022-opioid-rec05:3",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec05:3"
         ],
         "derived": [
           "cdc2022-opioid-rec04:5",
           "cdc2022-opioid-rec04:7",
           "cdc2022-opioid-rec04:9",
-          "cdc2022-opioid-rec08:2",
-          "cdc2022-opioid-rec08:3",
-          "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
           "cdc2022-opioid-rec10:2",
-          "cdc2022-opioid-rec10:4",
-          "cdc2022-opioid-rec05:3",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec05:3"
         ],
         "gaps": ["renewing 20 MME/day", "not changing"],
         "overflow": 0
       },
       "outcomeMatch": true,
       "precision": 1,
-      "recall": 1,
+      "recall": 0.3125,
       "spans": [
         {
           "text": "morphine",
@@ -745,15 +583,8 @@
           "cdc2022-opioid-rec08:3",
           "cdc2022-opioid-rec08:4",
           "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
           "cdc2022-opioid-rec10:3",
-          "cdc2022-opioid-rec10:4",
-          "cdc2022-opioid-rec05:4",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec05:4"
         ],
         "derived": [
           "cdc2022-opioid-rec02:3",
@@ -764,22 +595,15 @@
           "cdc2022-opioid-rec08:3",
           "cdc2022-opioid-rec08:4",
           "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
           "cdc2022-opioid-rec10:3",
-          "cdc2022-opioid-rec10:4",
-          "cdc2022-opioid-rec05:4",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec05:4"
         ],
         "gaps": ["60 MME/day", "untreated sleep apnoea", "harm-reduction advice rather"],
         "overflow": 0
       },
       "outcomeMatch": true,
       "precision": 1,
-      "recall": 0.9444,
+      "recall": 0.5556,
       "spans": [
         {
           "text": "hydrocodone",
@@ -815,44 +639,24 @@
         "selected": [
           "cdc2022-opioid-rec04:6",
           "cdc2022-opioid-rec04:10",
-          "cdc2022-opioid-rec08:2",
-          "cdc2022-opioid-rec08:3",
-          "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
           "cdc2022-opioid-rec10:3",
-          "cdc2022-opioid-rec10:4",
           "cdc2022-opioid-rec05:2",
           "cdc2022-opioid-rec05:3",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec05:5"
         ],
         "derived": [
           "cdc2022-opioid-rec04:6",
           "cdc2022-opioid-rec04:10",
-          "cdc2022-opioid-rec08:2",
-          "cdc2022-opioid-rec08:3",
-          "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
           "cdc2022-opioid-rec10:3",
-          "cdc2022-opioid-rec10:4",
           "cdc2022-opioid-rec05:2",
           "cdc2022-opioid-rec05:3",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec05:5"
         ],
         "gaps": [],
         "overflow": 0
       },
       "outcomeMatch": true,
-      "precision": 0.375,
+      "precision": 1,
       "recall": 1,
       "spans": []
     },
@@ -882,10 +686,7 @@
           "cdc2022-opioid-rec08:4",
           "cdc2022-opioid-rec08:5",
           "cdc2022-opioid-rec11:2",
-          "cdc2022-opioid-rec11:3",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec11:3"
         ],
         "derived": [
           "cdc2022-opioid-rec08:2",
@@ -893,17 +694,14 @@
           "cdc2022-opioid-rec08:4",
           "cdc2022-opioid-rec08:5",
           "cdc2022-opioid-rec11:2",
-          "cdc2022-opioid-rec11:3",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec11:3"
         ],
         "gaps": ["Pain duration not documented", "alprazolam", "obstructive sleep apnea"],
         "overflow": 0
       },
       "outcomeMatch": true,
       "precision": 1,
-      "recall": 1,
+      "recall": 0.6667,
       "spans": [
         {
           "text": "Percocet",
@@ -938,37 +736,19 @@
           "cdc2022-opioid-rec01:2",
           "cdc2022-opioid-rec01:3",
           "cdc2022-opioid-rec01:4",
-          "cdc2022-opioid-rec08:2",
-          "cdc2022-opioid-rec08:3",
-          "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
-          "cdc2022-opioid-rec05:4",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec05:4"
         ],
         "derived": [
           "cdc2022-opioid-rec01:2",
           "cdc2022-opioid-rec01:3",
           "cdc2022-opioid-rec01:4",
-          "cdc2022-opioid-rec08:2",
-          "cdc2022-opioid-rec08:3",
-          "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
-          "cdc2022-opioid-rec05:4",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec05:4"
         ],
         "gaps": ["not initiating treatment"],
         "overflow": 0
       },
       "outcomeMatch": true,
-      "precision": 0.3077,
+      "precision": 1,
       "recall": 1,
       "spans": []
     },
@@ -982,41 +762,13 @@
       "baseline": {
         "outcome": "answered",
         "pain": "acute",
-        "selected": [
-          "cdc2022-opioid-rec03:2",
-          "cdc2022-opioid-rec06:2",
-          "cdc2022-opioid-rec08:2",
-          "cdc2022-opioid-rec08:3",
-          "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec09:2",
-          "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
-        ],
-        "derived": [
-          "cdc2022-opioid-rec03:2",
-          "cdc2022-opioid-rec06:2",
-          "cdc2022-opioid-rec08:2",
-          "cdc2022-opioid-rec08:3",
-          "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec09:2",
-          "cdc2022-opioid-rec09:5",
-          "cdc2022-opioid-rec09:6",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
-        ],
+        "selected": ["cdc2022-opioid-rec03:2", "cdc2022-opioid-rec06:2", "cdc2022-opioid-rec09:2"],
+        "derived": ["cdc2022-opioid-rec03:2", "cdc2022-opioid-rec06:2", "cdc2022-opioid-rec09:2"],
         "gaps": ["dental extraction"],
         "overflow": 0
       },
       "outcomeMatch": true,
-      "precision": 0.0769,
+      "precision": 0.3333,
       "recall": 1,
       "spans": [
         {
@@ -1091,27 +843,27 @@
           "cdc2022-opioid-rec08:3",
           "cdc2022-opioid-rec08:4",
           "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec11:3",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec11:3"
         ],
         "derived": [
           "cdc2022-opioid-rec08:2",
           "cdc2022-opioid-rec08:3",
           "cdc2022-opioid-rec08:4",
           "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec11:3",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
+          "cdc2022-opioid-rec11:3"
         ],
-        "gaps": ["gabapentin", "no benzodiazepine", "missing", "referral"],
+        "gaps": [
+          "gabapentin",
+          "sedating CNS depressant",
+          "no benzodiazepine",
+          "missing",
+          "referral"
+        ],
         "overflow": 0
       },
       "outcomeMatch": true,
       "precision": 1,
-      "recall": 1,
+      "recall": 0.625,
       "spans": [
         {
           "text": "gabapentin",
@@ -1129,26 +881,8 @@
       "baseline": {
         "outcome": "answered",
         "pain": "unstated",
-        "selected": [
-          "cdc2022-opioid-rec08:2",
-          "cdc2022-opioid-rec08:3",
-          "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
-        ],
-        "derived": [
-          "cdc2022-opioid-rec08:2",
-          "cdc2022-opioid-rec08:3",
-          "cdc2022-opioid-rec08:4",
-          "cdc2022-opioid-rec08:5",
-          "cdc2022-opioid-rec05:5",
-          "cdc2022-opioid-rec12:2",
-          "cdc2022-opioid-rec12:3",
-          "cdc2022-opioid-rec12:4"
-        ],
+        "selected": ["cdc2022-opioid-rec08:2", "cdc2022-opioid-rec08:3", "cdc2022-opioid-rec08:4"],
+        "derived": ["cdc2022-opioid-rec08:2", "cdc2022-opioid-rec08:3", "cdc2022-opioid-rec08:4"],
         "gaps": ["Referral says pain", "gives no duration", "No opioid"],
         "overflow": 0
       },
@@ -1462,7 +1196,12 @@
         "pain": "unstated",
         "selected": ["cdc2022-opioid-rec05:4"],
         "derived": ["cdc2022-opioid-rec05:4"],
-        "gaps": ["atrial fibrillation stroke prevention", "anticoagulation", "reviewing warfarin"],
+        "gaps": [
+          "atrial fibrillation stroke prevention",
+          "expected benefit",
+          "anticoagulation",
+          "reviewing warfarin"
+        ],
         "overflow": 0
       }
     }
@@ -1471,7 +1210,7 @@
     "byOutcome": {
       "answered": {
         "n": 18,
-        "matched": 16
+        "matched": 15
       },
       "no-match": {
         "n": 6,
@@ -1484,8 +1223,21 @@
     },
     "rules": {
       "gold": 163,
-      "derived": 240,
-      "truePositive": 143
+      "derived": 121,
+      "truePositive": 106
+    },
+    "policies": {
+      "shipped": "and",
+      "and": {
+        "derived": 121,
+        "truePositive": 106,
+        "outcomesMatched": 26
+      },
+      "rule": {
+        "derived": 140,
+        "truePositive": 113,
+        "outcomesMatched": 28
+      }
     },
     "spans": {
       "n": 22,

@@ -169,7 +169,8 @@ describe('U2 deterministic intake outcomes', () => {
           trigger:
             index === 0
               ? { kind: 'condition', id: 'c01', value: 0.83 }
-              : { kind: 'section', id: 's1', value: 0.91 },
+              : // mnt-d63 policy A: the weaker of the section (0.91) and the rule's own (0.88).
+                { kind: 'section', id: 's1', value: 0.88 },
         },
         rule: UI_VOCABULARY.rules[index],
         result: result.kind === 'derived' ? result.rules[index] : undefined,

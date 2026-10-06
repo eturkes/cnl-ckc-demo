@@ -91,9 +91,9 @@ describe('S1 deterministic selector', () => {
     input.sections = Object.fromEntries(Object.keys(input.sections).map((id) => [id, 0]));
     expect(select(vocab, input, 'and')).toMatchObject({ kind: 'answered' });
     const b = select(vocab, input, 'rule');
-    expect(b.kind === 'answered' && b.matches.some((match) => match.trigger.kind === 'section')).toBe(
-      true,
-    );
+    expect(
+      b.kind === 'answered' && b.matches.some((match) => match.trigger.kind === 'section'),
+    ).toBe(true);
   });
 
   it('unstated is not a wildcard, even when every Noul says yes', () => {
@@ -185,6 +185,11 @@ function* generated(seed: number, count: number) {
       vocab.conditions.map(({ id }) => [id, pick(next, VALUES)]),
     );
     input.sections = Object.fromEntries(vocab.sections.map(({ id }) => [id, pick(next, VALUES)]));
+    input.rules = Object.fromEntries(
+      vocab.rules.flatMap((rule) =>
+        rule.trigger.kind === 'section' ? [[rule.id, pick(next, VALUES)]] : [],
+      ),
+    );
     const chunks = extractCandidates(description(next));
     input.terms = chunks.candidates.map((candidate) => ({
       ...candidate,
@@ -201,12 +206,15 @@ describe('ORACLE-S independent selector differential', () => {
     // in memory; its imports are type-only, so the transpiled module stands alone.
     const ts = createRequire(import.meta.url)('typescript') as typeof import('typescript');
     const source = readFileSync(new URL('../src/intake/select.ts', import.meta.url), 'utf8');
-    const lookup = '      trigger.id,\n    );';
-    expect(source.split(lookup)).toHaveLength(2);
-    const mutated = source.replace(
-      lookup,
-      "      trigger.kind === 'condition' ? 'c01' : 's1',\n    );",
-    );
+    const lookups = [
+      ['valueOf(judgment.conditions, trigger.id)', "valueOf(judgment.conditions, 'c01')"],
+      ['valueOf(judgment.sections, trigger.id)', "valueOf(judgment.sections, 's1')"],
+    ] as const;
+    let mutated = source;
+    for (const [lookup, fixed] of lookups) {
+      expect(mutated.split(lookup), lookup).toHaveLength(2);
+      mutated = mutated.replace(lookup, fixed);
+    }
     const { outputText } = ts.transpileModule(mutated, {
       compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
     });
@@ -224,22 +232,25 @@ describe('ORACLE-S independent selector differential', () => {
     ).toBeDefined();
   });
 
-  it('agrees over 750 generated rule orders, triggers, pain subsets, probabilities and gaps', () => {
-    for (const { iteration, vocab, input } of generated(0x16c002, 750)) {
-      const before = structuredClone({ vocab, input });
-      const actual = select(vocab, input);
-      expect(actual, `seed 0x16c002 iteration ${String(iteration)}`).toEqual(
-        reference(vocab, input),
-      );
-      expect({ vocab, input }).toEqual(before);
-      if (actual.kind === 'answered') {
-        expect(actual.matches.length).toBeGreaterThan(0);
-        expect(actual.matches.map(({ ruleId }) => ruleId)).toEqual(
-          vocab.rules
-            .filter((rule) => actual.matches.some((match) => match.ruleId === rule.id))
-            .map(({ id }) => id),
+  it.each(['and', 'rule'] as const)(
+    'agrees over 750 generated rule orders, triggers, pain subsets, probabilities and gaps (policy %s)',
+    (policy) => {
+      for (const { iteration, vocab, input } of generated(0x16c002, 750)) {
+        const before = structuredClone({ vocab, input });
+        const actual = select(vocab, input, policy);
+        expect(actual, `seed 0x16c002 iteration ${String(iteration)}`).toEqual(
+          reference(vocab, input, policy),
         );
+        expect({ vocab, input }).toEqual(before);
+        if (actual.kind === 'answered') {
+          expect(actual.matches.length).toBeGreaterThan(0);
+          expect(actual.matches.map(({ ruleId }) => ruleId)).toEqual(
+            vocab.rules
+              .filter((rule) => actual.matches.some((match) => match.ruleId === rule.id))
+              .map(({ id }) => id),
+          );
+        }
       }
-    }
-  });
+    },
+  );
 });

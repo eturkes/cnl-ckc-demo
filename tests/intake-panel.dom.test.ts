@@ -293,7 +293,8 @@ describe('U3 derived rows and owned reveal action', () => {
       expect(text(row)).toContain(rule.document);
       const trigger = index === 0 ? ['c01', 'condition-alpha'] : ['s1', 'section-gamma'];
       expect(trigger.some((label) => text(row).includes(label))).toBe(true);
-      expect(text(row)).toMatch(index === 0 ? /0[.,]83|83\s*%/u : /0[.,]91|91\s*%/u);
+      // mnt-d63 policy A: the section rule reads the weaker of its section and its own question.
+      expect(text(row)).toMatch(index === 0 ? /0[.,]83|83\s*%/u : /0[.,]88|88\s*%/u);
       expect(text(row)).toMatch(index === 0 ? /\b7\b/u : /\b11\b/u);
       expect(text(one('button[data-intake-reveal]', row))).not.toBe('');
     }

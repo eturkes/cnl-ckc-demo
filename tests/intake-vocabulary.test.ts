@@ -200,7 +200,11 @@ describe('intake vocabulary contract', () => {
     expect(new Set(actual.vocabulary).size).toBe(actual.vocabulary.length);
     expect(
       actual.rules.map(({ painSet: _painSet, goal: _goal, text: _text, ...identity }) => identity),
-    ).toEqual(expected.rules.map(({ painSet: _painSet, goal: _goal, ...identity }) => identity));
+    ).toEqual(
+      expected.rules.map(
+        ({ painSet: _painSet, goal: _goal, text: _text, ...identity }) => identity,
+      ),
+    );
   });
 
   it('mnt-d63 every rule quotes guideline wording its own document carries', async () => {
