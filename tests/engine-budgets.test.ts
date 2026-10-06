@@ -592,6 +592,56 @@ describe('P4 client lifecycle', () => {
 });
 
 describe('P1 bounded runtime loading', () => {
+  it('an explicit reset boots under the boot deadline and retires a hung or failed replacement', async () => {
+    const armed = new Map<number, () => void>();
+    let next = 0;
+    const client = new EngineClient({
+      spawn: () => new FakeWorker() as unknown as Worker,
+      schedule: (fn) => {
+        const handle = ++next;
+        armed.set(handle, fn);
+        return handle;
+      },
+      cancelSchedule: (handle) => armed.delete(handle as number),
+    });
+    FakeWorker.live = [];
+    const booting = client.boot();
+    await settle();
+    const first = FakeWorker.live[0];
+    first?.reply({
+      id: first.last.id,
+      kind: 'booted',
+      contract: { schemaVersion: 1, documents: 1 },
+    });
+    expect(await booting).toMatchObject({ kind: 'booted' });
+
+    // A replacement that never answers is ended by the boot deadline, not left hanging.
+    const hung = client.reset('explicit reset');
+    await settle();
+    expect(FakeWorker.live[1]?.last.kind).toBe('boot');
+    expect(armed.size).toBe(1);
+    for (const fire of [...armed.values()]) fire();
+    expect(await hung).toMatchObject({ kind: 'error', error: { code: 'boot' } });
+    expect(FakeWorker.live[1]?.terminated).toBe(true);
+
+    // A replacement that answers its boot with an error is retired too; the next boot spawns.
+    const failing = client.reset('explicit reset');
+    await settle();
+    const third = FakeWorker.live[2];
+    third?.reply({
+      id: third.last.id,
+      kind: 'error',
+      error: { code: 'contract', message: 'replacement disagreed with the manifest' },
+    });
+    expect(await failing).toMatchObject({ kind: 'error', error: { code: 'contract' } });
+    expect(third?.terminated).toBe(true);
+    expect(armed.size).toBe(0);
+    void client.boot();
+    await settle();
+    expect(FakeWorker.live).toHaveLength(4);
+    client.dispose();
+  });
+
   it('P1.1 arms one deadline for a consult and discards the engine when it expires', async () => {
     const armed = new Map<number, () => void>();
     let next = 0;
@@ -617,7 +667,10 @@ describe('P1 bounded runtime loading', () => {
     expect(await loading).toMatchObject({ kind: 'error', error: { code: 'consult' } });
     await settle();
     expect(worker?.terminated).toBe(true);
-    expect(armed.size).toBe(0);
+    // The discarding reset boots its replacement under the boot deadline (queue row `A failed
+    // reset…`, user-approved change of this assertion from `armed.size` 0): that one timer.
+    expect(FakeWorker.live[1]?.last.kind).toBe('boot');
+    expect(armed.size).toBe(1);
     client.dispose();
   });
 });

@@ -261,7 +261,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `5da1e02` find: hand-run mutants and probes — two committed (listbox mutant, skipped-case control), one test (TS peer cap), three historical.
 - [x] `a4795fe` find: upstream and design claims disposed; `copy:check` refuses a component literal beyond the brand mark.
 - [x] `d533775` find: a halting payload's build refusal names the halt and its exit.
-- [ ] find (dict re-encoding) ruled (user): `createEncoder` refuses a dict and fails closed.
+- [x] `8a8a21e` find (dict re-encoding) ruled (user): `createEncoder` refuses a dict and fails closed.
 - [x] `f862574` find (inline-disable reasons) ruled (user): unfreeze `tools/kb/provenance.mjs` in T9, give line 70 its reason, ship the grader.
 - [x] `5bc686e` find (heavy-load timeouts) closed by user ruling: the measured 2.9× envelope (20/20 runs at load ≤23.5) is the bar.
 - [ ] find (failed reset) approved (user): change P4.4 (`engine-recovery`) + P1.1 (`engine-budgets`); every reset boots under the deadline and retires a failed replacement.

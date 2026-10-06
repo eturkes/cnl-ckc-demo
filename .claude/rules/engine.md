@@ -146,11 +146,13 @@ leaves its frame open, and every later query then resolves outside the KB:
   an error terminates the worker, and the next `boot()` — the UI's Retry — spawns a fresh one.
   The hung-boot watchdog keeps its own single automatic recreation.
 - `EngineClient.query` awaits that recreation on `limit:'heap'`, so a caller sees its heap
-  outcome only once the replacement verified the contract or failed. The wait is bounded by
-  `BOOT_DEADLINE_MS`, which retires a hung replacement — a reset already in flight included,
-  when the recreation joins it. The wall-clock deadline fires its reset instead, because there
-  the caller is already settled; that reset and an explicit one boot unbounded (queue row
-  `A failed reset keeps its replacement worker`).
+  outcome only once the replacement verified the contract or failed. The wall-clock deadline
+  fires its reset instead, because there the caller is already settled.
+- **Every reset boots under `BOOT_DEADLINE_MS` and retires a failed replacement** (user ruling):
+  explicit, wall-clock or heap, single-flighted so a recreation joins a reset in flight. A
+  replacement that hangs is ended at the deadline, one that answers its boot with an error is
+  terminated like a failed `boot()`'s worker, and the next request spawns a fresh one.
+  `tests/engine-budgets.test.ts`, `tests/engine-recovery.test.ts` P4.4.
 
 ## Boot phases
 
