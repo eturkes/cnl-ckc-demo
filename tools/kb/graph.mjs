@@ -426,6 +426,16 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
   /** Each shown body relation's dedup key → the id of the edge that shows it. */
   /** @type {Map<string, string>} */
   const emittedConditions = new Map();
+  /**
+   * Every `condition supports` occurrence the dedup folded into an earlier one — the world it sat
+   * in beside the kept edge's — so a check can prove what each fold hides (queue row
+   * `Condition-supports dedup is scope-blind`). Not shipped in the asset.
+   * @type {{ document: string, sentence: number, source: string, target: string, kept: string,
+   *   keptWorld: number, world: number }[]}
+   */
+  const conditionMerges = [];
+  /** @type {Map<string, number>} */
+  const conditionWorlds = new Map();
   /** `<line>:<body index>` → the edge showing that body literal's relation. */
   /** @type {Map<string, string>} */
   const literalEdges = new Map();
@@ -633,8 +643,21 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
             headNode,
             'condition supports',
           ].join('\u0000');
-          if (emittedConditions.has(key)) continue;
+          const kept = emittedConditions.get(key);
+          if (kept !== undefined) {
+            conditionMerges.push({
+              document: clause.document,
+              sentence: clause.sentence ?? 0,
+              source: conditionEvent,
+              target: headNode,
+              kept,
+              keptWorld: conditionWorlds.get(key) ?? -1,
+              world: world(clause, call),
+            });
+            continue;
+          }
           emittedConditions.set(key, `edge:${String(clause.line)}:${String(clause.body.length + index + 2)}`);
+          conditionWorlds.set(key, world(clause, call));
           emit(
             clause,
             clause.body.length + index + 2,
@@ -707,5 +730,5 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
       byEdgeKind: countRecord(edgeKinds),
     },
   };
-  return { path: GRAPH_ASSET_PATH, bytes: generatedJson(model), model };
+  return { path: GRAPH_ASSET_PATH, bytes: generatedJson(model), model, conditionMerges };
 };

@@ -264,12 +264,13 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `8a8a21e` find (dict re-encoding) ruled (user): `createEncoder` refuses a dict and fails closed.
 - [x] `f862574` find (inline-disable reasons) ruled (user): unfreeze `tools/kb/provenance.mjs` in T9, give line 70 its reason, ship the grader.
 - [x] `5bc686e` find (heavy-load timeouts) closed by user ruling: the measured 2.9× envelope (20/20 runs at load ≤23.5) is the bar.
-- [ ] find (failed reset) approved (user): change P4.4 (`engine-recovery`) + P1.1 (`engine-budgets`); every reset boots under the deadline and retires a failed replacement.
+- [x] `935b287` find (failed reset) approved (user): change P4.4 (`engine-recovery`) + P1.1 (`engine-budgets`); every reset boots under the deadline and retires a failed replacement.
 - [ ] find (condition-supports dedup is scope-blind): new row from d49, `pri` low — fund after the named rows (its second acceptance arm needs no ruling).
 - [ ] find (selected-row proof case trips `limit` under contention): `med`, funded after the named rows.
 - [ ] find (B9 times cached proofs): `med`, funded after the named rows.
 - [ ] find (five coverage passages do not locate on their recorded page): `low`, producer-owned.
 - [ ] find (bundled JavaScript ships without its licence notices): `low`.
+- [ ] find (engine:probe R41 control): `med`, funded after the named rows.
 - [ ] Close-2: the closing diff since `70c8507` → one `reviewer` covering every lens; `pnpm gate` on a clean tree; final report per the request's Met-when.
 - [x] `aefae8c` find: a refactor staled mutant R09's anchor with the gate green → `tests/mutant-anchors.test.ts` grades every anchor in the gate.
 - [x] `8c186d2` find: a heap recreation that joined an in-flight reset waited on its unbounded boot → it arms its own boot deadline.

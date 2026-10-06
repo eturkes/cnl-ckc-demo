@@ -139,8 +139,12 @@ first), which is the user's edge-state ruling made real in `src/graph/model.ts`.
   `tests/graph-orphan-scopes.test.ts` (`MEANING`) proves every relation literal rides an edge
   of its own world. The body-relation dedup keys on that world: a relation asserted plainly and
   under a negation in one sentence is two edges, +16 `argument` (`.agent/contracts/mnt-d49.md`).
-  The `condition supports` dedup stays scope-blind — queue row `Condition-supports dedup is
-  scope-blind`.
+  The `condition supports` dedup stays scope-blind, and what each fold hides is graded: a negated
+  occurrence folds either behind a twin its own clause states unnegated, or into a negated twin
+  whose edge already shows the negation. `tests/graph-condition-merges.test.ts` reads every kept
+  twin's own clause text for the first kind and proves its condition event sits under no `-`, so
+  a shown support is always one its sentence states (`deriveSemanticGraph` `conditionMerges`, not
+  shipped); it pins both counts.
 
 **u13 closed the SHOWN edge.** `EdgeView` (`src/graph/view.ts`) carries `scope`, `farScope` and
 the composed `label`, and both renderers show them. `m5u8.md:90-97` declares the type, amended

@@ -56,15 +56,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   section-triggered (37 lost, 0 gained, 82 false positives removed); `rec12:2`–`:4` account for 21
   and `rec05:5` for 6, so the rule question denies the opioid-use-disorder recommendations most.
   Code, replay and report: branch `wt/d63` `cfbe0ad` (never rename).
-- **Condition-supports dedup is scope-blind** — `tools/kb/graph.mjs` keys the synthesized
-  `condition supports` shortcut on document, sentence, source event and head alone. 17 body
-  events inside a negation therefore merge their shortcut into a twin from another world. The
-  body-relation dedup keys on scope since mnt-d49. Keying this one too emits the 17 (edges
-  20,980 → 20,997), and every one has endpoint scopes that contradict: 38 → 55 contradicting
-  shortcuts, none of the 17 justified by `tests/graph-shortcut-justification.test.ts`.
-  Accept: either the dedup keys on scope and the justification suite justifies all 55 by their
-  own clauses, with the moved counts recorded; or a committed check proves each merged negated
-  support has an unnegated twin support in its own sentence. `pri` low.
 - **Selected-row proof case trips `limit` under contention** — `tests/proof-live.test.ts`
   `binds the selected canonical row rather than returning the first proof` proves under the real
   clock. With the run and 24 busy loops pinned to one CPU (`taskset -c 0`) it fails
@@ -90,6 +81,14 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   copied `pdf.worker.min` keeps its header, and `README.md` `Licences` names the fonts alone.
   Accept: `dist/` ships a third-party notice holding each bundled package's licence text, and a
   committed check refuses a bundled package missing from it, with its firing input. `pri` low.
+- **engine:probe's R41 control no longer fires** — `pnpm engine:probe` at `935b287`: R41's five
+  reset cycles pass, but its control (one cycle WITHOUT the reset) graded `R41 cycle 0: replacement
+  reports undefined documents` instead of the expected `consulted overlay survived the reset`, so
+  the lane exits 1. In the control the hostile `between(1,400000000,_),fail.` may outrun the
+  client's 30.5 s hard deadline, whose own wall-clock reset then aborts the follow-up queries;
+  whether the boot-phase (d5), streaming (d17) or reset change moved it is unconfirmed. Accept: the
+  control fires again for a stated cause, `pnpm engine:probe` exits 0, and the cause is recorded
+  beside the lane in `.claude/rules/gate.md`. `pri` med.
 
 ## Index — one line per `high` + `med` row
 
@@ -102,6 +101,7 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 | **high** Browser WASM abort leaves a dead session | an aborted runtime reaches the client as its own terminal state that recreates the worker without a caller `reset()`, proven by a browser probe whose next query reports 337 documents |
 | Selected-row proof case trips `limit` under contention | the case asserts the whole result, so a trip names its `limit` subtype, and it passes under that same pinned contention |
 | B9 times cached proofs | a whole-file run proves B9 reaches the meta-interpreter for every measured selection before it reads the elapsed time |
+| engine:probe's R41 control no longer fires | the control fires again for a stated cause, `pnpm engine:probe` exits 0, and the cause is recorded beside the lane in `.claude/rules/gate.md` |
 
 ## Accepted-open
 
