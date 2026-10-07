@@ -185,6 +185,38 @@ MAINTAIN request: work every `.agent/deferred.md` row in rank order (`high` → 
 queue order within a rank); one unit + commit per row, gate green at each, row pruned in its
 closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 
+- [ ] Resume note — session paused by the user after `995e333`; the next session deletes this row once oriented.
+  - Finish line in force: the original request's Met-when. Every row is closed by its own check in
+    its own commit, recorded as blocked on the user, or waiting on its trigger. The full gate passes
+    on a clean tree at the closing commit, and the final message lists SHAs, owed parts, rows added,
+    gate + skipped/not-run checks, teammates, advisor calls (`none`), the unconfirmed, `git status`
+    and the closing SHA.
+  - Committed this run: cap-one `9ade964`, CI `64fb0cc`, d5 `d6714d7`, d12 `114ad49`, d17 `04ada8c`,
+    d39 `337aeba`, d41 `9056d3d`, d43 `db0736f`, d63 `d107a16` (measured, blocked), inline-disable
+    `f862574`, dict `8a8a21e`, failed reset `935b287`, condition-supports `ce75b11`, selected-row
+    `5fd1588`, B9 `d2744cb`, probe-control `e8f7cab`, licences `995e333`; then this note. Uncommitted:
+    none. No snapshot branch: nothing was in flight.
+  - Rows added this run: selected-row, B9, engine:probe R41 control, licence notices (all closed);
+    five coverage passages (open, `low`, producer-owned).
+  - Teammates: none running, no worktrees. `mnt2-reviewer-1`…`-8` (reviewer) stopped + harvested,
+    reports `.scratch/agents/mnt2-reviewer-N.md`; every verdict passes after its fix round
+    (reviewer-8: P1 fail(med) → P1-r2 pass on `4e28d9d`; P2–P4 pass). Review snapshots `wip/mnt2-*`
+    are cited by commit bodies and stay; d63 evidence `wt/d63` `cfbe0ad`. Last state rerun:
+    `e8f7cab` gate + engine:probe + smoke + browser:check + mutate 46/46; `995e333` gate + smoke +
+    browser:check + readme:check.
+  - Next action: the ONE `AskUserQuestion`, interrupted unanswered — (1) ratify `e8f7cab`'s
+    claims:check change (the citation controls plant `deferred` on a copy when the registry cites
+    no queue row; original firing `no cited deferred row, so the citation controls grade nothing`)
+    or revert to a skip; (2) d63: declared limit / ship policy B (changes the acceptance) /
+    redesign + a second billed run / leave open; (3) d61: stay local / prepare a deploy; (4) the
+    d5/d17/d41/d43 captures in `.scratch/mnt2/<unit>/`: accepted / review later / changes. Fund
+    what the answers unblock, then Close-2. d14 (behind d29), d29 (trigger) and the five passages
+    (producer) stay as they are.
+  - Close-2 also runs the release lanes, `pnpm kb:reproduce` included — unconfirmed: kb.pvm read
+    457,932 B in an Oct 2 cached build vs 458,180 B in today's forced builds, which agree.
+  - Scratch helpers (gitignored, may be recreated): `.scratch/maint/prune.py '<title>'`,
+    `.scratch/maint/adj.sh` (`adj RNNN '<cmd>' <disposition>`), `.scratch/maint/regdiff.py`;
+    notes `.scratch/mnt2/notes.md`.
 - [x] `9ade964` `med` Cap-one re-proof: a pinned-contention trip names `limit: 'wall-clock'`; the case proves under a frozen clock.
 - [x] `64fb0cc` `med` CI registry receipt: the registry row lists every `run:` + `uses:` step of `ci.yml`.
 - [x] `24bbb5d` d0 find: 4 live advisories reddened `audit:check` → lockfile bump.
@@ -265,11 +297,11 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `f862574` find (inline-disable reasons) ruled (user): unfreeze `tools/kb/provenance.mjs` in T9, give line 70 its reason, ship the grader.
 - [x] `5bc686e` find (heavy-load timeouts) closed by user ruling: the measured 2.9× envelope (20/20 runs at load ≤23.5) is the bar.
 - [x] `935b287` find (failed reset) approved (user): change P4.4 (`engine-recovery`) + P1.1 (`engine-budgets`); every reset boots under the deadline and retires a failed replacement.
-- [ ] find (condition-supports dedup is scope-blind): new row from d49, `pri` low — fund after the named rows (its second acceptance arm needs no ruling).
+- [x] `ce75b11` find (condition-supports dedup is scope-blind): arm 2 — every fold hiding a negation keeps a twin its own clause states unnegated.
 - [x] `5fd1588` find (selected-row proof case trips `limit` under contention): frozen clock + whole-result assertion.
 - [x] `d2744cb` find (B9 times cached proofs): B9 empties the cache and requires a meta-interpreter run per timed proof.
 - [ ] find (five coverage passages do not locate on their recorded page): `low`, producer-owned.
-- [ ] find (bundled JavaScript ships without its licence notices): `low`.
+- [x] `995e333` find (bundled JavaScript ships without its licence notices): `dist/licenses/third-party.txt` + the build refuses a bundled package missing from it.
 - [x] `e8f7cab` find (engine:probe R41 control): a run ends at its final record; the control fires again.
 - [ ] Close-2: the closing diff since `70c8507` → one `reviewer` covering every lens; `pnpm gate` on a clean tree; final report per the request's Met-when.
 - [x] `aefae8c` find: a refactor staled mutant R09's anchor with the gate green → `tests/mutant-anchors.test.ts` grades every anchor in the gate.
