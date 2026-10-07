@@ -408,6 +408,7 @@ export class EngineSession {
     // A cancel held from before dispatch settles the run without proving a solution:
     // the caller asked to stop before any answer existed.
     let stopped: LimitKind | 'cancelled' | undefined = this.#cancelling ? 'cancelled' : undefined;
+    let exhausted = false;
     try {
       while (stopped === undefined) {
         const step = iterator.next();
@@ -428,6 +429,9 @@ export class EngineSession {
               stopped = 'inference';
             } else if (outcome.final) {
               // Exhausted inside budget: the terminal record carries the last step and no answer.
+              // Only the meter's resume marker is left to backtrack into, so the run ends here
+              // rather than yielding with its query still open to another request.
+              exhausted = true;
             } else if (solutions.length >= budget.answerCap) {
               // Proving one solution past the cap and discarding it is the only thing
               // that separates a truncated run from a run holding exactly `answerCap`
@@ -445,7 +449,9 @@ export class EngineSession {
             }
           }
         }
-        if (stopped !== undefined || step.done === true) break;
+        // The step that exhausted the goal is read against the deadline like any other step.
+        if (exhausted && late()) stopped = 'wall-clock';
+        if (stopped !== undefined || exhausted || step.done === true) break;
         // The only point where a posted cancel can land, and the only point where
         // elapsed time is observable: `next()` itself is synchronous and uninterruptible.
         await yieldToEvents();

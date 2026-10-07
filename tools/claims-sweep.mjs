@@ -13,7 +13,7 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { requireFiring } from './control.mjs';
-import { gradeIndex, QUEUE } from './queue.mjs';
+import { gradeIndex, QUEUE, queueRows } from './queue.mjs';
 
 const REGISTRY = 'docs/claims.md';
 
@@ -299,6 +299,26 @@ export const gradeRegistry = (rows, registry) => {
 
 const CITATION = /queue row `([^`]+)`/u;
 
+/**
+ * A registry citing no queue row is a sound state, yet the citation controls still have to fire:
+ * this copy marks the first row `deferred`, citing the first live queue row.
+ *
+ * @param {string} registry @param {string} queue @returns {string}
+ */
+const plantDeferral = (registry, queue) => {
+  const row = registry
+    .split('\n')
+    .map((line) => ROW.exec(line))
+    .find((match) => match !== null);
+  const title = queueRows(queue)[0]?.title;
+  if (row === undefined || row === null || title === undefined) {
+    throw new Error('no registry row or queue row to plant a deferral on');
+  }
+  const cells = row[0].split(' | ');
+  cells[cells.length - 1] = `deferred — planted control (queue row \`${title}\`) |`;
+  return registry.replace(row[0], cells.join(' | '));
+};
+
 /** @param {string} registry */
 const deferredRows = (registry) =>
   registry
@@ -412,7 +432,8 @@ if (process.argv.includes('--seed')) {
   );
 
   const queue = readFileSync(QUEUE, 'utf8');
-  const [victim] = deferredRows(registry);
+  const cites = deferredRows(registry).length > 0 ? registry : plantDeferral(registry, queue);
+  const [victim] = deferredRows(cites);
   const cited = CITATION.exec(victim?.[7] ?? '')?.[1];
   if (victim === undefined || cited === undefined) {
     throw new Error('no cited deferred row, so the citation controls grade nothing');
@@ -423,7 +444,7 @@ if (process.argv.includes('--seed')) {
       mutation: `${victim[1] ?? ''} citation stripped`,
       expect: [`${victim[1] ?? ''} `, 'cites no queue row'],
     },
-    () => gradeDeferrals(registry.replace(victim[0], victim[0].replace(CITATION, '')), queue),
+    () => gradeDeferrals(cites.replace(victim[0], victim[0].replace(CITATION, '')), queue),
   );
   const dangling = requireFiring(
     'claims:check',
@@ -431,7 +452,7 @@ if (process.argv.includes('--seed')) {
       mutation: `queue row "${cited}" pruned`,
       expect: [`${victim[1] ?? ''} `, `absent from ${QUEUE}`],
     },
-    () => gradeDeferrals(registry, queue.replace(`**${cited}**`, '**control**')),
+    () => gradeDeferrals(cites, queue.replace(`**${cited}**`, '**control**')),
   );
 
   const plantedRow = '- **ZZ control row** — planted. Accept: never. `pri` med.\n';

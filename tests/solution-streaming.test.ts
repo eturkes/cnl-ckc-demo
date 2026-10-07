@@ -325,3 +325,95 @@ describe('client partial routing', () => {
     client.dispose();
   });
 });
+
+describe('a run ends at its final record', () => {
+  it(
+    'takes no step past exhaustion, so no other request runs while its query is open',
+    async () => {
+      // The meter's trailing resume marker leaves a choice point after the final record; stepping
+      // into it cost one more yield with the query still open, and a request admitted there nested
+      // inside it (the R41 control of `pnpm engine:probe` failed on exactly that in the browser).
+      let steps = 0;
+      const counted = new EngineSession({
+        expected: contract,
+        loadImage: async (bytes) => {
+          const engine = await loadImage(bytes);
+          const query = engine.prolog.query.bind(engine.prolog);
+          engine.prolog.query = (goal: string, bindings?: Record<string, unknown>) => {
+            const result = query(goal, bindings);
+            if (!goal.includes('BudgetMeter_')) return result;
+            const iterate = result[Symbol.iterator].bind(result);
+            result[Symbol.iterator] = () => {
+              const iterator = iterate();
+              return {
+                next: () => {
+                  steps += 1;
+                  return iterator.next();
+                },
+              } as ReturnType<typeof iterate>;
+            };
+            return result;
+          };
+          return engine;
+        },
+      });
+      await counted.boot(image);
+      expect(await counted.solve('fail.', budget())).toEqual({ kind: 'failure' });
+      expect(steps).toBe(1);
+      steps = 0;
+      const two = await counted.solve('between(1,2,X).', budget());
+      expect(two).toMatchObject({ kind: 'solutions' });
+      // Two answers, then the final record: three steps, none past it.
+      expect(steps).toBe(3);
+    },
+    TIMEOUT,
+  );
+});
+
+describe('the exhausting step still reads the deadline', () => {
+  it(
+    'reports wall-clock when the step that exhausted the goal crossed the deadline',
+    async () => {
+      let virtualNow = 0;
+      const timed = new EngineSession({
+        expected: contract,
+        loadImage: async (bytes) => {
+          const engine = await loadImage(bytes);
+          const query = engine.prolog.query.bind(engine.prolog);
+          engine.prolog.query = (goal: string, bindings?: Record<string, unknown>) => {
+            const result = query(goal, bindings);
+            if (!goal.includes('BudgetMeter_')) return result;
+            const iterate = result[Symbol.iterator].bind(result);
+            result[Symbol.iterator] = () => {
+              const iterator = iterate();
+              return {
+                next: () => {
+                  const step = iterator.next();
+                  // The final record (`BudgetFinal_ = true`) arrives 20 ms past a 10 ms deadline.
+                  const value = step.value as Record<string, unknown> | undefined;
+                  if (value?.BudgetFinal_ === 'true') virtualNow += 20;
+                  return step;
+                },
+              } as ReturnType<typeof iterate>;
+            };
+            return result;
+          };
+          return engine;
+        },
+      });
+      await timed.boot(image);
+      const epoch = Date.now();
+      vi.spyOn(Date, 'now').mockImplementation(() => epoch + virtualNow);
+      expect(await timed.solve('fail.', budget({ wallClockMs: 10 }))).toEqual({
+        kind: 'limit',
+        limit: 'wall-clock',
+        solutions: [],
+      });
+      virtualNow = 0;
+      const two = await timed.solve('(true;true).', budget({ wallClockMs: 10 }));
+      expect(two).toMatchObject({ kind: 'limit', limit: 'wall-clock' });
+      if (two.kind === 'limit') expect(two.solutions).toHaveLength(2);
+    },
+    TIMEOUT,
+  );
+});
