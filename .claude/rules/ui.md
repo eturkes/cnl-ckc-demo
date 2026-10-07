@@ -183,3 +183,10 @@ read out of the vendored bag **at run time** through `verifyBag`.
 |---|---|---|
 | `TYPEAHEAD_MS` (`QuestionCombobox.svelte`) | 500 ms | the typeahead buffer's life, the APG figure; `pnpm test:browser` K5 grades both sides of it |
 | `DEMO_BUDGET` (`DemoController.svelte.ts`) | 5 000 000 inferences, 5 000 ms | one prepared question's request-wide budget; shipped catalog peaks sit orders of magnitude below it |
+
+## User review
+
+- **A visual unit's user review = the live interface** (user ruling). Hand over the running app
+  (`pnpm build && pnpm preview`, or `pnpm dev`) with the click path to each changed state, and
+  record the review owed until the user rules. Capture folders feed `pnpm visual-qa` and
+  `reviewer` passes alone; never ask the user to review captures.

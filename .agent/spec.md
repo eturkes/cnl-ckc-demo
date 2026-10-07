@@ -200,8 +200,8 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
     capture review.
   - Teammates before the pause: `mnt2-reviewer-1`…`-8` (reviewer), every verdict pass after its fix
     round; reports `.scratch/agents/mnt2-reviewer-N.md`. Snapshots `wip/mnt2-*` + `wt/d63` stay.
-  - Next: d63 commit → rulings commit (gate.md ratification, ui.md live review, ticks) → Close-2:
-    one `reviewer` over `70c8507..HEAD` every lens, `pnpm gate` clean, release lanes incl.
+  - This session: d63 `9d11b44`; rulings commit (gate.md ratification, ui.md live review). Next:
+    Close-2: one `reviewer` over `70c8507..HEAD` every lens, `pnpm gate` clean, release lanes incl.
     `kb:reproduce` — unconfirmed: kb.pvm 457,932 B in an Oct 2 cached build vs 458,180 B in the
     forced builds since, which agree. Notes `.scratch/mnt3/`.
 - [x] `9ade964` `med` Cap-one re-proof: a pinned-contention trip names `limit: 'wall-clock'`; the case proves under a frozen clock.
@@ -242,7 +242,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `e9465b9` d54 every `deferred` registry row cites a live queue row; `claims:check` refuses an uncited or dangling one (7 rows added).
 - [x] `9b793fd` d1 the Japanese face ships as a catalog-exact subset (2,654,740 B → 193,444 B), raster-identical to the original.
 - [x] `906d069` d3 `copy:check` grades Japanese register J1–J4 (`mnt-d3.md`, approved); 3 copy edits.
-- [x] `d6714d7` d5 approved (user): phased boot status replaces the status line's boot text — visual unit, captures + `visual-qa`; the user review of the captures is owed.
+- [x] `d6714d7` d5 approved (user): phased boot status replaces the status line's boot text — visual unit, captures + `visual-qa`; the user's live review is owed (`.claude/rules/ui.md` `User review`).
 - [x] `3f99fd1` d6 the URL carries the selected catalog id; reload and back/forward select it and never run.
 - [x] `424b394` d8 a service worker precaches the boot set; a second visit boots offline; a renamed PVM evicts the stale cache.
 - [x] `6e558cd` d9 both u1 wave-1 reports validate (25/25, 12/12), re-derived at today's tree; new row: halting payload reports `[object Object]`.
@@ -251,14 +251,14 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `768742e` d20 `kb:asset-check` refuses an oracle path assembled from its two bare segments.
 - [x] `1dc006f` d22 `pnpm visual-qa`: 39 states at 320/375/1280 px, none overflows, planted-overflow control.
 - [x] `2b4a2b6` d28 the source-label grammar is stated in `.claude/rules/ui.md` `Copy`; the humanizer test cites it.
-- [x] `04ada8c` d17 approved (user): solutions render as they arrive — visual unit, captures + `visual-qa`; the user review of the captures is owed.
+- [x] `04ada8c` d17 approved (user): solutions render as they arrive — visual unit, captures + `visual-qa`; the user's live review is owed (`.claude/rules/ui.md` `User review`).
 - [x] `03a0184` d33 `copy:check` grades a keyed literal once, under its key (378 → 251 graded strings).
 - [x] `0cdaa0f` d38 `withBuiltSite` (`tools/browser.mjs`) owns build, serve, launch and teardown for smoke, browser:check and visual-qa.
 - [x] `337aeba` d39 ruled (user): unfreeze the `serialize.ts` + `humanize.ts` header lines in T9 and delete them (the other 8 headers + 8 sites done).
 - [x] `7f7a2aa` d34 m1u5 matrix 26/26: 19 covered, 6 ported green (`tests/m1u5-port.dom.test.ts`), 1 superseded, 0 red.
-- [x] `9056d3d` d41 approved (user): an owned lazy PDF.js viewer replaces the ladder's iframe (+504,727 B gzip) — visual unit, captures + `visual-qa`; the user review of the captures is owed.
+- [x] `9056d3d` d41 approved (user): an owned lazy PDF.js viewer replaces the ladder's iframe (+504,727 B gzip) — visual unit, captures + `visual-qa`; the user's live review is owed (`.claude/rules/ui.md` `User review`).
 - [x] `a067cdc` d42 session proof cache: re-selection runs no meta-interpreter call; solve/consult/poison invalidate.
-- [x] `db0736f` d43 approved (user): the document-first provenance browser = a third view beside the graph and its list fallback — visual unit, captures + `visual-qa`; the user review of the captures is owed.
+- [x] `db0736f` d43 approved (user): the document-first provenance browser = a third view beside the graph and its list fallback — visual unit, captures + `visual-qa`; the user's live review is owed (`.claude/rules/ui.md` `User review`).
 - [x] `bdd2ae4` d47 `pnpm queue:index` derives the queue index; `claims:check` refuses a stale one by line.
 - [x] `2089c73` d35 m1u7 matrix 34/34: 16 covered, 13 ported green (`tests/m1u7-port{,.dom}.test.ts`), 5 superseded, 0 red.
 - [x] `737c6d6` d55 u13's firing record names base `3c4c17c` (reproduced there: rc 1, same assertion); the phrasing census is gone from the tree.
@@ -269,7 +269,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `c73a1f2` d60 `--verdict` admits the reviewer role's vocabulary; waves.md names the brief's one vocabulary.
 - [ ] d61 ruled (user): stay local — stays open, owed to the user (deploy + limiter).
 - [x] `75e6073` d62 the selector suite plants the fixed-trigger mutant in memory and requires ORACLE-S to catch it.
-- [ ] d63 ruled (user): declared limit — `proof.md` `Free-text intake selects` states it and `tests/census.test.ts` grades its figures; the one billed run scored A 106/121 · 106/163 and B 113/140 · 113/163 against 143/240 · 143/163 (evidence `wt/d63` `cfbe0ad`).
+- [x] `9d11b44` d63 ruled (user): declared limit — `proof.md` `Free-text intake selects` states it and `tests/census.test.ts` grades its figures; the one billed run scored A 106/121 · 106/163 and B 113/140 · 113/163 against 143/240 · 143/163 (evidence `wt/d63` `cfbe0ad`).
 - [x] `4c37c0a` find: engine timing figures reworded to the bounds they guarantee, browser figures cited to `engine:probe`.
 - [x] `65d9afb` find: `copy:check` refuses a component joining catalog fragments outside the declared pairs.
 - [x] `bb27a1a` find: a dom test fails the proof request and reads `TEXT.traceFailure` in both locales.
