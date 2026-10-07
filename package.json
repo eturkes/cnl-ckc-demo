@@ -62,7 +62,7 @@
     "@fontsource-variable/literata": "5.3.0",
     "@fontsource/biz-udpgothic": "5.3.0",
     "@typesafe-ai/sdk": "0.6.0",
-    "cytoscape": "3.34.2",
+    "cytoscape": "3.34.3",
     "cytoscape-fcose": "2.2.0",
     "pdfjs-dist": "6.4.299",
     "swipl-wasm": "8.0.7"
