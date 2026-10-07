@@ -185,38 +185,25 @@ MAINTAIN request: work every `.agent/deferred.md` row in rank order (`high` → 
 queue order within a rank); one unit + commit per row, gate green at each, row pruned in its
 closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 
-- [ ] Resume note — session paused by the user after `995e333`; the next session deletes this row once oriented.
+- [ ] Resume note — resumed after `417f501` (gate rc 0 there, 1117/1117); the closing commit deletes this row.
   - Finish line in force: the original request's Met-when. Every row is closed by its own check in
     its own commit, recorded as blocked on the user, or waiting on its trigger. The full gate passes
     on a clean tree at the closing commit, and the final message lists SHAs, owed parts, rows added,
-    gate + skipped/not-run checks, teammates, advisor calls (`none`), the unconfirmed, `git status`
-    and the closing SHA.
-  - Committed this run: cap-one `9ade964`, CI `64fb0cc`, d5 `d6714d7`, d12 `114ad49`, d17 `04ada8c`,
-    d39 `337aeba`, d41 `9056d3d`, d43 `db0736f`, d63 `d107a16` (measured, blocked), inline-disable
+    gate + skipped/not-run checks, teammates, advisor calls, the unconfirmed, `git status` and the
+    closing SHA.
+  - Committed before the pause: cap-one `9ade964`, CI `64fb0cc`, d5 `d6714d7`, d12 `114ad49`, d17
+    `04ada8c`, d39 `337aeba`, d41 `9056d3d`, d43 `db0736f`, d63 measured `d107a16`, inline-disable
     `f862574`, dict `8a8a21e`, failed reset `935b287`, condition-supports `ce75b11`, selected-row
-    `5fd1588`, B9 `d2744cb`, probe-control `e8f7cab`, licences `995e333`; then this note. Uncommitted:
-    none. No snapshot branch: nothing was in flight.
-  - Rows added this run: selected-row, B9, engine:probe R41 control, licence notices (all closed);
-    five coverage passages (open, `low`, producer-owned).
-  - Teammates: none running, no worktrees. `mnt2-reviewer-1`…`-8` (reviewer) stopped + harvested,
-    reports `.scratch/agents/mnt2-reviewer-N.md`; every verdict passes after its fix round
-    (reviewer-8: P1 fail(med) → P1-r2 pass on `4e28d9d`; P2–P4 pass). Review snapshots `wip/mnt2-*`
-    are cited by commit bodies and stay; d63 evidence `wt/d63` `cfbe0ad`. Last state rerun:
-    `e8f7cab` gate + engine:probe + smoke + browser:check + mutate 46/46; `995e333` gate + smoke +
-    browser:check + readme:check.
-  - Next action: the ONE `AskUserQuestion`, interrupted unanswered — (1) ratify `e8f7cab`'s
-    claims:check change (the citation controls plant `deferred` on a copy when the registry cites
-    no queue row; original firing `no cited deferred row, so the citation controls grade nothing`)
-    or revert to a skip; (2) d63: declared limit / ship policy B (changes the acceptance) /
-    redesign + a second billed run / leave open; (3) d61: stay local / prepare a deploy; (4) the
-    d5/d17/d41/d43 captures in `.scratch/mnt2/<unit>/`: accepted / review later / changes. Fund
-    what the answers unblock, then Close-2. d14 (behind d29), d29 (trigger) and the five passages
-    (producer) stay as they are.
-  - Close-2 also runs the release lanes, `pnpm kb:reproduce` included — unconfirmed: kb.pvm read
-    457,932 B in an Oct 2 cached build vs 458,180 B in today's forced builds, which agree.
-  - Scratch helpers (gitignored, may be recreated): `.scratch/maint/prune.py '<title>'`,
-    `.scratch/maint/adj.sh` (`adj RNNN '<cmd>' <disposition>`), `.scratch/maint/regdiff.py`;
-    notes `.scratch/mnt2/notes.md`.
+    `5fd1588`, B9 `d2744cb`, probe-control `e8f7cab`, licences `995e333`, pause `417f501`.
+  - Rulings (user, this session): `e8f7cab`'s claims:check change RATIFIED; d63 = declared limit;
+    d61 stays local, owed; d5/d17/d41/d43 = the user reviews them in the live interface, owed — no
+    capture review.
+  - Teammates before the pause: `mnt2-reviewer-1`…`-8` (reviewer), every verdict pass after its fix
+    round; reports `.scratch/agents/mnt2-reviewer-N.md`. Snapshots `wip/mnt2-*` + `wt/d63` stay.
+  - Next: d63 commit → rulings commit (gate.md ratification, ui.md live review, ticks) → Close-2:
+    one `reviewer` over `70c8507..HEAD` every lens, `pnpm gate` clean, release lanes incl.
+    `kb:reproduce` — unconfirmed: kb.pvm 457,932 B in an Oct 2 cached build vs 458,180 B in the
+    forced builds since, which agree. Notes `.scratch/mnt3/`.
 - [x] `9ade964` `med` Cap-one re-proof: a pinned-contention trip names `limit: 'wall-clock'`; the case proves under a frozen clock.
 - [x] `64fb0cc` `med` CI registry receipt: the registry row lists every `run:` + `uses:` step of `ci.yml`.
 - [x] `24bbb5d` d0 find: 4 live advisories reddened `audit:check` → lockfile bump.
@@ -282,7 +269,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `c73a1f2` d60 `--verdict` admits the reviewer role's vocabulary; waves.md names the brief's one vocabulary.
 - [ ] d61 ruled (user): stay local — stays open, owed to the user (deploy + limiter).
 - [x] `75e6073` d62 the selector suite plants the fixed-trigger mutant in memory and requires ORACLE-S to catch it.
-- [ ] d63 measured, blocked on the user: the one billed run scored A 106/121 · 106/163 and B 113/140 · 113/163 against 143/240 · 143/163; neither holds recall, so `main` keeps the shipped request (evidence `wt/d63` `cfbe0ad`); a redesign or second run needs the user.
+- [ ] d63 ruled (user): declared limit — `proof.md` `Free-text intake selects` states it and `tests/census.test.ts` grades its figures; the one billed run scored A 106/121 · 106/163 and B 113/140 · 113/163 against 143/240 · 143/163 (evidence `wt/d63` `cfbe0ad`).
 - [x] `4c37c0a` find: engine timing figures reworded to the bounds they guarantee, browser figures cited to `engine:probe`.
 - [x] `65d9afb` find: `copy:check` refuses a component joining catalog fragments outside the declared pairs.
 - [x] `bb27a1a` find: a dom test fails the proof request and reads `TEXT.traceFailure` in both locales.

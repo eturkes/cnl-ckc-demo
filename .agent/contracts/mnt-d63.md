@@ -55,3 +55,11 @@ Conditional rules are unchanged under both.
   shipped policy, with the original text recorded in the commit body.
 - `.claude/rules/proof.md` `Free-text intake selects`: the 95/97 figure is replaced by the new
   report's figures.
+
+## Close
+
+Neither policy met the check (A 106/121 · 106/163, B 113/140 · 113/163 against 143/240 ·
+143/163), so the request change stayed off `main`. User ruling: the row closes as a declared
+limit — `.claude/rules/proof.md` `Free-text intake selects` states it, `tests/census.test.ts`
+grades its baseline figures against `tests/intake/report.json`, and the queue row is pruned.
+The two Records above stay unapplied: no policy shipped.

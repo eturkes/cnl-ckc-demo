@@ -3,8 +3,8 @@
 // before; here a figure that no longer matches names its rules file and line.
 //
 // Derivations come from the verified bag, the live saved image, the twelve live clinical proofs,
-// the generated intake vocabulary and the graph model the app itself projects — never from the
-// rules text being graded.
+// the generated intake vocabulary, the committed intake replay report and the graph model the app
+// itself projects — never from the rules text being graded.
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -241,7 +241,7 @@ beforeAll(async () => {
 
   // Intake vocabulary: the selection model's rules, conditions and section-triggered rules.
   const intake = JSON.parse(readFileSync(join(GENERATED, 'intake-vocabulary.json'), 'utf8')) as {
-    rules: { document: string; trigger: { kind: string } }[];
+    rules: { id: string; document: string; trigger: { kind: string } }[];
     conditions: unknown[];
   };
   derived.set('intake.rules', intake.rules.length);
@@ -251,6 +251,24 @@ beforeAll(async () => {
     intake.rules.filter((rule) => rule.trigger.kind === 'section').length,
   );
   derived.set('intake.documents', new Set(intake.rules.map((rule) => rule.document)).size);
+
+  // Intake replay report: the shipped selection's derived rules graded against held-out gold.
+  const report = JSON.parse(readFileSync(join(ROOT, 'tests', 'intake', 'report.json'), 'utf8')) as {
+    cases: { gold: { ruleIds: string[] }; baseline: { derived: string[] } }[];
+  };
+  const trigger = new Map(intake.rules.map((rule) => [rule.id, rule.trigger.kind]));
+  const selected = report.cases.flatMap(({ gold, baseline }) =>
+    baseline.derived.map((id) => ({ id, gold: gold.ruleIds.includes(id) })),
+  );
+  const misses = selected.filter((rule) => !rule.gold);
+  derived.set('intake.derived', selected.length);
+  derived.set('intake.truePositives', selected.length - misses.length);
+  derived.set('intake.gold', report.cases.flatMap(({ gold }) => gold.ruleIds).length);
+  derived.set('intake.falsePositives', misses.length);
+  derived.set(
+    'intake.sectionFalsePositives',
+    misses.filter(({ id }) => trigger.get(id) === 'section').length,
+  );
 
   // Graph: the generated asset as data, and the projection the app's own model computes.
   const model = new SemanticGraphModel(
@@ -416,6 +434,22 @@ const CENSUS: Row[] = [
       fig('rules', `over ${N} rules`, 'intake.rules'),
       fig('unconditional rules', `${N} of them unconditional`, 'intake.unconditional'),
       fig('documents', `across ${N} documents`, 'intake.documents'),
+    ],
+  },
+  {
+    file: PROOF,
+    anchor: '- An unconditional rule is triggered by its CDC Box 3 section',
+    figures: [
+      fig(
+        'section-triggered false positives',
+        `qualified: ${N} of the`,
+        'intake.sectionFalsePositives',
+      ),
+      fig('false positives', `of the ${N} derived rules`, 'intake.falsePositives'),
+      fig('true positives', `precision is ${N}/`, 'intake.truePositives'),
+      fig('derived rules', `precision is \\d+/${N}`, 'intake.derived'),
+      fig('recalled rules', `at recall ${N}/`, 'intake.truePositives'),
+      fig('gold rules', `at recall \\d+/${N}`, 'intake.gold'),
     ],
   },
   {

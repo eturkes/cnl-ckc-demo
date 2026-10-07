@@ -35,27 +35,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   lets many clients jointly spend the API key, so a public Worker likely needs a per-client
   bucket AND a global spend bucket. Already in place: `ALLOWED_ORIGINS` is a `wrangler.jsonc`
   var, so naming the published page is configuration, not code.
-- **A section "yes" selects every pain-compatible unconditional rule of that section** — 95 of
-  the 97 derived
-  rules the held-out gold does not list are section-triggered (`.claude/rules/proof.md`), so
-  derived-rule precision on the 30 held-out cases is 143/240. Accept: an intake change lifts
-  precision on `pnpm intake:probe` without lowering recall below 143/163, re-derived through
-  `tests/intake-replay.test.ts`. `pri` low. **User ruling**: approved — contract `.agent/contracts/mnt-d63.md`: 22 per-rule Nouls, and ONE billed `pnpm intake:probe` scores policies A and B on the same responses. **Background**: measured offline over the recorded
-  judgments, no filter of the shipped selection can meet the check — holding recall at 143/163
-  means dropping zero true positives, and 106 of them are section-triggered beside the 95 false
-  positives. Section rules only where no condition of that section fired: 67/144 precision, 67/163
-  recall; only where no condition fired at all: 51/109, 51/163; condition rules alone: 37/39,
-  37/163. A lift therefore needs new per-rule judgment signal — a request change, which the
-  user's selection-model ruling governs — and a live billed `pnpm intake:probe` to score it.
-  **Measured (the approved ONE billed run, `.agent/contracts/mnt-d63.md`)**: 22 per-rule Nouls
-  quoting each unconditional rule's aligned source sentence(s); 36 calls; both policies scored on
-  the same responses. A (section AND rule): precision 106/121, recall 106/163, outcomes 26/30.
-  B (rule alone): 113/140, 113/163, 28/30. Baseline: 143/240, 143/163, 27/30. Neither holds recall
-  ≥ 143/163, so the request change stays off `main` (contract: revert) and the row stays open,
-  owed to the user — a second billed run needs the user's approval. Under A every lost true positive is
-  section-triggered (37 lost, 0 gained, 82 false positives removed); `rec12:2`–`:4` account for 21
-  and `rec05:5` for 6, so the rule question denies the opioid-use-disorder recommendations most.
-  Code, replay and report: branch `wt/d63` `cfbe0ad` (never rename).
 - **Five coverage passages do not locate on their recorded page** — the owned page viewer
   marks a passage where its page's text holds it (`tests/passage-locate.test.ts`: 319 whole, 13
   continuing, 5 not found). `cdc2022-opioid-rec06` and `rec07` record page 14, yet each passage

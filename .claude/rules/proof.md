@@ -48,9 +48,12 @@ over 48 rules, 22 of them unconditional, across 12 documents.
   executable surface and cannot fabricate a recommendation.
 - An unconditional rule is triggered by its CDC Box 3 section instead. A section "yes"
   therefore selects every unconditional rule of that section whose pain set admits the judged
-  pain type, however qualified: 95 of the 97
-  derived rules the held-out gold does not list are section-triggered
-  (`tests/intake/report.json`).
+  pain type, however qualified: 95 of the 97 derived rules the held-out gold does not list
+  are section-triggered, so derived-rule precision is 143/240 at recall 143/163
+  (`tests/intake/report.json`). **Declared limit (user ruling):** a lift needs per-rule
+  judgment signal, and the one billed run that scored 22 per-rule Nouls lost recall under
+  both policies — section AND rule 106/121 · 106/163, rule alone 113/140 · 113/163
+  (`.agent/contracts/mnt-d63.md`, branch `wt/d63` `cfbe0ad`).
 - Declared model limits, not defects: `unstated` pain admits the 13 pain-agnostic rules
   alone; the pain Choice is single-valued; a gap phrase is judged absent, never proved
   absent, and phrases past the 16th go unjudged; the guideline's own exclusions (cancer
