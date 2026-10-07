@@ -200,10 +200,8 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
     capture review.
   - Teammates before the pause: `mnt2-reviewer-1`…`-8` (reviewer), every verdict pass after its fix
     round; reports `.scratch/agents/mnt2-reviewer-N.md`. Snapshots `wip/mnt2-*` + `wt/d63` stay.
-  - This session: d63 `9d11b44`; rulings commit (gate.md ratification, ui.md live review). Next:
-    Close-2: one `reviewer` over `70c8507..HEAD` every lens, `pnpm gate` clean, release lanes incl.
-    `kb:reproduce` — unconfirmed: kb.pvm 457,932 B in an Oct 2 cached build vs 458,180 B in the
-    forced builds since, which agree. Notes `.scratch/mnt3/`.
+  - This session: d63 `9d11b44`, rulings `ddab59a`, Close-2 contract `fd0a7cd`, Close-2 fixes (this
+    commit; snapshot `wt/close2` `46dcf6b`). Next: tick Close-2 + delete this note. Notes `.scratch/mnt3/`.
 - [x] `9ade964` `med` Cap-one re-proof: a pinned-contention trip names `limit: 'wall-clock'`; the case proves under a frozen clock.
 - [x] `64fb0cc` `med` CI registry receipt: the registry row lists every `run:` + `uses:` step of `ci.yml`.
 - [x] `24bbb5d` d0 find: 4 live advisories reddened `audit:check` → lockfile bump.
@@ -290,7 +288,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [ ] find (five coverage passages do not locate on their recorded page): `low`, producer-owned.
 - [x] `995e333` find (bundled JavaScript ships without its licence notices): `dist/licenses/third-party.txt` + the build refuses a bundled package missing from it.
 - [x] `e8f7cab` find (engine:probe R41 control): a run ends at its final record; the control fires again.
-- [ ] Close-2: the closing diff since `70c8507` → one `reviewer` covering every lens; `pnpm gate` on a clean tree; final report per the request's Met-when.
+- [ ] Close-2: check set `.agent/contracts/mnt2-close.md`; `mnt2-reviewer-9`–`-11` (reviewer) 11/11 rows — 7 pass, C3 D1 D2 fail(low) → fixed, `mnt2-reviewer-12` r2 3/3 pass; release:check + mutate 46/46 (+ C3 1/1) + binding:replay green.
 - [x] `aefae8c` find: a refactor staled mutant R09's anchor with the gate green → `tests/mutant-anchors.test.ts` grades every anchor in the gate.
 - [x] `8c186d2` find: a heap recreation that joined an in-flight reset waited on its unbounded boot → it arms its own boot deadline.
 - [x] `28c37bc` Close: 4 lenses × 2 reviewers, round-2 re-review all pass; 46/46 mutants killed under the exit-1 rule.

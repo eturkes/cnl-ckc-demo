@@ -66,4 +66,4 @@ case in its run, so a tree holding them red can never be gate-green, and xfail, 
 or branch-only storage each stop executing the defect. S9's headline now counts entity and
 event nodes alone and both locales name what the hidden totals contain; S13+ is refused at
 `parseEdge`, where `guideline_arg/4` and `guideline_pp/4` constrain their source to an event —
-5,002 constrained edges, 0 violations across the shipped 20,964.
+5,018 constrained edges, 0 violations across the shipped 20,980.

@@ -16,6 +16,8 @@
   const pageHref = $derived(`${guidelinePdfUrl}#page=${String(page)}`);
 
   let open = $state(false);
+  // Each select bumps it, so a failed draw re-runs the effect on the next select.
+  let attempt = $state(0);
   let surface = $state<HTMLElement>();
   let viewer = $state.raw<
     | { kind: 'rendering' }
@@ -25,6 +27,7 @@
 
   // The viewer and PDF.js load only here, once the reader opens the page.
   $effect(() => {
+    void attempt;
     if (!open || surface === undefined) return;
     const host = surface;
     const target = page;
@@ -81,8 +84,14 @@
 </script>
 
 <div class="page-actions">
-  <button type="button" data-action="load-page-viewer" disabled={open} onclick={() => (open = true)}
-    >{t.LABELS.loadPageViewer}</button
+  <button
+    type="button"
+    data-action="load-page-viewer"
+    disabled={open && viewer.kind !== 'failed'}
+    onclick={() => {
+      open = true;
+      attempt += 1;
+    }}>{t.LABELS.loadPageViewer}</button
   >
   <a href={pageHref} target="_blank" rel="noreferrer">{t.LABELS.openPageTab}</a>
 </div>
