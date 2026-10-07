@@ -270,7 +270,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `d2744cb` find (B9 times cached proofs): B9 empties the cache and requires a meta-interpreter run per timed proof.
 - [ ] find (five coverage passages do not locate on their recorded page): `low`, producer-owned.
 - [ ] find (bundled JavaScript ships without its licence notices): `low`.
-- [ ] find (engine:probe R41 control): `med`, funded after the named rows.
+- [x] `e8f7cab` find (engine:probe R41 control): a run ends at its final record; the control fires again.
 - [ ] Close-2: the closing diff since `70c8507` → one `reviewer` covering every lens; `pnpm gate` on a clean tree; final report per the request's Met-when.
 - [x] `aefae8c` find: a refactor staled mutant R09's anchor with the gate green → `tests/mutant-anchors.test.ts` grades every anchor in the gate.
 - [x] `8c186d2` find: a heap recreation that joined an in-flight reset waited on its unbounded boot → it arms its own boot deadline.

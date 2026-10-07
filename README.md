@@ -168,5 +168,9 @@ CSP meta tag because deployment headers are the authoritative boundary.
 ## Licences
 
 The demo is Apache-2.0 WITH LLVM-exception. Atkinson Hyperlegible Next, Atkinson
-Hyperlegible Mono, and Literata are included under the SIL Open Font License 1.1;
-their licence texts are served from `public/licenses/`.
+Hyperlegible Mono, Literata, and BIZ UDPGothic are included under the SIL Open Font
+License 1.1; their licence texts are served from `public/licenses/`.
+
+The build bundles third-party JavaScript and removes its licence comments. Each build
+therefore writes `licenses/third-party.txt`, which holds the licence file of each bundled
+package. The build fails when a bundled package is missing from that file.

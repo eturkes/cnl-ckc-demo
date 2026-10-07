@@ -81,6 +81,12 @@ template reads as unsafe → derive the value in the script block instead.
   English page and fetch the 6.2 MB fallback engine a sound session never takes. `src/main.ts`
   registers in production builds alone. `pnpm browser:check` grades the offline second visit and
   the invalidation.
+- **Licence notice = `dist/licenses/third-party.txt`** (`tools/licences.mjs`): minification strips
+  every licence comment, so the `licenceNotice` plugin lists each package with code in a bundled
+  chunk (`renderedLength > 0`, the main AND worker builds) beside its licence file, verbatim.
+  Worker builds run inside the main build's transform phase, so their packages are known before
+  the main build emits; a bundler-injected `\0` module maps to its shipping package through
+  `VIRTUAL`, and an unmapped one fails the build. `closeBundle` grades the written file.
 - `cacheDir` must resolve against the project root. Worktrees reach the toolchain through a
   `node_modules` symlink, so the default `node_modules/.vite` is ONE physical directory
   shared by every tree.
