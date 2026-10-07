@@ -84,7 +84,10 @@ leaves its frame open, and every later query then resolves outside the KB:
   discarding that record. A step is metered from the moment the engine resumes the goal — the
   resume point is stamped into the `BudgetMeter_` global on backtracking — so the display
   render between steps never enters the total, which counts the goal plus the wrapper's few
-  inferences per step. Proofs keep the per-step `wrapGoal`.
+  inferences per step. The marker leaves a choice point after the final record, so a run ends AT
+  that record: one more step would yield with the query still open, and a request admitted there
+  nests inside it (in the browser that nested query failed, `pnpm engine:probe`'s R41 control).
+  Proofs keep the per-step `wrapGoal`.
 - **Answers stream** (d17): `solve` renders each answer between steps and hands it at once to
   its listener, which `handle` posts as a non-terminal `partial` under the query's id;
   `EngineClient.query(…, onSolution)` and `AnswerService.ask(…, onSolution)` deliver them, a
