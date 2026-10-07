@@ -185,23 +185,6 @@ MAINTAIN request: work every `.agent/deferred.md` row in rank order (`high` → 
 queue order within a rank); one unit + commit per row, gate green at each, row pruned in its
 closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 
-- [ ] Resume note — resumed after `417f501` (gate rc 0 there, 1117/1117); the closing commit deletes this row.
-  - Finish line in force: the original request's Met-when. Every row is closed by its own check in
-    its own commit, recorded as blocked on the user, or waiting on its trigger. The full gate passes
-    on a clean tree at the closing commit, and the final message lists SHAs, owed parts, rows added,
-    gate + skipped/not-run checks, teammates, advisor calls, the unconfirmed, `git status` and the
-    closing SHA.
-  - Committed before the pause: cap-one `9ade964`, CI `64fb0cc`, d5 `d6714d7`, d12 `114ad49`, d17
-    `04ada8c`, d39 `337aeba`, d41 `9056d3d`, d43 `db0736f`, d63 measured `d107a16`, inline-disable
-    `f862574`, dict `8a8a21e`, failed reset `935b287`, condition-supports `ce75b11`, selected-row
-    `5fd1588`, B9 `d2744cb`, probe-control `e8f7cab`, licences `995e333`, pause `417f501`.
-  - Rulings (user, this session): `e8f7cab`'s claims:check change RATIFIED; d63 = declared limit;
-    d61 stays local, owed; d5/d17/d41/d43 = the user reviews them in the live interface, owed — no
-    capture review.
-  - Teammates before the pause: `mnt2-reviewer-1`…`-8` (reviewer), every verdict pass after its fix
-    round; reports `.scratch/agents/mnt2-reviewer-N.md`. Snapshots `wip/mnt2-*` + `wt/d63` stay.
-  - This session: d63 `9d11b44`, rulings `ddab59a`, Close-2 contract `fd0a7cd`, Close-2 fixes (this
-    commit; snapshot `wt/close2` `46dcf6b`). Next: tick Close-2 + delete this note. Notes `.scratch/mnt3/`.
 - [x] `9ade964` `med` Cap-one re-proof: a pinned-contention trip names `limit: 'wall-clock'`; the case proves under a frozen clock.
 - [x] `64fb0cc` `med` CI registry receipt: the registry row lists every `run:` + `uses:` step of `ci.yml`.
 - [x] `24bbb5d` d0 find: 4 live advisories reddened `audit:check` → lockfile bump.
@@ -288,7 +271,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [ ] find (five coverage passages do not locate on their recorded page): `low`, producer-owned.
 - [x] `995e333` find (bundled JavaScript ships without its licence notices): `dist/licenses/third-party.txt` + the build refuses a bundled package missing from it.
 - [x] `e8f7cab` find (engine:probe R41 control): a run ends at its final record; the control fires again.
-- [ ] Close-2: check set `.agent/contracts/mnt2-close.md`; `mnt2-reviewer-9`–`-11` (reviewer) 11/11 rows — 7 pass, C3 D1 D2 fail(low) → fixed, `mnt2-reviewer-12` r2 3/3 pass; release:check + mutate 46/46 (+ C3 1/1) + binding:replay green.
+- [x] `06e1d24` Close-2: check set `.agent/contracts/mnt2-close.md`; `mnt2-reviewer-9`–`-11` (reviewer) 11/11 rows — 7 pass, C3 D1 D2 fail(low) → fixed, `mnt2-reviewer-12` r2 3/3 pass; release:check + mutate 46/46 (+ C3 1/1) + binding:replay green.
 - [x] `aefae8c` find: a refactor staled mutant R09's anchor with the gate green → `tests/mutant-anchors.test.ts` grades every anchor in the gate.
 - [x] `8c186d2` find: a heap recreation that joined an in-flight reset waited on its unbounded boot → it arms its own boot deadline.
 - [x] `28c37bc` Close: 4 lenses × 2 reviewers, round-2 re-review all pass; 46/46 mutants killed under the exit-1 rule.
