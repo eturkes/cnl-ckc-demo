@@ -65,7 +65,7 @@
     "cytoscape": "3.34.2",
     "cytoscape-fcose": "2.2.0",
     "pdfjs-dist": "6.4.299",
-    "swipl-wasm": "8.0.7"
+    "swipl-wasm": "8.2.1"
   },
   "devDependencies": {
     "@eslint-community/eslint-plugin-eslint-comments": "^4.8.1",
