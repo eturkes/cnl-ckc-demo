@@ -507,6 +507,8 @@ const CENSUS: Row[] = [
       fig('event nodes', `\\+ ${N} event`, 'projection.event'),
       fig('value nodes', `\\+ ${N} value`, 'projection.value'),
       fig('concept headline', `counts the ${N} entity/event`, 'projection.concepts'),
+      fig('full-graph nodes', `out of ${N} /`, 'graph.nodes'),
+      fig('full-graph edges', `out of [\\d,]+ / ${N}`, 'graph.edges'),
     ],
   },
   {

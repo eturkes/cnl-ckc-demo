@@ -2,8 +2,8 @@
 // register, and hold the Japanese catalog at parity with the English one.
 //
 // Two graders, because the two languages admit different decidable rules. English
-// grades on sentence length and banned filler. Japanese grades on PARITY alone:
-// every English key present, and every value actually rewritten. The word limits
+// grades on sentence length and banned filler. Japanese grades on PARITY — every
+// English key present, every value actually rewritten — plus register J1–J4. The word limits
 // do not port — Japanese has no word spaces, so `words()` would score every
 // sentence as one word and pass anything at all.
 //

@@ -531,4 +531,18 @@ export const MUTANTS = [
     ],
     check: ['node', 'tools/presentation-check.mjs'],
   },
+  {
+    label: 'C3 a failed page draw keeps Load page viewer disabled',
+    edits: [
+      {
+        path: 'src/provenance/PageViewer.svelte',
+        old: "    disabled={open && viewer.kind !== 'failed'}",
+        new: '    disabled={open}',
+      },
+    ],
+    check: {
+      test: 'tests/page-viewer.dom.test.ts',
+      name: 'a failed draw re-enables Load page viewer',
+    },
+  },
 ];

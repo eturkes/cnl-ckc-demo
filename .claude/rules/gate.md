@@ -84,8 +84,10 @@ Step semantics a reader cannot get from the script name:
   by row count, by row anchor, by a row whose `hash` no longer digests its claim, or by leaving
   a row unadjudicated. A claim unit is a bullet with
   its continuations, a table row or a paragraph; raw lines would split one assertion in two.
-  Adding a claim to any of those sources therefore reddens the gate until the registry answers
-  it, which is the whole point — and editing THIS file is itself such an addition, so the check
+  A rules unit enters only when it states a digit or a `pnpm` command (`claimlike`), and a
+  contract unit only as an id-keyed acceptance row, so a plain-language rule stays outside the
+  registry. Adding a claim that passes those filters to any of those sources therefore reddens
+  the gate until the registry answers it, which is the whole point — and editing THIS file is itself such an addition, so the check
   is self-referential by construction. `pnpm claims:seed` re-derives the row set when a source
   moves and carries every adjudicated cell forward, keyed on a digest of the FULL claim text:
   ids and line anchors are re-issued on every run, so an id-keyed merge would hand one claim's
@@ -176,7 +178,7 @@ committed state:
 | command | what it alone proves |
 |---|---|
 | `pnpm kb:reproduce` | byte-reproducibility of pvm + qlf + catalog across two forced builds |
-| `pnpm engine:probe` | the engine lifecycle in a real browser: R38 cap + deadline end an unbounded goal; R39 a worker stuck in one step ended by the main-thread deadline with the main thread free; R41 five reset cycles each killing a hostile loop, dropping consulted state and booting the manifest's corpus; R42 a failing consult poisons its engine and a reset clears it; R45 the runaway-`assertz` abort, the dead engine and recovery by reset. Control: a cycle without its reset must be refused |
+| `pnpm engine:probe` | the engine lifecycle in a real browser: R38 cap + deadline end an unbounded goal; R39 a worker stuck in one step ended by the main-thread deadline with the main thread free; R41 five reset cycles each killing a hostile loop, dropping consulted state and booting the manifest's corpus; R42 a failing consult poisons its engine and a reset clears it; R45 the runaway-`assertz` abort, the dead engine and recovery by reset. Control: a cycle without its reset must be refused. It stopped firing at `04ada8c`: d17's resume marker left a choice point past the final record, so a run yielded with its query open and a request admitted there nested inside it; a run now ends AT its final record (`e8f7cab`, `.claude/rules/engine.md`) |
 | `pnpm test:browser` | the combobox predicates jsdom can only stub — S1/S7 from Chromium's accessibility tree, K5 on the real clock, K8/K10/P2/P3 under real key and pointer input with focus read after each, B1 through the native `scrollIntoView`, B3 axe with real layout (`tests/question-combobox.browser.test.ts`) |
 | `pnpm smoke` | built output answers in a real browser against bag bytes read at run time, the served saved state is current with the bag's input digest, and no request takes the lazy QLF fallback |
 | `pnpm readme:check` | the README's `## Run locally` path from a clean clone of HEAD: every non-keyed `sh` line rc 0, both servers answering, the booted preview engine, `kb:build` and the bag manifest agreeing on the document count, and the clone's module count equal to a reference build of the same tree. It refuses a dirty tree, and its one deviation from the README text is a sandbox `--install-directory` on `corepack enable` |

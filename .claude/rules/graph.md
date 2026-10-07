@@ -112,14 +112,14 @@ server refuses, and a `--graph-*` palette set to `initial`). The mocked suite ca
   mechanisms: **9,053 rule-context implications + 751 synthesized event-support shortcuts**.
   The 751 are the defect site at `graph.mjs:398`.
 
-## Projection scope — the model carries it, the renderer does not yet
+## Projection scope — the model carries it, the shown edge reads it
 
 The concept projection still filters `operator` edges and non-`condition supports` `implies`
 edges, and `operator-context` is still absent from `CONCEPT_NODE_KINDS`. **u12 moved the scope
 onto the surviving edges instead** (`SemanticGraphEdge.scopeOperators`, ordered outermost
 first), which is the user's edge-state ruling made real in `src/graph/model.ts`.
 
-- Projection = **1,300 nodes / 2,668 grouped edges** out of 2,901 / 20,964. The nodes are
+- Projection = **1,300 nodes / 2,668 grouped edges** out of 2,901 / 20,980. The nodes are
   1,084 entity + 151 event + 65 value; the headline counts the 1,235 entity/event alone and
   names the 65 as attributes, because calling a value node a concept is what S9 caught.
 - **1,912 of the 2,668 groups carry an ordered scope**, and **372 of them carry a far scope**
