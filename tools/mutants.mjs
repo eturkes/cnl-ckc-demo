@@ -21,8 +21,8 @@ export const MUTANTS = [
       },
       {
         path: 'src/engine/session.ts',
-        old: '        if (stopped !== undefined || step.done === true) break;',
-        new: "        if (stopped !== undefined || step.done === true) break;\n        if (solutions.length >= budget.answerCap) {\n          stopped = 'answer-cap';\n          break;\n        }",
+        old: '        if (stopped !== undefined || exhausted || step.done === true) break;',
+        new: "        if (stopped !== undefined || exhausted || step.done === true) break;\n        if (solutions.length >= budget.answerCap) {\n          stopped = 'answer-cap';\n          break;\n        }",
       },
     ],
     check: { test: 'tests/engine-budgets.test.ts', name: 'exact-fit cap' },

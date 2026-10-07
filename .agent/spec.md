@@ -267,7 +267,7 @@ closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
 - [x] `935b287` find (failed reset) approved (user): change P4.4 (`engine-recovery`) + P1.1 (`engine-budgets`); every reset boots under the deadline and retires a failed replacement.
 - [ ] find (condition-supports dedup is scope-blind): new row from d49, `pri` low — fund after the named rows (its second acceptance arm needs no ruling).
 - [x] `5fd1588` find (selected-row proof case trips `limit` under contention): frozen clock + whole-result assertion.
-- [ ] find (B9 times cached proofs): `med`, funded after the named rows.
+- [x] `d2744cb` find (B9 times cached proofs): B9 empties the cache and requires a meta-interpreter run per timed proof.
 - [ ] find (five coverage passages do not locate on their recorded page): `low`, producer-owned.
 - [ ] find (bundled JavaScript ships without its licence notices): `low`.
 - [ ] find (engine:probe R41 control): `med`, funded after the named rows.
