@@ -15,3 +15,16 @@ row touches an untrusted-input surface beyond PDF text items compared as strings
 | B3 | gate | `tests/spec-check.test.ts` grades copies of the REAL spec, and each case is RED at the base its commit body records (`d052941`, `74fc9d9`) by the recorded command. |
 | C1 | records | `.agent/deferred.md`, `.agent/spec.md` `Tasks`, `.claude/rules/ui.md` (Page viewer) and `.claude/rules/gate.md` (`spec:check` firing row) state what the tree does; the coverage-passages row's producer citation matches `../cnl-ckc` (`coverage.tsv` B3-09/B3-10, `audit/census-map.tsv` `p013.C13`–`C15`); the heap row's swipl-wasm 8.2.1 sentence claims no more than a bare-runtime probe shows; `docs/claims.md` moved anchors alone, every digest unchanged. |
 | C2 | records | The bodies of `05ee351`, `005903a`, `e4de686`, `d052941` and `74fc9d9`: every measurement, red witness and quoted firing reproduces by its recorded command, and no sentence claims beyond what it measured. |
+
+## Verdicts
+
+`mnt4-reviewer-1` (reviewer), read at `67ca2a5` (= `74fc9d9` + this check set): 7/7 pass, no
+register entry. A1: 227 lone `•` + 54 lone `ï` items, all bullet fonts, each followed by a space
+and text; every passage located at `f855bb5` locates the same way, plus exactly the three named.
+A2: item sets = the passage span minus whitespace/bullet items; the built viewer marks all three.
+B1: base 2/8 red; a per-character `ï` drop reddens the bullet case (`expected { coverage: 'whole',
+items: [ 2 ] } … 'none'`, rematched by MAIN). B2: `gradeTasks` bytes unchanged; real, no-ticked,
+no-open and empty blocks each fire their controls; planting never moves the verdict. B3 + C2:
+every recorded red witness and quoted firing reproduces. C1: producer citations match `2acd0d70`.
+Security lens = MAIN: pass — `locate.ts` compares PDF text items as strings; `spec-check.mjs`'s
+optional path is a local CLI argument; no dependency moved.
