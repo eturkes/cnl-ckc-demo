@@ -185,7 +185,7 @@ MAINTAIN request: run the demo on the Rust/Verus `../cnl-ckc` (upstream `2acd0d7
 the bag `ckc dist build` writes, and move every parser, rule and record that named the retired
 Python toolchain.
 
-- [ ] u1 `data` re-vendored bag `cnl-ckc-kb-gde2a9b061325`; the coverage parser admits
+- [x] `9cf5680` u1 `data` re-vendored bag `cnl-ckc-kb-gde2a9b061325`; the coverage parser admits
   `uncovered(inexpressible: …)`; `kb-build.md` regeneration recipe + port specs name `ckc`.
   - Accept: `pnpm gate` green on the new bag; `tests/kb-derived-assets.test.ts` grades all seven
     declared uncovered classes + one refused class, RED at base on `inexpressible`; T9 takes
