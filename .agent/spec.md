@@ -195,8 +195,8 @@ needing the user records its part owed; new finds become rows funded after those
   spec:check's SHA control plants one before the pointer and strips it.
 - [x] `74fc9d9` q6 find `low` approved (user): on a `Tasks` block holding no open row,
   spec:check's open-unit controls plant one before the pointer and break it.
-- [ ] Close: check set `.agent/contracts/mnt4-close.md`; `mnt4-reviewer-1` (reviewer) 7/7 pass;
-  release:check + mutate 47/47 + binding:replay green.
+- [x] `d7f7e1b` Close: check set `.agent/contracts/mnt4-close.md`; `mnt4-reviewer-1` (reviewer)
+  7/7 pass; release:check + mutate 47/47 + binding:replay green.
 
 Closed MAINTAIN request: run the demo on the Rust/Verus `../cnl-ckc` (upstream `2acd0d70`) — re-vendor
 the bag `ckc dist build` writes, and move every parser, rule and record that named the retired
