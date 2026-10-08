@@ -188,11 +188,13 @@ needing the user records its part owed; new finds become rows funded after those
 - [ ] q2 `med` u3 heap limit — blocked behind q1; swipl-wasm 8.2.1 aborts the same way, so a
   bump does not unblock it; the `limit: 'heap'` read owed.
 - [ ] q3 `low` judgment Worker — ruled (user): stay local; owed to the user (deploy + limiter).
-- [ ] q4 `low` coverage passages: a lone bullet item leaves the locate fold → 3 of 5 locate;
-  `rec06` + `rec07` owed to the producer (page 14 recorded, page 13 holds them).
-  - Accept: `tests/passage-locate.test.ts` census 321 / 14 / 2 + the bullet case, RED at base.
-- [ ] q5 `low` spec:check with no ticked row — planted control prepared on `wt/spec-check`;
-  the grader change awaits user approval.
+- [x] `005903a` q4 `low` coverage passages: a lone bullet item leaves the locate fold → 3 of 5
+  locate; ruled (user): a behavioral fix, no live review owed; `rec06` + `rec07` stay queued,
+  owed to the producer (page 14 recorded, page 13 holds them).
+- [ ] q5 `low` approved (user): on a `Tasks` block holding no ticked row, spec:check's SHA
+  control plants one before the pointer and strips it.
+  - Accept: `tests/spec-check.test.ts` — the real spec with every ticked row cut passes, its
+    success line naming the planted control; RED at base.
 - [ ] q6 find `low` spec:check with no open row (the q5 twin) — planted control prepared on
   `wt/spec-check`; the grader change awaits user approval.
 - [ ] Close: check set `.agent/contracts/mnt4-close.md`; one reviewer over every lens;

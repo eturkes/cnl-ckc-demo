@@ -44,14 +44,8 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   begins; the producer's own census places both there (`audit/census-map.tsv` `p013.C13`–`C15`).
   The producer (`../cnl-ckc`) owns the fix. Accept: each of the two either locates after a
   re-vendored bag corrects its region page, or carries a recorded producer reason, and the
-  census in `tests/passage-locate.test.ts` moves with it. `pri` low.
-- **`spec:check` reddens a `Tasks` block holding no ticked row** — its SHA control strips the
-  first ticked row, so with none it fires nothing and exits 1 (`control did not fire — a ticked
-  row stripped of its SHA reported nothing`). `state.md` clears ticked rows at phase close, so the
-  next phase's first commit cannot pass the gate. Accept: on a block with no ticked row the
-  control plants one in a copy and requires the refusal, the same shape as `claims:check`'s
-  planted citation; `pnpm spec:check` passes on a real spec whose `Tasks` holds open rows alone.
-  `pri` low. A grader change → its own approved unit.
+  census in `tests/passage-locate.test.ts` moves with it. `pri` low. **User ruling**: keep it
+  owed to the producer — no demo-side declared limit.
 - **`spec:check` reddens a `Tasks` block holding no open row** — both open-unit controls rewrite
   the first `- [ ]` row, so with none they fire nothing and exit 1 (`control did not fire — an
   open unit written as a plain bullet reported nothing`). A run that ticks its last open unit

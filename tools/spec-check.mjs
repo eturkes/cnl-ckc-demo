@@ -3,13 +3,18 @@
 // pointing at `.agent/deferred.md`. Format alone: a shallow CI clone cannot resolve old SHAs.
 
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { resolve } from 'node:path';
 
 import { requireFiring } from './control.mjs';
 import { ROOT } from './kb/paths.mjs';
 
-const SPEC = '.agent/spec.md';
+const SPEC = process.argv[2] ?? '.agent/spec.md';
 const POINTER = '.agent/deferred.md';
+/**
+ * `state.md` clears ticked rows at phase close, so a sound block can hold none; the SHA control
+ * then plants this row in a copy and strips it, as `claims:check` plants a citation.
+ */
+const PLANTED_TICKED = '- [x] `0000000` planted control row.';
 
 /** @param {string} spec @returns {string[]} the section's top-level items, continuation lines dropped */
 const taskItems = (spec) => {
@@ -42,10 +47,13 @@ export const gradeTasks = (spec) => {
   return failures;
 };
 
-const spec = readFileSync(join(ROOT, SPEC), 'utf8');
+const spec = readFileSync(resolve(ROOT, SPEC), 'utf8');
 const items = taskItems(spec);
 const open = items.find((item) => item.startsWith('- [ ] ')) ?? '';
-const ticked = items.find((item) => item.startsWith('- [x] ')) ?? '';
+const pointer = items.at(-1) ?? '';
+const found = items.find((item) => item.startsWith('- [x] '));
+const ticked = found ?? PLANTED_TICKED;
+const withTicked = found === undefined ? spec.replace(pointer, `${ticked}\n${pointer}`) : spec;
 const controls = [
   requireFiring(
     'spec:check',
@@ -66,15 +74,15 @@ const controls = [
   requireFiring(
     'spec:check',
     {
-      mutation: 'a ticked row stripped of its SHA',
+      mutation: `${found === undefined ? 'a planted' : 'a'} ticked row stripped of its SHA`,
       expect: ['a ticked row carries no commit SHA'],
     },
-    () => gradeTasks(spec.replace(ticked, ticked.replace(/`[0-9a-f]{7,40}` /u, ''))),
+    () => gradeTasks(withTicked.replace(ticked, ticked.replace(/`[0-9a-f]{7,40}` /u, ''))),
   ),
   requireFiring(
     'spec:check',
     { mutation: 'the queue pointer dropped from the last item', expect: ['does not point at'] },
-    () => gradeTasks(spec.replace(items.at(-1) ?? '', '- Queue → elsewhere.')),
+    () => gradeTasks(spec.replace(pointer, '- Queue → elsewhere.')),
   ),
 ];
 
