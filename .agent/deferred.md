@@ -52,6 +52,13 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   control plants one in a copy and requires the refusal, the same shape as `claims:check`'s
   planted citation; `pnpm spec:check` passes on a real spec whose `Tasks` holds open rows alone.
   `pri` low. A grader change → its own approved unit.
+- **`spec:check` reddens a `Tasks` block holding no open row** — both open-unit controls rewrite
+  the first `- [ ]` row, so with none they fire nothing and exit 1 (`control did not fire — an
+  open unit written as a plain bullet reported nothing`). A run that ticks its last open unit
+  leaves exactly that block, so the commit ticking it cannot pass the gate. Accept: on a block
+  with no open row the controls plant one in a copy and require the refusal, the same shape as
+  the planted ticked row; `pnpm spec:check` passes on a real spec whose `Tasks` holds ticked rows
+  alone. `pri` low. A grader change → its own approved unit.
 
 ## Index — one line per `high` + `med` row
 

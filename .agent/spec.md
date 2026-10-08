@@ -193,6 +193,8 @@ needing the user records its part owed; new finds become rows funded after those
   - Accept: `tests/passage-locate.test.ts` census 321 / 14 / 2 + the bullet case, RED at base.
 - [ ] q5 `low` spec:check with no ticked row — planted control prepared on `wt/spec-check`;
   the grader change awaits user approval.
+- [ ] q6 find `low` spec:check with no open row (the q5 twin) — planted control prepared on
+  `wt/spec-check`; the grader change awaits user approval.
 - [ ] Close: check set `.agent/contracts/mnt4-close.md`; one reviewer over every lens;
   release:check + mutate.
 
