@@ -11,10 +11,14 @@ import { ROOT } from './kb/paths.mjs';
 const SPEC = process.argv[2] ?? '.agent/spec.md';
 const POINTER = '.agent/deferred.md';
 /**
- * `state.md` clears ticked rows at phase close, so a sound block can hold none; the SHA control
- * then plants this row in a copy and strips it, as `claims:check` plants a citation.
+ * A sound block can hold no row of one kind: `state.md` clears ticked rows at phase close, and
+ * a run's last tick leaves no open row. A control missing its kind plants a row of it before
+ * the pointer in a copy and breaks that, as `claims:check` plants a citation.
  */
-const PLANTED_TICKED = '- [x] `0000000` planted control row.';
+const ROWS = {
+  open: { mark: '- [ ] ', planted: '- [ ] planted control row.' },
+  ticked: { mark: '- [x] ', planted: '- [x] `0000000` planted control row.' },
+};
 
 /** @param {string} spec @returns {string[]} the section's top-level items, continuation lines dropped */
 const taskItems = (spec) => {
@@ -49,35 +53,47 @@ export const gradeTasks = (spec) => {
 
 const spec = readFileSync(resolve(ROOT, SPEC), 'utf8');
 const items = taskItems(spec);
-const open = items.find((item) => item.startsWith('- [ ] ')) ?? '';
 const pointer = items.at(-1) ?? '';
-const found = items.find((item) => item.startsWith('- [x] '));
-const ticked = found ?? PLANTED_TICKED;
-const withTicked = found === undefined ? spec.replace(pointer, `${ticked}\n${pointer}`) : spec;
+/**
+ * @param {keyof typeof ROWS} kind @param {string} named the row as a control names it
+ * @returns {{row: string, text: string, named: string}} the first row of `kind`, else one planted
+ */
+const sample = (kind, named) => {
+  const { mark, planted } = ROWS[kind];
+  const row = items.find((item) => item.startsWith(mark));
+  if (row !== undefined) return { row, text: spec, named };
+  return {
+    row: planted,
+    text: spec.replace(pointer, `${planted}\n${pointer}`),
+    named: `a planted ${named.replace(/^an? /u, '')}`,
+  };
+};
+const open = sample('open', 'an open unit');
+const ticked = sample('ticked', 'a ticked row');
 const controls = [
   requireFiring(
     'spec:check',
     {
-      mutation: 'an open unit written as a plain bullet',
+      mutation: `${open.named} written as a plain bullet`,
       expect: ['an open unit is not a "- [ ]" row'],
     },
-    () => gradeTasks(spec.replace(open, open.replace('- [ ] ', '- '))),
+    () => gradeTasks(open.text.replace(open.row, open.row.replace('- [ ] ', '- '))),
   ),
   requireFiring(
     'spec:check',
     {
-      mutation: 'an open unit written with a star bullet',
+      mutation: `${open.named} written with a star bullet`,
       expect: ['an open unit is not a "- [ ]" row'],
     },
-    () => gradeTasks(spec.replace(open, open.replace('- [ ] ', '* [ ] '))),
+    () => gradeTasks(open.text.replace(open.row, open.row.replace('- [ ] ', '* [ ] '))),
   ),
   requireFiring(
     'spec:check',
     {
-      mutation: `${found === undefined ? 'a planted' : 'a'} ticked row stripped of its SHA`,
+      mutation: `${ticked.named} stripped of its SHA`,
       expect: ['a ticked row carries no commit SHA'],
     },
-    () => gradeTasks(withTicked.replace(ticked, ticked.replace(/`[0-9a-f]{7,40}` /u, ''))),
+    () => gradeTasks(ticked.text.replace(ticked.row, ticked.row.replace(/`[0-9a-f]{7,40}` /u, ''))),
   ),
   requireFiring(
     'spec:check',

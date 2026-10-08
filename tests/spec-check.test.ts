@@ -42,4 +42,15 @@ describe('spec:check', () => {
     expect(output).toContain('a planted ticked row stripped of its SHA');
     expect(status).toBe(0);
   });
+
+  it('passes a Tasks block holding ticked rows alone, its open-unit controls on a planted row', () => {
+    const spec = SPEC.replace(rows(' '), '');
+    expect(spec).not.toMatch(rows(' '));
+    expect(spec).toMatch(rows('x'));
+    const { status, output } = specCheck(spec);
+    expect(output).toMatch(/ — 0 open, /u);
+    expect(output).toContain('a planted open unit written as a plain bullet');
+    expect(output).toContain('a planted open unit written with a star bullet');
+    expect(status).toBe(0);
+  });
 });

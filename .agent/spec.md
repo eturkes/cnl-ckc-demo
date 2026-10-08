@@ -191,12 +191,12 @@ needing the user records its part owed; new finds become rows funded after those
 - [x] `005903a` q4 `low` coverage passages: a lone bullet item leaves the locate fold → 3 of 5
   locate; ruled (user): a behavioral fix, no live review owed; `rec06` + `rec07` stay queued,
   owed to the producer (page 14 recorded, page 13 holds them).
-- [ ] q5 `low` approved (user): on a `Tasks` block holding no ticked row, spec:check's SHA
-  control plants one before the pointer and strips it.
-  - Accept: `tests/spec-check.test.ts` — the real spec with every ticked row cut passes, its
-    success line naming the planted control; RED at base.
-- [ ] q6 find `low` spec:check with no open row (the q5 twin) — planted control prepared on
-  `wt/spec-check`; the grader change awaits user approval.
+- [x] `d052941` q5 `low` approved (user): on a `Tasks` block holding no ticked row,
+  spec:check's SHA control plants one before the pointer and strips it.
+- [ ] q6 find `low` approved (user): on a `Tasks` block holding no open row, spec:check's
+  open-unit controls plant one before the pointer and break it.
+  - Accept: `tests/spec-check.test.ts` — the real spec with every open row cut passes, its
+    success line naming both planted controls; RED at base.
 - [ ] Close: check set `.agent/contracts/mnt4-close.md`; one reviewer over every lens;
   release:check + mutate.
 
