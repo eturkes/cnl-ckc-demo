@@ -6,19 +6,16 @@ paths:
 # Upstream sync
 
 `CLAUDE.md` = the template `~/.local/app/agents/claude/CLAUDE.project.md`, copied whole;
-last-sync = agents@5471e83. A refresh overwrites the whole file, so anything the repo needs it
+last-sync = agents@2cedb4f. A refresh overwrites the whole file, so anything the repo needs it
 to say must survive that overwrite in `.claude/rules/`. Refresh prompt =
-`~/.local/app/agents/claude/prompts/refresh.md`.
+`~/.local/app/agents/claude/prompts/auto/refresh.md`, or `steered/refresh.md` with a request
+slot; the bodies are otherwise equal.
 
 ## Recipe
 
 - Run the refresh prompt whole: its header copies the template, its step 1 derives last-sync
-  and the upstream delta, and its step 5 writes the value back.
-- Step 1's `sed` reads every line of this file, so only the recorded line may follow
-  `last-sync =` with an `agents@` value — a second spelling yields an empty candidate.
-- **A recorded value that fails the match = a template copy that landed without a rules
-  pass.** The obligations then reach back to the recorded value, not only to the derived one
-  (user ruling) — `b456dfc` copied a newer template over a pass recorded at an older one.
+  and the upstream delta, and its step 5 writes the value back. Step 1's `differs` case, the
+  `last-sync` read and step 7's hidden-path sweep live in the prompt alone.
 - Read `git diff HEAD -- CLAUDE.md` before committing. **Both directions obligate a
   `.claude/rules/` pass**, and the added-line direction obligates a census too. A REMOVED line
   outside the upstream delta is repo law → fold it into its owning rule file. A removed line
@@ -99,7 +96,8 @@ Named so a later diff reads cleanly and nobody restores them. Archived text, clo
   Archived u16 briefs still say `WebFetch`.
 - Per-lens closing reviewers outside IMPLEMENT + two blind teammates per verdict → one
   `reviewer` over every lens outside IMPLEMENT, one per lens inside it (`CLAUDE.md`
-  `Session flow`); a second, blind one only where a wrong verdict is costly to reverse (global
-  `Subagents`). `28c37bc`'s `4 lenses × 2 reviewers` is history.
+  `Session flow`), one teammate per question with no blind second (global `Offload
+  economics`). `28c37bc`'s `4 lenses × 2 reviewers` is history.
+- `claude/prompts/<phase>.md` → `claude/prompts/auto/` + `steered/`.
 - The `prototype/` verification carve-out → `a prototype runs under PROTOTYPE law`; no
   prototype exists here (`stack.md`).

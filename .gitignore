@@ -21,7 +21,7 @@ dist/
 # Agent scratch + machine-local overrides
 .scratch/
 .claude/settings.local.json
-.claude/.headroom_wrap_marker.json
+.claude/.headroom_wrap_*
 CLAUDE.local.md
 
 # vitest browser-mode failure screenshots
