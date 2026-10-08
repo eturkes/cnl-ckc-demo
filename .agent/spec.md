@@ -193,10 +193,8 @@ needing the user records its part owed; new finds become rows funded after those
   owed to the producer (page 14 recorded, page 13 holds them).
 - [x] `d052941` q5 `low` approved (user): on a `Tasks` block holding no ticked row,
   spec:check's SHA control plants one before the pointer and strips it.
-- [ ] q6 find `low` approved (user): on a `Tasks` block holding no open row, spec:check's
-  open-unit controls plant one before the pointer and break it.
-  - Accept: `tests/spec-check.test.ts` — the real spec with every open row cut passes, its
-    success line naming both planted controls; RED at base.
+- [x] `74fc9d9` q6 find `low` approved (user): on a `Tasks` block holding no open row,
+  spec:check's open-unit controls plant one before the pointer and break it.
 - [ ] Close: check set `.agent/contracts/mnt4-close.md`; one reviewer over every lens;
   release:check + mutate.
 
