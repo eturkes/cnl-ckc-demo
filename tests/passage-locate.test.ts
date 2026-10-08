@@ -61,6 +61,19 @@ describe('locatePassage', () => {
     });
   });
 
+  it('skips a lone bullet item and keeps ï inside a word', () => {
+    // The shipped guideline's two bullet glyphs, each its own item followed by a space item.
+    const items = ['ï', ' ', 'For opioid-naïve patients;', '', '•', ' ', 'start low.'];
+    expect(locatePassage(items, 'For opioid-naïve patients; start low.')).toEqual({
+      coverage: 'whole',
+      items: [2, 6],
+    });
+    expect(locatePassage(items, 'For opioid-nave patients')).toEqual({
+      coverage: 'none',
+      items: [],
+    });
+  });
+
   it('marks a passage that runs off the page end as continuing', () => {
     const items = [
       'Other text here. ',
@@ -98,7 +111,7 @@ describe('locatePassage', () => {
 });
 
 describe('the shipped corpus', () => {
-  it('locates every coverage passage on its recorded page: 319 whole, 13 continuing, 5 not found', async () => {
+  it('locates every coverage passage on its recorded page: 321 whole, 14 continuing, 2 not found', async () => {
     const task = getDocument({
       data: new Uint8Array(readFileSync(join(PROVENANCE, 'guideline.pdf'))),
     });
@@ -126,13 +139,8 @@ describe('the shipped corpus', () => {
       else expect(located.items.length, document.id).toBeGreaterThan(0);
     }
     await task.destroy();
-    expect(counts).toEqual({ whole: 319, continues: 13, none: 5 });
-    expect(unlocated).toEqual([
-      'cdc2022-opioid-rec06',
-      'cdc2022-opioid-rec07',
-      'cdc2022-opioid-rec10-imp10',
-      'cdc2022-opioid-s9-01',
-      'cdc2022-opioid-s9-05',
-    ]);
+    expect(counts).toEqual({ whole: 321, continues: 14, none: 2 });
+    // Both record page 14 while their passage sits whole on page 13: the producer's page.
+    expect(unlocated).toEqual(['cdc2022-opioid-rec06', 'cdc2022-opioid-rec07']);
   }, 120_000);
 });

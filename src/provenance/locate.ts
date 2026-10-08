@@ -12,14 +12,23 @@ export interface Located {
 const MIN_START = 20;
 
 /**
+ * A text item holding one list bullet and nothing else: the extracted passage drops list
+ * markers. The guideline's symbol-font bullet extracts as U+00EF `ï`, which also occurs inside
+ * words (`naïve`), so only a whole item is dropped, never the character.
+ */
+const BULLETS = new Set(['•', 'ï']);
+
+/**
  * Fold text the way the comparison reads it, char by char so each folded char keeps its
  * source item: NFKC (ligatures, compatibility forms), no whitespace or soft hyphen, case
- * folded. PDF text runs split words and lines where the extracted passage does not.
+ * folded, no bullet item. PDF text runs split words and lines where the extracted passage
+ * does not.
  */
 const fold = (items: readonly string[]): { text: string; owner: number[] } => {
   let text = '';
   const owner: number[] = [];
   items.forEach((item, index) => {
+    if (BULLETS.has(item.trim())) return;
     for (const char of item) {
       for (const folded of char.normalize('NFKC').toLowerCase()) {
         if (folded === '\u00ad' || /\s/u.test(folded)) continue;

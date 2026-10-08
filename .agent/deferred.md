@@ -37,14 +37,14 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   lets many clients jointly spend the API key, so a public Worker likely needs a per-client
   bucket AND a global spend bucket. Already in place: `ALLOWED_ORIGINS` is a `wrangler.jsonc`
   var, so naming the published page is configuration, not code.
-- **Five coverage passages do not locate on their recorded page** — the owned page viewer
-  marks a passage where its page's text holds it (`tests/passage-locate.test.ts`: 319 whole, 13
-  continuing, 5 not found). `cdc2022-opioid-rec06` and `rec07` record page 14, yet each passage
-  sits whole on page 13, where BOX 3 begins. `rec10-imp10`, `s9-01` and `s9-05` differ from their page's text
-  past their first 31–35 characters. Both kinds come from the vendored bag, so the producer
-  (`../cnl-ckc`) owns the fix. Accept: each of the five either locates after a re-vendored bag
-  corrects its region page or passage, or carries a recorded producer reason, and the census in
-  `tests/passage-locate.test.ts` moves with it. `pri` low.
+- **Two coverage passages do not locate on their recorded page** — the owned page viewer
+  marks a passage where its page's text holds it (`tests/passage-locate.test.ts`: 321 whole, 14
+  continuing, 2 not found). `cdc2022-opioid-rec06` and `rec07` record page 14 (producer
+  `coverage.tsv` B3-09, B3-10 `p14`), yet each passage sits whole on page 13, where BOX 3
+  begins; the producer's own census places both there (`audit/census-map.tsv` `p013.C13`–`C15`).
+  The producer (`../cnl-ckc`) owns the fix. Accept: each of the two either locates after a
+  re-vendored bag corrects its region page, or carries a recorded producer reason, and the
+  census in `tests/passage-locate.test.ts` moves with it. `pri` low.
 - **`spec:check` reddens a `Tasks` block holding no ticked row** — its SHA control strips the
   first ticked row, so with none it fires nothing and exits 1 (`control did not fire — a ticked
   row stripped of its SHA reported nothing`). `state.md` clears ticked rows at phase close, so the

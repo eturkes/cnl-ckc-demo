@@ -117,7 +117,9 @@ is why attribution and nonendorsement cannot live inside the About disclosure.
   transparent text layer carries the marks. Viewer and worker load through `import()` only when
   the reader selects Load page viewer, and both stay out of the offline precache.
 - The passage is marked where the page's text items hold it (`src/provenance/locate.ts`), compared
-  NFKC-folded with whitespace, soft hyphens and case removed. A passage whose start runs off the
+  NFKC-folded with whitespace, soft hyphens and case removed, and with any item that is one
+  list bullet alone (`•`, or the symbol-font bullet extracted as `ï`) skipped, because the
+  extracted passage drops list markers. A passage whose start runs off the
   page end is marked as continuing; otherwise an unlocated passage marks nothing and says so —
   never a guess. `tests/passage-locate.test.ts` grades every shipped coverage row.
 - `.page-viewer` carries `data-document`, `data-state`, `data-page` and `data-coverage`, the
