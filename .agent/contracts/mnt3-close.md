@@ -13,3 +13,19 @@ to these rows; anything outside them is a register entry. The security lens stay
 | B2 | gate | `tools/kb/provenance.mjs` coverage-status grammar admits exactly upstream `status_of`'s uncovered classes — no wider, no narrower — and the change moves no derived asset byte for the shipped bag. |
 | C1 | records | `.claude/rules/kb-build.md`: the regeneration recipe runs as written and leaves `../cnl-ckc` byte-clean; the bag-name + provenance bullet matches upstream `docs/REFERENCE.md` `Export`; each port-spec function named exists under `../cnl-ckc/rust/ckc-spec/src/`; the `tests/ui/` census (15 green + 84 red) holds. |
 | C2 | records | `docs/claims.md` rows the change moved are adjudicated truthfully; no live text (outside `.agent/archive/`, commit history and closed contracts) still names the retired Python toolchain (`dist.py`, `goal.py`, `ui.py`, `meta head`) as current; `.agent/spec.md` `Tasks` + the new `.agent/deferred.md` row state what the tree does. |
+
+## Rulings
+
+- **A2 fail(low), accepted (MAIN).** The row's sentence, and `9cf5680`'s body ("every changed
+  byte a header comment …"), overclaim the delta. Corrected old → new bag delta, 354 changed
+  members, each line-classified (r2 residue folded in): `%` header comments in all 337 `pl/` and
+  all 8 `queries/{answers,traces}/` files; `#` header lines of `coverage.tsv` (+`inexpressible`),
+  `audit/projection-notes.tsv` and `audit/review-manifest.tsv`; each `queries/traces/*.pl`
+  `answers_sha256`, moved to its answer file's new sha256; one replay line of prose in
+  `data/guidelines/cdc-2022-opioid/README.md:108`; nonclinical prose in `NOTICE` and
+  `README-dist.md` (Rust toolchain, `ckc` commands); `release-manifest.tsv` `meta` rows
+  (`head` + `python` dropped) and member digests + sizes, member + label rows otherwise equal;
+  the two BagIt manifests. The substance holds: `pl/` non-comment lines + coordinates,
+  `queries/pl/`, answer terms, coverage data rows, alignment and labels are unchanged, and all
+  343 derived catalog/provenance/graph/corpus/intake assets are byte-identical
+  (`mnt3-reviewer-1`). No product change.
