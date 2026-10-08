@@ -190,7 +190,7 @@ Python toolchain.
   - Accept: `pnpm gate` green on the new bag; `tests/kb-derived-assets.test.ts` grades all seven
     declared uncovered classes + one refused class, RED at base on `inexpressible`; T9 takes
     the regex as one declared edit of `22053ef` (user ruling).
-- [ ] Close: `release:check` + `binding:replay` + `mutate` green; one `reviewer` over every lens.
+- [x] `5539905` Close: check set `.agent/contracts/mnt3-close.md`; `mnt3-reviewer-1` (reviewer) 6/6 — A2 fail(low) → delta restated, r2 residue folded in + line-classified; release:check + mutate 47/47 + binding:replay green.
 
 Closed queue run (`dN` = the row's ordinal in the queue at `24bbb5d`):
 
