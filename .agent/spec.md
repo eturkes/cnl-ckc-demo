@@ -181,7 +181,22 @@ unreachable until an ad-hoc goal path exists — which the free-text ruling decl
 
 # Tasks
 
-MAINTAIN request: run the demo on the Rust/Verus `../cnl-ckc` (upstream `2acd0d70`) — re-vendor
+MAINTAIN request: work every `.agent/deferred.md` row in rank order (5 rows at `f855bb5`). A row
+needing the user records its part owed; new finds become rows funded after those five.
+
+- [ ] q1 `high` Browser WASM abort — waits: an ad-hoc goal path (`Decisions` MAIN).
+- [ ] q2 `med` u3 heap limit — blocked behind q1; swipl-wasm 8.2.1 aborts the same way, so a
+  bump does not unblock it; the `limit: 'heap'` read owed.
+- [ ] q3 `low` judgment Worker — ruled (user): stay local; owed to the user (deploy + limiter).
+- [ ] q4 `low` coverage passages: a lone bullet item leaves the locate fold → 3 of 5 locate;
+  `rec06` + `rec07` owed to the producer (page 14 recorded, page 13 holds them).
+  - Accept: `tests/passage-locate.test.ts` census 321 / 14 / 2 + the bullet case, RED at base.
+- [ ] q5 `low` spec:check with no ticked row — planted control prepared on `wt/spec-check`;
+  the grader change awaits user approval.
+- [ ] Close: check set `.agent/contracts/mnt4-close.md`; one reviewer over every lens;
+  release:check + mutate.
+
+Closed MAINTAIN request: run the demo on the Rust/Verus `../cnl-ckc` (upstream `2acd0d70`) — re-vendor
 the bag `ckc dist build` writes, and move every parser, rule and record that named the retired
 Python toolchain.
 
@@ -202,7 +217,6 @@ Closed queue run (`dN` = the row's ordinal in the queue at `24bbb5d`):
 - [x] `b6f2a54` d7 `claims:seed` keys on a full-claim digest; `claims:check` refuses a stale digest.
 - [x] `bbb4f24` d10 QLF fallback under the user's transfer reading: a failed saved state boots `swipl-bundle` + `kb.qlf`; a sound session fetches neither, precache included.
 - [x] `5af7982` d13 `tools/validate-report.mjs`: committed port, escaped pipe = content.
-- [ ] d14 blocked behind d29: real heap exhaustion aborts in Node too at swipl-wasm 8.0.7; live harness committed, `limit: 'heap'` read owed.
 - [x] `060c0f7` d18 u4 suite ported: 4 merged green, 3 covered, 1 input retired (P1.10 held by T13).
 - [x] `e78551f` d16 `browser:check` kills a hostile goal by the client deadline; one respawn reports 337 documents.
 - [x] `07899e0` d19 closed on its own check: archived `m1u4.md` D6 records why `query_sha256` stays out of the runtime; the export lane re-derives the whole envelope.
@@ -228,7 +242,6 @@ Closed queue run (`dN` = the row's ordinal in the queue at `24bbb5d`):
 - [x] `0e1e5e0` d51 each of the 38 contradicting shortcuts is justified by its own clause (`tests/graph-shortcut-justification.test.ts`).
 - [x] `ebf066e` d52 `graph:check` binds each spanning reading to its edge by id, both directions; the fallback list can expand to every incident relation.
 - [x] `d07faac` d53 each `kb:asset-check` root table refuses an emptied table by its own name.
-- [ ] d29 `high` WASM abort — waits: an ad-hoc goal path (`Decisions` MAIN).
 - [x] `e9465b9` d54 every `deferred` registry row cites a live queue row; `claims:check` refuses an uncited or dangling one (7 rows added).
 - [x] `9b793fd` d1 the Japanese face ships as a catalog-exact subset (2,654,740 B → 193,444 B), raster-identical to the original.
 - [x] `906d069` d3 `copy:check` grades Japanese register J1–J4 (`mnt-d3.md`, approved); 3 copy edits.
@@ -257,7 +270,6 @@ Closed queue run (`dN` = the row's ordinal in the queue at `24bbb5d`):
 - [x] `05df8e9` d58 a registry cell may hold `\|`; claims:check re-seeds a piped copy and requires it back byte-identical.
 - [x] `da89fd6` d59 `spec:check` in the gate: open rows `- [ ]`, ticked rows carry SHAs, pointer last.
 - [x] `c73a1f2` d60 `--verdict` admits the reviewer role's vocabulary; waves.md names the brief's one vocabulary.
-- [ ] d61 ruled (user): stay local — stays open, owed to the user (deploy + limiter).
 - [x] `75e6073` d62 the selector suite plants the fixed-trigger mutant in memory and requires ORACLE-S to catch it.
 - [x] `9d11b44` d63 ruled (user): declared limit — `proof.md` `Free-text intake selects` states it and `tests/census.test.ts` grades its figures; the one billed run scored A 106/121 · 106/163 and B 113/140 · 113/163 against 143/240 · 143/163 (evidence `wt/d63` `cfbe0ad`).
 - [x] `4c37c0a` find: engine timing figures reworded to the bounds they guarantee, browser figures cited to `engine:probe`.
@@ -277,7 +289,6 @@ Closed queue run (`dN` = the row's ordinal in the queue at `24bbb5d`):
 - [x] `ce75b11` find (condition-supports dedup is scope-blind): arm 2 — every fold hiding a negation keeps a twin its own clause states unnegated.
 - [x] `5fd1588` find (selected-row proof case trips `limit` under contention): frozen clock + whole-result assertion.
 - [x] `d2744cb` find (B9 times cached proofs): B9 empties the cache and requires a meta-interpreter run per timed proof.
-- [ ] find (five coverage passages do not locate on their recorded page): `low`, producer-owned.
 - [x] `995e333` find (bundled JavaScript ships without its licence notices): `dist/licenses/third-party.txt` + the build refuses a bundled package missing from it.
 - [x] `e8f7cab` find (engine:probe R41 control): a run ends at its final record; the control fires again.
 - [x] `06e1d24` Close-2: check set `.agent/contracts/mnt2-close.md`; `mnt2-reviewer-9`–`-11` (reviewer) 11/11 rows — 7 pass, C3 D1 D2 fail(low) → fixed, `mnt2-reviewer-12` r2 3/3 pass; release:check + mutate 46/46 (+ C3 1/1) + binding:replay green.

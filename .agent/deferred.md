@@ -12,7 +12,9 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate. `pri` med.
   **Blocked on the `high` abort row below**: at swipl-wasm 8.0.7 real exhaustion aborts the
   runtime in Node too and never raises `resource_error(memory)`, so `limit: 'heap'` is
-  unreachable live until that row classifies the abort. The fast live half is committed —
+  unreachable live until that row classifies the abort. swipl-wasm 8.2.1 (SWI-Prolog 10.1.15)
+  aborts the same way in a bare runtime, so a version bump does not lift the block. The fast
+  live half is committed —
   `tests/engine-heap.test.ts` drives the trip in ~1 s behind a 1900 MB `_malloc` reserve and
   pins today's abort; it owes only the `limit: 'heap'` read.
 - **Browser WASM abort leaves a dead session** — a runaway `assertz` aborts the WASM runtime
