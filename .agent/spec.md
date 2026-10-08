@@ -181,9 +181,18 @@ unreachable until an ad-hoc goal path exists — which the free-text ruling decl
 
 # Tasks
 
-MAINTAIN request: work every `.agent/deferred.md` row in rank order (`high` → `med` → `low`,
-queue order within a rank); one unit + commit per row, gate green at each, row pruned in its
-closing commit. `dN` = the row's ordinal in the queue at `24bbb5d`.
+MAINTAIN request: run the demo on the Rust/Verus `../cnl-ckc` (upstream `2acd0d70`) — re-vendor
+the bag `ckc dist build` writes, and move every parser, rule and record that named the retired
+Python toolchain.
+
+- [ ] u1 `data` re-vendored bag `cnl-ckc-kb-gde2a9b061325`; the coverage parser admits
+  `uncovered(inexpressible: …)`; `kb-build.md` regeneration recipe + port specs name `ckc`.
+  - Accept: `pnpm gate` green on the new bag; `tests/kb-derived-assets.test.ts` grades all seven
+    declared uncovered classes + one refused class, RED at base on `inexpressible`; T9 takes
+    the regex as one declared edit of `22053ef` (user ruling).
+- [ ] Close: `release:check` + `binding:replay` + `mutate` green; one `reviewer` over every lens.
+
+Closed queue run (`dN` = the row's ordinal in the queue at `24bbb5d`):
 
 - [x] `9ade964` `med` Cap-one re-proof: a pinned-contention trip names `limit: 'wall-clock'`; the case proves under a frozen clock.
 - [x] `64fb0cc` `med` CI registry receipt: the registry row lists every `run:` + `uses:` step of `ci.yml`.

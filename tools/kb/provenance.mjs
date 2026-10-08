@@ -146,7 +146,9 @@ const parseCoverage = (files, root) => {
     } else if (
       status !== 'pending' &&
       !/^restates\([A-Za-z0-9][A-Za-z0-9-]*\)$/u.test(status) &&
-      !/^uncovered\((?:heading|process|external|aim|descriptive|notice): [^\r\n]+\)$/u.test(status)
+      !/^uncovered\((?:heading|process|external|aim|descriptive|notice|inexpressible): [^\r\n]+\)$/u.test(
+        status,
+      )
     ) {
       refuse('coverage-status', `${path}:${index + 1}: ${status}`);
     }

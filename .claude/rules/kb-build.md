@@ -18,26 +18,43 @@ paths:
   `tarfile.getmembers`) hides those pseudo-entries — a raw reader must handle `L` or it
   refuses the real bag. Single root dir, all members regular files, mode 0644, uid/gid 0, one
   mtime, gzip mtime field 0.
-- The name tags the **last commit touching `guidelines/`** upstream, not repo HEAD. The bag's
-  own provenance = the `meta head` row in its `release-manifest.tsv`.
+- The name + root dir tag upstream's **input head** — the last commit changing `guidelines/`,
+  the vendored compiler or the lexicon — not repo HEAD. The bag's `release-manifest.tsv` holds
+  content digests alone (no `meta head` row), so the name is the bag's sole commit provenance.
 - Payload = 337 docs × 3 representations — `ace/` (source ACE), `pl/` (compiled Prolog,
   schema v1), `align/` (source↔ACE alignment, backs the trace view) — plus `queries/`
   (4 `.ace` questions, `pl/` compiled goals, `answers/` expected solutions, `traces/`),
   `source/`, `audit/`.
 - Rights profile = `redistributable` (public-domain MMWR) → source passages may ship whole in
   the UI. The bag records `swipl 9.2.9` as its compiler; the 10.1.13 WASM runtime loads it.
-- Regenerate: `python3 -P tools/dist.py build <outdir>` run in `../cnl-ckc`, then copy the
-  tarball + sidecar into `kb/`. Leave that repo clean. `tools/dist.py` is the release
-  boundary and `goal.py` compiles ACE questions upstream — both are regeneration inputs,
-  never runtime deps.
+- Regenerate = upstream's Rust `ckc` (Verus-verified kernel; no Python left): `ckc dist build
+  <outdir>` run in `../cnl-ckc`, then copy the tarball + sidecar into `kb/`. `ckc dist` is the
+  release boundary and `ckc compile`/`ckc queries` write `pl/` + `queries/` upstream — all
+  regeneration inputs, never runtime deps. Build `ckc` project-locally so `../cnl-ckc` stays
+  byte-clean (`<ch>` = `../cnl-ckc/rust/rust-toolchain.toml` `channel`; plain `cargo build`
+  compiles the ghost-erased kernel, so Verus is not needed):
+
+  ```sh
+  S=$PWD/.scratch/ckc T=$S/rustup/toolchains/<ch>-x86_64-unknown-linux-gnu/bin
+  RUSTUP_HOME=$S/rustup rustup toolchain install <ch> --profile minimal
+  (cd ../cnl-ckc/rust && PATH=$T:$PATH CARGO_HOME=$S/cargo CARGO_TARGET_DIR=$S/target \
+    cargo build --release --locked --offline -q -p ckc)
+  (cd ../cnl-ckc && $S/target/release/ckc dist build $S/dist)
+  ```
+
+  Accept a bag only when its `release-manifest.tsv` equals upstream's committed one byte for
+  byte and `ckc check` passes at that commit; a second `dist build` is byte-identical.
 - Read the bag as an agent: `tar xzf kb/cnl-ckc-kb-*.tar.gz -C .scratch/ &&
   ln -sfn cnl-ckc-kb-* .scratch/kb`.
 
 ## Upstream port specifications
 
-`../cnl-ckc/tools/ui.py` resolves coverage rows to source payloads and renders click/hover
--linked source↔ACE span groups; `parse_evidence`, `hl_parse_align` and its model joins are
-the TypeScript-port specifications behind `src/provenance/`. Its `tests/ui/` fixture corpus
+Upstream's reviewer surface (`ckc ui`) is specified in Verus under
+`../cnl-ckc/rust/ckc-spec/src/`, and those specs are the TypeScript-port specifications behind
+`tools/kb/provenance.mjs` + `src/provenance/`: `check.rs` `status_of` + `uncovered_class_ok`
+(coverage grammar — `tests/kb-derived-assets.test.ts` grades every declared class),
+`evidence_of` + `payload_of` (coverage row → source payload), `align.rs` `align_outcome`
+(source↔ACE span groups), `ui.rs` `alignment` + `aligned_text`. Its `tests/ui/` fixture corpus
 (15 green + 84 red case families) is the adversarial oracle for provenance joins and hostile
 input. No graph command or graph artifact exists upstream.
 

@@ -466,7 +466,8 @@ describe('clinical records', () => {
 
     // Unfrozen by user ruling, each a declared edit of the 22053ef bytes; every other byte of
     // these surfaces holds. Queue row d39: two what-only headers deleted. Inline-disable row:
-    // the one frozen lint directive states its reason.
+    // the one frozen lint directive states its reason. Upstream coverage grammar: the
+    // `inexpressible` uncovered class (`ckc-spec` `uncovered_class_ok`).
     const unfrozen: Readonly<Record<string, readonly (readonly [string, string])[]>> = {
       'src/questions/serialize.ts': [
         ["// Canonical answer serialization, in the bag's own result grammar.\n//\n", ''],
@@ -478,6 +479,10 @@ describe('clinical records', () => {
         [
           '  // eslint-disable-next-line no-control-regex\n',
           '  // eslint-disable-next-line no-control-regex -- matching control characters is the refusal\n',
+        ],
+        [
+          '      !/^uncovered\\((?:heading|process|external|aim|descriptive|notice): [^\\r\\n]+\\)$/u.test(status)\n',
+          '      !/^uncovered\\((?:heading|process|external|aim|descriptive|notice|inexpressible): [^\\r\\n]+\\)$/u.test(\n        status,\n      )\n',
         ],
       ],
     };

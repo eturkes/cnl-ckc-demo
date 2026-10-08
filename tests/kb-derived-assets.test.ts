@@ -121,6 +121,34 @@ describe('bag-derived provenance assets', () => {
     );
     expect(() => deriveProvenance(badOffset)).toThrow(/alignment-span/u);
   });
+
+  it('admits every uncovered class the upstream coverage grammar declares, and no other', () => {
+    const coverage = [...files.keys()].find((path) => path.endsWith('/coverage.tsv'));
+    if (coverage === undefined) throw new Error('coverage fixture missing');
+    const original = Buffer.from(files.get(coverage) ?? []).toString('utf8');
+    const reclass = (text: string, cls: string): string => {
+      const next = text.replace('\tuncovered(heading: ', `\tuncovered(${cls}: `);
+      expect(next, cls).not.toBe(text);
+      return next;
+    };
+    // One derivation grades all seven: a full pass costs ~0.35 s, and the suite's accepted load
+    // envelope is 2.9× a 5000 ms timeout. The bag carries five classes; two heading rows take the rest.
+    const all = reclass(reclass(original, 'notice'), 'inexpressible');
+    for (const cls of [
+      'heading',
+      'process',
+      'external',
+      'aim',
+      'descriptive',
+      'notice',
+      'inexpressible',
+    ]) {
+      expect(all, cls).toContain(`\tuncovered(${cls}: `);
+    }
+    expect(() => deriveProvenance(new Map(files).set(coverage, Buffer.from(all)))).not.toThrow();
+    const undeclared = new Map(files).set(coverage, Buffer.from(reclass(original, 'ineffable')));
+    expect(() => deriveProvenance(undeclared)).toThrow(/coverage-status/u);
+  });
 });
 
 describe('static semantic graph asset', () => {
