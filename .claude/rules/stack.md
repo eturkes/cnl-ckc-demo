@@ -12,15 +12,15 @@ User-ruled, binding on every role.
   expansion, shortest path and centrality outrank renderer throughput.
 - **The KB enters by export only.** `../cnl-ckc` is read-only, never linked, never a runtime
   dependency; the vendored bag under `kb/` is the whole interface.
-- Non-negotiable: every answer traces to a genuine Prolog solution. Demo-tier rigor is
-  waived everywhere else.
-- **The waiver reaches integrity too, outside the non-negotiable.** User ruling.
-  `CLAUDE.md` `Engineering` verification integrity binds this repo where the answer path runs,
-  and there it binds whole — the overlay recipe in `.claude/rules/proof.md` is what it costs.
-  Off that path a thin check, or one that cannot refuse a wrong input, is a demo-tier choice.
-  Strengthening one is scheduled work, and no prototype exists here for the template's
-  PROTOTYPE-law carve-out to cover. Report honesty is separate and unwaived: a report names
-  what ran, passed and was skipped either way.
+- Non-negotiable: every answer traces to a genuine Prolog solution.
+- **Demo tier = no formal verification.** User ruling. The demo serves no clinical purpose: it
+  demonstrates `../cnl-ckc`'s utility, and `cnl-ckc` carries the clinical-grade rigor, so its
+  formal-verification tier stays out of this repo. Every other `CLAUDE.md` `Engineering` and
+  `Session flow` clause binds the whole repo: verification integrity on and off the answer
+  path, the assurance tiers, and the IMPLEMENT + MAINTAIN teammate dispatch. On the answer
+  path, integrity costs the overlay recipe in `.claude/rules/proof.md`. Checks the retired
+  integrity waiver excused → `.agent/deferred.md` row `Off-path checks the retired demo-tier
+  waiver excused`.
 - **No prototype tree** — `CLAUDE.md` `Session flow` PROTOTYPE + IMPLEMENT, inapplicable by
   user ruling. The expedited M2–M4 surfaces played the PROTOTYPE role in place and were
   redeveloped under M5's gates (`.agent/spec.md` `Decisions`), so `Artifacts` records no

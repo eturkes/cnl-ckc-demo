@@ -41,11 +41,12 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   there stops and asks.
 - **The expedited surfaces get redeveloped in place.** The reviewed spine + the shipped
   Japanese interface stay.
-- **The demo-tier waiver reaches verification integrity.** Off the answer path a thin check,
-  or one that cannot refuse a wrong input, is a demo-tier choice rather than a defect;
-  `CLAUDE.md` `Engineering` verification integrity binds where the answer path runs, and there
-  it binds whole. Strengthening a check elsewhere is scheduled work — u10c is the first such
-  unit. Report honesty is unwaived. Binding → `.claude/rules/stack.md`.
+- **Demo tier = no formal verification.** The demo serves no clinical purpose and `cnl-ckc`
+  carries the clinical-grade rigor, so `cnl-ckc`'s formal-verification tier stays out. Every
+  other `CLAUDE.md` `Engineering` and `Session flow` clause binds the whole repo — verification
+  integrity off the answer path too, the assurance tiers, and the IMPLEMENT + MAINTAIN teammate
+  dispatch. This retires the integrity waiver; the checks it excused are queued in
+  `.agent/deferred.md`. Binding → `.claude/rules/stack.md`.
 - **Orphan operator contexts stay orphaned.** 71 operator-context nodes carry no edge — 64
   negation, 7 `can`, i.e. 41% of the corpus's 156 negation contexts — the body-level scopes
   whose identity binds at query time. They gain no covering edges; each records its body
@@ -98,8 +99,7 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   where they bite. `A8` was a shipped fail-open — `tools/kb/catalog.mjs` emitted
   `catalogVersion` and its sole reader consumed `entries` without looking — and it is fixed in
   place. `G3`, `C2`, `C5`, `C6` and `C10` are grader and record-keeping defects off the answer
-  path, which the demo-tier waiver already calls scheduled work rather than defects, so each
-  carries a `.agent/deferred.md` row and closes in MAINTAIN. The four architecture rows
+  path; each carried a `.agent/deferred.md` row into MAINTAIN. The four architecture rows
   `A3`–`A6` stay accepted-open on their retained checks: semantics in `.svelte` components, no
   runtime validation at the worker boundary, query and proof paths that never drain
   diagnostics, and a 3,139,261 B worker booting before user activation.

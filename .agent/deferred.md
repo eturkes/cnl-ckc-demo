@@ -46,6 +46,15 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   re-vendored bag corrects its region page, or carries a recorded producer reason, and the
   census in `tests/passage-locate.test.ts` moves with it. `pri` low. **User ruling**: keep it
   owed to the producer — no demo-side declared limit.
+- **Off-path checks the retired demo-tier waiver excused** — the waiver let a check off the
+  answer path stay thin or unable to refuse a wrong input, and the `## Accepted-open` ids were
+  ruled under it. `CLAUDE.md` `Engineering` verification integrity now binds the whole repo
+  (`.claude/rules/stack.md` `Demo tier`). Accept: a committed inventory under
+  `.agent/contracts/` lists every check off the answer path — gate step, out-of-chain lane and
+  suite — and each one either refuses a planted wrong input with its firing recorded, or
+  carries its own queue row with an acceptance check; every `## Accepted-open` id is re-ruled
+  against the same clause. `pri` med. **User ruling**: demo tier = no formal verification, so
+  formal methods stay out of the inventory.
 
 ## Index — one line per `high` + `med` row
 
@@ -56,6 +65,7 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 | --- | --- |
 | u3 heap limit is unit-tested only | a committed test drives real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate |
 | **high** Browser WASM abort leaves a dead session | an aborted runtime reaches the client as its own terminal state that recreates the worker without a caller `reset()`, proven by a browser probe whose next query reports 337 documents |
+| Off-path checks the retired demo-tier waiver excused | a committed inventory under `.agent/contracts/` lists every check off the answer path — gate step, out-of-chain lane and suite — and each one either refuses a planted wrong input with its firing recorded, or carries its own queue row with an acceptance check; every `## Accepted-open` id is re-ruled against the same clause |
 
 ## Accepted-open
 

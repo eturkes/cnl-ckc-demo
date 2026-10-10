@@ -6,7 +6,7 @@ paths:
 # Upstream sync
 
 `CLAUDE.md` = the template `~/.local/app/agents/claude/CLAUDE.project.md`, copied whole;
-last-sync = agents@2cedb4f. A refresh overwrites the whole file, so anything the repo needs it
+last-sync = agents@4d22203. A refresh overwrites the whole file, so anything the repo needs it
 to say must survive that overwrite in `.claude/rules/`. Refresh prompt =
 `~/.local/app/agents/claude/prompts/auto/refresh.md`, or `steered/refresh.md` with a request
 slot; the bodies are otherwise equal.
@@ -43,9 +43,10 @@ slot; the bodies are otherwise equal.
   itself. Bare files (`gate`, `stack`, `waves`) load at session start; `paths:` files — this
   one included — load on first touch of a matching file.
 - **Teammates = the roles in `~/.claude/agents/`**, triggered by the global `CLAUDE.md`
-  `Subagents` law. A commit body names each teammate the unit used (name, role, verdict). No
-  project file pins a model, effort level or agent definition: `.claude/settings.local.json`
-  carries the headroom hook + proxy URL alone, and no `.claude/agents/` exists.
+  `Subagents` law at the rate `CLAUDE.md` `Session flow` sets per phase. A commit body names
+  each teammate the unit used (name, role, verdict). No project file pins a model, effort level
+  or agent definition: `.claude/settings.local.json` holds no model, effort or agent key, and
+  no `.claude/agents/` exists.
 
 ## Rulings index
 
@@ -54,7 +55,7 @@ This repo's rulings on template clauses (`CLAUDE.md` `Session flow`: this file =
 
 | template clause | ruling | carrier |
 |---|---|---|
-| `Engineering` verification integrity | binds whole on the answer path; off it a thin check is a demo-tier choice; report honesty unwaived (user) | `stack.md` |
+| `Engineering` fuzzing/property/formal methods | formal verification stays out: the demo serves no clinical purpose, `cnl-ckc` carries that rigor (user) | `stack.md` |
 | `Session flow` PROTOTYPE location + IMPLEMENT retire-at-close | inapplicable: no prototype tree; the expedited surfaces were redeveloped in place (user) | `stack.md` |
 | `Session flow` IMPLEMENT CI | CI runs `pnpm gate` + the scanners and publishes nothing (user: local delivery) | `gate.md` `CI` |
 | `Session flow` IMPLEMENT security scanning + `Engineering` remotely-exploitable code | live `pnpm audit`, no allowlist; static analysis = ESLint security rules alone (user) | `gate.md` `audit:check`, `lint` |
@@ -94,10 +95,16 @@ Named so a later diff reads cleanly and nobody restores them. Archived text, clo
 - `.serena/` → deleted. Code intelligence is the built-in `LSP` tool.
 - `WebFetch` as a research source → verbatim page text (`webtext`, `CLAUDE.md` `Execution`).
   Archived u16 briefs still say `WebFetch`.
-- Per-lens closing reviewers outside IMPLEMENT + two blind teammates per verdict → one
-  `reviewer` over every lens outside IMPLEMENT, one per lens inside it (`CLAUDE.md`
-  `Session flow`), one teammate per question with no blind second (global `Offload
-  economics`). `28c37bc`'s `4 lenses × 2 reviewers` is history.
+- Two blind teammates per verdict → one teammate per question with no blind second (global
+  `Offload economics`). `28c37bc`'s `4 lenses × 2 reviewers` is history.
+- One `reviewer` over every lens at a MAINTAIN close → one per lens in IMPLEMENT + MAINTAIN,
+  one covering every lens in PROTOTYPE + ITERATE (`CLAUDE.md` `Session flow` Teammates). The
+  `mnt2`–`mnt4` close contracts keep the old form.
+- The demo-tier integrity waiver (off the answer path, a thin check = a demo-tier choice) and
+  MAIN-alone MAINTAIN units → the template's verification integrity + IMPLEMENT + MAINTAIN
+  dispatch on every unit; demo tier = no formal verification (user ruling, `stack.md`). The
+  closed `review-implement.md` + `review-u16.md` contracts and `.agent/review.md` keep the old
+  form.
 - `claude/prompts/<phase>.md` → `claude/prompts/auto/` + `steered/`.
 - The `prototype/` verification carve-out → `a prototype runs under PROTOTYPE law`; no
   prototype exists here (`stack.md`).
