@@ -165,8 +165,8 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
 - **Stack.** `@typesafe-ai/sdk` exact `0.6.0` inside the Worker ALONE — the browser never
   imports it, and ESLint enforces that. `wrangler` is a devDependency.
 
-- **Probe set.** An independent `scientist` authors the held-out descriptions + gold from the
-  KB alone, frozen and committed before the first live run. Live accuracy is REPORTED per
+- **Probe set.** An independent teammate, blind to the selector, authors the held-out
+  descriptions + gold from the KB alone, frozen and committed before the first live run. Live accuracy is REPORTED per
   case, never gated — Jev has no determinism control. The gate grades the committed replay +
   the forced-arm control.
 

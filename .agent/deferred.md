@@ -55,6 +55,13 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   carries its own queue row with an acceptance check; every `## Accepted-open` id is re-ruled
   against the same clause. `pri` med. **User ruling**: demo tier = no formal verification, so
   formal methods stay out of the inventory.
+- **Two `Decisions` bullets state the reader-relative label ruling** — `.agent/spec.md`
+  `Decisions` **User** holds `The reading is READER-RELATIVE` and `An edge label is
+  READER-RELATIVE` back to back: the same ruling twice, each carrying clauses the other lacks
+  (the approved change of `tests/graph-semantics.review.test.ts:118` + its firing citation; the
+  shared `scopeReading` helper + the pointer to `.claude/rules/graph.md`). Accept:
+  `command grep -c 'READER-RELATIVE' .agent/spec.md` → 1, and that bullet carries every clause
+  both state. `pri` low. The ruling text is the user's, so the merge needs the user's approval.
 
 ## Index — one line per `high` + `med` row
 

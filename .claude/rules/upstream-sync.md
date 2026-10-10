@@ -6,7 +6,7 @@ paths:
 # Upstream sync
 
 `CLAUDE.md` = the template `~/.local/app/agents/claude/CLAUDE.project.md`, copied whole;
-last-sync = agents@4d22203. A refresh overwrites the whole file, so anything the repo needs it
+last-sync = agents@eac5295. A refresh overwrites the whole file, so anything the repo needs it
 to say must survive that overwrite in `.claude/rules/`. Refresh prompt =
 `~/.local/app/agents/claude/prompts/auto/refresh.md`, or `steered/refresh.md` with a request
 slot; the bodies are otherwise equal.
@@ -42,11 +42,12 @@ slot; the bodies are otherwise equal.
 - **`.claude/rules/` is the refresh-safe carrier.** Nothing durable belongs in `CLAUDE.md`
   itself. Bare files (`gate`, `stack`, `waves`) load at session start; `paths:` files — this
   one included — load on first touch of a matching file.
-- **Teammates = the roles in `~/.claude/agents/`**, triggered by the global `CLAUDE.md`
-  `Subagents` law at the rate `CLAUDE.md` `Session flow` sets per phase. A commit body names
-  each teammate the unit used (name, role, verdict). No project file pins a model, effort level
-  or agent definition: `.claude/settings.local.json` holds no model, effort or agent key, and
-  no `.claude/agents/` exists.
+- **Teammates = the roles in `~/.claude/agents/`**, dispatched where a global `CLAUDE.md`
+  `Subagents` fit pays, weighed per case; `CLAUDE.md` `Session flow` sets each phase's teammate
+  cost + depth and its phase fits. A commit body names each teammate the unit used (name, role,
+  verdict). No project file pins a model, effort level or agent definition:
+  `.claude/settings.local.json` holds no model, effort or agent key, and no `.claude/agents/`
+  exists.
 
 ## Rulings index
 
@@ -101,10 +102,17 @@ Named so a later diff reads cleanly and nobody restores them. Archived text, clo
   one covering every lens in PROTOTYPE + ITERATE (`CLAUDE.md` `Session flow` Teammates). The
   `mnt2`–`mnt4` close contracts keep the old form.
 - The demo-tier integrity waiver (off the answer path, a thin check = a demo-tier choice) and
-  MAIN-alone MAINTAIN units → the template's verification integrity + IMPLEMENT + MAINTAIN
-  dispatch on every unit; demo tier = no formal verification (user ruling, `stack.md`). The
-  closed `review-implement.md` + `review-u16.md` contracts and `.agent/review.md` keep the old
-  form.
+  MAIN-alone MAINTAIN units → the template's verification integrity + its IMPLEMENT + MAINTAIN
+  teammate fits, weighed per unit; demo tier = no formal verification (user ruling, `stack.md`).
+  The closed `review-implement.md` + `review-u16.md` contracts and `.agent/review.md` keep the
+  old form.
 - `claude/prompts/<phase>.md` → `claude/prompts/auto/` + `steered/`.
 - The `prototype/` verification carve-out → `a prototype runs under PROTOTYPE law`; no
   prototype exists here (`stack.md`).
+- The template's per-phase teammate + advisor mandates — `consultant` on every phase plan,
+  `reviewer` + `tester` per kernel unit, `scientist` reproducing every result, `researcher` at
+  any count, the advisor on through IMPLEMENT + MAINTAIN → fits weighed per case (global
+  `Subagents`, `CLAUDE.md` `Session flow` Teammates); each situation they named stays a fit.
+  `scientist` appraises rather than authors, so the `Probe set` gold author is an independent
+  teammate (user ruling, `.agent/spec.md` `Decisions`). Closed contracts and commit bodies keep
+  the old form.
