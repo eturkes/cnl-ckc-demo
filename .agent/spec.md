@@ -11,8 +11,9 @@ questions by deterministic Prolog execution.
 - An interactive, navigable network graph shows the semantic relationships between KB
   entities.
 - The KB enters by export only. `../cnl-ckc` is never linked and never a runtime dependency.
-- Demo tier: `cnl-ckc`-level rigor is waived everywhere except the non-negotiable. The target
-  demonstrates `cnl-ckc`'s utility, not clinical production software.
+- Demo tier: no formal verification of the kind `cnl-ckc` carries; every other engineering
+  standard applies in full. The demo is never embedded in any clinical capacity — it
+  demonstrates `cnl-ckc`'s utility, and `cnl-ckc` is the clinical-grade system.
 
 # Artifacts
 
