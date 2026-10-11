@@ -89,21 +89,28 @@ export interface SessionOptions {
 const DISPLAY_OPTIONS = '[quoted(true),numbervars(true),ignore_ops(true)]';
 
 /**
+ * `term_string/3` reads the FIRST term and ignores the rest, so `g. assertz(x)` parses as `g`, and a
+ * second term would show on the KB card while never running. The engine's own reader therefore
+ * counts the terms the text holds — comments and layout as the reader sees them, nested block
+ * comments included — retrying once with a closing full stop for text that ends without one.
+ * Its variables are `_`-named, so the stream blob it opens never comes back as a binding.
+ */
+const countTerms = (suffix: string, text: string): string =>
+  `catch(setup_call_cleanup(open_string(${text},_St${suffix}),` +
+  `findall(x,(repeat,read_term(_St${suffix},_X${suffix},[]),` +
+  `(_X${suffix}==end_of_file->!,fail;true)),_L${suffix}),close(_St${suffix})),` +
+  `error(syntax_error(_),_),_L${suffix}=bad)`;
+
+/**
  * Parse a read-only goal and render the parsed term back, in one query. `numbervars(false)` keeps
  * a `'$VAR'(N)` term from rendering as a variable, and `variable_names` keeps the caller's names,
  * so the rendered text re-reads to a variant of the checked term.
  */
 const READONLY_PARSE =
-  'term_string(T,S,[variable_names(Vs),subterm_positions(P)]),arg(2,P,E),sub_string(S,E,_,0,R),' +
-  'term_string(T,C,[quoted(true),ignore_ops(true),numbervars(false),variable_names(Vs)]).';
-
-/**
- * `term_string/3` reads the FIRST term and ignores the rest, so `g. assertz(x)` parses as `g`.
- * The text after the term may hold layout, comments and one full stop, nothing else: a second
- * term would show on the KB card while never running.
- */
-const ONLY_TERM = /^\.?$/u;
-const LAYOUT = /\s+|%[^\n]*|\/\*[\s\S]*?\*\//gu;
+  'term_string(T,S,[variable_names(Vs)]),' +
+  'term_string(T,C,[quoted(true),ignore_ops(true),numbervars(false),variable_names(Vs)]),' +
+  `${countTerms('0', 'S')},(_L0==bad->string_concat(S,"\\n.",_S1),` +
+  `${countTerms('1', '_S1')},_L=_L1;_L=_L0),(_L==bad->N=bad;length(_L,N)).`;
 
 const SCHEMA_GOAL = 'findall(V,guideline_schema_version(V),Vs),sort(Vs,Us),length(Us,N),Us=[S].';
 const DOCUMENTS_GOAL = 'findall(D,guideline_document(D,_,_),Ds),length(Ds,N).';
@@ -766,13 +773,12 @@ export class EngineSession {
         `the goal does not parse${parsed.kind === 'prolog-error' ? ` (${parsed.message})` : ''}`,
       );
     }
-    const { T: term, Vs: names, C: rendered, R: rest } = parsed.bindings;
-    if (term === undefined || rendered?.kind !== 'string' || rest?.kind !== 'string') {
+    const { T: term, Vs: names, C: rendered, N: terms } = parsed.bindings;
+    if (term === undefined || rendered?.kind !== 'string' || terms === undefined) {
       throw new DecodeError('the read-only parse returned no term or rendering');
     }
-    if (!ONLY_TERM.test(rest.value.replace(LAYOUT, ''))) {
-      throw new GuardRefusal('the goal text holds more than one term');
-    }
+    if (terms.kind !== 'integer') throw new GuardRefusal('the goal text does not parse');
+    if (terms.value !== 1) throw new GuardRefusal('the goal text holds more than one term');
     const verdict = guardGoal(term, [...variableNames(names)]);
     if (!verdict.ok) throw new GuardRefusal(verdict.reason);
     return rendered.value;

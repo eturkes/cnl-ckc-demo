@@ -104,7 +104,15 @@ pseudo-random generator is the one exception: `X is random(6)` advances its stat
 walk cannot close it, because a variable bound at run time can carry `random/1` into an
 expression (`E = random(6), X is E`). Nothing in the demo reads that state (chat-consultant-1 K1).
 
+The KB-read rule is syntactic: it requires a KB entry point in some goal position, not on every
+path, so `once((X = "an invented claim" ; guideline_schema_version(_)))` binds the literal without
+reading the KB (`chat-reviewer-1` register). The card shows the goal; `chat-c4.md` `Declared limit`
+states what a `kb` label certifies.
+
 G9 samples the admitted builtins; it does not prove that no admitted goal can abort the runtime.
+Measured: with the heap held to ~100 MB by a 1700 MB reservation, the shared battery's retained
+stacks exhausted malloc and admitted `split_string/4` aborted the runtime; G9's shared engine
+therefore boots without the reservation (the control keeps it).
 The last bound on an abort that gets through is c2's recreation of the worker
 (`.agent/contracts/chat-c2.md`).
 

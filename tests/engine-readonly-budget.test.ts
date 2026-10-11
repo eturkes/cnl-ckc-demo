@@ -23,7 +23,10 @@ const DEMO_BUDGET: BudgetSpec = {
   answerCap: 32,
 };
 const DOCUMENTS = 'findall(D,guideline_document(D,_,_),Ds),length(Ds,N)';
-// Same untouched reservation as the contract's battery probe: shrink time to the real abort.
+// The control's untouched reservation shrinks the time to its real abort. The shared battery
+// engine boots WITHOUT it: under a ~100 MB heap the battery's own retained stacks exhausted malloc,
+// `split_string/4` aborted the runtime mid-battery and the next case hung in it — a harness
+// state no browser session reaches, and c2's recovery is the bound on a real abort.
 const RESERVE_BYTES = 1700 * 1024 * 1024;
 type Reservable = Engine & { _malloc(bytes: number): number };
 const factory = require('swipl-wasm/dist/loadImageDefault.js') as
@@ -31,7 +34,7 @@ const factory = require('swipl-wasm/dist/loadImageDefault.js') as
   | { default: (bytes: Uint8Array) => (options?: Record<string, unknown>) => Promise<Reservable> };
 const load = typeof factory === 'function' ? factory : factory.default;
 const loader =
-  (protectExit: boolean): ImageLoader =>
+  (protectExit: boolean, reserve: boolean): ImageLoader =>
   async (bytes) => {
     const engine = await load(bytes)({
       printErr: () => undefined,
@@ -44,12 +47,14 @@ const loader =
           }
         : {}),
     });
-    if (engine._malloc(RESERVE_BYTES) === 0) throw new Error('heap reservation refused');
+    if (reserve && engine._malloc(RESERVE_BYTES) === 0) {
+      throw new Error('heap reservation refused');
+    }
     return engine;
   };
-const boot = async (protectExit = false): Promise<EngineSession> => {
+const boot = async (protectExit = false, reserve = false): Promise<EngineSession> => {
   const session = new EngineSession({
-    loadImage: loader(protectExit),
+    loadImage: loader(protectExit, reserve),
     expected: manifest.contract,
   });
   await session.boot(image);
@@ -148,7 +153,7 @@ describe('read-only budget battery', () => {
   );
 
   it('G9 control unflagged atom doubling reports a runtime abort', async () => {
-    const control = await boot();
+    const control = await boot(false, true);
     const outcome = await run(control, atomChain, false);
     const aborted =
       (outcome.kind === 'error' &&

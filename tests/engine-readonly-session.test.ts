@@ -407,15 +407,20 @@ describe('live read-only session', () => {
     expect(comparable(readonly)).toEqual(comparable(original));
   });
 
-  it.each(['% trailing comment', '/* note */'])(
-    'G5 executes canonical text rather than the caller comment %s',
-    async (comment) => {
-      const bare = await request('clinical_rule(D,S,R)');
-      const commented = await request(`clinical_rule(D,S,R) ${comment}`);
-      expect(solutions(bare).length).toBeGreaterThan(0);
-      expect(comparable(commented)).toEqual(comparable(bare));
-    },
-  );
+  // `/* outer /* inner */ outer */` and the full-stop forms: chat-reviewer-1 F1, refused by the
+  // first, regex-based trailing-text check while the engine's own reader accepts them.
+  it.each([
+    '% trailing comment',
+    '/* note */',
+    '/* outer /* inner */ outer */',
+    '. /* outer /* inner */ outer */',
+    '/* note */ .',
+  ])('G5 executes canonical text rather than the caller comment %s', async (comment) => {
+    const bare = await request('clinical_rule(D,S,R)');
+    const commented = await request(`clinical_rule(D,S,R) ${comment}`);
+    expect(solutions(bare).length).toBeGreaterThan(0);
+    expect(comparable(commented)).toEqual(comparable(bare));
+  });
 
   it.each([
     "'it''s'",
@@ -486,7 +491,13 @@ describe('live read-only session', () => {
           await request('(current_predicate(probe_c1_invalid/1)->State=present;State=absent)', {}),
         );
         expect.soft(state[0]?.bindings.State).toEqual({ kind: 'atom', value: 'absent' });
-        guard(result, /readonly|read.only|flag|true/iu);
+        guard(result, /readonly flag/iu);
+        // A goal the allowlist ADMITS, so only the flag check can refuse it (chat-reviewer-1 F2:
+        // a dispatcher taking truthy flags passed every case above, because assertz is refused).
+        guard(
+          await request('once(guideline_schema_version(_))', { readonly: flag }),
+          /readonly flag/iu,
+        );
       } finally {
         raw('catch(abolish(probe_c1_invalid/1),_,true)');
       }
