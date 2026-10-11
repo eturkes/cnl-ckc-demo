@@ -64,6 +64,13 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   shared `scopeReading` helper + the pointer to `.claude/rules/graph.md`). Accept:
   `command grep -c 'READER-RELATIVE' .agent/spec.md` → 1, and that bullet carries every clause
   both state. `pri` low. The ruling text is the user's, so the merge needs the user's approval.
+- **A compound named `functor` fails to decode** — swipl-wasm's `PrologCompound` sets
+  `this.functor = name` and then `this[name] = args`, so for the name `functor` the arguments
+  overwrite the name, and `decodeTerm` (`src/engine/terms.ts`) throws `unsupported native tag:
+  t` on `X = functor(a)` or any goal that parses to one. Fail-closed, and no shipped answer holds
+  such a compound; the chat's read-only allowlist refuses `functor/3` because of it
+  (`.agent/contracts/chat-c1.md`). Accept: `X = functor(a,b)` solves with `X` decoded as a
+  compound `functor/2`, and the encoder re-enters it unchanged (`=@=`). `pri` low.
 
 ## Index — one line per `high` + `med` row
 
