@@ -12,7 +12,10 @@ import { describe, expect, it } from 'vitest';
 
 const SOURCE = fileURLToPath(new URL('../src/demo/DemoController.svelte.ts', import.meta.url));
 
+// `CHAT_BUDGET` + `runGoal` = the chat's path onto the one engine queue (`chat-c4.md`, user
+// ruling); the original pin fired on exactly those two names.
 const DECLARED_EXPORTS = [
+  'CHAT_BUDGET',
   'DEMO_BUDGET',
   'DemoController',
   'DemoEngine',
@@ -31,6 +34,7 @@ const DECLARED_MEMBERS = [
   'retry',
   'reveal',
   'run',
+  'runGoal',
   'select',
   'selectSolution',
   'selected',

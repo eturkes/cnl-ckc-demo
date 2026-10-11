@@ -8,7 +8,7 @@
 // being the active one — `AbortSignal` is multicast and cannot express ownership
 // by itself.
 
-import { EngineClient, type BootOutcome } from '../engine/client.js';
+import { EngineClient, type BootOutcome, type QueryOutcome } from '../engine/client.js';
 import type {
   BootProgress,
   BudgetSpec,
@@ -41,6 +41,12 @@ export const DEMO_BUDGET: Readonly<BudgetSpec> = Object.freeze({
   answerCap: 32,
 });
 
+/**
+ * Bounds one model-written chat goal, run read-only (`.agent/contracts/chat-c4.md`): the demo
+ * budget with room for a listing — the model reads at most `TOOL_RESULT_MAX` characters of it.
+ */
+export const CHAT_BUDGET: Readonly<BudgetSpec> = Object.freeze({ ...DEMO_BUDGET, answerCap: 50 });
+
 const PROOF_BUDGET: Readonly<BudgetSpec> = Object.freeze({
   stackBytes: 16_777_216,
   depth: 100,
@@ -63,6 +69,8 @@ export interface DemoEngine {
   ): Promise<AnswerResult>;
   prove?(input: ProofInput, budget: BudgetSpec, signal?: AbortSignal): Promise<ProofOutcome>;
   derive?(ruleIds: readonly unknown[], signal?: AbortSignal): Promise<IntakeDerivation>;
+  /** One model-written goal, always through the engine's read-only allowlist. */
+  runGoal?(goal: string, budget: BudgetSpec, signal?: AbortSignal): Promise<QueryOutcome>;
   dispose(): void;
 }
 
@@ -75,6 +83,8 @@ export const createDemoEngine = (): DemoEngine => {
     ask: (id, budget, signal, onSolution) => service.ask(id, budget, signal, onSolution),
     prove: (input, budget, signal) => client.prove(input, budget, signal),
     derive: (ruleIds, signal) => intake.derive(ruleIds, signal),
+    runGoal: (goal, budget, signal) =>
+      client.query(goal, budget, signal, undefined, { readonly: true }),
     dispose: () => {
       client.dispose();
     },
@@ -196,6 +206,17 @@ export class DemoController {
     const booted = this.state.kind !== 'booting' && this.state.kind !== 'boot-error';
     if (derive === undefined || !booted || this.#disposed) return undefined;
     return this.#exclusive(() => derive(ruleIds, signal));
+  }
+
+  /**
+   * Run one chat goal read-only through the same engine queue as every other call. `undefined`
+   * = nothing ran: the engine carries no chat path, has not booted, or is disposed.
+   */
+  runGoal(goal: string, signal?: AbortSignal): Promise<QueryOutcome> | undefined {
+    const run = this.#engine.runGoal?.bind(this.#engine);
+    const booted = this.state.kind !== 'booting' && this.state.kind !== 'boot-error';
+    if (run === undefined || !booted || this.#disposed) return undefined;
+    return this.#exclusive(() => run(goal, CHAT_BUDGET, signal));
   }
 
   /**
