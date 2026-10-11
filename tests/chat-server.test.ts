@@ -193,8 +193,10 @@ function toolResponses(log: Trace[]) {
     (row) => row.kind === 'validated-response' && row.detail.method === 'item/tool/call',
   );
 }
-function expectRefused(log: Trace[], count: number) {
-  const responses = toolResponses(log);
+// A refusal reaches the fake over its stdin, so its log can trail the event that caused it.
+async function expectRefused(log: () => Trace[], count: number) {
+  await until(() => toolResponses(log()).length >= count, `${String(count)} call refusals`);
+  const responses = toolResponses(log());
   expect(responses).toHaveLength(count);
   for (const row of responses)
     expect(object(object(row.detail.response).result).success).toBe(false);
@@ -471,7 +473,7 @@ describe('chat-c3 bridge contract', { timeout: 20_000 }, () => {
     const turn = await s.open('call-timeout');
     await turn.event('query');
     await turn.done();
-    expectRefused(s.log(), 1);
+    await expectRefused(s.log, 1);
     expect((await s.result(turn.id, 'q1')).status).toBe(404);
   });
 
@@ -484,7 +486,7 @@ describe('chat-c3 bridge contract', { timeout: 20_000 }, () => {
     expectError(await busy.done(), 'busy');
     expectError(await turn.done(), 'timeout');
     expect(s.received('turn/interrupt')).toHaveLength(1);
-    expectRefused(s.log(), 1);
+    await expectRefused(s.log, 1);
     expect((await s.result(turn.id, 'q1')).status).toBe(404);
   });
 
@@ -498,7 +500,7 @@ describe('chat-c3 bridge contract', { timeout: 20_000 }, () => {
       () => s.received('turn/interrupt').length === 1 && toolResponses(s.log()).length === 1,
       'disconnect cleanup',
     );
-    expectRefused(s.log(), 1);
+    await expectRefused(s.log, 1);
     expect((await s.result(turn.id, 'q1')).status).toBe(404);
   });
 
@@ -511,7 +513,7 @@ describe('chat-c3 bridge contract', { timeout: 20_000 }, () => {
     expectError(await turn.done(), 'timeout');
     // Retired at `controlMs`, well before the call deadline would have answered anything.
     expect(performance.now() - start).toBeLessThan(4000);
-    expectRefused(s.log(), 1);
+    await expectRefused(s.log, 1);
     expect((await s.result(turn.id, 'q1')).status).toBe(404);
     const next = await s.open('plain');
     const events = await next.done();
@@ -545,7 +547,7 @@ describe('chat-c3 bridge contract', { timeout: 20_000 }, () => {
     closed.add(s.bridge);
     await turn.done();
     await until(() => s.log().some((row) => row.kind === 'exit'), 'child exit');
-    expectRefused(s.log(), 1);
+    await expectRefused(s.log, 1);
   });
 
   it.each(['complete-open', 'failed', 'interrupted', 'failure'])(
@@ -555,7 +557,7 @@ describe('chat-c3 bridge contract', { timeout: 20_000 }, () => {
       const turn = await s.open(mode);
       const events = await turn.done();
       await until(() => toolResponses(s.log()).length === 1, 'terminal call refusal');
-      expectRefused(s.log(), 1);
+      await expectRefused(s.log, 1);
       if (mode !== 'complete-open')
         expectError(events, mode === 'interrupted' ? 'interrupted' : 'codex');
       else expect(events.some((event) => event.type === 'error')).toBe(false);
@@ -583,7 +585,7 @@ describe('chat-c3 bridge contract', { timeout: 20_000 }, () => {
       await turn.event('error');
       expectError(await turn.done(), 'auth');
       expect(s.received('turn/interrupt')).toHaveLength(1);
-      expectRefused(s.log(), 1);
+      await expectRefused(s.log, 1);
       expect((await s.result(turn.id, 'q1')).status).toBe(404);
     },
   );
