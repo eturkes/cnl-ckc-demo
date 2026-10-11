@@ -66,6 +66,7 @@ const fromIndicator = (pi: string, fill: () => PlTerm = variable): PlTerm => {
 function reference(goal: PlTerm, names: readonly string[] = []): boolean {
   if (names.some((name) => /^_(?:G)?[0-9]+$/u.test(name))) return false;
   const pending: PlTerm[] = [goal];
+  let readsKB = false;
   while (pending.length > 0) {
     const term = pending.shift();
     if (term === undefined) throw new Error('empty reference work item');
@@ -78,9 +79,14 @@ function reference(goal: PlTerm, names: readonly string[] = []): boolean {
     if (pi === 'clause/2') {
       const head = term.args[0];
       if (head === undefined || !KB.includes(indicator(head) ?? '')) return false;
+      readsKB = true;
       continue;
     }
-    if (KB.includes(pi) || DATA.includes(pi)) continue;
+    if (KB.includes(pi)) {
+      readsKB = true;
+      continue;
+    }
+    if (DATA.includes(pi)) continue;
     const slots = CONTROL.find(([signature]) => signature === pi)?.[1];
     if (slots === undefined) return false;
     pending.unshift(
@@ -91,7 +97,7 @@ function reference(goal: PlTerm, names: readonly string[] = []): boolean {
       }),
     );
   }
-  return true;
+  return readsKB;
 }
 
 const DATA_SHAPES: PlTerm[] = [
@@ -111,9 +117,12 @@ const DATA_SHAPES: PlTerm[] = [
   compound(':', atom('user'), compound('assertz', atom('x'))),
 ];
 
-const compare = (goal: PlTerm, names: readonly string[] = []): boolean => {
-  const expected = reference(goal, names);
-  const actual = guardGoal(goal, names);
+const anchored = (goal: PlTerm): PlTerm =>
+  compound(',', compound('guideline_schema_version', variable(99999)), goal);
+const compare = (goal: PlTerm, names: readonly string[] = [], withKB = true): boolean => {
+  const input = withKB ? anchored(goal) : goal;
+  const expected = reference(input, names);
+  const actual = guardGoal(input, names);
   expect(actual.ok, `${indicator(goal) ?? goal.kind}; names=${names.join(',')}`).toBe(expected);
   if (!actual.ok) expect(actual.reason.length).toBeGreaterThan(0);
   return expected;
@@ -203,18 +212,46 @@ describe('independent read-only grammar', () => {
       expect(compare(compound('=', variable(), atom('x')), ['X', name, 'Y']), name).toBe(false);
   });
 
+  it('G10 requires a KB read in goal position, never a KB-shaped datum', () => {
+    for (const pi of KB) {
+      const kb = fromIndicator(pi);
+      expect(compare(kb, [], false), pi).toBe(true);
+      expect(compare(compound('clause', kb, variable()), [], false), pi).toBe(true);
+      expect(compare(compound('=', variable(), kb), [], false), pi).toBe(false);
+    }
+    for (const goal of [...DATA.map((pi) => fromIndicator(pi)), ...ATOMS.map(atom)]) {
+      expect(compare(goal, [], false)).toBe(false);
+      const verdict = guardGoal(goal, []);
+      if (verdict.ok) throw new Error('goal without KB read admitted');
+      expect(verdict.reason).toBe('the goal reads no KB predicate');
+    }
+    for (const [pi, slots] of CONTROL) {
+      const template = fromIndicator(pi, () => atom('true'));
+      if (template.kind !== 'compound') throw new Error('control lacks arguments');
+      expect(compare(template, [], false), pi).toBe(false);
+      for (let index = 0; index < template.args.length; index += 1) {
+        const args = [...template.args];
+        args[index] = compound('guideline_schema_version', variable());
+        expect(
+          compare(compound(template.functor, ...args), [], false),
+          `${pi} arg ${String(index + 1)}`,
+        ).toBe(slots.includes(index));
+      }
+    }
+  });
+
   it('G10 names the first refused goal in depth-first left-to-right order', () => {
     const bad = compound(
       ',',
       compound('once', compound(';', atom('true'), compound('assertz', atom('x')))),
       compound('atom_concat', atom('a'), atom('b'), variable()),
     );
-    const first = guardGoal(bad, []);
+    const first = guardGoal(anchored(bad), []);
     expect(first.ok).toBe(false);
     if (first.ok) throw new Error('refused tree admitted');
     expect(first.reason).toContain('assertz/1');
     const swapped = guardGoal(
-      compound(',', compound('atom_concat', atom('a'), atom('b'), variable()), bad),
+      anchored(compound(',', compound('atom_concat', atom('a'), atom('b'), variable()), bad)),
       [],
     );
     expect(swapped.ok).toBe(false);

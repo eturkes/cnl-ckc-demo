@@ -21,6 +21,7 @@ const calls: { goal: string; bindings?: Record<string, unknown> }[] = [];
 let engine: Engine;
 let session: EngineSession;
 let serial = 0;
+const KB_ANCHOR = 'once(guideline_schema_version(_))';
 
 const factory = require('swipl-wasm/dist/loadImageDefault.js') as
   | ((bytes: Uint8Array) => (options?: Record<string, unknown>) => Promise<Engine>)
@@ -93,6 +94,8 @@ const guard = (result: EngineResponse, reason: RegExp | string): void => {
 };
 
 const REFUSALS: [string, string | RegExp][] = [
+  ['X = "an invented claim"', 'the goal reads no KB predicate'],
+  ['msort([b,a],L)', 'the goal reads no KB predicate'],
   ['assertz(probe_c1(1))', 'assertz/1'],
   ['string_chars("ab",Cs)', 'string_chars/2'],
   ['functor(f(a),F,N)', /functor|decode/iu],
@@ -304,7 +307,9 @@ describe('live read-only session', () => {
   it.each(['_123x', '_G123x', '_g123', '_G', '__123'])(
     'G1 admits neighboring variable name %s',
     async (name) => {
-      expect(solutions(await request(`${name} = 1, X = ${name}`))[0]?.bindings.X).toEqual({
+      expect(
+        solutions(await request(`${KB_ANCHOR}, ${name} = 1, X = ${name}`))[0]?.bindings.X,
+      ).toEqual({
         kind: 'integer',
         value: 1,
       });
@@ -312,12 +317,14 @@ describe('live read-only session', () => {
   );
 
   it('G1 enforces the 2048-code-unit boundary before parsing', async () => {
-    const exact = `true/*${'a'.repeat(2040)}*/`;
+    const prefix = `${KB_ANCHOR}/*`;
+    const room = 2048 - prefix.length - 2;
+    const exact = `${prefix}${'a'.repeat(room)}*/`;
     expect(exact.length).toBe(2048);
     expect(solutions(await request(exact))).toHaveLength(1);
     guard(await request(`${exact} `), /2048|length|long|code.unit/iu);
-    // Astral glyphs count twice: 1020 glyphs + 8 syntax units = exactly 2048.
-    const astral = `true/*${'😀'.repeat(1020)}*/`;
+    // Astral glyphs count twice; retain the same exact code-unit boundary.
+    const astral = `${prefix}${'😀'.repeat(Math.floor(room / 2))}${'a'.repeat(room % 2)}*/`;
     expect(astral.length).toBe(2048);
     expect(solutions(await request(astral))).toHaveLength(1);
     guard(await request(`${astral} `), /2048|length|long|code.unit/iu);
@@ -378,10 +385,10 @@ describe('live read-only session', () => {
   );
 
   it.each(BUILTINS)('G3 admits the small builtin goal %s', async (_pi, goal) => {
-    expect(solutions(await request(goal)).length).toBeGreaterThan(0);
+    expect(solutions(await request(`${KB_ANCHOR},${goal}`)).length).toBeGreaterThan(0);
   });
 
-  it.each([...ADMITTED, ...BUILTINS.map(([, goal]) => goal)])(
+  it.each([...ADMITTED, ...BUILTINS.map(([, goal]) => `${KB_ANCHOR},${goal}`)])(
     'G4 preserves the unflagged result for %s',
     async (goal) => {
       const original = await request(goal, {});
@@ -427,7 +434,7 @@ describe('live read-only session', () => {
     'pair(A,A)',
     'pair(A,B)',
   ])('G5 runs a canonical variant of data %s', async (literal) => {
-    const source = `X = ${literal}`;
+    const source = `once(guideline_schema_version(_KbVersion)), X = ${literal}`;
     const canonicalTerm = raw(
       'term_string(T,Source,[variable_names(Vs)]),term_string(T,Canonical,[quoted(true),ignore_ops(true),numbervars(false),variable_names(Vs)])',
       { Source: source },
@@ -445,7 +452,7 @@ describe('live read-only session', () => {
 
   it('G5 performs one parsed canonicalization before executing a read-only goal', async () => {
     calls.length = 0;
-    expect(solutions(await request('X = 1 + 2'))).toHaveLength(1);
+    expect(solutions(await request(`${KB_ANCHOR}, X = 1 + 2`))).toHaveLength(1);
     const parse = calls.filter(
       ({ goal }) => goal.includes('variable_names(') && goal.includes('term_string('),
     );
