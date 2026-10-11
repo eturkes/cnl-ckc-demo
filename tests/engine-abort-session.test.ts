@@ -44,13 +44,15 @@ const fixture = async (rows: number, lines: string[], site: 'step' | 'call' = 's
         default: (image: Uint8Array) => (options?: Record<string, unknown>) => Promise<Engine>;
       };
       const engine = await factory.default(bytes)({});
-      const writeFile = engine.FS.writeFile.bind(engine.FS);
-      engine.FS.writeFile = (...args) => {
+      const { FS } = engine;
+      if (FS === undefined) throw new Error('the saved image exposes no filesystem');
+      const writeFile = FS.writeFile.bind(FS);
+      FS.writeFile = (...args) => {
         calls.push('writeFile');
         if (armed && site === 'call') trip();
         return writeFile(...args);
       };
-      const fs = engine.FS as typeof engine.FS & { unlink(path: string): void };
+      const fs = FS as typeof FS & { unlink(path: string): void };
       const unlink = fs.unlink.bind(fs);
       fs.unlink = (path) => {
         calls.push('unlink');
@@ -62,6 +64,7 @@ const fixture = async (rows: number, lines: string[], site: 'step' | 'call' = 's
         if (tripped) throw new WebAssembly.RuntimeError('Aborted(probe)');
         if (armed && site === 'call') trip();
         const result = query(goal, bindings);
+        if (result.close === undefined) throw new Error('the query exposes no close');
         const close = result.close.bind(result);
         result.close = () => {
           calls.push('close');
