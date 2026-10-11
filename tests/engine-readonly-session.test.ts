@@ -38,7 +38,7 @@ beforeAll(async () => {
         get(target, property, receiver) {
           if (property !== 'query') return Reflect.get(target, property, receiver) as unknown;
           return (goal: string, bindings?: Record<string, unknown>) => {
-            calls.push({ goal, bindings });
+            calls.push(bindings === undefined ? { goal } : { goal, bindings });
             return query(goal, bindings);
           };
         },
