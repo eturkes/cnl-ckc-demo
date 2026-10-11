@@ -211,7 +211,7 @@ tree at the closing commit.
   - Accept: refuses the atom-doubling chain, `assertz`, a module-qualified goal, a variable goal
     and `call/2`; admits every `clinical_*` entry point; contract + diff-blind `tester` suite RED
     before code.
-- [ ] c2 `kernel` q1 + q2: an aborted runtime recreates the worker; R45 moves (approved).
+- [x] `ecca9dd` c2 `kernel` q1 + q2: an aborted runtime recreates the worker; R45 moves (approved).
   - Accept: the q1 row's own check (browser probe, next query reports 337 documents) + q2's
     `limit: 'heap'` read; R45's original firing recorded in the contract.
 - [ ] c3 `kernel` `server/chat.mjs`: persistent `codex app-server` bridge, NDJSON turns, tool
@@ -227,9 +227,9 @@ tree at the closing commit.
 MAINTAIN request: work every `.agent/deferred.md` row in rank order (5 rows at `f855bb5`). A row
 needing the user records its part owed; new finds become rows funded after those five.
 
-- [ ] q1 `high` Browser WASM abort — funded by the chat request, unit c2 (user ruling).
-- [ ] q2 `med` u3 heap limit — rides with c2 on `limit: 'heap'`; swipl-wasm 8.2.1 aborts the
-  same way, so a bump does not unblock it.
+- [x] `ecca9dd` q1 `high` Browser WASM abort — closed by c2: R45's next query answers on a recreated worker.
+- [x] `ecca9dd` q2 `med` u3 heap limit — closed by c2: `tests/engine-heap.test.ts` reads `limit: 'heap'`
+  on the real trip.
 - [ ] q3 `low` judgment Worker — ruled (user): stay local; owed to the user (deploy + limiter).
 - [x] `005903a` q4 `low` coverage passages: a lone bullet item leaves the locate fold → 3 of 5
   locate; ruled (user): a behavioral fix, no live review owed; `rec06` + `rec07` stay queued,
