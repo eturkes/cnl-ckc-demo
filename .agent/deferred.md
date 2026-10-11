@@ -25,7 +25,9 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   (M1 review R45). Unreachable from M1's six bounded catalog goals;
   an ad-hoc goal path is what makes it reachable (`.agent/spec.md` `Decisions` MAIN). Accept: an aborted runtime reaches the client
   as its own terminal state that recreates the worker without a caller `reset()`, proven by a
-  browser probe whose next query reports 337 documents. `pri` high, gated on an ad-hoc goal path.
+  browser probe whose next query reports 337 documents. `pri` high. **User ruling**: funded by
+  the chat request (`.agent/contracts/chat-plan.md`, unit c2), whose model-written goals are the
+  ad-hoc goal path; the `pnpm engine:probe` R45 change is approved.
 - **The judgment Worker runs locally alone** — user ruling deferred the Cloudflare deploy and
   stopped Pages publishing, so free-text intake exists only under `pnpm intake:dev` + Vite's
   proxy. `worker/index.ts` spends one global limiter bucket (`key: 'intake'`), correct for one

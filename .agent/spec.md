@@ -170,24 +170,65 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   case, never gated — Jev has no determinism control. The gate grades the committed replay +
   the forced-arm control.
 
+- **Chat intake REPLACES the TypeSafe intake (open request).** Free text becomes a chatbot:
+  `gpt-6.1-sol`, effort `medium`, over a persistent `codex app-server`. The model writes Prolog
+  goals, they run in the browser engine, and every answer segment is labelled KB / web / model.
+  It reverses "intake SELECTS, never composes; no new executable surface" — the seven intake
+  bullets above it die in the unit that retires the TypeSafe intake, whose code, suites, gate
+  rows, census rows, binding entries and mutants are approved for deletion.
+  - **Provenance = inline labels**: KB tags open query cards holding the goal and the engine's
+    verbatim solutions; Web tags open the URLs the turn's own search returned.
+  - **q1 is funded here**: an aborted runtime becomes a terminal state that recreates the
+    worker; the `engine:probe` R45 change is approved, and q2 closes with it on `limit: 'heap'`.
+  - Plan, measured probe facts, open isolation question → `.agent/contracts/chat-plan.md`.
+
 **MAIN:** premise display = deduplicated steps inside the EXISTING ladder rungs, never a new
 step type (3,930 leaves / 346 premises), carrying hypothetical origin and no source line.
 u6's oracle is GREEN at base, credited RED-under-dependency-removal alone — it guards the
 compiled KB, which the answer-path defect never broke. u11 graded the scope records, u12 the
 projection model and u13 the shown edge; **rendered output is graded by `pnpm graph:check`
 alone**, because a model-side assertion and a mocked DOM suite both survive a renderer that
-shows the wrong label. The `pri` high **Browser WASM abort** queue row stays gated: it needs
-a runaway `assertz` to abort the runtime, and the intake composes no goal, so the abort stays
-unreachable until an ad-hoc goal path exists — which the free-text ruling declines.
+shows the wrong label. The chat's goal path reaches the **Browser WASM abort** queue row: a
+32-step `atom_concat` chain aborts the runtime in 401 ms under a 64 MB stack, because atoms sit
+outside `stack_limit` — so the read-only guard excludes every atom builder.
 
 # Tasks
+
+MAINTAIN request (open): chat intake replaces the TypeSafe intake (`Decisions` User, plan
+`.agent/contracts/chat-plan.md`). Met when: delivered end to end + `pnpm gate` green on a clean
+tree at the closing commit.
+
+- [ ] RESUME: paused at orientation close; no unit started, nothing committed for the request
+  beyond this state commit (`chat-plan.md`, `Decisions`, these rows). Uncommitted work: none.
+  No teammate ran; no branch or worktree exists for this request. Local resume inputs (gitignored):
+  `.scratch/probe/` (codex + KB probe scripts, `run1.log`), `.scratch/codex-schema-x/` (protocol
+  schema, regenerate with the command in `chat-plan.md`). Next action: decide the codex isolation
+  question (`chat-plan.md` `Isolation — OPEN`: `baseInstructions`, `model_catalog_json`, or a
+  dedicated `CODEX_HOME` with its own login), then write c1's contract and start c1.
+- [ ] c1 `kernel` guarded read-only query: `query(…, {readonly:true})`, JS allowlist over the
+  decoded parse, canonical re-render, `EngineErrorCode` `'guard'`.
+  - Accept: refuses the atom-doubling chain, `assertz`, a module-qualified goal, a variable goal
+    and `call/2`; admits every `clinical_*` entry point; contract + diff-blind `tester` suite RED
+    before code.
+- [ ] c2 `kernel` q1 + q2: an aborted runtime recreates the worker; R45 moves (approved).
+  - Accept: the q1 row's own check (browser probe, next query reports 337 documents) + q2's
+    `limit: 'heap'` read; R45's original firing recorded in the contract.
+- [ ] c3 `kernel` `server/chat.mjs`: persistent `codex app-server` bridge, NDJSON turns, tool
+  relay, Origin/Host allowlist, graded against a fake app-server.
+- [ ] c4 `kernel` browser chat: client, controller on the engine queue, provenance resolver
+  (kb/web/unverified), capped tool-result text, binding row for the KB card.
+- [ ] c5 visual: ChatPanel replaces IntakePanel above the drop-down, both locales, dom tests,
+  visual-qa states; user live review owed.
+- [ ] c6 retire the TypeSafe intake (approved deletion set, `chat-plan.md` `User rulings`).
+- [ ] c7 live `pnpm chat:probe` + `pnpm chat:live`: reported, never gated.
+- [ ] c8 README, rules, `Artifacts`, claims registry, census; close review per lens.
 
 MAINTAIN request: work every `.agent/deferred.md` row in rank order (5 rows at `f855bb5`). A row
 needing the user records its part owed; new finds become rows funded after those five.
 
-- [ ] q1 `high` Browser WASM abort — waits: an ad-hoc goal path (`Decisions` MAIN).
-- [ ] q2 `med` u3 heap limit — blocked behind q1; swipl-wasm 8.2.1 aborts the same way, so a
-  bump does not unblock it; the `limit: 'heap'` read owed.
+- [ ] q1 `high` Browser WASM abort — funded by the chat request, unit c2 (user ruling).
+- [ ] q2 `med` u3 heap limit — rides with c2 on `limit: 'heap'`; swipl-wasm 8.2.1 aborts the
+  same way, so a bump does not unblock it.
 - [ ] q3 `low` judgment Worker — ruled (user): stay local; owed to the user (deploy + limiter).
 - [x] `005903a` q4 `low` coverage passages: a lone bullet item leaves the locate fold → 3 of 5
   locate; ruled (user): a behavioral fix, no live review owed; `rec06` + `rec07` stay queued,
