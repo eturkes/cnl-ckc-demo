@@ -65,14 +65,13 @@ describe('chat HTTP wire', () => {
       expect(url).toBe('/api/chat/turn');
       expect(init?.method).toBe('POST');
       expect(init?.signal).toBe(abort.signal);
-      expect([...formOf(init)]).toEqual(
-        id === undefined
-          ? [['message', message]]
-          : [
-              ['message', message],
-              ['conversation', id],
-            ],
+      expect(Object.fromEntries(formOf(init))).toEqual(
+        id === undefined ? { message } : { message, conversation: id },
       );
+      expect([...formOf(init)]).toHaveLength(id === undefined ? 1 : 2);
+      expect(
+        new Request('http://localhost/api/chat/turn', init).headers.get('content-type'),
+      ).toMatch(/^application\/x-www-form-urlencoded(?:;|$)/iu);
       expect(seen).toEqual([conversation, done]);
     },
   );
@@ -82,7 +81,7 @@ describe('chat HTTP wire', () => {
     async (ok) => {
       const fetcher = mockFetch(new Response(null, { status: 204 }));
       const text = "solutions\nAnswer = 'a+b&c'\n日本語";
-      await new HttpChatClient().result('thread-2', 'q7', text, ok);
+      expect(await new HttpChatClient().result('thread-2', 'q7', text, ok)).toBe(true);
       const [url, init] = fetcher.mock.calls[0]!;
       expect(url).toBe('/api/chat/result');
       expect(init?.method).toBe('POST');
@@ -93,6 +92,9 @@ describe('chat HTTP wire', () => {
         ok: String(ok),
       });
       expect([...formOf(init)]).toHaveLength(4);
+      expect(
+        new Request('http://localhost/api/chat/result', init).headers.get('content-type'),
+      ).toMatch(/^application\/x-www-form-urlencoded(?:;|$)/iu);
     },
   );
 
@@ -222,15 +224,17 @@ describe('chat HTTP wire', () => {
     const abort = new AbortController();
     const fetcher = mockFetch(response([encoder.encode(wire(events))]));
     const seen: Event[] = [];
-    await new HttpChatClient().turn(
-      'm',
-      undefined,
-      (event) => {
-        seen.push(event);
-        abort.abort();
-      },
-      abort.signal,
-    );
+    await expect(
+      new HttpChatClient().turn(
+        'm',
+        undefined,
+        (event) => {
+          seen.push(event);
+          abort.abort();
+        },
+        abort.signal,
+      ),
+    ).rejects.toMatchObject({ name: 'AbortError' });
     expect(fetcher.mock.calls[0]?.[1]?.signal).toBe(abort.signal);
     expect(seen).toEqual([conversation]);
   });
@@ -240,7 +244,9 @@ describe('chat HTTP wire', () => {
     abort.abort();
     mockFetch(response([encoder.encode(wire(events))]));
     const listener = vi.fn();
-    await new HttpChatClient().turn('m', undefined, listener, abort.signal);
+    await expect(
+      new HttpChatClient().turn('m', undefined, listener, abort.signal),
+    ).rejects.toMatchObject({ name: 'AbortError' });
     expect(listener).not.toHaveBeenCalled();
   });
 
@@ -279,7 +285,7 @@ describe('chat HTTP wire', () => {
     stream.enqueue(encoder.encode(wire([conversation])));
     await started.promise;
     abort.abort();
-    await pending;
+    await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
     expect(seen).toEqual([conversation]);
   });
 });

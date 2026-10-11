@@ -49,8 +49,6 @@ class QueueEngine implements DemoEngine {
     goal: string;
     budget: BudgetSpec;
     signal: AbortSignal | undefined;
-    onSolution: ((solution: PlSolution) => void) | undefined;
-    options: { readonly?: boolean } | undefined;
     pending: Pending<QueryOutcome>;
   }[] = [];
   readonly events: string[] = [];
@@ -79,15 +77,9 @@ class QueueEngine implements DemoEngine {
     this.proofs.push({ input, signal, pending });
     return this.enter('proof', pending);
   }
-  query(
-    goal: string,
-    budget: BudgetSpec,
-    signal?: AbortSignal,
-    onSolution?: (solution: PlSolution) => void,
-    options?: { readonly?: boolean },
-  ): Promise<QueryOutcome> {
+  runGoal(goal: string, budget: BudgetSpec, signal?: AbortSignal): Promise<QueryOutcome> {
     const pending = deferred<QueryOutcome>();
-    this.queries.push({ goal, budget, signal, onSolution, options, pending });
+    this.queries.push({ goal, budget, signal, pending });
     return this.enter('query', pending);
   }
   dispose(): void {}
@@ -113,7 +105,7 @@ afterEach(() => {
 });
 
 describe('chat shares the demo engine queue', () => {
-  it('D7 CHAT_BUDGET changes only the answer cap to 50 and dispatches read-only with the same signal', async () => {
+  it('D7 CHAT_BUDGET changes only the answer cap to 50 and reaches the queued engine with the same signal', async () => {
     expect(CHAT_BUDGET).toEqual({ ...DEMO_BUDGET, answerCap: 50 });
     const { engine, controller } = await ready();
     const abort = new AbortController();
@@ -127,9 +119,7 @@ describe('chat shares the demo engine queue', () => {
       goal: GOAL,
       budget: CHAT_BUDGET,
       signal: abort.signal,
-      options: { readonly: true },
     });
-    expect(engine.queries[0]?.onSolution).toBeUndefined();
     const outcome = chatOutcome();
     engine.queries[0]!.pending.resolve(outcome);
     expect(await result).toBe(outcome);
