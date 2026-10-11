@@ -153,7 +153,7 @@ tree at the closing commit.
 - [x] `d31f758` c5 visual: ChatPanel replaces IntakePanel above the drop-down, both locales, dom tests,
   visual-qa states; user live review owed.
 - [x] `d31f758` c6 retire the TypeSafe intake (approved deletion set, `chat-plan.md` `User rulings`).
-- [ ] c7 live `pnpm chat:probe` + `pnpm chat:live`: reported, never gated.
+- [x] `2f781a2` c7 live `pnpm chat:probe` + `pnpm chat:live`: reported, never gated.
 - [ ] c8 README, rules, `Artifacts`, claims registry, census; close review per lens.
 
 MAINTAIN request: work every `.agent/deferred.md` row in rank order (5 rows at `f855bb5`). A row

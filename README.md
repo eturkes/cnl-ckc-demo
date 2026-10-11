@@ -122,6 +122,11 @@ formatting, lint, types, tests, and the production bundle:
 pnpm gate
 ```
 
+With `pnpm chat:dev` and `pnpm dev` running, `pnpm chat:live` checks the chat path in a real
+browser. `pnpm chat:probe` reports the source labels the model earns on six fixed questions.
+Both spend turns on your ChatGPT plan, so no gate runs them. The gate checks the bridge against
+a scripted model instead.
+
 The release check adds byte-for-byte knowledge-base reproduction and real-browser
 proofs for the nested production build, live answers, lazy graph, responsive
 states, and cancellation:

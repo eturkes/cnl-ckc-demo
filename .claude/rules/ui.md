@@ -185,6 +185,23 @@ read out of the vendored bag **at run time** through `verifyBag`.
 |---|---|---|
 | `TYPEAHEAD_MS` (`QuestionCombobox.svelte`) | 500 ms | the typeahead buffer's life, the APG figure; `pnpm test:browser` K5 grades both sides of it |
 | `DEMO_BUDGET` (`DemoController.svelte.ts`) | 5 000 000 inferences, 5 000 ms | one prepared question's request-wide budget; shipped catalog peaks sit orders of magnitude below it |
+| `CHAT_BUDGET` (`DemoController.svelte.ts`) | `DEMO_BUDGET`, answer cap 50 | one read-only chat goal; the model reads at most `TOOL_RESULT_MAX` of it, the card shows all |
+| `TOOL_RESULT_MAX` (`src/chat/result.ts`) | 8 000 characters | the text one call hands the model, ~2 000 tokens; a cut names what it left out |
+| `MAX_MESSAGE` (`ChatPanel.svelte`) | 4 000 characters | the bridge's own `MESSAGE_MAX`, held in the field |
+| `DEADLINES` (`server/chat.mjs`) | call 30 s, turn 180 s, control 30 s | a browser that never answers a call, a turn that never ends, a child that never answers a control request; a live turn measured 4–22 s |
+
+## Chat
+
+- `ChatPanel.svelte` sits above the built-in combobox. Its status and alert regions are mounted
+  from the first render, and the conversation region carries `aria-busy`, for the reason the
+  answer region does (`Run lifecycle`).
+- A part's tag is TEXT — `KB qN`, `Web N`, `Model`, `Unverified` — never colour alone. A KB tag
+  links its card, a Web tag the turn's numbered source; a tag whose target sits in a closed
+  disclosure opens it before scrolling (`show`).
+- The page renders segment text as it is; the model's guide asks for plain text, because a
+  Markdown mark would show as a literal character (`server/chat-guide.md` rule 7).
+- The panel's view model is flattened in the script (`turnView`): ESLint types a `.svelte` import
+  as `any`, so a narrowed member access in markup reads as unsafe (`.claude/rules/toolchain.md`).
 
 ## User review
 
