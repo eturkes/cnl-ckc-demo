@@ -1,5 +1,8 @@
 // chat-c1 G8/G11: only the public client seam + the existing checker; no engine mock verdicts.
 import { spawnSync } from 'node:child_process';
+import { cpSync, mkdtempSync, rmSync, symlinkSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
@@ -113,12 +116,26 @@ describe('read-only client contract', () => {
     }
   });
 
+  // Over a snapshot of `src/` + `tools/`: `engine:check` walks `src/` while `tests/kb-reach`
+  // plants and removes `src/zz-forbidden-reach-control.ts` in a parallel file, and a file that
+  // vanished between the walk and its read failed this case with ENOENT. `zz-` files are those
+  // suites' probes, never sources. The gate's own `engine:check` step runs over the live tree.
   it('G11 keeps the existing engine:check green without changing its checks', () => {
-    const result = spawnSync(process.execPath, ['tools/engine-check.mjs'], {
-      cwd: fileURLToPath(new URL('..', import.meta.url)),
-      encoding: 'utf8',
-    });
-    expect(result.error).toBeUndefined();
-    expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
+    const root = fileURLToPath(new URL('..', import.meta.url));
+    const copy = mkdtempSync(join(tmpdir(), 'engine-check-'));
+    try {
+      const probe = (path: string): boolean => !basename(path).startsWith('zz-');
+      cpSync(join(root, 'src'), join(copy, 'src'), { recursive: true, filter: probe });
+      cpSync(join(root, 'tools'), join(copy, 'tools'), { recursive: true, filter: probe });
+      symlinkSync(join(root, 'node_modules'), join(copy, 'node_modules'));
+      const result = spawnSync(process.execPath, ['tools/engine-check.mjs'], {
+        cwd: copy,
+        encoding: 'utf8',
+      });
+      expect(result.error).toBeUndefined();
+      expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
+    } finally {
+      rmSync(copy, { recursive: true, force: true });
+    }
   });
 });
