@@ -14,9 +14,9 @@ const DATA = String.raw`=/2 \=/2 ==/2 \==/2 @</2 @>/2 @=</2 @>=/2 compare/3
   var/1 nonvar/1 atom/1 number/1 integer/1 float/1 atomic/1 compound/1 callable/1
   is_list/1 string/1 ground/1 memberchk/2 length/2 msort/2 sort/2 sort/4 keysort/2
   max_list/2 min_list/2 '$member'/2 '$append'/3 sub_string/5 string_concat/3
-  split_string/4 string_lower/2 string_upper/2 string_code/3 string_chars/2 string_codes/2
+  split_string/4 string_lower/2 string_upper/2 string_code/3 string_codes/2
   string_length/2 sub_atom_icasechk/3 atom_length/2 text_to_string/2 copy_term/2
-  term_variables/2 functor/3 arg/3 =../2`
+  term_variables/2 arg/3 =../2`
   .replaceAll("'", '')
   .split(/\s+/u);
 const CONTROL: ReadonlyArray<readonly [string, readonly number[]]> = [
@@ -38,7 +38,7 @@ const CONTROL: ReadonlyArray<readonly [string, readonly number[]]> = [
 const ATOMS = ['true', 'fail', 'false', '!'];
 const REFUSED = `assertz/1 retract/1 nb_setval/2 set_prolog_flag/2 consult/1 halt/0
   atom_concat/3 atom_string/2 atom_codes/2 atom_chars/2 atom_number/2 sub_atom/5
-  upcase_atom/2 term_to_atom/2 char_code/2 number_codes/2 number_string/2
+  upcase_atom/2 term_to_atom/2 char_code/2 number_codes/2 number_string/2 string_chars/2 functor/3
   member/2 append/3 nth0/3 nth1/3 last/2 sum_list/2 aggregate_all/3
   call/0 call/1 call/2 call/3 call/4 call/8 catch/3 freeze/2 :/2
   clinical_derive/5 clinical_advice_source/4 guideline_entity/3 not_in_contract/2`.split(/\s+/u);
