@@ -12,7 +12,7 @@
 
 import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -754,9 +754,13 @@ export async function startChatServer(options = {}) {
   if (bin !== undefined && bin !== '') command[0] = bin;
   // eslint-disable-next-line security/detect-non-literal-fs-filename -- GUIDE is a module constant naming the file beside this one
   const guide = readFileSync(GUIDE, 'utf8');
+  const codexHome = options.codexHome ?? join(homedir(), '.config', 'cnl-ckc-demo', 'codex');
+  // codex refuses a CODEX_HOME that does not exist, before it reads any login.
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- the operator's own configured home
+  mkdirSync(codexHome, { recursive: true, mode: 0o700 });
   const bridge = new Bridge({
     codexCommand: command,
-    codexHome: options.codexHome ?? join(homedir(), '.config', 'cnl-ckc-demo', 'codex'),
+    codexHome,
     guide,
     deadlines: { ...DEADLINES, ...options.deadlines },
   });

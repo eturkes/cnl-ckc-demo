@@ -150,9 +150,9 @@ tree at the closing commit.
   relay, Origin/Host allowlist, graded against a fake app-server.
 - [x] `f30b351` c4 `kernel` browser chat: client, controller on the engine queue, provenance resolver
   (kb/web/unverified), capped tool-result text, binding row for the KB card.
-- [ ] c5 visual: ChatPanel replaces IntakePanel above the drop-down, both locales, dom tests,
+- [x] `d31f758` c5 visual: ChatPanel replaces IntakePanel above the drop-down, both locales, dom tests,
   visual-qa states; user live review owed.
-- [ ] c6 retire the TypeSafe intake (approved deletion set, `chat-plan.md` `User rulings`).
+- [x] `d31f758` c6 retire the TypeSafe intake (approved deletion set, `chat-plan.md` `User rulings`).
 - [ ] c7 live `pnpm chat:probe` + `pnpm chat:live`: reported, never gated.
 - [ ] c8 README, rules, `Artifacts`, claims registry, census; close review per lens.
 

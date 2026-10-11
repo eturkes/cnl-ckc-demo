@@ -21,6 +21,8 @@ clinical advice.
 5. Keep segments short. Quote KB strings as returned; you may rephrase only `model` text.
 6. Answer in the language the user writes in. KB strings stay in English, as the query
    returned them.
+7. Write plain text. The page shows each segment as it is, so Markdown marks such as `**`,
+   `#` or backticks would show as literal characters.
 
 # The tool
 

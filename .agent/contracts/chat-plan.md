@@ -62,9 +62,10 @@ list from `RUST_LOG=trace`), `run1.log` (one full event stream). Schema:
   request_user_input,request_user_input_async,exec}` + `collaboration.*` in the request under
   every `-c` `features.*=false` tried, `project_doc_max_bytes=0` and `mcp_servers={}`; `exec` =
   JS V8 isolate (no fs/network) nesting `prolog_query`, `web.run`, `apply_patch`, MCP resource
-  tools, `clock`. Re-measure that tool list under the dedicated home once it is logged in
-  (`.scratch/probe/tools-of.sh` with `CODEX_HOME`); whatever remains is c3's to contain: a
-  `item/tool/call` for an unknown tool or thread is refused, every other server request answered
+  tools, `clock`. Re-measured under the logged-in dedicated home: `instructionSources []`, and the
+  same `functions.{wait,request_user_input,request_user_input_async,exec}` + `collaboration.*`
+  remain. c3 contains them: an `item/tool/call` for an unknown tool, thread or turn is refused
+  (a spawned sub-agent's thread is unknown to the bridge), every other server request answered
   with a refusal. Thread `cwd` = an empty temp dir; sandbox `read-only`, `approvalPolicy:'never'`.
 
 ## Measured — engine hazards (Node, `.scratch/probe/abort.mjs`, 64 MB stack, 1M inferences)

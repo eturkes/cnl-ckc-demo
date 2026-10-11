@@ -87,6 +87,7 @@ chat. Every Prolog goal that the model writes runs in the page's engine, read-on
 1. Log in once under the chat's home directory:
 
    ```sh
+   mkdir -p ~/.config/cnl-ckc-demo/codex
    CODEX_HOME=~/.config/cnl-ckc-demo/codex codex login
    ```
 

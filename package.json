@@ -24,6 +24,8 @@
     "build": "vite build",
     "check": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
     "chat:dev": "node server/chat.mjs",
+    "chat:live": "node tools/chat-live.mjs",
+    "chat:probe": "node tools/chat-probe.mjs",
     "contrast:check": "node tools/contrast.mjs",
     "copy:check": "node tools/copy-check.mjs",
     "dev": "vite",
