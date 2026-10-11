@@ -73,6 +73,7 @@ function run() {
   const stall = config.stall;
   /** @param {string} kind @param {unknown} detail */
   function trace(kind, detail) {
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- Trace path belongs to the test's disposable directory.
     appendFileSync(tracePath, JSON.stringify({ kind, detail, pid: process.pid }) + '\n');
   }
   /** @param {unknown[]} messages */
@@ -304,14 +305,26 @@ function run() {
         );
     } else if (method === 'thread/start') {
       assert(initialized);
+      exactKeys(params, [
+        'model',
+        'cwd',
+        'sandbox',
+        'approvalPolicy',
+        'ephemeral',
+        'personality',
+        'developerInstructions',
+        'dynamicTools',
+      ]);
       assert.equal(params.model, 'gpt-6.1-sol');
       assert.equal(params.sandbox, 'read-only');
       assert.equal(params.approvalPolicy, 'never');
       assert.equal(params.ephemeral, true);
       assert.equal(params.personality, 'none');
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- The test supplies the repository's fixed guide path.
       assert.equal(params.developerInstructions, readFileSync(text(config.guide), 'utf8'));
       const cwd = text(params.cwd);
       assert(isAbsolute(cwd));
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- The contract requires inspecting the child's isolated directory.
       assert.deepEqual(readdirSync(cwd), []);
       assert(Array.isArray(params.dynamicTools));
       assert.equal(params.dynamicTools.length, 1);
@@ -331,6 +344,8 @@ function run() {
         send(reply(rpc.id, { thread: { id, turns: [] }, model: 'gpt-6.1-sol' }));
     } else if (method === 'turn/start') {
       assert(initialized);
+      assert('outputSchema' in params, 'turn/start must carry the contract outputSchema');
+      exactKeys(params, ['threadId', 'input', 'effort', 'summary', 'outputSchema']);
       const threadId = text(params.threadId);
       assert(threads.has(threadId));
       assert(!turns.get(threadId) || turns.get(threadId)?.closed);
@@ -419,12 +434,13 @@ function run() {
         finish(turn);
       }
     } else if (method === 'turn/interrupt') {
+      exactKeys(params, ['threadId', 'turnId']);
       const turn = turns.get(text(params.threadId));
       assert(turn && turn.id === params.turnId);
       trace('interrupt', { threadId: turn.threadId, turnId: turn.id });
       if (turn.mode === 'ignore' || stall === method) return;
       send(reply(rpc.id, {}));
-      setTimeout(() => complete(turn, 'interrupted'), 8);
+      setTimeout(() => complete(turn, 'interrupted'), turn.mode === 'hold' ? 45 : 8);
     } else assert.fail(`unexpected client method ${method}`);
   }
   trace('spawn', { argv: process.argv.slice(2), codexHome: process.env.CODEX_HOME });
