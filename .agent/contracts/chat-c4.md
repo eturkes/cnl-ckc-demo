@@ -47,6 +47,18 @@ execution over the exported KB, never hard-coding.**
   no engine ready), dispatching `EngineClient.query(goal, CHAT_BUDGET, signal, undefined,
   { readonly: true })` through the queue. `CHAT_BUDGET` = `DEMO_BUDGET` with `answerCap: 50`.
 
+## Public shapes
+
+Stated to `chat-tester-4` before its suite, from the code's own declarations: `ChatEvent`
+`search` = `{query, opened: string | undefined, results}` (an `openPage`/`findInPage` action's
+URL; the action itself is dropped); `ChatClient.turn` awaits `onEvent` per event;
+`ReplayChatClient.posted` records each result post; `parseAnswer` returns the segment array or
+`undefined`; `Ledger` = `{ran, urls}`; `ChatController` exposes `messages` (whole-array
+replacement), `busy`, `submit`, `cancel`, `reset`, `dispose`; an answer that is not the segment
+shape lands as ONE `unverified` segment holding its text. `DemoController` gains `CHAT_BUDGET` +
+`runGoal`, widening `tests/demo-api.test.ts`'s pinned surface by exactly those two names (user
+ruling; the original pin fired on both).
+
 ## Declared limit
 
 A `kb` label certifies CITATION, not entailment: every cited call ran over the KB in this

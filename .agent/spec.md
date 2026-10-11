@@ -214,7 +214,7 @@ tree at the closing commit.
 - [x] `ecca9dd` c2 `kernel` q1 + q2: an aborted runtime recreates the worker; R45 moves (approved).
   - Accept: the q1 row's own check (browser probe, next query reports 337 documents) + q2's
     `limit: 'heap'` read; R45's original firing recorded in the contract.
-- [ ] c3 `kernel` `server/chat.mjs`: persistent `codex app-server` bridge, NDJSON turns, tool
+- [x] `0c3174d` c3 `kernel` `server/chat.mjs`: persistent `codex app-server` bridge, NDJSON turns, tool
   relay, Origin/Host allowlist, graded against a fake app-server.
 - [ ] c4 `kernel` browser chat: client, controller on the engine queue, provenance resolver
   (kb/web/unverified), capped tool-result text, binding row for the KB card.

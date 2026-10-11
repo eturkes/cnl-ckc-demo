@@ -36,6 +36,15 @@ import { ROOT } from './kb/paths.mjs';
  */
 const REQUIRED = Object.freeze([
   {
+    suite: 'tests/chat-binding.test.ts',
+    why: "a chat KB card and the text the model reads are the engine's answer over guideline_*",
+    cases: [
+      'chat answer binding to exported KB execution D4 real controller cards and posted result change under a PID-unique guideline_entity overlay and restore after retraction',
+      'chat answer binding to exported KB execution D4 fixed-outcome host control fails both card and posted-text binding assertions',
+      'chat answer binding to exported KB execution D4 no-dispatch controller-path control fails the same binding assertions',
+    ],
+  },
+  {
     suite: 'tests/clinical-binding.test.ts',
     why: 'perturbing guideline_* moves the answer and the line-keyed proof',
     cases: [
@@ -199,6 +208,18 @@ const REQUIRED = Object.freeze([
  * @type {readonly Requirement[]}
  */
 const LIFECYCLE = Object.freeze([
+  {
+    suite: 'tests/chat-controller.test.ts',
+    why: 'a chat turn settles into a terminal state, and a stopped or failed turn lands no label',
+    cases: [
+      'chat lifecycle retires every late callback D6 cancellation before-settlement aborts fetch and goal, posts nothing and lands no segments',
+      'chat lifecycle retires every late callback D6 cancellation after-settlement-before-post aborts fetch and goal, posts nothing and lands no segments',
+      'chat lifecycle retires every late callback D6 cancellation after answer before done never lands provisional labels or later results',
+      'chat lifecycle retires every late callback D6 error reason codex survives a subsequent answer and prevents labels',
+      'chat lifecycle retires every late callback D6 transport end network names its failure and discards even a parsed answer',
+      'chat lifecycle retires every late callback D6 dispose mid-goal aborts the turn and drops its late result and answer',
+    ],
+  },
   {
     suite: 'tests/demo-controller.dom.test.ts',
     why: 'a rejected ask settles into a terminal state the view renders',
