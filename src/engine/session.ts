@@ -16,6 +16,7 @@ import {
   wrapGoal,
 } from './budget.js';
 import { notify, PROOF_BUDGET_MAX } from './protocol.js';
+import { guardGoal, READONLY_GOAL_MAX } from './readonly.js';
 import type {
   BootPhase,
   BudgetSpec,
@@ -86,6 +87,23 @@ export interface SessionOptions {
 
 /** Matches `write_canonical`, so display text re-reads as the same term. */
 const DISPLAY_OPTIONS = '[quoted(true),numbervars(true),ignore_ops(true)]';
+
+/**
+ * Parse a read-only goal and render the parsed term back, in one query. `numbervars(false)` keeps
+ * a `'$VAR'(N)` term from rendering as a variable, and `variable_names` keeps the caller's names,
+ * so the rendered text re-reads to a variant of the checked term.
+ */
+const READONLY_PARSE =
+  'term_string(T,S,[variable_names(Vs),subterm_positions(P)]),arg(2,P,E),sub_string(S,E,_,0,R),' +
+  'term_string(T,C,[quoted(true),ignore_ops(true),numbervars(false),variable_names(Vs)]).';
+
+/**
+ * `term_string/3` reads the FIRST term and ignores the rest, so `g. assertz(x)` parses as `g`.
+ * The text after the term may hold layout, comments and one full stop, nothing else: a second
+ * term would show on the KB card while never running.
+ */
+const ONLY_TERM = /^\.?$/u;
+const LAYOUT = /\s+|%[^\n]*|\/\*[\s\S]*?\*\//gu;
 
 const SCHEMA_GOAL = 'findall(V,guideline_schema_version(V),Vs),sort(Vs,Us),length(Us,N),Us=[S].';
 const DOCUMENTS_GOAL = 'findall(D,guideline_document(D,_,_),Ds),length(Ds,N).';
@@ -379,16 +397,20 @@ export class EngineSession {
     budget: BudgetSpec,
     id = '',
     onSolution?: (solution: PlSolution) => void,
+    parsed = false,
   ): Promise<SolveResult> {
     const engine = this.#require();
     assertGoalAvoidsReserved(goal);
     // An unparsable goal yields no solution instead of raising, so without this
-    // guard a malformed goal is indistinguishable from an honest zero-answer run.
-    const parsed = decodeOnce(engine.prolog.query('term_string(T,S).', { S: goal }).once());
-    if (parsed.kind !== 'bindings') {
-      throw new PrologFailure(
-        parsed.kind === 'prolog-error' ? parsed.message : `goal does not parse: ${goal}`,
-      );
+    // guard a malformed goal is indistinguishable from an honest zero-answer run. The
+    // read-only path passes `parsed`: it runs the engine's own rendering of a term it parsed.
+    if (!parsed) {
+      const read = decodeOnce(engine.prolog.query('term_string(T,S).', { S: goal }).once());
+      if (read.kind !== 'bindings') {
+        throw new PrologFailure(
+          read.kind === 'prolog-error' ? read.message : `goal does not parse: ${goal}`,
+        );
+      }
     }
 
     // Any goal may assert or retract, so no earlier proof survives a query, before or after.
@@ -690,8 +712,14 @@ export class EngineSession {
         case 'query': {
           // Revalidated here because the client is not the only thing that can post.
           const budget = validateBudget(request.budget);
-          const solved = await this.solve(request.goal, budget, id, (solution) =>
-            progress?.({ id, kind: 'partial', solution }),
+          const readonly = isReadonly(request);
+          const goal = readonly ? this.#readonlyGoal(request.goal) : request.goal;
+          const solved = await this.solve(
+            goal,
+            budget,
+            id,
+            (solution) => progress?.({ id, kind: 'partial', solution }),
+            readonly,
           );
           return solved.kind === 'failure' ? { id, kind: 'failure' } : { id, ...solved };
         }
@@ -712,6 +740,42 @@ export class EngineSession {
     } catch (cause) {
       return { id, kind: 'error', error: classify(cause, request.kind) };
     }
+  }
+
+  /**
+   * Admit a model-written goal and hand back the text that will run: the engine's own rendering
+   * of the term the guard checked, never the caller's text. The cap comes first, because the
+   * parse creates every atom the text spells, outside `stack_limit`.
+   */
+  #readonlyGoal(goal: unknown): string {
+    if (typeof goal !== 'string') throw new GuardRefusal('the goal is not text');
+    if (goal.trim() === '') throw new GuardRefusal('the goal is empty');
+    if (goal.length > READONLY_GOAL_MAX) {
+      throw new GuardRefusal(`the goal is longer than ${String(READONLY_GOAL_MAX)} characters`);
+    }
+    const engine = this.#require();
+    let parsed;
+    try {
+      parsed = decodeOnce(engine.prolog.query(READONLY_PARSE, { S: goal }).once());
+    } catch (cause) {
+      if (!(cause instanceof DecodeError)) throw cause;
+      throw new GuardRefusal(`the goal holds a term the decoder refuses (${cause.message})`);
+    }
+    if (parsed.kind !== 'bindings') {
+      throw new GuardRefusal(
+        `the goal does not parse${parsed.kind === 'prolog-error' ? ` (${parsed.message})` : ''}`,
+      );
+    }
+    const { T: term, Vs: names, C: rendered, R: rest } = parsed.bindings;
+    if (term === undefined || rendered?.kind !== 'string' || rest?.kind !== 'string') {
+      throw new DecodeError('the read-only parse returned no term or rendering');
+    }
+    if (!ONLY_TERM.test(rest.value.replace(LAYOUT, ''))) {
+      throw new GuardRefusal('the goal text holds more than one term');
+    }
+    const verdict = guardGoal(term, [...variableNames(names)]);
+    if (!verdict.ok) throw new GuardRefusal(verdict.reason);
+    return rendered.value;
   }
 
   #require(): Engine {
@@ -851,7 +915,28 @@ export class ConsultFailure extends Error {
   override name = 'ConsultFailure';
 }
 
+/** A read-only goal the allowlist refuses; raised before anything runs. */
+export class GuardRefusal extends Error {
+  override name = 'GuardRefusal';
+
+  constructor(reason: string) {
+    super(`read-only query refused: ${reason}`);
+  }
+}
+
+/**
+ * Whether a posted query asked for the read-only path. Read off the raw request, because the
+ * client is not the only thing that can post: any value but `true` is refused, never ignored.
+ */
+const isReadonly = (request: EngineRequest & { kind: 'query' }): boolean => {
+  if (!('readonly' in request)) return false;
+  const flag: unknown = request.readonly;
+  if (flag !== true) throw new GuardRefusal('the readonly flag must be true when present');
+  return true;
+};
+
 const classify = (cause: unknown, kind: EngineRequest['kind']): EngineError => {
+  if (cause instanceof GuardRefusal) return fail('guard', cause);
   if (cause instanceof ContractMismatch) return fail('contract', cause);
   if (cause instanceof BudgetError) return fail('budget', cause);
   if (cause instanceof ConsultFailure) return fail('consult', cause);

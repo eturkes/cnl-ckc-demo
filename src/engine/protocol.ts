@@ -65,7 +65,9 @@ export type EngineErrorCode =
   /** A budget spec was absent, malformed, or out of range. */
   | 'budget'
   /** A runtime load emitted a diagnostic, so its engine is discarded. */
-  | 'consult';
+  | 'consult'
+  /** A read-only query named something its allowlist refuses; nothing ran. */
+  | 'guard';
 
 export interface EngineError {
   code: EngineErrorCode;
@@ -171,7 +173,8 @@ export interface BootProgress {
 /** A request before the client assigns its correlation id. */
 export type EngineRequestBody =
   | { kind: 'boot' }
-  | { kind: 'query'; goal: string; budget: BudgetSpec }
+  /** `readonly` present = a model-written goal, run through the allowlist (`readonly.ts`). */
+  | { kind: 'query'; goal: string; budget: BudgetSpec; readonly?: true }
   | { kind: 'proof'; input: ProofInput; budget: BudgetSpec }
   | { kind: 'consult'; source: string }
   | { kind: 'cancel'; target: string };
