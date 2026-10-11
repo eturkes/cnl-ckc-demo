@@ -198,13 +198,12 @@ MAINTAIN request (open): chat intake replaces the TypeSafe intake (`Decisions` U
 `.agent/contracts/chat-plan.md`). Met when: delivered end to end + `pnpm gate` green on a clean
 tree at the closing commit.
 
-- [ ] RESUME: paused at orientation close; no unit started, nothing committed for the request
-  beyond this state commit (`chat-plan.md`, `Decisions`, these rows). Uncommitted work: none.
-  No teammate ran; no branch or worktree exists for this request. Local resume inputs (gitignored):
-  `.scratch/probe/` (codex + KB probe scripts, `run1.log`), `.scratch/codex-schema-x/` (protocol
-  schema, regenerate with the command in `chat-plan.md`). Next action: decide the codex isolation
-  question (`chat-plan.md` `Isolation — OPEN`: `baseInstructions`, `model_catalog_json`, or a
-  dedicated `CODEX_HOME` with its own login), then write c1's contract and start c1.
+- [ ] RESUME: finish line = this request's `Met when` (body = the user's chat request, prior
+  transcript `8d9c0933`): delivered end to end + `pnpm gate` green on a clean tree at the closing
+  commit. Isolation ruled: dedicated `CODEX_HOME` (`chat-plan.md` `Isolation`); the user's
+  `codex login` under it is owed before c7. In flight: c1 (contract `.agent/contracts/chat-c1.md`).
+  Scratch (gitignored): `.scratch/probe/` (codex + KB probes, `battery.src.ts` guard battery),
+  `.scratch/codex-schema-x/` (regenerate: `chat-plan.md`), roster `.scratch/agents/roster.md`.
 - [ ] c1 `kernel` guarded read-only query: `query(…, {readonly:true})`, JS allowlist over the
   decoded parse, canonical re-render, `EngineErrorCode` `'guard'`.
   - Accept: refuses the atom-doubling chain, `assertz`, a module-qualified goal, a variable goal

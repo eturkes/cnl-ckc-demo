@@ -51,20 +51,21 @@ list from `RUST_LOG=trace`), `run1.log` (one full event stream). Schema:
   against the turn's own results.
 - One turn (2 tool calls + 1 search, medium) = 16.7 s. Without a schema guide the model invents
   predicates (`recommendation/3`) and probes `current_predicate(P/A)`.
-- **Isolation — OPEN, decide before the server unit.** gpt-6.1-sol catalog entry
-  (`~/.codex/models_cache.json`): `tool_mode:"code_mode_only"`, `multi_agent_version:"v2"`.
-  Even with `-c` `features.{shell_tool,unified_exec,view_image,multi_agent,image_generation,
-  browser_use,browser_use_external,computer_use,apps,plugins,tool_suggest,sleep_tool,goals,hooks,
-  skill_search,memories,code_mode_host}=false`, `project_doc_max_bytes=0`, `mcp_servers={}` the
-  request still carries `functions.{wait,request_user_input,request_user_input_async,exec}` +
-  `collaboration.{followup_task,interrupt_agent,list_agents,send_message,spawn_agent,wait_agent}`;
-  `exec` = JS V8 isolate (no fs/network) whose nested tools are `prolog_query`, `web.run`,
-  `apply_patch`, MCP resource tools, `clock`. `instructionSources` still = `~/.codex/AGENTS.md`
-  (user's coding-agent instructions leak into every chat thread). Candidates: `baseInstructions`
-  on `thread/start`; config `model_catalog_json` overriding `tool_mode` / `multi_agent_version`;
-  a dedicated `CODEX_HOME` (needs its own `codex login` — never copy `auth.json`: refresh-token
-  rotation can invalidate the user's session). Thread `cwd` = an empty temp dir; sandbox
-  `read-only`, `approvalPolicy:'never'`.
+- **Isolation = a dedicated `CODEX_HOME` (user ruling).** Default `~/.config/cnl-ckc-demo/codex`
+  (outside every Vite-served root), env override; the user runs `codex login` once under it —
+  never copy `auth.json`: refresh-token rotation can invalidate the user's session. Measured: an
+  empty home → `instructionSources []`, while the user's `~/.codex` loads its `AGENTS.md` (global
+  instructions load from `CODEX_HOME`, no `-c` knob reaches them) plus `config.toml`, MCP servers
+  and plugins. Rejected: `model_catalog_json` (patches a large, version-tied cache codex
+  rewrites); `chatgptAuthTokens` login (marked internal-only). gpt-6.1-sol's catalog entry
+  (`tool_mode:"code_mode_only"`, `multi_agent_version:"v2"`) kept `functions.{wait,
+  request_user_input,request_user_input_async,exec}` + `collaboration.*` in the request under
+  every `-c` `features.*=false` tried, `project_doc_max_bytes=0` and `mcp_servers={}`; `exec` =
+  JS V8 isolate (no fs/network) nesting `prolog_query`, `web.run`, `apply_patch`, MCP resource
+  tools, `clock`. Re-measure that tool list under the dedicated home once it is logged in
+  (`.scratch/probe/tools-of.sh` with `CODEX_HOME`); whatever remains is c3's to contain: a
+  `item/tool/call` for an unknown tool or thread is refused, every other server request answered
+  with a refusal. Thread `cwd` = an empty temp dir; sandbox `read-only`, `approvalPolicy:'never'`.
 
 ## Measured — engine hazards (Node, `.scratch/probe/abort.mjs`, 64 MB stack, 1M inferences)
 

@@ -1,0 +1,90 @@
+# chat-c1 — read-only query mode for model-written goals
+
+Tier `kernel`: engine, on the chat's answer path — a KB segment shows whatever this mode
+returns, and no downstream check re-grades it. Source = `.agent/spec.md` `Tasks` c1 +
+`.agent/contracts/chat-plan.md` `Design` `Guard`, whose acceptance this restates without
+widening: **refuses the atom-doubling chain, `assertz`, a module-qualified goal, a variable goal
+and `call/2`; admits every `clinical_*` entry point.**
+
+The chat model writes goal text. The closed saved state still holds builtins that write
+(`assertz/1`, `nb_setval/2`, `set_prolog_flag/2`, `consult/1`) and builtins that abort the WASM
+runtime: atoms sit outside `stack_limit`, so a 32-step `atom_concat/3` doubling chain aborts it
+under a 64 MiB stack (108 ms, FATAL, every later query dead; `.scratch/probe/battery.src.ts`).
+Hence default deny over the PARSED goal, never over its text.
+
+## Seam
+
+- `EngineRequestBody` `query` gains an optional `readonly: true`.
+  `EngineClient.query(goal, budget, signal?, onSolution?, options?: { readonly?: boolean })`
+  posts `readonly: true` when `options.readonly === true` and posts NO `readonly` key otherwise.
+- `EngineSession.handle` decides on the posted request alone. `readonly` absent → today's path,
+  byte-identical. `readonly === true` → the read-only path below. Any other value → `guard`
+  error, nothing run.
+- Read-only path, in order: length cap → one parse query
+  (`term_string(T,S,[variable_names(Vs)])` and the canonical render of `T` under
+  `[quoted(true),ignore_ops(true),numbervars(false),variable_names(Vs)]`) → `guardGoal` over the
+  decoded `T` → `meteredGoal(<rendered text>, budget)`. The request runs the RENDERED text,
+  never the caller's.
+- `src/engine/readonly.ts` (pure, no engine import) exports `READONLY_GOAL_MAX = 2048`,
+  `type GuardVerdict = { ok: true } | { ok: false; reason: string }` and
+  `guardGoal(goal: PlTerm, variableNames: readonly string[]): GuardVerdict`.
+- Refusal = `EngineErrorCode` `'guard'` (new), message prefixed `read-only query refused: `
+  and naming the first refused subgoal's `name/arity` in depth-first, left-to-right order, or
+  the rule that refused it.
+
+## Allowlist (default deny)
+
+Goal positions are walked; every other argument is data and never walked.
+
+- Control, walked: `,`/2, `;`/2, `->`/2, `*->`/2 (both args); `\+`/1, `not`/1, `once`/1,
+  `ignore`/1 (the arg); `forall`/2 (both); `findall`/3, `findall`/4, `bagof`/3, `setof`/3
+  (arg 2); `^`/2 (arg 2). Atoms `true`, `fail`, `false`, `!`.
+- KB entry points, data args: the nine schema predicates `guideline_arg/4`,
+  `guideline_cardinality/5`, `guideline_document/3`, `guideline_entity/4`, `guideline_event/3`,
+  `guideline_operator/3`, `guideline_pp/4`, `guideline_property/4`,
+  `guideline_schema_version/1`; and `clinical_advice/3`, `clinical_advice/4`,
+  `clinical_rule/3`, `clinical_premise/4`, `clinical_gate/4`, `clinical_source/3`,
+  `clinical_passage/2`, `clinical_context/3`, `clinical_derive/4` = "every `clinical_*` entry
+  point". `clause/2` = arg 1 non-variable, its indicator one of those eighteen.
+- Builtins, data args: `=/2 \=/2 ==/2 \==/2 @</2 @>/2 @=</2 @>=/2 compare/3`;
+  `is/2 =:=/2 =\=/2 </2 >/2 =</2 >=/2 succ/2 plus/3 between/3`;
+  `var/1 nonvar/1 atom/1 number/1 integer/1 float/1 atomic/1 compound/1 callable/1 is_list/1
+  string/1 ground/1`; `memberchk/2 length/2 msort/2 sort/2 sort/4 keysort/2 max_list/2
+  min_list/2 '$member'/2 '$append'/3`; `sub_string/5 string_concat/3 split_string/4
+  string_lower/2 string_upper/2 string_code/3 string_chars/2 string_codes/2 string_length/2
+  sub_atom_icasechk/3 atom_length/2 text_to_string/2`; `copy_term/2 term_variables/2
+  functor/3 arg/3 =../2`. Absent from the image and so never admitted: `member/2`,
+  `append/3`, `nth0/3`, `nth1/3`, `last/2`, `sum_list/2`, `aggregate_all/3`.
+- Refused, among everything else: every builder of an atom from text or numbers
+  (`atom_concat/3`, `atom_string/2`, `atom_codes/2`, `atom_chars/2`, `atom_number/2`,
+  `sub_atom/5`, `upcase_atom/2`, `term_to_atom/2`, `char_code/2`, `number_codes/2`);
+  `number_string/2` (a 10M-digit parse ran one uninterruptible step past 60 s in Node);
+  `call/N` for every N; `catch/3`; `freeze/2`; any `M:G`; a variable, number, string, list or
+  dict in goal position.
+- Goal text longer than `READONLY_GOAL_MAX` UTF-16 code units is refused BEFORE the parse: the
+  parse creates every atom the text spells, outside `stack_limit`. 2048 ≈ 30× the longest
+  catalog goal (65).
+- A variable named `_<digits>` or `_G<digits>` is refused: those are the renderer's own names
+  for unnamed variables, so the rendered text would merge two distinct variables.
+
+## Acceptance
+
+| id | predicate |
+|---|---|
+| G1 | Each refuses with `code: 'guard'`, its message naming the indicator or rule: the 32-step `atom_concat/3` doubling chain; `assertz(probe_c1(1))`; `retract(_)`; `nb_setval(k,1)`; `set_prolog_flag(double_quotes,codes)`; `consult(f)`; `halt`; `user:clinical_rule(D,S,R)`; `lists:append(X,Y,Z)`; `G`; `G = true, G`; `findall(X,G,L)`; `\+ G`; `call(clinical_rule(D,S,R))`; `call(clinical_rule(D),S,R)` (`call/3`); `call(G,X)` (`call/2`); `[f]`; `"text"`; `42`; `clause(H,B)`; `clause(assertz(_),B)`; `catch(true,_,true)`; and each refused builtin nested in control — `(true;assertz(x))`, `forall(true,assertz(x))`, `findall(X,(clinical_rule(X,_,_),assertz(y)),L)`, `once(atom_concat(a,b,C))`, `setof(D,S^R^(clinical_rule(D,S,R),atom_concat(D,x,_)),L)`; a goal of `READONLY_GOAL_MAX + 1` code units; a goal naming variable `_123`. |
+| G2 | A refused goal runs nothing: after `assertz(probe_c1(1))` and `nb_setval(c1_probe,1)` are refused, an unflagged query finds `probe_c1/1` undefined and `nb_current(c1_probe,_)` false. The cap refusal creates no atom: `statistics(atoms,N)` read by unflagged queries before and after equals. |
+| G3 | Each admits — settles `solutions` or `failure`, never `error` — one goal per KB entry point (all eighteen), plus `findall(D,clinical_rule(D,_,_),Ds),sort(Ds,U),length(U,N)` (N = 12), `setof(D,S^R^clinical_rule(D,S,R),Ds)`, `clause(guideline_entity(A,B,C,D),Body)`, `clinical_passage(D,T),sub_string(T,_,_,_,"nonopioid")`, and `guideline_operator(actual,C,should)` (`failure`: correct on the bare KB, `.claude/rules/proof.md`). |
+| G4 | Equivalence: every goal G3 admits, and every `QUESTION_CATALOG` goal, settles under `readonly` with the same `kind` and the same solutions — `bindings` and `display` deep-equal — as the same goal unflagged. |
+| G5 | The rendered text is what runs: `clinical_rule(D,S,R) % trailing comment` and `clinical_rule(D,S,R) /* note */` answer like `clinical_rule(D,S,R)`. Rendering round-trips: for a corpus spanning quoted atoms (`'it''s'`), strings, `0'a`, `-1` vs `- 1`, `{q}`, `[]` vs `'[]'`, `3r4`, `1.5`, `'$VAR'(1)`, operator atoms as data (`X = (+)`) and nested lists, the rendered text re-reads to a variant (`=@=`) of the parsed term. |
+| G6 | A refusal leaves the session usable: the next read-only query answers, `booted` stays true, nothing is poisoned. |
+| G7 | `readonly: 'true'`, `readonly: 1` and `readonly: false` each settle a `guard` error and run nothing; an unflagged `assertz(probe_c1_open(1))` still succeeds, as today. |
+| G8 | Client: `query(…, { readonly: true })` posts `readonly: true`; `query(goal, budget)` and `AnswerService.ask` post no `readonly` key; a `guard` error reaches the caller as `{ kind: 'error', error: { code: 'guard' } }`; the posted request survives `structuredClone`. |
+| G9 | Every allowlisted builtin stops on the budget, not the runtime: on ONE session under `DEMO_BUDGET`, each case — `findall` of 200 lists of 4M cells; `length(L,N), N > 100000000`; `between(1,inf,N), fail`; a 32-step `string_concat/3` doubling chain; `X is 7**(10**9)`; `copy_term/2` of a 3M-cell list 100 times; `msort/2` of 3M integers; `sort/4` of 3M compounds; `string_chars/2`, `string_codes/2`, `string_upper/2`, `split_string/4`, `text_to_string/2` and `sub_string/5` enumeration over doubled strings; `X = f(X)`; `'$append'(X,Y,Z), fail` — settles `limit`, `failure` or `error` read-only, and the engine then reports the manifest's document count. Control: the same harness, on its own session, runs the `atom_concat/3` chain UNFLAGGED and must report the engine dead afterwards. |
+| G10 | `guardGoal` alone (pure): agrees with an independent reference reading of this allowlist over generated terms — control nesting to depth ≥ 6 mixing admitted, refused and variable subgoals. |
+| G11 | Unchanged: `pnpm engine:check` (P6.2's `query(goal, budget, signal?` prefix, P6.5's `terms.ts` export pin) and every existing suite stay green. |
+
+## Out of scope
+
+Chat wiring (c3, c4), abort recovery (c2), proofs for model goals (no read-only `prove`), the
+tool-result text cap (c4), and the decoder's `unsupported native tag: t` on
+`functor(T,foo,3), T = foo(1,2,3)` — a fail-closed `decode` error that exists today and stays.
