@@ -110,22 +110,24 @@ const GUIDE = fileURLToPath(new URL('./chat-guide.md', import.meta.url));
  * `item/tool/call`. A method absent here (`account/chatgptAuthTokens/refresh`,
  * `attestation/generate`, anything newer) gets JSON-RPC `-32601`.
  */
-const REFUSALS = new Map([
-  ['item/commandExecution/requestApproval', () => ({ decision: 'decline' })],
-  ['item/fileChange/requestApproval', () => ({ decision: 'decline' })],
-  ['item/permissions/requestApproval', () => ({ permissions: {} })],
-  ['item/tool/requestUserInput', () => ({ answers: {} })],
-  ['mcpServer/elicitation/request', () => ({ action: 'decline' })],
-  [
-    'applyPatchApproval',
-    () => ({ decision: { denied: { rejection: 'this client approves nothing' } } }),
-  ],
-  [
-    'execCommandApproval',
-    () => ({ decision: { denied: { rejection: 'this client approves nothing' } } }),
-  ],
-  ['currentTime/read', () => ({ currentTimeAt: Math.floor(Date.now() / 1000) })],
-]);
+const REFUSALS = new Map(
+  /** @type {[string, () => Record<string, unknown>][]} */ ([
+    ['item/commandExecution/requestApproval', () => ({ decision: 'decline' })],
+    ['item/fileChange/requestApproval', () => ({ decision: 'decline' })],
+    ['item/permissions/requestApproval', () => ({ permissions: {} })],
+    ['item/tool/requestUserInput', () => ({ answers: {} })],
+    ['mcpServer/elicitation/request', () => ({ action: 'decline' })],
+    [
+      'applyPatchApproval',
+      () => ({ decision: { denied: { rejection: 'this client approves nothing' } } }),
+    ],
+    [
+      'execCommandApproval',
+      () => ({ decision: { denied: { rejection: 'this client approves nothing' } } }),
+    ],
+    ['currentTime/read', () => ({ currentTimeAt: Math.floor(Date.now() / 1000) })],
+  ]),
+);
 
 /** @typedef {{ type: string, [key: string]: unknown }} ChatEvent */
 /** @typedef {(event: ChatEvent) => void} Emit */
@@ -166,6 +168,7 @@ const toolText = (detail) => ({
 
 /** A child that left a control request unanswered past `controlMs`; it is retired. */
 class ControlTimeout extends Error {
+  /** @override */
   name = 'ControlTimeout';
 }
 
