@@ -35,7 +35,9 @@ function object(value: unknown): Json {
   expect(Array.isArray(value)).toBe(false);
   return value as Json;
 }
-async function until(predicate: () => boolean, label: string, ms = 700) {
+// Generous on purpose: it bounds a wait that should succeed, and under the gate's full-suite
+// load a child Node process takes hundreds of milliseconds to start.
+async function until(predicate: () => boolean, label: string, ms = 4000) {
   const start = performance.now();
   while (!predicate()) {
     if (performance.now() - start >= ms) throw new Error(`deadline waiting for ${label}`);
@@ -59,7 +61,8 @@ async function setup(options: Options = {}, stall?: string) {
     port: 0,
     codexHome: resolve(dir, 'codex-home'),
     codexCommand: ['node', fake],
-    deadlines: { callMs: 250, turnMs: 450, controlMs: 100 },
+    // `controlMs` bounds `initialize`, which includes starting the fake's Node process.
+    deadlines: { callMs: 2000, turnMs: 4000, controlMs: 2000 },
     ...options,
   });
   const resource = { bridge, dir, trace, controllers: [] as AbortController[] };
@@ -229,7 +232,7 @@ function raw(
   });
 }
 
-describe('chat-c3 bridge contract', () => {
+describe('chat-c3 bridge contract', { timeout: 20_000 }, () => {
   it('B1 initializes once, pins start parameters, guide, home and every child flag', async () => {
     const s = await setup();
     await (await s.open('plain')).done();
@@ -464,7 +467,7 @@ describe('chat-c3 bridge contract', () => {
   });
 
   it('B7 answers an unanswered call false at callMs and removes its pending result slot', async () => {
-    const s = await setup({ deadlines: { callMs: 20, turnMs: 300, controlMs: 100 } });
+    const s = await setup({ deadlines: { callMs: 20, turnMs: 4000, controlMs: 2000 } });
     const turn = await s.open('call-timeout');
     await turn.event('query');
     await turn.done();
@@ -473,7 +476,7 @@ describe('chat-c3 bridge contract', () => {
   });
 
   it('B7 times out, interrupts, retains busy until completed and ends with one error and done', async () => {
-    const s = await setup({ deadlines: { callMs: 250, turnMs: 35, controlMs: 100 } });
+    const s = await setup({ deadlines: { callMs: 2000, turnMs: 35, controlMs: 2000 } });
     const turn = await s.open('hold');
     await turn.event('query');
     await turn.event('error');
@@ -501,12 +504,13 @@ describe('chat-c3 bridge contract', () => {
 
   it('B7 retires a child ignoring interrupt and B8 excludes its stragglers after respawn', async () => {
     // controlMs also bounds the respawned child's `initialize`, which includes starting Node.
-    const s = await setup({ deadlines: { callMs: 200, turnMs: 25, controlMs: 150 } });
+    const s = await setup({ deadlines: { callMs: 6000, turnMs: 25, controlMs: 1000 } });
     const turn = await s.open('ignore');
     await turn.event('query');
     const start = performance.now();
     expectError(await turn.done(), 'timeout');
-    expect(performance.now() - start).toBeLessThan(300);
+    // Retired at `controlMs`, well before the call deadline would have answered anything.
+    expect(performance.now() - start).toBeLessThan(4000);
     expectRefused(s.log(), 1);
     expect((await s.result(turn.id, 'q1')).status).toBe(404);
     const next = await s.open('plain');
@@ -524,11 +528,12 @@ describe('chat-c3 bridge contract', () => {
   it.each(['initialize', 'thread/start', 'turn/start'])(
     'B7 bounds unanswered %s control waits',
     async (stall) => {
-      const s = await setup({ deadlines: { callMs: 250, turnMs: 350, controlMs: 25 } }, stall);
+      const s = await setup({ deadlines: { callMs: 8000, turnMs: 8000, controlMs: 1000 } }, stall);
       const started = performance.now();
       const turn = await s.open('plain');
       expectError(await turn.done(), 'timeout');
-      expect(performance.now() - started).toBeLessThan(250);
+      // Ended by the control bound, before the turn bound could.
+      expect(performance.now() - started).toBeLessThan(6000);
     },
   );
 
