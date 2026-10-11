@@ -188,9 +188,10 @@ u6's oracle is GREEN at base, credited RED-under-dependency-removal alone — it
 compiled KB, which the answer-path defect never broke. u11 graded the scope records, u12 the
 projection model and u13 the shown edge; **rendered output is graded by `pnpm graph:check`
 alone**, because a model-side assertion and a mocked DOM suite both survive a renderer that
-shows the wrong label. The chat's goal path reaches the **Browser WASM abort** queue row: a
-32-step `atom_concat` chain aborts the runtime in 401 ms under a 64 MB stack, because atoms sit
-outside `stack_limit` — so the read-only guard excludes every atom builder.
+shows the wrong label. A model-written goal can trap the WASM runtime: a 32-step `atom_concat`
+chain aborts it under a 64 MB stack, because atoms sit outside `stack_limit` — so the read-only
+guard excludes every atom builder (`chat-c1.md`), and a trap that gets through retires the
+worker before its caller resumes (`chat-c2.md`).
 
 # Tasks
 
@@ -205,7 +206,7 @@ tree at the closing commit.
   `chat-c4.md`. MAIN code uncommitted in the primary tree: c1 (`src/engine/readonly.ts`,
   session/client/protocol), c3 (`server/`), c4 (`src/chat/`, `DemoController.runGoal`). Red
   suites in flight: roster `.scratch/agents/roster.md` (chat-tester-1…4). Scratch: `.scratch/probe/`.
-- [ ] c1 `kernel` guarded read-only query: `query(…, {readonly:true})`, JS allowlist over the
+- [x] `95c3495` c1 `kernel` guarded read-only query: `query(…, {readonly:true})`, JS allowlist over the
   decoded parse, canonical re-render, `EngineErrorCode` `'guard'`.
   - Accept: refuses the atom-doubling chain, `assertz`, a module-qualified goal, a variable goal
     and `call/2`; admits every `clinical_*` entry point; contract + diff-blind `tester` suite RED

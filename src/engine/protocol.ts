@@ -67,7 +67,9 @@ export type EngineErrorCode =
   /** A runtime load emitted a diagnostic, so its engine is discarded. */
   | 'consult'
   /** A read-only query named something its allowlist refuses; nothing ran. */
-  | 'guard';
+  | 'guard'
+  /** A WASM trap aborted the runtime; the client recreates the worker before it answers. */
+  | 'aborted';
 
 export interface EngineError {
   code: EngineErrorCode;

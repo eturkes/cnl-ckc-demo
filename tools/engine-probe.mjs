@@ -9,8 +9,9 @@
 //   R41  five reset cycles: each kills a hostile loop, drops consulted state and boots an
 //        engine that reports the manifest's corpus;
 //   R42  a failing runtime consult poisons its engine, and a reset clears the residue;
-//   R45  a runaway `assertz` aborts the runtime and the client keeps the dead engine until a
-//        reset — today's defect, pinned until the abort is classified.
+//   R45  a runaway `assertz` aborts the runtime; the abort settles as `limit` `'heap'` (or error
+//        `aborted`) and the client recreates the worker itself, so the NEXT query — no reset —
+//        reports the manifest's corpus (`.agent/contracts/chat-c2.md` A6).
 // Outside `pnpm gate`: it needs a real browser. Vite runs in process, so nothing outlives it.
 
 import { createServer } from 'vite';
@@ -124,13 +125,10 @@ const R45 = scenario(`
       { ...BUDGET_MAX, wallClockMs: 240000, answerCap: 10 });
     const elapsedMs = performance.now() - t0;
     const next = await client.query(DOCS, small);
-    const booted = await client.reset('engine probe R45');
-    const recovered = await client.query(DOCS, small);
     return {
-      runaway: { kind: runaway.kind, limit: runaway.limit, message: runaway.error?.message?.slice(0, 40) },
+      runaway: { kind: runaway.kind, limit: runaway.limit, code: runaway.error?.code },
       elapsedMs,
-      next: { kind: next.kind, limit: next.limit, message: next.error?.message?.slice(0, 40) },
-      reset: booted.kind, recovered: recovered.solutions?.[0]?.display?.N,
+      next: next.solutions?.[0]?.display?.N,
     };
   } finally { client.dispose(); }`);
 
@@ -216,22 +214,16 @@ const gradeR42 = (result) =>
 /** @param {Row} result @returns {string[]} */
 const gradeR45 = (result) => {
   const runaway = row(result.runaway);
-  const next = row(result.next);
-  /** @param {Row} outcome @returns {boolean} the two ways a dead engine answers */
-  const dead = (outcome) =>
-    (outcome.kind === 'error' && String(outcome.message).startsWith('Aborted()')) ||
-    (outcome.kind === 'limit' && outcome.limit === 'heap');
   /** @type {string[]} */
   const failures = [];
-  if (!(runaway.kind === 'error' && String(runaway.message).startsWith('Aborted()'))) {
-    failures.push(`R45 runaway: ${JSON.stringify(runaway)}, expected the runtime to abort`);
+  const aborted =
+    (runaway.kind === 'limit' && runaway.limit === 'heap') ||
+    (runaway.kind === 'error' && runaway.code === 'aborted');
+  if (!aborted) {
+    failures.push(`R45 runaway: ${JSON.stringify(runaway)}, expected limit heap or error aborted`);
   }
-  if (!dead(next))
-    failures.push(`R45 next query answered on the aborted engine: ${JSON.stringify(next)}`);
-  if (result.reset !== 'booted' || result.recovered !== corpus) {
-    failures.push(
-      `R45 reset ${String(result.reset)}, recovered ${String(result.recovered)} documents`,
-    );
+  if (result.next !== corpus) {
+    failures.push(`R45 next query after the abort reported ${String(result.next)} documents`);
   }
   return failures;
 };
@@ -288,7 +280,7 @@ try {
       `R41 ${String(restarts.length)} resets ${restarts[0]?.toFixed(0) ?? '?'}–` +
       `${restarts.at(-1)?.toFixed(0) ?? '?'} ms, each replacement at ${corpus} documents; R42 two ` +
       `failing loads poisoned then cleared; R45 runaway aborted after ` +
-      `${Number(r45.elapsedMs).toFixed(0)} ms, next query dead until reset; ` +
+      `${Number(r45.elapsedMs).toFixed(0)} ms, next query answered on a recreated worker; ` +
       `control: a cycle without its reset`,
   );
 } catch (cause) {
