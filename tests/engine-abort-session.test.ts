@@ -20,12 +20,17 @@ const { contract } = JSON.parse(readFileSync(join(GENERATED, 'kb-manifest.json')
 const BUDGET = { ...BUDGET_MAX, wallClockMs: 30_000 };
 const OOM = 'Could not allocate memory: Out of memory';
 
-const fixture = async (rows: number, lines: string[]) => {
+const fixture = async (rows: number, lines: string[], site: 'step' | 'call' = 'step') => {
   let armed = false;
   let tripped = false;
   const calls: string[] = [];
   const diagnostics: string[] = [];
   const drained: string[] = [];
+  const trip = (): never => {
+    tripped = true;
+    diagnostics.push(...lines);
+    throw new WebAssembly.RuntimeError('Aborted(probe)');
+  };
   const session = new EngineSession({
     expected: contract,
     drain: () => {
@@ -42,6 +47,7 @@ const fixture = async (rows: number, lines: string[]) => {
       const writeFile = engine.FS.writeFile.bind(engine.FS);
       engine.FS.writeFile = (...args) => {
         calls.push('writeFile');
+        if (armed && site === 'call') trip();
         return writeFile(...args);
       };
       const fs = engine.FS as typeof engine.FS & { unlink(path: string): void };
@@ -54,6 +60,7 @@ const fixture = async (rows: number, lines: string[]) => {
       engine.prolog.query = (goal: string, bindings?: Record<string, unknown>) => {
         calls.push('query');
         if (tripped) throw new WebAssembly.RuntimeError('Aborted(probe)');
+        if (armed && site === 'call') trip();
         const result = query(goal, bindings);
         const close = result.close.bind(result);
         result.close = () => {
@@ -68,11 +75,7 @@ const fixture = async (rows: number, lines: string[]) => {
           return {
             next: () => {
               calls.push('next');
-              if (yielded === rows) {
-                tripped = true;
-                diagnostics.push(...lines);
-                throw new WebAssembly.RuntimeError('Aborted(probe)');
-              }
+              if (yielded === rows) trip();
               yielded += 1;
               return iterator.next();
             },
@@ -135,6 +138,29 @@ describe('aborted session terminal state', () => {
     const { abort, drained } = await fixture(0, [line]);
     expect.soft(await abort()).toMatchObject({ kind: 'error', error: { code: 'aborted' } });
     expect.soft(drained).toContain(line);
+  });
+
+  it.each(
+    LATER.filter((request) => request.kind !== 'boot').flatMap((request) =>
+      [false, true].map((memory) => ({ request, memory })),
+    ),
+  )('A3 a trap at $request.kind entry is terminal, memory=$memory', async ({ request, memory }) => {
+    const lines = memory ? [OOM] : [];
+    const { session, drained, calls } = await fixture(0, lines, 'call');
+    const expected =
+      memory && request.kind !== 'consult'
+        ? { kind: 'limit', limit: 'heap' }
+        : { kind: 'error', error: { code: 'aborted' } };
+    const result = await session.handle({ ...request, id: 'entry-abort' }, IMAGE);
+    expect.soft(result).toMatchObject({ id: 'entry-abort', ...expected });
+    expect.soft(drained).toEqual(lines);
+    expect.soft(session.booted).toBe(false);
+    const before = [...calls];
+    expect.soft(await session.handle({ id: 'again', kind: 'boot' }, IMAGE)).toMatchObject({
+      kind: 'error',
+      error: { code: 'aborted' },
+    });
+    expect.soft(calls).toEqual(before);
   });
 
   it.each([
