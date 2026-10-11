@@ -28,9 +28,9 @@ export const INSTRUCTIONS = {
     'Select a result to move the map. Select Path to show the shortest semantic connection.',
   graphExpandHint: 'The view is capped for readability. Select Expand to reveal more.',
   graphCompareRun: 'Run a prepared question above to compare the graph with a live proof.',
-  intakeDescribe: 'Describe a clinical situation in your own words.',
-  intakePrivacy: 'Leave out names, dates and other details that identify a patient.',
-  intakeOrPick: 'Or select a prepared question below.',
+  chatAsk: 'Ask a question about opioid prescribing or pain care in your own words.',
+  chatPrivacy: 'Leave out names, dates and other details that identify a patient.',
+  chatOrPick: 'Or select a prepared question below.',
 } as const;
 
 /** Explanatory text. 25 words per sentence. */
@@ -123,23 +123,18 @@ export const DESCRIPTIONS = {
   prolog:
     'The Prolog engine renders each value below in canonical syntax. The demo sorts those values into the exported answer format.',
 
-  intakeDisclosure:
-    'A language model reads the description and judges which guideline conditions it meets. ' +
-    'The Prolog engine then derives each matching recommendation.',
-  intakeRefused:
-    'The description does not appear to be about opioid prescribing, pain care or opioid use disorder. ' +
-    'Rephrase it, or select a prepared question.',
-  intakeNoMatch:
-    'No recommendation in the knowledge base applies to the conditions and the pain type judged for this description.',
-  intakeAnswered:
-    'Prolog derived each recommendation below from the guideline clauses it cites. ' +
-    'The language model chose which rules to derive. It wrote none of the text.',
-  intakeNoneDerived: 'No matched rule derived in Prolog, so no recommendation is shown.',
-  intakeGapsNote:
-    'The language model judged that the knowledge base has no vocabulary for these phrases. ' +
-    'This is a judgment, not a proof.',
-  intakeNoGaps:
-    'The language model named no phrase from the description as missing from the knowledge base.',
+  chatDisclosure:
+    'A GPT model answers through a bridge on this computer. ' +
+    'Each Prolog goal it writes runs read-only in the engine on this page.',
+  chatLegend:
+    'Each part of an answer names its source. ' +
+    'KB: a Prolog query ran on this page, and its card shows the goal and the solutions. ' +
+    'Web: a page that the search in this turn returned. Model: what the model knows on its own. ' +
+    'Unverified: the source that the model claimed is not in the record of this conversation.',
+  chatLimit:
+    'A KB tag shows that the cited query ran. ' +
+    'Compare the sentence with the solutions in its card, because the model wrote the wording.',
+  chatCardNote: 'The Prolog engine rendered these solutions in canonical syntax.',
 
   attribution:
     'Source: CDC. The Centers for Disease Control and Prevention developed the source material.',
@@ -267,21 +262,18 @@ export const LABELS = {
   graphSelectedBefore: 'Selected from',
   graphSelectedAfter: '.',
 
-  intakeLabel: 'Clinical situation',
-  intakeSubmit: 'Match recommendations',
-  intakeCancel: 'Stop matching',
-  intakeRetry: 'Match again',
-  intakeResults: 'Matching result',
-  intakeRefusedHeading: 'Outside the scope of this demo',
-  intakeNoMatchHeading: 'No match: phrases the knowledge base has no vocabulary for',
-  intakeAnsweredHeading: 'Matched recommendations',
-  intakeFailedHeading: 'Matching did not finish',
-  intakeGapsLabel: 'Phrases judged absent from the knowledge base',
-  intakeReveal: 'Show derivation',
-  painAcute: 'acute',
-  painSubacute: 'subacute',
-  painChronic: 'chronic',
-  painUnstated: 'not stated',
+  chatLabel: 'Your question',
+  chatSend: 'Send',
+  chatStop: 'Stop',
+  chatNew: 'New conversation',
+  chatTranscript: 'Conversation',
+  chatYou: 'You',
+  chatAssistant: 'Assistant',
+  chatTagKb: 'KB',
+  chatTagWeb: 'Web',
+  chatTagModel: 'Model',
+  chatTagUnverified: 'Unverified',
+  chatGoal: 'Goal',
 } as const;
 
 /** English plural agreement. Japanese has no equivalent, so `ja.ts` omits it. */
@@ -430,41 +422,37 @@ export const TEXT = {
     `The visual graph is unavailable. Use the complete HTML navigation below. ${message}`,
   graphLoadFailed: (message: string) => `The semantic graph did not load. ${message}`,
 
-  intakeJudging: () => 'Matching the description against the guideline conditions.',
-  intakeDeriving: () => 'Deriving the matched recommendations in Prolog.',
-  intakeAnsweredStatus: (derived: number, matched: number) =>
-    `${plural(derived, 'recommendation')} derived from ${plural(matched, 'matched rule')}.`,
-  intakeNoMatchStatus: () => 'No recommendation matched the description.',
-  intakeRefusedStatus: () => 'The description is outside the scope of this demo.',
-  intakeCancelled: () => 'Matching cancelled.',
-  intakeRateLimited: () =>
-    'Too many requests reached the matching service. Wait one minute. Then select Match again.',
-  intakeStale: () =>
-    'This page and the matching service use different knowledge-base vocabularies. Reload the page. If the problem continues, restart the matching service.',
-  intakeServer: () =>
-    'The matching service failed. If it is not running, start it with pnpm intake:dev. Then select Match again.',
-  intakeNetwork: () =>
-    'The matching service did not respond. Start it with pnpm intake:dev. Then select Match again.',
-  intakeInvalid: () =>
-    'The matching service sent an answer that this demo could not verify. Select Match again.',
-  intakeEngine: () => 'The Prolog engine could not derive the matched rules. Select Match again.',
-  intakePain: (pain: string) => `Pain type judged: ${pain}.`,
-  intakeCondition: (condition: string, score: string) =>
-    `Condition met: ${condition} (model score ${score}).`,
-  intakeSection: (heading: string, score: string) =>
-    `Topic met: ${heading} (model score ${score}).`,
-  intakeDocument: (document: string) => `Document: ${document}`,
-  intakeClauses: (n: number) => `${plural(n, 'guideline clause')} cited by the proof.`,
-  intakeNotDerived: () => 'This rule did not derive, so it is not shown as a recommendation.',
-  intakeLimit: (code: string) => `The derivation stopped at the ${code} limit.`,
-  intakeError: (code: string, message: string) => `The derivation failed (${code}). ${message}`,
-  intakeRuleCancelled: () => 'The derivation was cancelled.',
-  intakeOverflow: (unjudged: number, limit: number, length: number) =>
-    `${plural(unjudged, 'phrase')} went unjudged. The demo judges at most ${String(limit)} phrases, ` +
-    `each at most ${String(length)} characters long.`,
-  intakeRevealMissing: () =>
-    'The prepared question did not return this document, so no derivation is shown.',
-  intakeRevealUnavailable: () => 'The engine is not ready. Try again when it has started.',
+  chatAnswering: () => 'The assistant is answering.',
+  chatAnswered: () => 'The answer is ready.',
+  chatCancelled: () => 'The reply was stopped.',
+  chatTurnEnded: () => 'This turn ended without an answer.',
+  chatQueries: (n: number) => `Knowledge-base queries: ${String(n)}`,
+  chatSources: (n: number) => `Web sources: ${String(n)}`,
+  chatCardRunning: () => 'running',
+  chatCardSolutions: (n: number) => plural(n, 'solution'),
+  chatCardFailure: () => 'no solutions',
+  chatCardLimit: (limit: string, n: number) =>
+    `stopped at the ${limit} limit after ${plural(n, 'solution')}`,
+  chatCardRefused: () => 'refused by the read-only guard',
+  chatCardError: (code: string) => `failed (${code})`,
+  chatCardCancelled: () => 'cancelled',
+  chatModelRead: (shown: number, total: number) =>
+    `The model read ${String(shown)} of ${plural(total, 'solution')}.`,
+  chatClaimed: (source: string) => `claimed source: ${source}`,
+  chatAuth: () =>
+    'The chat model is not logged in. ' +
+    'Log in once with CODEX_HOME=~/.config/cnl-ckc-demo/codex codex login. Then send again.',
+  chatNetwork: () =>
+    'The chat bridge did not respond. Start it with pnpm chat:dev. Then send again.',
+  chatServer: () =>
+    'The chat bridge failed. If it is not running, start it with pnpm chat:dev. Then send again.',
+  chatProtocol: () => 'The chat bridge sent a reply that this page cannot read. Send again.',
+  chatBusy: () => 'A reply is still running in this conversation. Wait for it, then send again.',
+  chatExpired: () =>
+    'The conversation ended on the bridge. Select New conversation. Then send again.',
+  chatCodex: (message: string) => `The chat model reported an error. ${message}`,
+  chatTimeout: () => 'The chat model took too long to answer. Send again.',
+  chatInterrupted: () => 'The reply was interrupted. Send again.',
 } as const;
 
 /**

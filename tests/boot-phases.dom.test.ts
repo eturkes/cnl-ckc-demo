@@ -72,7 +72,7 @@ const statusEvents = async (
   app = mount(App, { target, props: { controller } });
   flushSync();
   const region = target.querySelector<HTMLElement>(
-    'p.status[role="status"]:not([data-intake-status])',
+    'p.status[role="status"]:not([data-chat-status])',
   );
   if (region === null) throw new Error('run status region is missing');
   const events = [region.textContent];

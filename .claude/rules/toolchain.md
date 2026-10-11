@@ -18,8 +18,8 @@ paths:
   `engines` (`>=24.15.0 <25`, jsdom 30's floor) + CI `setup-node`. pnpm installs that runtime
   into `node_modules/.bin`, so every `pnpm <script>` and `pnpm exec node` runs on it whatever
   the host carries. **Bare `node` is the host's** and is never a gate runner.
-- `wrangler` (devDependency) and `@typesafe-ai/sdk` (exact, runtime) serve `worker/` alone;
-  ESLint `no-restricted-imports` refuses the SDK outside it.
+- The chat bridge needs the `codex` CLI on `PATH` (`CHAT_CODEX_BIN` overrides) and a login under
+  its dedicated `CODEX_HOME` (`~/.config/cnl-ckc-demo/codex`); it is not a package dependency.
 
 ## Dependency pins
 
@@ -34,12 +34,6 @@ paths:
 - `swipl-wasm` stays **exact-pinned**: production calls three undeclared APIs off it
   (`.claude/rules/engine.md`), so every version bump re-verifies them against the shipped
   `.d.ts`.
-- `pnpm.overrides` lifts `undici@>=7.28.0 <7.29.1` to `^7.29.1`: `wrangler` → `miniflare`
-  pins `undici` 7.29.0 exactly, inside GHSA-3wwx-pv8p-q78v, and `audit:check` takes no
-  allowlist. Drop the override once `miniflare` pins ≥7.29.1 — `pnpm why undici` shows it.
-- `pnpm.overrides` lifts `sharp@<0.35.5` to `^0.35.5`: `miniflare` pins `sharp` 0.35.4
-  exactly, inside GHSA-wq5f-xc86-pv6w. Drop the override once `miniflare` pins ≥0.35.5 —
-  `pnpm why sharp` shows it.
 - Each cap here must also appear in `.github/dependabot.yml`'s `ignore` list, or the weekly
   run reopens the same gate-breaking PR.
 - ESLint config needs `@types/node`, and svelte parsing needs `extraFileExtensions`.

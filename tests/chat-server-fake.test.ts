@@ -72,8 +72,10 @@ it('B1 B2 fake control accepts the contract schema and refuses its omission befo
       });
       try {
         const start = performance.now();
+        // A precondition wait, not a bound under test: the fake's Node process can take seconds
+        // to start under the gate's full-suite load.
         while (!stdout.includes(`thread-${String(child.pid)}-1`)) {
-          if (performance.now() - start > 500) throw new Error(`fake handshake failed: ${stderr}`);
+          if (performance.now() - start > 4000) throw new Error(`fake handshake failed: ${stderr}`);
           await delay(2);
         }
         write({

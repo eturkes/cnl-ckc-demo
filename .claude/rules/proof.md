@@ -8,10 +8,11 @@ paths:
   - "src/provenance/**"
   - "tests/clinical-*.ts"
   - "tests/proof-*.ts"
-  - "tools/kb/intake.mjs"
-  - "src/intake/**"
-  - "worker/**"
-  - "tests/intake-*.ts"
+  - "src/engine/readonly.ts"
+  - "src/chat/**"
+  - "server/**"
+  - "tests/chat-*.ts"
+  - "tests/engine-readonly-*.ts"
 ---
 
 # Inference and proof
@@ -31,35 +32,23 @@ clinician entity + cardinality makes `should` operators, `maximize` events (7),
 `nonopioid-therapy` entities (3) and the full operator→event→arg→entity join all derive. The
 blocker was ever a missing clinical context premise, never a missing KB.
 
-## Free-text intake selects; it never composes
+## Premises are scaffolding, not patient facts
 
 A clinical premise is universal-instantiation scaffolding, not a patient fact: 346 raw
 `clinical_premise` facts normalize to 42 shapes once the per-sentence skolem is removed, and
 the two commonest (`guideline_cardinality(actual,_H,na,eq,1)`,
 `guideline_entity(actual,_H,clinician,countable)`) sit in 46 and 45 of the 46 sentences.
-Matching a description to premises therefore cannot pick a recommendation. The
-discriminator is the rule's own condition: `clinical_rule/3` carries 24 distinct conditions
-over 48 rules, 22 of them unconditional, across 12 documents.
+Matching a patient description to premises therefore cannot pick a recommendation; the
+discriminator is the rule's own condition in `clinical_rule/3`.
 
-- The intake judgment chooses rule ids among those 48 and phrases among the user's own
-  words. Each chosen id runs its BUILD-TIME `clinical_derive/4` goal from
-  `intake-vocabulary.json`; the shown text is rendered from the `Rule` the engine returned.
-  No goal is assembled at run time and `derive/5` is untouched, so the intake adds no
-  executable surface and cannot fabricate a recommendation.
-- An unconditional rule is triggered by its CDC Box 3 section instead. A section "yes"
-  therefore selects every unconditional rule of that section whose pain set admits the judged
-  pain type, however qualified: 95 of the 97 derived rules the held-out gold does not list
-  are section-triggered, so derived-rule precision is 143/240 at recall 143/163
-  (`tests/intake/report.json`). **Declared limit (user ruling):** a lift needs per-rule
-  judgment signal, and the one billed run that scored 22 per-rule Nouls lost recall under
-  both policies — section AND rule 106/121 · 106/163, rule alone 113/140 · 113/163
-  (`.agent/contracts/mnt-d63.md`, branch `wt/d63` `cfbe0ad`).
-- Declared model limits, not defects: `unstated` pain admits the 13 pain-agnostic rules
-  alone; the pain Choice is single-valued; a gap phrase is judged absent, never proved
-  absent, and phrases past the 16th go unjudged; the guideline's own exclusions (cancer
-  pain, sickle cell disease, palliative and end-of-life care) are not enforced.
-- Refusal = the `other` pain hatch alone, never a probability threshold: in-scope and
-  out-of-scope coverage scores overlap (`.agent/archive/nl-intake.md`).
+## Model-written goals
+
+The chat's model writes goal text, and the engine runs it read-only (`src/engine/readonly.ts`,
+`.agent/contracts/chat-c1.md`): the parsed term is checked, the engine's own rendering of it
+runs, and a goal that reads no KB predicate is refused. A `kb` label in the chat certifies that
+its cited query ran over the KB in this conversation, not that the sentence restates it; the
+card beside the sentence shows the goal and the engine's verbatim solutions
+(`.agent/contracts/chat-c4.md` `Declared limit`).
 
 ## The closed saved state
 

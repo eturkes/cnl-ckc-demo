@@ -137,7 +137,7 @@ const readDocuments = async (page, mode) => {
 const BOOT_RECORDER = `(() => {
   window.__bootEvents = [];
   new MutationObserver((_, watcher) => {
-    const status = document.querySelector('p.status[role="status"]:not([data-intake-status])');
+    const status = document.querySelector('p.status[role="status"]:not([data-chat-status])');
     if (status === null) return;
     watcher.disconnect();
     const record = () => {

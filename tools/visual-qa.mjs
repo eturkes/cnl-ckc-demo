@@ -3,7 +3,7 @@
 // exit 1 when any state overflows. Outside `pnpm gate`: it needs a real browser.
 // `browser:check` measures 320 px alone, in both locales; this walk adds the wider viewports,
 // every boot phase, a run mid-stream, every catalog question's answer, a cancelled run, the graph,
-// the corpus browser with one document open and a failed boot.
+// the corpus browser with one document open, a failed boot, and the chat answered and failed.
 
 import { mkdirSync } from 'node:fs';
 import { cp } from 'node:fs/promises';
@@ -197,6 +197,99 @@ const bootPhases = async (browser, url, width) => {
   await page.close();
 };
 
+/** One scripted chat turn: its goal runs for real in the built engine, the rest is recorded. */
+const CHAT_TURN = [
+  { type: 'conversation', id: 'visual-qa' },
+  { type: 'commentary', text: 'Checking the knowledge base.' },
+  { type: 'query', call: 'q1', goal: 'clinical_rule(D,S,R)' },
+  {
+    type: 'search',
+    query: 'cdc opioid guideline 2022',
+    action: { type: 'search', query: 'cdc opioid guideline 2022' },
+    results: [
+      {
+        url: 'https://www.cdc.gov/mmwr/volumes/71/rr/rr7103a1.htm',
+        title:
+          'CDC Clinical Practice Guideline for Prescribing Opioids for Pain — United States, 2022',
+        domain: 'www.cdc.gov',
+        snippet: 'This guideline provides recommendations for clinicians.',
+      },
+    ],
+  },
+  {
+    type: 'answer',
+    text: JSON.stringify({
+      segments: [
+        {
+          text: 'Every clinician should maximize nonopioid therapy for acute pain.',
+          source: 'kb',
+          queries: ['q1'],
+          urls: [],
+        },
+        {
+          text: 'CDC published this guideline in 2022.',
+          source: 'web',
+          queries: [],
+          urls: ['https://www.cdc.gov/mmwr/volumes/71/rr/rr7103a1.htm'],
+        },
+        {
+          text: 'Exercise therapy is one nonopioid option.',
+          source: 'model',
+          queries: [],
+          urls: [],
+        },
+        { text: 'A claim no query backs.', source: 'kb', queries: ['q9'], urls: [] },
+      ],
+    }),
+  },
+  { type: 'done' },
+];
+
+/**
+ * The chat answered — every tag kind, the query cards open — and the chat failed, with the
+ * bridge answered by recorded routes.
+ *
+ * @param {import('./browser.mjs').Browser} browser @param {string} url @param {number} width
+ * @returns {Promise<void>}
+ */
+const chat = async (browser, url, width) => {
+  const page = await browser.newPage({ viewport: { width, height: 900 } });
+  let failing = false;
+  await page.route('**/api/chat/turn', (route) =>
+    failing
+      ? route.fulfill({ status: 500, body: '' })
+      : route.fulfill({
+          status: 200,
+          contentType: 'application/x-ndjson',
+          body: `${CHAT_TURN.map((event) => JSON.stringify(event)).join('\n')}\n`,
+        }),
+  );
+  await page.route('**/api/chat/result', (route) => route.fulfill({ status: 204, body: '' }));
+  await page.goto(url, { waitUntil: 'load', timeout: TIMEOUT });
+  await page.waitForSelector('[data-engine="ready"]', { timeout: TIMEOUT });
+  await page.locator('textarea#chat-message').fill('What should I try before opioids?');
+  await page.locator('[data-action="chat-send"]').click();
+  await page.waitForSelector('[data-chat-role="assistant"][data-chat-state="answered"]', {
+    timeout: TIMEOUT,
+  });
+  await page.locator('details[data-chat-cards] > summary').click();
+  for (const label of ['kb', 'web', 'model', 'unverified']) {
+    if ((await page.locator(`[data-chat-segment="${label}"]`).count()) === 0) {
+      fail(`${String(width)}px: the answered chat shows no ${label} segment`);
+    }
+  }
+  await measure(page, width, 'chat answered');
+  failing = true;
+  await page.locator('[data-action="chat-new"]').click();
+  await page.locator('textarea#chat-message').fill('And after that?');
+  await page.locator('[data-action="chat-send"]').click();
+  await page.waitForSelector('[data-chat-role="assistant"][data-chat-state="failed"]', {
+    timeout: TIMEOUT,
+  });
+  await measure(page, width, 'chat failed');
+  await page.close();
+};
+
 /**
  * @param {import('./browser.mjs').Browser} browser @param {string} url @param {number} width
  * @returns {Promise<void>}
@@ -220,6 +313,7 @@ await withBuiltSite(
     for (const width of WIDTHS) {
       await bootPhases(browser, `${origin}/${BUILT}/`, width);
       await walk(browser, `${origin}/${BUILT}/`, width);
+      await chat(browser, `${origin}/${BUILT}/`, width);
       await bootError(browser, `${origin}/${IMAGELESS}/`, width);
     }
   },

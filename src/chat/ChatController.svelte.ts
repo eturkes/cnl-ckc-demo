@@ -66,8 +66,11 @@ export class ChatController {
   #conversation: string | undefined;
   /** This conversation's record: calls whose goals ran, URLs its searches returned. */
   #record = new ChatRecord();
-  /** The run token: only the holder may write, and `cancel()` or `dispose()` retires it. */
-  #run: AbortController | undefined;
+  /**
+   * The run token: only the holder may write, and `cancel()` or `dispose()` retires it. State, so
+   * `busy` — read by the view — follows it.
+   */
+  #run = $state.raw<AbortController | undefined>(undefined);
   #disposed = false;
 
   constructor(options: { client: ChatClient; host: ChatHost }) {

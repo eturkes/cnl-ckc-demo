@@ -33,9 +33,6 @@
     "format:check": "prettier --check .",
     "gate": "pnpm audit:check && pnpm secret:check && pnpm kb:build && pnpm kb:asset-check && pnpm kb:export-check && pnpm engine:check && pnpm copy:check && pnpm contrast:check && pnpm presentation:check && pnpm claims:check && pnpm spec:check && pnpm format:check && pnpm lint && pnpm check && pnpm binding:check && pnpm build",
     "graph:check": "node tools/graph-check.mjs",
-    "intake:dev": "WRANGLER_SEND_METRICS=false wrangler dev",
-    "intake:live": "node tools/intake-live.mjs",
-    "intake:probe": "node tools/intake-probe.mjs && INTAKE_REPORT_WRITE=1 vitest run tests/intake-replay.test.ts && prettier --write tests/intake/replay.json tests/intake/report.json",
     "kb:asset-check": "node tools/kb/check.mjs",
     "kb:export-check": "node tools/kb/export-check.mjs",
     "kb:build": "node tools/kb/build.mjs",
@@ -62,7 +59,6 @@
     "@fontsource-variable/atkinson-hyperlegible-next": "5.3.0",
     "@fontsource-variable/literata": "5.3.0",
     "@fontsource/biz-udpgothic": "5.3.0",
-    "@typesafe-ai/sdk": "0.6.0",
     "cytoscape": "3.34.2",
     "cytoscape-fcose": "2.2.0",
     "pdfjs-dist": "6.4.299",
@@ -94,13 +90,6 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.68.0",
     "vite": "^8.2.2",
-    "vitest": "^4.1.11",
-    "wrangler": "^4.143.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "undici@>=7.28.0 <7.29.1": "^7.29.1",
-      "sharp@<0.35.5": "^0.35.5"
-    }
+    "vitest": "^4.1.11"
   }
 }

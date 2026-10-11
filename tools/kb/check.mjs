@@ -20,7 +20,6 @@ import {
   GRAPH_SCHEMA_VERSION,
 } from './graph.mjs';
 import { deriveCorpusIndex } from './corpus.mjs';
-import { deriveIntakeVocabulary, validateIntakeVocabulary } from './intake.mjs';
 import { deriveProvenance, PROVENANCE_SCHEMA_VERSION } from './provenance.mjs';
 import { GENERATED_DIR, ROOT, loadManifest, payloadSource } from './paths.mjs';
 
@@ -28,7 +27,7 @@ import { GENERATED_DIR, ROOT, loadManifest, payloadSource } from './paths.mjs';
 const SCAN_ROOTS = [
   'tools',
   'src',
-  'worker',
+  'server',
   'kb/generated',
   'vite.config.ts',
   'package.json',
@@ -41,7 +40,7 @@ const SCAN_ROOTS = [
  * indistinguishable from a lookup. `kb/generated` is in: the runtime loads those assets, so
  * an oracle path inside one is production reach the source scan alone would never see.
  */
-const PRODUCTION_ROOTS = ['src', 'tools', 'worker', 'vite.config.ts', 'index.html', 'kb/generated'];
+const PRODUCTION_ROOTS = ['src', 'tools', 'server', 'vite.config.ts', 'index.html', 'kb/generated'];
 /**
  * A byte scan sees a static import, a dynamic `import()` and an `fs` read alike, which an
  * ESLint import rule cannot — the core rule visits import and export declarations only.
@@ -175,8 +174,6 @@ if (scanFailures.length === 0) {
 }
 let scopeControlsFired = 0;
 let scopeRecordsValidated = 0;
-let intakeControlsFired = 0;
-let intakeRulesValidated = 0;
 
 const scanOnly = process.argv.includes('--scan-only');
 const manifest = loadManifest();
@@ -233,36 +230,6 @@ if (scanOnly) {
         scopeControlsFired = 1;
         scopeRecordsValidated = graph.model.scopes.length;
       }
-      const intake = deriveIntakeVocabulary(files);
-      const intakeFailures = validateIntakeVocabulary(intake.model);
-      for (const problem of intakeFailures) fail(`intake vocabulary: ${problem}`);
-      if (intakeFailures.length === 0) {
-        // The real model with one section's documents emptied: every rule of that section
-        // loses its home, which a validator that stopped reading sections would not notice.
-        requireFiring(
-          'kb:asset-check',
-          {
-            mutation: 'the real intake model with section s2 emptied of documents',
-            expect: ['section s2 has no documents', 'lies in 0 sections'],
-          },
-          () =>
-            validateIntakeVocabulary({
-              ...intake.model,
-              sections: intake.model.sections.map((section) =>
-                section.id === 's2' ? { ...section, documents: [] } : section,
-              ),
-            }),
-        );
-        intakeControlsFired = 1;
-        intakeRulesValidated = intake.model.rules.length;
-      }
-      if (
-        manifest.intake.vocabularyVersion !== intake.model.vocabularyVersion ||
-        manifest.intake.rules !== intake.model.rules.length ||
-        manifest.intake.digest !== intake.model.digest
-      ) {
-        fail('manifest intake metadata does not match the bag-derived vocabulary');
-      }
       if (
         manifest.provenance.schemaVersion !== PROVENANCE_SCHEMA_VERSION ||
         manifest.provenance.documents !== provenance.stats.documents ||
@@ -290,7 +257,6 @@ if (scanOnly) {
         { kind: 'source-pdf', path: provenance.pdf.path, bytes: provenance.pdf.bytes },
         { kind: 'provenance-corpus', path: corpus.path, bytes: corpus.bytes },
         { kind: 'semantic-graph', path: graph.path, bytes: graph.bytes },
-        { kind: 'intake-vocabulary', path: intake.path, bytes: intake.bytes },
       ];
       const derivedKinds = new Set([
         'provenance-index',
@@ -298,11 +264,10 @@ if (scanOnly) {
         'source-pdf',
         'provenance-corpus',
         'semantic-graph',
-        'intake-vocabulary',
       ]);
       const recorded = manifest.assets.filter((entry) => derivedKinds.has(entry.kind));
       if (recorded.length !== derived.length) {
-        fail(`manifest records ${recorded.length} derived provenance/graph/intake assets, expected ${derived.length}`);
+        fail(`manifest records ${recorded.length} derived provenance/graph assets, expected ${derived.length}`);
       }
       const recordedByPath = new Map(recorded.map((entry) => [entry.path, entry]));
       for (const expected of derived) {
@@ -433,8 +398,6 @@ if (failures.length > 0) {
       `${questions.length} question sentences absent from ${QUESTION_ROOTS.length} roots, ` +
       `${String(controlsFired)} SCAN_ROOTS control fired, controls: ${rootTableControls.join(', ')}, ` +
       `${String(scopeRecordsValidated)} graph scopes verified, ` +
-      `${String(scopeControlsFired)} scopes control fired, ` +
-      `${String(intakeRulesValidated)} intake rules verified, ` +
-      `${String(intakeControlsFired)} intake control fired\n`,
+      `${String(scopeControlsFired)} scopes control fired\n`,
   );
 }

@@ -36,6 +36,10 @@ import { ROOT } from './kb/paths.mjs';
  * @property {(options: { path: string }) => Promise<unknown>} screenshot
  * @property {() => Promise<void>} close
  * @property {(script: string) => Promise<void>} addInitScript
+ * @property {(url: string, handler: (route: Route) => Promise<void>) => Promise<void>} route
+ *
+ * @typedef {object} Route
+ * @property {(response: { status: number, contentType?: string, body: string }) => Promise<void>} fulfill
  *
  * @typedef {object} Browser
  * @property {(options?: object) => Promise<Page>} newPage

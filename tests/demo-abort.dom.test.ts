@@ -63,7 +63,7 @@ it('A7 shows the heap limit and lets the next catalog run answer', async () => {
       id: ID,
       result: { kind: 'limit', limit: 'heap' },
     });
-    const region = target.querySelector<HTMLElement>('[aria-busy]:not([data-intake-result])');
+    const region = target.querySelector<HTMLElement>('[aria-busy]:not([data-chat-conversation])');
     if (region === null) throw new Error('answer region missing');
     expect(region.textContent).toMatch(/heap/iu);
     expect(region.getAttribute('aria-busy')).toBe('false');

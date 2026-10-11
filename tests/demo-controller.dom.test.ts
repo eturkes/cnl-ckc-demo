@@ -175,13 +175,13 @@ const setState = (state: DemoState): void => {
   flushSync();
 };
 
-// `m5u16.md` U4: the intake panel owns its own live regions and busy region, graded by the
-// intake suites; these helpers grade the run's.
-const INTAKE_REGIONS = '[data-intake-status], [data-intake-alert], [data-intake-result]';
+// The chat panel owns its own live regions and busy region, graded by `tests/chat-panel.dom`;
+// these helpers grade the run's.
+const CHAT_REGIONS = '[data-chat-status], [data-chat-alert], [data-chat-conversation]';
 
 const roles = (role: string): HTMLElement[] =>
   [...target.querySelectorAll<HTMLElement>(`[role="${role}"]`)].filter(
-    (element) => !element.matches(INTAKE_REGIONS),
+    (element) => !element.matches(CHAT_REGIONS),
   );
 
 const role = (name: string): HTMLElement => {
@@ -192,7 +192,7 @@ const role = (name: string): HTMLElement => {
 };
 
 const answerRegion = (): HTMLElement => {
-  const region = target.querySelector<HTMLElement>(`[aria-busy]:not(${INTAKE_REGIONS})`);
+  const region = target.querySelector<HTMLElement>(`[aria-busy]:not(${CHAT_REGIONS})`);
   if (region === null) throw new Error('answer region has no aria-busy state');
   return region;
 };

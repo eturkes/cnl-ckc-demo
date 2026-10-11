@@ -81,10 +81,10 @@ const drain = async (): Promise<void> => {
   flushSync();
 };
 
-const INTAKE_REGIONS = '[data-intake-status], [data-intake-alert], [data-intake-result]';
+const CHAT_REGIONS = '[data-chat-status], [data-chat-alert], [data-chat-conversation]';
 const pageAlerts = (): HTMLElement[] => [...target.querySelectorAll<HTMLElement>('[role="alert"]')];
 const alerts = (): HTMLElement[] =>
-  pageAlerts().filter((element) => !element.matches(INTAKE_REGIONS));
+  pageAlerts().filter((element) => !element.matches(CHAT_REGIONS));
 
 const retry = (): HTMLButtonElement => {
   const buttons = [...target.querySelectorAll<HTMLButtonElement>('button')].filter((button) =>
@@ -178,7 +178,7 @@ describe('rendered boot-error recovery', () => {
     expect(workers).toHaveLength(3);
     expect(workers.map((worker) => worker.seen.length)).toEqual([1, 1, 1]);
     expect(workers.map((worker) => worker.terminated)).toEqual([true, true, false]);
-    expect(target.querySelector('[role="status"]:not([data-intake-status])')?.textContent).toMatch(
+    expect(target.querySelector('[role="status"]:not([data-chat-status])')?.textContent).toMatch(
       /ready/iu,
     );
   });

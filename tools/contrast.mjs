@@ -51,9 +51,9 @@ const PAIRS = [
     fg: '--focus-ring',
     bg: '--surface-sunken',
     min: LARGE,
-    where: 'focus on an intake result action',
+    where: 'focus on a chat tag, card or source link',
   },
-  { fg: '--text-muted', bg: '--surface-sunken', min: LARGE, where: 'intake reveal button border' },
+  { fg: '--text-muted', bg: '--surface-sunken', min: LARGE, where: 'chat model tag border' },
   { fg: '--action-text', bg: '--action', min: LARGE, where: 'selected option text on its fill' },
   // The graph canvas. A node label is small bold text on its own fill, so it takes NORMAL;
   // the fill itself is a graphical object on the canvas and takes LARGE. Both themes are

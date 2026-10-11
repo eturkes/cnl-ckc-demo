@@ -110,7 +110,7 @@ describe('m1u7 framing and composition contract', () => {
     }
   });
 
-  // A6:136–137: the built-in catalog stays fixed alongside u16's free-text intake.
+  // A6:136–137: the built-in catalog stays fixed alongside the free-text chat.
   it('A6 states the fixed catalog and non-clinical limitation', () => {
     const about = text(element('details.about'));
     expect(about).toMatch(/question list is fixed/iu);

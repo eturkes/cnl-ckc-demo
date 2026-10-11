@@ -18,9 +18,8 @@ questions by deterministic Prolog execution.
 # Artifacts
 
 - `src/` + `index.html` — the demo. `pnpm dev`; production `pnpm build && pnpm preview`.
-- `worker/` + `wrangler.jsonc` — local judgment proxy for free-text intake, key in gitignored
-  `.dev.vars`. `pnpm intake:dev` beside `pnpm dev`.
-- `tools/intake-probe.mjs` — live held-out accuracy, keyed + billed. `pnpm intake:probe`.
+- `server/chat.mjs` + `server/chat-guide.md` — local chat bridge to `codex app-server`.
+  `pnpm chat:dev` beside `pnpm dev`, after `CODEX_HOME=~/.config/cnl-ckc-demo/codex codex login`.
 
 # Decisions
 
@@ -105,82 +104,16 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   runtime validation at the worker boundary, query and proof paths that never drain
   diagnostics, and a 3,139,261 B worker booting before user activation.
 
-- **Free-text patient intake is BUILT, and it SELECTS rules rather than composing goals.**
-  The user describes a clinical situation; the demo returns the subset of
-  the 48 shipped `clinical_rule/3` recommendations whose guideline conditions that description
-  meets, each derived through the existing clinical path unchanged.
-  - Premises are universal-instantiation scaffolding, so they cannot select a recommendation;
-    the discriminator is the `clinical_rule/3` condition, and **`derive/5` is not touched**.
-    Measurements + law → `.claude/rules/proof.md` `Free-text intake selects`.
-  - Intake is ONE judgment request — condition Nouls + pain Choice with its `other` hatch +
-    section Nouls + candidate-term Nouls (below). **No goal is composed and no new executable surface is added**:
-    every derivation is an existing predicate over existing shipped records, and the answer
-    set is a subset of the 48 shipped recommendations, so it cannot fabricate.
-  - Refusal = the hatch alone; an empty match set is the distinct no-match outcome. **Never a
-    probability threshold** — `covered`
-    spans [0.50,0.97] in-scope against [0.01,0.65] out, which overlap, so no threshold
-    separates them.
-  - Three outcomes stay distinct on screen: refused at intake / matched nothing, naming what
-    the description asserts that the KB has **no vocabulary for** / answered. That third list
-    is the anti-hallucination story made visible rather than asserted, and it is honest about
-    real gaps — the condition vocabulary carries no numeric dose threshold and nothing about
-    sleep-disordered breathing.
-  - Key stays server-side behind a **serverless proxy** — Cloudflare Workers, chosen on abuse
-    containment — never `dangerouslyAllowBrowser`.
-
-  Measurements, costs and limits → `.agent/archive/nl-intake.md`; probe code → branches
-  `wt/res-nl-intake` `ae608ff` (routing, grounding, vocabulary) and `wt/res-u16-shape`
-  `490dfcf` (premise shape, rule shape) — never rename either.
-
-- **u16 delivery bindings.**
-  - **Key = `~/.config/typesafe/key`** (supersedes paste-in-chat). It is read only into a
-    gitignored `.dev.vars` and the live probe run; it is never echoed or committed.
-  - **Local-only delivery.** The Cloudflare deploy is DEFERRED (`.agent/deferred.md`); the
-    Worker ships as code and runs under `wrangler dev` behind a same-origin Vite proxy, so
-    `connect-src 'self'` stands. **Pages publishing STOPS**: CI keeps the gate + scanners.
-  - **Layout = free text FIRST, drop-down below.** `QuestionCombobox` keeps its exact look
-    under the textarea as the "or pick a built-in question" path; both stay visible.
-  - **Result view = its own panel under the intake.** Each derived recommendation offers "Show
-    derivation", which runs its document's built-in question through the UNCHANGED
-    `AnswerPanel` + ladder.
-  - **Gap list on BOTH answered and no-match outcomes**; on no-match it is the headline.
-  - **Japanese = copy parity only.** Free-text intake is graded in English alone; no
-    bilingual-intake claim either way.
-
-- **Third outcome = candidates from the user's OWN words.** A dependency-free stopword chunker
-  cuts the description into verbatim substrings (bounded count + length); the same request
-  asks one Noul per candidate — asserted by the description AND expressed by no KB vocabulary
-  entry. The browser recomputes the candidates and refuses any returned term they do not
-  contain, so nothing is generated. `compromise` was measured worse (split `opioid use
-  disorder`, dropped `tramadol`) and is rejected.
-
-- **Selection model.** Condition Nouls (24) select conditional rules; a pain Choice
-  `{acute, subacute, chronic, unstated}` + `other` = the hatch; 4 section Nouls, headings
-  read VERBATIM from the bag's CDC Box 3, select unconditional rules. A rule answers iff its
-  trigger fires (its condition Noul, else its section Noul) AND it is pain-compatible.
-  `painSet(rule)` = the pain types its own text names, else its document's union, else ∅ =
-  agnostic; compatible iff ∅ or the chosen type is in it, so `unstated` admits agnostic rules
-  alone. A Noul says yes at value ≥ 0.5.
-
-- **Stack.** `@typesafe-ai/sdk` exact `0.6.0` inside the Worker ALONE — the browser never
-  imports it, and ESLint enforces that. `wrangler` is a devDependency.
-
-- **Probe set.** An independent teammate, blind to the selector, authors the held-out
-  descriptions + gold from the KB alone, frozen and committed before the first live run. Live accuracy is REPORTED per
-  case, never gated — Jev has no determinism control. The gate grades the committed replay +
-  the forced-arm control.
-
-- **Chat intake REPLACES the TypeSafe intake (open request).** Free text becomes a chatbot:
-  `gpt-6.1-sol`, effort `medium`, over a persistent `codex app-server`. The model writes Prolog
-  goals, they run in the browser engine, and every answer segment is labelled KB / web / model.
-  It reverses "intake SELECTS, never composes; no new executable surface" — the seven intake
-  bullets above it die in the unit that retires the TypeSafe intake, whose code, suites, gate
-  rows, census rows, binding entries and mutants are approved for deletion.
+- **The chat is the free-text intake.** It replaced the TypeSafe rule-selection intake, whose
+  code, suites, gate rows, census rows and binding entries are gone. `gpt-6.1-sol`, effort
+  `medium`, over one persistent `codex app-server` under a dedicated `CODEX_HOME`
+  (`~/.config/cnl-ckc-demo/codex`, its own login). The model writes Prolog goals; each runs
+  read-only in the page's engine; every answer segment is labelled KB / Web / Model, else
+  Unverified.
   - **Provenance = inline labels**: KB tags open query cards holding the goal and the engine's
     verbatim solutions; Web tags open the URLs the turn's own search returned.
-  - **q1 is funded here**: an aborted runtime becomes a terminal state that recreates the
-    worker; the `engine:probe` R45 change is approved, and q2 closes with it on `limit: 'heap'`.
-  - Plan, measured probe facts, open isolation question → `.agent/contracts/chat-plan.md`.
+  - Contracts `.agent/contracts/chat-c1.md`…`chat-c5.md`; plan + measured probe facts
+    `chat-plan.md`.
 
 **MAIN:** premise display = deduplicated steps inside the EXISTING ladder rungs, never a new
 step type (3,930 leaves / 346 premises), carrying hypothetical origin and no source line.
@@ -201,11 +134,10 @@ tree at the closing commit.
 
 - [ ] RESUME: finish line = this request's `Met when` (body = the user's chat request, prior
   transcript `8d9c0933`): delivered end to end + `pnpm gate` green on a clean tree at the closing
-  commit. Isolation ruled: dedicated `CODEX_HOME` (`chat-plan.md` `Isolation`); the user's
-  `codex login` under it is owed before c7. Contracts committed: `.agent/contracts/chat-c1.md`…
-  `chat-c4.md`. MAIN code uncommitted in the primary tree: c1 (`src/engine/readonly.ts`,
-  session/client/protocol), c3 (`server/`), c4 (`src/chat/`, `DemoController.runGoal`). Red
-  suites in flight: roster `.scratch/agents/roster.md` (chat-tester-1…4). Scratch: `.scratch/probe/`.
+  commit. c1–c4 committed; c5 + c6 land together (the App stops mounting the intake panel the
+  deleted intake suites mount). Owed: the user's `CODEX_HOME=~/.config/cnl-ckc-demo/codex codex
+  login` before c7's live lanes; the user's live review of the chat panel (c5 V8). Roster
+  `.scratch/agents/roster.md`; snapshot worktrees `.scratch/worktrees/c1`…`c4` (wip/chat-c*).
 - [x] `95c3495` c1 `kernel` guarded read-only query: `query(…, {readonly:true})`, JS allowlist over the
   decoded parse, canonical re-render, `EngineErrorCode` `'guard'`.
   - Accept: refuses the atom-doubling chain, `assertz`, a module-qualified goal, a variable goal
@@ -216,7 +148,7 @@ tree at the closing commit.
     `limit: 'heap'` read; R45's original firing recorded in the contract.
 - [x] `0c3174d` c3 `kernel` `server/chat.mjs`: persistent `codex app-server` bridge, NDJSON turns, tool
   relay, Origin/Host allowlist, graded against a fake app-server.
-- [ ] c4 `kernel` browser chat: client, controller on the engine queue, provenance resolver
+- [x] `f30b351` c4 `kernel` browser chat: client, controller on the engine queue, provenance resolver
   (kb/web/unverified), capped tool-result text, binding row for the KB card.
 - [ ] c5 visual: ChatPanel replaces IntakePanel above the drop-down, both locales, dom tests,
   visual-qa states; user live review owed.

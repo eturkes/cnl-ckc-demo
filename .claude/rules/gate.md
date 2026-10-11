@@ -109,8 +109,8 @@ Step semantics a reader cannot get from the script name:
 - **The stable censuses the rules state are graded, not trusted.** `tests/census.test.ts` (run by
   `binding:check` with the rest of the suite, after `kb:build`) holds a `CENSUS` table: each row
   anchors one claim unit in `.claude/rules/`, parses each figure out of its text and compares it
-  with a value derived from the verified bag, the live image, the twelve live proofs, the intake
-  vocabulary or the projected graph model; a mismatch names the rules file and line. A figure
+  with a value derived from the verified bag, the live image, the twelve live proofs or the
+  projected graph model; a mismatch names the rules file and line. A figure
   added to those families belongs in that table. Its control re-grades the real `kb-build.md`
   with one figure altered, and refuses an emptied table.
 - `presentation:check` (`tools/presentation-check.mjs`) grades four DECLARED tables against
@@ -143,7 +143,6 @@ effect of the unit whose grader it loosens.
 | `secret:check` | a token-shaped literal planted in a temp dir; the `TREE_TARGETS` list emptied | secretlint spawned on the literal, must exit 1, before the tree pass; the emptied list must exit 1 naming `TREE_TARGETS` — without that guard secretlint exits 2 `Not found target files` and the wrapper mislabels it `secret found in the working tree` |
 | `kb:build` | one digit changed in the bag `.sha256` sidecar | `readVerifiedBag(perturb)` re-run in process, before the real verify |
 | `kb:asset-check` | seven planted `src/zz-forbidden-reach-control.ts` inputs — an oracle reached by static import, `import()` and `fs` read, an oracle path joined or concatenated from its two bare segments, a serializing call, a copied question sentence | `tests/kb-reach.test.ts` spawns the real checker per form and requires nonzero with the offending path named; `binding:check` names all eight cases, the clean baseline included |
-| `kb:asset-check` intake | the REAL derived intake model with section `s2` emptied of documents | `validateIntakeVocabulary` re-run through `requireFiring`, refusing with `section s2 has no documents` and every rule of that section `lies in 0 sections`; a validator that stopped reading sections would pass the emptied model |
 | `kb:export-check` | one declared query dropped from the verified bag | `exportedQueries` re-run on the short map, must refuse by name |
 | `engine:check` | one perturbed pinned surface per predicate: the budget parameter dropped from `EngineClient.query`, a bare `swipl-wasm` import added outside the worker, a member added to `PrologConstructors`, an export added to `terms.ts` | the command re-runs itself once per row under `ENGINE_CHECK_CONTROL`; the perturbation rides the file reader, so each control drives the whole check and must exit 1 naming its predicate |
 | `engine:check` `CONTROLS` | the `CONTROLS` table emptied | its own non-empty grader, in process — emptied, no child control runs at all and the summary would otherwise end `0 controls fired` |
@@ -187,8 +186,6 @@ committed state:
 | `pnpm graph:check` | the renderer-neutral edge-view contract R1-R7 (`.agent/contracts/m5u8.md`) against the SHIPPED `mountGraphCanvas`, over 14 fixtures x 2 viewports, plus C1-C12 (`m5u10.md`) against the SHIPPED `SemanticGraph.svelte` over 2 devices x 2 views + both fallbacks |
 | `pnpm mutate [substring]` | each fixed defect's closing check binds to its fix: every mutant in `tools/mutants.mjs` restores one pre-fix behaviour and its check must go red, after that check passed on the pristine tree; every touched file is restored and proven byte-equal. Only exit status 1 kills; a signal or another status reads `INCONCLUSIVE` and fails the run. Every anchor is graded inside the gate by `tests/mutant-anchors.test.ts`, so a refactor that moves one reddens the gate, not the next mutate run. From a clean checkout: `pnpm install --frozen-lockfile && pnpm kb:build && pnpm mutate`. Run it alone — CPU contention turns a 5000 ms test timeout into a false kill |
 | `pnpm binding:replay` | that `clinical-binding` E2 is load-bearing: the same erasure is invisible at `a944fca` and drops exactly one document now |
-| `pnpm intake:probe` | live model accuracy on the 30 held-out intake descriptions: re-posts every recorded request, rewrites `tests/intake/replay.json`, re-derives `report.json`. Keyed (`~/.config/typesafe/key`) and billed, so it never runs in a gate; the gate replays the recording (`tests/intake-replay.test.ts`) |
-| `pnpm intake:live` | the two-server intake path in a real browser: with `pnpm intake:dev` + `pnpm dev` up, a fixed description must come back `answered` with ≥1 Prolog-derived row, and "Show derivation" must reach the answer region with no page error. Keyed, so outside every gate |
 
 **A server spawned through `pnpm exec` outlives `child.kill()`, and both browser lanes were
 bitten by it.** `spawn('pnpm', ['exec', 'vite', ...])` builds a pnpm → vite tree, so signalling

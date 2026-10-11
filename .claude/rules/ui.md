@@ -85,7 +85,7 @@ is why attribution and nonendorsement cannot live inside the About disclosure.
 ## Run lifecycle
 
 - **Run serialization chains on the ENGINE CALL, not on the state write.** Every engine call —
-  query, proof, intake derivation — goes through the controller's one queue (`#exclusive`),
+  query, proof, chat goal — goes through the controller's one queue (`#exclusive`),
   which dispatches after the previous call SETTLED, aborted proofs included. A successor that
   awaited its predecessor's settle promise would add a microtask hop a 4-tick test drain
   misses, and the state write is guarded by run identity anyway.

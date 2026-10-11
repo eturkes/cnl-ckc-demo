@@ -2,9 +2,9 @@
 
 User-ruled, binding on every role.
 
-- Runtime = **static site + SWI-Prolog WASM** (`swipl-wasm`, exact-pinned). No server, no
-  host `swipl` install, deploys as static files. Free-text intake stays reachable later
-  because APE is itself Prolog and loads into the same engine.
+- Runtime = **static site + SWI-Prolog WASM** (`swipl-wasm`, exact-pinned). No host `swipl`
+  install; deploys as static files. The chat is the one local server: `server/chat.mjs` relays
+  a `codex app-server` child and never runs a goal — every goal runs in the page's engine.
 - Frontend = **Svelte 5** runes + **Vite** + TypeScript. Runes carry the demo's real state
   (selected question, run status, chosen solution, focused trace node, graph selection);
   single-file components read well for agents.

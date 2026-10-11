@@ -5,9 +5,8 @@
 import generated from '@kb/question-catalog.json';
 
 /**
- * Every question the demo can run. Free text is not one of them: the intake
- * reads as future free-text but resolves an id, so this tuple is the whole
- * executable surface.
+ * Every prepared question the demo can run, by id. The chat's model-written goals are the one
+ * other executable surface, and they reach the engine read-only (`src/engine/readonly.ts`).
  */
 export const QUESTION_IDS = [
   'when-to-use-opioids',

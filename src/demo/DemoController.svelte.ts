@@ -23,7 +23,6 @@ import type { ProvenanceState } from '../provenance/model.js';
 import { QUESTION_CATALOG, type QuestionId } from '../questions/catalog.js';
 import { serializeAnswer } from '../questions/serialize.js';
 import { AnswerService, type AnswerResult } from '../questions/service.js';
-import { IntakeService, type IntakeDerivation } from '../intake/service.js';
 
 /**
  * Bounds every demo run. These are working values, not the `BUDGET_MAX` ceilings:
@@ -56,8 +55,9 @@ const PROOF_BUDGET: Readonly<BudgetSpec> = Object.freeze({
 });
 
 /**
- * The controller's whole view of the engine: one boot, one budgeted ask, the selected
- * proof, the intake derivation by rule id, one dispose. No arbitrary goal crosses it.
+ * The controller's whole view of the engine: one boot, one budgeted ask, the selected proof,
+ * one read-only chat goal, one dispose. The chat goal is the one goal text from outside the
+ * catalog, and it reaches the engine through the read-only allowlist alone (`readonly.ts`).
  */
 export interface DemoEngine {
   boot(onProgress?: (progress: BootProgress) => void): Promise<BootOutcome>;
@@ -68,7 +68,6 @@ export interface DemoEngine {
     onSolution?: (solution: PlSolution) => void,
   ): Promise<AnswerResult>;
   prove?(input: ProofInput, budget: BudgetSpec, signal?: AbortSignal): Promise<ProofOutcome>;
-  derive?(ruleIds: readonly unknown[], signal?: AbortSignal): Promise<IntakeDerivation>;
   /** One model-written goal, always through the engine's read-only allowlist. */
   runGoal?(goal: string, budget: BudgetSpec, signal?: AbortSignal): Promise<QueryOutcome>;
   dispose(): void;
@@ -77,12 +76,10 @@ export interface DemoEngine {
 export const createDemoEngine = (): DemoEngine => {
   const client = new EngineClient();
   const service = new AnswerService(client);
-  const intake = new IntakeService(client);
   return {
     boot: (onProgress) => client.boot(onProgress),
     ask: (id, budget, signal, onSolution) => service.ask(id, budget, signal, onSolution),
     prove: (input, budget, signal) => client.prove(input, budget, signal),
-    derive: (ruleIds, signal) => intake.derive(ruleIds, signal),
     runGoal: (goal, budget, signal) =>
       client.query(goal, budget, signal, undefined, { readonly: true }),
     dispose: () => {
@@ -136,8 +133,6 @@ export class DemoController {
 
   readonly #engine: DemoEngine;
   #active: ActiveRun | undefined;
-  /** The run whose state write landed last, so a caller awaiting a run can tell it was ITS run. */
-  #settledBy: AbortController | undefined;
   /**
    * One engine queue. The session holds a single active request, so a call must not go out
    * while another — an aborted proof included — is still in flight; with nothing in flight it
@@ -197,18 +192,6 @@ export class DemoController {
   }
 
   /**
-   * Derive intake rules by id through the same engine queue as every other call. `undefined`
-   * = no derivation ran: the engine carries no intake path, has not booted, or is disposed.
-   * Boot stays outside the queue, so readiness is checked here, as `#start` checks it.
-   */
-  derive(ruleIds: readonly unknown[], signal?: AbortSignal): Promise<IntakeDerivation> | undefined {
-    const derive = this.#engine.derive?.bind(this.#engine);
-    const booted = this.state.kind !== 'booting' && this.state.kind !== 'boot-error';
-    if (derive === undefined || !booted || this.#disposed) return undefined;
-    return this.#exclusive(() => derive(ruleIds, signal));
-  }
-
-  /**
    * Run one chat goal read-only through the same engine queue as every other call. `undefined`
    * = nothing ran: the engine carries no chat path, has not booted, or is disposed.
    */
@@ -217,41 +200,6 @@ export class DemoController {
     const booted = this.state.kind !== 'booting' && this.state.kind !== 'boot-error';
     if (run === undefined || !booted || this.#disposed) return undefined;
     return this.#exclusive(() => run(goal, CHAT_BUDGET, signal));
-  }
-
-  /**
-   * Run `question` and select the solution derived from `document` (`m5u16.md` U3).
-   *
-   * Three built-in questions span several documents and a run settles on solution 0, so
-   * opening "the question" alone would show another document's derivation. This waits for
-   * ITS run — a newer one supersedes it — then selects by the derived document, and reports
-   * a missing document instead of standing on the wrong one.
-   */
-  async reveal(
-    question: QuestionId,
-    document: string,
-  ): Promise<'shown' | 'missing' | 'superseded' | 'unavailable'> {
-    this.select(question);
-    const pending = this.run();
-    const mine = this.#active?.controller;
-    await pending;
-    if (mine === undefined || this.#settledBy !== mine || this.#active !== undefined) {
-      return mine === undefined ? 'unavailable' : 'superseded';
-    }
-    if (this.state.kind !== 'settled' || this.state.result.kind !== 'answer') return 'missing';
-    const index = this.state.result.solutions.findIndex((solution) => {
-      const answer = solution.bindings.Answer;
-      const cited = answer?.kind === 'compound' ? answer.args[0] : undefined;
-      return (
-        answer?.kind === 'compound' &&
-        answer.functor === 'clinical_answer' &&
-        cited?.kind === 'atom' &&
-        cited.value === document
-      );
-    });
-    if (index < 0) return 'missing';
-    this.selectSolution(index);
-    return 'shown';
   }
 
   dispose(): void {
@@ -342,7 +290,6 @@ export class DemoController {
     const settle = (result: AnswerResult): void => {
       if (this.#active?.controller !== controller) return;
       retire();
-      this.#settledBy = controller;
       this.state = { kind: 'settled', id, result };
       this.solutionIndex = solutionsOf(result).length > 0 ? 0 : -1;
       const first = solutionsOf(result)[0];

@@ -4,7 +4,7 @@
   //
   // Host is a `div`, not a readonly `<input>` (D1): an input announces "read only
   // edit" for a widget that accepts no text and raises a mobile keyboard. The
-  // text-field look is CSS, so the later free-text intake swaps the host alone.
+  // text-field look is CSS alone.
 
   import { messages } from '../i18n/locale.svelte.js';
 
@@ -246,8 +246,7 @@
     position: relative;
   }
 
-  /* Text-field affordance: the widget accepts no text today, and free-text intake
-     replaces this host without touching the rest. */
+  /* Text-field affordance: the widget accepts no text; free text goes to the chat above it. */
   .box {
     box-sizing: border-box;
     width: 100%;

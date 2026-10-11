@@ -3,7 +3,7 @@
 //
 // The README is a durable human-facing claim that re-stales on any `package.json`, lockfile or
 // `tools/kb/` change, and nothing else runs it as written. This check clones committed HEAD into
-// a scratch directory, executes ONLY the `sh` blocks of `## Run locally` — the keyed intake
+// a scratch directory, executes ONLY the `sh` blocks of `## Run locally` — the keyed chat
 // blocks excepted — and grades every command's exit status plus the corpus and module counts.
 //
 // Outside `pnpm gate`: it needs a clean clone, a package install and a real browser.
@@ -24,7 +24,7 @@ import { loadManifest, ROOT } from './kb/paths.mjs';
 
 const SECTION = '## Run locally';
 /** Blocks that need the TypeSafe key are a live, billed path — never part of setup. */
-const KEYED = /\.dev\.vars|intake:/u;
+const KEYED = /codex login|chat:dev/u;
 /** Commands that serve until stopped; each passes once its page answers. */
 const SERVERS = new Set(['pnpm dev', 'pnpm preview']);
 const TIMEOUT = 300_000;

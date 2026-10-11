@@ -117,10 +117,10 @@ Clause counts: version 337, document 337, entity 1834, cardinality 1834, event 1
 - Query goals reach the engine from the catalog, never from the image.
 - **The build cache keys on inputs, never on producer code.** It compares the bag input, the
   payload source, the toolchain and the catalog, so an edit to a producer (`graph.mjs`,
-  `provenance.mjs`, `intake.mjs`) leaves the cached asset in place: `node tools/kb/build.mjs
+  `provenance.mjs`) leaves the cached asset in place: `node tools/kb/build.mjs
   --force` rebuilds it. `kb:asset-check` re-derives the graph from the bag and refuses the stale
   asset (`manifest metadata differs from fresh derivation`), so the gate stays red until then.
-- `MANIFEST_VERSION` is 7. Bumping it is what stops a cached manifest from lacking a block or an
+- `MANIFEST_VERSION` is 8 (7 → 8 dropped the intake vocabulary). Bumping it is what stops a cached manifest from lacking a block or an
   asset a new build writes.
 - `provenance/corpus-index.json` (`tools/kb/corpus.mjs`) = each evidence chunk's id, review label
   and coverage region, sorted by id, derived from the chunks `provenance.mjs` emits; the corpus
@@ -168,7 +168,7 @@ drifted. It is a diagnostic lane, separate from the catalog above.
 - Committed `queries/answers/*.pl` and `queries/traces/*.pl` are **regression oracles only,
   never response data**. The export lane byte-matches all four committed answers on every
   gate run.
-- Forbidden-reach check = a byte scan over `src`, `tools`, `worker`, `vite.config.ts`, `index.html`
+- Forbidden-reach check = a byte scan over `src`, `tools`, `server`, `vite.config.ts`, `index.html`
   and the runtime-loaded `kb/generated` assets in
   `kb:asset-check`. ESLint cannot do it: core `no-restricted-imports` visits import and
   export declarations only, so `import()` and `fs.readFile` escape it. `tests/` is out of
