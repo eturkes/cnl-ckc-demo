@@ -347,6 +347,8 @@ export class EngineClient {
       case 'cancelled':
         return { kind: 'cancelled', solutions: response.solutions };
       case 'error':
+        // An aborted runtime is retired like a heap trip: the caller resumes on its replacement.
+        if (response.error.code === 'aborted') await this.#recreate();
         return { kind: 'error', error: response.error };
       case 'booted':
       case 'proof':
@@ -401,6 +403,8 @@ export class EngineClient {
       case 'cancelled':
         return { kind: 'cancelled' };
       case 'error':
+        // An aborted runtime is retired like a heap trip: the caller resumes on its replacement.
+        if (response.error.code === 'aborted') await this.#recreate();
         return { kind: 'error', error: response.error };
       case 'booted':
       case 'solutions':
@@ -433,6 +437,7 @@ export class EngineClient {
         error: { code: 'consult', message: `runtime load exceeded ${CONSULT_DEADLINE_MS} ms` },
       };
     }
+    if (response.kind === 'error' && response.error.code === 'aborted') await this.#recreate();
     return {
       kind: 'error',
       error:
@@ -464,9 +469,12 @@ export class EngineClient {
     return this.#reset(reason);
   }
 
-  /** A heap recreation's caller awaits the replacement; a reset in flight is joined, not doubled. */
+  /**
+   * A heap trip's or an aborted runtime's caller awaits the replacement; a reset in flight is
+   * joined, not doubled.
+   */
   #recreate(): Promise<BootOutcome> {
-    return this.#reset('heap exhausted; engine discarded');
+    return this.#reset('heap exhausted or runtime aborted; engine discarded');
   }
 
   #reset(reason: string): Promise<BootOutcome> {

@@ -133,23 +133,22 @@ leaves its frame open, and every later query then resolves outside the KB:
   browser:check` kills a hostile `repeat,fail` through the client deadline in a real browser on
   every run: exactly one respawn by the time the caller resumes, and the replacement reports the
   manifest's document count.
-- **Heap exhaustion aborts the runtime in BOTH hosts.** A runaway `assertz` never raises
-  `resource_error(memory)`: the allocator prints FATAL `Could not allocate memory: Out of
-  memory` and the WASM runtime aborts, reaching the caller as `{code:'prolog', message:
-  'Aborted(). Build with -sASSERTIONS for more info.'}` (`pnpm engine:probe` R45, which
-  prints the browser time to abort and pins the dead engine and its recovery by reset). That engine never answers again: the next query aborts again or, when the
-  runtime survived with no memory, raises `resource_error(memory)` and reports `limit:'heap'` —
-  which one varies run to run. The runaway itself never reports `heap`, so the recreation that
-  outcome triggers never runs for it. `readOutcome` still maps
-  `resource_error(memory)` for a build that raises it. `pnpm exec vitest run
-  tests/engine-heap.test.ts` pins both halves fast, by reserving 1900 MB with one
-  untouched `_malloc` first. Open `pri high` row in `.agent/deferred.md`.
+- **A WASM trap aborts the runtime in BOTH hosts.** A runaway `assertz`, or an atom builder
+  doubling text (`atom_concat/3`), never raises `resource_error(memory)`: the allocator prints
+  FATAL `Could not allocate memory: Out of memory` and the runtime throws
+  `WebAssembly.RuntimeError` `Aborted()`. Its state is undefined afterwards — the next query died
+  in one Node run and answered 337 documents in another — so the session never calls it again
+  (`.agent/contracts/chat-c2.md`): the trapping query or proof settles `limit` `'heap'` when the
+  drained FATAL line names memory, else error `aborted`; every later request is refused
+  `aborted`; `EngineClient` recreates the worker before that caller resumes. `pnpm exec vitest
+  run tests/engine-heap.test.ts` drives the real trip fast, reserving 1900 MB with one untouched
+  `_malloc` first; `pnpm engine:probe` R45 proves the recreation in a real browser.
 - **A failed boot retires its worker.** The worker caches its image fetch, so a rejected fetch
   stays rejected and a retry on that worker can only fail again; `EngineClient.boot()` resolving
   an error terminates the worker, and the next `boot()` — the UI's Retry — spawns a fresh one.
   The hung-boot watchdog keeps its own single automatic recreation.
-- `EngineClient.query` awaits that recreation on `limit:'heap'`, so a caller sees its heap
-  outcome only once the replacement verified the contract or failed. The wall-clock deadline
+- `EngineClient.query`, `prove` and `consult` await that recreation on `limit:'heap'` or error
+  `aborted`, so a caller sees the outcome only once the replacement verified the contract or failed. The wall-clock deadline
   fires its reset instead, because there the caller is already settled.
 - **Every reset boots under `BOOT_DEADLINE_MS` and retires a failed replacement** (user ruling):
   explicit, wall-clock or heap, single-flighted so a recreation joins a reset in flight. A

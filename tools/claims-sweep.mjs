@@ -464,7 +464,9 @@ if (process.argv.includes('--seed')) {
     },
     () => gradeIndex(queue.replace('\n## Index — ', `\n${plantedRow}\n## Index — `)),
   );
-  const firstIndexLine = /^\| \*\*high\*\* .*$/mu.exec(queue)?.[0] ?? '';
+  // The index's first data line, whatever its rank: a queue holding no `high` row still has one.
+  const firstIndexLine =
+    /^\| --- \| --- \|\n(\|.*)$/mu.exec(queue.slice(queue.indexOf('\n## Index — ')))?.[1] ?? '';
   const repeatedIndex = requireFiring(
     'claims:check',
     { mutation: 'the first index line repeated', expect: ['repeats or reorders its lines'] },

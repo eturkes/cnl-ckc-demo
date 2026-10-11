@@ -123,6 +123,11 @@ const PROOF_VARIABLE = /^[A-Z][A-Za-z0-9_]*$/u;
 
 const CONSULT_PATH = '/u3-runtime-load.pl';
 
+const ABORTED = 'the engine runtime aborted; the client recreates the worker';
+
+/** The allocator's FATAL line on a heap trap (`.claude/rules/engine.md`). */
+const OUT_OF_MEMORY = /Could not allocate memory|Out of memory/u;
+
 /** Diagnostics `qsave_program` emits under WASM for reasons unrelated to the payload. */
 const TOLERATED = /library\(shlib\)/;
 
@@ -273,6 +278,12 @@ export class EngineSession {
   /** A failed runtime load leaves clauses resident, so its engine is never reused. */
   #poisoned: string | undefined;
   /**
+   * Set once a WASM trap aborted the runtime, by its cause. The runtime's state is undefined
+   * after a trap — one trapped runtime died, another answered 337 documents — so nothing calls
+   * into it again: every later request is refused `aborted` and the client recreates the worker.
+   */
+  #aborted: 'heap' | 'aborted' | undefined;
+  /**
    * Proofs this engine already derived, by goal + selected bindings + budget. A session holds
    * one image for its whole life, and every request that can change the engine — any `solve`
    * goal, any `consult` — clears the map on entry and exit, so a hit is a proof the loaded
@@ -286,7 +297,7 @@ export class EngineSession {
   }
 
   get booted(): boolean {
-    return this.#engine !== undefined;
+    return this.#engine !== undefined && this.#aborted === undefined;
   }
 
   /**
@@ -298,6 +309,7 @@ export class EngineSession {
    * `onPhase` hears the phases of the boot it starts; a joining caller hears none.
    */
   async boot(image: Uint8Array, onPhase?: (phase: BootPhase) => void): Promise<EngineContract> {
+    if (this.#aborted !== undefined) throw new RuntimeAborted(ABORTED);
     if (this.#engine !== undefined && this.#contract !== undefined) return this.#contract;
     const report = (phase: BootPhase): void => {
       notify(onPhase, phase);
@@ -496,11 +508,18 @@ export class EngineSession {
         }
       }
     } catch (cause) {
-      if (!(cause instanceof LateRender)) throw cause;
-      stopped = 'wall-clock';
+      if (cause instanceof LateRender) stopped = 'wall-clock';
+      // A heap trap keeps the answers rendered before it; any other trap answers `aborted`.
+      else if (cause instanceof WebAssembly.RuntimeError && this.#trap() === 'heap') {
+        stopped = 'heap';
+      } else if (cause instanceof WebAssembly.RuntimeError) throw new RuntimeAborted(ABORTED);
+      else throw cause;
     } finally {
-      query.close?.();
-      restore();
+      // A trapped runtime is never called again, its cleanup included.
+      if (this.#aborted === undefined) {
+        query.close?.();
+        restore();
+      }
       this.#active = undefined;
       this.#cancelling = false;
       this.#proofs.clear();
@@ -647,9 +666,14 @@ export class EngineSession {
         }
         if (Date.now() - started > spec.wallClockMs) stopped ??= 'wall-clock';
       }
+    } catch (cause) {
+      if (cause instanceof WebAssembly.RuntimeError) this.#trap();
+      throw cause;
     } finally {
-      query.close?.();
-      restore();
+      if (this.#aborted === undefined) {
+        query.close?.();
+        restore();
+      }
       this.#active = undefined;
       this.#cancelling = false;
     }
@@ -745,8 +769,29 @@ export class EngineSession {
         }
       }
     } catch (cause) {
+      // This request's own trap: the boot path never gets here with one, it fails over instead.
+      if (cause instanceof WebAssembly.RuntimeError) {
+        const heap = this.#trap() === 'heap';
+        if (heap && (request.kind === 'query' || request.kind === 'proof')) {
+          return { id, kind: 'limit', limit: 'heap', solutions: [] };
+        }
+        return { id, kind: 'error', error: fail('aborted', cause) };
+      }
       return { id, kind: 'error', error: classify(cause, request.kind) };
     }
+  }
+
+  /**
+   * Record the trap that aborted the runtime; idempotent. Its stderr names the cause:
+   * `Could not allocate memory: Out of memory` = the heap, anything else = `aborted`.
+   */
+  #trap(): 'heap' | 'aborted' {
+    if (this.#aborted === undefined) {
+      const lines = this.#options.drain?.() ?? [];
+      this.#aborted = lines.some((line) => OUT_OF_MEMORY.test(line)) ? 'heap' : 'aborted';
+      this.#proofs.clear();
+    }
+    return this.#aborted;
   }
 
   /**
@@ -785,6 +830,7 @@ export class EngineSession {
   }
 
   #require(): Engine {
+    if (this.#aborted !== undefined) throw new RuntimeAborted(ABORTED);
     if (this.#poisoned !== undefined) throw new ConsultFailure(this.#poisoned);
     const engine = this.#engine;
     if (engine === undefined) throw new Error('engine is not booted');
@@ -921,6 +967,11 @@ export class ConsultFailure extends Error {
   override name = 'ConsultFailure';
 }
 
+/** A request on a session whose runtime trapped; nothing ran. */
+export class RuntimeAborted extends Error {
+  override name = 'RuntimeAborted';
+}
+
 /** A read-only goal the allowlist refuses; raised before anything runs. */
 export class GuardRefusal extends Error {
   override name = 'GuardRefusal';
@@ -942,6 +993,7 @@ const isReadonly = (request: EngineRequest & { kind: 'query' }): boolean => {
 };
 
 const classify = (cause: unknown, kind: EngineRequest['kind']): EngineError => {
+  if (cause instanceof RuntimeAborted) return fail('aborted', cause);
   if (cause instanceof GuardRefusal) return fail('guard', cause);
   if (cause instanceof ContractMismatch) return fail('contract', cause);
   if (cause instanceof BudgetError) return fail('budget', cause);

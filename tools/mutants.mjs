@@ -50,6 +50,20 @@ export const MUTANTS = [
     check: { test: 'tests/engine-budgets.test.ts', name: 'heap limit' },
   },
   {
+    label: 'chat-c2 an aborted runtime keeps its worker',
+    edits: [
+      {
+        path: 'src/engine/client.ts',
+        old: "        return { kind: 'cancelled', solutions: response.solutions };\n      case 'error':\n        // An aborted runtime is retired like a heap trip: the caller resumes on its replacement.\n        if (response.error.code === 'aborted') await this.#recreate();\n",
+        new: "        return { kind: 'cancelled', solutions: response.solutions };\n      case 'error':\n",
+      },
+    ],
+    check: {
+      test: 'tests/engine-abort-client.test.ts',
+      name: "A5 'query' 'aborted error' waits for exactly one booted replacement",
+    },
+  },
+  {
     label: 'c06 undeclared query set accepted',
     edits: [
       {

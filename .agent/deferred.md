@@ -7,27 +7,6 @@ evidence gap under a durable claim, `low` = a feature or a tidy-up. A row closes
 acceptance check and leaves in that commit; the index at the foot collapses the `high` +
 `med` set to one line each.
 
-- **u3 heap limit is unit-tested only** — `P2.7` is covered by `readOutcome` over a
-  synthesized `resource_error(memory)`, not a live trip. Accept: a committed test drives
-  real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate. `pri` med.
-  **Blocked on the `high` abort row below**: at swipl-wasm 8.0.7 real exhaustion aborts the
-  runtime in Node too and never raises `resource_error(memory)`, so `limit: 'heap'` is
-  unreachable live until that row classifies the abort. swipl-wasm 8.2.1 (SWI-Prolog 10.1.15)
-  aborts the same way in a bare runtime, so a version bump does not lift the block. The fast
-  live half is committed —
-  `tests/engine-heap.test.ts` drives the trip in ~1 s behind a 1900 MB `_malloc` reserve and
-  pins today's abort; it owes only the `limit: 'heap'` read.
-- **Browser WASM abort leaves a dead session** — a runaway `assertz` aborts the WASM runtime
-  — in Node too at swipl-wasm 8.0.7, pinned live by `tests/engine-heap.test.ts`, which is the
-  fix's red witness — and surfaces as `{code:'prolog', message:'Aborted()...'}`, so `limit:'heap'`
-  never fires and `EngineClient` keeps the dead worker: every later query fails — aborting again
-  or, run to run, reporting a heap limit from a runtime left with no memory — breaching u3 P3.4
-  (M1 review R45). Unreachable from M1's six bounded catalog goals;
-  an ad-hoc goal path is what makes it reachable (`.agent/spec.md` `Decisions` MAIN). Accept: an aborted runtime reaches the client
-  as its own terminal state that recreates the worker without a caller `reset()`, proven by a
-  browser probe whose next query reports 337 documents. `pri` high. **User ruling**: funded by
-  the chat request (`.agent/contracts/chat-plan.md`, unit c2), whose model-written goals are the
-  ad-hoc goal path; the `pnpm engine:probe` R45 change is approved.
 - **The judgment Worker runs locally alone** — user ruling deferred the Cloudflare deploy and
   stopped Pages publishing, so free-text intake exists only under `pnpm intake:dev` + Vite's
   proxy. `worker/index.ts` spends one global limiter bucket (`key: 'intake'`), correct for one
@@ -79,8 +58,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 
 | defect | accept |
 | --- | --- |
-| u3 heap limit is unit-tested only | a committed test drives real heap exhaustion and reads `limit: 'heap'` without adding 19 s to the gate |
-| **high** Browser WASM abort leaves a dead session | an aborted runtime reaches the client as its own terminal state that recreates the worker without a caller `reset()`, proven by a browser probe whose next query reports 337 documents |
 | Off-path checks the retired demo-tier waiver excused | a committed inventory under `.agent/contracts/` lists every check off the answer path — gate step, out-of-chain lane and suite — and each one either refuses a planted wrong input with its firing recorded, or carries its own queue row with an acceptance check; every `## Accepted-open` id is re-ruled against the same clause |
 
 ## Accepted-open
