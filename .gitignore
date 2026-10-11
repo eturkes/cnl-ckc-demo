@@ -21,6 +21,7 @@ dist/
 # Agent scratch + machine-local overrides
 .scratch/
 .claude/settings.local.json
+.claude/worktrees/
 .claude/.headroom_wrap_*
 CLAUDE.local.md
 

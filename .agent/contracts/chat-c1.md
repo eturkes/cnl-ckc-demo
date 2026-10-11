@@ -18,8 +18,8 @@ Hence default deny over the PARSED goal, never over its text.
   `EngineClient.query(goal, budget, signal?, onSolution?, options?: { readonly?: boolean })`
   posts `readonly: true` when `options.readonly === true` and posts NO `readonly` key otherwise.
 - `EngineSession.handle` decides on the posted request alone. `readonly` absent → today's path,
-  byte-identical. `readonly === true` → the read-only path below. Any other value → `guard`
-  error, nothing run.
+  byte-identical. `readonly === true` → the read-only path below. A `readonly` key holding any
+  other value, `undefined` included → `guard` error, nothing run.
 - Read-only path, in order: length cap → one parse query
   (`term_string(T,S,[variable_names(Vs)])` and the canonical render of `T` under
   `[quoted(true),ignore_ops(true),numbervars(false),variable_names(Vs)]`) → `guardGoal` over the
@@ -71,6 +71,10 @@ Goal positions are walked; every other argument is data and never walked.
   `functor` and its arguments under the key of its name, so for that one name the arguments
   overwrite the name and `decodeTerm` fails closed. `functor/3` is therefore refused (amended
   before code, `chat-tester-1`); the decoder defect is queued in `.agent/deferred.md`.
+- Empty goal text, text that does not parse, and text holding a second term are each refused as
+  `guard`, nothing run. `term_string/3` reads the FIRST term and ignores the rest (`g.
+  assertz(x)` parses as `g`), so the text after the term may hold layout, comments and one
+  full stop alone — a second term would show on the KB card while never running.
 - Goal text longer than `READONLY_GOAL_MAX` UTF-16 code units is refused BEFORE the parse: the
   parse creates every atom the text spells, outside `stack_limit`. 2048 ≈ 30× the longest
   catalog goal (65).
@@ -100,7 +104,15 @@ pseudo-random generator is the one exception: `X is random(6)` advances its stat
 walk cannot close it, because a variable bound at run time can carry `random/1` into an
 expression (`E = random(6), X is E`). Nothing in the demo reads that state (chat-consultant-1 K1).
 
+The KB-read rule is syntactic: it requires a KB entry point in some goal position, not on every
+path, so `once((X = "an invented claim" ; guideline_schema_version(_)))` binds the literal without
+reading the KB (`chat-reviewer-1` register). The card shows the goal; `chat-c4.md` `Declared limit`
+states what a `kb` label certifies.
+
 G9 samples the admitted builtins; it does not prove that no admitted goal can abort the runtime.
+Measured: with the heap held to ~100 MB by a 1700 MB reservation, the shared battery's retained
+stacks exhausted malloc and admitted `split_string/4` aborted the runtime; G9's shared engine
+therefore boots without the reservation (the control keeps it).
 The last bound on an abort that gets through is c2's recreation of the worker
 (`.agent/contracts/chat-c2.md`).
 

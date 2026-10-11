@@ -302,12 +302,17 @@ export class EngineClient {
     return outcome;
   }
 
-  /** `onSolution` hears each answer as the worker renders it, before the outcome settles. */
+  /**
+   * `onSolution` hears each answer as the worker renders it, before the outcome settles.
+   * `readonly` sends a model-written goal through the worker's allowlist (`readonly.ts`); a
+   * catalog goal omits it, and then the request carries no `readonly` key at all.
+   */
   async query(
     goal: string,
     budget: BudgetSpec,
     signal?: AbortSignal,
     onSolution?: (solution: PlSolution) => void,
+    options?: { readonly?: boolean },
   ): Promise<QueryOutcome> {
     let spec: BudgetSpec;
     try {
@@ -319,7 +324,9 @@ export class EngineClient {
       };
     }
     const response = await this.#send(
-      { kind: 'query', goal, budget: spec },
+      options?.readonly === true
+        ? { kind: 'query', goal, budget: spec, readonly: true }
+        : { kind: 'query', goal, budget: spec },
       spec.wallClockMs + HARD_GRACE_MS,
       signal,
       undefined,

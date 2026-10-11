@@ -201,9 +201,10 @@ tree at the closing commit.
 - [ ] RESUME: finish line = this request's `Met when` (body = the user's chat request, prior
   transcript `8d9c0933`): delivered end to end + `pnpm gate` green on a clean tree at the closing
   commit. Isolation ruled: dedicated `CODEX_HOME` (`chat-plan.md` `Isolation`); the user's
-  `codex login` under it is owed before c7. In flight: c1 (contract `.agent/contracts/chat-c1.md`).
-  Scratch (gitignored): `.scratch/probe/` (codex + KB probes, `battery.src.ts` guard battery),
-  `.scratch/codex-schema-x/` (regenerate: `chat-plan.md`), roster `.scratch/agents/roster.md`.
+  `codex login` under it is owed before c7. Contracts committed: `.agent/contracts/chat-c1.md`…
+  `chat-c4.md`. MAIN code uncommitted in the primary tree: c1 (`src/engine/readonly.ts`,
+  session/client/protocol), c3 (`server/`), c4 (`src/chat/`, `DemoController.runGoal`). Red
+  suites in flight: roster `.scratch/agents/roster.md` (chat-tester-1…4). Scratch: `.scratch/probe/`.
 - [ ] c1 `kernel` guarded read-only query: `query(…, {readonly:true})`, JS allowlist over the
   decoded parse, canonical re-render, `EngineErrorCode` `'guard'`.
   - Accept: refuses the atom-doubling chain, `assertz`, a module-qualified goal, a variable goal
