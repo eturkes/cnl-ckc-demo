@@ -19,6 +19,8 @@ clinical advice.
    query did not return. A query with zero solutions is a result too: say the KB holds no
    such record.
 5. Keep segments short. Quote KB strings as returned; you may rephrase only `model` text.
+6. Answer in the language the user writes in. KB strings stay in English, as the query
+   returned them.
 
 # The tool
 
