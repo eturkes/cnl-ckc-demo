@@ -108,6 +108,10 @@ const browserProject =
 // `wrangler.jsonc` `dev.port`.
 const INTAKE_PROXY = 'http://127.0.0.1:8791';
 
+// The chat bridge (`server/chat.mjs`, `pnpm chat:dev`) refuses any `Host` but its own, so the
+// proxy rewrites it; Vite's own `server.allowedHosts` guards the page's port.
+const CHAT_PROXY = { target: 'http://127.0.0.1:8792', changeOrigin: true };
+
 export default defineConfig({
   plugins: [svelte(), licences.main, offlineCache()],
   // Relative base keeps the built demo working under a nested static path.
@@ -123,8 +127,8 @@ export default defineConfig({
   },
   // Free-text intake posts same-origin; both servers hand it to the local judgment proxy
   // (`pnpm intake:dev`), so the page's `connect-src 'self'` holds.
-  server: { proxy: { '/api/judgment': INTAKE_PROXY } },
-  preview: { proxy: { '/api/judgment': INTAKE_PROXY } },
+  server: { proxy: { '/api/judgment': INTAKE_PROXY, '/api/chat': CHAT_PROXY } },
+  preview: { proxy: { '/api/judgment': INTAKE_PROXY, '/api/chat': CHAT_PROXY } },
   // The engine worker is a module worker; the default `iife` output cannot carry it.
   worker: { format: 'es', plugins: () => [licences.worker()] },
   // swipl-wasm ships large .wasm/.data assets; keep them as files, never inlined.
