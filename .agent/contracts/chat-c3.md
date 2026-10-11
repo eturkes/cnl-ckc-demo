@@ -28,13 +28,13 @@ never runs a goal: the browser runs every goal in its own engine and posts the r
   `outputSchema` = `{segments:[{text, source:'kb'|'web'|'model', queries:[string], urls:[string]}]}`,
   every property required, no others.
 - `POST /api/chat/turn`, form `message` (1–4000 chars) + optional `conversation`, answers
-  `200 application/x-ndjson`, one JSON object per line, in order:
+  `200 application/x-ndjson`, one JSON object per line, discriminated by its `type` field (`{type:'query', call, goal}`), in order:
   `conversation{id}` (always first) · `commentary{text}` · `query{call, goal}` ·
   `search{query, action, results:[{url, title, domain, snippet}]}` · `answer{text}` ·
   `error{reason, message}` · `done` (always last). `reason` ∈ `auth` · `busy` · `expired` ·
   `codex` · `timeout` · `interrupted`.
 - `POST /api/chat/result`, form `conversation`, `call`, `text` (≤ 16384 chars), `ok`
-  (`true`|`false`): replies to that call's pending `item/tool/call` with
+  (`true`|`false`) — a malformed field on either path answers `400` — replies to that call's pending `item/tool/call` with
   `{contentItems:[{type:'inputText', text}], success}`; `204` once relayed, `404` for an unknown
   or already answered call.
 - Call ids = `q1…qN` per conversation, minted by the bridge in arrival order; the browser keeps

@@ -11,7 +11,10 @@ chat request; the `pnpm engine:probe` R45 change is approved.
 A WASM trap kills the Emscripten runtime: every later call into it throws again. Measured (Node,
 `.scratch/probe/abort2.mjs`): the 32-step `atom_concat/3` chain throws `WebAssembly.RuntimeError`
 `Aborted(). Build with -sASSERTIONS for more info.` after 783 ms, its stderr carries
-`Could not allocate memory: Out of memory`, and the next two queries throw the same error. Today
+`Could not allocate memory: Out of memory`, and the next two queries throw the same error. A
+trapped runtime is not reliably dead, though: in `chat-tester-1`'s shared-engine run the query
+after `Aborted()` answered 337 documents. Its state after a trap is undefined either way, so the
+session never calls it again. Today
 `classify` reports it as `code: 'prolog'`, so the client keeps the dead worker.
 
 ## Seam
