@@ -128,16 +128,10 @@ worker before its caller resumes (`chat-c2.md`).
 
 # Tasks
 
-MAINTAIN request (open): chat intake replaces the TypeSafe intake (`Decisions` User, plan
+Closed MAINTAIN request: chat intake replaces the TypeSafe intake (`Decisions` User, plan
 `.agent/contracts/chat-plan.md`). Met when: delivered end to end + `pnpm gate` green on a clean
 tree at the closing commit.
 
-- [ ] RESUME: finish line = this request's `Met when` (body = the user's chat request, prior
-  transcript `8d9c0933`): delivered end to end + `pnpm gate` green on a clean tree at the closing
-  commit. c1–c4 committed; c5 + c6 land together (the App stops mounting the intake panel the
-  deleted intake suites mount). Owed: the user's `CODEX_HOME=~/.config/cnl-ckc-demo/codex codex
-  login` before c7's live lanes; the user's live review of the chat panel (c5 V8). Roster
-  `.scratch/agents/roster.md`; snapshot worktrees `.scratch/worktrees/c1`…`c4` (wip/chat-c*).
 - [x] `95c3495` c1 `kernel` guarded read-only query: `query(…, {readonly:true})`, JS allowlist over the
   decoded parse, canonical re-render, `EngineErrorCode` `'guard'`.
   - Accept: refuses the atom-doubling chain, `assertz`, a module-qualified goal, a variable goal
@@ -154,7 +148,12 @@ tree at the closing commit.
   visual-qa states; user live review owed.
 - [x] `d31f758` c6 retire the TypeSafe intake (approved deletion set, `chat-plan.md` `User rulings`).
 - [x] `2f781a2` c7 live `pnpm chat:probe` + `pnpm chat:live`: reported, never gated.
-- [ ] c8 README, rules, `Artifacts`, claims registry, census; close review per lens.
+- [x] `e88a9db` c8 README, rules, `Artifacts`, claims registry, census.
+- [ ] owed (user): live review of the chat panel (c5 V8) — `pnpm chat:dev` + `pnpm dev`, ask a
+  question, open a KB tag and a Web source, try Stop and New conversation.
+- [x] `8f5faf2` Close: check set `.agent/contracts/chat-close.md`; `chat-close-product`,
+  `chat-close-gate`, `chat-close-records` (reviewer) 9/9 rows + security (MAIN) — P3 fail(med),
+  R1 fail(low) → fixed, KB read on every path (user ruling); release:check + mutate 48/48 green.
 
 MAINTAIN request: work every `.agent/deferred.md` row in rank order (5 rows at `f855bb5`). A row
 needing the user records its part owed; new finds become rows funded after those five.
@@ -291,7 +290,9 @@ never rename one: `wt/rev-arch` `1e89286` (A8), `wt/rev-graph` `ace618a` (G3),
 `b9278ac`, `wt/tester-3` `7ab6142`; u16 review witnesses `wt/reviewer-3` `40fd9d6`,
 `wt/reviewer-4` `897a0a6`, `wt/reviewer-5` `abf51f8`, `wt/reviewer-6` `24acbd0`,
 `wt/reviewer-8` `cbb14b0`, `wt/reviewer-9` `3e21deb`; `wip/u16-review`, the per-sub-unit review
-snapshots the u16 commit bodies cite.
+snapshots the u16 commit bodies cite. Chat request: red suites `worktree-agent-a890c938619fd3157`
+`8026d4e` (c1), `wt/chat-tester-2` `06483be` (c3), `wt/chat-tester-3` `fd876eb` (c2),
+`wt/chat-tester-4` `4bd88bc` (c4); gated snapshots `wip/chat-c1`…`wip/chat-c4`.
 
 `prototype/` never existed here. The PROTOTYPE-phase role was played by the expedited M2–M4
 surfaces, shipped in place and redeveloped under M5 by user ruling, so there is no tree to
