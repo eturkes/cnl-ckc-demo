@@ -131,7 +131,7 @@ worker before its caller resumes (`chat-c2.md`).
 MAINTAIN request: work every `.agent/deferred.md` row in rank order (6 rows at `d3c4bc5`). A row
 needing the user records its part owed; new finds become rows funded after those six.
 
-- [ ] m1 `med` copy:check reads both quote forms.
+- [x] `0727bd2` m1 `med` copy:check reads both quote forms.
   - Accept: a double-quoted `en.ts` value over the word limit and a double-quoted `ja.ts` value
     ending in plain form are each refused by key.
 - [ ] m2 `med` check inventory: every gate step, lane and suite with its firing record.

@@ -18,9 +18,13 @@ const launcher = /** @type {{ binaryPath: () => Promise<string> }} */ (
   await import(`${resolveGlobal('chromiumfish', fail)}/dist/index.js`)
 );
 const chromium = await launcher.binaryPath();
-const run = spawnSync('pnpm', ['exec', 'vitest', 'run', '--project', 'browser'], {
-  cwd: ROOT,
-  stdio: 'inherit',
-  env: { ...process.env, VITEST_BROWSER: '1', VITEST_CHROMIUM: chromium },
-});
+const run = spawnSync(
+  'pnpm',
+  ['exec', 'vitest', 'run', '--project', 'browser', ...process.argv.slice(2)],
+  {
+    cwd: ROOT,
+    stdio: 'inherit',
+    env: { ...process.env, VITEST_BROWSER: '1', VITEST_CHROMIUM: chromium },
+  },
+);
 process.exitCode = run.status ?? 1;

@@ -1,5 +1,7 @@
 // The mutant table `pnpm mutate` runs: each entry restores one fixed defect's pre-fix behaviour
 // and names the check that closes it, which must go red. A green row is a fix nothing binds.
+// An `inv` entry instead plants a wrong implementation or input for one check in
+// `.agent/contracts/mnt5-inventory.md`: that check's firing record, rerunnable.
 //
 // `check` is a vitest file plus a `-t` name filter, or a whole command for a defect a gate step
 // closes. Every `old` must occur exactly once in its file; a stale anchor stops the run.
@@ -590,5 +592,824 @@ export const MUTANTS = [
       },
     ],
     check: ['node', 'tools/copy-check.mjs'],
+  },
+  {
+    label: 'inv format:check: a source line the formatter would rewrite',
+    edits: [
+      {
+        path: 'src/main.ts',
+        old: "const target = document.getElementById('app');",
+        new: 'const target = document.getElementById( "app" );',
+      },
+    ],
+    check: ['pnpm', 'exec', 'prettier', '--check', '.'],
+  },
+  {
+    label: 'inv lint: a component renders catalog text through an {@html} sink',
+    edits: [
+      {
+        path: 'src/demo/AboutPanel.svelte',
+        old: '<p>{t.DESCRIPTIONS.purpose}</p>',
+        new: '<p>{@html t.DESCRIPTIONS.purpose}</p>',
+      },
+    ],
+    check: ['pnpm', 'lint'],
+  },
+  {
+    label: 'inv check: the app mounts on a number instead of its target element',
+    edits: [
+      {
+        path: 'src/main.ts',
+        old: 'export default mount(App, { target });',
+        new: 'export default mount(App, { target: 1 });',
+      },
+    ],
+    check: ['pnpm', 'check'],
+  },
+  {
+    label: 'inv test:browser: the typeahead window shortened to 100 ms',
+    edits: [
+      {
+        path: 'src/questions/QuestionCombobox.svelte',
+        old: 'const TYPEAHEAD_MS = 500;',
+        new: 'const TYPEAHEAD_MS = 100;',
+      },
+    ],
+    check: ['pnpm', 'test:browser', 'tests/question-combobox.browser.test.ts'],
+  },
+  {
+    label: 'inv proof-identity: a provenance chunk keys a clause by the wrong line',
+    edits: [
+      {
+        path: 'kb/generated/provenance/documents/cdc2022-opioid-rec01-imp01.json',
+        old: '"line": 22,',
+        new: '"line": 21,',
+      },
+    ],
+    check: { test: 'tests/proof-identity.test.ts', name: 'keys every schema clause by a unique' },
+  },
+  {
+    label:
+      'inv chat-server-fake: the fake refuses a missing outputSchema without naming the contract',
+    edits: [
+      {
+        path: 'tests/support/fake-codex.mjs',
+        old: "      assert('outputSchema' in params, 'turn/start must carry the contract outputSchema');",
+        new: "      assert('outputSchema' in params);",
+      },
+    ],
+    check: { test: 'tests/chat-server-fake.test.ts', name: 'B1 B2 fake control' },
+  },
+
+  {
+    label: 'inv chat-engine: model goal drops readonly option',
+    edits: [
+      {
+        path: 'src/demo/DemoController.svelte.ts',
+        old: 'client.query(goal, budget, signal, undefined, { readonly: true })',
+        new: 'client.query(goal, budget, signal)',
+      },
+    ],
+    check: { test: 'tests/chat-engine.test.ts', name: 'D7 createDemoEngine' },
+  },
+  {
+    label: 'inv clinical-differential: premise ordinals start at one',
+    edits: [
+      {
+        path: 'tools/kb/clinical.mjs',
+        old: '`clinical_premise(${key},${String(ordinal)},(${groundTerm(goal, variables, skolem)})).`,',
+        new: '`clinical_premise(${key},${String(ordinal + 1)},(${groundTerm(goal, variables, skolem)})).`,',
+      },
+    ],
+    check: { test: 'tests/clinical-differential.test.ts', name: 'D2: preserves premise order' },
+  },
+  {
+    label: 'inv corpus-browser.dom: section omitted from filter',
+    edits: [
+      {
+        path: 'src/provenance/CorpusBrowser.svelte',
+        old: '[row.id, row.region.id, row.region.section].some((field) =>',
+        new: '[row.id, row.region.id].some((field) =>',
+      },
+    ],
+    check: {
+      test: 'tests/corpus-browser.dom.test.ts',
+      name: 'filters by document, region or section',
+    },
+  },
+  {
+    label: 'inv demo-abort.dom: settled run cannot start again',
+    edits: [
+      {
+        path: 'src/demo/DemoController.svelte.ts',
+        old: "    const live = this.state.kind !== 'booting' && this.state.kind !== 'boot-error';",
+        new: "    const live = this.state.kind === 'idle';",
+      },
+    ],
+    check: { test: 'tests/demo-abort.dom.test.ts', name: 'A7 shows the heap limit' },
+  },
+  {
+    label: 'inv demo-lifecycle: settled result leaves run active',
+    edits: [
+      {
+        path: 'src/demo/DemoController.svelte.ts',
+        old: "      this.state = { kind: 'settled', id, result };",
+        new: "      this.state = { kind: 'running', id };",
+      },
+    ],
+    check: { test: 'tests/demo-lifecycle.test.ts', name: 'R3 enters running synchronously' },
+  },
+  {
+    label: 'inv demo-proof-controller: stale proof completion overwrites selection',
+    edits: [
+      {
+        path: 'src/demo/DemoController.svelte.ts',
+        old: '    if (this.#disposed || controller.signal.aborted || token !== this.#proofToken) return;',
+        new: '    if (this.#disposed) return;',
+      },
+    ],
+    check: {
+      test: 'tests/demo-proof-controller.test.ts',
+      name: 'aborts a prior selection and suppresses its stale completion',
+    },
+  },
+  {
+    label: 'inv boot-phases: unexpected progress ignored silently',
+    edits: [
+      {
+        path: 'src/engine/client.ts',
+        old: "          this.onProtocolViolation?.({\n            code: 'protocol',\n            message: `${response.kind} for ${response.id}, which reports none`,\n          });",
+        new: '          void response;',
+      },
+    ],
+    check: { test: 'tests/boot-phases.test.ts', name: 'progress for a request that reports none' },
+  },
+  {
+    label: 'inv census: latin-ext face duplicates latin file',
+    edits: [
+      {
+        path: 'src/app.css',
+        old: 'literata-latin-ext-wght-normal.woff2',
+        new: 'literata-latin-wght-normal.woff2',
+      },
+    ],
+    check: {
+      test: 'tests/census.test.ts',
+      name: 'every figure the rules state equals its derivation',
+    },
+  },
+  {
+    label: 'inv chat-client: malformed event line skipped',
+    edits: [
+      {
+        path: 'src/chat/client.ts',
+        old: "          if (event === undefined) return 'protocol';",
+        new: '          if (event === undefined) continue;',
+      },
+    ],
+    check: { test: 'tests/chat-client.test.ts', name: 'D8 malformed event line fails protocol' },
+  },
+  {
+    label: 'inv chat-controller: malformed answer earns model label',
+    edits: [
+      {
+        path: 'src/chat/ChatController.svelte.ts',
+        old: "? [{ text: answer, source: 'model', queries: [], urls: [], label: 'unverified' }]",
+        new: "? [{ text: answer, source: 'model', queries: [], urls: [], label: 'model' }]",
+      },
+    ],
+    check: {
+      test: 'tests/chat-controller.test.ts',
+      name: 'D5 malformed final answer is exactly one raw unverified segment',
+    },
+  },
+  {
+    label: 'inv chat-events: answer missing text admitted',
+    edits: [
+      {
+        path: 'src/chat/events.ts',
+        old: 'return isText(value.text) ? { type: value.type, text: value.text } : undefined;',
+        new: 'return isText(value.text) || value.text === undefined ? { type: value.type, text: value.text } : undefined;',
+      },
+    ],
+    check: {
+      test: 'tests/chat-events.test.ts',
+      name: 'D1 rejects every missing required field and every non-string replacement',
+    },
+  },
+  {
+    label: 'inv chat-binding: query card drops engine outcome',
+    edits: [
+      {
+        path: 'src/chat/ChatController.svelte.ts',
+        old: '      card(call, { call, goal, outcome, result });',
+        new: '      card(call, { call, goal, result });',
+      },
+    ],
+    check: {
+      test: 'tests/chat-binding.test.ts',
+      name: 'D4 real controller cards and posted result change',
+    },
+  },
+  {
+    label: 'inv chat-panel.dom: source links accept every scheme',
+    edits: [
+      {
+        path: 'src/chat/ChatPanel.svelte',
+        old: "      return protocol === 'https:' || protocol === 'http:' ? url : '';",
+        new: '      return url;',
+      },
+    ],
+    check: {
+      test: 'tests/chat-panel.dom.test.ts',
+      name: 'V2 a search result URL that is not http',
+    },
+  },
+  {
+    label: 'inv chat-provenance: extra segment fields admitted',
+    edits: [
+      {
+        path: 'src/chat/provenance.ts',
+        old: '  return own.length === keys.length && keys.every((key) => own.includes(key));',
+        new: '  return keys.every((key) => own.includes(key));',
+      },
+    ],
+    check: {
+      test: 'tests/chat-provenance.test.ts',
+      name: 'D3 parseAnswer rejects every missing, mistyped or extra segment field',
+    },
+  },
+  {
+    label: 'inv chat-queue.dom: model goal runs before boot',
+    edits: [
+      {
+        path: 'src/demo/DemoController.svelte.ts',
+        old: '    if (run === undefined || !booted || this.#disposed) return undefined;',
+        new: '    if (run === undefined || this.#disposed) return undefined;',
+      },
+    ],
+    check: { test: 'tests/chat-queue.dom.test.ts', name: 'D7 no ready engine yields undefined' },
+  },
+  {
+    label: 'inv chat-result: refused goal reported as executed',
+    edits: [
+      {
+        path: 'src/chat/result.ts',
+        old: '      return { ok: false, text: text.slice(0, TOOL_RESULT_MAX), shown: 0, total: 0 };',
+        new: '      return { ok: true, text: text.slice(0, TOOL_RESULT_MAX), shown: 0, total: 0 };',
+      },
+    ],
+    check: {
+      test: 'tests/chat-result.test.ts',
+      name: 'D2 real guard refusal returns the engine message',
+    },
+  },
+  {
+    label: 'inv clinical-answer-live: partial document answer admitted',
+    edits: [
+      {
+        path: 'tools/kb/clinical.mjs',
+        old: 'length(Derived,N), ',
+        new: 'length(Derived,M), M =< N, ',
+      },
+    ],
+    check: {
+      test: 'tests/clinical-answer-live.test.ts',
+      name: 'A6 withholding one document premises',
+    },
+  },
+  {
+    label: 'inv clinical-binding: erased clause leaves partial answer',
+    edits: [
+      {
+        path: 'tools/kb/clinical.mjs',
+        old: 'length(Derived,N), ',
+        new: 'length(Derived,M), M =< N, ',
+      },
+    ],
+    check: { test: 'tests/clinical-binding.test.ts', name: 'E2 erasing one cited clause' },
+  },
+  {
+    label: 'inv clinical-gate-live: emitted gate lines offset by one',
+    edits: [
+      {
+        path: 'tools/kb/clinical.mjs',
+        old: "grounded.map(({ line }) => String(line)).join(',')",
+        new: "grounded.map(({ line }) => String(line + 1)).join(',')",
+      },
+    ],
+    check: { test: 'tests/clinical-gate-live.test.ts', name: 'T15 exact-site refutation' },
+  },
+  {
+    label: 'inv clinical-proof-live: erased clause retains partial proof',
+    edits: [
+      {
+        path: 'tools/kb/clinical.mjs',
+        old: 'length(Derived,N), ',
+        new: 'length(Derived,M), M =< N, ',
+      },
+    ],
+    check: { test: 'tests/clinical-proof-live.test.ts', name: 'B5 erasing a cited clause line' },
+  },
+  {
+    label: 'inv clinical-records: multiple antecedents admitted',
+    edits: [
+      {
+        path: 'tools/kb/clinical.mjs',
+        old: '        if (bodies.length !== 1) {',
+        new: '        if (bodies.length === 0) {',
+      },
+    ],
+    check: { test: 'tests/clinical-records.test.ts', name: 'T5 one antecedent per sentence' },
+  },
+  {
+    label: 'inv corpus-index: unsupported schema admitted',
+    edits: [
+      {
+        path: 'src/provenance/model.ts',
+        old: "  if (root.schemaVersion !== 1) throw new Error('corpus index has an unsupported schema');",
+        new: "  if (root.schemaVersion === 0) throw new Error('corpus index has an unsupported schema');",
+      },
+    ],
+    check: {
+      test: 'tests/corpus-index.test.ts',
+      name: 'refuses a malformed row rather than listing it',
+    },
+  },
+  {
+    label: 'inv engine-readonly-client: drops requested readonly flag',
+    edits: [
+      {
+        path: 'src/engine/client.ts',
+        old: "        ? { kind: 'query', goal, budget: spec, readonly: true }",
+        new: "        ? { kind: 'query', goal, budget: spec }",
+      },
+    ],
+    check: {
+      test: 'tests/engine-readonly-client.test.ts',
+      name: 'G8 posts readonly true only when explicitly selected',
+    },
+  },
+  {
+    label: 'inv graph-live: neighborhood depth cutoff off by one',
+    edits: [
+      {
+        path: 'src/graph/model.ts',
+        old: '      if (current === undefined || current.depth >= depth) continue;\n      const candidates = this.incident(current.id)',
+        new: '      if (current === undefined || current.depth + 1 >= depth) continue;\n      const candidates = this.incident(current.id)',
+      },
+    ],
+    check: {
+      test: 'tests/graph-live.test.ts',
+      name: 'opens a bounded, connected document neighborhood',
+    },
+  },
+  {
+    label: 'inv engine-abort-live: heap trap loses heap classification',
+    edits: [
+      {
+        path: 'src/engine/session.ts',
+        old: "      this.#aborted = lines.some((line) => OUT_OF_MEMORY.test(line)) ? 'heap' : 'aborted';",
+        new: "      this.#aborted = 'aborted';",
+      },
+    ],
+    check: { test: 'tests/engine-abort-live.test.ts', name: 'A2 reports heap limit' },
+  },
+  {
+    label: 'inv engine-abort-session: later requests reuse aborted runtime',
+    edits: [
+      {
+        path: 'src/engine/session.ts',
+        old: '  #require(): Engine {\n    if (this.#aborted !== undefined) throw new RuntimeAborted(ABORTED);',
+        new: '  #require(): Engine {',
+      },
+    ],
+    check: {
+      test: 'tests/engine-abort-session.test.ts',
+      name: 'A4 preserves the aborted invariant',
+    },
+  },
+  {
+    label: 'inv engine-fallback: fallback document count unchecked',
+    edits: [
+      {
+        path: 'src/engine/session.ts',
+        old: '      contract.schemaVersion !== expected.schemaVersion ||\n      contract.documents !== expected.documents',
+        new: '      contract.schemaVersion !== expected.schemaVersion',
+      },
+    ],
+    check: { test: 'tests/engine-fallback.test.ts', name: 'F5 fallback documents mismatch' },
+  },
+  {
+    label: 'inv engine-heap: allocator trap becomes generic abort',
+    edits: [
+      {
+        path: 'src/engine/session.ts',
+        old: "      this.#aborted = lines.some((line) => OUT_OF_MEMORY.test(line)) ? 'heap' : 'aborted';",
+        new: "      this.#aborted = 'aborted';",
+      },
+    ],
+    check: { test: 'tests/engine-heap.test.ts', name: 'A1 returns heap limit' },
+  },
+  {
+    label: 'inv engine-readonly-budget: atom builder joins builtin allowlist',
+    edits: [
+      {
+        path: 'src/engine/readonly.ts',
+        old: "const BUILTINS = new Set([\n  '=/2',",
+        new: "const BUILTINS = new Set([\n  'atom_concat/3',\n  '=/2',",
+      },
+    ],
+    check: { test: 'tests/engine-readonly-budget.test.ts', name: 'G1 refuses 32 atom doublings' },
+  },
+  {
+    label: 'inv engine-readonly-guard: disjunction needs only one KB branch',
+    edits: [
+      {
+        path: 'src/engine/readonly.ts',
+        old: '      return (guarded ? reads(first) : branch(first)) && branch(second);',
+        new: '      return (guarded ? reads(first) : branch(first)) || branch(second);',
+      },
+    ],
+    check: {
+      test: 'tests/engine-readonly-guard.test.ts',
+      name: 'G10 requires a KB read on every way',
+    },
+  },
+  {
+    label: 'inv engine-readonly-session: accepts truthy readonly flags',
+    edits: [
+      {
+        path: 'src/engine/session.ts',
+        old: "  if (flag !== true) throw new GuardRefusal('the readonly flag must be true when present');",
+        new: "  if (!flag) throw new GuardRefusal('the readonly flag must be true when present');",
+      },
+    ],
+    check: {
+      test: 'tests/engine-readonly-session.test.ts',
+      name: 'G7 rejects malformed posted readonly',
+    },
+  },
+  {
+    label: 'inv engine-runtime-facts: integers reencode as atoms',
+    edits: [
+      {
+        path: 'src/engine/terms.ts',
+        old: "      case 'atom':\n      case 'integer':\n      case 'float':\n        return term.value;",
+        new: "      case 'integer':\n        return String(term.value);\n      case 'atom':\n      case 'float':\n        return term.value;",
+      },
+    ],
+    check: {
+      test: 'tests/engine-runtime-facts.test.ts',
+      name: 'corrupts a guideline id round-tripped through JSON',
+    },
+  },
+  {
+    label: 'inv engine-u2-port: unmatched response is silently dropped',
+    edits: [
+      {
+        path: 'src/engine/client.ts',
+        old: "        this.onProtocolViolation?.({\n          code: 'protocol',\n          message: `response ${response.id} matched no pending request`,\n        });\n        return;",
+        new: '        return;',
+      },
+    ],
+    check: { test: 'tests/engine-u2-port.test.ts', name: 'P2.2 reports an unmatched response id' },
+  },
+  {
+    label: 'inv engine-u3-port: maximum budget is excluded',
+    edits: [
+      {
+        path: 'src/engine/budget.ts',
+        old: '    if (value > BUDGET_MAX[field]) {',
+        new: '    if (value >= BUDGET_MAX[field]) {',
+      },
+    ],
+    check: { test: 'tests/engine-u3-port.test.ts', name: 'P1.2 — zero' },
+  },
+  {
+    label: 'inv graph-condition-merges: kept scope replaced by folded scope',
+    edits: [
+      {
+        path: 'tools/kb/graph.mjs',
+        old: '              keptWorld: conditionWorlds.get(key) ?? -1,',
+        new: '              keptWorld: world(clause, call),',
+      },
+    ],
+    check: { test: 'tests/graph-condition-merges.test.ts', name: 'records 25 negated folds' },
+  },
+  {
+    label: 'inv graph-model: scope terminal reference unchecked',
+    edits: [
+      {
+        path: 'src/graph/model.ts',
+        old: '    if (scope.chain.at(-1) !== scope.reference) {\n      throw new GraphDataError(`scopes[${String(index)}].chain must end with its reference`);\n    }\n',
+        new: '',
+      },
+    ],
+    check: {
+      test: 'tests/graph-model.test.ts',
+      name: 'rejects scope chain with the wrong terminal reference by field',
+    },
+  },
+  {
+    label: 'inv graph-scope: empty scope table accepted',
+    edits: [
+      {
+        path: 'tools/kb/graph.mjs',
+        old: "    return ['scopes table is empty, so graph scope validation grades no record'];",
+        new: '    return [];',
+      },
+    ],
+    check: { test: 'tests/graph-scope.test.ts', name: 'validates the emitted scope shape' },
+  },
+  {
+    label: 'inv graph-semantics.review: argument source role unchecked',
+    edits: [
+      {
+        path: 'src/graph/model.ts',
+        old: "  Object.freeze({ argument: 'event', preposition: 'event' });",
+        new: "  Object.freeze({ preposition: 'event' });",
+      },
+    ],
+    check: { test: 'tests/graph-semantics.review.test.ts', name: 'rejects an argument edge' },
+  },
+  {
+    label: 'inv graph-shortcut-justification: far scope copied from near end',
+    edits: [
+      {
+        path: 'src/graph/model.ts',
+        old: '        farScopeOperators: targetScope,',
+        new: '        farScopeOperators: nearScope,',
+      },
+    ],
+    check: {
+      test: 'tests/graph-shortcut-justification.test.ts',
+      name: 'records the 38 shortcuts whose endpoint scopes contradict',
+    },
+  },
+  {
+    label: 'inv i18n.dom: document language stays English',
+    edits: [
+      {
+        path: 'src/i18n/locale.svelte.ts',
+        old: '  document.documentElement.lang = next;',
+        new: "  document.documentElement.lang = 'en';",
+      },
+    ],
+    check: {
+      test: 'tests/i18n.dom.test.ts',
+      name: 'switches the interface, the lang attribute and the document title',
+    },
+  },
+  {
+    label: 'inv m1u5-port.dom: active option scroll aligns at start',
+    edits: [
+      {
+        path: 'src/questions/QuestionCombobox.svelte',
+        old: "    document.getElementById(optionId(activeIndex))?.scrollIntoView({ block: 'nearest' });",
+        new: "    document.getElementById(optionId(activeIndex))?.scrollIntoView({ block: 'start' });",
+      },
+    ],
+    check: {
+      test: 'tests/m1u5-port.dom.test.ts',
+      name: 'B1 every active-option change scrolls that option with nearest block alignment',
+    },
+  },
+  {
+    label: 'inv m1u7-port.dom: first font licence link omitted',
+    edits: [
+      {
+        path: 'src/demo/AboutPanel.svelte',
+        old: '    {#each FONT_LICENCES as licence (licence.href)}',
+        new: '    {#each FONT_LICENCES.slice(1) as licence (licence.href)}',
+      },
+    ],
+    check: {
+      test: 'tests/m1u7-port.dom.test.ts',
+      name: 'A7 links every contracted font licence from the disclosure',
+    },
+  },
+  {
+    label: 'inv provenance-ladder.dom: graph focus drops proof lines',
+    edits: [
+      {
+        path: 'src/provenance/ProvenanceLadder.svelte',
+        old: '            ...(proofSourceLines.length === 0 ? {} : { lines: proofSourceLines }),\n',
+        new: '',
+      },
+    ],
+    check: {
+      test: 'tests/provenance-ladder.dom.test.ts',
+      name: 'links the proof to the graph and pairs keyboard-selected alignment spans',
+    },
+  },
+  {
+    label: 'inv question-combobox.browser: active descendant never exposed',
+    edits: [
+      {
+        path: 'src/questions/QuestionCombobox.svelte',
+        old: '      aria-activedescendant={open ? optionId(activeIndex) : undefined}',
+        new: '      aria-activedescendant={undefined}',
+      },
+    ],
+    check: ['pnpm', 'test:browser', 'tests/question-combobox.browser.test.ts'],
+  },
+  {
+    label: 'inv trace-failure.dom: failed proof shown as unavailable',
+    edits: [
+      {
+        path: 'src/provenance/ProvenanceLadder.svelte',
+        old: "      case 'failure':\n        return TEXT.traceFailure();",
+        new: "      case 'failure':\n        return TEXT.traceUnavailable();",
+      },
+    ],
+    check: {
+      test: 'tests/trace-failure.dom.test.ts',
+      name: 'renders TEXT.traceFailure when the proof request fails, in both locales',
+    },
+  },
+  {
+    label: 'inv kb-live: reported document count off by one',
+    edits: [
+      {
+        path: 'tools/kb/produce.mjs',
+        old: "    documents: Number(documents['N']),",
+        new: "    documents: Number(documents['N']) + 1,",
+      },
+    ],
+    check: { test: 'tests/kb-live.test.ts', name: 'loads the saved state into a live engine' },
+  },
+  {
+    label: 'inv licences: package name substitutes for licence text',
+    edits: [
+      {
+        path: 'tools/licences.mjs',
+        old: '    .filter((notice) => !text.includes(section(notice)))',
+        new: '    .filter((notice) => !text.includes(notice.name))',
+      },
+    ],
+    check: {
+      test: 'tests/licences.test.ts',
+      name: 'carries each package licence file verbatim and refuses one it omits',
+    },
+  },
+  {
+    label: 'inv m1u7-port: instruction word ceiling raised to thirty',
+    edits: [
+      {
+        path: 'tools/copy-check.mjs',
+        old: "  { name: 'INSTRUCTIONS', limit: 20 },",
+        new: "  { name: 'INSTRUCTIONS', limit: 30 },",
+      },
+    ],
+    check: {
+      test: 'tests/m1u7-port.test.ts',
+      name: 'C6 refuses a 30-word sentence planted in INSTRUCTIONS',
+    },
+  },
+  {
+    label: 'inv mutant-anchors: exported-query mutant retains a stale anchor',
+    edits: [
+      {
+        path: 'tools/mutants.mjs',
+        old: "        old: '  if (unexpected.length > 0 || missing.length > 0) {',\n",
+        new: "        old: '  if (unexpected.length > 0 || missing.length > 0) { /* retired anchor */',\n",
+      },
+    ],
+    check: {
+      test: 'tests/mutant-anchors.test.ts',
+      name: 'finds every mutant anchor exactly once in the tree',
+    },
+  },
+  {
+    label: 'inv proof-live: inference exhaustion reported as depth',
+    edits: [
+      {
+        path: 'src/engine/budget.ts',
+        old: "    return { kind: 'limit', limit: 'inference' };",
+        new: "    return { kind: 'limit', limit: 'depth' };",
+      },
+    ],
+    check: {
+      test: 'tests/proof-live.test.ts',
+      name: 'surfaces a proof budget trip as a typed limit',
+    },
+  },
+  {
+    label: 'inv provenance-model: overlapping spans are accepted',
+    edits: [
+      {
+        path: 'src/provenance/model.ts',
+        old: '    if (span.start < cursor || span.end > points.length)',
+        new: '    if (span.end > points.length)',
+      },
+    ],
+    check: {
+      test: 'tests/provenance-model.test.ts',
+      name: 'rejects overlapping, out-of-bounds, and text-mismatched spans',
+    },
+  },
+  {
+    label: 'inv question-link.dom: unknown id falls back to first question',
+    edits: [
+      {
+        path: 'src/questions/link.ts',
+        old: '  return QUESTION_IDS.find((known) => known === id) ?? null;',
+        new: '  return QUESTION_IDS.find((known) => known === id) ?? QUESTION_IDS[0];',
+      },
+    ],
+    check: {
+      test: 'tests/question-link.dom.test.ts',
+      name: 'ignores an id outside the catalog and strips it without a history entry',
+    },
+  },
+  {
+    label: 'inv questions-u4-port: service accepts case-folded ids',
+    edits: [
+      {
+        path: 'src/questions/service.ts',
+        old: "    if (!isQuestionId(id)) return { kind: 'rejected', reason: 'unknown-id' };",
+        new: "    if (typeof id === 'string') id = id.toLowerCase();\n    if (!isQuestionId(id)) return { kind: 'rejected', reason: 'unknown-id' };",
+      },
+    ],
+    check: {
+      test: 'tests/questions-u4-port.test.ts',
+      name: 't.case P1.1/P1.3 rejects case folds and punctuation variants',
+    },
+  },
+  {
+    label: 'inv semantic-graph.dom: client HTTP errors pass response guard',
+    edits: [
+      {
+        path: 'src/graph/SemanticGraph.svelte',
+        old: '      if (!response.ok) throw new Error(`graph asset returned HTTP ${String(response.status)}`);',
+        new: '      if (response.status >= 500) throw new Error(`graph asset returned HTTP ${String(response.status)}`);',
+      },
+    ],
+    check: {
+      test: 'tests/semantic-graph.dom.test.ts',
+      name: 'reports a failed asset request and retries from an explicit control',
+    },
+  },
+  {
+    label: 'inv solution-streaming.dom: latest answer replaces earlier answers',
+    edits: [
+      {
+        path: 'src/demo/DemoController.svelte.ts',
+        old: '      this.state = { ...state, solutions: [...(state.solutions ?? []), solution] };',
+        new: '      this.state = { ...state, solutions: [solution] };',
+      },
+    ],
+    check: {
+      test: 'tests/solution-streaming.dom.test.ts',
+      name: 'shows each streamed answer while the run is busy, then the settled answer',
+    },
+  },
+  {
+    label: 'inv validate-report: unknown no longer marks a placeholder',
+    edits: [
+      {
+        path: 'tools/validate-report.mjs',
+        old: "const PLACEHOLDER = new Set(['unknown', 'todo', 'tbd', 'n/a', 'na', '-', '?', '']);",
+        new: "const PLACEHOLDER = new Set(['todo', 'tbd', 'n/a', 'na', '-', '?', '']);",
+      },
+    ],
+    check: { test: 'tests/validate-report.test.ts', name: 'refuses a seeded all-unknown skeleton' },
+  },
+  {
+    label: 'inv smoke: package licence omits LLVM exception',
+    edits: [
+      {
+        path: 'package.json',
+        old: '  "license": "Apache-2.0 WITH LLVM-exception",',
+        new: '  "license": "Apache-2.0",',
+      },
+    ],
+    check: {
+      test: 'tests/smoke.test.ts',
+      name: 'carries the project name and the LICENSE identifier',
+    },
+  },
+  {
+    label: "inv inventory: the inventory drops the validate-report suite's row",
+    edits: [
+      {
+        path: '.agent/contracts/mnt5-inventory.md',
+        old: '| `tests/validate-report.test.ts` | off | report grader counts unknown placeholders as filled findings | mutate | `inv validate-report: unknown no longer marks a placeholder` |\n',
+        new: '',
+      },
+    ],
+    check: { test: 'tests/inventory.test.ts', name: 'lists every suite, gate step and lane' },
+  },
+  {
+    label: "inv toolchain-pins: the TypeScript pin reads another package's manifest",
+    edits: [
+      {
+        path: 'tests/toolchain-pins.test.ts',
+        old: "expect(capFailures(manifest('typescript-eslint'), manifest('typescript'))).toEqual([]);",
+        new: "expect(capFailures(manifest('typescript-eslint'), manifest('eslint'))).toEqual([]);",
+      },
+    ],
+    check: { test: 'tests/toolchain-pins.test.ts', name: 'caps TypeScript below 6.1' },
   },
 ];
