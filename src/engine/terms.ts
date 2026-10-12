@@ -94,6 +94,8 @@ export function decodeTerm(value: unknown): PlTerm {
   if (value.$t === 't' && typeof value.functor === 'string') {
     return compound(value.functor, value[value.functor]);
   }
+  // A compound NAMED `functor` writes its arguments over the name it was just given.
+  if (value.$t === 't' && Array.isArray(value.functor)) return compound('functor', value.functor);
   // The wrapper writes the tag to `$t`, then the arguments to the name's own key, so a compound
   // NAMED `$t` leaves its envelope where the tag was.
   if (Array.isArray(value.$t) && value.functor === '$t') return compound('$t', value.$t);

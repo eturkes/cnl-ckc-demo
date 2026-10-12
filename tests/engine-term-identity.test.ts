@@ -125,6 +125,22 @@ it('P3.7 holds for a long improper list, falsy tail included, without deep recur
   }
 });
 
+it('decodes a compound named functor and re-enters it unchanged, nested included', () => {
+  // The wrapper keeps a compound's name under `functor` and its arguments under the name, so
+  // for this one name the arguments overwrite the name.
+  expect(termOf('functor(a,b)')).toEqual({
+    kind: 'compound',
+    functor: 'functor',
+    args: [
+      { kind: 'atom', value: 'a' },
+      { kind: 'atom', value: 'b' },
+    ],
+  });
+  for (const literal of ['functor(a,b)', 'functor(A,B,A)', 'f(functor(functor(a)))', 'functor']) {
+    expect(variants(literal, termOf(literal)), literal).toBe(true);
+  }
+});
+
 it('decodes a compound named $t and refuses its re-entry by name', () => {
   // The wrapper writes the type tag to `$t`, then the arguments to the name's own key, so for
   // this one name the arguments overwrite the tag; its encoder reads the tag the same way.
