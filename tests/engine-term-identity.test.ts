@@ -125,6 +125,19 @@ it('P3.7 holds for a long improper list, falsy tail included, without deep recur
   }
 });
 
+it('decodes a compound named $t and refuses its re-entry by name', () => {
+  // The wrapper writes the type tag to `$t`, then the arguments to the name's own key, so for
+  // this one name the arguments overwrite the tag; its encoder reads the tag the same way.
+  expect(termOf("'$t'(a)")).toEqual({
+    kind: 'compound',
+    functor: '$t',
+    args: [{ kind: 'atom', value: 'a' }],
+  });
+  const encode = createEncoder(engine.prolog);
+  expect(() => encode(termOf("'$t'(a)"))).toThrow(DecodeError);
+  expect(() => encode(termOf("f('$t'(a,b))"))).toThrow('a compound named $t cannot re-enter');
+});
+
 it('refuses to re-encode a decoded dict, standalone or as an improper-list tail (user ruling)', () => {
   // swipl-wasm has no supported path to re-enter a TAGGED dict: re-encoded, `tag{a:0}` came back
   // as `_{'$tag':tag,a:0}`, no variant of the original. Refusing it fails closed.

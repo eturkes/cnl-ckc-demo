@@ -44,13 +44,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   such a compound; the chat's read-only allowlist refuses `functor/3` because of it
   (`.agent/contracts/chat-c1.md`). Accept: `X = functor(a,b)` solves with `X` decoded as a
   compound `functor/2`, and the encoder re-enters it unchanged (`=@=`). `pri` low.
-- **A compound named `$t` fails to decode and cannot re-enter** — swipl-wasm's `PrologCompound`
-  sets `this.$t = "t"` and then `this[name] = args`, so for `'$t'(a)` the arguments overwrite the
-  type tag: `decodeTerm` throws `unsupported native tag: a`, and the wrapper's `toProlog` raises
-  `get_dict/3: Arguments are not sufficiently instantiated` on a re-encoded one. Fail-closed; no
-  shipped answer holds one. Accept: `X = '$t'(a)` solves with `X` decoded as compound `$t/1`,
-  and `createEncoder` refuses it by name with `DecodeError` before any query runs, as it refuses
-  a dict. `pri` low.
 - **`pnpm mutate` credits a timeout-only kill** — a vitest check that fails only by `Test timed
   out` exits 1, and `tools/mutate.mjs` reads exit 1 as killed, so a mutant that merely stalls its
   check, or a check starved by load, counts as bound (`mnt5-reviewer-2` F4: the first

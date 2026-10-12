@@ -143,7 +143,7 @@ needing the user records its part owed; new finds become rows funded after those
 - [ ] m6 `low` coverage passages — waits on the producer correcting B3-09/B3-10 `p14`.
 - [x] `b36a568` m7 `med` `chat:live` gains a firing input that calls no model (new row).
 - [ ] m8 `med` `pnpm mutate` refuses a timeout-only kill — owed (user): a grader change (new row).
-- [ ] m9 `low` the axe-contrast pin fires in an environment that decides contrast (new row).
+- [x] `84b0478` m9 `low` the axe-contrast pin fires in an environment that decides contrast (new row).
 - [ ] m10 `low` a compound named `$t` decodes and is refused re-entry by name (new row).
 
 Closed MAINTAIN request: chat intake replaces the TypeSafe intake (`Decisions` User, plan

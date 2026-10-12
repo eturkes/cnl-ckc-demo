@@ -1445,4 +1445,15 @@ export const MUTANTS = [
     ],
     check: ['pnpm', 'test:browser', 'tests/axe-contrast.browser.test.ts'],
   },
+  {
+    label: "m10 a compound named $t is handed to the wrapper's encoder",
+    edits: [
+      {
+        path: 'src/engine/terms.ts',
+        old: "        // The wrapper's `toProlog` reads `$t` as the type tag, which this name's arguments\n        // overwrite. Refused, as a dict is.\n        if (term.functor === '$t') {\n          throw new DecodeError('a compound named $t cannot re-enter the engine');\n        }\n",
+        new: '',
+      },
+    ],
+    check: { test: 'tests/engine-term-identity.test.ts', name: 'refuses its re-entry by name' },
+  },
 ];

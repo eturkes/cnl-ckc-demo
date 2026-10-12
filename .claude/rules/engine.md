@@ -23,6 +23,9 @@ paths:
   re-enter a TAGGED dict, so `createEncoder` throws `DecodeError` rather than send
   `_{'$tag':tag,…}`, standalone or nested. No shipped answer term carries a dict.
   `tests/engine-term-identity.test.ts`.
+- **A compound named `$t` decodes but never re-encodes**: the wrapper writes its arguments over
+  the `$t` type tag, so `decodeTerm` reads the envelope there and `createEncoder` throws
+  `DecodeError` rather than hand `toProlog` an untagged value. `tests/engine-term-identity.test.ts`.
 - An improper list re-encodes as `List(prefix, '[|]'(last, Tail))`: the wrapper's `List` tests
   `if (tail)`, so an atom `''` or integer `0` tail passed straight to it collapses to `[]`,
   while a chain of `'[|]'/2` compounds recurses per cell and overflows on a long list.

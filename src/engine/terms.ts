@@ -58,6 +58,13 @@ const asInteger = (value: unknown, field: string): PlInteger => {
  * decodes as `integer`. The shipped corpus contains no floats. Asking Prolog for
  * each binding's type would close the gap at one extra call per binding.
  */
+const compound = (functor: string, packed: unknown): PlTerm => {
+  if (!Array.isArray(packed) || packed.length !== 1 || !Array.isArray(packed[0])) {
+    throw new DecodeError(`compound ${functor} lacks swipl-wasm's one-element argument envelope`);
+  }
+  return { kind: 'compound', functor, args: packed[0].map(decodeTerm) };
+};
+
 export function decodeTerm(value: unknown): PlTerm {
   if (typeof value === 'string') return { kind: 'atom', value };
   if (typeof value === 'bigint') return { kind: 'integer', value };
@@ -85,14 +92,11 @@ export function decodeTerm(value: unknown): PlTerm {
     return { kind: 'improper-list', items: value.v.map(decodeTerm), tail: decodeTerm(value.t) };
   }
   if (value.$t === 't' && typeof value.functor === 'string') {
-    const packed = value[value.functor];
-    if (!Array.isArray(packed) || packed.length !== 1 || !Array.isArray(packed[0])) {
-      throw new DecodeError(
-        `compound ${value.functor} lacks swipl-wasm's one-element argument envelope`,
-      );
-    }
-    return { kind: 'compound', functor: value.functor, args: packed[0].map(decodeTerm) };
+    return compound(value.functor, value[value.functor]);
   }
+  // The wrapper writes the tag to `$t`, then the arguments to the name's own key, so a compound
+  // NAMED `$t` leaves its envelope where the tag was.
+  if (Array.isArray(value.$t) && value.functor === '$t') return compound('$t', value.$t);
   // `$t` absent is load-bearing: a dict carries a user tag that may be any atom, so
   // `{ $t: 'x', $tag: 'foo' }` is an unrecognized wrapper, not a dict, and must fail
   // closed instead of decoding as one.
@@ -171,6 +175,11 @@ export function createEncoder(constructors: PrologConstructors): (term: PlTerm) 
           : new constructors.List(items, new constructors.Compound('[|]', last, tail));
       }
       case 'compound':
+        // The wrapper's `toProlog` reads `$t` as the type tag, which this name's arguments
+        // overwrite. Refused, as a dict is.
+        if (term.functor === '$t') {
+          throw new DecodeError('a compound named $t cannot re-enter the engine');
+        }
         return new constructors.Compound(term.functor, ...term.args.map(encode));
       case 'variable': {
         let name = names.get(term.id);
