@@ -137,10 +137,14 @@ needing the user records its part owed; new finds become rows funded after those
 - [x] `a98b2c9` m2 `med` check inventory: every gate step, lane and suite with its firing record.
   - Accept: `.agent/contracts/mnt5-inventory.md` graded by `tests/inventory.test.ts`; owed
     (user): the accepted-open re-ruling.
-- [ ] m3 `low` `tests/spec-check.test.ts` holds on any real spec.
+- [x] `7e31bc2` m3 `low` `tests/spec-check.test.ts` holds on any real spec.
 - [ ] m4 `low` a compound named `functor` decodes — owed (user): three G1 refusal cases change.
 - [ ] m5 `low` one reader-relative `Decisions` bullet — owed (user): the ruling text is theirs.
 - [ ] m6 `low` coverage passages — waits on the producer correcting B3-09/B3-10 `p14`.
+- [ ] m7 `med` `chat:live` gains a firing input that calls no model (new row).
+- [ ] m8 `med` `pnpm mutate` refuses a timeout-only kill — owed (user): a grader change (new row).
+- [ ] m9 `low` the axe-contrast pin fires in an environment that decides contrast (new row).
+- [ ] m10 `low` a compound named `$t` decodes and is refused re-entry by name (new row).
 
 Closed MAINTAIN request: chat intake replaces the TypeSafe intake (`Decisions` User, plan
 `.agent/contracts/chat-plan.md`). Met when: delivered end to end + `pnpm gate` green on a clean

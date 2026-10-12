@@ -56,7 +56,7 @@ red must come from a case of the named check failing on behaviour.
 | `visual-qa` | a box planted wider than the viewport | text | `.claude/rules/gate.md Control: a box planted wider than the viewport must read as overflow at each width` |
 | `graph:check` | one edge drawn dashed; `SEPARATION_PX` set to 0 | text | `.claude/rules/gate.md one edge's `line-style` set to `dashed` in the mounted graph` |
 | `mutate` | a mutant its check did not bind | commit | `0273a6a E03 came back GREEN` |
-| `chat:live` | none yet | queue | ``chat:live` carries no firing input` |
+| `chat:live` | the bridge relaying a fake whose answer cites a query it never ran | text | `.claude/rules/gate.md `CHAT_LIVE_CONTROL=no-kb pnpm chat:live` runs Vite and the bridge in process and calls no model` |
 | `chat:probe` | — | none | `reports and never grades: the model has no determinism control` |
 | `binding:replay` | `pnpm binding:replay HEAD` | text | `.claude/rules/gate.md both differential arms go green, so the command exits 1` |
 ## Suites

@@ -44,12 +44,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   such a compound; the chat's read-only allowlist refuses `functor/3` because of it
   (`.agent/contracts/chat-c1.md`). Accept: `X = functor(a,b)` solves with `X` decoded as a
   compound `functor/2`, and the encoder re-enters it unchanged (`=@=`). `pri` low.
-- **`chat:live` carries no firing input** — the lane fails unless the live turn lands a KB part
-  whose card holds the goal and an engine solution (`tools/chat-live.mjs`), yet no run ever
-  plants a turn that must fail, so a lane that stopped reading the page would pass green.
-  Accept: a control drives the real lane against the bridge relaying
-  `tests/support/fake-codex.mjs` scripted to answer without running a goal, and the lane exits
-  1 naming `no KB part`, with no model call billed. `pri` med.
 - **axe-contrast pins a jsdom fact no planted input reaches** — `tests/axe-contrast.dom.test.ts`
   pins that `axe-core` under jsdom reports every `color-contrast` result `incomplete`, the fact
   `contrast:check` exists for; it can go red only when the environment changes, and nothing
@@ -78,7 +72,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 | defect | accept |
 | --- | --- |
 | Off-path checks the retired demo-tier waiver excused | a committed inventory under `.agent/contracts/` lists every check off the answer path — gate step, out-of-chain lane and suite — and each one either refuses a planted wrong input with its firing recorded, or carries its own queue row with an acceptance check; every `## Accepted-open` id is re-ruled against the same clause |
-| `chat:live` carries no firing input | a control drives the real lane against the bridge relaying `tests/support/fake-codex.mjs` scripted to answer without running a goal, and the lane exits 1 naming `no KB part`, with no model call billed |
 | `pnpm mutate` credits a timeout-only kill | a mutant whose vitest check fails only by timeout reads `INCONCLUSIVE` and fails the run, shown by a planted stalling mutant |
 
 ## Accepted-open

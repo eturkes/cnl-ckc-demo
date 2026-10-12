@@ -18,9 +18,9 @@ export const PAGE = process.env['CHAT_LIVE_URL'] ?? 'http://localhost:5173/';
 /** One model turn takes 15–60 s measured (two tool calls + a search ≈ 17 s). */
 export const TURN_MS = 240_000;
 
-/** @param {Page} page @returns {Promise<void>} */
-export const openChat = async (page) => {
-  await page.goto(PAGE, { waitUntil: 'load', timeout: 60_000 });
+/** @param {Page} page @param {string} [url] @returns {Promise<void>} */
+export const openChat = async (page, url = PAGE) => {
+  await page.goto(url, { waitUntil: 'load', timeout: 60_000 });
   await page.waitForFunction(
     "document.querySelector('main')?.dataset.engine === 'ready'",
     undefined,
