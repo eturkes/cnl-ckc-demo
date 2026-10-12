@@ -64,7 +64,8 @@ red must come from a case of the named check failing on behaviour.
 | suite | path | firing | record | anchor |
 |---|---|---|---|---|
 | `tests/about-copy.dom.test.ts` | off | corpus count written into copy | mutate | `E03 corpus count written back into copy` |
-| `tests/axe-contrast.dom.test.ts` | off | none reachable: it pins a fact of `axe-core` under jsdom | queue | `axe-contrast pins a jsdom fact no planted input reaches` |
+| `tests/axe-contrast.browser.test.ts` | off | the probe's pair made readable | mutate | `inv axe-contrast.browser: the probe's pair made readable` |
+| `tests/axe-contrast.dom.test.ts` | off | the pin's own probe run in Chromium, which decides contrast | text | `tests/axe-contrast.browser.test.ts decides the unreadable pair a violation, where the jsdom pin no longer holds` |
 | `tests/boot-phases.dom.test.ts` | off | first progress wrongly settles boot | commit | `d6714d7 all 5 dom cases RED` |
 | `tests/boot-phases.test.ts` | off | unexpected progress ignored silently | mutate | `inv boot-phases: unexpected progress ignored silently` |
 | `tests/boot-recovery.dom.test.ts` | off | retry reuses worker retaining failed image fetch | commit | `88af76b B4 retry red: cached-rejection retention` |

@@ -141,7 +141,7 @@ needing the user records its part owed; new finds become rows funded after those
 - [ ] m4 `low` a compound named `functor` decodes — owed (user): three G1 refusal cases change.
 - [ ] m5 `low` one reader-relative `Decisions` bullet — owed (user): the ruling text is theirs.
 - [ ] m6 `low` coverage passages — waits on the producer correcting B3-09/B3-10 `p14`.
-- [ ] m7 `med` `chat:live` gains a firing input that calls no model (new row).
+- [x] `b36a568` m7 `med` `chat:live` gains a firing input that calls no model (new row).
 - [ ] m8 `med` `pnpm mutate` refuses a timeout-only kill — owed (user): a grader change (new row).
 - [ ] m9 `low` the axe-contrast pin fires in an environment that decides contrast (new row).
 - [ ] m10 `low` a compound named `$t` decodes and is refused re-entry by name (new row).

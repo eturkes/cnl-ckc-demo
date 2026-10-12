@@ -1434,4 +1434,15 @@ export const MUTANTS = [
     ],
     check: { test: 'tests/spec-check.test.ts', name: 'its open-unit controls on a planted row' },
   },
+  {
+    label: "inv axe-contrast.browser: the probe's pair made readable",
+    edits: [
+      {
+        path: 'tests/support/axe-contrast.ts',
+        old: '\'<p style="color:#777;background:#787878">nearly invisible text</p>\'',
+        new: '\'<p style="color:#000;background:#fff">plainly readable text</p>\'',
+      },
+    ],
+    check: ['pnpm', 'test:browser', 'tests/axe-contrast.browser.test.ts'],
+  },
 ];

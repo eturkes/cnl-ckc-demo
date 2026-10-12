@@ -44,12 +44,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   such a compound; the chat's read-only allowlist refuses `functor/3` because of it
   (`.agent/contracts/chat-c1.md`). Accept: `X = functor(a,b)` solves with `X` decoded as a
   compound `functor/2`, and the encoder re-enters it unchanged (`=@=`). `pri` low.
-- **axe-contrast pins a jsdom fact no planted input reaches** — `tests/axe-contrast.dom.test.ts`
-  pins that `axe-core` under jsdom reports every `color-contrast` result `incomplete`, the fact
-  `contrast:check` exists for; it can go red only when the environment changes, and nothing
-  plants that change. Accept: the same probe, run in an environment that can decide contrast
-  (`pnpm test:browser`'s Chromium), reports the planted pair a violation, recorded beside the
-  pin. `pri` low.
 - **A compound named `$t` fails to decode and cannot re-enter** — swipl-wasm's `PrologCompound`
   sets `this.$t = "t"` and then `this[name] = args`, so for `'$t'(a)` the arguments overwrite the
   type tag: `decodeTerm` throws `unsupported native tag: a`, and the wrapper's `toProlog` raises
