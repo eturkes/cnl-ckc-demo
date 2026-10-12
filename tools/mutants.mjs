@@ -4,7 +4,8 @@
 // `.agent/contracts/mnt5-inventory.md`: that check's firing record, rerunnable.
 //
 // `check` is a vitest file plus a `-t` name filter, or a whole command for a defect a gate step
-// closes. Every `old` must occur exactly once in its file; a stale anchor stops the run.
+// closes. The filter is a regex: `$` anchors, so `named $t` selects nothing. Every `old` must
+// occur exactly once in its file; a stale anchor stops the run.
 
 /**
  * @typedef {{ path: string, old: string, new: string }} Edit

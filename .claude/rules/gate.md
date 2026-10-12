@@ -136,7 +136,12 @@ to nothing. Each step's success line ends with the control that fired, so a gree
 lane and `tests/*.test.ts` beside its record — an `inv` mutant, a commit body's red, a firing-input
 row below, or a queue row owed. `tests/inventory.test.ts`, run by `binding:check` with the suite,
 refuses a check without a row and a record that no longer resolves, so a new suite ships with its
-firing record.
+firing record. A suite's firing record is THAT suite red on a present-but-wrong implementation or
+input. These never count: a case asserting that the product refuses a hostile input, a passing
+in-suite control, a collection or import failure, a missing fixture, and a red that comes from a
+test timeout alone. A suite whose subject is test support, generated data or an installed
+manifest takes its planted input there — `tests/support/`, a `kb/generated` chunk, the suite's own
+read of the manifest — and never in `node_modules`, whose files pnpm hardlinks to the shared store.
 
 **The row a grader change edits in the table below is that change's record of the ORIGINAL
 grader's firing.** That is how the approval clause lands here: this repo's graders are the

@@ -20,7 +20,8 @@ Record kinds — `anchor` holds what the kind resolves:
 | `none` | the reason | a lane that grades nothing — it reports; never a suite |
 
 A `commit` record never counts a collection failure, an import error or a missing fixture: the
-red must come from a case of the named check failing on behaviour.
+red must come from a case of the named check failing on behaviour. The full bar for a suite's
+record is `.claude/rules/gate.md` `Firing inputs`.
 
 ## Gate steps
 

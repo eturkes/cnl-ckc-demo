@@ -131,6 +131,32 @@ worker before its caller resumes (`chat-c2.md`).
 MAINTAIN request: work every `.agent/deferred.md` row in rank order (6 rows at `d3c4bc5`). A row
 needing the user records its part owed; new finds become rows funded after those six.
 
+- [ ] RESUME: finish line in force = this request's `Met when` — every `.agent/deferred.md` row
+  closed by its own acceptance check in its own commit, recorded blocked on the user with what it
+  owes, or waiting on its re-open trigger, and `pnpm gate` green on a clean tree at the closing
+  commit.
+  - Committed: m1 `0727bd2`, m2 `a98b2c9`, m3 `7e31bc2`, m7 `b36a568`, m9 `84b0478`, m10
+    `f2f1bb5`, then this pause commit. Working tree: nothing uncommitted.
+  - Approval-pending work, one commit each on `f2f1bb5`, none gate-run: `wip/m4-functor`
+    `045ece0` (decoder fix + accept test + the three G1 case changes; the term-identity and
+    readonly suites 261/261 on it; owes the `chat-c1.md` amendment and a mutant), `wip/m8-mutate-timeout`
+    `7ea4369` (firing shown: a planted stalling mutant reads `INCONCLUSIVE`, rc 1, where the
+    current grader reads `RED — killed`, rc 0; owes the `gate.md` mutate rows and the inventory's
+    mutate lane row), `wip/m5-decisions` `4900d24` (the merged bullet alone).
+  - Teammates: none running, every worktree removed, no `wt/mnt5-*` branch left.
+  - Next: one chained `AskUserQuestion` (the first draft went unanswered; the user paused).
+    (1) Accepted-open re-ruling: premise C1 + A11+ close, C6 closes as immutable history, A4 A5
+    A6 A8 stay open by the IMPLEMENT ruling; per id queue or keep: A1, A3, A9+ (clause index
+    alone), A10+ (recommend keep), S7 (visual: the user's live review owed), C4u1, C4u4, C4u5.
+    Facts → `.agent/contracts/mnt5-inventory.md` `## Accepted-open re-ruling`. (2) m4: a chat
+    goal holding `functor(...)` that reads the KB now runs; the three G1 cases' reason moves to
+    `the goal reads no KB predicate`. (3) m5: the merged bullet. (4) m8: the mutate grader change.
+    Then land each approved branch as its own unit (rebase, records, gate), fund the selected
+    ids as new rows, and close with `pnpm release:check`, `pnpm mutate` run alone, and a closing
+    review per `CLAUDE.md` `Session flow`. m6 waits: `../cnl-ckc` `2acd0d70` still records
+    B3-09/B3-10 `p14`.
+  - Scratch: `.scratch/review/mutant.mjs` = the per-mutant timeout sweep the m8 row cites.
+
 - [x] `0727bd2` m1 `med` copy:check reads both quote forms.
   - Accept: a double-quoted `en.ts` value over the word limit and a double-quoted `ja.ts` value
     ending in plain form are each refused by key.
@@ -144,7 +170,7 @@ needing the user records its part owed; new finds become rows funded after those
 - [x] `b36a568` m7 `med` `chat:live` gains a firing input that calls no model (new row).
 - [ ] m8 `med` `pnpm mutate` refuses a timeout-only kill — owed (user): a grader change (new row).
 - [x] `84b0478` m9 `low` the axe-contrast pin fires in an environment that decides contrast (new row).
-- [ ] m10 `low` a compound named `$t` decodes and is refused re-entry by name (new row).
+- [x] `f2f1bb5` m10 `low` a compound named `$t` decodes and is refused re-entry by name (new row).
 
 Closed MAINTAIN request: chat intake replaces the TypeSafe intake (`Decisions` User, plan
 `.agent/contracts/chat-plan.md`). Met when: delivered end to end + `pnpm gate` green on a clean
