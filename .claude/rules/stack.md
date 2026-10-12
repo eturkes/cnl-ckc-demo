@@ -12,7 +12,9 @@ User-ruled, binding on every role.
   expansion, shortest path and centrality outrank renderer throughput.
 - **The KB enters by export only.** `../cnl-ckc` is read-only, never linked, never a runtime
   dependency; the vendored bag under `kb/` is the whole interface.
-- Non-negotiable: every answer traces to a genuine Prolog solution.
+- Non-negotiable: every answer the demo presents as the knowledge base's — a prepared question's
+  answer, a chat part tagged KB — traces to a genuine Prolog solution. A chat part from the web
+  or the model's own knowledge says so in its tag and claims no KB backing.
 - **Demo tier = no formal verification.** User ruling. The demo serves no clinical purpose: it
   demonstrates `../cnl-ckc`'s utility, and `cnl-ckc` carries the clinical-grade rigor, so its
   formal-verification tier stays out of this repo. Every other `CLAUDE.md` `Engineering` and

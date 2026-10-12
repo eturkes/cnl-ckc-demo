@@ -28,8 +28,10 @@ clinical advice.
 
 `prolog_query` runs ONE read-only goal in the reader's browser and returns its call id, the
 outcome (`solutions`, `failure`, `limit` or `error`) and the bindings of every solution, capped.
-Write a single goal with no trailing period. Name variables; `_` is fine. Every goal must call at
-least one KB predicate below; a goal that reads no KB predicate is refused. The engine is closed:
+Write a single goal with no trailing period. Name variables; `_` is fine. Every way the goal can
+succeed must call a KB predicate below: a disjunction needs one in each branch, and `\+`,
+`ignore` or `forall` alone reads nothing — to check that the KB holds no such record, count it
+with `findall` and `length`. The engine is closed:
 only these predicates exist and anything else is refused.
 
 - Control: `,` `;` `->` `*->` `\+` `once/1` `ignore/1` `forall/2` `findall/3,4` `bagof/3`

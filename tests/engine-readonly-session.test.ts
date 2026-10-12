@@ -95,6 +95,11 @@ const guard = (result: EngineResponse, reason: RegExp | string): void => {
 
 const REFUSALS: [string, string | RegExp][] = [
   ['X = "an invented claim"', 'the goal reads no KB predicate'],
+  // The every-path rule (close fix, user ruling): the KB branch exists but the claim branch wins.
+  [
+    'once((X = "an invented claim" ; guideline_schema_version(_)))',
+    'the goal can succeed without reading a KB predicate',
+  ],
   ['msort([b,a],L)', 'the goal reads no KB predicate'],
   ['assertz(probe_c1(1))', 'assertz/1'],
   ['string_chars("ab",Cs)', 'string_chars/2'],

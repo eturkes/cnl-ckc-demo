@@ -45,7 +45,7 @@ discriminator is the rule's own condition in `clinical_rule/3`.
 
 The chat's model writes goal text, and the engine runs it read-only (`src/engine/readonly.ts`,
 `.agent/contracts/chat-c1.md`): the parsed term is checked, the engine's own rendering of it
-runs, and a goal that reads no KB predicate is refused. A `kb` label in the chat certifies that
+runs, and a goal with any way to succeed that reads no KB predicate is refused. A `kb` label in the chat certifies that
 its cited query ran over the KB in this conversation, not that the sentence restates it; the
 card beside the sentence shows the goal and the engine's verbatim solutions
 (`.agent/contracts/chat-c4.md` `Declared limit`).

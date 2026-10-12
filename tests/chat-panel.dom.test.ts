@@ -335,6 +335,25 @@ describe('chat panel', () => {
     },
   );
 
+  it('V2 a search result URL that is not http(s) shows as text, never as a link', async () => {
+    const hostile = 'javascript:alert(1)';
+    client.script([
+      { type: 'conversation', id: 'c-js' },
+      {
+        type: 'search',
+        query: 'q',
+        opened: undefined,
+        results: [{ url: hostile, title: 'Looks like a page', domain: 'x', snippet: 's' }],
+      },
+      answer([{ text: 'A web claim.', source: 'web', queries: [], urls: [hostile] }]),
+      { type: 'done' },
+    ]);
+    await send();
+    const sources = one('[data-chat-sources]');
+    expect(sources.querySelectorAll('a')).toHaveLength(0);
+    expect(text(one('.unlinked', sources))).toBe('Looks like a page');
+  });
+
   it('V4 New conversation empties the transcript', async () => {
     client.script(ANSWERED);
     await send();

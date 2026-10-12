@@ -26,9 +26,9 @@ The shipped answers are produced at run time. They are not stored UI fixtures.
   graph. The primary ontology view hides those nodes. It keeps modality and
   negation visible as state on the relationships themselves.
 - A chat. The model writes Prolog goals, and the page runs each goal read-only in its own
-  engine. Every part of an answer names its source: **KB** for a query that ran, with a
-  card that shows the goal and the engine's solutions; **Web** for a page that the turn's
-  search returned; **Model** for the model's own knowledge. A claimed source that this
+  engine. Every part of an answer names its source. **KB** marks a query that ran, and its
+  card shows the goal and the engine's solutions. **Web** marks a page that the turn's search
+  returned. **Model** marks the model's own knowledge. A claimed source that this
   conversation's record does not hold shows as **Unverified**.
 - Light and dark themes, responsive layouts, local fonts, and relative asset
   paths for nested static hosting.

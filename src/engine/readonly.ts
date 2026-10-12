@@ -175,17 +175,66 @@ const walk = (goal: PlTerm, reach: { kb: boolean }): GuardVerdict => {
   return refuse(`${name} is not on the read-only allowlist`);
 };
 
+/** `fail`/`false`: a branch with no way to succeed, so it never needs a KB read of its own. */
+const NEVER = new Set(['fail', 'false']);
+
 /**
- * Admit a parsed goal only when every goal position it holds is on the allowlist and at least
- * one of them reads the KB.
+ * Whether every way `goal` can succeed passes a KB read (`chat-c1.md` `KB read on every path`,
+ * user ruling). Structural and conservative: a conjunction needs one conjunct that does, a
+ * disjunction or an else branch needs each branch that can succeed to; a collector reads when
+ * its goal does; `\+`, `not`, `ignore` and `forall` count as no read, because they succeed on a
+ * path that hands back nothing from the KB. `fail` is no read, so it cannot satisfy a collector
+ * vacuously. Called on a goal `walk` admitted.
+ */
+const readsOnEveryPath = (goal: PlTerm): boolean => {
+  if (goal.kind !== 'compound') return false;
+  const [first, second] = goal.args;
+  const reads = (term: PlTerm | undefined): boolean => term !== undefined && readsOnEveryPath(term);
+  const branch = (term: PlTerm | undefined): boolean =>
+    (term?.kind === 'atom' && NEVER.has(term.value)) || reads(term);
+  switch (`${goal.functor}/${String(goal.args.length)}`) {
+    case ',/2':
+    case '->/2':
+    case '*->/2':
+      return reads(first) || reads(second);
+    case ';/2': {
+      // `(C -> T ; E)` and `(C *-> T ; E)`: the then-path reads through C or T, the else-path alone.
+      const guarded =
+        first?.kind === 'compound' &&
+        (first.functor === '->' || first.functor === '*->') &&
+        first.args.length === 2;
+      return (guarded ? reads(first) : branch(first)) && branch(second);
+    }
+    case 'once/1':
+      return reads(first);
+    case '^/2':
+    case 'findall/3':
+    case 'findall/4':
+    case 'bagof/3':
+    case 'setof/3':
+      return reads(second);
+    case 'clause/2':
+      return true;
+    default:
+      return KB.has(`${goal.functor}/${String(goal.args.length)}`);
+  }
+};
+
+/**
+ * Admit a parsed goal only when every goal position it holds is on the allowlist and every way it
+ * can succeed reads the KB.
  */
 export function guardGoal(goal: PlTerm, variableNames: readonly string[]): GuardVerdict {
   const merged = variableNames.find((name) => RENDERER_NAME.test(name));
   if (merged !== undefined) return refuse(`variable name ${merged} is reserved for the renderer`);
   const reach = { kb: false };
   const verdict = walk(goal, reach);
+  if (!verdict.ok) return verdict;
   // A goal that reads no KB predicate could only hand back constants the model wrote itself,
-  // which would then show as a KB result.
-  if (verdict.ok && !reach.kb) return refuse('the goal reads no KB predicate');
+  // which would then show as a KB result; so could a goal with one branch that skips the KB.
+  if (!reach.kb) return refuse('the goal reads no KB predicate');
+  if (!readsOnEveryPath(goal)) {
+    return refuse('the goal can succeed without reading a KB predicate');
+  }
   return verdict;
 }

@@ -71,6 +71,8 @@ function run() {
   const config = object(JSON.parse(process.env.FAKE_CODEX_CONFIG ?? '{}'));
   const tracePath = text(config.trace);
   const stall = config.stall;
+  /** `stall: 'slow-initialize'` answers `initialize` late: a second turn can arrive meanwhile. */
+  const slowInitialize = stall === 'slow-initialize';
   /** @param {string} kind @param {unknown} detail */
   function trace(kind, detail) {
     // eslint-disable-next-line security/detect-non-literal-fs-filename -- Trace path belongs to the test's disposable directory.
@@ -294,7 +296,7 @@ function run() {
       assert(text(info.version).length > 0);
       assert.equal(object(params.capabilities).experimentalApi, true);
       handshake = true;
-      if (stall !== method)
+      const answer = () => {
         send(
           reply(rpc.id, {
             userAgent: 'fake-codex/1',
@@ -303,6 +305,9 @@ function run() {
             platformOs: 'linux',
           }),
         );
+      };
+      if (slowInitialize) setTimeout(answer, 300);
+      else if (stall !== method) answer();
     } else if (method === 'thread/start') {
       assert(initialized);
       exactKeys(params, [

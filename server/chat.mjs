@@ -344,6 +344,9 @@ class Bridge {
 
   /** @returns {Promise<AppServer>} */
   #ensure() {
+    // A start in flight comes first: its child is alive from spawn but not yet initialized, and a
+    // request sent before `initialized` is refused (`chat-close-product` F1).
+    if (this.#starting !== undefined) return this.#starting;
     if (this.#child?.alive === true) return Promise.resolve(this.#child);
     this.#starting ??= this.#start().finally(() => {
       this.#starting = undefined;

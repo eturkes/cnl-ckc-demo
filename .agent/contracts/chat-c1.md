@@ -66,6 +66,16 @@ Goal positions are walked; every other argument is data and never walked.
   over one, else `guard` refusal `the goal reads no KB predicate`. A goal that only binds
   constants (`X = "an invented claim"`) would hand the model's own words back as a KB result
   (amended before code, `chat-consultant-3`).
+- **KB read on every path** (close fix, user ruling): every way the goal can succeed must pass a
+  KB read, else `guard` refusal `the goal can succeed without reading a KB predicate`. Read
+  structurally: a conjunction needs one conjunct that does; a disjunction each branch that can
+  succeed (`fail`/`false` branches need nothing); `(C -> T ; E)` reads through C or T, and E;
+  `once`, `^` and the collectors read when their goal does; `\+`, `not`, `ignore` and `forall`
+  read nothing. Witnesses: `chat-close-product` (its F2, registered) `once((X = "an invented claim" ;
+  guideline_schema_version(_)))` earned a KB tag on the real image (its probe rc 1 at `c5c4b81`,
+  rc 0 after); `tests/engine-readonly-guard.test.ts` `G10 requires a KB read on every way…` red
+  under the old rule. Approved grader change: G10's slot expectation was `slots.includes(index)`
+  and fired `;/2 arg 1: expected false to be true` at the change.
 - A goal holding a term the decoder refuses is refused as `guard`, nothing run. That includes
   every compound named `functor`: swipl-wasm's `PrologCompound` keeps its name under the key
   `functor` and its arguments under the key of its name, so for that one name the arguments
@@ -104,10 +114,10 @@ pseudo-random generator is the one exception: `X is random(6)` advances its stat
 walk cannot close it, because a variable bound at run time can carry `random/1` into an
 expression (`E = random(6), X is E`). Nothing in the demo reads that state (chat-consultant-1 K1).
 
-The KB-read rule is syntactic: it requires a KB entry point in some goal position, not on every
-path, so `once((X = "an invented claim" ; guideline_schema_version(_)))` binds the literal without
-reading the KB (`chat-reviewer-1` register). The card shows the goal; `chat-c4.md` `Declared limit`
-states what a `kb` label certifies.
+Every success path reads the KB, but a path may still bind a constant beside that read:
+`guideline_schema_version(_), X = "an invented claim"` is admitted, and its card shows the goal
+whole, which is how a reader sees the literal. `chat-c4.md` `Declared limit` states what a `kb`
+label certifies.
 
 G9 samples the admitted builtins; it does not prove that no admitted goal can abort the runtime.
 Measured: with the heap held to ~100 MB by a 1700 MB reservation, the shared battery's retained

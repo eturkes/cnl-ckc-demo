@@ -111,9 +111,21 @@
   interface ViewSource {
     id: string;
     url: string;
+    /** `''` for a URL that is not http(s): it shows as text and never becomes a link. */
+    href: string;
     text: string;
     domain: string;
   }
+
+  /** Only a web page may become a link; a `javascript:` or `data:` URL from a result stays text. */
+  const webHref = (url: string): string => {
+    try {
+      const { protocol } = new URL(url);
+      return protocol === 'https:' || protocol === 'http:' ? url : '';
+    } catch {
+      return '';
+    }
+  };
 
   /**
    * One turn, flattened in the script: ESLint types a `.svelte` import as `any`, so a member
@@ -154,6 +166,7 @@
       return {
         id: sourceId(turn, index),
         url,
+        href: webHref(url),
         text: found === undefined || found.title === '' ? url : found.title,
         domain: found?.domain ?? '',
       };
@@ -423,7 +436,11 @@
             <ol>
               {#each view.sources as source (source.url)}
                 <li id={source.id}>
-                  <a href={source.url} target="_blank" rel="noreferrer">{source.text}</a>
+                  {#if source.href === ''}
+                    <span class="unlinked">{source.text}</span>
+                  {:else}
+                    <a href={source.href} target="_blank" rel="noreferrer">{source.text}</a>
+                  {/if}
                   {#if source.domain !== ''}
                     <span class="meta">{source.domain}</span>
                   {/if}

@@ -66,7 +66,9 @@ conversation, and its card shows the goal and the engine's verbatim solutions be
 sentence. The sentence itself is the model's wording; no check here judges prose. c1 refuses a
 goal that reads no KB predicate, which closes the pure echo (`X = "an invented claim"` ran and
 returned its own literal, `chat-consultant-3` K6), but a goal that reads the KB can still bind a
-constant the model wrote. The card is what lets the reader see that.
+constant the model wrote. The card is what lets the reader see that. Since the close fix, every
+way a goal can succeed must read the KB (`chat-c1.md` `KB read on every path`), so only a
+constant conjoined with a KB read remains.
 
 ## Acceptance
 

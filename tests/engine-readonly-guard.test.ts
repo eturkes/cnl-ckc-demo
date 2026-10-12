@@ -62,6 +62,31 @@ const fromIndicator = (pi: string, fill: () => PlTerm = variable): PlTerm => {
   return arity === 0 ? atom(name) : compound(name, ...Array.from({ length: arity }, fill));
 };
 
+// The every-path rule (chat-c1.md `KB read on every path`, user ruling at the close), read in
+// its dual form: may this goal succeed on a path that passes no KB read? `fail`/`false` as a
+// disjunct or else branch is a path that never succeeds; anywhere else it is no read.
+const NO_READ_CONTROL = new Set(['\\+/1', 'not/1', 'ignore/1', 'forall/2']);
+const never = (term: PlTerm | undefined): boolean =>
+  term?.kind === 'atom' && (term.value === 'fail' || term.value === 'false');
+function skips(goal: PlTerm | undefined): boolean {
+  if (goal === undefined || goal.kind !== 'compound') return true;
+  const pi = indicator(goal) ?? '';
+  const [a, b] = goal.args;
+  if (KB.includes(pi) || pi === 'clause/2') return false;
+  if (NO_READ_CONTROL.has(pi)) return true;
+  if (pi === ',/2' || pi === '->/2' || pi === '*->/2') return skips(a) && skips(b);
+  if (pi === ';/2') {
+    const thenSkips =
+      a?.kind === 'compound' && (a.functor === '->' || a.functor === '*->') && a.args.length === 2
+        ? skips(a)
+        : !never(a) && skips(a);
+    return thenSkips || (!never(b) && skips(b));
+  }
+  if (pi === 'once/1') return skips(a);
+  if (['^/2', 'findall/3', 'findall/4', 'bagof/3', 'setof/3'].includes(pi)) return skips(b);
+  return true;
+}
+
 // Reference = expand only declared goal slots into a DFS queue; data never enters the queue.
 function reference(goal: PlTerm, names: readonly string[] = []): boolean {
   if (names.some((name) => /^_(?:G)?[0-9]+$/u.test(name))) return false;
@@ -97,7 +122,7 @@ function reference(goal: PlTerm, names: readonly string[] = []): boolean {
       }),
     );
   }
-  return readsKB;
+  return readsKB && !skips(goal);
 }
 
 const DATA_SHAPES: PlTerm[] = [
@@ -225,6 +250,11 @@ describe('independent read-only grammar', () => {
       if (verdict.ok) throw new Error('goal without KB read admitted');
       expect(verdict.reason).toBe('the goal reads no KB predicate');
     }
+    // A KB read in one goal slot, `true` in the others: a disjunction then has a branch that
+    // skips the KB, and `\+`/`not`/`ignore`/`forall` succeed on a path that reads nothing.
+    // Approved grader change at the close (user): this expectation was `slots.includes(index)`
+    // under the some-path rule, and fired `;/2 arg 1: expected false to be true` at the change.
+    const SKIPPING = new Set([';/2', ...NO_READ_CONTROL]);
     for (const [pi, slots] of CONTROL) {
       const template = fromIndicator(pi, () => atom('true'));
       if (template.kind !== 'compound') throw new Error('control lacks arguments');
@@ -235,9 +265,40 @@ describe('independent read-only grammar', () => {
         expect(
           compare(compound(template.functor, ...args), [], false),
           `${pi} arg ${String(index + 1)}`,
-        ).toBe(slots.includes(index));
+        ).toBe(slots.includes(index) && !SKIPPING.has(pi));
       }
     }
+  });
+
+  it('G10 requires a KB read on every way the goal can succeed', () => {
+    const kb = (): PlTerm => compound('guideline_schema_version', variable());
+    const claim = compound('=', variable(), { kind: 'string', value: 'an invented claim' });
+    const admitted: PlTerm[] = [
+      compound(';', kb(), kb()),
+      compound(';', kb(), atom('fail')),
+      compound(';', compound('->', kb(), atom('true')), atom('false')),
+      compound(';', compound('->', atom('true'), kb()), kb()),
+      compound('findall', variable(), compound(';', atom('fail'), kb()), variable()),
+      compound(',', kb(), compound('\\+', kb())),
+      compound(',', kb(), claim),
+    ];
+    const skipping: PlTerm[] = [
+      compound('once', compound(';', claim, kb())),
+      compound(';', compound('->', kb(), atom('true')), atom('true')),
+      compound('\\+', kb()),
+      compound('forall', kb(), atom('true')),
+      compound('ignore', kb()),
+      compound('findall', variable(), compound(';', claim, kb()), variable()),
+    ];
+    for (const goal of admitted) expect(compare(goal, [], false), indicator(goal)).toBe(true);
+    for (const goal of skipping) {
+      expect(compare(goal, [], false), indicator(goal)).toBe(false);
+      const verdict = guardGoal(goal, []);
+      if (verdict.ok) throw new Error('a goal with a KB-free success path was admitted');
+      expect(verdict.reason).toBe('the goal can succeed without reading a KB predicate');
+    }
+    const empty = guardGoal(compound('findall', variable(), atom('fail'), variable()), []);
+    expect(empty).toEqual({ ok: false, reason: 'the goal reads no KB predicate' });
   });
 
   it('G10 names the first refused goal in depth-first left-to-right order', () => {
@@ -293,5 +354,19 @@ describe('independent read-only grammar', () => {
       else no += 1;
     }
     expect({ yes, no }).toEqual({ yes: 200, no: 400 });
+    // The same trees unanchored, so their own control decides whether every path reads the KB.
+    let open = 0;
+    let shut = 0;
+    state = 0xc1a111;
+    for (let index = 0; index < 600; index += 1) {
+      const goal = wrap(
+        fromIndicator(pick(KB), () => structuredClone(pick(DATA_SHAPES))),
+        1 + (index % 6),
+      );
+      if (compare(goal, [], false)) open += 1;
+      else shut += 1;
+    }
+    expect(open).toBeGreaterThan(0);
+    expect(shut).toBeGreaterThan(0);
   });
 });

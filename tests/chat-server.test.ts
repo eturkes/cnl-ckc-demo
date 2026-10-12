@@ -275,6 +275,20 @@ describe('chat-c3 bridge contract', { timeout: 20_000 }, () => {
     expect(s.received('turn/start')).toHaveLength(1);
   });
 
+  // chat-close-product F1: `#ensure` handed an alive but uninitialized child to the second of two
+  // first turns, so its `thread/start` reached the fake before `initialized`.
+  it('B1 two first turns share one handshake and send nothing before initialized', async () => {
+    const s = await setup({}, 'slow-initialize');
+    const [first, second] = await Promise.all([s.open('plain'), s.open('plain')]);
+    expect(first.id).not.toBe(second.id);
+    for (const turn of [first, second]) {
+      const events = await turn.done();
+      expect(events.some((event) => event.type === 'error')).toBe(false);
+    }
+    expect(s.received('initialize')).toHaveLength(1);
+    expect(s.received('thread/start')).toHaveLength(2);
+  });
+
   it('B2 streams coalesced response and first event in order with verbatim answer bytes', async () => {
     const s = await setup();
     const turn = await s.open('transcript');

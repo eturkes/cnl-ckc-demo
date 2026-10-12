@@ -7,17 +7,6 @@ evidence gap under a durable claim, `low` = a feature or a tidy-up. A row closes
 acceptance check and leaves in that commit; the index at the foot collapses the `high` +
 `med` set to one line each.
 
-- **The judgment Worker runs locally alone** — user ruling deferred the Cloudflare deploy and
-  stopped Pages publishing, so free-text intake exists only under `pnpm intake:dev` + Vite's
-  proxy. `worker/index.ts` spends one global limiter bucket (`key: 'intake'`), correct for one
-  local caller and wrong for a public one. Accept: a deployed Worker answers every W1–W6 case of
-  `tests/intake-worker.test.ts` from its own origin, the limiter keys per client
-  (`CF-Connecting-IP`), `ALLOWED_ORIGINS` names the published page alone, and the published
-  page reaches it under its `connect-src`. `pri` low. **User ruling**: stay local — the deploy stays deferred, and this row stays open and owed to the user. **Background**: the deploy itself
-  (account, route, the key as a Worker secret) and a limiter ruling — a per-client key alone
-  lets many clients jointly spend the API key, so a public Worker likely needs a per-client
-  bucket AND a global spend bucket. Already in place: `ALLOWED_ORIGINS` is a `wrangler.jsonc`
-  var, so naming the published page is configuration, not code.
 - **Two coverage passages do not locate on their recorded page** — the owned page viewer
   marks a passage where its page's text holds it (`tests/passage-locate.test.ts`: 321 whole, 14
   continuing, 2 not found). `cdc2022-opioid-rec06` and `rec07` record page 14 (producer

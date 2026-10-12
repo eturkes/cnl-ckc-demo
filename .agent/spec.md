@@ -162,7 +162,7 @@ needing the user records its part owed; new finds become rows funded after those
 - [x] `ecca9dd` q1 `high` Browser WASM abort — closed by c2: R45's next query answers on a recreated worker.
 - [x] `ecca9dd` q2 `med` u3 heap limit — closed by c2: `tests/engine-heap.test.ts` reads `limit: 'heap'`
   on the real trip.
-- [ ] q3 `low` judgment Worker — ruled (user): stay local; owed to the user (deploy + limiter).
+- [x] `d31f758` q3 `low` judgment Worker — retired with the TypeSafe intake (approved deletion set): no Worker is left to deploy.
 - [x] `005903a` q4 `low` coverage passages: a lone bullet item leaves the locate fold → 3 of 5
   locate; ruled (user): a behavioral fix, no live review owed; `rec06` + `rec07` stay queued,
   owed to the producer (page 14 recorded, page 13 holds them).
