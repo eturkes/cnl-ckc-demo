@@ -82,7 +82,8 @@ const UNTRANSLATED_OK = new Set();
 
 /**
  * String literals in a source region, with adjacent `'a' + 'b'` concatenations
- * joined so a wrapped sentence grades as one sentence.
+ * joined so a wrapped sentence grades as one sentence. Both quote forms count: Prettier
+ * rewrites a literal holding an apostrophe to `"…"`.
  *
  * @param {string} source @returns {{key: string, text: string}[]}
  */
@@ -96,20 +97,26 @@ const literals = (source) => {
   // on a quote, so no two of them can match the same span.
   const entry =
     // eslint-disable-next-line security/detect-unsafe-regex -- each iteration anchors on a quote, so matching stays linear
-    /(?:^|\n)\s*(?:\/\*\*[\s\S]*?\*\/\s*)?([\w]+):\s*((?:'(?:[^'\\]|\\.)*'(?:\s*\+)?\s*)+)/g;
+    /(?:^|\n)\s*(?:\/\*\*[\s\S]*?\*\/\s*)?([\w]+):\s*((?:(?:'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")(?:\s*\+)?\s*)+)/g;
   let rest = body;
   for (const match of body.matchAll(entry)) {
     const [whole, key, group] = match;
     if (key === undefined || group === undefined || match.index === undefined) continue;
-    const text = [...group.matchAll(/'((?:[^'\\]|\\.)*)'/g)].map(([, s]) => s ?? '').join('');
+    const text = [...group.matchAll(/'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"/g)]
+      .map(([, single, double]) => single ?? double ?? '')
+      .join('');
     out.push({ key, text });
     // Blanked for the standalone pass, so a keyed value grades once, under its key.
     const start = match.index + whole.length - group.length;
     rest = `${rest.slice(0, start)}${' '.repeat(group.length)}${rest.slice(start + group.length)}`;
   }
   // Standalone literals, which is how `TEXT`'s arrow bodies and every template
-  // piece are reached — the entry pattern above sees quoted values alone.
-  for (const [, text] of rest.matchAll(/(?:^|[^\w'])(?:'|`)((?:[^'`\\\n]|\\.){12,})(?:'|`)/g)) {
+  // piece are reached — the entry pattern above sees quoted values alone. One scan takes both
+  // quote forms, so a quote nested inside the other form never grades as a second literal.
+  for (const [, quoted, double] of rest.matchAll(
+    /(?:^|[^\w'"])(?:(?:'|`)((?:[^'`\\\n]|\\.){12,})(?:'|`)|"((?:[^"\\\n]|\\.){12,})")/g,
+  )) {
+    const text = quoted ?? double;
     if (text !== undefined) out.push({ key: '<literal>', text });
   }
   return out;
@@ -365,7 +372,7 @@ const gradeFiller = (filler) =>
  *
  * @param {string | undefined} slice
  */
-const endsSentence = (slice) => /[.!?。！？](?:'|`)\s*\)?\s*,?\s*$/u.test(slice ?? '');
+const endsSentence = (slice) => /[.!?。！？](?:'|"|`)\s*\)?\s*,?\s*$/u.test(slice ?? '');
 
 /**
  * No string may be built by joining catalog fragments (`.claude/rules/i18n.md`): two catalog
@@ -436,8 +443,8 @@ const POLITE =
 
 /** Every quoted or template string body in a source slice. @param {string} slice @returns {string[]} */
 const stringBodies = (slice) =>
-  [...slice.matchAll(/'((?:[^'\\]|\\.)*)'|`((?:[^`\\]|\\.)*)`/g)].map(
-    ([, quoted, template]) => quoted ?? template ?? '',
+  [...slice.matchAll(/'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`((?:[^`\\]|\\.)*)`/g)].map(
+    ([, quoted, double, template]) => quoted ?? double ?? template ?? '',
   );
 
 /** @param {string} sentence @returns {number} */
@@ -550,6 +557,8 @@ const main = () => {
     ({ key, text }) => key !== '<literal>' && en.includes(`'${text}'`),
   );
   if (keyed === undefined) throw new Error(`${EN}: DESCRIPTIONS holds no single-literal value`);
+  // An apostrophe is what makes Prettier double-quote a literal.
+  const doubled = `The reader's ${Array.from({ length: 28 }, (_, i) => `word${String(i)}`).join(' ')}.`;
 
   // One control per grader, each breaking the input this grader reads. `en` standing in for
   // `ja` is the parity mutation: every value is then byte-identical to its English source.
@@ -582,6 +591,39 @@ const main = () => {
         ).failures;
         return found.length === 1 ? found : [];
       },
+    ),
+    requireFiring(
+      'copy',
+      {
+        mutation: 'one keyed DESCRIPTIONS value rewritten as a double-quoted 30-word sentence',
+        expect: [`${EN} DESCRIPTIONS.${keyed.key}: 30 words, limit 25`],
+      },
+      // Exactly one line, by key: a keyless `<literal>` line means the value escaped its key.
+      () => {
+        const found = gradeEnglish(
+          en.replace(`'${keyed.text}'`, `"${doubled}"`),
+          BUCKETS,
+          FILLER,
+        ).failures;
+        return found.length === 1 ? found : [];
+      },
+    ),
+    requireFiring(
+      'copy',
+      {
+        mutation: `the Japanese DESCRIPTIONS.${keyed.key} rewritten double-quoted, ending in する。`,
+        expect: [`${JA} DESCRIPTIONS.${keyed.key}: plain-form ending in`],
+      },
+      () =>
+        gradeJapanese(
+          en,
+          ja.replace(
+            entries(bucket(ja, JA, 'DESCRIPTIONS')).get(keyed.key) ?? '',
+            `  ${keyed.key}: "CDCの説明はここで終わる。",\n`,
+          ),
+          JA_LIMITS,
+          JA_TERMS,
+        ).failures,
     ),
     requireFiring(
       'copy',

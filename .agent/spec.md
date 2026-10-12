@@ -128,6 +128,20 @@ worker before its caller resumes (`chat-c2.md`).
 
 # Tasks
 
+MAINTAIN request: work every `.agent/deferred.md` row in rank order (6 rows at `d3c4bc5`). A row
+needing the user records its part owed; new finds become rows funded after those six.
+
+- [ ] m1 `med` copy:check reads both quote forms.
+  - Accept: a double-quoted `en.ts` value over the word limit and a double-quoted `ja.ts` value
+    ending in plain form are each refused by key.
+- [ ] m2 `med` check inventory: every gate step, lane and suite with its firing record.
+  - Accept: `.agent/contracts/mnt5-inventory.md` graded by `tests/inventory.test.ts`; owed
+    (user): the accepted-open re-ruling.
+- [ ] m3 `low` `tests/spec-check.test.ts` holds on any real spec.
+- [ ] m4 `low` a compound named `functor` decodes — owed (user): three G1 refusal cases change.
+- [ ] m5 `low` one reader-relative `Decisions` bullet — owed (user): the ruling text is theirs.
+- [ ] m6 `low` coverage passages — waits on the producer correcting B3-09/B3-10 `p14`.
+
 Closed MAINTAIN request: chat intake replaces the TypeSafe intake (`Decisions` User, plan
 `.agent/contracts/chat-plan.md`). Met when: delivered end to end + `pnpm gate` green on a clean
 tree at the closing commit.

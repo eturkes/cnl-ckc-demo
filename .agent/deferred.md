@@ -39,12 +39,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   such a compound; the chat's read-only allowlist refuses `functor/3` because of it
   (`.agent/contracts/chat-c1.md`). Accept: `X = functor(a,b)` solves with `X` decoded as a
   compound `functor/2`, and the encoder re-enters it unchanged (`=@=`). `pri` low.
-- **copy:check reads single-quoted catalog literals alone** — `tools/copy-check.mjs` `literals`
-  matches `'…'` bodies only, while Prettier rewrites any literal holding an apostrophe to `"…"`,
-  so such a value escapes the length, filler, register and join graders (found when the chat's
-  legend held `turn's`: its join grader misread the key's last sentence). The catalogs hold no
-  double-quoted value today. Accept: a double-quoted `en.ts` value over the word limit and a
-  double-quoted `ja.ts` value ending in plain form are each refused by key. `pri` med.
 - **`tests/spec-check.test.ts` needs an open row in the real spec** — its first case strips the
   ticked rows from the REAL `.agent/spec.md` and requires open rows to remain, so a `Tasks` block
   holding ticked rows alone fails the suite though `spec:check` itself grades it clean (its
@@ -59,7 +53,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 | defect | accept |
 | --- | --- |
 | Off-path checks the retired demo-tier waiver excused | a committed inventory under `.agent/contracts/` lists every check off the answer path — gate step, out-of-chain lane and suite — and each one either refuses a planted wrong input with its firing recorded, or carries its own queue row with an acceptance check; every `## Accepted-open` id is re-ruled against the same clause |
-| copy:check reads single-quoted catalog literals alone | a double-quoted `en.ts` value over the word limit and a double-quoted `ja.ts` value ending in plain form are each refused by key |
 
 ## Accepted-open
 

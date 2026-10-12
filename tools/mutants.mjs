@@ -559,4 +559,36 @@ export const MUTANTS = [
       name: 'a failed draw re-enables Load page viewer',
     },
   },
+  {
+    label: 'copy-quotes copy:check reads single-quoted English literals alone',
+    edits: [
+      {
+        path: 'tools/copy-check.mjs',
+        old: '    /(?:^|\\n)\\s*(?:\\/\\*\\*[\\s\\S]*?\\*\\/\\s*)?([\\w]+):\\s*((?:(?:\'(?:[^\'\\\\]|\\\\.)*\'|"(?:[^"\\\\]|\\\\.)*")(?:\\s*\\+)?\\s*)+)/g;',
+        new: "    /(?:^|\\n)\\s*(?:\\/\\*\\*[\\s\\S]*?\\*\\/\\s*)?([\\w]+):\\s*((?:'(?:[^'\\\\]|\\\\.)*'(?:\\s*\\+)?\\s*)+)/g;",
+      },
+      {
+        path: 'tools/copy-check.mjs',
+        old: "    const text = [...group.matchAll(/'((?:[^'\\\\]|\\\\.)*)'|\"((?:[^\"\\\\]|\\\\.)*)\"/g)]\n      .map(([, single, double]) => single ?? double ?? '')\n      .join('');",
+        new: "    const text = [...group.matchAll(/'((?:[^'\\\\]|\\\\.)*)'/g)].map(([, s]) => s ?? '').join('');",
+      },
+      {
+        path: 'tools/copy-check.mjs',
+        old: "  for (const [, quoted, double] of rest.matchAll(\n    /(?:^|[^\\w'\"])(?:(?:'|`)((?:[^'`\\\\\\n]|\\\\.){12,})(?:'|`)|\"((?:[^\"\\\\\\n]|\\\\.){12,})\")/g,\n  )) {\n    const text = quoted ?? double;\n    if (text !== undefined) out.push({ key: '<literal>', text });\n  }",
+        new: "  for (const [, text] of rest.matchAll(/(?:^|[^\\w'])(?:'|`)((?:[^'`\\\\\\n]|\\\\.){12,})(?:'|`)/g)) {\n    if (text !== undefined) out.push({ key: '<literal>', text });\n  }",
+      },
+    ],
+    check: ['node', 'tools/copy-check.mjs'],
+  },
+  {
+    label: 'copy-quotes the Japanese register reads single-quoted bodies alone',
+    edits: [
+      {
+        path: 'tools/copy-check.mjs',
+        old: "const stringBodies = (slice) =>\n  [...slice.matchAll(/'((?:[^'\\\\]|\\\\.)*)'|\"((?:[^\"\\\\]|\\\\.)*)\"|`((?:[^`\\\\]|\\\\.)*)`/g)].map(\n    ([, quoted, double, template]) => quoted ?? double ?? template ?? '',\n  );",
+        new: "const stringBodies = (slice) =>\n  [...slice.matchAll(/'((?:[^'\\\\]|\\\\.)*)'|`((?:[^`\\\\]|\\\\.)*)`/g)].map(\n    ([, quoted, template]) => quoted ?? template ?? '',\n  );",
+      },
+    ],
+    check: ['node', 'tools/copy-check.mjs'],
+  },
 ];
