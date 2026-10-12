@@ -1,6 +1,7 @@
 // `pnpm spec:check` over copies of the real spec in the states a phase leaves behind. Each
 // control strips a row of one kind, so a block holding none of that kind needs a planted row,
-// or the control fires nothing and a sound block fails the gate.
+// or the control fires nothing and a sound block fails the gate. The cases plant their own kept
+// kind when the base lacks it, so they hold whichever rows the real spec carries today.
 
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -17,6 +18,15 @@ const DIR = mkdtempSync(join(tmpdir(), 'spec-check-'));
 /** A top-level `Tasks` row of one kind, with its indented continuation lines. */
 const rows = (mark: 'x' | ' '): RegExp =>
   new RegExp(String.raw`^- \[${mark}\] .*\n(?: {2}.*\n)*`, 'gmu');
+const PLANTED = { x: '- [x] `0000000` planted ticked row.', ' ': '- [ ] planted open unit.' };
+
+/** `spec` keeping its `keep` rows alone, planting one if it holds none. */
+const holding = (spec: string, keep: 'x' | ' '): string => {
+  const kept = spec.replace(rows(keep === 'x' ? ' ' : 'x'), '');
+  return rows(keep).test(kept)
+    ? kept
+    : kept.replace('\n# Tasks\n', `\n# Tasks\n\n${PLANTED[keep]}\n`);
+};
 
 const specCheck = (spec: string): { status: number | null; output: string } => {
   const file = join(DIR, 'spec.md');
@@ -32,9 +42,13 @@ afterAll(() => {
   rmSync(DIR, { recursive: true, force: true });
 });
 
-describe('spec:check', () => {
+describe.each([
+  ['the real spec', SPEC],
+  ['the real spec with no open row', SPEC.replace(rows(' '), '')],
+  ['the real spec with no ticked row', SPEC.replace(rows('x'), '')],
+])('spec:check over %s', (_, base) => {
   it('passes a Tasks block holding open rows alone, its SHA control on a planted row', () => {
-    const spec = SPEC.replace(rows('x'), '');
+    const spec = holding(base, ' ');
     expect(spec).not.toMatch(rows('x'));
     expect(spec).toMatch(rows(' '));
     const { status, output } = specCheck(spec);
@@ -44,7 +58,7 @@ describe('spec:check', () => {
   });
 
   it('passes a Tasks block holding ticked rows alone, its open-unit controls on a planted row', () => {
-    const spec = SPEC.replace(rows(' '), '');
+    const spec = holding(base, 'x');
     expect(spec).not.toMatch(rows(' '));
     expect(spec).toMatch(rows('x'));
     const { status, output } = specCheck(spec);

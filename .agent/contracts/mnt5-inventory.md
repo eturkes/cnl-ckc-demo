@@ -155,7 +155,7 @@ red must come from a case of the named check failing on behaviour.
 | `tests/smoke.test.ts` | off | package licence drops the LLVM exception | mutate | `inv smoke: package licence omits LLVM exception` |
 | `tests/solution-streaming.dom.test.ts` | off | each streamed answer overwrites the preceding answers | mutate | `inv solution-streaming.dom: latest answer replaces earlier answers` |
 | `tests/solution-streaming.test.ts` | off | final record leaves the query open and permits nested execution | commit | `e8f7cab pnpm exec vitest run tests/solution-streaming.test.ts` → rc 1,` |
-| `tests/spec-check.test.ts` | off | checker ignores supplied spec path and grades the original | commit | `d052941 tests/spec-check.test.ts` → rc 1, `expected 'spec:check ok — 6 open, 88 ticked wit…' to match` |
+| `tests/spec-check.test.ts` | off | spec:check admitting a ticked row without its SHA | mutate | `spec-check-suite a ticked row passes without its SHA` |
 | `tests/toolchain-pins.test.ts` | off | the TypeScript pin reading another package's manifest | mutate | `inv toolchain-pins: the TypeScript pin reads another package's manifest` |
 | `tests/trace-failure.dom.test.ts` | off | failed proof renders unavailable copy instead of failure copy | mutate | `inv trace-failure.dom: failed proof shown as unavailable` |
 | `tests/validate-report.test.ts` | off | report grader counts unknown placeholders as filled findings | mutate | `inv validate-report: unknown no longer marks a placeholder` |

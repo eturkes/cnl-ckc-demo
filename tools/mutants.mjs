@@ -1412,4 +1412,26 @@ export const MUTANTS = [
     ],
     check: { test: 'tests/toolchain-pins.test.ts', name: 'caps TypeScript below 6.1' },
   },
+  {
+    label: 'spec-check-suite a ticked row passes without its SHA',
+    edits: [
+      {
+        path: 'tools/spec-check.mjs',
+        old: 'else if (!/^- \\[x\\] `[0-9a-f]{7,40}` /u.test(item)) {',
+        new: 'else if (!/^- \\[x\\] /u.test(item)) {',
+      },
+    ],
+    check: { test: 'tests/spec-check.test.ts', name: 'its SHA control on a planted row' },
+  },
+  {
+    label: 'spec-check-suite an open unit passes as a plain bullet',
+    edits: [
+      {
+        path: 'tools/spec-check.mjs',
+        old: "if (item.startsWith('- [ ] ')) continue;",
+        new: "if (!item.startsWith('- [x] ')) continue;",
+      },
+    ],
+    check: { test: 'tests/spec-check.test.ts', name: 'its open-unit controls on a planted row' },
+  },
 ];

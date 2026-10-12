@@ -134,7 +134,7 @@ needing the user records its part owed; new finds become rows funded after those
 - [x] `0727bd2` m1 `med` copy:check reads both quote forms.
   - Accept: a double-quoted `en.ts` value over the word limit and a double-quoted `ja.ts` value
     ending in plain form are each refused by key.
-- [ ] m2 `med` check inventory: every gate step, lane and suite with its firing record.
+- [x] `a98b2c9` m2 `med` check inventory: every gate step, lane and suite with its firing record.
   - Accept: `.agent/contracts/mnt5-inventory.md` graded by `tests/inventory.test.ts`; owed
     (user): the accepted-open re-ruling.
 - [ ] m3 `low` `tests/spec-check.test.ts` holds on any real spec.

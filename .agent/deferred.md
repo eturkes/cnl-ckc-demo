@@ -44,12 +44,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   such a compound; the chat's read-only allowlist refuses `functor/3` because of it
   (`.agent/contracts/chat-c1.md`). Accept: `X = functor(a,b)` solves with `X` decoded as a
   compound `functor/2`, and the encoder re-enters it unchanged (`=@=`). `pri` low.
-- **`tests/spec-check.test.ts` needs an open row in the real spec** — its first case strips the
-  ticked rows from the REAL `.agent/spec.md` and requires open rows to remain, so a `Tasks` block
-  holding ticked rows alone fails the suite though `spec:check` itself grades it clean (its
-  controls plant the missing kind, q5/q6). Found when the chat request closed every row. Accept:
-  the suite passes on a copy of the real spec holding no open row and on one holding no ticked
-  row, each case still RED when `spec:check` stops refusing its defect. `pri` low.
 - **`chat:live` carries no firing input** — the lane fails unless the live turn lands a KB part
   whose card holds the goal and an engine solution (`tools/chat-live.mjs`), yet no run ever
   plants a turn that must fail, so a lane that stopped reading the page would pass green.
