@@ -11,19 +11,20 @@ import { ROOT } from './kb/paths.mjs';
 const SPEC = process.argv[2] ?? '.agent/spec.md';
 const POINTER = '.agent/deferred.md';
 /**
- * A sound block can hold no row of one kind: `state.md` clears ticked rows at phase close, and
- * a run's last tick leaves no open row. A control missing its kind plants a row of it before
- * the pointer in a copy and breaks that, as `claims:check` plants a citation.
+ * A sound block can hold no row of one kind: `state.md` clears ticked rows at each phase close
+ * and each MAINTAIN request's close, and a run's last tick leaves no open row. A control missing
+ * its kind plants a row of it before the pointer in a copy and breaks that, as `claims:check`
+ * plants a citation.
  */
 const ROWS = {
   open: { mark: '- [ ] ', planted: '- [ ] planted control row.' },
-  ticked: { mark: '- [x] ', planted: '- [x] `0000000` planted control row.' },
+  ticked: { mark: '- [x] ', planted: '- [x] 0000000 planted control row.' },
 };
 
 /** @param {string} spec @returns {string[]} the section's top-level items, continuation lines dropped */
 const taskItems = (spec) => {
-  const start = spec.indexOf('\n# Tasks\n');
-  const end = spec.indexOf('\n# ', start + 1);
+  const start = spec.indexOf('\n## Tasks\n');
+  const end = spec.indexOf('\n## ', start + 1);
   if (start < 0 || end < 0) return [];
   return spec
     .slice(start, end)
@@ -34,7 +35,7 @@ const taskItems = (spec) => {
 /** @param {string} spec @returns {string[]} */
 export const gradeTasks = (spec) => {
   const items = taskItems(spec);
-  if (items.length === 0) return [`${SPEC} holds no "# Tasks" items`];
+  if (items.length === 0) return [`${SPEC} holds no "## Tasks" items`];
   /** @type {string[]} */
   const failures = [];
   const last = items.at(-1) ?? '';
@@ -44,7 +45,7 @@ export const gradeTasks = (spec) => {
     if (item.startsWith('- [ ] ')) continue;
     if (!item.startsWith('- [x] '))
       failures.push(`Tasks: an open unit is not a "- [ ]" row: ${head}`);
-    else if (!/^- \[x\] `[0-9a-f]{7,40}` /u.test(item)) {
+    else if (!/^- \[x\] [0-9a-f]{7,40} /u.test(item)) {
       failures.push(`Tasks: a ticked row carries no commit SHA: ${head}`);
     }
   }
@@ -93,7 +94,7 @@ const controls = [
       mutation: `${ticked.named} stripped of its SHA`,
       expect: ['a ticked row carries no commit SHA'],
     },
-    () => gradeTasks(ticked.text.replace(ticked.row, ticked.row.replace(/`[0-9a-f]{7,40}` /u, ''))),
+    () => gradeTasks(ticked.text.replace(ticked.row, ticked.row.replace(/[0-9a-f]{7,40} /u, ''))),
   ),
   requireFiring(
     'spec:check',

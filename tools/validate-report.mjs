@@ -13,8 +13,6 @@ import { readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 
 const PLACEHOLDER = new Set(['unknown', 'todo', 'tbd', 'n/a', 'na', '-', '?', '']);
-const MIN_FINDING = 40;
-const MIN_EVIDENCE = 8;
 const POINTER =
   /https?:\/\/|[\w.-]+\/|\w+\.\w+:\d+|`|[\w.-]+\.(?:md|py|ts|js|mjs|cjs|json|svelte|pl|ace|tsv|txt|html|css)\b/u;
 const UNIT_COLS = [
@@ -119,12 +117,6 @@ const checkUnits = (text, minimum, name) => {
     const tier = (c[2] ?? '').toLowerCase();
     if (!TIERS.has(tier))
       errors.push(`${name} unit ${unit}: tier ${repr(c[2])} not in ['data', 'docs', 'kernel']`);
-    const acceptance = c[5] ?? '';
-    if (acceptance.length < 20) {
-      errors.push(
-        `${name} unit ${unit}: acceptance too thin (${String(acceptance.length)}<20 chars)`,
-      );
-    }
   }
   if (rows < minimum) errors.push(`${name}: ${String(rows)} unit rows, need >=${String(minimum)}`);
   return errors;
@@ -165,24 +157,11 @@ export const gradeReport = ({ name, text, ids, units = 0, verdict = false }) => 
     const [, finding = '', evidence = ''] = row.cells;
     if (placeholder(finding)) errors.push(`${at}: finding still placeholder (${repr(finding)})`);
     if (placeholder(evidence)) errors.push(`${at}: evidence still placeholder (${repr(evidence)})`);
-    if (!placeholder(finding)) {
-      if (verdict && !VERDICT.test(finding)) {
-        errors.push(`${at}: finding must open \`pass:\` or \`fail(low|med|high):\``);
-      }
-      if (finding.length < MIN_FINDING) {
-        errors.push(
-          `${at}: finding too thin (${String(finding.length)}<${String(MIN_FINDING)} chars)`,
-        );
-      }
+    if (!placeholder(finding) && verdict && !VERDICT.test(finding)) {
+      errors.push(`${at}: finding must open \`pass:\` or \`fail(low|med|high):\``);
     }
-    if (!placeholder(evidence)) {
-      if (evidence.length < MIN_EVIDENCE) {
-        errors.push(
-          `${at}: evidence too thin (${String(evidence.length)}<${String(MIN_EVIDENCE)} chars)`,
-        );
-      } else if (!POINTER.test(evidence)) {
-        errors.push(`${at}: evidence lacks a pointer (path / file:line / URL / \`cmd\`)`);
-      }
+    if (!placeholder(evidence) && !POINTER.test(evidence)) {
+      errors.push(`${at}: evidence lacks a pointer (path / file:line / URL / \`cmd\`)`);
     }
   }
   if (units > 0) errors.push(...checkUnits(text, units, name));

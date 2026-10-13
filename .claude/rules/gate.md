@@ -3,8 +3,8 @@
 `pnpm gate` = one `&&` chain in `package.json`; every step fails closed:
 
 `audit:check → secret:check → kb:build → kb:asset-check → kb:export-check → engine:check →
-copy:check → contrast:check → presentation:check → claims:check → spec:check → format:check →
-lint → check → binding:check → build`
+copy:check → contrast:check → presentation:check → claims:check → spec:check → spec:lint →
+format:check → lint → check → binding:check → build`
 
 `package.json` is authoritative if that list ever diverges from it. The chain's per-run counts
 (checked files, tests, modules, copy strings, contrast pairs) move on almost every commit →
@@ -65,11 +65,11 @@ Step semantics a reader cannot get from the script name:
   `.ask` call-site arity, exactly one `swipl-wasm` importer (`src/engine/worker.ts` — the
   pattern must admit a BARE side-effect import, which a `from`-anchored one missed), the
   undeclared-API allowlist, and a `terms.ts` export-surface pin.
-- `copy:check` (`tools/copy-check.mjs`) runs two graders over `src/i18n/`: English on sentence
-  length and banned filler, Japanese on key parity plus the J1–J4 register rules. Why the limits do not port, and what
-  may stay untranslated, are in `.claude/rules/i18n.md`. A third grades every `.svelte` file it
-  finds by walking `src/`: the literal prose a component renders — markup text nodes and
-  human-facing attribute values, expressions stripped — at the 25-word limit plus the filler
+- `copy:check` (`tools/copy-check.mjs`) runs two graders over `src/i18n/`: English on banned
+  filler, Japanese on key parity plus the J2–J4 register rules. What may stay untranslated, and
+  why sentence length is no check, are in `.claude/rules/i18n.md`. A third grades every
+  `.svelte` file it finds by walking `src/`: the literal prose a component renders — markup
+  text nodes and human-facing attribute values, expressions stripped — through the filler
   sweep, so prose written into a new component instead of the catalog cannot escape it. A
   `WORDMARK` table pins the accepted wordmark: both catalog values, the `<h1>` that renders it
   and the `CNL / CKC` brand mark. `INTERNAL_ID` refuses any catalog string, in either locale,
@@ -102,10 +102,14 @@ Step semantics a reader cannot get from the script name:
   may hold an escaped `\|`; every run re-seeds a copy of the real registry whose first command
   carries one and requires that row back byte-identical.
 - `spec:check` (`tools/spec-check.mjs`) grades `.agent/spec.md` `Tasks`: every open unit a
-  `- [ ]` row, every ticked row a commit SHA in backticks, the last item pointing at
+  `- [ ]` row, every ticked row `- [x] <sha>`, the last item pointing at
   `.agent/deferred.md`. Format alone — a shallow CI clone cannot resolve old SHAs. No commit can
   name its own hash, so a unit's closing commit leaves its row `- [ ]` and the next commit ticks
   it with that SHA.
+- `spec:lint` (`tools/spec-lint.mjs`) runs `.agent/spec-lint`, the template's shape check over the
+  whole spec: a byte copy of `~/.local/app/agents/claude/spec-lint`, refreshed at each template
+  refresh and never edited here, because its cases live upstream (`claude/check-spec-lint`). The
+  wrapper owns this repo's controls alone.
 - **The stable censuses the rules state are graded, not trusted.** `tests/census.test.ts` (run by
   `binding:check` with the rest of the suite, after `kb:build`) holds a `CENSUS` table: each row
   anchors one claim unit in `.claude/rules/`, parses each figure out of its text and compares it
@@ -121,67 +125,10 @@ Step semantics a reader cannot get from the script name:
   brace-free ⇒ only leaf rules match and `@media` never matches alone; CSS comments strip
   first, so a documented rule carries its comment in its selector list.
 
-## Firing inputs
+Firing law + the per-step firing-input table → `.claude/rules/firing.md`, loaded on touching a
+check's files.
 
-**Every purpose-built check ships the input that makes it fail.** A check that cannot fail and
-a clean tree emit the same green, so a step may not report a count until it has proved it can
-still refuse one. `tools/control.mjs` is the shared seam: `requireFiring(check, {mutation,
-expect}, grade)` runs the check's OWN grader over a deliberately broken copy of its REAL input,
-requires the refusal to NAME what was broken, and exits 1 when the broken copy grades clean.
-Breaking the real input rather than grading a synthetic fixture is what also catches the check
-that silently stopped reading — an empty glob, a renamed region, a declared table that parsed
-to nothing. Each step's success line ends with the control that fired, so a green run says so.
-
-**Every check's firing is inventoried** in `.agent/contracts/mnt5-inventory.md`: each gate step,
-lane and `tests/*.test.ts` beside its record — an `inv` mutant, a commit body's red, a firing-input
-row below, or a queue row owed. `tests/inventory.test.ts`, run by `binding:check` with the suite,
-refuses a check without a row and a record that no longer resolves, so a new suite ships with its
-firing record. A suite's firing record is THAT suite red on a present-but-wrong implementation or
-input. These never count: a case asserting that the product refuses a hostile input, a passing
-in-suite control, a collection or import failure, a missing fixture, and a red that comes from a
-test timeout alone. A suite whose subject is test support, generated data or an installed
-manifest takes its planted input there — `tests/support/`, a `kb/generated` chunk, the suite's own
-read of the manifest — and never in `node_modules`, whose files pnpm hardlinks to the shared store.
-
-**The row a grader change edits in the table below is that change's record of the ORIGINAL
-grader's firing.** That is how the approval clause lands here: this repo's graders are the
-declared tables, allowlists and pinned surfaces those rows name, so widening an allowlist,
-raising a timeout or dropping a declared row belongs in its own approved unit, never as a side
-effect of the unit whose grader it loosens.
-
-| step | broken input | how it runs |
-|---|---|---|
-| `secret:check` | a token-shaped literal planted in a temp dir; the `TREE_TARGETS` list emptied | secretlint spawned on the literal, must exit 1, before the tree pass; the emptied list must exit 1 naming `TREE_TARGETS` — without that guard secretlint exits 2 `Not found target files` and the wrapper mislabels it `secret found in the working tree` |
-| `kb:build` | one digit changed in the bag `.sha256` sidecar | `readVerifiedBag(perturb)` re-run in process, before the real verify |
-| `kb:asset-check` | seven planted `src/zz-forbidden-reach-control.ts` inputs — an oracle reached by static import, `import()` and `fs` read, an oracle path joined or concatenated from its two bare segments, a serializing call, a copied question sentence | `tests/kb-reach.test.ts` spawns the real checker per form and requires nonzero with the offending path named; `binding:check` names all eight cases, the clean baseline included |
-| `kb:export-check` | one declared query dropped from the verified bag | `exportedQueries` re-run on the short map, must refuse by name |
-| `engine:check` | one perturbed pinned surface per predicate: the budget parameter dropped from `EngineClient.query`, a bare `swipl-wasm` import added outside the worker, a member added to `PrologConstructors`, an export added to `terms.ts` | the command re-runs itself once per row under `ENGINE_CHECK_CONTROL`; the perturbation rides the file reader, so each control drives the whole check and must exit 1 naming its predicate |
-| `engine:check` `CONTROLS` | the `CONTROLS` table emptied | its own non-empty grader, in process — emptied, no child control runs at all and the summary would otherwise end `0 controls fired` |
-| `kb:asset-check` answer-oracle reach | the real `kb/generated` tree with `question-catalog.json` read as carrying an oracle path | `answerReach` re-run in process over every production root, refusing with `answer-oracle reach in kb/generated/question-catalog.json`; a producer that wrote the path into an asset keeps its digests consistent, so only this scan names it |
-| `kb:asset-check` root tables | each of `PRODUCTION_ROOTS`, `SERIALIZE_ROOTS` and `QUESTION_ROOTS` emptied | `gradeRootTable` re-run in process per table, refusing `<TABLE> table is empty` by the table's own name, and a root that walks to no path by entry; the success line names all three controls. A scan control over a table that already failed is skipped, so the table's own refusal is what prints |
-| `kb:asset-check` `SCAN_ROOTS` | one declared root replaced by a path that does not exist | each root binds its paths and rejects zero files, so the refusal names `SCAN_ROOTS` and the root; `walk()` returning `[]` used to leave the success line reading `clean over 6 roots` |
-| `kb:asset-check` `scopes` | the REAL emitted `scopes` table sliced to zero | `validateSemanticGraphAsset(model)` re-run on the emptied table through `requireFiring`, refusing with `scopes table is empty, so graph scope validation grades no record`; it also refuses an unresolvable `edge.scope` index and an operator edge carrying none |
-| `copy:check` | the shipped English graded at limit 0 against a filler list holding `the`; one keyed `DESCRIPTIONS` value given a banned word; the same value rewritten as a double-quoted 30-word sentence; its Japanese value rewritten double-quoted, ending in `する。`; a component joining `LABELS.run` + `LABELS.cancel` added to the real set; a component rendering a literal label added to it; `en.ts` read as the Japanese catalog; the shell `<title>` prefixed; the `FILLER` table emptied; a component carrying a 30-word sentence added to the real component set; that set emptied; the English wordmark with one letter changed; one keyed `DESCRIPTIONS` value naming `u12`; the Japanese ceilings set to 0; every 知識ベース read as ナレッジベース; the first `: ` in a Japanese string read as `：`; the first `します。` read as `する。` | one per grader, in process, over the real catalogs and components; the keyed mutant and the double-quoted one must each yield EXACTLY one failure, naming its key: a keyed value is blanked before the standalone-literal pass, so it grades once, under its key, and a keyless line means the value escaped its key, the gap Prettier opens by double-quoting any literal holding an apostrophe; the emptied table must exit 1 naming `FILLER`, because the other controls survive on their own synthetic filler; the planted component must be refused by its path |
-| `contrast:check` | `--text` collapsed onto `--surface` | the pair loop re-run on the perturbed token map, must report `1:1` |
-| `presentation:check` | one `@font-face` renamed out of `app.css`; each shipped licence compared against the next package's; `overflow-wrap` stripped from every component style; `--font-code`'s generic family dropped from `app.css`; the `STACKS` table emptied; a kanji the subset lacks appended to the `ja.ts` text | one per declared table, in process; the planted kanji must be refused by its code point |
-| `binding:check` | a required case no suite defines; a required suite the run never loaded; the first required case reported skipped; the `REQUIRED` table emptied; the `LIFECYCLE` table emptied; the `MEANING` table emptied | the inventory loop re-run over the gate's OWN suite report, so none costs a second vitest; the last three feed `gradeTable` the real table emptied, through the same function the real one goes through |
-| `claims:check` | the claim set re-derived from ONE rules file, contracts dropped; the first rules claim the cell cuts short, lengthened past the cut; one `deferred` citation stripped; its queue row pruned; a `med` queue row planted with no index rewrite; the first index line repeated; when the registry cites no queue row, a copy with its first row planted `deferred` stands in for the citation controls | its own `gradeRegistry` over the real registry, in process; the short set must be refused by row count, because a sweep that silently stopped reading would otherwise agree with any registry it could still match. The lengthened claim must be refused unseeded by its anchor, then come back `unknown` from the seed's own merge — the append the old text-keyed seed carried a verdict across. Then `gradeDeferrals` twice: the first cited `deferred` row with its citation stripped, and the queue with that row's title renamed — each must name the row id. Last, `gradeIndex` over the real queue with a planted `med` row and no rewrite must report the index lacking that row's line, and the index with its first line repeated must be refused for repeating its lines. The planted copy is a user-ratified grader change: the original grader fired `no cited deferred row, so the citation controls grade nothing` on a sound registry citing no queue row. The repeated line is the index's first data line of any rank, a user-approved grader change: the original control, keyed on the first `**high**` line, fired `control did not fire — the first index line repeated reported nothing, missing "repeats or reorders its lines"` on a sound queue holding no `high` row, which chat-c2's close of the WASM-abort row left |
-| `build` licence notice | the written `dist/licenses/third-party.txt` with its first package's section cut | `checkNotice` (`tools/licences.mjs`) in the `licenceNotice` plugin's `closeBundle` re-runs `missingNotices` over the cut copy, which must name that package, then grades the file as written; a bundled `\0` module no `VIRTUAL` row maps fails the build |
-| `spec:check` | the first open unit written as a plain bullet, then with a star bullet; the first ticked row stripped of its SHA; the queue pointer dropped from the last item; on a block holding no row of a kind, a row of it planted before the pointer and broken the same way | `gradeTasks` re-run in process over the real spec, each refusal naming its defect. The planted rows are user-approved grader changes: the original controls fired `control did not fire — a ticked row stripped of its SHA reported nothing` on a sound block holding open rows alone, which every phase close leaves, and `… an open unit written as a plain bullet reported nothing` on one holding ticked rows alone, which a run's last tick leaves. `tests/spec-check.test.ts` runs the command over both states built from three bases — the real spec, and the real spec with its open rows or its ticked rows cut — each case planting the kind it keeps when its base holds none |
-| `smoke` | the same build served with its hashed `kb-*.pvm` removed; the manifest input digest altered; one served pvm byte flipped; the full-engine marker appended to the worker chunk; the entry statically importing the full-engine chunk | the stripped copy loads in its own page and the lane's boot grader must name `boot-error instead of ready`; the staleness and `fallbackSplit` (`tools/bundle.mjs`) controls run in process over the real build |
-| `browser:check` | the same build served with its Japanese `woff2` files renamed; each weight cut again without `AUTOFIT`; a build copy with `sw.js` deleted; the PVM renamed under the old `sw.js`; the built boot's status recording with its `load` change removed; the page viewer's reading with its marked text stripped; an opened corpus passage with one character appended | the boot grader must refuse the short recording by its phase list; the viewer grader must refuse the stripped reading; the corpus grader must refuse the altered passage; the lane's face grader (`document.fonts.load` of a Japanese glyph) must report the face never loaded; the parity leg must see the bare cut rasterize differently from the original; the worker-less copy must fail to boot on a severed reload; the cache probe must still find the stale PVM cached |
-| `kb:reproduce` | one asset digest changed in the second manifest | the equality seam re-run on the perturbed clone |
-| `readme:check` | the real README with `## Run locally` renamed; the reference module count off by one | both graders re-run in process before the clone, the second over the measured counts; end to end, a committed README missing its `pnpm kb:build` line exits 1 at `pnpm build` |
-| `graph:check` | one edge's `line-style` set to `dashed` in the mounted graph; `SEPARATION_PX` set to 0 | `dashControl` requires a 0 → 1 → 0 reading off the live renderer; R1 requires the probe-reported cutoff to be exactly 3 px AND a fixed absolute boundary pair where 2 px collapses and 3 px separates — at 0 every coincident midpoint reads distinct, so R1 passed vacuously while the renderer regressed |
-| `graph:check` termination | a planted non-terminating page, `tools/graph-probe/hang.html` | `GRAPH_CHECK_CONTROL=non-terminating-page node tools/graph-check.mjs` drives the REAL campaign against that page and must exit 1 naming `control/non-terminating-page` — 10.252 s measured — so a lane that cannot finish is refused BY NAME instead of by wall clock, which is the whole distinction a timeout kill destroys |
-| `graph:check` scope readings | one scope element dropped from a rendered label; the scope reordered; the negation dash removed; one scope element dropped from the fallback reading; each of `CANVAS_SCOPE_READINGS`, `FALLBACK_SCOPE_READINGS` and `SPANNING_SCOPE_READINGS` emptied; a spanning reading taken from another edge's row; the reverse spanning row removed | each refusal must NAME the case and the edge — a dropped canvas `may` reads `expected … ordered scope [should, may]`, a removed dash reads `dashed=false` — because a count alone cannot say WHICH reading regressed; each emptied table must refuse by its own table name, since the other controls survive on the two tables they do not empty and a vacuous `0 readings` would otherwise pass |
-| `graph:check` component half | the component's selection callback detached; a `graphUrl` the server does not serve; every `--graph-*` token set to `initial` on the mount host | the interaction sweep re-runs under the detached callback and `gradeInteractions` must refuse it by naming C2 and C6; the other two are the product's own failure paths, graded as C9 and C10 |
-| `chat:live` | the bridge relaying `tests/support/fake-codex.mjs`, whose answer cites a KB query it never ran | `CHAT_LIVE_CONTROL=no-kb pnpm chat:live` runs Vite and the bridge in process and calls no model; the turn settles `answered` with its part labelled `unverified`, and the lane must exit 1 naming `no KB part` |
-| `binding:replay` | `pnpm binding:replay HEAD` | both differential arms go green, so the command exits 1 instead of accepting archived-red/current-green |
-
-`audit:check`, `format:check`, `lint`, `check` and `build` are configured third-party
-checkers, not purpose-built ones, and are absent from that table by rule rather than by
-omission — except the licence notice `build` carries, which has its own row.
+## Lanes
 
 Out of the chain — each needs a real browser or two forced builds, and each reruns from
 committed state:
@@ -286,7 +233,3 @@ avg 4.6–23.5 on 8 cores (`4dc9179` body); runs at 27–33 timed out 1–20 liv
 measured envelope is the accepted bar — ≤ 2.9× cores — and no per-test timeout was raised
 for load. A red gate under heavier external load is load, not the tree: rerun it once the load
 falls.
-
-A gate backing a durable claim must rerun from committed state. A scratch-local validator is
-a temporary encoding → record its regeneration path beside the gate invocation here, and
-schedule the port as a `.agent/deferred.md` row.

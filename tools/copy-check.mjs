@@ -2,10 +2,9 @@
 // register, and hold the Japanese catalog at parity with the English one.
 //
 // Two graders, because the two languages admit different decidable rules. English
-// grades on sentence length and banned filler. Japanese grades on PARITY — every
-// English key present, every value actually rewritten — plus register J1–J4. The word limits
-// do not port — Japanese has no word spaces, so `words()` would score every
-// sentence as one word and pass anything at all.
+// grades on banned filler. Japanese grades on PARITY — every English key present, every
+// value actually rewritten — plus register J2–J4. Sentence length stays a judgment, never a
+// check (user ruling, global `CLAUDE.md` `Authoring`).
 //
 // The checker is static. There is no TypeScript runner in this repo, and adding
 // one to read two string records would cost more than parsing them does. It
@@ -51,30 +50,25 @@ const DECLARED_PAIRS = [
 const FILLER = ['simply', 'robust', 'seamlessly', 'leverage'];
 
 const EN = 'src/i18n/en.ts';
-/** The longest sentence a component may render, the same as the `DESCRIPTIONS` bucket. */
-const COMPONENT_LIMIT = 25;
 const JA = 'src/i18n/ja.ts';
 
 /**
- * Graded buckets, English only. `LABELS` and `TEXT` are chrome and interpolated
- * prose; their limits almost never bind, and the reason to grade them is the
- * banned-filler sweep.
+ * The catalog's buckets, every one graded in both locales.
  *
- * @type {{name: string, limit: number}[]}
+ * @type {{name: string}[]}
  */
 const BUCKETS = [
-  { name: 'INSTRUCTIONS', limit: 20 },
-  { name: 'DESCRIPTIONS', limit: 25 },
-  { name: 'LABELS', limit: 25 },
-  { name: 'TEXT', limit: 25 },
+  { name: 'INSTRUCTIONS' },
+  { name: 'DESCRIPTIONS' },
+  { name: 'LABELS' },
+  { name: 'TEXT' },
 ];
 
 /**
  * Keys whose Japanese value is allowed to be byte-identical to its English one.
  *
- * The word limits do NOT port: Japanese has no word spaces, so `words()` would
- * count every sentence as one and pass everything. Parity is what the gate can
- * actually decide — every key present, and every value actually rewritten.
+ * Parity is what the gate can decide — every key present, and every value actually
+ * rewritten.
  *
  * @type {Set<string>}
  */
@@ -121,31 +115,6 @@ const literals = (source) => {
   }
   return out;
 };
-
-/**
- * Split prose into sentences. A period between digits is a decimal, not a
- * boundary, so `License 1.1.` is one sentence rather than three. The sentinel is
- * a private-use codepoint: a control character would trip `no-control-regex`.
- *
- * @param {string} text @returns {string[]}
- */
-const sentences = (text) =>
-  text
-    .replace(/(\d)\.(\d)/g, '$1\uE000$2')
-    .split(/[.!?]+(?=\s|$)/)
-    .map((s) => s.replace(/\uE000/g, '.').trim())
-    .filter((s) => s !== '');
-
-/**
- * `${...}` renders as one value, so it counts as one word.
- *
- * @param {string} sentence @returns {number}
- */
-const words = (sentence) =>
-  sentence
-    .replace(/\$\{[^}]*\}/g, 'x')
-    .split(/\s+/)
-    .filter(Boolean).length;
 
 /**
  * One bucket's source text, between its `export const` and its closing `as const`.
@@ -238,32 +207,24 @@ const checkShell = (failures, en, html) => {
 };
 
 /**
- * The English register: one failure per over-long sentence and per banned word.
+ * The English register: one failure per banned word.
  *
- * `buckets` and `filler` are parameters so the control can grade the SHIPPED strings against a
- * deliberately impossible register — a limit no sentence clears, a word every page carries —
- * which proves the whole path from bucket location to comparison without writing a broken
- * string into `en.ts`.
+ * `filler` is a parameter so the control can grade the SHIPPED strings against a word every page
+ * carries, which proves the whole path from bucket location to comparison without writing a
+ * broken string into `en.ts`.
  *
- * @param {string} source @param {{name: string, limit: number}[]} buckets
- * @param {string[]} filler @returns {{failures: string[], graded: number}}
+ * @param {string} source @param {string[]} filler @returns {{failures: string[], graded: number}}
  */
-const gradeEnglish = (source, buckets, filler) => {
+const gradeEnglish = (source, filler) => {
   /** @type {string[]} */
   const failures = [];
   let graded = 0;
-  for (const { name, limit } of buckets) {
+  for (const { name } of BUCKETS) {
     const region = bucket(source, EN, name);
     const found = literals(region);
     if (found.length === 0) throw new Error(`${EN}: ${name} yielded no strings to grade`);
     for (const { key, text } of found) {
       graded += 1;
-      for (const sentence of sentences(text)) {
-        const n = words(sentence);
-        if (n > limit) {
-          failures.push(`${EN} ${name}.${key}: ${n} words, limit ${limit} — "${sentence}"`);
-        }
-      }
       for (const word of filler) {
         if (new RegExp(`\\b${word}\\b`, 'i').test(text)) {
           failures.push(`${EN} ${name}.${key}: banned word "${word}"`);
@@ -326,7 +287,7 @@ const componentText = (source) => {
 
 /**
  * Prose written straight into a component escapes the catalog grader, so it takes the same
- * register here: the `DESCRIPTIONS` limit and the filler sweep.
+ * filler sweep here.
  *
  * @param {{path: string, source: string}[]} files @param {string[]} filler
  * @returns {{failures: string[], graded: number}}
@@ -342,12 +303,6 @@ const gradeComponents = (files, filler) => {
   const failures = [];
   for (const { path, source } of files) {
     for (const text of componentText(source)) {
-      for (const sentence of sentences(text)) {
-        const n = words(sentence);
-        if (n > COMPONENT_LIMIT) {
-          failures.push(`${path}: ${n} words, limit ${COMPONENT_LIMIT} — "${sentence}"`);
-        }
-      }
       for (const word of filler) {
         if (new RegExp(`\\b${word}\\b`, 'i').test(text))
           failures.push(`${path}: banned word "${word}"`);
@@ -413,19 +368,10 @@ const gradeComposition = (files, en, ja) => {
 };
 
 /**
- * Japanese register (`.agent/contracts/mnt-d3.md`). J1 sentence ceilings in units: one
- * character, except an ASCII word run and a `${…}` interpolation count one each.
- * `INSTRUCTIONS` mirrors the English 20-word imperative at about 2 characters a word; the
- * rest follows the 50–60 字 re-check point of 公用文作成の考え方 (2022).
- */
-const JA_LIMITS = new Map([
-  ['INSTRUCTIONS', 40],
-  ['DESCRIPTIONS', 60],
-  ['LABELS', 60],
-  ['TEXT', 60],
-]);
-
-/** J2: an English source naming the pattern carries the fixed Japanese term (`i18n.md`). */
+ * Japanese register (`.agent/contracts/mnt-d3.md`) J2–J4; its J1 sentence ceilings are retired
+ * with the English caps.
+ *
+ * J2: an English source naming the pattern carries the fixed Japanese term (`i18n.md`). */
 const JA_TERMS = [
   ['knowledge base', '知識ベース'],
   ['compiled', 'コンパイル済み'],
@@ -447,23 +393,18 @@ const stringBodies = (slice) =>
     ([, quoted, double, template]) => quoted ?? double ?? template ?? '',
   );
 
-/** @param {string} sentence @returns {number} */
-const jaUnits = (sentence) =>
-  [...sentence.replace(/\$\{[^}]*\}/g, 'X').replace(/[A-Za-z0-9][A-Za-z0-9 .\-/]*/g, 'W')].length;
-
 /**
- * J1–J3 over the Japanese catalog. A sentence runs up to and including `。`, `！` or `？`; a
+ * J2–J4 over the Japanese catalog. A sentence runs up to and including `。`, `！` or `？`; a
  * trailing run with no terminator is a label, which keeps its dictionary form.
  *
- * @param {string} en @param {string} ja @param {Map<string, number>} limits
- * @param {string[][]} terms @returns {{failures: string[], graded: number}}
+ * @param {string} en @param {string} ja @param {string[][]} terms
+ * @returns {{failures: string[], graded: number}}
  */
-const gradeJapanese = (en, ja, limits, terms) => {
+const gradeJapanese = (en, ja, terms) => {
   /** @type {string[]} */
   const failures = [];
   let graded = 0;
   for (const { name } of BUCKETS) {
-    const limit = limits.get(name) ?? 0;
     const english = entries(bucket(en, EN, name));
     for (const [key, slice] of entries(bucket(ja, JA, name))) {
       const at = `${JA} ${name}.${key}`;
@@ -471,8 +412,6 @@ const gradeJapanese = (en, ja, limits, terms) => {
       for (const body of bodies) {
         for (const [sentence] of body.matchAll(/[^。！？]*[。！？]/gu)) {
           graded += 1;
-          const units = jaUnits(sentence.trim());
-          if (units > limit) failures.push(`${at}: ${String(units)} units, limit ${String(limit)}`);
           const core = sentence
             .trim()
             .slice(0, -1)
@@ -549,7 +488,8 @@ const main = () => {
     path: relative(ROOT, path),
     source: readFileSync(path, 'utf8'),
   }));
-  const planted = `<p>${Array.from({ length: 30 }, (_, i) => `word${String(i)}`).join(' ')}.</p>`;
+  const banned = FILLER[0] ?? '';
+  const planted = `<p>This page ${banned} answers.</p>`;
   const sources = components(join(ROOT, 'src'))
     .concat(walkTs(join(ROOT, 'src')))
     .map((path) => ({ path: relative(ROOT, path), source: readFileSync(path, 'utf8') }));
@@ -558,7 +498,7 @@ const main = () => {
   );
   if (keyed === undefined) throw new Error(`${EN}: DESCRIPTIONS holds no single-literal value`);
   // An apostrophe is what makes Prettier double-quote a literal.
-  const doubled = `The reader's ${Array.from({ length: 28 }, (_, i) => `word${String(i)}`).join(' ')}.`;
+  const doubled = `The reader's answer ${banned} arrives.`;
 
   // One control per grader, each breaking the input this grader reads. `en` standing in for
   // `ja` is the parity mutation: every value is then byte-identical to its English source.
@@ -566,15 +506,10 @@ const main = () => {
     requireFiring(
       'copy',
       {
-        mutation: 'the shipped English graded at limit 0 against a filler list holding "the"',
-        expect: [', limit 0 — ', 'banned word "the"'],
+        mutation: 'the shipped English graded against a filler list holding "the"',
+        expect: ['banned word "the"'],
       },
-      () =>
-        gradeEnglish(
-          en,
-          BUCKETS.map(({ name }) => ({ name, limit: 0 })),
-          ['the'],
-        ).failures,
+      () => gradeEnglish(en, ['the']).failures,
     ),
     requireFiring(
       'copy',
@@ -585,8 +520,7 @@ const main = () => {
       // Exactly one line, by key: a second, keyless line for the same string is the double grade.
       () => {
         const found = gradeEnglish(
-          en.replace(`'${keyed.text}'`, `'${keyed.text} ${FILLER[0] ?? ''}'`),
-          BUCKETS,
+          en.replace(`'${keyed.text}'`, `'${keyed.text} ${banned}'`),
           FILLER,
         ).failures;
         return found.length === 1 ? found : [];
@@ -595,16 +529,13 @@ const main = () => {
     requireFiring(
       'copy',
       {
-        mutation: 'one keyed DESCRIPTIONS value rewritten as a double-quoted 30-word sentence',
-        expect: [`${EN} DESCRIPTIONS.${keyed.key}: 30 words, limit 25`],
+        mutation:
+          'one keyed DESCRIPTIONS value rewritten as a double-quoted sentence holding a banned word',
+        expect: [`${EN} DESCRIPTIONS.${keyed.key}: banned word "${banned}"`],
       },
       // Exactly one line, by key: a keyless `<literal>` line means the value escaped its key.
       () => {
-        const found = gradeEnglish(
-          en.replace(`'${keyed.text}'`, `"${doubled}"`),
-          BUCKETS,
-          FILLER,
-        ).failures;
+        const found = gradeEnglish(en.replace(`'${keyed.text}'`, `"${doubled}"`), FILLER).failures;
         return found.length === 1 ? found : [];
       },
     ),
@@ -621,7 +552,6 @@ const main = () => {
             entries(bucket(ja, JA, 'DESCRIPTIONS')).get(keyed.key) ?? '',
             `  ${keyed.key}: "CDCの説明はここで終わる。",\n`,
           ),
-          JA_LIMITS,
           JA_TERMS,
         ).failures,
     ),
@@ -671,8 +601,8 @@ const main = () => {
     requireFiring(
       'copy',
       {
-        mutation: 'a component carrying a 30-word sentence added to the real set',
-        expect: ['src/zz-control.svelte: 30 words, limit 25'],
+        mutation: 'a component carrying a banned word added to the real set',
+        expect: [`src/zz-control.svelte: banned word "${banned}"`],
       },
       () =>
         gradeComponents([...files, { path: 'src/zz-control.svelte', source: planted }], FILLER)
@@ -715,20 +645,11 @@ const main = () => {
     ),
     requireFiring(
       'copy',
-      { mutation: 'the Japanese ceilings set to 0', expect: [`${JA} INSTRUCTIONS.`, 'limit 0'] },
-      () =>
-        gradeJapanese(en, ja, new Map([...JA_LIMITS].map(([name]) => [name, 0])), JA_TERMS)
-          .failures,
-    ),
-    requireFiring(
-      'copy',
       {
         mutation: 'every 知識ベース in the Japanese catalog read as ナレッジベース',
         expect: ['"knowledge base" must read 知識ベース'],
       },
-      () =>
-        gradeJapanese(en, ja.replaceAll('知識ベース', 'ナレッジベース'), JA_LIMITS, JA_TERMS)
-          .failures,
+      () => gradeJapanese(en, ja.replaceAll('知識ベース', 'ナレッジベース'), JA_TERMS).failures,
     ),
     requireFiring(
       'copy',
@@ -741,18 +662,14 @@ const main = () => {
           BUCKETS.flatMap(({ name }) => stringBodies(bucket(ja, JA, name))).find((body) =>
             body.includes(': '),
           ) ?? '';
-        return gradeJapanese(
-          en,
-          ja.replace(labelled, labelled.replace(': ', '：')),
-          JA_LIMITS,
-          JA_TERMS,
-        ).failures;
+        return gradeJapanese(en, ja.replace(labelled, labelled.replace(': ', '：')), JA_TERMS)
+          .failures;
       },
     ),
     requireFiring(
       'copy',
       { mutation: 'the first します。 read as する。', expect: ['plain-form ending in'] },
-      () => gradeJapanese(en, ja.replace('します。', 'する。'), JA_LIMITS, JA_TERMS).failures,
+      () => gradeJapanese(en, ja.replace('します。', 'する。'), JA_TERMS).failures,
     ),
     requireFiring(
       'copy',
@@ -767,7 +684,7 @@ const main = () => {
   ];
 
   const failures = gradeFiller(FILLER);
-  const { failures: englishFailures, graded } = gradeEnglish(en, BUCKETS, FILLER);
+  const { failures: englishFailures, graded } = gradeEnglish(en, FILLER);
   failures.push(...englishFailures);
   const { failures: componentFailures, graded: componentFiles } = gradeComponents(files, FILLER);
   failures.push(...componentFailures);
@@ -780,12 +697,7 @@ const main = () => {
   ]);
   failures.push(...idFailures);
   const compared = checkParity(failures, en, ja);
-  const { failures: registerFailures, graded: jaSentences } = gradeJapanese(
-    en,
-    ja,
-    JA_LIMITS,
-    JA_TERMS,
-  );
+  const { failures: registerFailures, graded: jaSentences } = gradeJapanese(en, ja, JA_TERMS);
   failures.push(...registerFailures);
   const shell = checkShell(failures, en, html);
 
@@ -795,8 +707,8 @@ const main = () => {
     process.exit(1);
   }
   console.log(
-    `copy: ${graded} en strings pass, ${componentFiles} components carry no over-long or filler prose, ` +
-      `${compared} ja keys at parity, ${String(jaSentences)} ja sentences within J1–J3 and no fullwidth colon, ${String(joins)} catalog joins whole sentences or declared, no component literal ` +
+    `copy: ${graded} en strings pass, ${componentFiles} components carry no filler prose, ` +
+      `${compared} ja keys at parity, ${String(jaSentences)} ja sentences within J3 and no fullwidth colon, ${String(joins)} catalog joins whole sentences or declared, no component literal ` +
       `beyond the brand mark, ` +
       `${WORDMARK.length} wordmark pins shipped, ${String(idStrings)} catalog strings name no internal id, ` +
       `${shell} shell strings match index.html; controls: ${controls.join(', ')}`,

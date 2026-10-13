@@ -168,7 +168,7 @@ export const claimSet = (override = {}) => {
   }
 
   // 2. The spec's own `Artifacts` — the run commands the project promises a reader.
-  const artifacts = /# Artifacts\n([\s\S]*?)\n# /u.exec(read('.agent/spec.md'));
+  const artifacts = /^## Artifacts\n([\s\S]*?)\n## /mu.exec(read('.agent/spec.md'));
   for (const line of (artifacts?.[1] ?? '').split('\n')) {
     if (line.trim().startsWith('- ')) {
       rows.push({

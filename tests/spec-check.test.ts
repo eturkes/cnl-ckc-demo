@@ -18,14 +18,14 @@ const DIR = mkdtempSync(join(tmpdir(), 'spec-check-'));
 /** A top-level `Tasks` row of one kind, with its indented continuation lines. */
 const rows = (mark: 'x' | ' '): RegExp =>
   new RegExp(String.raw`^- \[${mark}\] .*\n(?: {2}.*\n)*`, 'gmu');
-const PLANTED = { x: '- [x] `0000000` planted ticked row.', ' ': '- [ ] planted open unit.' };
+const PLANTED = { x: '- [x] 0000000 planted ticked row.', ' ': '- [ ] planted open unit.' };
 
 /** `spec` keeping its `keep` rows alone, planting one if it holds none. */
 const holding = (spec: string, keep: 'x' | ' '): string => {
   const kept = spec.replace(rows(keep === 'x' ? ' ' : 'x'), '');
   return rows(keep).test(kept)
     ? kept
-    : kept.replace('\n# Tasks\n', `\n# Tasks\n\n${PLANTED[keep]}\n`);
+    : kept.replace('\n## Tasks\n', `\n## Tasks\n\n${PLANTED[keep]}\n`);
 };
 
 const specCheck = (spec: string): { status: number | null; output: string } => {

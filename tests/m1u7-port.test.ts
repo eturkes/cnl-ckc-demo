@@ -1,6 +1,5 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { runInNewContext } from 'node:vm';
 
 import { describe, expect, it } from 'vitest';
 
@@ -57,28 +56,4 @@ describe('m1u7 presentation contract', () => {
     expect(missing).toEqual([]);
     expect(declared.has('--field')).toBe(false);
   });
-
-  // C6:117–118: the existing control lowers the limit; these plant the stated input instead.
-  it.each(['INSTRUCTIONS', 'DESCRIPTIONS'])(
-    'C6 refuses a 30-word sentence planted in %s by file, key and count',
-    (record) => {
-      const checker = read('tools/copy-check.mjs')
-        .replace(/^import[^\n]+;\n/gmu, '')
-        .replace(/\nmain\(\);\s*$/u, '\n(source) => gradeEnglish(source, BUCKETS, FILLER);');
-      const candidate: unknown = runInNewContext(checker);
-      expect(typeof candidate).toBe('function');
-      const grade = candidate as (source: string) => { failures: string[]; graded: number };
-      const source = read('src/i18n/en.ts');
-      expect(grade(source).failures).toEqual([]);
-      const sentence = `${Array.from({ length: 30 }, (_, index) => `word${String(index)}`).join(' ')}.`;
-      const mutant = source.replace(
-        new RegExp(`(export const ${record}[^\\n]*\\{)`, 'u'),
-        `$1\n  contractThirtyWordControl: '${sentence}',`,
-      );
-      expect(mutant).not.toBe(source);
-      expect(grade(mutant).failures).toEqual([
-        expect.stringContaining(`src/i18n/en.ts ${record}.contractThirtyWordControl: 30 words`),
-      ]);
-    },
-  );
 });

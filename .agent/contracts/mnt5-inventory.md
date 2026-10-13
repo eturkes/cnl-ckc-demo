@@ -1,7 +1,7 @@
 # Check inventory — firing records (mnt5)
 
 Every check this repo runs, each beside the record of it refusing a planted wrong input:
-`CLAUDE.md` `Engineering` verification integrity binds the whole repo
+global `CLAUDE.md` `Engineering` verification integrity binds the whole repo
 (`.claude/rules/stack.md` `Demo tier`), and a check that cannot fail and a clean tree emit the same
 green. `tests/inventory.test.ts` grades this file in the gate: one row per `pnpm gate` step, per
 out-of-chain lane in `.claude/rules/gate.md`, and per `tests/*.test.ts`, each record resolving.
@@ -21,45 +21,46 @@ Record kinds — `anchor` holds what the kind resolves:
 
 A `commit` record never counts a collection failure, an import error or a missing fixture: the
 red must come from a case of the named check failing on behaviour. The full bar for a suite's
-record is `.claude/rules/gate.md` `Firing inputs`.
+record is `.claude/rules/firing.md`.
 
 ## Gate steps
 
 | check | firing | record | anchor |
 |---|---|---|---|
 | `audit:check` | a live advisory against the locked tree | commit | `24bbb5d `pnpm gate` rc 1 at audit:check` |
-| `secret:check` | a token-shaped literal; `TREE_TARGETS` emptied | text | `.claude/rules/gate.md a token-shaped literal planted in a temp dir; the `TREE_TARGETS` list emptied` |
-| `kb:build` | one digit changed in the bag sidecar | text | `.claude/rules/gate.md one digit changed in the bag `.sha256` sidecar` |
-| `kb:asset-check` | seven planted forbidden-reach inputs | text | `.claude/rules/gate.md seven planted `src/zz-forbidden-reach-control.ts` inputs` |
-| `kb:export-check` | one declared query dropped from the bag | text | `.claude/rules/gate.md one declared query dropped from the verified bag` |
-| `engine:check` | one perturbed pinned surface per predicate | text | `.claude/rules/gate.md one perturbed pinned surface per predicate` |
-| `copy:check` | a 30-word value, double-quoted included, and fifteen more | text | `.claude/rules/gate.md the same value rewritten as a double-quoted 30-word sentence` |
-| `contrast:check` | `--text` collapsed onto `--surface` | text | `.claude/rules/gate.md `--text` collapsed onto `--surface`` |
-| `presentation:check` | one `@font-face` renamed out of `app.css`, and five more | text | `.claude/rules/gate.md one `@font-face` renamed out of `app.css`` |
-| `claims:check` | the claim set re-derived from one rules file, and five more | text | `.claude/rules/gate.md the claim set re-derived from ONE rules file, contracts dropped` |
-| `spec:check` | an open unit as a plain bullet, a ticked row without its SHA | text | `.claude/rules/gate.md the first open unit written as a plain bullet, then with a star bullet` |
+| `secret:check` | a token-shaped literal; `TREE_TARGETS` emptied | text | `.claude/rules/firing.md a token-shaped literal planted in a temp dir; the `TREE_TARGETS` list emptied` |
+| `kb:build` | one digit changed in the bag sidecar | text | `.claude/rules/firing.md one digit changed in the bag `.sha256` sidecar` |
+| `kb:asset-check` | seven planted forbidden-reach inputs | text | `.claude/rules/firing.md seven planted `src/zz-forbidden-reach-control.ts` inputs` |
+| `kb:export-check` | one declared query dropped from the bag | text | `.claude/rules/firing.md one declared query dropped from the verified bag` |
+| `engine:check` | one perturbed pinned surface per predicate | text | `.claude/rules/firing.md one perturbed pinned surface per predicate` |
+| `copy:check` | a banned word in a double-quoted value, and fifteen more | text | `.claude/rules/firing.md the same value rewritten as a double-quoted sentence holding a banned word` |
+| `contrast:check` | `--text` collapsed onto `--surface` | text | `.claude/rules/firing.md `--text` collapsed onto `--surface`` |
+| `presentation:check` | one `@font-face` renamed out of `app.css`, and five more | text | `.claude/rules/firing.md one `@font-face` renamed out of `app.css`` |
+| `claims:check` | the claim set re-derived from one rules file, and five more | text | `.claude/rules/firing.md the claim set re-derived from ONE rules file, contracts dropped` |
+| `spec:check` | an open unit as a plain bullet, a ticked row without its SHA | text | `.claude/rules/firing.md the first open unit written as a plain bullet, then with a star bullet` |
+| `spec:lint` | a backticked-SHA row planted before the pointer; `## Tasks` as H1 | text | `.claude/rules/firing.md a ticked row planted before the pointer with its SHA in backticks` |
 | `format:check` | a source line the formatter rewrites | mutate | `inv format:check: a source line the formatter would rewrite` |
 | `lint` | catalog text through an `{@html}` sink | mutate | `inv lint: a component renders catalog text through an {@html} sink` |
 | `check` | the app mounted on a number | mutate | `inv check: the app mounts on a number instead of its target element` |
-| `binding:check` | a required case no suite defines, and five more | text | `.claude/rules/gate.md a required case no suite defines; a required suite the run never loaded` |
-| `build` | the licence notice with its first section cut | text | `.claude/rules/gate.md the written `dist/licenses/third-party.txt` with its first package's section cut` |
+| `binding:check` | a required case no suite defines, and five more | text | `.claude/rules/firing.md a required case no suite defines; a required suite the run never loaded` |
+| `build` | the licence notice with its first section cut | text | `.claude/rules/firing.md the written `dist/licenses/third-party.txt` with its first package's section cut` |
 
 ## Lanes
 
 | check | firing | record | anchor |
 |---|---|---|---|
-| `kb:reproduce` | one asset digest changed in the second manifest | text | `.claude/rules/gate.md one asset digest changed in the second manifest` |
+| `kb:reproduce` | one asset digest changed in the second manifest | text | `.claude/rules/firing.md one asset digest changed in the second manifest` |
 | `engine:probe` | a reset cycle without its reset | text | `.claude/rules/gate.md Control: a cycle without its reset must be refused` |
 | `test:browser` | the typeahead window shortened to 100 ms | mutate | `inv test:browser: the typeahead window shortened to 100 ms` |
-| `smoke` | the build served without its hashed PVM, and four more | text | `.claude/rules/gate.md the same build served with its hashed `kb-*.pvm` removed` |
-| `readme:check` | `## Run locally` renamed; the module count off by one | text | `.claude/rules/gate.md the real README with `## Run locally` renamed` |
-| `browser:check` | the Japanese faces renamed, and six more | text | `.claude/rules/gate.md the same build served with its Japanese `woff2` files renamed` |
+| `smoke` | the build served without its hashed PVM, and four more | text | `.claude/rules/firing.md the same build served with its hashed `kb-*.pvm` removed` |
+| `readme:check` | `## Run locally` renamed; the module count off by one | text | `.claude/rules/firing.md the real README with `## Run locally` renamed` |
+| `browser:check` | the Japanese faces renamed, and six more | text | `.claude/rules/firing.md the same build served with its Japanese `woff2` files renamed` |
 | `visual-qa` | a box planted wider than the viewport | text | `.claude/rules/gate.md Control: a box planted wider than the viewport must read as overflow at each width` |
-| `graph:check` | one edge drawn dashed; `SEPARATION_PX` set to 0 | text | `.claude/rules/gate.md one edge's `line-style` set to `dashed` in the mounted graph` |
+| `graph:check` | one edge drawn dashed; `SEPARATION_PX` set to 0 | text | `.claude/rules/firing.md one edge's `line-style` set to `dashed` in the mounted graph` |
 | `mutate` | a mutant its check did not bind | commit | `0273a6a E03 came back GREEN` |
-| `chat:live` | the bridge relaying a fake whose answer cites a query it never ran | text | `.claude/rules/gate.md `CHAT_LIVE_CONTROL=no-kb pnpm chat:live` runs Vite and the bridge in process and calls no model` |
+| `chat:live` | the bridge relaying a fake whose answer cites a query it never ran | text | `.claude/rules/firing.md `CHAT_LIVE_CONTROL=no-kb pnpm chat:live` runs Vite and the bridge in process and calls no model` |
 | `chat:probe` | — | none | `reports and never grades: the model has no determinism control` |
-| `binding:replay` | `pnpm binding:replay HEAD` | text | `.claude/rules/gate.md both differential arms go green, so the command exits 1` |
+| `binding:replay` | `pnpm binding:replay HEAD` | text | `.claude/rules/firing.md both differential arms go green, so the command exits 1` |
 ## Suites
 
 | suite | path | firing | record | anchor |
@@ -139,7 +140,7 @@ record is `.claude/rules/gate.md` `Firing inputs`.
 | `tests/lint-directives.test.ts` | off | base lint config admits bare disables without a reason | commit | `f862574 requires `require-description`; RED on the base config` |
 | `tests/m1u5-port.dom.test.ts` | off | active option scrolls to start rather than nearest block | mutate | `inv m1u5-port.dom: active option scroll aligns at start` |
 | `tests/m1u7-port.dom.test.ts` | off | About disclosure omits first contracted font licence link | mutate | `inv m1u7-port.dom: first font licence link omitted` |
-| `tests/m1u7-port.test.ts` | off | instruction word ceiling rises from twenty to thirty | mutate | `inv m1u7-port: instruction word ceiling raised to thirty` |
+| `tests/m1u7-port.test.ts` | off | a root token outside the role names | mutate | `inv m1u7-port: a non-role root token planted` |
 | `tests/mutant-anchors.test.ts` | off | exported-query mutant names an anchor absent from its producer | mutate | `inv mutant-anchors: exported-query mutant retains a stale anchor` |
 | `tests/page-viewer.dom.test.ts` | off | failed page draw leaves retry button disabled | mutate | `C3 a failed page draw keeps Load page viewer disabled` |
 | `tests/passage-locate.test.ts` | off | locator keeps standalone bullet items that the extracted passage drops | commit | `005903a pnpm exec vitest run tests/passage-locate.test.ts` → rc 1, 2/8 red` |

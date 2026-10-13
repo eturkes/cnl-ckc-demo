@@ -17,16 +17,19 @@ User-ruled, binding on every role.
   or the model's own knowledge says so in its tag and claims no KB backing.
 - **Demo tier = no formal verification.** User ruling. The demo serves no clinical purpose: it
   demonstrates `../cnl-ckc`'s utility, and `cnl-ckc` carries the clinical-grade rigor, so its
-  formal-verification tier stays out of this repo. Every other `CLAUDE.md` `Engineering` and
-  `Session flow` clause binds the whole repo: verification integrity on and off the answer
-  path, the assurance tiers, and the IMPLEMENT + MAINTAIN teammate dispatch. On the answer
+  formal-verification tier stays out of this repo. Every other global `CLAUDE.md` `Engineering`
+  and `CLAUDE.md` `Session flow` clause binds the whole repo: verification integrity on and off
+  the answer path, the assurance tiers, and the IMPLEMENT + MAINTAIN teammate dispatch. On the answer
   path, integrity costs the overlay recipe in `.claude/rules/proof.md`. Checks the retired
   integrity waiver excused → `.agent/deferred.md` row `Off-path checks the retired demo-tier
   waiver excused`.
-- **No prototype tree** — `CLAUDE.md` `Session flow` PROTOTYPE + IMPLEMENT, inapplicable by
-  user ruling. The expedited M2–M4 surfaces played the PROTOTYPE role in place and were
-  redeveloped under M5's gates (`.agent/spec.md` `Decisions`), so `Artifacts` records no
-  prototype path and IMPLEMENT's retire-at-close has nothing to retire.
+- **No prototype tree for the expedited M2–M4 surfaces** — `CLAUDE.md` `Session flow`
+  PROTOTYPE, ITERATE + IMPLEMENT, inapplicable to them by user ruling. They played the
+  PROTOTYPE role in place and were redeveloped under M5's gates (`.agent/spec.md`
+  `Decisions`), so `Artifacts` records no prototype path, IMPLEMENT's retire-at-close has
+  nothing to retire, and no `prototype-<scope>` tag exists. A future PROTOTYPE or ITERATE
+  scope follows the template: its prototype lives at an isolated path and retires at its
+  IMPLEMENT close (user ruling).
 
 Package versions live in `package.json` + `pnpm-lock.yaml` — read them there. Constraints
 that bind a version are in `.claude/rules/toolchain.md`.

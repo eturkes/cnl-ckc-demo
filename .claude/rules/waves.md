@@ -32,6 +32,16 @@ are this repo's deltas.
   contracts, ledgers, reviewer reports, `.agent/deferred.md` rows — names the branch. A Close-order
   branch sweep covers its own wave's roster alone; renaming a cited branch invalidates the
   record it was preserving.
+- Surviving evidence branches, cited by the ledger, contracts, commit bodies and queue rows —
+  never rename one: `wt/rev-arch` `1e89286` (A8), `wt/rev-graph` `ace618a` (G3),
+  `wt/rev-assurance` `5c97965` (C2); u16 red suites `wt/tester-1` `4da48b3`, `wt/tester-2`
+  `b9278ac`, `wt/tester-3` `7ab6142`; u16 review witnesses `wt/reviewer-3` `40fd9d6`,
+  `wt/reviewer-4` `897a0a6`, `wt/reviewer-5` `abf51f8`, `wt/reviewer-6` `24acbd0`,
+  `wt/reviewer-8` `cbb14b0`, `wt/reviewer-9` `3e21deb`; `wip/u16-review`, the per-sub-unit
+  review snapshots the u16 commit bodies cite. Chat request: red suites
+  `worktree-agent-a890c938619fd3157` `8026d4e` (c1), `wt/chat-tester-2` `06483be` (c3),
+  `wt/chat-tester-3` `fd876eb` (c2), `wt/chat-tester-4` `4bd88bc` (c4); gated snapshots
+  `wip/chat-c1`…`wip/chat-c4`.
 - Research probe branches held as evidence, worktrees removed: `wt/res-m1-1` `36cc56f`
   (swipl-wasm load/worker/terms/trace/perf/test/errors/deploy), `wt/res-m1-2` `5863141`
   (cytoscape layout/perf/test, axe, contrast, combobox), `wt/res-m2-2` `0a48b79` (every
@@ -44,7 +54,7 @@ are this repo's deltas.
 - A probe branch also carries probe code `main` cannot hold. `wt/res-nl-intake`'s four `.mjs`
   probes fail `pnpm lint` under the typescript-eslint project service, which resolves every
   linted file through `tsconfig.json`; adding `.agent/` to the ESLint ignore list would be a
-  grader change, and `CLAUDE.md` `Engineering` reserves those for their own approved unit.
+  grader change, and global `CLAUDE.md` `Engineering` reserves those for their own approved unit.
 
 ## Units + teammates
 
@@ -53,7 +63,10 @@ are this repo's deltas.
   `e71486e``, each beside the command that reproduces it — `git show <sha>:<producer> >
   <producer> && pnpm kb:build && npx vitest run <suite>`
   (`.agent/archive/contracts/m5u1.md:232`, `m5u2.md:216`). A base-GREEN case is declared in
-  that same row with its reason, never manufactured. Two shapes satisfy the revision half
+  that same row with its reason, never manufactured, and stays uncredited: global
+  `Engineering` credits one through the stack's own mutation tool at default operators, none
+  runs here, and `pnpm mutate`'s hand-written mutants are firing records, never that
+  credit. Two shapes satisfy the revision half
   without a `git show`: a witness that stays inside the run, where the run IS the revision
   (`engine:check` under `ENGINE_CHECK_CONTROL`), and a differential that names its own arms
   (`pnpm binding:replay HEAD`). The residue this closes is the hand run written down —
@@ -65,7 +78,7 @@ are this repo's deltas.
   across Bash calls, so the relative form resolves against whichever tree the shell last
   entered and the write silently fails.
 - Lagging teammate → send a **cost** directive at the FIRST flat poll, not a flush directive:
-  cap each finding at ~250 chars, ship no detail sections, run one measurement pass per row,
+  each finding = its verdict + one anchor, ship no detail sections, run one measurement pass per row,
   flush after every row. A bare "flush now" moved nobody; the cost directive carried every
   lagging teammate to complete inside one poll. The brief's batch size is what it corrects.
 - **A seeded progress counter must not contain the token it counts.** u15 seeded each
@@ -95,7 +108,9 @@ evidence bar lands — a red test, or the disputed bytes in `/usr/bin/rg -Fn` fo
 `file:line` — so harvest rematches a row without opening its detail section. Grading needs a
 sibling `<stem>.ids`. A seeded all-`unknown` skeleton exits 1 — that is what makes it a
 deliverable-first counter. The Units table admits `-` in the `flags` and `depends` columns
-only; every other column rejects it. A `\|` inside a cell is content, never a delimiter.
+only; every other column rejects it. A `\|` inside a cell is content, never a delimiter. No cell
+carries a length floor (user ruling, global `CLAUDE.md` `Authoring`): a placeholder, a missing
+verdict or an evidence cell without a pointer is what fails.
 
 `.agent/review.md` is hand-maintained after its first shape; the committed ledger is the
 source, and a generator is re-derived only for a bulk reshape.

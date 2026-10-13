@@ -1,8 +1,8 @@
 // `.agent/contracts/mnt5-inventory.md` = every check this repo runs, each with the record of it
-// refusing a planted wrong input (`CLAUDE.md` `Engineering`: a check that cannot fail and a clean
-// tree emit the same green). This suite holds the inventory to the tree: a suite, gate step or lane
-// without a row reddens the gate, and so does a record that no longer resolves. A `commit:` SHA is
-// graded for form alone — a shallow CI clone cannot resolve old commits.
+// refusing a planted wrong input (global `CLAUDE.md` `Engineering`: a check that cannot fail and
+// a clean tree emit the same green). This suite holds the inventory to the tree: a suite, gate
+// step or lane without a row reddens the gate, and so does a record that no longer resolves. A
+// `commit:` SHA is graded for form alone — a shallow CI clone cannot resolve old commits.
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';

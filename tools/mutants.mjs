@@ -1255,18 +1255,15 @@ export const MUTANTS = [
     },
   },
   {
-    label: 'inv m1u7-port: instruction word ceiling raised to thirty',
+    label: 'inv m1u7-port: a non-role root token planted',
     edits: [
       {
-        path: 'tools/copy-check.mjs',
-        old: "  { name: 'INSTRUCTIONS', limit: 20 },",
-        new: "  { name: 'INSTRUCTIONS', limit: 30 },",
+        path: 'src/app.css',
+        old: '  --surface: #f5f7f9;',
+        new: '  --surface: #f5f7f9;\n  --zz-unrolled: #000;',
       },
     ],
-    check: {
-      test: 'tests/m1u7-port.test.ts',
-      name: 'C6 refuses a 30-word sentence planted in INSTRUCTIONS',
-    },
+    check: { test: 'tests/m1u7-port.test.ts', name: 'T1 defines only role-named root tokens' },
   },
   {
     label: 'inv mutant-anchors: exported-query mutant retains a stale anchor',
@@ -1418,7 +1415,7 @@ export const MUTANTS = [
     edits: [
       {
         path: 'tools/spec-check.mjs',
-        old: 'else if (!/^- \\[x\\] `[0-9a-f]{7,40}` /u.test(item)) {',
+        old: 'else if (!/^- \\[x\\] [0-9a-f]{7,40} /u.test(item)) {',
         new: 'else if (!/^- \\[x\\] /u.test(item)) {',
       },
     ],
