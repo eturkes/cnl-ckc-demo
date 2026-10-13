@@ -58,12 +58,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   firing record became `inv m1u7-port: a non-role root token planted`. Re-open trigger: a user
   ruling that restores a sentence-length check. Accept: C6 returns with that check and is seen
   red on a planted over-long sentence. `pri` low. **User ruling**: retire the caps and delete C6.
-- **`Intent` still calls free-text intake future** — `.agent/spec.md` `Intent` reads `Question
-  intake reads as future free-text input; for now a click opens a drop-down of built-in
-  questions`, while `Decisions` records the shipped chat as the free-text intake. The template
-  now keeps `Intent` agent-editable and current. Accept: the `Intent` intake line states the
-  shipped chat beside the built-in drop-down, and the session's closing message names that
-  notify-set edit. `pri` low.
 - **`copy:check` grades component prose twice** — `gradeLiterals` refuses every literal a
   component renders bar the brand mark, so `gradeComponents`' filler sweep over the same
   `componentText` can never be the sole refusal; the cap retirement left it holding that sweep
