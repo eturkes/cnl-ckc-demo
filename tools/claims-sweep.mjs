@@ -167,15 +167,16 @@ export const claimSet = (override = {}) => {
     rows.push({ source: 'shipped', at, hash: digest(claim), claim });
   }
 
-  // 2. The spec's own `Artifacts` — the run commands the project promises a reader.
+  // 2. The spec's own `Artifacts` — the run commands the project promises a reader. A bullet is
+  // one claim with its continuation lines, where a run command may sit.
   const artifacts = /^## Artifacts\n([\s\S]*?)\n## /mu.exec(read('.agent/spec.md'));
-  for (const line of (artifacts?.[1] ?? '').split('\n')) {
-    if (line.trim().startsWith('- ')) {
+  for (const unit of units(artifacts?.[1] ?? '')) {
+    if (unit.text.startsWith('- ')) {
       rows.push({
         source: 'spec',
         at: '.agent/spec.md Artifacts',
-        hash: digest(line.trim()),
-        claim: cell(line.trim()),
+        hash: digest(unit.text),
+        claim: cell(unit.text),
       });
     }
   }
@@ -372,6 +373,20 @@ const pastTheCut = () => {
   throw new Error('no rules claim runs past the cell cut, so the edit controls grade nothing');
 };
 
+/**
+ * The spec with a run command planted on a continuation line of its first `Artifacts` bullet —
+ * the line a first-line-only sweep never read.
+ *
+ * @returns {(path: string) => string}
+ */
+const continued = () => {
+  const spec = readFileSync('.agent/spec.md', 'utf8');
+  const first = /^## Artifacts\n\n(- .*)$/mu.exec(spec)?.[1];
+  if (first === undefined) throw new Error('.agent/spec.md Artifacts holds no bullet to continue');
+  const edited = spec.replace(first, `${first}\n  \`pnpm zz-control\` beside it.`);
+  return (path) => (path === '.agent/spec.md' ? edited : readFileSync(path, 'utf8'));
+};
+
 const rows = claimSet();
 
 if (process.argv.includes('--seed')) {
@@ -429,6 +444,15 @@ if (process.argv.includes('--seed')) {
     'claims:check',
     { mutation: 'that edit re-seeded', expect: ['unadjudicated: ', edit.at] },
     () => gradeRegistry(edited, table(edited, registry)),
+  );
+
+  const continuation = requireFiring(
+    'claims:check',
+    {
+      mutation: 'a run command planted on an Artifacts continuation line',
+      expect: ['(.agent/spec.md Artifacts) adjudicated other text'],
+    },
+    () => gradeRegistry(claimSet({ read: continued() }), registry),
   );
 
   const queue = readFileSync(QUEUE, 'utf8');
@@ -507,7 +531,7 @@ if (process.argv.includes('--seed')) {
     process.stdout.write(
       `claims:check ok — ${String(rows.length)} claims covered (${split}), ` +
         `every row adjudicated, ${String(deferredRows(registry).length)} deferrals cited; ` +
-        `queue index current; controls: ${control}, ${unseeded}, ${reseeded}, ${uncited}, ` +
+        `queue index current; controls: ${control}, ${unseeded}, ${reseeded}, ${continuation}, ${uncited}, ` +
         `${dangling}, ${staleIndex}, ${repeatedIndex}\n`,
     );
   }
