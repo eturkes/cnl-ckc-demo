@@ -75,7 +75,12 @@ const units = (text) => {
     }
     buffer = [];
   };
-  text.split('\n').forEach((raw, index) => {
+  const lines = text.split('\n');
+  // A leading YAML frontmatter block is a rules file's loader config, never a claim: a `paths:`
+  // glob holding a digit would otherwise read as one.
+  const body = lines[0] === '---' ? lines.indexOf('---', 1) + 1 : 0;
+  lines.forEach((raw, index) => {
+    if (index < body) return;
     const line = index + 1;
     const trimmed = raw.trim();
     if (trimmed.startsWith('```')) {
@@ -372,6 +377,28 @@ const pastTheCut = () => {
   throw new Error('no rules claim runs past the cell cut, so the edit controls grade nothing');
 };
 
+/**
+ * A rules file's frontmatter with a digit-bearing `paths:` glob planted first in its list — the
+ * shape of `firing.md`'s `mnt5-inventory.md` glob, which read as a claim.
+ *
+ * @returns {{at: string, read: (path: string) => string}}
+ */
+const plantedGlob = () => {
+  for (const file of readdirSync(RULES_DIR).sort()) {
+    const path = join(RULES_DIR, file);
+    const text = readFileSync(path, 'utf8');
+    if (!text.startsWith('---\npaths:\n')) continue;
+    const edited = text.replace('---\npaths:\n', '---\npaths:\n  - "tools/zz-control-9.mjs"\n');
+    return {
+      at: path,
+      read: (target) => (target === path ? edited : readFileSync(target, 'utf8')),
+    };
+  }
+  throw new Error(
+    'no rules file opens with a paths: frontmatter, so the frontmatter check grades nothing',
+  );
+};
+
 const rows = claimSet();
 
 if (process.argv.includes('--seed')) {
@@ -485,6 +512,12 @@ if (process.argv.includes('--seed')) {
   const pipedRow = piped[pipedAt] ?? '';
   const pipeHeld = table(rows, piped.join('\n')).split('\n').includes(pipedRow);
 
+  const glob = plantedGlob();
+  const globHeld =
+    claimSet({ read: glob.read })
+      .map(({ hash }) => hash)
+      .join() === rows.map(({ hash }) => hash).join();
+
   const failures = [
     ...gradeRegistry(rows, registry),
     ...gradeDeferrals(registry, queue),
@@ -492,6 +525,9 @@ if (process.argv.includes('--seed')) {
     ...(pipeHeld
       ? []
       : [`a command cell holding \\| does not survive pnpm claims:seed: ${pipedRow}`]),
+    ...(globHeld
+      ? []
+      : [`a digit-bearing paths: glob planted in ${glob.at} frontmatter joined the claim set`]),
   ];
   if (failures.length > 0) {
     process.stderr.write(`claims:check failed — ${failures.join('; ')}\n`);
@@ -506,7 +542,8 @@ if (process.argv.includes('--seed')) {
       .join(', ');
     process.stdout.write(
       `claims:check ok — ${String(rows.length)} claims covered (${split}), ` +
-        `every row adjudicated, ${String(deferredRows(registry).length)} deferrals cited; ` +
+        `every row adjudicated, ${String(deferredRows(registry).length)} deferrals cited, ` +
+        `a frontmatter glob planted in ${glob.at} kept out; ` +
         `queue index current; controls: ${control}, ${unseeded}, ${reseeded}, ${uncited}, ` +
         `${dangling}, ${staleIndex}, ${repeatedIndex}\n`,
     );

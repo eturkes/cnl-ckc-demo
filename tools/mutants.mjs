@@ -1454,4 +1454,9 @@ export const MUTANTS = [
     ],
     check: { test: 'tests/engine-term-identity.test.ts', name: 'refuses its re-entry by name' },
   },
+  {
+    label: 'm14 claims:check reads rules frontmatter as prose',
+    edits: [{ path: 'tools/claims-sweep.mjs', old: '    if (index < body) return;\n', new: '' }],
+    check: ['node', 'tools/claims-sweep.mjs'],
+  },
 ];
