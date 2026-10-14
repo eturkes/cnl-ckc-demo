@@ -286,33 +286,6 @@ const componentText = (source) => {
 };
 
 /**
- * Prose written straight into a component escapes the catalog grader, so it takes the same
- * filler sweep here.
- *
- * @param {{path: string, source: string}[]} files @param {string[]} filler
- * @returns {{failures: string[], graded: number}}
- */
-const gradeComponents = (files, filler) => {
-  if (files.length === 0) {
-    return {
-      failures: ['no .svelte component found under src, so component copy grades nothing'],
-      graded: 0,
-    };
-  }
-  /** @type {string[]} */
-  const failures = [];
-  for (const { path, source } of files) {
-    for (const text of componentText(source)) {
-      for (const word of filler) {
-        if (new RegExp(`\\b${word}\\b`, 'i').test(text))
-          failures.push(`${path}: banned word "${word}"`);
-      }
-    }
-  }
-  return { failures, graded: files.length };
-};
-
-/**
  * @param {readonly string[]} filler
  * @returns {string[]}
  */
@@ -467,29 +440,35 @@ const BRAND = 'CNL / CKC';
 
 /**
  * Every human-facing string lives in `src/i18n/`: a component renders catalog values, never a
- * literal text node or labelling attribute, the brand mark aside.
+ * literal text node or labelling attribute, the brand mark aside. A walk that finds no component
+ * would pass every component vacuously, so it refuses.
  *
- * @param {{path: string, source: string}[]} files @returns {string[]}
+ * @param {{path: string, source: string}[]} files
+ * @returns {{failures: string[], graded: number}}
  */
-const gradeLiterals = (files) =>
-  files
-    .filter(({ path }) => path.endsWith('.svelte'))
-    .flatMap(({ path, source }) =>
+const gradeLiterals = (files) => {
+  const components = files.filter(({ path }) => path.endsWith('.svelte'));
+  if (components.length === 0) {
+    return {
+      failures: ['no .svelte component found under src, so component copy grades nothing'],
+      graded: 0,
+    };
+  }
+  return {
+    failures: components.flatMap(({ path, source }) =>
       componentText(source)
         .filter((text) => text !== BRAND)
         .map((text) => `${path}: human-facing literal ${JSON.stringify(text)} outside src/i18n`),
-    );
+    ),
+    graded: components.length,
+  };
+};
 
 const main = () => {
   const en = readFileSync(join(ROOT, EN), 'utf8');
   const ja = readFileSync(join(ROOT, JA), 'utf8');
   const html = readFileSync(join(ROOT, 'index.html'), 'utf8');
-  const files = components(join(ROOT, 'src')).map((path) => ({
-    path: relative(ROOT, path),
-    source: readFileSync(path, 'utf8'),
-  }));
   const banned = FILLER[0] ?? '';
-  const planted = `<p>This page ${banned} answers.</p>`;
   const sources = components(join(ROOT, 'src'))
     .concat(walkTs(join(ROOT, 'src')))
     .map((path) => ({ path: relative(ROOT, path), source: readFileSync(path, 'utf8') }));
@@ -581,7 +560,7 @@ const main = () => {
         gradeLiterals([
           ...sources,
           { path: 'src/zz-literal.svelte', source: '<p>Hello reader</p>' },
-        ]),
+        ]).failures,
     ),
     requireFiring(
       'copy',
@@ -600,18 +579,8 @@ const main = () => {
     ),
     requireFiring(
       'copy',
-      {
-        mutation: 'a component carrying a banned word added to the real set',
-        expect: [`src/zz-control.svelte: banned word "${banned}"`],
-      },
-      () =>
-        gradeComponents([...files, { path: 'src/zz-control.svelte', source: planted }], FILLER)
-          .failures,
-    ),
-    requireFiring(
-      'copy',
       { mutation: 'the derived component set emptied', expect: ['no .svelte component found'] },
-      () => gradeComponents([], FILLER).failures,
+      () => gradeLiterals([]).failures,
     ),
     requireFiring(
       'copy',
@@ -686,11 +655,10 @@ const main = () => {
   const failures = gradeFiller(FILLER);
   const { failures: englishFailures, graded } = gradeEnglish(en, FILLER);
   failures.push(...englishFailures);
-  const { failures: componentFailures, graded: componentFiles } = gradeComponents(files, FILLER);
-  failures.push(...componentFailures);
   failures.push(...checkWordmark((file) => readFileSync(join(ROOT, file), 'utf8')));
   const { failures: joinFailures, joins } = gradeComposition(sources, en, ja);
-  failures.push(...joinFailures, ...gradeLiterals(sources));
+  const { failures: literalFailures, graded: componentFiles } = gradeLiterals(sources);
+  failures.push(...joinFailures, ...literalFailures);
   const { failures: idFailures, graded: idStrings } = gradeInternalIds([
     { path: EN, source: en },
     { path: JA, source: ja },
@@ -707,8 +675,8 @@ const main = () => {
     process.exit(1);
   }
   console.log(
-    `copy: ${graded} en strings pass, ${componentFiles} components carry no filler prose, ` +
-      `${compared} ja keys at parity, ${String(jaSentences)} ja sentences within J3 and no fullwidth colon, ${String(joins)} catalog joins whole sentences or declared, no component literal ` +
+    `copy: ${graded} en strings pass, ` +
+      `${compared} ja keys at parity, ${String(jaSentences)} ja sentences within J3 and no fullwidth colon, ${String(joins)} catalog joins whole sentences or declared, ${String(componentFiles)} components render no literal ` +
       `beyond the brand mark, ` +
       `${WORDMARK.length} wordmark pins shipped, ${String(idStrings)} catalog strings name no internal id, ` +
       `${shell} shell strings match index.html; controls: ${controls.join(', ')}`,
