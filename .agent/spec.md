@@ -172,16 +172,18 @@ worker before its caller resumes (`chat-c2.md`).
 - [x] 5f8e3dd m5 `low` one reader-relative `Decisions` bullet, in the text the user approved.
 - [ ] m6 `low` coverage passages — waits on the producer correcting B3-09/B3-10 `p14`.
 - [x] b36a568 m7 `med` `chat:live` gains a firing input that calls no model (new row).
-- [ ] m8 `med` `pnpm mutate` refuses a timeout-only kill — owed (user): a grader change (new row).
+- [ ] m8 `med` `pnpm mutate` refuses a timeout-only kill — owed (user): a grader change, left queued;
+  `wip/m8-mutate-timeout` `7ea4369` (new row).
 - [x] 84b0478 m9 `low` the axe-contrast pin fires in an environment that decides contrast (new row).
 - [x] f2f1bb5 m10 `low` a compound named `$t` decodes and is refused re-entry by name (new row).
 - [x] 6d45194 m11 `low` `Intent` states the shipped chat beside the built-in drop-down (refresh row).
 - [x] 2c76c7b m12 `low` a default-operator mutation tool runs over a base-green suite's imports (refresh row).
-- [ ] m13 `low` `copy:check` grades component prose once — owed (user): a grader change, or a
-  recorded reason keeps the sweep (refresh row).
-- [ ] m14 `low` `claims:check` skips rules frontmatter — owed (user): a grader change (refresh row).
-- [ ] m15 `med` `claims:check` grades each `Artifacts` bullet whole — owed (user): a grader change
-  (refresh row).
+- [ ] m13 `low` `copy:check` grades component prose once — owed (user): a grader change, left
+  queued; `wip/m13-copy-sweep` `3a438c3` (refresh row).
+- [ ] m14 `low` `claims:check` skips rules frontmatter — owed (user): a grader change, left queued;
+  `wip/m14-frontmatter` `e13a620` (refresh row).
+- [ ] m15 `med` `claims:check` grades each `Artifacts` bullet whole — owed (user): a grader change,
+  left queued; `wip/m15-artifacts` `e7e1844` (refresh row).
 - [ ] m16 `low` the exporter's five shape guards each refuse a planted malformed query (new row,
   found by m12).
 - [x] b44d709 m17 `med` the accepted-open re-ruling lands — all fifteen ids stay open (user ruling) — and
