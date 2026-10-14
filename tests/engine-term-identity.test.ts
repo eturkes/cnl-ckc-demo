@@ -162,6 +162,10 @@ it('refuses a dict whose keys spell a compound named functor or $t', () => {
     "X = d{'$t': t, functor: [[a]]}.",
     "X = _{'$t': [[a]], functor: '$t'}.",
     "X = d{'$t': [[a]], functor: '$t'}.",
+    // A `__proto__` key sets the object's prototype, so a prototype test alone is steerable.
+    "X = _{'$t': t, functor: [[a]], '__proto__': []}.",
+    "X = d{'$t': [[a]], functor: '$t', '__proto__': []}.",
+    "X = _{'$t': t, functor: [[a]], '__proto__': f(a)}.",
   ]) {
     expect(() => goalTerm(goal), goal).toThrow(DecodeError);
   }

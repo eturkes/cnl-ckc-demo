@@ -32,8 +32,9 @@ paths:
   A zero-arity compound of any name re-enters as an atom (queue row `Zero-arity compounds
   re-enter as atoms`).
 - **A dict never takes a wrapper arm**: a dict reaches the decoder as a plain object — an anonymous
-  one with no `$tag` — so its own keys can spell the `functor` or `$t` shape above; those arms admit
-  a wrapper class instance alone, and such a dict fails closed.
+  one with no `$tag` — so its own keys can spell the `functor` or `$t` shape above, and a
+  `'__proto__'` key sets its prototype. Those arms admit a value whose prototype OWNS the
+  wrapper's `arity` method: no term decodes into a function, so such a dict fails closed.
 - An improper list re-encodes as `List(prefix, '[|]'(last, Tail))`: the wrapper's `List` tests
   `if (tail)`, so an atom `''` or integer `0` tail passed straight to it collapses to `[]`,
   while a chain of `'[|]'/2` compounds recurses per cell and overflows on a long list.

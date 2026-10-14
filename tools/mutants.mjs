@@ -1459,7 +1459,7 @@ export const MUTANTS = [
     edits: [
       {
         path: 'src/engine/terms.ts',
-        old: "  // A compound NAMED `functor` writes its arguments over the name it was just given. A dict\n  // spelling the same keys is a plain object, so it stays out and fails closed below.\n  if (value.$t === 't' && Array.isArray(value.functor) && !plain(value)) {\n    return compound('functor', value.functor);\n  }\n",
+        old: "  // A compound NAMED `functor` writes its arguments over the name it was just given. A dict\n  // spelling the same keys is no wrapper compound, so it stays out and fails closed below.\n  if (value.$t === 't' && Array.isArray(value.functor) && wrapperCompound(value)) {\n    return compound('functor', value.functor);\n  }\n",
         new: '',
       },
     ],
@@ -1481,7 +1481,7 @@ export const MUTANTS = [
     edits: [
       {
         path: 'src/engine/terms.ts',
-        old: "if (value.$t === 't' && Array.isArray(value.functor) && !plain(value)) {",
+        old: "if (value.$t === 't' && Array.isArray(value.functor) && wrapperCompound(value)) {",
         new: "if (value.$t === 't' && Array.isArray(value.functor)) {",
       },
     ],
@@ -1492,7 +1492,7 @@ export const MUTANTS = [
     edits: [
       {
         path: 'src/engine/terms.ts',
-        old: "if (Array.isArray(value.$t) && value.functor === '$t' && !plain(value)) {",
+        old: "if (Array.isArray(value.$t) && value.functor === '$t' && wrapperCompound(value)) {",
         new: "if (Array.isArray(value.$t) && value.functor === '$t') {",
       },
     ],
