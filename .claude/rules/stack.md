@@ -20,9 +20,8 @@ User-ruled, binding on every role.
   formal-verification tier stays out of this repo. Every other global `CLAUDE.md` `Engineering`
   and `CLAUDE.md` `Session flow` clause binds the whole repo: verification integrity on and off
   the answer path, the assurance tiers, and the IMPLEMENT + MAINTAIN teammate dispatch. On the answer
-  path, integrity costs the overlay recipe in `.claude/rules/proof.md`. Checks the retired
-  integrity waiver excused → `.agent/deferred.md` row `Off-path checks the retired demo-tier
-  waiver excused`.
+  path, integrity costs the overlay recipe in `.claude/rules/proof.md`. Every check the retired
+  waiver excused sits beside its firing record in `.agent/contracts/mnt5-inventory.md`.
 - **No prototype tree for the expedited M2–M4 surfaces** — `CLAUDE.md` `Session flow`
   PROTOTYPE, ITERATE + IMPLEMENT, inapplicable to them by user ruling. They played the
   PROTOTYPE role in place and were redeveloped under M5's gates (`.agent/spec.md`

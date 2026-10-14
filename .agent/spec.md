@@ -48,8 +48,8 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   carries the clinical-grade rigor, so `cnl-ckc`'s formal-verification tier stays out. Every
   other global `CLAUDE.md` `Engineering` and `CLAUDE.md` `Session flow` clause binds the whole
   repo — verification integrity off the answer path too, the assurance tiers, and the IMPLEMENT +
-  MAINTAIN teammate dispatch. This retires the integrity waiver; the checks it excused are queued in
-  `.agent/deferred.md`. Binding → `.claude/rules/stack.md`.
+  MAINTAIN teammate dispatch. This retires the integrity waiver; every check it excused sits beside
+  its firing record in `.agent/contracts/mnt5-inventory.md`. Binding → `.claude/rules/stack.md`.
 - **Orphan operator contexts stay orphaned.** 71 operator-context nodes carry no edge — 64
   negation, 7 `can`, i.e. 41% of the corpus's 156 negation contexts — the body-level scopes
   whose identity binds at query time. They gain no covering edges; each records its body
@@ -106,6 +106,10 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   `A3`–`A6` stay accepted-open on their retained checks: semantics in `.svelte` components, no
   runtime validation at the worker boundary, query and proof paths that never drain
   diagnostics, and a 3,139,261 B worker booting before user activation.
+- **Accepted-open stays open.** Re-ruled against the verification-integrity clause the retired
+  waiver excused, all fifteen ids — A1 A3 A4 A5 A6 A8 A9+ A10+ A11+ · S7 · C1 C4u1 C4u4 C4u5
+  C6 — stay accepted-open, the closes proposed for C1, A11+ and C6 included; none becomes a queue
+  row. Facts per id → `.agent/contracts/mnt5-inventory.md` `## Accepted-open re-ruling`.
 
 - **The chat is the free-text intake.** It replaced the TypeSafe rule-selection intake, whose
   code, suites, gate rows, census rows and binding entries are gone. `gpt-6.1-sol`, effort
@@ -141,7 +145,7 @@ worker before its caller resumes (`chat-c2.md`).
   commit; the resumed session closes once this note is gone.
   - Committed: m1 `0727bd2`, m2 `a98b2c9`, m3 `7e31bc2`, m7 `b36a568`, m9 `84b0478`, m10
     `f2f1bb5`, the pause commit `e9ffcb7`, the template refresh `bd320a6`, m11 `6d45194`, m12
-    `2c76c7b`, then m16 (this commit).
+    `2c76c7b`, m16 `d4f6a1e`, then m17 (this commit).
   - Resumed at `bd320a6` (`pnpm gate` rc 0). Carried branches rerun there, each cherry-picked onto
     it: `wip/m4-functor` `045ece0` — the term-identity, read-only session and guard suites 261/261,
     the accept test red at base (`unsupported native tag: t`), the three G1 cases' original
@@ -152,16 +156,13 @@ worker before its caller resumes (`chat-c2.md`).
     the merged bullet alone. Prepared this session on `6d45194`, firing shown, records owed at
     landing: `wip/m13-copy-sweep` `3a438c3`, `wip/m14-frontmatter` `e13a620`,
     `wip/m15-artifacts` `e7e1844`.
-  - Next: one chained `AskUserQuestion` — the agent-side work is done: (1) the accepted-open premise — C1 + A11+
-    close, C6 closes as immutable history, A4 A5 A6 A8 stay open by the IMPLEMENT ruling; (2)+(3)
-    per id queue or keep: A1, A3, A9+ (clause index alone), A10+ (recommend keep), S7 (visual: the
-    user's live review owed), C4u1, C4u4, C4u5 — facts → `.agent/contracts/mnt5-inventory.md`
-    `## Accepted-open re-ruling`; (4) m4; (5) m5; (6) the grader changes m8, m13, m14, m15. Then
-    land each approved branch as its own unit (rebase, records, gate), fund the selected ids as
-    new rows, and close with `pnpm release:check`, `pnpm mutate` run alone, the rules upkeep, the
-    `Tasks` clearing into `.agent/archive/maintain.md` and a closing review per `CLAUDE.md`
-    `Session flow`. m6 waits: `../cnl-ckc` `2acd0d70` still records B3-09/B3-10 `p14`; the C6
-    row waits on its re-open trigger.
+  - User rulings this session: the accepted-open premise rejected and no id queued, so all
+    fifteen stay open (m17); m4 and m5 approved; the grader changes m8, m13, m14 and m15 left
+    queued, owed to the user, their branches kept. Next: m5, then m4 (each rebased onto `main`
+    with its records, gate, commit), then the close — `pnpm mutate` run alone, `pnpm
+    release:check`, a closing `reviewer`, the rules upkeep, the `Tasks` clearing into
+    `.agent/archive/maintain.md`, and this note removed. m6 waits: `../cnl-ckc` `2acd0d70` still
+    records B3-09/B3-10 `p14`; the C6 row waits on its re-open trigger.
   - Teammates: none running.
   - Scratch: `.scratch/review/mutant.mjs` = the per-mutant timeout sweep the m8 row cites.
 
@@ -188,6 +189,10 @@ worker before its caller resumes (`chat-c2.md`).
   (refresh row).
 - [ ] m16 `low` the exporter's five shape guards each refuse a planted malformed query (new row,
   found by m12).
+- [ ] m17 `med` the accepted-open re-ruling lands — all fifteen ids stay open (user ruling) — and
+  the m2 queue row closes.
+- [ ] m18 `med` `bridge.close()` awaits every child it spawned, a retired one included (new row,
+  found by m17's gate).
 - [ ] owed (user): live reviews of four approved visual units (`.claude/rules/ui.md` `User review`)
   — d5 `d6714d7` phased boot status, d17 `04ada8c` solutions rendered as they arrive, d41
   `9056d3d` the owned PDF.js page viewer, d43 `db0736f` the document-first provenance browser.

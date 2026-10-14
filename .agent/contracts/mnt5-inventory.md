@@ -168,22 +168,23 @@ record is `.claude/rules/firing.md`.
 
 The fifteen ids were ruled open under the retired waiver (`.agent/archive/review-expedited.md`
 `Rulings — closed` 4–5, a user scope ruling). Facts at `d3c4bc5`, `mnt5-reviewer-1` (reviewer),
-each retained check rerun in its own worktree; the ruling is the user's.
+each retained check rerun in its own worktree. User ruling: all fifteen stay open, the closes
+proposed for C1, A11+ and C6 included, and none becomes a queue row.
 
-| id | fact at `d3c4bc5` | evidence | proposed ruling |
+| id | fact at `d3c4bc5` | evidence | ruling |
 |---|---|---|---|
-| A1 | open: a manifest-authorized altered graph survives `kb:build` | `wt/rev-arch-1` `tools/review-probes/a1-cache.test.mjs` rc 1; `tools/kb/build.mjs:100` `assetsIntact(cached)` | queue row |
-| A3 | open: an emitted modality changed to `can` still builds | `wt/rev-arch-1` `tools/review-probes/a3-answer-equivalence.test.mjs` rc 1 | queue row |
-| A4 | open: `ProvenanceLadder.svelte` still selects proof documents | `wt/rev-arch-1` `a4-component-semantics.test.mjs` rc 1 | stays open: user ruling (`.agent/spec.md` `Decisions`, IMPLEMENT close, `review.md` A3) |
-| A5 | open: App construction boots a 3,148,507 B worker before activation | `a5-lazy-payload.test.mjs` rc 1 on an isolated build | stays open: user ruling (`review.md` A6) |
-| A6 | open: a worker response with `solutions: 'not-an-array'` is accepted | `tests/review-a6-worker-validation.test.ts` rc 1 | stays open: user ruling (`review.md` A4) |
-| A8 | open: out-of-bounds alignment parses; a stderr-emitting query succeeds | `tests/review-a8-fail-closed.test.ts` 2/2 rc 1 | stays open: user ruling (`review.md` A5) |
-| A9+ | half closed: the QLF has a consumer since `bbb4f24`; `provenance/clause-index.json` (1,877,776 B) still has none | `a9-dead-assets.test.mjs` rc 1 naming that asset alone | queue row (the index half) |
-| A10+ | open: one build reaches `deriveProvenance` three times | `a10-duplicate-derivation.test.mjs` rc 1 | queue row |
-| A11+ | closed: the publisher left at `049f5a1`; CI publishes nothing (user ruling) | `.github/workflows/ci.yml:3`; no `deploy-pages` step | close |
-| S7 | open: a missing proof-line join renders an empty clause list, then the evidence | `src/provenance/ProvenanceLadder.svelte:59`, `:208` | queue row (visual: a failure state on the accepted ladder) |
-| C1 | closed: live proof `cc8886f`, oracle `e71486e`, censuses `524dad6`, captures `1dc006f` | `clinical-proof-live` 7/7, `clinical-differential` 5/5, `census` 2/2 | close |
-| C4u1 | open: four local provenance cases; no differential, no 15-green/84-red corpus port | `tests/provenance-model.test.ts` 4/4, corpus scan rc 1 | queue row |
-| C4u4 | open: duplicate clause lines and page 0 still parse | `src/provenance/model.ts:170`, `:196` | queue row |
-| C4u5 | open: 2 of 6 ladder states carry DOM + axe (content, limit) | `tests/provenance-ladder.dom.test.ts:284`, `:308` | queue row |
-| C6 | open, historical: 5 of 10 subjects in `5ed81a3^..a944fca` miss the convention | `git log --format='%h %s' 5ed81a3^..a944fca` | close: history is immutable; the convention binds forward |
+| A1 | open: a manifest-authorized altered graph survives `kb:build` | `wt/rev-arch-1` `tools/review-probes/a1-cache.test.mjs` rc 1; `tools/kb/build.mjs:100` `assetsIntact(cached)` | stays open (user) |
+| A3 | open: an emitted modality changed to `can` still builds | `wt/rev-arch-1` `tools/review-probes/a3-answer-equivalence.test.mjs` rc 1 | stays open (user) |
+| A4 | open: `ProvenanceLadder.svelte` still selects proof documents | `wt/rev-arch-1` `a4-component-semantics.test.mjs` rc 1 | stays open (user) |
+| A5 | open: App construction boots a 3,148,507 B worker before activation | `a5-lazy-payload.test.mjs` rc 1 on an isolated build | stays open (user) |
+| A6 | open: a worker response with `solutions: 'not-an-array'` is accepted | `tests/review-a6-worker-validation.test.ts` rc 1 | stays open (user) |
+| A8 | open: out-of-bounds alignment parses; a stderr-emitting query succeeds | `tests/review-a8-fail-closed.test.ts` 2/2 rc 1 | stays open (user) |
+| A9+ | half closed: the QLF has a consumer since `bbb4f24`; `provenance/clause-index.json` (1,877,776 B) still has none | `a9-dead-assets.test.mjs` rc 1 naming that asset alone | stays open (user) |
+| A10+ | open: one build reaches `deriveProvenance` three times | `a10-duplicate-derivation.test.mjs` rc 1 | stays open (user) |
+| A11+ | closed: the publisher left at `049f5a1`; CI publishes nothing (user ruling) | `.github/workflows/ci.yml:3`; no `deploy-pages` step | stays open (user) |
+| S7 | open: a missing proof-line join renders an empty clause list, then the evidence | `src/provenance/ProvenanceLadder.svelte:59`, `:208` | stays open (user) |
+| C1 | closed: live proof `cc8886f`, oracle `e71486e`, censuses `524dad6`, captures `1dc006f` | `clinical-proof-live` 7/7, `clinical-differential` 5/5, `census` 2/2 | stays open (user) |
+| C4u1 | open: four local provenance cases; no differential, no 15-green/84-red corpus port | `tests/provenance-model.test.ts` 4/4, corpus scan rc 1 | stays open (user) |
+| C4u4 | open: duplicate clause lines and page 0 still parse | `src/provenance/model.ts:170`, `:196` | stays open (user) |
+| C4u5 | open: 2 of 6 ladder states carry DOM + axe (content, limit) | `tests/provenance-ladder.dom.test.ts:284`, `:308` | stays open (user) |
+| C6 | open, historical: 5 of 10 subjects in `5ed81a3^..a944fca` miss the convention | `git log --format='%h %s' 5ed81a3^..a944fca` | stays open (user) |
