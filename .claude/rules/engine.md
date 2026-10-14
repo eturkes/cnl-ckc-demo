@@ -29,8 +29,9 @@ paths:
 - **A compound named `functor` decodes, and re-enters at arity 1 or more**: the wrapper stores
   the name under `functor`, then writes the argument envelope over it under the name's own key,
   so `decodeTerm` reads the envelope where the name was. `tests/engine-term-identity.test.ts`.
-  A zero-arity compound of any name re-enters as an atom (queue row `Zero-arity compounds
-  re-enter as atoms`).
+- **A zero-arity compound decodes but never re-enters**: the wrapper builds a zero-argument
+  `Compound` as the atom of its name, so `createEncoder` refuses `foo()` by name rather than send
+  `foo`. `tests/engine-term-identity.test.ts`.
 - **A dict never takes a wrapper arm**: a dict reaches the decoder as a plain object — an anonymous
   one with no `$tag` — so its own keys can spell the `functor` or `$t` shape above, and a
   `'__proto__'` key sets its prototype. Those arms admit a value whose prototype OWNS the

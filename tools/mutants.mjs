@@ -1509,4 +1509,15 @@ export const MUTANTS = [
     ],
     check: { test: 'tests/chat-server.test.ts', name: 'second close waits' },
   },
+  {
+    label: 'm21 a zero-arity compound re-enters as an atom',
+    edits: [
+      {
+        path: 'src/engine/terms.ts',
+        old: '        if (term.args.length === 0) {\n          throw new DecodeError(\n            `a zero-arity compound cannot re-enter the engine (${term.functor})`,\n          );\n        }\n',
+        new: '',
+      },
+    ],
+    check: { test: 'tests/engine-term-identity.test.ts', name: 'zero-arity compound' },
+  },
 ];

@@ -194,6 +194,7 @@ worker before its caller resumes (`chat-c2.md`).
   (user): a grader change; `wip/f4-inventory` `ac40f9c` (review find F4).
 - [ ] m20 `low` the decoder's first compound arm admits a wrapper instance alone — owed (user): the
   u2-port fixtures change (review register).
+- [ ] m21 `low` a zero-arity compound is refused re-entry by name (review register J1).
 - [ ] owed (user): live reviews of four approved visual units (`.claude/rules/ui.md` `User review`)
   — d5 `d6714d7` phased boot status, d17 `04ada8c` solutions rendered as they arrive, d41
   `9056d3d` the owned PDF.js page viewer, d43 `db0736f` the document-first provenance browser.

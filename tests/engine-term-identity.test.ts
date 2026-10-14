@@ -154,6 +154,16 @@ it('decodes a compound named $t and refuses its re-entry by name', () => {
   expect(() => encode(termOf("f('$t'(a,b))"))).toThrow('a compound named $t cannot re-enter');
 });
 
+it('refuses to re-encode a zero-arity compound rather than turn it into an atom', () => {
+  // The wrapper builds a zero-argument `Compound` as the atom of its name, so `foo()` would
+  // re-enter as `foo`; decoding keeps it a compound.
+  const encode = createEncoder(engine.prolog);
+  for (const literal of ['foo()', 'functor()', 'f(g(), a)']) {
+    expect(termOf(literal).kind, literal).toBe('compound');
+    expect(() => encode(termOf(literal)), literal).toThrow('a zero-arity compound cannot re-enter');
+  }
+});
+
 it('refuses a dict whose keys spell a compound named functor or $t', () => {
   // A dict reaches the decoder as a plain object — an anonymous one with no `$tag` at all — so its
   // own keys can spell either wrapper shape above; only a wrapper instance takes those arms.

@@ -202,6 +202,13 @@ export function createEncoder(constructors: PrologConstructors): (term: PlTerm) 
         if (term.functor === '$t') {
           throw new DecodeError('a compound named $t cannot re-enter the engine');
         }
+        // The wrapper builds a zero-argument `Compound` as the atom of its name, so `foo()` would
+        // come back as `foo`. Refused, as a dict is.
+        if (term.args.length === 0) {
+          throw new DecodeError(
+            `a zero-arity compound cannot re-enter the engine (${term.functor})`,
+          );
+        }
         return new constructors.Compound(term.functor, ...term.args.map(encode));
       case 'variable': {
         let name = names.get(term.id);
