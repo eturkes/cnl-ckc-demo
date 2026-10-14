@@ -159,9 +159,11 @@ drifted. It is a diagnostic lane, separate from the catalog above.
   bans `queries/answers` reach over `tools/` — a comment merely spelling the path reddens the
   scan. `pnpm binding:check` names all four of its cases in the required inventory, so
   deleting the file, renaming a case or skipping one fails the gate.
-- The lane is GREEN at base and its whole credit is going RED when the payload stops
-  supporting an export: erasing the single `category-A-recommendation` entity line drops that
-  document from the category-A statement while the other three exports still match.
+- The lane is GREEN at base. Its firing is going RED when the payload stops supporting an
+  export: erasing the single `category-A-recommendation` entity line drops that document from
+  the category-A statement while the other three exports still match. Its credit is the
+  default-operator mutants `pnpm stryker` shows it killing in `exports.mjs`, `paths.mjs` and
+  `produce.mjs` (`.agent/contracts/mnt5-stryker.md`).
 
 ## Oracles and reach
 

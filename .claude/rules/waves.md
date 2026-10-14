@@ -63,10 +63,10 @@ are this repo's deltas.
   `e71486e``, each beside the command that reproduces it — `git show <sha>:<producer> >
   <producer> && pnpm kb:build && npx vitest run <suite>`
   (`.agent/archive/contracts/m5u1.md:232`, `m5u2.md:216`). A base-GREEN case is declared in
-  that same row with its reason, never manufactured, and stays uncredited: global
-  `Engineering` credits one through the stack's own mutation tool at default operators, none
-  runs here, and `pnpm mutate`'s hand-written mutants are firing records, never that
-  credit. Two shapes satisfy the revision half
+  that same row with its reason, never manufactured, and stays uncredited until `pnpm stryker`
+  (`tools/mutation/`, one suite per run) shows its suite killing default-operator mutants in the
+  files it imports — the credit global `Engineering` names; `pnpm mutate`'s hand-written mutants
+  are firing records, never that credit. Two shapes satisfy the revision half
   without a `git show`: a witness that stays inside the run, where the run IS the revision
   (`engine:check` under `ENGINE_CHECK_CONTROL`), and a differential that names its own arms
   (`pnpm binding:replay HEAD`). The residue this closes is the hand run written down —

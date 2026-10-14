@@ -37,6 +37,17 @@ paths:
 - Each cap here must also appear in `.github/dependabot.yml`'s `ignore` list, or the weekly
   run reopens the same gate-breaking PR.
 - ESLint config needs `@types/node`, and svelte parsing needs `extraFileExtensions`.
+- `@stryker-mutator/core` + `@stryker-mutator/vitest-runner` move together: the runner peers on
+  the EXACT core version, so the `dev-toolchain` group moves both for minor and patch and a
+  major bump moves both by hand. Stryker's default `@stryker-mutator/*` plugin glob searches
+  beside core's own install, which pnpm's isolated layout leaves without the runner →
+  `tools/mutation/stryker.config.mjs` resolves the runner itself. The runner forces threads and
+  has no browser mode, so `pnpm stryker` grades node-project suites alone.
+- `package.json` `pnpm.overrides` `typed-rest-client>qs` = the upgrade the audit ruling asks
+  for: `typed-rest-client` 2.3.1, the HTTP client of Stryker's dashboard reporter and
+  `stryker init` (`pnpm stryker` runs neither), pins `qs` 6.15.1, which three
+  moderate advisories reach, and the patched `qs` is 6.16.0. Drop the override once Stryker's
+  `typed-rest-client` pins a patched `qs`.
 - Prettier reformats `.claude/` and `.agent/` tool-owned files if unscoped →
   `.prettierignore` restricts it to first-party source. Keep that scoping.
 

@@ -58,6 +58,7 @@ record is `.claude/rules/firing.md`.
 | `visual-qa` | a box planted wider than the viewport | text | `.claude/rules/gate.md Control: a box planted wider than the viewport must read as overflow at each width` |
 | `graph:check` | one edge drawn dashed; `SEPARATION_PX` set to 0 | text | `.claude/rules/firing.md one edge's `line-style` set to `dashed` in the mounted graph` |
 | `mutate` | a mutant its check did not bind | commit | `0273a6a E03 came back GREEN` |
+| `stryker` | — | none | `reports every mutant left alive; the credit it grants is recorded per unit, never graded` |
 | `chat:live` | the bridge relaying a fake whose answer cites a query it never ran | text | `.claude/rules/firing.md `CHAT_LIVE_CONTROL=no-kb pnpm chat:live` runs Vite and the bridge in process and calls no model` |
 | `chat:probe` | — | none | `reports and never grades: the model has no determinism control` |
 | `binding:replay` | `pnpm binding:replay HEAD` | text | `.claude/rules/firing.md both differential arms go green, so the command exits 1` |

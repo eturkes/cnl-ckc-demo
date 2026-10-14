@@ -121,9 +121,9 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
 **MAIN:** premise display = deduplicated steps inside the EXISTING ladder rungs, never a new
 step type (3,930 leaves / 346 premises), carrying hypothetical origin and no source line.
 u6's oracle is GREEN at base — it guards the compiled KB, which the answer-path defect never
-broke — and stays uncredited: its RED-under-dependency-removal witness is a firing record, and
-global `CLAUDE.md` `Engineering` credits a base-green test through a default-operator mutation
-tool alone (`.agent/deferred.md`). u11 graded the scope records, u12 the
+broke; its RED-under-dependency-removal witness is a firing record, and its credit is the
+default-operator mutants `pnpm stryker` shows it killing in its three imports — every survivor,
+and every collection failure, which earns none, in `.agent/contracts/mnt5-stryker.md`. u11 graded the scope records, u12 the
 projection model and u13 the shown edge; **rendered output is graded by `pnpm graph:check`
 alone**, because a model-side assertion and a mocked DOM suite both survive a renderer that
 shows the wrong label. A model-written goal can trap the WASM runtime: a 32-step `atom_concat`
@@ -140,7 +140,8 @@ worker before its caller resumes (`chat-c2.md`).
   owes, or waiting on its re-open trigger, and `pnpm gate` green on a clean tree at the closing
   commit; the resumed session closes once this note is gone.
   - Committed: m1 `0727bd2`, m2 `a98b2c9`, m3 `7e31bc2`, m7 `b36a568`, m9 `84b0478`, m10
-    `f2f1bb5`, the pause commit `e9ffcb7`, the template refresh `bd320a6`, then m11 (this commit).
+    `f2f1bb5`, the pause commit `e9ffcb7`, the template refresh `bd320a6`, m11 `6d45194`, then
+    m12 (this commit).
   - Resumed at `bd320a6` (`pnpm gate` rc 0). Carried branches rerun there, each cherry-picked onto
     it: `wip/m4-functor` `045ece0` — the term-identity, read-only session and guard suites 261/261,
     the accept test red at base (`unsupported native tag: t`), the three G1 cases' original
@@ -148,9 +149,10 @@ worker before its caller resumes (`chat-c2.md`).
     amendment and a mutant. `wip/m8-mutate-timeout` `7ea4369` — the planted stall reads
     `INCONCLUSIVE — failed by timeout alone`, rc 1, the current grader `RED — killed`, rc 0; owes
     the `gate.md` mutate rows and the inventory's mutate lane row. `wip/m5-decisions` `4900d24` —
-    the merged bullet alone.
-  - Order: agent-side work first — m11, m12, then m13–m15 prepared as `wip/` branches with their
-    firing shown — then one chained `AskUserQuestion`: (1) the accepted-open premise — C1 + A11+
+    the merged bullet alone. Prepared this session on `6d45194`, firing shown, records owed at
+    landing: `wip/m14-frontmatter` `e13a620`, `wip/m15-artifacts` `e7e1844`.
+  - Order: agent-side work first — m11, m12, m13 prepared as a `wip/` branch, m16 — then one
+    chained `AskUserQuestion`: (1) the accepted-open premise — C1 + A11+
     close, C6 closes as immutable history, A4 A5 A6 A8 stay open by the IMPLEMENT ruling; (2)+(3)
     per id queue or keep: A1, A3, A9+ (clause index alone), A10+ (recommend keep), S7 (visual: the
     user's live review owed), C4u1, C4u4, C4u5 — facts → `.agent/contracts/mnt5-inventory.md`
@@ -177,13 +179,15 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] m8 `med` `pnpm mutate` refuses a timeout-only kill — owed (user): a grader change (new row).
 - [x] 84b0478 m9 `low` the axe-contrast pin fires in an environment that decides contrast (new row).
 - [x] f2f1bb5 m10 `low` a compound named `$t` decodes and is refused re-entry by name (new row).
-- [ ] m11 `low` `Intent` states the shipped chat beside the built-in drop-down (refresh row).
+- [x] 6d45194 m11 `low` `Intent` states the shipped chat beside the built-in drop-down (refresh row).
 - [ ] m12 `low` a default-operator mutation tool runs over a base-green suite's imports (refresh row).
 - [ ] m13 `low` `copy:check` grades component prose once — owed (user): a grader change, or a
   recorded reason keeps the sweep (refresh row).
 - [ ] m14 `low` `claims:check` skips rules frontmatter — owed (user): a grader change (refresh row).
 - [ ] m15 `med` `claims:check` grades each `Artifacts` bullet whole — owed (user): a grader change
   (refresh row).
+- [ ] m16 `low` the exporter's five shape guards each refuse a planted malformed query (new row,
+  found by m12).
 - [ ] owed (user): live reviews of four approved visual units (`.claude/rules/ui.md` `User review`)
   — d5 `d6714d7` phased boot status, d17 `04ada8c` solutions rendered as they arrive, d41
   `9056d3d` the owned PDF.js page viewer, d43 `db0736f` the document-first provenance browser.

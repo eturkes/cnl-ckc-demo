@@ -10,7 +10,7 @@ import svelteConfig from './svelte.config.js';
 
 export default ts.config(
   // `.vite/` is the root-resolved build cache; it holds bundled dependency code.
-  { ignores: ['dist/', 'kb/', '.scratch/', '.vite/'] },
+  { ignores: ['dist/', 'kb/', '.scratch/', '.vite/', '.stryker-tmp/', 'reports/'] },
   js.configs.recommended,
   ts.configs.recommendedTypeChecked,
   svelte.configs.recommended,
