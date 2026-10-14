@@ -6,6 +6,38 @@ names.
 
 ## Tasks
 
+Closed MAINTAIN request: work every `.agent/deferred.md` row in rank order (6 rows at
+`d3c4bc5`), paused at `e9ffcb7`, resumed at `bd320a6`. Met when: every row closed by its
+own acceptance check in its own commit, recorded blocked on the user with what it owes, or
+waiting on its re-open trigger, and `pnpm gate` green on a clean tree at the closing commit.
+
+- [x] `0727bd2` m1 `med` copy:check reads both quote forms.
+  - Accept: a double-quoted `en.ts` value over the word limit and a double-quoted `ja.ts` value
+    ending in plain form are each refused by key.
+- [x] `a98b2c9` m2 `med` check inventory: every gate step, lane and suite with its firing record.
+  - Accept: `.agent/contracts/mnt5-inventory.md` graded by `tests/inventory.test.ts`; owed
+    (user): the accepted-open re-ruling.
+- [x] `7e31bc2` m3 `low` `tests/spec-check.test.ts` holds on any real spec.
+- [x] `a5419e3` m4 `low` a compound named `functor` decodes; the three G1 refusal cases change (user-approved).
+- [x] `5f8e3dd` m5 `low` one reader-relative `Decisions` bullet, in the text the user approved.
+- [x] `b36a568` m7 `med` `chat:live` gains a firing input that calls no model (new row).
+- [x] `84b0478` m9 `low` the axe-contrast pin fires in an environment that decides contrast (new row).
+- [x] `f2f1bb5` m10 `low` a compound named `$t` decodes and is refused re-entry by name (new row).
+- [x] `6d45194` m11 `low` `Intent` states the shipped chat beside the built-in drop-down (refresh row).
+- [x] `2c76c7b` m12 `low` a default-operator mutation tool runs over a base-green suite's imports (refresh row).
+- [x] `d4f6a1e` m16 `low` the exporter's five shape guards each refuse a planted malformed query (new row,
+  found by m12).
+- [x] `b44d709` m17 `med` the accepted-open re-ruling lands — all fifteen ids stay open (user ruling) — and
+  the m2 queue row closes.
+- [x] `53105de` m18 `med` `bridge.close()` awaits every child it spawned, a retired one included (new row, found by
+  m17's gate); its test race `e373681`.
+- [x] `ac8c4a8` m21 `low` a zero-arity compound is refused re-entry by name (review register J1).
+- [x] `8a56ec3` Close: `mnt5-reviewer-3` (reviewer) 12/12 rows over `b6b455a` — 7 pass; F1 (major) fixed over two
+  rounds (`8c1f3e1`, `8a56ec3`), F2 (major), F3 and F5 (minor) fixed in `8c1f3e1`, re-review pass; F4
+  (major) queued as m19, a change to m2's grading check owed to the user; register: the first
+  compound arm (m20, owed), J1 → m21 `ac8c4a8`. At `ac8c4a8`: `pnpm release:check` rc 0, `pnpm
+  mutate` 125/125; rules upkeep `b6b455a`.
+
 Closed MAINTAIN request: chat intake replaces the TypeSafe intake (`Decisions` User, plan
 `.agent/contracts/chat-plan.md`). Met when: delivered end to end + `pnpm gate` green on a clean
 tree at the closing commit.

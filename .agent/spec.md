@@ -133,68 +133,19 @@ worker before its caller resumes (`chat-c2.md`).
 
 ## Tasks
 
-- [ ] RESUME: MAINTAIN request — work every `.agent/deferred.md` row in rank order (6 rows at
-  `d3c4bc5`); a row needing the user records its part owed; new finds become rows funded after
-  those six. Finish line in force = this request's `Met when` — every `.agent/deferred.md` row
-  closed by its own acceptance check in its own commit, recorded blocked on the user with what it
-  owes, or waiting on its re-open trigger, and `pnpm gate` green on a clean tree at the closing
-  commit; the resumed session closes once this note is gone.
-  - Committed: m1 `0727bd2`, m2 `a98b2c9`, m3 `7e31bc2`, m7 `b36a568`, m9 `84b0478`, m10
-    `f2f1bb5`, the pause commit `e9ffcb7`, the template refresh `bd320a6`, m11 `6d45194`, m12
-    `2c76c7b`, m16 `d4f6a1e`, m17 `b44d709`, m5 `5f8e3dd`, m4 `a5419e3`, then m18 (this commit).
-  - Resumed at `bd320a6` (`pnpm gate` rc 0). Carried branches rerun there, each cherry-picked onto
-    it: `wip/m4-functor` `045ece0` — the term-identity, read-only session and guard suites 261/261,
-    the accept test red at base (`unsupported native tag: t`), the three G1 cases' original
-    expectations red against the fix (`to match /functor|decode/iu`); owes the `chat-c1.md`
-    amendment and a mutant. `wip/m8-mutate-timeout` `7ea4369` — the planted stall reads
-    `INCONCLUSIVE — failed by timeout alone`, rc 1, the current grader `RED — killed`, rc 0; owes
-    the `gate.md` mutate rows and the inventory's mutate lane row. `wip/m5-decisions` `4900d24` —
-    the merged bullet alone. Prepared this session on `6d45194`, firing shown, records owed at
-    landing: `wip/m13-copy-sweep` `3a438c3`, `wip/m14-frontmatter` `e13a620`,
-    `wip/m15-artifacts` `e7e1844`.
-  - User rulings this session: the accepted-open premise rejected and no id queued, so all
-    fifteen stay open (m17); m4 and m5 approved; the grader changes m8, m13, m14 and m15 left
-    queued, owed to the user, their branches kept. Next: the close — `pnpm mutate` run alone, `pnpm
-    release:check`, a closing `reviewer`, the rules upkeep, the `Tasks` clearing into
-    `.agent/archive/maintain.md`, and this note removed. m6 waits: `../cnl-ckc` `2acd0d70` still
-    records B3-09/B3-10 `p14`; the C6 row waits on its re-open trigger.
-  - Teammates: none running.
-  - Scratch: `.scratch/review/mutant.mjs` = the per-mutant timeout sweep the m8 row cites.
-
-- [x] 0727bd2 m1 `med` copy:check reads both quote forms.
-  - Accept: a double-quoted `en.ts` value over the word limit and a double-quoted `ja.ts` value
-    ending in plain form are each refused by key.
-- [x] a98b2c9 m2 `med` check inventory: every gate step, lane and suite with its firing record.
-  - Accept: `.agent/contracts/mnt5-inventory.md` graded by `tests/inventory.test.ts`; owed
-    (user): the accepted-open re-ruling.
-- [x] 7e31bc2 m3 `low` `tests/spec-check.test.ts` holds on any real spec.
-- [x] a5419e3 m4 `low` a compound named `functor` decodes; the three G1 refusal cases change (user-approved).
-- [x] 5f8e3dd m5 `low` one reader-relative `Decisions` bullet, in the text the user approved.
 - [ ] m6 `low` coverage passages — waits on the producer correcting B3-09/B3-10 `p14`.
-- [x] b36a568 m7 `med` `chat:live` gains a firing input that calls no model (new row).
 - [ ] m8 `med` `pnpm mutate` refuses a timeout-only kill — owed (user): a grader change, left queued;
   `wip/m8-mutate-timeout` `7ea4369` (new row).
-- [x] 84b0478 m9 `low` the axe-contrast pin fires in an environment that decides contrast (new row).
-- [x] f2f1bb5 m10 `low` a compound named `$t` decodes and is refused re-entry by name (new row).
-- [x] 6d45194 m11 `low` `Intent` states the shipped chat beside the built-in drop-down (refresh row).
-- [x] 2c76c7b m12 `low` a default-operator mutation tool runs over a base-green suite's imports (refresh row).
 - [ ] m13 `low` `copy:check` grades component prose once — owed (user): a grader change, left
   queued; `wip/m13-copy-sweep` `3a438c3` (refresh row).
 - [ ] m14 `low` `claims:check` skips rules frontmatter — owed (user): a grader change, left queued;
   `wip/m14-frontmatter` `e13a620` (refresh row).
 - [ ] m15 `med` `claims:check` grades each `Artifacts` bullet whole — owed (user): a grader change,
   left queued; `wip/m15-artifacts` `e7e1844` (refresh row).
-- [ ] m16 `low` the exporter's five shape guards each refuse a planted malformed query (new row,
-  found by m12).
-- [x] b44d709 m17 `med` the accepted-open re-ruling lands — all fifteen ids stay open (user ruling) — and
-  the m2 queue row closes.
-- [ ] m18 `med` `bridge.close()` awaits every child it spawned, a retired one included (new row,
-  found by m17's gate).
 - [ ] m19 `med` the inventory refuses a bare-path `text` record and a `none` gate step — owed
   (user): a grader change; `wip/f4-inventory` `ac40f9c` (review find F4).
 - [ ] m20 `low` the decoder's first compound arm admits a wrapper instance alone — owed (user): the
   u2-port fixtures change (review register).
-- [ ] m21 `low` a zero-arity compound is refused re-entry by name (review register J1).
 - [ ] owed (user): live reviews of four approved visual units (`.claude/rules/ui.md` `User review`)
   — d5 `d6714d7` phased boot status, d17 `04ada8c` solutions rendered as they arrive, d41
   `9056d3d` the owned PDF.js page viewer, d43 `db0736f` the document-first provenance browser.
