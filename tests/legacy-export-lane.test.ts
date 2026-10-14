@@ -92,6 +92,37 @@ describe('legacy export lane', () => {
     );
   });
 
+  it('D2 guards each malformed exported query is refused by its own message', () => {
+    const [first] = queries;
+    if (first === undefined) throw new Error('the lane declared no exports');
+    const text = new TextDecoder('utf-8', { fatal: true }).decode(bytesOf(first.path));
+    const line = text
+      .split('\n')
+      .find((candidate) => candidate.startsWith("'$guideline_query_projection'("));
+    if (line === undefined) throw new Error(`${first.id}: no projection line to break`);
+    const planted = (projection: string): Map<string, Uint8Array> =>
+      new Map(bagFiles).set(first.path, new TextEncoder().encode(text.replace(line, projection)));
+
+    expect(() => exportedQueries(planted('% no projection'))).toThrow(
+      `${first.id} carries no goal projection`,
+    );
+    expect(() => exportedQueries(planted("'$guideline_query_projection'(goal(true))."))).toThrow(
+      `${first.id} projection has an unsupported shape`,
+    );
+    expect(() =>
+      exportedQueries(planted("'$guideline_query_projection'(goal(LaneX=1),answers([])).")),
+    ).toThrow(`${first.id} names a variable the lane reserves`);
+    expect(() =>
+      exportedQueries(planted("'$guideline_query_projection'(goal(true),answers([x])).")),
+    ).toThrow(`${first.id} projects nothing it reports`);
+
+    const twin = first.path.replace(/^data\/guidelines\/[^/]+\//u, 'data/guidelines/zz-twin/');
+    expect(twin).not.toBe(first.path);
+    expect(() => exportedQueries(new Map(bagFiles).set(twin, bytesOf(first.path)))).toThrow(
+      `${first.id} is exported by two guidelines`,
+    );
+  });
+
   it('D3/D4 every exported goal answers its committed oracle byte for byte', () => {
     let graded = 0;
     for (const query of queries) {

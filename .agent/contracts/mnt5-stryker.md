@@ -12,8 +12,9 @@ command + every survivor recorded. This is that record for `tests/legacy-export-
   `tests/clinical-test-support.ts` is test code.
 - Command: `pnpm stryker` = `tools/mutation/stryker.config.mjs`, the suite run alone per mutant
   through `tools/mutation/vitest.config.mjs`, then `tools/mutation/survivors.mjs`.
-- Result: 296 mutants — 102 killed, 0 timed out, 69 survived, 47 fail the suite at collection,
-  78 uncovered. The suite is credited with the 102 kills alone.
+- Result: 296 mutants — 112 killed, 0 timed out, 64 survived, 47 fail the suite at collection,
+  73 uncovered. The suite is credited with the 112 kills alone. At m12 `2c76c7b`, before the
+  `D2 guards` case: 102 killed, 69 survived, 78 uncovered.
 
 ## Collection failures
 
@@ -24,12 +25,13 @@ replays each such mutant by hand: written into the working tree, the suite run a
 restored and proven byte-equal. All 47 throw the exporter's own refusal at import. A collection
 failure is no assertion catching the mutant (`.claude/rules/firing.md`), so none is credited.
 
-## Survivors that bear on a guard
+## Guards
 
-The five guards that refuse a malformed exported query — `exports.mjs:67`, `:69`, `:72`, `:74`,
-`:93` — each survive as `false`: no suite plants the input they refuse. Queue row
-`The exporter's five shape guards refuse nothing any suite plants` (`.agent/deferred.md`).
-The rest are equivalent on the shipped bag (regex anchors, message text, `LANE_SUITE`, which
+At m12 the five guards that refuse a malformed exported query — `exports.mjs:67`, `:69`, `:72`,
+`:74`, `:93` — each survived as `false`, because no suite planted the input they refuse. m16's
+`D2 guards` case plants each one into a copy of the verified bag and requires its message; all
+five `false` mutants and the five refusal-message mutants are killed. The survivors left are
+equivalent on the shipped bag (regex anchors, message text, `LANE_SUITE`, which
 `binding:check` reads) or the producer's fail-closed paths D5's sound build never takes.
 
 ## Every mutant left alive
@@ -38,81 +40,6 @@ In location order, as `pnpm stryker` prints it.
 
 | mutant | mutator | replacement | verdict |
 | --- | --- | --- | --- |
-| `tools/kb/exports.mjs:21:39` | ArrayDeclaration | "[]" | collection failure: legacy export lane: bag exports differ from the declared set of 0; unexpected [category-a-recommenda |
-| `tools/kb/exports.mjs:22:3` | StringLiteral | "\"\"" | collection failure: legacy export lane: bag exports differ from the declared set of 4; unexpected [category-a-recommenda |
-| `tools/kb/exports.mjs:23:3` | StringLiteral | "\"\"" | collection failure: legacy export lane: bag exports differ from the declared set of 4; unexpected [dosage-reduction-cont |
-| `tools/kb/exports.mjs:24:3` | StringLiteral | "\"\"" | collection failure: legacy export lane: bag exports differ from the declared set of 4; unexpected [evidence-type-1-recom |
-| `tools/kb/exports.mjs:25:3` | StringLiteral | "\"\"" | collection failure: legacy export lane: bag exports differ from the declared set of 4; unexpected [recommendation-exists |
-| `tools/kb/exports.mjs:29:27` | StringLiteral | "\"\"" | Survived |
-| `tools/kb/exports.mjs:31:20` | Regex | "/^data\\/guidelines\\/[/]+\\/queries\\/pl\\/([^/]+)\\.pl$/u" | collection failure: legacy export lane: bag exports differ from the declared set of 4; missing [category-a-recommendatio |
-| `tools/kb/exports.mjs:31:20` | Regex | "/^data\\/guidelines\\/[^/]\\/queries\\/pl\\/([^/]+)\\.pl$/u" | collection failure: legacy export lane: bag exports differ from the declared set of 4; missing [category-a-recommendatio |
-| `tools/kb/exports.mjs:31:20` | Regex | "/^data\\/guidelines\\/[^/]+\\/queries\\/pl\\/([/]+)\\.pl$/u" | collection failure: legacy export lane: bag exports differ from the declared set of 4; missing [category-a-recommendatio |
-| `tools/kb/exports.mjs:31:20` | Regex | "/^data\\/guidelines\\/[^/]+\\/queries\\/pl\\/([^/])\\.pl$/u" | collection failure: legacy export lane: bag exports differ from the declared set of 4; missing [category-a-recommendatio |
-| `tools/kb/exports.mjs:31:20` | Regex | "/^data\\/guidelines\\/[^/]+\\/queries\\/pl\\/([^/]+)\\.pl/u" | Survived |
-| `tools/kb/exports.mjs:31:20` | Regex | "/data\\/guidelines\\/[^/]+\\/queries\\/pl\\/([^/]+)\\.pl$/u" | Survived |
-| `tools/kb/exports.mjs:37:20` | Regex | "/'\\$guideline_query_projection'\\(goal\\((.*)\\),answers\\((\\[.*" | Survived |
-| `tools/kb/exports.mjs:37:20` | Regex | "/^'\\$guideline_query_projection'\\(goal\\((.)\\),answers\\((\\[.*" | collection failure: legacy export lane: category-a-recommendations projection has an unsupported shape |
-| `tools/kb/exports.mjs:37:20` | Regex | "/^'\\$guideline_query_projection'\\(goal\\((.*)\\),answers\\((\\[." | Survived |
-| `tools/kb/exports.mjs:37:20` | Regex | "/^'\\$guideline_query_projection'\\(goal\\((.*)\\),answers\\((\\[." | collection failure: legacy export lane: category-a-recommendations projection has an unsupported shape |
-| `tools/kb/exports.mjs:38:19` | Regex | "/\\banswer\\(([^A-Z_][A-Za-z0-9_]*)/gu" | collection failure: legacy export lane: category-a-recommendations projects nothing it reports |
-| `tools/kb/exports.mjs:38:19` | Regex | "/\\banswer\\(([A-Z_][A-Za-z0-9_])/gu" | collection failure: legacy export lane: category-a-recommendations projects nothing it reports |
-| `tools/kb/exports.mjs:40:18` | Regex | "/\\bLane[^A-Za-z0-9_]*/u" | Survived |
-| `tools/kb/exports.mjs:40:18` | Regex | "/\\bLane[A-Za-z0-9_]/u" | Survived |
-| `tools/kb/exports.mjs:64:15` | StringLiteral | "\"\"" | collection failure: Unknown encoding:  |
-| `tools/kb/exports.mjs:65:12` | StringLiteral | "\"\"" | collection failure: legacy export lane: category-a-recommendations carries no goal projection |
-| `tools/kb/exports.mjs:66:11` | ArrowFunction | "() => undefined" | collection failure: legacy export lane: category-a-recommendations carries no goal projection |
-| `tools/kb/exports.mjs:66:26` | MethodExpression | "candidate.endsWith(\"'$guideline_query_projection'(\")" | collection failure: legacy export lane: category-a-recommendations carries no goal projection |
-| `tools/kb/exports.mjs:66:47` | StringLiteral | "\"\"" | collection failure: legacy export lane: category-a-recommendations projection has an unsupported shape |
-| `tools/kb/exports.mjs:67:7` | ConditionalExpression | "false" | Survived |
-| `tools/kb/exports.mjs:67:7` | ConditionalExpression | "true" | collection failure: legacy export lane: category-a-recommendations carries no goal projection |
-| `tools/kb/exports.mjs:67:7` | EqualityOperator | "line !== undefined" | collection failure: legacy export lane: category-a-recommendations carries no goal projection |
-| `tools/kb/exports.mjs:67:34` | StringLiteral | "``" | NoCoverage |
-| `tools/kb/exports.mjs:69:7` | ConditionalExpression | "false" | Survived |
-| `tools/kb/exports.mjs:69:7` | ConditionalExpression | "true" | collection failure: legacy export lane: category-a-recommendations projection has an unsupported shape |
-| `tools/kb/exports.mjs:69:7` | EqualityOperator | "match !== null" | collection failure: legacy export lane: category-a-recommendations projection has an unsupported shape |
-| `tools/kb/exports.mjs:69:30` | StringLiteral | "``" | NoCoverage |
-| `tools/kb/exports.mjs:72:7` | ConditionalExpression | "false" | Survived |
-| `tools/kb/exports.mjs:72:7` | ConditionalExpression | "true" | collection failure: legacy export lane: category-a-recommendations names a variable the lane reserves |
-| `tools/kb/exports.mjs:72:35` | StringLiteral | "``" | NoCoverage |
-| `tools/kb/exports.mjs:73:21` | ArrayDeclaration | "[]" | collection failure: legacy export lane: category-a-recommendations projects nothing it reports |
-| `tools/kb/exports.mjs:74:7` | ConditionalExpression | "false" | Survived |
-| `tools/kb/exports.mjs:74:7` | ConditionalExpression | "true" | collection failure: legacy export lane: category-a-recommendations projects nothing it reports |
-| `tools/kb/exports.mjs:74:7` | ConditionalExpression | "true" | collection failure: legacy export lane: recommendation-exists projects nothing it reports |
-| `tools/kb/exports.mjs:74:7` | EqualityOperator | "answers === '[]'" | collection failure: legacy export lane: recommendation-exists projects nothing it reports |
-| `tools/kb/exports.mjs:74:7` | LogicalOperator | "answers !== '[]' \|\| projected.length === 0" | collection failure: legacy export lane: category-a-recommendations projects nothing it reports |
-| `tools/kb/exports.mjs:74:19` | StringLiteral | "\"\"" | collection failure: legacy export lane: recommendation-exists projects nothing it reports |
-| `tools/kb/exports.mjs:74:27` | ConditionalExpression | "true" | collection failure: legacy export lane: category-a-recommendations projects nothing it reports |
-| `tools/kb/exports.mjs:74:27` | EqualityOperator | "projected.length !== 0" | collection failure: legacy export lane: category-a-recommendations projects nothing it reports |
-| `tools/kb/exports.mjs:74:58` | StringLiteral | "``" | NoCoverage |
-| `tools/kb/exports.mjs:75:41` | StringLiteral | "\"\"" | collection failure: Digest method not supported |
-| `tools/kb/exports.mjs:89:36` | BlockStatement | "{}" | collection failure: legacy export lane: bag exports differ from the declared set of 4; missing [category-a-recommendatio |
-| `tools/kb/exports.mjs:91:9` | ConditionalExpression | "false" | collection failure: Cannot read properties of null (reading '1') |
-| `tools/kb/exports.mjs:91:9` | ConditionalExpression | "true" | collection failure: legacy export lane: bag exports differ from the declared set of 4; missing [category-a-recommendatio |
-| `tools/kb/exports.mjs:91:9` | EqualityOperator | "match !== null" | collection failure: Cannot read properties of null (reading '1') |
-| `tools/kb/exports.mjs:93:9` | ConditionalExpression | "false" | Survived |
-| `tools/kb/exports.mjs:93:9` | ConditionalExpression | "true" | collection failure: legacy export lane: category-a-recommendations is exported by two guidelines |
-| `tools/kb/exports.mjs:93:31` | StringLiteral | "``" | NoCoverage |
-| `tools/kb/exports.mjs:94:5` | CallExpression | ";" | collection failure: legacy export lane: bag exports differ from the declared set of 4; missing [category-a-recommendatio |
-| `tools/kb/exports.mjs:96:22` | MethodExpression | "[...found.keys()]" | collection failure: legacy export lane: bag exports differ from the declared set of 4; unexpected [category-a-recommenda |
-| `tools/kb/exports.mjs:96:22` | MethodExpression | "[...found.keys()].filter(id => !EXPORTED.includes(id))" | Survived |
-| `tools/kb/exports.mjs:96:55` | BooleanLiteral | "EXPORTED.includes(id)" | collection failure: legacy export lane: bag exports differ from the declared set of 4; unexpected [category-a-recommenda |
-| `tools/kb/exports.mjs:97:19` | MethodExpression | "EXPORTED" | collection failure: legacy export lane: bag exports differ from the declared set of 4; missing [category-a-recommendatio |
-| `tools/kb/exports.mjs:97:43` | BooleanLiteral | "found.has(id)" | collection failure: legacy export lane: bag exports differ from the declared set of 4; missing [category-a-recommendatio |
-| `tools/kb/exports.mjs:98:7` | ConditionalExpression | "true" | collection failure: legacy export lane: bag exports differ from the declared set of 4 |
-| `tools/kb/exports.mjs:98:7` | EqualityOperator | "unexpected.length <= 0" | collection failure: legacy export lane: bag exports differ from the declared set of 4 |
-| `tools/kb/exports.mjs:98:7` | EqualityOperator | "unexpected.length >= 0" | collection failure: legacy export lane: bag exports differ from the declared set of 4 |
-| `tools/kb/exports.mjs:98:32` | EqualityOperator | "missing.length <= 0" | collection failure: legacy export lane: bag exports differ from the declared set of 4 |
-| `tools/kb/exports.mjs:98:32` | EqualityOperator | "missing.length >= 0" | collection failure: legacy export lane: bag exports differ from the declared set of 4 |
-| `tools/kb/exports.mjs:100:7` | StringLiteral | "``" | Survived |
-| `tools/kb/exports.mjs:101:10` | ConditionalExpression | "true" | Survived |
-| `tools/kb/exports.mjs:101:10` | EqualityOperator | "unexpected.length >= 0" | Survived |
-| `tools/kb/exports.mjs:101:67` | StringLiteral | "\"\"" | Survived |
-| `tools/kb/exports.mjs:101:78` | StringLiteral | "\"Stryker was here!\"" | Survived |
-| `tools/kb/exports.mjs:102:10` | ConditionalExpression | "true" | Survived |
-| `tools/kb/exports.mjs:102:10` | EqualityOperator | "missing.length >= 0" | Survived |
-| `tools/kb/exports.mjs:102:58` | StringLiteral | "\"\"" | Survived |
-| `tools/kb/exports.mjs:102:69` | StringLiteral | "\"Stryker was here!\"" | Survived |
-| `tools/kb/exports.mjs:131:46` | StringLiteral | "\"\"" | Survived |
 | `tools/kb/paths.mjs:14:41` | StringLiteral | "\"\"" | Survived |
 | `tools/kb/paths.mjs:14:47` | StringLiteral | "\"\"" | Survived |
 | `tools/kb/paths.mjs:15:50` | StringLiteral | "\"\"" | Survived |
@@ -232,3 +159,68 @@ In location order, as `pnpm stryker` prints it.
 | `tools/kb/produce.mjs:271:27` | StringLiteral | "\"\"" | NoCoverage |
 | `tools/kb/produce.mjs:275:33` | ArrowFunction | "() => undefined" | Survived |
 | `tools/kb/produce.mjs:276:51` | StringLiteral | "\"\"" | NoCoverage |
+| `tools/kb/exports.mjs:21:39` | ArrayDeclaration | "[]" | collection failure: legacy export lane: bag exports differ from the declared set of 0; unexpected [category-a-recommenda |
+| `tools/kb/exports.mjs:22:3` | StringLiteral | "\"\"" | collection failure: legacy export lane: bag exports differ from the declared set of 4; unexpected [category-a-recommenda |
+| `tools/kb/exports.mjs:23:3` | StringLiteral | "\"\"" | collection failure: legacy export lane: bag exports differ from the declared set of 4; unexpected [dosage-reduction-cont |
+| `tools/kb/exports.mjs:24:3` | StringLiteral | "\"\"" | collection failure: legacy export lane: bag exports differ from the declared set of 4; unexpected [evidence-type-1-recom |
+| `tools/kb/exports.mjs:25:3` | StringLiteral | "\"\"" | collection failure: legacy export lane: bag exports differ from the declared set of 4; unexpected [recommendation-exists |
+| `tools/kb/exports.mjs:29:27` | StringLiteral | "\"\"" | Survived |
+| `tools/kb/exports.mjs:31:20` | Regex | "/^data\\/guidelines\\/[/]+\\/queries\\/pl\\/([^/]+)\\.pl$/u" | collection failure: legacy export lane: bag exports differ from the declared set of 4; missing [category-a-recommendatio |
+| `tools/kb/exports.mjs:31:20` | Regex | "/^data\\/guidelines\\/[^/]\\/queries\\/pl\\/([^/]+)\\.pl$/u" | collection failure: legacy export lane: bag exports differ from the declared set of 4; missing [category-a-recommendatio |
+| `tools/kb/exports.mjs:31:20` | Regex | "/^data\\/guidelines\\/[^/]+\\/queries\\/pl\\/([/]+)\\.pl$/u" | collection failure: legacy export lane: bag exports differ from the declared set of 4; missing [category-a-recommendatio |
+| `tools/kb/exports.mjs:31:20` | Regex | "/^data\\/guidelines\\/[^/]+\\/queries\\/pl\\/([^/])\\.pl$/u" | collection failure: legacy export lane: bag exports differ from the declared set of 4; missing [category-a-recommendatio |
+| `tools/kb/exports.mjs:31:20` | Regex | "/^data\\/guidelines\\/[^/]+\\/queries\\/pl\\/([^/]+)\\.pl/u" | Survived |
+| `tools/kb/exports.mjs:31:20` | Regex | "/data\\/guidelines\\/[^/]+\\/queries\\/pl\\/([^/]+)\\.pl$/u" | Survived |
+| `tools/kb/exports.mjs:37:20` | Regex | "/'\\$guideline_query_projection'\\(goal\\((.*)\\),answers\\((\\[.*" | Survived |
+| `tools/kb/exports.mjs:37:20` | Regex | "/^'\\$guideline_query_projection'\\(goal\\((.)\\),answers\\((\\[.*" | collection failure: legacy export lane: category-a-recommendations projection has an unsupported shape |
+| `tools/kb/exports.mjs:37:20` | Regex | "/^'\\$guideline_query_projection'\\(goal\\((.*)\\),answers\\((\\[." | Survived |
+| `tools/kb/exports.mjs:37:20` | Regex | "/^'\\$guideline_query_projection'\\(goal\\((.*)\\),answers\\((\\[." | collection failure: legacy export lane: category-a-recommendations projection has an unsupported shape |
+| `tools/kb/exports.mjs:38:19` | Regex | "/\\banswer\\(([^A-Z_][A-Za-z0-9_]*)/gu" | collection failure: legacy export lane: category-a-recommendations projects nothing it reports |
+| `tools/kb/exports.mjs:38:19` | Regex | "/\\banswer\\(([A-Z_][A-Za-z0-9_])/gu" | collection failure: legacy export lane: category-a-recommendations projects nothing it reports |
+| `tools/kb/exports.mjs:40:18` | Regex | "/\\bLane[^A-Za-z0-9_]*/u" | Survived |
+| `tools/kb/exports.mjs:40:18` | Regex | "/\\bLane[A-Za-z0-9_]/u" | Survived |
+| `tools/kb/exports.mjs:64:15` | StringLiteral | "\"\"" | collection failure: Unknown encoding:  |
+| `tools/kb/exports.mjs:65:12` | StringLiteral | "\"\"" | collection failure: legacy export lane: category-a-recommendations carries no goal projection |
+| `tools/kb/exports.mjs:66:11` | ArrowFunction | "() => undefined" | collection failure: legacy export lane: category-a-recommendations carries no goal projection |
+| `tools/kb/exports.mjs:66:26` | MethodExpression | "candidate.endsWith(\"'$guideline_query_projection'(\")" | collection failure: legacy export lane: category-a-recommendations carries no goal projection |
+| `tools/kb/exports.mjs:66:47` | StringLiteral | "\"\"" | collection failure: legacy export lane: category-a-recommendations projection has an unsupported shape |
+| `tools/kb/exports.mjs:67:7` | ConditionalExpression | "true" | collection failure: legacy export lane: category-a-recommendations carries no goal projection |
+| `tools/kb/exports.mjs:67:7` | EqualityOperator | "line !== undefined" | collection failure: legacy export lane: category-a-recommendations carries no goal projection |
+| `tools/kb/exports.mjs:69:7` | ConditionalExpression | "true" | collection failure: legacy export lane: category-a-recommendations projection has an unsupported shape |
+| `tools/kb/exports.mjs:69:7` | EqualityOperator | "match !== null" | collection failure: legacy export lane: category-a-recommendations projection has an unsupported shape |
+| `tools/kb/exports.mjs:72:7` | ConditionalExpression | "true" | collection failure: legacy export lane: category-a-recommendations names a variable the lane reserves |
+| `tools/kb/exports.mjs:73:21` | ArrayDeclaration | "[]" | collection failure: legacy export lane: category-a-recommendations projects nothing it reports |
+| `tools/kb/exports.mjs:74:7` | ConditionalExpression | "true" | collection failure: legacy export lane: category-a-recommendations projects nothing it reports |
+| `tools/kb/exports.mjs:74:7` | ConditionalExpression | "true" | collection failure: legacy export lane: recommendation-exists projects nothing it reports |
+| `tools/kb/exports.mjs:74:7` | EqualityOperator | "answers === '[]'" | collection failure: legacy export lane: recommendation-exists projects nothing it reports |
+| `tools/kb/exports.mjs:74:7` | LogicalOperator | "answers !== '[]' \|\| projected.length === 0" | collection failure: legacy export lane: category-a-recommendations projects nothing it reports |
+| `tools/kb/exports.mjs:74:19` | StringLiteral | "\"\"" | collection failure: legacy export lane: recommendation-exists projects nothing it reports |
+| `tools/kb/exports.mjs:74:27` | ConditionalExpression | "true" | collection failure: legacy export lane: category-a-recommendations projects nothing it reports |
+| `tools/kb/exports.mjs:74:27` | EqualityOperator | "projected.length !== 0" | collection failure: legacy export lane: category-a-recommendations projects nothing it reports |
+| `tools/kb/exports.mjs:75:41` | StringLiteral | "\"\"" | collection failure: Digest method not supported |
+| `tools/kb/exports.mjs:89:36` | BlockStatement | "{}" | collection failure: legacy export lane: bag exports differ from the declared set of 4; missing [category-a-recommendatio |
+| `tools/kb/exports.mjs:91:9` | ConditionalExpression | "false" | collection failure: Cannot read properties of null (reading '1') |
+| `tools/kb/exports.mjs:91:9` | ConditionalExpression | "true" | collection failure: legacy export lane: bag exports differ from the declared set of 4; missing [category-a-recommendatio |
+| `tools/kb/exports.mjs:91:9` | EqualityOperator | "match !== null" | collection failure: Cannot read properties of null (reading '1') |
+| `tools/kb/exports.mjs:93:9` | ConditionalExpression | "true" | collection failure: legacy export lane: category-a-recommendations is exported by two guidelines |
+| `tools/kb/exports.mjs:94:5` | CallExpression | ";" | collection failure: legacy export lane: bag exports differ from the declared set of 4; missing [category-a-recommendatio |
+| `tools/kb/exports.mjs:96:22` | MethodExpression | "[...found.keys()]" | collection failure: legacy export lane: bag exports differ from the declared set of 4; unexpected [category-a-recommenda |
+| `tools/kb/exports.mjs:96:22` | MethodExpression | "[...found.keys()].filter(id => !EXPORTED.includes(id))" | Survived |
+| `tools/kb/exports.mjs:96:55` | BooleanLiteral | "EXPORTED.includes(id)" | collection failure: legacy export lane: bag exports differ from the declared set of 4; unexpected [category-a-recommenda |
+| `tools/kb/exports.mjs:97:19` | MethodExpression | "EXPORTED" | collection failure: legacy export lane: bag exports differ from the declared set of 4; missing [category-a-recommendatio |
+| `tools/kb/exports.mjs:97:43` | BooleanLiteral | "found.has(id)" | collection failure: legacy export lane: bag exports differ from the declared set of 4; missing [category-a-recommendatio |
+| `tools/kb/exports.mjs:98:7` | ConditionalExpression | "true" | collection failure: legacy export lane: bag exports differ from the declared set of 4 |
+| `tools/kb/exports.mjs:98:7` | EqualityOperator | "unexpected.length <= 0" | collection failure: legacy export lane: bag exports differ from the declared set of 4 |
+| `tools/kb/exports.mjs:98:7` | EqualityOperator | "unexpected.length >= 0" | collection failure: legacy export lane: bag exports differ from the declared set of 4 |
+| `tools/kb/exports.mjs:98:32` | EqualityOperator | "missing.length <= 0" | collection failure: legacy export lane: bag exports differ from the declared set of 4 |
+| `tools/kb/exports.mjs:98:32` | EqualityOperator | "missing.length >= 0" | collection failure: legacy export lane: bag exports differ from the declared set of 4 |
+| `tools/kb/exports.mjs:100:7` | StringLiteral | "``" | Survived |
+| `tools/kb/exports.mjs:101:10` | ConditionalExpression | "true" | Survived |
+| `tools/kb/exports.mjs:101:10` | EqualityOperator | "unexpected.length >= 0" | Survived |
+| `tools/kb/exports.mjs:101:67` | StringLiteral | "\"\"" | Survived |
+| `tools/kb/exports.mjs:101:78` | StringLiteral | "\"Stryker was here!\"" | Survived |
+| `tools/kb/exports.mjs:102:10` | ConditionalExpression | "true" | Survived |
+| `tools/kb/exports.mjs:102:10` | EqualityOperator | "missing.length >= 0" | Survived |
+| `tools/kb/exports.mjs:102:58` | StringLiteral | "\"\"" | Survived |
+| `tools/kb/exports.mjs:102:69` | StringLiteral | "\"Stryker was here!\"" | Survived |
+| `tools/kb/exports.mjs:131:46` | StringLiteral | "\"\"" | Survived |
