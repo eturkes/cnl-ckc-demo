@@ -157,8 +157,9 @@ drifted. It is a diagnostic lane, separate from the catalog above.
   committed order on this corpus, so the sort buys order-independence, not this data.
 - The byte comparison lives in `tests/legacy-export-lane.test.ts` because `kb:asset-check`
   bans `queries/answers` reach over `tools/` — a comment merely spelling the path reddens the
-  scan. `pnpm binding:check` names all four of its cases in the required inventory, so
-  deleting the file, renaming a case or skipping one fails the gate.
+  scan. `pnpm binding:check` names its four oracle cases — D1, D2, D3/D4, D5 — in the required
+  inventory, so deleting the file, renaming one of them or skipping it fails the gate; the
+  `D2 guards` case is not required.
 - The lane is GREEN at base. Its firing is going RED when the payload stops supporting an
   export: erasing the single `category-A-recommendation` entity line drops that document from
   the category-A statement while the other three exports still match. Its credit is the

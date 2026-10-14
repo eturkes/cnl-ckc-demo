@@ -18,12 +18,14 @@ command + every survivor recorded. This is that record for `tests/legacy-export-
 
 ## Collection failures
 
-Stryker reports 116 mutants `Survived`; 47 of them completed zero tests. The suite reads the bag
-through `exportedQueries` at module scope, so a mutant that breaks that call throws at import and
-no case runs, and the vitest runner reads that as a survivor. `tools/mutation/survivors.mjs`
-replays each such mutant by hand: written into the working tree, the suite run alone, the file
-restored and proven byte-equal. All 47 throw the exporter's own refusal at import. A collection
-failure is no assertion catching the mutant (`.claude/rules/firing.md`), so none is credited.
+Stryker reports 111 mutants `Survived` (116 at m12); 47 of them completed zero tests. The suite
+reads the bag through `exportedQueries` at module scope, so a mutant that breaks that call
+throws at import and no case runs, and the vitest runner reads that as a survivor.
+`tools/mutation/survivors.mjs` replays each such mutant by hand: written into the working tree,
+the suite run alone, the file restored and proven byte-equal. Each fails the suite at import: 43
+throw the exporter's own refusal, 4 a JavaScript error from a mutated call (`Cannot read
+properties of null` ×2, `Digest method not supported`, `Unknown encoding`). A collection failure
+is no assertion catching the mutant (`.claude/rules/firing.md`), so none is credited.
 
 ## Guards
 

@@ -333,7 +333,8 @@ class Bridge {
   /** @type {Map<string, Conversation>} */
   #threads = new Map();
   #cwd = mkdtempSync(join(tmpdir(), 'cnl-ckc-chat-'));
-  #closed = false;
+  /** @type {Promise<void> | undefined} */
+  #closing;
   /** @type {Set<Promise<void>>} each child told to exit, until it has; `close()` awaits them */
   #exiting = new Set();
 
@@ -717,9 +718,13 @@ class Bridge {
     return true;
   }
 
-  async close() {
-    if (this.#closed) return;
-    this.#closed = true;
+  /** Resolves once every child has exited; a later call shares the first call's drain. */
+  close() {
+    this.#closing ??= this.#drain();
+    return this.#closing;
+  }
+
+  async #drain() {
     const child = this.#child;
     if (child !== undefined) this.#onExit(child);
     await child?.close();

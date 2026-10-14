@@ -1459,7 +1459,7 @@ export const MUTANTS = [
     edits: [
       {
         path: 'src/engine/terms.ts',
-        old: "  // A compound NAMED `functor` writes its arguments over the name it was just given.\n  if (value.$t === 't' && Array.isArray(value.functor)) return compound('functor', value.functor);\n",
+        old: "  // A compound NAMED `functor` writes its arguments over the name it was just given. A dict\n  // spelling the same keys is a plain object, so it stays out and fails closed below.\n  if (value.$t === 't' && Array.isArray(value.functor) && !plain(value)) {\n    return compound('functor', value.functor);\n  }\n",
         new: '',
       },
     ],
@@ -1475,5 +1475,38 @@ export const MUTANTS = [
       },
     ],
     check: { test: 'tests/chat-server.test.ts', name: 'close awaits every child' },
+  },
+  {
+    label: 'f1 a dict spelling a compound named functor takes its arm',
+    edits: [
+      {
+        path: 'src/engine/terms.ts',
+        old: "if (value.$t === 't' && Array.isArray(value.functor) && !plain(value)) {",
+        new: "if (value.$t === 't' && Array.isArray(value.functor)) {",
+      },
+    ],
+    check: { test: 'tests/engine-term-identity.test.ts', name: 'dict whose keys spell' },
+  },
+  {
+    label: 'f1 a dict spelling a compound named $t takes its arm',
+    edits: [
+      {
+        path: 'src/engine/terms.ts',
+        old: "if (Array.isArray(value.$t) && value.functor === '$t' && !plain(value)) {",
+        new: "if (Array.isArray(value.$t) && value.functor === '$t') {",
+      },
+    ],
+    check: { test: 'tests/engine-term-identity.test.ts', name: 'dict whose keys spell' },
+  },
+  {
+    label: 'f2 a second close skips the first close drain',
+    edits: [
+      {
+        path: 'server/chat.mjs',
+        old: '    this.#closing ??= this.#drain();\n    return this.#closing;',
+        new: '    if (this.#closing) return Promise.resolve();\n    this.#closing = this.#drain();\n    return this.#closing;',
+      },
+    ],
+    check: { test: 'tests/chat-server.test.ts', name: 'second close waits' },
   },
 ];

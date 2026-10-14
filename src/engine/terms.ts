@@ -65,6 +65,10 @@ const compound = (functor: string, packed: unknown): PlTerm => {
   return { kind: 'compound', functor, args: packed[0].map(decodeTerm) };
 };
 
+/** Every wrapper value is a class instance; a dict reaches the decoder as a plain object. */
+const plain = (value: Record<string, unknown>): boolean =>
+  Object.getPrototypeOf(value) === Object.prototype;
+
 export function decodeTerm(value: unknown): PlTerm {
   if (typeof value === 'string') return { kind: 'atom', value };
   if (typeof value === 'bigint') return { kind: 'integer', value };
@@ -94,11 +98,16 @@ export function decodeTerm(value: unknown): PlTerm {
   if (value.$t === 't' && typeof value.functor === 'string') {
     return compound(value.functor, value[value.functor]);
   }
-  // A compound NAMED `functor` writes its arguments over the name it was just given.
-  if (value.$t === 't' && Array.isArray(value.functor)) return compound('functor', value.functor);
+  // A compound NAMED `functor` writes its arguments over the name it was just given. A dict
+  // spelling the same keys is a plain object, so it stays out and fails closed below.
+  if (value.$t === 't' && Array.isArray(value.functor) && !plain(value)) {
+    return compound('functor', value.functor);
+  }
   // The wrapper writes the tag to `$t`, then the arguments to the name's own key, so a compound
-  // NAMED `$t` leaves its envelope where the tag was.
-  if (Array.isArray(value.$t) && value.functor === '$t') return compound('$t', value.$t);
+  // NAMED `$t` leaves its envelope where the tag was; the same dict rule holds.
+  if (Array.isArray(value.$t) && value.functor === '$t' && !plain(value)) {
+    return compound('$t', value.$t);
+  }
   // `$t` absent is load-bearing: a dict carries a user tag that may be any atom, so
   // `{ $t: 'x', $tag: 'foo' }` is an unrecognized wrapper, not a dict, and must fail
   // closed instead of decoding as one.

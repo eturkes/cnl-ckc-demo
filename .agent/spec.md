@@ -75,8 +75,8 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   end; `scope` stays byte-for-byte what the producer recorded, because composing the two would
   manufacture a chain no `scopes` record holds. Amendment recorded at `.agent/contracts/m5u8.md`
   with the original text; approving unit `.agent/contracts/m5u13.md` V6. The 38 cases whose ends
-  CONTRADICT rather than nest are a producer question queued to `.agent/deferred.md`; the
-  shipped edge population does not move.
+  CONTRADICT rather than nest are each justified by their own clause
+  (`tests/graph-shortcut-justification.test.ts`); the shipped edge population does not move.
 - **An edge label is READER-RELATIVE; the data stays direction-fixed.** `scope` is always the
   source end and `farScope` always the target end, `null` IFF that end is genuinely unscoped —
   nulling `farScope` when the two ends AGREE is wrong, because the source reading hides the
@@ -190,6 +190,10 @@ worker before its caller resumes (`chat-c2.md`).
   the m2 queue row closes.
 - [ ] m18 `med` `bridge.close()` awaits every child it spawned, a retired one included (new row,
   found by m17's gate).
+- [ ] m19 `med` the inventory refuses a bare-path `text` record and a `none` gate step — owed
+  (user): a grader change; `wip/f4-inventory` `ac40f9c` (review find F4).
+- [ ] m20 `low` the decoder's first compound arm admits a wrapper instance alone — owed (user): the
+  u2-port fixtures change (review register).
 - [ ] owed (user): live reviews of four approved visual units (`.claude/rules/ui.md` `User review`)
   — d5 `d6714d7` phased boot status, d17 `04ada8c` solutions rendered as they arrive, d41
   `9056d3d` the owned PDF.js page viewer, d43 `db0736f` the document-first provenance browser.

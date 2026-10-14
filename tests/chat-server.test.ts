@@ -590,6 +590,34 @@ describe('chat-c3 bridge contract', { timeout: 20_000 }, () => {
       expect(() => process.kill(pid, 0), `child ${String(pid)} outlived close()`).toThrow();
   });
 
+  it('B7 a second close waits on the children of the first', async () => {
+    const s = await setup(
+      { deadlines: { callMs: 8000, turnMs: 8000, controlMs: 2000 } },
+      'turn/start',
+      1000,
+    );
+    const turn = await s.open('plain');
+    expectError(await turn.done(), 'timeout');
+    const pids = [
+      ...new Set(
+        s
+          .log()
+          .filter((row) => row.kind === 'spawn')
+          .map((row) => row.pid),
+      ),
+    ];
+    expect(pids).not.toHaveLength(0);
+    const first = s.bridge.close();
+    await s.bridge.close();
+    closed.add(s.bridge);
+    for (const pid of pids)
+      expect(
+        () => process.kill(pid, 0),
+        `child ${String(pid)} outlived the second close()`,
+      ).toThrow();
+    await first;
+  });
+
   it.each(['complete-open', 'failed', 'interrupted', 'failure'])(
     'B7 cleans pending calls on %s with one terminal error at most',
     async (mode) => {
