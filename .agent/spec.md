@@ -141,7 +141,7 @@ worker before its caller resumes (`chat-c2.md`).
   commit; the resumed session closes once this note is gone.
   - Committed: m1 `0727bd2`, m2 `a98b2c9`, m3 `7e31bc2`, m7 `b36a568`, m9 `84b0478`, m10
     `f2f1bb5`, the pause commit `e9ffcb7`, the template refresh `bd320a6`, m11 `6d45194`, m12
-    `2c76c7b`, m16 `d4f6a1e`, m17 `b44d709`, m5 `5f8e3dd`, then m4 (this commit).
+    `2c76c7b`, m16 `d4f6a1e`, m17 `b44d709`, m5 `5f8e3dd`, m4 `a5419e3`, then m18 (this commit).
   - Resumed at `bd320a6` (`pnpm gate` rc 0). Carried branches rerun there, each cherry-picked onto
     it: `wip/m4-functor` `045ece0` — the term-identity, read-only session and guard suites 261/261,
     the accept test red at base (`unsupported native tag: t`), the three G1 cases' original
@@ -154,7 +154,7 @@ worker before its caller resumes (`chat-c2.md`).
     `wip/m15-artifacts` `e7e1844`.
   - User rulings this session: the accepted-open premise rejected and no id queued, so all
     fifteen stay open (m17); m4 and m5 approved; the grader changes m8, m13, m14 and m15 left
-    queued, owed to the user, their branches kept. Next: m18, then the close — `pnpm mutate` run alone, `pnpm
+    queued, owed to the user, their branches kept. Next: the close — `pnpm mutate` run alone, `pnpm
     release:check`, a closing `reviewer`, the rules upkeep, the `Tasks` clearing into
     `.agent/archive/maintain.md`, and this note removed. m6 waits: `../cnl-ckc` `2acd0d70` still
     records B3-09/B3-10 `p14`; the C6 row waits on its re-open trigger.
@@ -168,7 +168,7 @@ worker before its caller resumes (`chat-c2.md`).
   - Accept: `.agent/contracts/mnt5-inventory.md` graded by `tests/inventory.test.ts`; owed
     (user): the accepted-open re-ruling.
 - [x] 7e31bc2 m3 `low` `tests/spec-check.test.ts` holds on any real spec.
-- [ ] m4 `low` a compound named `functor` decodes; the three G1 refusal cases change (user-approved).
+- [x] a5419e3 m4 `low` a compound named `functor` decodes; the three G1 refusal cases change (user-approved).
 - [x] 5f8e3dd m5 `low` one reader-relative `Decisions` bullet, in the text the user approved.
 - [ ] m6 `low` coverage passages — waits on the producer correcting B3-09/B3-10 `p14`.
 - [x] b36a568 m7 `med` `chat:live` gains a firing input that calls no model (new row).

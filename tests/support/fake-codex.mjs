@@ -71,6 +71,8 @@ function run() {
   const config = object(JSON.parse(process.env.FAKE_CODEX_CONFIG ?? '{}'));
   const tracePath = text(config.trace);
   const stall = config.stall;
+  /** `linger`: milliseconds a retired fake lives past SIGTERM, still writing its trace. */
+  const linger = typeof config.linger === 'number' ? config.linger : 5;
   /** `stall: 'slow-initialize'` answers `initialize` late: a second turn can arrive meanwhile. */
   const slowInitialize = stall === 'slow-initialize';
   /** @param {string} kind @param {unknown} detail */
@@ -460,7 +462,7 @@ function run() {
           tool(turn, {}, 'retired'),
         );
       }
-    setTimeout(() => process.exit(0), 5);
+    setTimeout(() => process.exit(0), linger);
   });
   const lines = createInterface({ input: process.stdin });
   lines.on('close', () => process.exit(0));

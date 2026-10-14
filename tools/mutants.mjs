@@ -1465,4 +1465,15 @@ export const MUTANTS = [
     ],
     check: { test: 'tests/engine-term-identity.test.ts', name: 'compound named functor' },
   },
+  {
+    label: 'm18 close leaves a retired child running',
+    edits: [
+      {
+        path: 'server/chat.mjs',
+        old: '    this.#onExit(child);\n    this.#dismiss(child);\n  }',
+        new: '    this.#onExit(child);\n    void child.close();\n  }',
+      },
+    ],
+    check: { test: 'tests/chat-server.test.ts', name: 'close awaits every child' },
+  },
 ];

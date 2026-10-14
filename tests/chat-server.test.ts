@@ -50,12 +50,12 @@ function rows(path: string): Trace[] {
     .filter(Boolean)
     .map((line) => JSON.parse(line) as Trace);
 }
-async function setup(options: Options = {}, stall?: string) {
+async function setup(options: Options = {}, stall?: string, linger?: number) {
   mkdirSync(resolve(root, '.scratch'), { recursive: true });
   const dir = mkdtempSync(resolve(root, '.scratch/chat-fake-'));
   const trace = resolve(dir, 'trace.ndjson');
   writeFileSync(trace, '');
-  vi.stubEnv('FAKE_CODEX_CONFIG', JSON.stringify({ trace, guide, stall }));
+  vi.stubEnv('FAKE_CODEX_CONFIG', JSON.stringify({ trace, guide, stall, linger }));
   vi.stubEnv('CHAT_CODEX_BIN', process.execPath);
   const bridge = await startBridge({
     port: 0,
@@ -562,6 +562,32 @@ describe('chat-c3 bridge contract', { timeout: 20_000 }, () => {
     await turn.done();
     await until(() => s.log().some((row) => row.kind === 'exit'), 'child exit');
     await expectRefused(s.log, 1);
+  });
+
+  it('B7 close awaits every child it spawned, a retired one included', async () => {
+    // The retired fake lingers past SIGTERM, still writing its trace into the directory the
+    // suite deletes once `close()` resolves.
+    const s = await setup(
+      { deadlines: { callMs: 8000, turnMs: 8000, controlMs: 500 } },
+      'turn/start',
+      1000,
+    );
+    const turn = await s.open('plain');
+    expectError(await turn.done(), 'timeout');
+    await until(() => s.log().some((row) => row.kind === 'retired'), 'child retired');
+    const pids = [
+      ...new Set(
+        s
+          .log()
+          .filter((row) => row.kind === 'spawn')
+          .map((row) => row.pid),
+      ),
+    ];
+    expect(pids).not.toHaveLength(0);
+    await s.bridge.close();
+    closed.add(s.bridge);
+    for (const pid of pids)
+      expect(() => process.kill(pid, 0), `child ${String(pid)} outlived close()`).toThrow();
   });
 
   it.each(['complete-open', 'failed', 'interrupted', 'failure'])(

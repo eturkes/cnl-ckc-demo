@@ -334,6 +334,8 @@ class Bridge {
   #threads = new Map();
   #cwd = mkdtempSync(join(tmpdir(), 'cnl-ckc-chat-'));
   #closed = false;
+  /** @type {Set<Promise<void>>} each child told to exit, until it has; `close()` awaits them */
+  #exiting = new Set();
 
   /**
    * @param {{ codexCommand: string[], codexHome: string, guide: string, deadlines: Deadlines }} options
@@ -379,7 +381,7 @@ class Bridge {
       );
       child.notify('initialized', {});
     } catch (error) {
-      void child.close();
+      this.#dismiss(child);
       throw error;
     }
     return child;
@@ -537,7 +539,15 @@ class Bridge {
   /** End a child the bridge no longer trusts: every conversation on it expires first. */
   #retire(/** @type {AppServer} */ child) {
     this.#onExit(child);
-    void child.close();
+    this.#dismiss(child);
+  }
+
+  /** End `child` without waiting on it here; `close()` still awaits its exit. */
+  #dismiss(/** @type {AppServer} */ child) {
+    const exited = child.close().then(() => {
+      this.#exiting.delete(exited);
+    });
+    this.#exiting.add(exited);
   }
 
   /**
@@ -713,6 +723,7 @@ class Bridge {
     const child = this.#child;
     if (child !== undefined) this.#onExit(child);
     await child?.close();
+    await Promise.all(this.#exiting);
     rmSync(this.#cwd, { recursive: true, force: true });
   }
 }
