@@ -76,11 +76,18 @@ Goal positions are walked; every other argument is data and never walked.
   rc 0 after); `tests/engine-readonly-guard.test.ts` `G10 requires a KB read on every way…` red
   under the old rule. Approved grader change: G10's slot expectation was `slots.includes(index)`
   and fired `;/2 arg 1: expected false to be true` at the change.
-- A goal holding a term the decoder refuses is refused as `guard`, nothing run. That includes
-  every compound named `functor`: swipl-wasm's `PrologCompound` keeps its name under the key
-  `functor` and its arguments under the key of its name, so for that one name the arguments
-  overwrite the name and `decodeTerm` fails closed. `functor/3` is therefore refused (amended
-  before code, `chat-tester-1`); the decoder defect is queued in `.agent/deferred.md`.
+- A goal holding a term the decoder refuses is refused as `guard`, nothing run. A compound
+  named `functor` decodes: swipl-wasm's `PrologCompound` keeps its name under the key `functor`
+  and its arguments under the key of its name, so for that one name the arguments overwrite the
+  name, and `decodeTerm` reads the arguments where the name was. `functor/3` stays refused
+  (amended before code, `chat-tester-1`).
+  - Amended at mnt5 m4 (user-approved). The original clause: `That includes every compound
+    named functor: … so for that one name the arguments overwrite the name and decodeTerm fails
+    closed. … the decoder defect is queued in .agent/deferred.md`. Three G1 cases in
+    `tests/engine-readonly-session.test.ts` — `X = functor(a,b,c)`, `X = [functor(a)]`,
+    `X = f(functor(a,b))` — expected `/functor|decode/iu`; they stay refused, now because the
+    goal reads no KB predicate, and their original expectations fire against the fix:
+    `expected 'read-only query refused: the goal rea…' to match /functor|decode/iu`.
 - Empty goal text, text that does not parse, and text holding a second term are each refused as
   `guard`, nothing run. `term_string/3` reads the FIRST term and ignores the rest (`g.
   assertz(x)` parses as `g`), so the text after the term may hold layout, comments and one

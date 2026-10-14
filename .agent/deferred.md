@@ -16,13 +16,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   re-vendored bag corrects its region page, or carries a recorded producer reason, and the
   census in `tests/passage-locate.test.ts` moves with it. `pri` low. **User ruling**: keep it
   owed to the producer — no demo-side declared limit.
-- **A compound named `functor` fails to decode** — swipl-wasm's `PrologCompound` sets
-  `this.functor = name` and then `this[name] = args`, so for the name `functor` the arguments
-  overwrite the name, and `decodeTerm` (`src/engine/terms.ts`) throws `unsupported native tag:
-  t` on `X = functor(a)` or any goal that parses to one. Fail-closed, and no shipped answer holds
-  such a compound; the chat's read-only allowlist refuses `functor/3` because of it
-  (`.agent/contracts/chat-c1.md`). Accept: `X = functor(a,b)` solves with `X` decoded as a
-  compound `functor/2`, and the encoder re-enters it unchanged (`=@=`). `pri` low.
 - **`pnpm mutate` credits a timeout-only kill** — a vitest check that fails only by `Test timed
   out` exits 1, and `tools/mutate.mjs` reads exit 1 as killed, so a mutant that merely stalls its
   check, or a check starved by load, counts as bound (`mnt5-reviewer-2` F4: the first

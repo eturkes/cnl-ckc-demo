@@ -1454,4 +1454,15 @@ export const MUTANTS = [
     ],
     check: { test: 'tests/engine-term-identity.test.ts', name: 'refuses its re-entry by name' },
   },
+  {
+    label: 'm4 a compound named functor fails to decode',
+    edits: [
+      {
+        path: 'src/engine/terms.ts',
+        old: "  // A compound NAMED `functor` writes its arguments over the name it was just given.\n  if (value.$t === 't' && Array.isArray(value.functor)) return compound('functor', value.functor);\n",
+        new: '',
+      },
+    ],
+    check: { test: 'tests/engine-term-identity.test.ts', name: 'compound named functor' },
+  },
 ];
