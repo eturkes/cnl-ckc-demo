@@ -16,13 +16,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   re-vendored bag corrects its region page, or carries a recorded producer reason, and the
   census in `tests/passage-locate.test.ts` moves with it. `pri` low. **User ruling**: keep it
   owed to the producer — no demo-side declared limit.
-- **Two `Decisions` bullets state the reader-relative label ruling** — `.agent/spec.md`
-  `Decisions` **User** holds `The reading is READER-RELATIVE` and `An edge label is
-  READER-RELATIVE` back to back: the same ruling twice, each carrying clauses the other lacks
-  (the approved change of `tests/graph-semantics.review.test.ts:118` + its firing citation; the
-  shared `scopeReading` helper + the pointer to `.claude/rules/graph.md`). Accept:
-  `command grep -c 'READER-RELATIVE' .agent/spec.md` → 1, and that bullet carries every clause
-  both state. `pri` low. The ruling text is the user's, so the merge needs the user's approval.
 - **A compound named `functor` fails to decode** — swipl-wasm's `PrologCompound` sets
   `this.functor = name` and then `this[name] = args`, so for the name `functor` the arguments
   overwrite the name, and `decodeTerm` (`src/engine/terms.ts`) throws `unsupported native tag:

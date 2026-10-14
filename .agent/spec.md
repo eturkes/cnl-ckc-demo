@@ -77,23 +77,19 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   with the original text; approving unit `.agent/contracts/m5u13.md` V6. The 38 cases whose ends
   CONTRADICT rather than nest are a producer question queued to `.agent/deferred.md`; the
   shipped edge population does not move.
-- **The reading is READER-RELATIVE; the data is direction-fixed.** `scope` is always the source
-  end and `farScope` always the target end, `null` IFF that end is unscoped. The LABEL resolves
-  them against the node the reader selected — your own end first, `→` always pointing away from
-  you — so one edge yields two strings and the arrow carries one meaning everywhere. Far end is
-  omitted when empty or deep-equal to near; nesting writes both sides in full rather than
-  eliding a repeat, because eliding would render a nested pair identically to a divergent one.
-  Approved change of the graded case `tests/graph-semantics.review.test.ts:118` →
+- **An edge label is READER-RELATIVE; the data stays direction-fixed.** `scope` is always the
+  source end and `farScope` always the target end, `null` IFF that end is genuinely unscoped —
+  nulling `farScope` when the two ends AGREE is wrong, because the source reading hides the
+  defect while a target-side reader loses their own near scope. The LABEL resolves them against
+  the node the reader selected: the reader's own end leads and `→` always points away from them,
+  so one edge yields two strings and the arrow carries one meaning everywhere. The far end is
+  omitted when empty or deep-equal to the near end — the label's decision, never the data's.
+  Nothing else is trimmed across ends: a nested pair writes both sides in full, because eliding
+  the repeat would render it identically to a divergent one. ONE shared `scopeReading` helper
+  composes both surfaces; a second derivation per surface is what R1 forbids. Approved change
+  of the graded case `tests/graph-semantics.review.test.ts:118` →
   `'supported by condition · should'`, the original's firing recorded in
-  `.agent/contracts/m5u13.md`.
-- **An edge label is READER-RELATIVE; the data stays direction-fixed.** `scope` is the source
-  end and `farScope` the target end, `null` IFF the target end is genuinely unscoped — nulling
-  it when the two ends AGREE is wrong, because the source reading hides the defect while a
-  target-side reader loses their own near scope. Whichever end the reader stands on leads, and
-  `→` always points away from them. ONE shared `scopeReading` helper composes both surfaces; a
-  second derivation per surface is what R1 forbids. Nothing is trimmed across ends — eliding a
-  repeat would render a nested pair identically to a divergent one. Forms + the four-case table
-  → `.claude/rules/graph.md`.
+  `.agent/contracts/m5u13.md`. Forms + the four-case table → `.claude/rules/graph.md`.
 - **Judgment review reads the SHIPPED SURFACE, not a commit range.** The `reviewer` lenses read the
   working tree at close — `src/`, `tools/`, the gate, the contracts — so a defect is caught
   wherever it ships and superseded code is never re-read. The u3–u10 pass the ledger called
@@ -145,7 +141,7 @@ worker before its caller resumes (`chat-c2.md`).
   commit; the resumed session closes once this note is gone.
   - Committed: m1 `0727bd2`, m2 `a98b2c9`, m3 `7e31bc2`, m7 `b36a568`, m9 `84b0478`, m10
     `f2f1bb5`, the pause commit `e9ffcb7`, the template refresh `bd320a6`, m11 `6d45194`, m12
-    `2c76c7b`, m16 `d4f6a1e`, then m17 (this commit).
+    `2c76c7b`, m16 `d4f6a1e`, m17 `b44d709`, then m5 (this commit).
   - Resumed at `bd320a6` (`pnpm gate` rc 0). Carried branches rerun there, each cherry-picked onto
     it: `wip/m4-functor` `045ece0` — the term-identity, read-only session and guard suites 261/261,
     the accept test red at base (`unsupported native tag: t`), the three G1 cases' original
@@ -158,8 +154,8 @@ worker before its caller resumes (`chat-c2.md`).
     `wip/m15-artifacts` `e7e1844`.
   - User rulings this session: the accepted-open premise rejected and no id queued, so all
     fifteen stay open (m17); m4 and m5 approved; the grader changes m8, m13, m14 and m15 left
-    queued, owed to the user, their branches kept. Next: m5, then m4 (each rebased onto `main`
-    with its records, gate, commit), then the close — `pnpm mutate` run alone, `pnpm
+    queued, owed to the user, their branches kept. Next: m4 (rebased onto `main` with its
+    records, gate, commit), then m18, then the close — `pnpm mutate` run alone, `pnpm
     release:check`, a closing `reviewer`, the rules upkeep, the `Tasks` clearing into
     `.agent/archive/maintain.md`, and this note removed. m6 waits: `../cnl-ckc` `2acd0d70` still
     records B3-09/B3-10 `p14`; the C6 row waits on its re-open trigger.
@@ -174,7 +170,7 @@ worker before its caller resumes (`chat-c2.md`).
     (user): the accepted-open re-ruling.
 - [x] 7e31bc2 m3 `low` `tests/spec-check.test.ts` holds on any real spec.
 - [ ] m4 `low` a compound named `functor` decodes — owed (user): three G1 refusal cases change.
-- [ ] m5 `low` one reader-relative `Decisions` bullet — owed (user): the ruling text is theirs.
+- [ ] m5 `low` one reader-relative `Decisions` bullet, in the text the user approved.
 - [ ] m6 `low` coverage passages — waits on the producer correcting B3-09/B3-10 `p14`.
 - [x] b36a568 m7 `med` `chat:live` gains a firing input that calls no model (new row).
 - [ ] m8 `med` `pnpm mutate` refuses a timeout-only kill — owed (user): a grader change (new row).
@@ -189,7 +185,7 @@ worker before its caller resumes (`chat-c2.md`).
   (refresh row).
 - [ ] m16 `low` the exporter's five shape guards each refuse a planted malformed query (new row,
   found by m12).
-- [ ] m17 `med` the accepted-open re-ruling lands — all fifteen ids stay open (user ruling) — and
+- [x] b44d709 m17 `med` the accepted-open re-ruling lands — all fifteen ids stay open (user ruling) — and
   the m2 queue row closes.
 - [ ] m18 `med` `bridge.close()` awaits every child it spawned, a retired one included (new row,
   found by m17's gate).
