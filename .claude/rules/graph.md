@@ -4,6 +4,8 @@ paths:
   - "tools/kb/graph.mjs"
   - "tests/graph-*.ts"
   - "tests/semantic-graph.dom.test.ts"
+  - "tools/graph-check.mjs"
+  - "tools/graph-probe/**"
 ---
 
 # Semantic graph
@@ -193,3 +195,38 @@ Each bound is owned here; changing one is a decision this table records, never a
 | `SEARCH_RESULT_LIMIT` (`SemanticGraph.svelte`) + `search`/`searchConcepts` `limit = 24` (`model.ts`) | 24 | one screen of search results; a longer list is a query to refine, not a list to scroll |
 | `FALLBACK_RELATION_LIMIT` (`SemanticGraph.svelte`) | 60 | direct-relationship list cap; the cut is surfaced in place by `TEXT.graphRelationsTruncated` (shown of total, omitted rows, split scope variants), and `LABELS.graphShowAllRelations` expands the list to every incident relation the notice counts — not just the neighborhood's |
 | `PADDING` (`canvas.ts`) | 32 px | fit margin, so a node label at the canvas edge is never clipped by the box |
+
+## The `graph:check` probe
+
+`graph:check` mounts the shipped adapter and reads Cytoscape back off `container._cyreg.cy`;
+the contract is renderer-neutral, its probe cannot be. Fixtures are derived, never committed —
+cited documents from the bag through `answerDocuments`, sentences and lines from each
+provenance chunk. Its summary counts are themselves required non-zero, so a campaign that
+graded nothing fails instead of reporting green. Screenshots for a judgement pass:
+`node tools/graph-check.mjs --shots <dir> --report <file>`; the report is
+`{readings, components, fallbacks}`.
+
+It drives TWO pages off one dev server. `tools/graph-probe/index.html` mounts the ADAPTER, and
+sizes the viewport to the measured `.graph-shell .canvas` box. `app.html` mounts the whole
+`SemanticGraph.svelte`, and sizes the viewport to the DEVICE, because the component computes
+its own box from the page container copied there out of `src/App.svelte`. The component half is
+the only grader of the seam between component state and rendered output:
+`tests/semantic-graph.dom.test.ts` mocks `canvas.js` away, so a stub there cannot say whether
+the path the panel lists is the path the canvas highlights. Runes live in `app.svelte.ts`
+because C9 has to change `graphUrl` between a failed load and the retry click.
+
+**A synthetic tap must be dispatched on a DESCENDANT of the canvas host, at a point inside the
+layout viewport.** Cytoscape's `eventInContainer` discards any event whose `target` is the
+container itself, and any whose client point falls outside the container rect — so the probe
+scrolls the canvas into view, resolves the layer with `elementFromPoint`, and pans the victim
+node under that point first. Pointer events reach nothing; `mousedown` + `mouseup` are the
+pair that fires `tap`.
+
+**The campaign owns a named budget and terminates on its own**, so a finished campaign never
+reads like a hung browser. Vite runs IN PROCESS with browser and server teardown awaited
+(`.claude/rules/gate.md`: a server spawned through `pnpm exec` outlives `child.kill()`). The budget is 120000 ms; on expiry the run prints
+`graph-check: campaign exceeded 120000 ms during <phase>` and takes 2000 ms to clean up, and a
+2000 ms unref'd post-summary guard names any residual liveness rather than hanging on it. A
+healthy committed-state run is 43.916 s with no outer timeout, so the budget is roughly 3x
+headroom, not a tight fit. **Never wrap this command in an outer `timeout` to paper over a
+regression** — the budget message names the phase, and a wall-clock kill does not.

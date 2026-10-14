@@ -69,29 +69,26 @@ are this repo's deltas.
   are firing records, never that credit. Two shapes satisfy the revision half
   without a `git show`: a witness that stays inside the run, where the run IS the revision
   (`engine:check` under `ENGINE_CHECK_CONTROL`), and a differential that names its own arms
-  (`pnpm binding:replay HEAD`). The residue this closes is the hand run written down —
-  `8280034`'s `C7 8 times by hand, reverted` names no revision and no command, so nobody can
-  read it back. The contract is the citable record; `.scratch/` is gitignored.
+  (`pnpm binding:replay HEAD`). The residue this closes is a hand run written down with no
+  revision and no command, which nobody can read back. The contract is the citable record;
+  `.scratch/` is gitignored.
 - **A path outside the teammate's own tree must be ABSOLUTE in the brief** — reports, roster
   and every other `.scratch/` target. Global names files repo-relative, which resolves inside
   the worktree, while `.scratch/` sits in the primary tree; MAIN's own cwd also persists
   across Bash calls, so the relative form resolves against whichever tree the shell last
   entered and the write silently fails.
-- Lagging teammate → send a **cost** directive at the FIRST flat poll, not a flush directive:
-  each finding = its verdict + one anchor, ship no detail sections, run one measurement pass per row,
-  flush after every row. A bare "flush now" moved nobody; the cost directive carried every
-  lagging teammate to complete inside one poll. The brief's batch size is what it corrects.
-- **A seeded progress counter must not contain the token it counts.** u15 seeded each
-  partition with a header line quoting its own `grep -c 'unknown'` command, so the counter
-  could never reach 0 and every poll under-reported the wave. Seed a row-anchored pattern
-  instead — `^| R[0-9]* |.*| unknown |$` — and keep the bare token out of prose.
-- **An agent that reads for a whole window and writes nothing is replaced, not steered.** u15's
-  first mapping teammate burned 153K across five flat polls with zero rows written, its last
-  message still its opening statement of intent; a same-shape peer finished 158 rows in that
-  window, so the task was never the problem. The successor's brief opens by naming the
-  predecessor's failure and demanding an `Edit` as its FIRST tool call — it filled all 171 rows.
-  When a successor then goes flat holding a complete mapping in its transcript, the directive
-  that moves it names a batch size: flush ≤20 rows per `Edit`, never one final write.
+- Lagging teammate → send a **cost** directive at the FIRST flat poll, never a bare flush
+  directive, which moves nobody: each finding = its verdict + one anchor, ship no detail
+  sections, run one measurement pass per row, flush after every row. The brief's batch size is
+  what it corrects.
+- **A seeded progress counter must not contain the token it counts**: a header line quoting the
+  counter's own pattern keeps it from ever reaching 0. Seed a row-anchored pattern —
+  `^| R[0-9]* |.*| unknown |$` — and keep the bare token out of prose.
+- **An agent that reads for a whole window and writes nothing is replaced, not steered**: the
+  stall is the agent's, not the task's. The successor's brief opens by naming the predecessor's
+  failure and demanding an `Edit` as its FIRST tool call. A successor that goes flat holding a
+  complete mapping in its transcript moves on a directive naming a batch size: flush ≤20 rows per
+  `Edit`, never one final write.
 - **`cat >>` on a file already in MAIN's context re-echoes the WHOLE file back into
   context.** Append with the `Edit` tool anchored on the file's last line instead; it echoes
   nothing.

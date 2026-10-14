@@ -39,8 +39,8 @@ Step semantics a reader cannot get from the script name:
   per-file CONFIG exception: `security/detect-unsafe-regex` is off for `src/questions/advice.ts` in
   `eslint.config.js`, because T9 freezes that file's bytes against `22053ef` and an inline
   disable would change them; the config comment carries the regex's linearity argument.
-- `kb:build` subsumes the retired `kb:verify` — it proves the vendored bag against its
-  `.sha256` sidecar before parsing, in memory, never extracting.
+- `kb:build` proves the vendored bag against its `.sha256` sidecar before parsing, in memory,
+  never extracting.
 - `kb:export-check` (`tools/kb/export-check.mjs`) is the legacy export lane's `EXPORTED`
   preflight: it refuses a bag whose exported query set drifted, early and without booting
   anything. Its byte oracle is graded by `binding:check`. Design → `.claude/rules/kb-build.md`.
@@ -136,7 +136,7 @@ committed state:
 | command | what it alone proves |
 |---|---|
 | `pnpm kb:reproduce` | byte-reproducibility of pvm + qlf + catalog across two forced builds |
-| `pnpm engine:probe` | the engine lifecycle in a real browser: R38 cap + deadline end an unbounded goal; R39 a worker stuck in one step ended by the main-thread deadline with the main thread free; R41 five reset cycles each killing a hostile loop, dropping consulted state and booting the manifest's corpus; R42 a failing consult poisons its engine and a reset clears it; R45 the runaway-`assertz` abort settling `limit` `'heap'` or error `aborted`, and the next query — no reset — answering the manifest's corpus on the recreated worker. Control: a cycle without its reset must be refused. It stopped firing at `04ada8c`: d17's resume marker left a choice point past the final record, so a run yielded with its query open and a request admitted there nested inside it; a run now ends AT its final record (`e8f7cab`, `.claude/rules/engine.md`) |
+| `pnpm engine:probe` | the engine lifecycle in a real browser: R38 cap + deadline end an unbounded goal; R39 a worker stuck in one step ended by the main-thread deadline with the main thread free; R41 five reset cycles each killing a hostile loop, dropping consulted state and booting the manifest's corpus; R42 a failing consult poisons its engine and a reset clears it; R45 the runaway-`assertz` abort settling `limit` `'heap'` or error `aborted`, and the next query — no reset — answering the manifest's corpus on the recreated worker. Control: a cycle without its reset must be refused; it fires only while a run ends AT its final record (`.claude/rules/engine.md`) |
 | `pnpm test:browser [file]` | the combobox predicates jsdom can only stub — S1/S7 from Chromium's accessibility tree, K5 on the real clock, K8/K10/P2/P3 under real key and pointer input with focus read after each, B1 through the native `scrollIntoView`, B3 axe with real layout (`tests/question-combobox.browser.test.ts`); and that axe decides the jsdom contrast pin's unreadable pair a violation here (`tests/axe-contrast.browser.test.ts`), the environment that pin would turn red in |
 | `pnpm smoke` | built output answers in a real browser against bag bytes read at run time, the served saved state is current with the bag's input digest, and no request takes the lazy QLF fallback |
 | `pnpm readme:check` | the README's `## Run locally` path from a clean clone of HEAD: every non-keyed `sh` line rc 0, both servers answering, the booted preview engine, `kb:build` and the bag manifest agreeing on the document count, and the clone's module count equal to a reference build of the same tree. It refuses a dirty tree, and its one deviation from the README text is a sandbox `--install-directory` on `corepack enable` |
@@ -149,17 +149,15 @@ committed state:
 | `pnpm chat:probe` | live model behaviour on six fixed questions, one JSON report of every part's label, card and source (L2). Reported, never graded: the model has no determinism control; the gate grades the bridge against a scripted fake (`tests/chat-server.test.ts`) and the page against recorded turns |
 | `pnpm binding:replay` | that `clinical-binding` E2 is load-bearing: the same erasure is invisible at `a944fca` and drops exactly one document now |
 
-**A server spawned through `pnpm exec` outlives `child.kill()`, and both browser lanes were
-bitten by it.** `spawn('pnpm', ['exec', 'vite', ...])` builds a pnpm → vite tree, so signalling
+**A server spawned through `pnpm exec` outlives `child.kill()`.** `spawn('pnpm', ['exec', 'vite', ...])` builds a pnpm → vite tree, so signalling
 the child reaps the wrapper and orphans vite; the orphan holds the inherited stdout and stderr
 pipes open and Node's loop never drains. The lane prints its success line and then hangs
 forever — so **a check that prints its success line is not a check that exited.** Two remedies
-ship, and either is sound: `graph:check` runs Vite IN PROCESS with teardown awaited (below),
+ship, and either is sound: `graph:check` runs Vite IN PROCESS with teardown awaited
+(`.claude/rules/graph.md`),
 while `browser:check` keeps the child and fixes the signal, `detached: true` plus
 `process.kill(-pid, 'SIGTERM')`. Prefer in-process for a new lane; a spawned server must name
-its group kill. Untreated, `browser:check` sat at **rc 124 on a 600 s timeout** with a stray dev
-server on 5173 and took `pnpm release:check` down with it — the composite had never once run
-end to end. Fixed, it is rc 0 in 8 s with no strays.
+its group kill.
 
 `tools/answer-oracle.mjs` is the browser lanes' shared expectation — `clinicalArtifacts` answer
 terms assembled in JavaScript from the bag, never scraped from the page and never a fixture
@@ -172,40 +170,6 @@ A2 against the live derivation.
 the ref under test, the bag, the image build and the loader from the working tree — and exits
 1 unless the archived arm is red and the working arm green. Control: `pnpm binding:replay HEAD`
 exits 1, both arms green.
-
-`graph:check` mounts the shipped adapter and reads Cytoscape back off `container._cyreg.cy`;
-the contract is renderer-neutral, its probe cannot be. Fixtures are derived, never committed —
-cited documents from the bag through `answerDocuments`, sentences and lines from each
-provenance chunk. Its summary counts are themselves required non-zero, so a campaign that
-graded nothing fails instead of reporting green. Screenshots for a judgement pass:
-`node tools/graph-check.mjs --shots <dir> --report <file>`; the report is
-`{readings, components, fallbacks}`.
-
-It drives TWO pages off one dev server. `tools/graph-probe/index.html` mounts the ADAPTER, and
-sizes the viewport to the measured `.graph-shell .canvas` box. `app.html` mounts the whole
-`SemanticGraph.svelte`, and sizes the viewport to the DEVICE, because the component computes
-its own box from the page container copied there out of `src/App.svelte`. The component half is
-the only grader of the seam between component state and rendered output:
-`tests/semantic-graph.dom.test.ts` mocks `canvas.js` away, so a stub there cannot say whether
-the path the panel lists is the path the canvas highlights. Runes live in `app.svelte.ts`
-because C9 has to change `graphUrl` between a failed load and the retry click.
-
-**A synthetic tap must be dispatched on a DESCENDANT of the canvas host, at a point inside the
-layout viewport.** Cytoscape's `eventInContainer` discards any event whose `target` is the
-container itself, and any whose client point falls outside the container rect — so the probe
-scrolls the canvas into view, resolves the layer with `elementFromPoint`, and pans the victim
-node under that point first. Pointer events reach nothing; `mousedown` + `mouseup` are the
-pair that fires `tap`.
-
-**The campaign owns a named budget and terminates on its own.** It formerly printed both
-summaries and then hung forever, which made `release:check` unrunnable unattended and made a
-finished campaign indistinguishable from a hung browser — the orphaned-Vite cause above. Vite
-now runs IN PROCESS with browser and server teardown awaited. The budget is 120000 ms; on expiry the run prints
-`graph-check: campaign exceeded 120000 ms during <phase>` and takes 2000 ms to clean up, and a
-2000 ms unref'd post-summary guard names any residual liveness rather than hanging on it. A
-healthy committed-state run is 43.916 s with no outer timeout, so the budget is roughly 3x
-headroom, not a tight fit. **Never wrap this command in an outer `timeout` to paper over a
-regression** — the budget message names the phase, and a wall-clock kill does not.
 
 `pnpm release:check` = `gate && kb:reproduce && smoke && browser:check && graph:check &&
 readme:check && test:browser && engine:probe`.
