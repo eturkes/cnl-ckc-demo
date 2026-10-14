@@ -87,10 +87,13 @@ const gradeInventory = (inventory: string, known: Facts): string[] => {
         failures.push(`${where}: "${text}" is no SHA + anchor`);
     } else if (kind === 'text') {
       const [path = '', ...rest] = text.split(' ');
+      const verbatim = rest.join(' ');
       const body = known.readText(path);
-      if (body === undefined) failures.push(`${where}: ${path} does not exist`);
-      else if (!body.includes(rest.join(' ')))
-        failures.push(`${where}: ${path} no longer holds "${rest.join(' ')}"`);
+      // An empty anchor is found in every file, so a bare path would resolve without a record.
+      if (verbatim.trim() === '') failures.push(`${where}: ${path} names no verbatim text`);
+      else if (body === undefined) failures.push(`${where}: ${path} does not exist`);
+      else if (!body.includes(verbatim))
+        failures.push(`${where}: ${path} no longer holds "${verbatim}"`);
     } else if (kind === 'queue') {
       if (!known.queueTitles.has(text)) failures.push(`${where}: no queue row titled "${text}"`);
     } else if (kind !== 'none') {
@@ -114,6 +117,9 @@ const gradeInventory = (inventory: string, known: Facts): string[] => {
   roster('suite', suites, known.suites, 0);
   for (const [check = '', , kind = '', anchor = ''] of [...steps, ...lanes])
     record(unquote(check), kind, anchor);
+  // `none` is a lane that reports and grades nothing; a gate step grades, so it owes a record.
+  for (const [check = '', , kind = ''] of steps)
+    if (kind === 'none') failures.push(`${unquote(check)}: a gate step needs a firing record`);
   for (const [suite = '', path = '', , kind = '', anchor = ''] of suites) {
     const name = unquote(suite);
     const answer = known.answerSuites.has(name) ? 'answer' : 'off';
