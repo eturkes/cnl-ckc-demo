@@ -565,16 +565,16 @@ describe('chat-c3 bridge contract', { timeout: 20_000 }, () => {
   });
 
   it('B7 close awaits every child it spawned, a retired one included', async () => {
-    // The retired fake lingers past SIGTERM, still writing its trace into the directory the
-    // suite deletes once `close()` resolves.
+    // The retired fake lingers, still writing its trace into the directory the suite deletes
+    // once `close()` resolves. `controlMs` also bounds `initialize`, which starts the fake's
+    // Node process, so it stays at the suite's default.
     const s = await setup(
-      { deadlines: { callMs: 8000, turnMs: 8000, controlMs: 500 } },
+      { deadlines: { callMs: 8000, turnMs: 8000, controlMs: 2000 } },
       'turn/start',
       1000,
     );
     const turn = await s.open('plain');
     expectError(await turn.done(), 'timeout');
-    await until(() => s.log().some((row) => row.kind === 'retired'), 'child retired');
     const pids = [
       ...new Set(
         s

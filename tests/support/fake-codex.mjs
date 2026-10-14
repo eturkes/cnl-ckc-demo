@@ -71,8 +71,11 @@ function run() {
   const config = object(JSON.parse(process.env.FAKE_CODEX_CONFIG ?? '{}'));
   const tracePath = text(config.trace);
   const stall = config.stall;
-  /** `linger`: milliseconds a retired fake lives past SIGTERM, still writing its trace. */
-  const linger = typeof config.linger === 'number' ? config.linger : 5;
+  /**
+   * `linger`: milliseconds a dismissed fake lives on, still writing its trace. The bridge ends
+   * stdin and then signals, so either may arrive first; set, both paths linger.
+   */
+  const linger = typeof config.linger === 'number' ? config.linger : undefined;
   /** `stall: 'slow-initialize'` answers `initialize` late: a second turn can arrive meanwhile. */
   const slowInitialize = stall === 'slow-initialize';
   /** @param {string} kind @param {unknown} detail */
@@ -462,10 +465,12 @@ function run() {
           tool(turn, {}, 'retired'),
         );
       }
-    setTimeout(() => process.exit(0), linger);
+    setTimeout(() => process.exit(0), linger ?? 5);
   });
   const lines = createInterface({ input: process.stdin });
-  lines.on('close', () => process.exit(0));
+  lines.on('close', () =>
+    linger === undefined ? process.exit(0) : setTimeout(() => process.exit(0), linger),
+  );
   lines.on('line', (line) => {
     try {
       receive(object(JSON.parse(line)));
