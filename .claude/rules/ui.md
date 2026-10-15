@@ -51,6 +51,16 @@ fill takes LARGE against the canvas. A pair graded here is only the graph's if t
 paints that value — `graph:check`'s `palette` rule is what decides that half
 (`.claude/rules/graph.md`).
 
+**Palette safety (`CLAUDE.md` `Execution` Charts + figures) is queued, not met** (user ruling).
+The five node fills `--graph-{document,entity,event,operator,value}` fail its computed check in
+both themes — 7 of 10 pairs, entity vs value at OKLab ΔE×100 1.5 under Machado protan
+simulation against a floor of 8 — so the `.agent/deferred.md` row
+`The graph's node palette fails the computed palette-safety check` carries the redesign and its
+gate step. Until it lands, `contrast:check` grades the graph colours and node kind also rides
+shape, legend and label. The figures regenerate from a scratch probe until that step lands:
+coloraide over each pair of the fills' hex values in `src/app.css`, `delta_e(method='ok') × 100`
+plain and after `filter('protan'|'deutan', 1.0, method='machado')` on both colours.
+
 ## Copy
 
 **Every human-facing string lives in `src/i18n/`** — `copy:check` refuses any literal text node

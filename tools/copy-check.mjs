@@ -4,7 +4,7 @@
 // Two graders, because the two languages admit different decidable rules. English
 // grades on banned filler. Japanese grades on PARITY — every English key present, every
 // value actually rewritten — plus register J2–J4. Sentence length stays a judgment, never a
-// check (user ruling, global `CLAUDE.md` `Authoring`).
+// check (user ruling, `CLAUDE.md` `Authoring`).
 //
 // The checker is static. There is no TypeScript runner in this repo, and adding
 // one to read two string records would cost more than parsing them does. It

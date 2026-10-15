@@ -19,7 +19,13 @@ paths:
   into `node_modules/.bin`, so every `pnpm <script>` and `pnpm exec node` runs on it whatever
   the host carries. **Bare `node` is the host's** and is never a gate runner.
 - The chat bridge needs the `codex` CLI on `PATH` (`CHAT_CODEX_BIN` overrides) and a login under
-  its dedicated `CODEX_HOME` (`~/.config/cnl-ckc-demo/codex`); it is not a package dependency.
+  its dedicated `CODEX_HOME` (`~/.config/cnl-ckc-demo/codex`, `CHAT_CODEX_HOME` overrides); it is
+  not a package dependency.
+- **Product prerequisites outside the tree stay** (user ruling on `CLAUDE.md` `Authoring`
+  portability): the chat's `CODEX_HOME` is a per-user product path, the same on every machine;
+  the browser lanes' Chromium = the public `chromiumfish` npm package, located by
+  `CHROMIUMFISH_DIR` (its package directory), else the pnpm global store
+  (`tools/browser.mjs` `resolveChromiumfish`). README `Prerequisites` + `Chat` name both.
 
 ## Dependency pins
 
@@ -65,7 +71,7 @@ the gate executes the scripts for real. Consequences for new `.mjs`:
   give every recursive JSDoc'd helper an explicit `@returns`.
 - `subset-font` and `fontverter` ship no types → `tools/font-modules.d.ts` declares the slice
   `tools/fonts.mjs` calls.
-- The chromiumfish launcher resolves from the pnpm global store and ships no types, so
+- The chromiumfish launcher resolves at run time and ships no types, so
   `tools/browser.mjs` carries one `no-unsafe-assignment` disable. A JSDoc cast does not clear
   it — the awaited dynamic import is still `any`.
 

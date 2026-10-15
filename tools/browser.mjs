@@ -90,19 +90,30 @@ export const failWith = (tool) => (message) => {
 };
 
 /**
- * pnpm globals move between store versions, so scan newest first.
+ * The chromiumfish launcher module: `CHROMIUMFISH_DIR` names its package directory, else the pnpm
+ * global store holds it, scanned newest first because pnpm globals move between store versions.
  *
- * @param {string} pkg
  * @param {(message: string) => never} fail
- * @returns {string}
+ * @returns {string} the launcher's file URL
  */
-export const resolveGlobal = (pkg, fail) => {
+export const resolveChromiumfish = (fail) => {
+  const named = process.env.CHROMIUMFISH_DIR;
+  if (named !== undefined && named !== '') {
+    const entry = join(named, 'dist/index.js');
+    return existsSync(entry)
+      ? pathToFileURL(entry).href
+      : fail(`CHROMIUMFISH_DIR=${named} holds no dist/index.js`);
+  }
   const globals = join(process.env.PNPM_HOME ?? join(homedir(), '.local/share/pnpm'), 'global');
-  for (const dir of readdirSync(globals).sort((a, b) => Number(b) - Number(a))) {
-    const entry = join(globals, dir, 'node_modules', pkg);
+  const stores = existsSync(globals) ? readdirSync(globals) : [];
+  for (const dir of stores.sort((a, b) => Number(b) - Number(a))) {
+    const entry = join(globals, dir, 'node_modules/chromiumfish/dist/index.js');
     if (existsSync(entry)) return pathToFileURL(entry).href;
   }
-  return fail(`${pkg} missing from ${globals}`);
+  return fail(
+    `chromiumfish missing from ${globals}: set CHROMIUMFISH_DIR to its package directory, ` +
+      'or install it with pnpm add -g chromiumfish',
+  );
 };
 
 /**
@@ -110,13 +121,13 @@ export const resolveGlobal = (pkg, fail) => {
  * @returns {Promise<Browser>}
  */
 export const launch = async (fail) => {
-  // The launcher resolves out of the pnpm global store at run time and ships no
-  // types, so this import is the one place `any` legitimately enters these files.
-  // The specifier is a store path this process resolved itself, and this file never ships.
+  // The launcher resolves at run time (`resolveChromiumfish`) and ships no types, so this
+  // import is the one place `any` legitimately enters these files. The specifier is a path
+  // this process resolved itself, and this file never ships.
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- the launcher ships no types
   const launcher = /** @type {{ ChromiumFish: (options?: object) => Promise<Browser> }} */ (
-    // eslint-disable-next-line no-unsanitized/method -- a store path this process resolved itself
-    await import(`${resolveGlobal('chromiumfish', fail)}/dist/index.js`)
+    // eslint-disable-next-line no-unsanitized/method -- a launcher path this process resolved itself
+    await import(resolveChromiumfish(fail))
   );
   return launcher.ChromiumFish({ headless: true });
 };

@@ -16,13 +16,13 @@
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 
 import { requireFiring } from './control.mjs';
 import { LANE_SUITE } from './kb/exports.mjs';
 import { ROOT } from './kb/paths.mjs';
 
-/** @typedef {{ fullName: string, status: string }} CaseResult */
+/** @typedef {{ fullName: string, status: string, duration?: number | null }} CaseResult */
 /** @typedef {{ name: string, assertionResults: CaseResult[] }} SuiteResult */
 /** @typedef {{ suite: string, why: string, cases: string[] }} Requirement */
 
@@ -331,6 +331,7 @@ const report = (graded, lifecycle, meaning, controls) => {
   }
 };
 
+const SLOWEST = 10;
 const scratch = mkdtempSync(join(tmpdir(), 'binding-check-'));
 const reportPath = join(scratch, 'suite.json');
 try {
@@ -357,6 +358,24 @@ try {
     suites = /** @type {{ testResults: SuiteResult[] }} */ (parsed).testResults;
   } catch {
     fail('the suite produced no readable report');
+  }
+
+  // The suite dominates the gate's wall-clock, so its slowest cases print with every run.
+  const slowest = suites
+    .flatMap(({ name, assertionResults }) =>
+      assertionResults.map(({ fullName, duration }) => ({
+        ms: duration ?? 0,
+        label: `${relative(ROOT, name)} > ${fullName}`,
+      })),
+    )
+    .sort((a, b) => b.ms - a.ms)
+    .slice(0, SLOWEST);
+  if (slowest.length > 0) {
+    process.stdout.write(
+      `binding:check slowest cases —\n${slowest
+        .map(({ ms, label }) => `${String(Math.round(ms)).padStart(7)} ms  ${label}`)
+        .join('\n')}\n`,
+    );
   }
 
   const inventory = gradeTable(REQUIRED, 'REQUIRED', suites);

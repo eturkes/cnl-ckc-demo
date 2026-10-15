@@ -1,15 +1,15 @@
 # Wave bindings
 
-Project bindings on the global `CLAUDE.md` `Subagents` protocol. Mechanics live there; these
-are this repo's deltas.
+Project bindings on the `CLAUDE.md` `Teammates` protocol. Mechanics live there; these are this
+repo's deltas.
 
 ## Artifacts
 
 - `.agent/contracts/` = committed. Anything a later unit dispatches from lands there —
   acceptance contracts, fixed check sets, verdict tables. The M1 + M5u1/u2 contracts and every
   historical review live under `.agent/archive/`.
-- `.scratch/` = gitignored, working state alone. The Close order captures worktree content,
-  not `.scratch/`, so a durable artifact must be committed to survive.
+- `.scratch/` = gitignored, working state alone. The `CLAUDE.md` `Teammates` close captures
+  worktree content, not `.scratch/`, so a durable artifact must be committed to survive.
 - Reports go to `.scratch/agents/<name>.md`; the roster is `.scratch/agents/roster.md`.
 
 ## Worktrees
@@ -28,10 +28,11 @@ are this repo's deltas.
   no disk cost on btrfs. The copy is a snapshot: a worktree whose suite depends on freshly
   built KB bytes gets re-seeded after MAIN's `kb:build`, and `node_modules` stays a symlink
   because dependency ids resolve through pnpm rather than through the fs allow-list.
-- Surviving teammate tips stay in **branch** form (`wt/<name>`): every committed citation —
-  contracts, ledgers, reviewer reports, `.agent/deferred.md` rows — names the branch. A Close-order
-  branch sweep covers its own wave's roster alone; renaming a cited branch invalidates the
-  record it was preserving.
+- **A cited teammate branch survives the close** (ruling on `CLAUDE.md` `Teammates`, whose close
+  removes worktrees + branches): its tip stays in **branch** form (`wt/<name>`), because every
+  committed citation — contracts, ledgers, reviewer reports, `.agent/deferred.md` rows — names
+  the branch. A close's branch sweep covers its own wave's roster alone; renaming a cited branch
+  invalidates the record it was preserving.
 - Surviving evidence branches, cited by the ledger, contracts, commit bodies and queue rows —
   never rename one: `wt/rev-arch` `1e89286` (A8), `wt/rev-graph` `ace618a` (G3),
   `wt/rev-assurance` `5c97965` (C2); u16 red suites `wt/tester-1` `4da48b3`, `wt/tester-2`
@@ -54,7 +55,7 @@ are this repo's deltas.
 - A probe branch also carries probe code `main` cannot hold. `wt/res-nl-intake`'s four `.mjs`
   probes fail `pnpm lint` under the typescript-eslint project service, which resolves every
   linted file through `tsconfig.json`; adding `.agent/` to the ESLint ignore list would be a
-  grader change, and global `CLAUDE.md` `Engineering` reserves those for their own approved unit.
+  grader change, and `CLAUDE.md` `Engineering` reserves those for their own approved unit.
 
 ## Units + teammates
 
@@ -65,18 +66,18 @@ are this repo's deltas.
   (`.agent/archive/contracts/m5u1.md:232`, `m5u2.md:216`). A base-GREEN case is declared in
   that same row with its reason, never manufactured, and stays uncredited until `pnpm stryker`
   (`tools/mutation/`, one suite per run) shows its suite killing default-operator mutants in the
-  files it imports — the credit global `Engineering` names; `pnpm mutate`'s hand-written mutants
-  are firing records, never that credit. Two shapes satisfy the revision half
-  without a `git show`: a witness that stays inside the run, where the run IS the revision
+  files it imports — the credit `CLAUDE.md` `Engineering` names; `pnpm mutate`'s hand-written
+  mutants are firing records, never that credit. Two shapes satisfy the revision half without a
+  `git show`: a witness that stays inside the run, where the run IS the revision
   (`engine:check` under `ENGINE_CHECK_CONTROL`), and a differential that names its own arms
   (`pnpm binding:replay HEAD`). The residue this closes is a hand run written down with no
   revision and no command, which nobody can read back. The contract is the citable record;
   `.scratch/` is gitignored.
-- **A path outside the teammate's own tree must be ABSOLUTE in the brief** — reports, roster
-  and every other `.scratch/` target. Global names files repo-relative, which resolves inside
-  the worktree, while `.scratch/` sits in the primary tree; MAIN's own cwd also persists
-  across Bash calls, so the relative form resolves against whichever tree the shell last
-  entered and the write silently fails.
+- **A path outside the teammate's own tree must be ABSOLUTE in the brief** — reports, roster and
+  every other `.scratch/` target. `CLAUDE.md` `Teammates` names files repo-relative, which
+  resolves inside the worktree, while `.scratch/` sits in the primary tree; MAIN's own cwd also
+  persists across Bash calls, so the relative form resolves against whichever tree the shell
+  last entered and the write silently fails.
 - Lagging teammate → send a **cost** directive at the FIRST flat poll, never a bare flush
   directive, which moves nobody: each finding = its verdict + one anchor, ship no detail
   sections, run one measurement pass per row, flush after every row. The brief's batch size is
@@ -98,16 +99,18 @@ are this repo's deltas.
 `node tools/validate-report.mjs <report.md> [--units N] [--verdict]` grades wave reports. Rows
 are `| id | finding | evidence |`, and `--verdict` folds the verdict into the finding cell. A
 reviewer brief carries ONE vocabulary: the cell opens `pass:` or `fail(low|med|high):`. The
-grader also admits the `reviewer` role's own form — `pass`, or `finding <ids> (blocker|major|minor)`
-— read as blocker = high, major = med, minor = low, so a reviewer following its role grades
-clean. The `evidence` cell is where the global
-evidence bar lands — a red test, or the disputed bytes in `/usr/bin/rg -Fn` form plus
-`file:line` — so harvest rematches a row without opening its detail section. Grading needs a
-sibling `<stem>.ids`. A seeded all-`unknown` skeleton exits 1 — that is what makes it a
-deliverable-first counter. The Units table admits `-` in the `flags` and `depends` columns
-only; every other column rejects it. A `\|` inside a cell is content, never a delimiter. No cell
-carries a length floor (user ruling, global `CLAUDE.md` `Authoring`): a placeholder, a missing
-verdict or an evidence cell without a pointer is what fails.
+grader also admits the `reviewer` role's own form — `pass`, or `finding <ids>
+(blocker|major|minor)` — read as blocker = high, major = med, minor = low, so a reviewer
+following its role grades clean. The `evidence` cell is where the `CLAUDE.md` `Teammates`
+evidence bar lands — a red test, or the disputed bytes in `rg -Fn` form plus `file:line` — so
+harvest rematches a row without opening its detail section. Grading needs a sibling
+`<stem>.ids`. A seeded all-`unknown` skeleton exits 1 — that is what makes it a
+deliverable-first counter. The Units table admits `-` in the `flags` and `depends` columns only;
+every other column rejects it. A `\|` inside a cell is content, never a delimiter. No cell
+carries a length floor (user ruling, `CLAUDE.md` `Authoring`): a placeholder, a missing verdict
+or an evidence cell without a pointer is what fails. The retired floors — finding 40, evidence
+8, unit acceptance 20 characters — fired `finding too thin (11<40 chars)` at `e9ffcb7` on an
+11-character finding with 5-character evidence.
 
 `.agent/review.md` is hand-maintained after its first shape; the committed ledger is the
 source, and a generator is re-derived only for a bulk reshape.

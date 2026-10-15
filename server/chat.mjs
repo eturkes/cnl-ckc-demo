@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // `pnpm chat:dev` — the local chat bridge (`.agent/contracts/chat-c3.md`).
 //
-// One persistent `codex app-server` child speaks newline-delimited JSON-RPC 2.0 on stdio, the
-// shape of `../live-stt/` `CodexTranslator`. The bridge never runs a goal: a `prolog_query` call
-// is forwarded to the browser, which runs it in its own engine and posts the result back, so the
-// answer the model reads is the answer the page shows.
+// One persistent `codex app-server` child speaks newline-delimited JSON-RPC 2.0 on stdio. The
+// bridge never runs a goal: a `prolog_query` call is forwarded to the browser, which runs it in
+// its own engine and posts the result back, so the answer the model reads is the answer the page
+// shows.
 //
 // It spends the user's subscription, so it binds 127.0.0.1 and refuses any request whose `Host`
 // or `Origin` is not local before reading its body: a cross-site form POST and a DNS-rebinding

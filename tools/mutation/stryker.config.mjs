@@ -1,6 +1,6 @@
 // `pnpm stryker` — default-operator mutation over the modules one base-green suite imports.
 //
-// Global `CLAUDE.md` `Engineering` credits a suite that already passes once the stack's mutation
+// `CLAUDE.md` `Engineering` credits a suite that already passes once the stack's mutation
 // tool, at its default operators, kills mutants in the files the suite imports or calls;
 // `pnpm mutate`'s hand-written mutants are firing records and never earn that credit. The suite
 // is u6's legacy export lane (`tools/mutation/vitest.config.mjs`), green at base since it shipped.

@@ -1,6 +1,6 @@
 // Deterministic checks for the engine's four forbidden-surface predicates (m1u3 P6.2-P6.5).
 //
-// P6.2-P6.5 are decidable by a script, and global CLAUDE.md Engineering gives every
+// P6.2-P6.5 are decidable by a script, and `CLAUDE.md` `Engineering` gives every
 // tool-decidable rule to a deterministic check. Until this step existed they held
 // "by construction" — that is, by nobody having broken them yet. Nothing else in
 // `pnpm gate` decides any of the four: prettier, eslint, svelte-check, copy-check,

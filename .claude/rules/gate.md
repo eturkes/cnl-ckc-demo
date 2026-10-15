@@ -1,14 +1,27 @@
 # Gate
 
-`pnpm gate` = one `&&` chain in `package.json`; every step fails closed:
+`pnpm gate` = `tools/gate.mjs` over `package.json` `gate:chain`, one `&&` chain run step by step;
+every step fails closed:
 
 `audit:check → secret:check → kb:build → kb:asset-check → kb:export-check → engine:check →
 copy:check → contrast:check → presentation:check → claims:check → spec:check → spec:lint →
 format:check → lint → check → binding:check → build`
 
-`package.json` is authoritative if that list ever diverges from it. The chain's per-run counts
+`gate:chain` is authoritative if that list ever diverges from it; `tests/inventory.test.ts`
+rosters the steps from the same text, and the runner refuses a segment other than
+`pnpm <declared script>`. The runner prints each step's wall-clock, `binding:check` its 10
+slowest cases, and the first red step ends the run with that step's status, naming the steps it
+left unrun. `pnpm gate:chain` runs the chain untimed. The chain's per-run counts
 (checked files, tests, modules, copy strings, contrast pairs) move on almost every commit →
 **rerun the gate rather than quoting a total**; a durable exact total re-stales itself.
+
+**Fast gate = `pnpm gate:fast`, for iteration**: `kb:build`, then every other step at once —
+`lint` and `format:check` on content-keyed caches under `.vite/`, `audit:check` only when
+`package.json` or `pnpm-lock.yaml` changed — then `vitest run --changed` alone in place of
+`binding:check`, every red step reported. Its reach ends at vitest's module graph and ESLint's
+per-file cache: a suite reading a changed file through `fs` (rules, contracts, `kb/generated`)
+and a type-aware finding that moves with an imported file wait for `pnpm gate`, which alone
+decides a commit.
 
 **`pnpm gate` green is not `release:check` green.** A report of a gate-only run names
 `kb:reproduce`, `smoke`, `browser:check`, `graph:check`, `readme:check`, `test:browser` and
@@ -107,9 +120,8 @@ Step semantics a reader cannot get from the script name:
   name its own hash, so a unit's closing commit leaves its row `- [ ]` and the next commit ticks
   it with that SHA.
 - `spec:lint` (`tools/spec-lint.mjs`) runs `.agent/spec-lint`, the template's shape check over the
-  whole spec: a byte copy of `~/.local/app/agents/claude/spec-lint`, refreshed at each template
-  refresh and never edited here, because its cases live upstream (`claude/check-spec-lint`). The
-  wrapper owns this repo's controls alone.
+  whole spec: a template file, copied in whole at each template refresh and never edited here,
+  because its cases live with the template. The wrapper owns this repo's controls alone.
 - **The stable censuses the rules state are graded, not trusted.** `tests/census.test.ts` (run by
   `binding:check` with the rest of the suite, after `kb:build`) holds a `CENSUS` table: each row
   anchors one claim unit in `.claude/rules/`, parses each figure out of its text and compares it
@@ -144,7 +156,7 @@ committed state:
 | `pnpm visual-qa` | horizontal fit of every state at 320, 375 and 1280 px — each phase of a sound boot held, a run held after its second streamed answer, idle, listbox open, every catalog question answered, the first answer with every disclosure open, a cancelled run, the graph, the corpus list and one corpus document open, and a failed boot — as JSON on stdout plus a PNG per state in `.probe/`; exit 1 names each overflowing state. Control: a box planted wider than the viewport must read as overflow at each width |
 | `pnpm graph:check` | the renderer-neutral edge-view contract R1-R7 (`.agent/contracts/m5u8.md`) against the SHIPPED `mountGraphCanvas`, over 14 fixtures x 2 viewports, plus C1-C12 (`m5u10.md`) against the SHIPPED `SemanticGraph.svelte` over 2 devices x 2 views + both fallbacks |
 | `pnpm mutate [substring]` | each fixed defect's closing check binds to its fix, and each inventoried check fires: every mutant in `tools/mutants.mjs` restores one pre-fix behaviour, or (`inv`) plants a wrong implementation or input, and its check must go red, after that check passed on the pristine tree; every touched file is restored and proven byte-equal. Only exit status 1 kills; a signal or another status reads `INCONCLUSIVE` and fails the run. Every anchor is graded inside the gate by `tests/mutant-anchors.test.ts`, so a refactor that moves one reddens the gate, not the next mutate run. From a clean checkout: `pnpm install --frozen-lockfile && pnpm kb:build && pnpm mutate`. Run it alone — CPU contention turns a 5000 ms test timeout into a false kill |
-| `pnpm stryker` | the legacy export lane's default-operator credit, the one global `CLAUDE.md` `Engineering` grants a base-green suite: Stryker mutates the three modules that suite imports and runs it alone per mutant, then `tools/mutation/survivors.mjs` lists every mutant left alive, splitting Stryker's `Survived` by whether a test ran — a mutant that fails the suite at collection is replayed by hand and never credited. Reported, never graded; the record is `.agent/contracts/mnt5-stryker.md`. Run it alone |
+| `pnpm stryker` | the legacy export lane's default-operator credit, the one `CLAUDE.md` `Engineering` grants a base-green suite: Stryker mutates the three modules that suite imports and runs it alone per mutant, then `tools/mutation/survivors.mjs` lists every mutant left alive, splitting Stryker's `Survived` by whether a test ran — a mutant that fails the suite at collection is replayed by hand and never credited. Reported, never graded; the record is `.agent/contracts/mnt5-stryker.md`. Run it alone |
 | `pnpm chat:live` | the chat path in a real browser: with `pnpm chat:dev` + `pnpm dev` up and the user's login under `~/.config/cnl-ckc-demo/codex`, one fixed KB question must settle answered with a KB part whose card holds the goal and an engine solution, and no page error (`.agent/contracts/chat-c7.md` L1). Keyed and billed to the user's ChatGPT plan, so outside every gate; its firing input calls no model (table above) |
 | `pnpm chat:probe` | live model behaviour on six fixed questions, one JSON report of every part's label, card and source (L2). Reported, never graded: the model has no determinism control; the gate grades the bridge against a scripted fake (`tests/chat-server.test.ts`) and the page against recorded turns |
 | `pnpm binding:replay` | that `clinical-binding` E2 is load-bearing: the same erasure is invisible at `a944fca` and drops exactly one document now |

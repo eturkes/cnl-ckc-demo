@@ -61,7 +61,9 @@ United States Government.
 
 - Node.js 24. pnpm downloads the pinned Node 24 runtime and runs every script on it.
 - pnpm 10, installed through Corepack
-- `chromiumfish` for `pnpm smoke` and `pnpm browser:check`
+- `chromiumfish` for the browser checks, for example `pnpm smoke` and `pnpm browser:check`.
+  Install it with `pnpm add -g chromiumfish`. To use a copy in a different location, set
+  `CHROMIUMFISH_DIR` to its package directory.
 
 ## Run locally
 

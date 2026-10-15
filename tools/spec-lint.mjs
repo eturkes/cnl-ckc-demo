@@ -1,6 +1,6 @@
-// `pnpm spec:lint` — `.agent/spec-lint` over `.agent/spec.md`: the template's shape check, a byte
-// copy of `~/.local/app/agents/claude/spec-lint` (`CLAUDE.md` `Session flow`). Its cases live
-// upstream; the controls prove the copy still refuses a broken copy of the real spec here.
+// `pnpm spec:lint` — `.agent/spec-lint` over `.agent/spec.md`: the template's shape check, a
+// template file copied in whole at each refresh (`CLAUDE.md` `Session flow`). Its cases live with
+// the template; the controls prove the copy still refuses a broken copy of the real spec here.
 
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';

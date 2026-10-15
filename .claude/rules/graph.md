@@ -20,7 +20,7 @@ source denies**. The graph's look is open to change; every other accepted surfac
 
 **Cytoscape is isolated behind one adapter.** It appears nowhere outside `src/graph/canvas.ts`
 — `model.ts`, `SemanticGraph.svelte`, `index.ts` and `tools/kb/graph.mjs` return rc 1 on
-`/usr/bin/rg -i 'cytoscape|fcose|\bcy\b'`, against 34 hits in `canvas.ts`. `model.ts` has ZERO
+`rg -i 'cytoscape|fcose|\bcy\b'`, against 34 hits in `canvas.ts`. `model.ts` has ZERO
 imports; it is a pure module. The whole seam is one line:
 `import { mountGraphCanvas, type GraphCanvas } from './canvas.js'`. Renderer surface = 12,282 B
 of 81,924 B graph surface = **15.0%**; 39 of 1,070 lines in `SemanticGraph.svelte` are

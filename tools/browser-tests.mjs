@@ -2,20 +2,20 @@
 // `pnpm test:browser` — the vitest `browser` project in real Chromium, outside `pnpm gate`.
 //
 // The project exists only under VITEST_BROWSER=1, so the gate's suite never needs a browser.
-// Chromium is the chromiumfish build the other browser lanes already use, resolved from the
-// pnpm global store, so nothing downloads a second browser.
+// Chromium is the chromiumfish build the other browser lanes already use, resolved by
+// `resolveChromiumfish`, so nothing downloads a second browser.
 
 import { spawnSync } from 'node:child_process';
 
-import { failWith, resolveGlobal } from './browser.mjs';
+import { failWith, resolveChromiumfish } from './browser.mjs';
 import { ROOT } from './kb/paths.mjs';
 
 const fail = failWith('test:browser');
 // The launcher module ships no types; its `binaryPath` resolves the installed Chromium.
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- the launcher ships no types
 const launcher = /** @type {{ binaryPath: () => Promise<string> }} */ (
-  // eslint-disable-next-line no-unsanitized/method -- a store path this process resolved itself
-  await import(`${resolveGlobal('chromiumfish', fail)}/dist/index.js`)
+  // eslint-disable-next-line no-unsanitized/method -- a launcher path this process resolved itself
+  await import(resolveChromiumfish(fail))
 );
 const chromium = await launcher.binaryPath();
 const run = spawnSync(

@@ -173,7 +173,7 @@ precomputed is left for a proof request to read back — `clinical_advice_source
 
 ## Binding a test to real execution
 
-global `CLAUDE.md` `Engineering` verification integrity in domain form. A returned fixture value is a
+`CLAUDE.md` `Engineering` verification integrity in domain form. A returned fixture value is a
 defect anywhere and the non-negotiable itself breaking here, which is why this surface gets an
 overlay probe rather than an assertion.
 

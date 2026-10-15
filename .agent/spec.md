@@ -2,7 +2,7 @@
 
 ## Intent
 
-A browser demo complementing `../cnl-ckc`: it shows the knowledge base answering clinical
+A browser demo complementing `cnl-ckc`: it shows the knowledge base answering clinical
 questions by deterministic Prolog execution.
 
 - Question intake takes free text through a chat. A model writes Prolog goals, and the page's
@@ -13,7 +13,7 @@ questions by deterministic Prolog execution.
 - A visualization traces each answer back to its guideline source.
 - An interactive, navigable network graph shows the semantic relationships between KB
   entities.
-- The KB enters by export only. `../cnl-ckc` is never linked and never a runtime dependency.
+- The KB enters by export only. `cnl-ckc` is never linked and never a runtime dependency.
 - Demo tier: no formal verification of the kind `cnl-ckc` carries; every other engineering
   standard applies in full. The demo is never embedded in any clinical capacity — it
   demonstrates `cnl-ckc`'s utility, and `cnl-ckc` is the clinical-grade system.
@@ -46,7 +46,7 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   Japanese interface stay.
 - **Demo tier = no formal verification.** The demo serves no clinical purpose and `cnl-ckc`
   carries the clinical-grade rigor, so `cnl-ckc`'s formal-verification tier stays out. Every
-  other global `CLAUDE.md` `Engineering` and `CLAUDE.md` `Session flow` clause binds the whole
+  other `CLAUDE.md` `Engineering` and `Session flow` clause binds the whole
   repo — verification integrity off the answer path too, the assurance tiers, and the IMPLEMENT +
   MAINTAIN teammate dispatch. This retires the integrity waiver; every check it excused sits beside
   its firing record in `.agent/contracts/mnt5-inventory.md`. Binding → `.claude/rules/stack.md`.

@@ -12,7 +12,7 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   continuing, 2 not found). `cdc2022-opioid-rec06` and `rec07` record page 14 (producer
   `coverage.tsv` B3-09, B3-10 `p14`), yet each passage sits whole on page 13, where BOX 3
   begins; the producer's own census places both there (`audit/census-map.tsv` `p013.C13`–`C15`).
-  The producer (`../cnl-ckc`) owns the fix. Accept: each of the two either locates after a
+  The producer (`cnl-ckc`) owns the fix. Accept: each of the two either locates after a
   re-vendored bag corrects its region page, or carries a recorded producer reason, and the
   census in `tests/passage-locate.test.ts` moves with it. `pri` low. **User ruling**: keep it
   owed to the producer — no demo-side declared limit.
@@ -26,7 +26,7 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   **User ruling**: left queued; `wip/m8-mutate-timeout` `7ea4369` holds the change with its firing shown.
 - **C6 left `tests/m1u7-port.test.ts` with the sentence caps** — the archived m1u7 contract's C6
   (a 30-word sentence planted in `INSTRUCTIONS` or `DESCRIPTIONS` fails `copy:check`) lost its
-  subject when the refresh to agents@8bc2c15 retired the caps; both cases and their mutant
+  subject when the caps retired; both cases and their mutant
   `inv m1u7-port: instruction word ceiling raised to thirty` were deleted, and the suite's
   firing record became `inv m1u7-port: a non-role root token planted`. Re-open trigger: a user
   ruling that restores a sentence-length check. Accept: C6 returns with that check and is seen
@@ -69,6 +69,44 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   dict fails closed with `DecodeError`, and the `nativeCompound` fixtures in
   `tests/engine-u2-port.test.ts` build wrapper instances so every case keeps its assertion.
   `pri` low. Changing a graded suite's fixtures needs the user's approval.
+- **The graph's node palette fails the computed palette-safety check** — `CLAUDE.md`
+  `Execution` Charts + figures wants OKLab ΔE×100 ≥ 15 between categorical marks and ≥ 8 under
+  Machado protan + deutan simulation, all pairs for a map, computed in the gate. The five node
+  fills `--graph-{document,entity,event,operator,value}` fail 7 of 10 pairs in each theme —
+  entity vs value 1.5 protan in the light theme — and no gate step computes it; node kind also
+  rides shape, legend and label. Accept: a gate step computes every pair of those fills in both
+  themes, refuses a planted pair below a floor by name, and passes on a redesigned palette that
+  still clears `contrast:check` and `graph:check`'s `palette` rule; the gate change is approved in
+  that unit, and the new look gets the user's live review (`.claude/rules/ui.md` `User review`).
+  `pri` high. **User ruling**: queued by the template refresh, which changes no colour.
+- **`pnpm stryker`'s surviving mutants carry no ruling** — `.agent/contracts/mnt5-stryker.md` lists
+  137 mutants left alive in the three modules `tests/legacy-export-lane.test.ts` imports (64
+  `Survived`, 73 `NoCoverage`), characterised by the record's author alone. `CLAUDE.md`
+  `Engineering` rules each survivor against the contract by someone other than the test's
+  author, an unruled one queued here in MAINTAIN. Accept: every listed mutant carries a non-author
+  ruling against the m5u6 contract in that record — specified behaviour → a test that kills it
+  through observable behaviour, seen red on the mutant; behaviour the contract leaves open →
+  recorded as open. `pri` med.
+- **`binding:check` dominates the full gate** — 38.3 s of a 63.6 s `pnpm gate` on 8 cores at load
+  3.7, the next step `lint` 10.2 s; `pnpm gate` prints each step's wall-clock. `CLAUDE.md`
+  `Execution` queues a dominating step for a speedup at equal strength (parallel runner,
+  content-keyed cache, incremental target, faster tool). Accept: `pnpm gate` prints
+  `binding:check` below 38.3 s on the same host and load, and every check still fires on its
+  planted bad input — its six controls, the `REQUIRED`, `LIFECYCLE` and `MEANING` rolls and
+  `tests/inventory.test.ts`. `pri` low.
+- **graph.md's renderer-surface figures are stale** — `.claude/rules/graph.md` `Renderer seam`
+  states `Renderer surface = 12,282 B of 81,924 B graph surface = 15.0%` and `39 of 1,070 lines in
+  SemanticGraph.svelte are canvas-coupled`; the tree measures `src/graph/canvas.ts` 12,504 B of
+  100,993 B under `src/graph/` and 1,146 `SemanticGraph.svelte` lines, and no census row grades
+  them (`docs/claims.md` R129 `false`). The isolation half holds. Accept: each figure re-derives
+  from the tree — a `tests/census.test.ts` `CENSUS` row or a stated command — or leaves the claim,
+  and R129 re-adjudicates `true`. `pri` med.
+- **kb-build.md keeps the bag regeneration recipe inline** — `CLAUDE.md` `Authoring` routes a
+  multi-step recipe to a committed script the rule names; `.claude/rules/kb-build.md`
+  `Vendored bag` spells its `rustup` + `cargo build` + `ckc dist build` steps inline. Accept: a
+  committed script takes the `cnl-ckc` checkout path and runs the recipe, `kb-build.md` names it
+  in place of the inline block, and a run at the vendored bag's input head yields a
+  `release-manifest.tsv` byte-equal to the vendored one. `pri` low.
 ## Index — one line per `high` + `med` row
 
 Generated by `pnpm queue:index` from the rows above — each title beside its acceptance check's
@@ -79,6 +117,9 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 | `pnpm mutate` credits a timeout-only kill | a mutant whose vitest check fails only by timeout reads `INCONCLUSIVE` and fails the run, shown by a planted stalling mutant |
 | `claims:check` covers one line of each `Artifacts` entry | each `Artifacts` bullet grades as one unit with its continuation lines, and a planted change on a continuation line is refused by `claims:check` as a stale row |
 | The inventory resolves a bare-path `text` record and a `none` gate step | the copy:check row planted as `text` + `tools/copy-check.mjs`, then as `none`, is refused by name — `names no verbatim text`, `a gate step needs a firing record` — and the real inventory still passes |
+| **high** The graph's node palette fails the computed palette-safety check | a gate step computes every pair of those fills in both themes, refuses a planted pair below a floor by name, and passes on a redesigned palette that still clears `contrast:check` and `graph:check`'s `palette` rule; the gate change is approved in that unit, and the new look gets the user's live review (`.claude/rules/ui.md` `User review`) |
+| `pnpm stryker`'s surviving mutants carry no ruling | every listed mutant carries a non-author ruling against the m5u6 contract in that record — specified behaviour → a test that kills it through observable behaviour, seen red on the mutant; behaviour the contract leaves open → recorded as open |
+| graph.md's renderer-surface figures are stale | each figure re-derives from the tree — a `tests/census.test.ts` `CENSUS` row or a stated command — or leaves the claim, and R129 re-adjudicates `true` |
 
 ## Accepted-open
 

@@ -28,19 +28,22 @@ paths:
 - Rights profile = `redistributable` (public-domain MMWR) → source passages may ship whole in
   the UI. The bag records `swipl 9.2.9` as its compiler; the 10.1.13 WASM runtime loads it.
 - Regenerate = upstream's Rust `ckc` (Verus-verified kernel; no Python left): `ckc dist build
-  <outdir>` run in `../cnl-ckc`, then copy the tarball + sidecar into `kb/`. `ckc dist` is the
-  release boundary and `ckc compile`/`ckc queries` write `pl/` + `queries/` upstream — all
-  regeneration inputs, never runtime deps. Build `ckc` project-locally so `../cnl-ckc` stays
-  byte-clean (`<ch>` = `../cnl-ckc/rust/rust-toolchain.toml` `channel`; plain `cargo build`
-  compiles the ghost-erased kernel, so Verus is not needed):
+  <outdir>` run in a `cnl-ckc` checkout (`$CKC`), then copy the tarball + sidecar into `kb/`.
+  `ckc dist` is the release boundary and `ckc compile`/`ckc queries` write `pl/` + `queries/`
+  upstream — all regeneration inputs, never runtime deps. Build `ckc` project-locally so the
+  checkout stays byte-clean (`<ch>` = `$CKC/rust/rust-toolchain.toml` `channel`; plain
+  `cargo build` compiles the ghost-erased kernel, so Verus is not needed):
 
   ```sh
-  S=$PWD/.scratch/ckc T=$S/rustup/toolchains/<ch>-x86_64-unknown-linux-gnu/bin
+  CKC=<cnl-ckc checkout> S=$PWD/.scratch/ckc T=$S/rustup/toolchains/<ch>-x86_64-unknown-linux-gnu/bin
   RUSTUP_HOME=$S/rustup rustup toolchain install <ch> --profile minimal
-  (cd ../cnl-ckc/rust && PATH=$T:$PATH CARGO_HOME=$S/cargo CARGO_TARGET_DIR=$S/target \
+  (cd "$CKC/rust" && PATH=$T:$PATH CARGO_HOME=$S/cargo CARGO_TARGET_DIR=$S/target \
     cargo build --release --locked --offline -q -p ckc)
-  (cd ../cnl-ckc && $S/target/release/ckc dist build $S/dist)
+  (cd "$CKC" && $S/target/release/ckc dist build $S/dist)
   ```
+
+  `CLAUDE.md` `Authoring` routes this recipe to a committed script; the port is queued
+  (`.agent/deferred.md` row `kb-build.md keeps the bag regeneration recipe inline`).
 
   Accept a bag only when its `release-manifest.tsv` equals upstream's committed one byte for
   byte and `ckc check` passes at that commit; a second `dist build` is byte-identical.
@@ -49,8 +52,8 @@ paths:
 
 ## Upstream port specifications
 
-Upstream's reviewer surface (`ckc ui`) is specified in Verus under
-`../cnl-ckc/rust/ckc-spec/src/`, and those specs are the TypeScript-port specifications behind
+Upstream's reviewer surface (`ckc ui`) is specified in Verus under `cnl-ckc`'s
+`rust/ckc-spec/src/`, and those specs are the TypeScript-port specifications behind
 `tools/kb/provenance.mjs` + `src/provenance/`: `check.rs` `status_of` + `uncovered_class_ok`
 (coverage grammar — `tests/kb-derived-assets.test.ts` grades every declared class),
 `evidence_of` + `payload_of` (coverage row → source payload), `align.rs` `align_outcome`
