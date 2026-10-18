@@ -26,7 +26,6 @@ reports/
 .scratch/
 .claude/settings.local.json
 .claude/worktrees/
-.claude/.headroom_wrap_*
 CLAUDE.local.md
 
 # vitest browser-mode failure screenshots
