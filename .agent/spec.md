@@ -192,7 +192,7 @@ worker before its caller resumes (`chat-c2.md`).
   queue rows on the verb slot.
 - [x] 35d2c9c ann-u3 `kernel` the answer panel's facts rows + en/ja copy — notices, the goal disclosure,
   `operator` visual QA; the live review is owed to the user. Contract `.agent/contracts/ann-u3.md`.
-- [ ] ann-u4 `docs` README, rules, claims + census; retire `prototype/` (`prototype-answer-annotations`
+- [x] f858a15 ann-u4 `docs` README, rules, claims + census; retire `prototype/` (`prototype-answer-annotations`
   tag) and its tsconfig include.
 - [ ] ann-review — one `reviewer` per lens over the scope diff + MAIN's security lens, rows in
   `.agent/review.md`; accepted fixes land before close.
