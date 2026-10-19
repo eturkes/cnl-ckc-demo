@@ -30,11 +30,30 @@ wrapping line, 0.78rem; a link-coloured disclosure after the statements.
 - Style: the approved look on existing role tokens (`--text-muted` labels), `overflow-wrap:
   anywhere` on values, the shipped `:focus-visible` ring on the summary.
 
+## Interface (binding names; tests and implementation both hold to them)
+
+- `AnswerPanel.svelte` props gain `solutions: readonly PlSolution[]` (the answer's solutions, in
+  `rows` order) and `marks: MarksState` (default `{ kind: 'idle' }`); `App.svelte` passes the
+  settled result's solutions and `demo.marks`. The panel calls `marksView(marks, points, rows,
+  solutions)` once and renders its `statements`, `notice`, `missing` and `total`.
+- DOM, per statement `.answer-point`: `dl.facts` holding one `div` per pair, `dt` = the label,
+  `dd` = the value. After the statements: `p.marks-missing` (the notice), then
+  `details.mark-goals` (summary, `p.mark-goals-note`, `code.mark-goal`, one `li > code` per
+  returned solution, `p.mark-goals-status` when the outcome is not `solutions`).
+- Catalog keys, both locales: `LABELS.marksQualifier` `Qualifier`/`修飾語`, `LABELS.marksGrade`
+  `Grade`/`グレード`, `LABELS.marksPreferred` `Preferred`/`優先`, `LABELS.marksTime`
+  `Time`/`時期`, `LABELS.marksGoals` (the disclosure summary), `TEXT.marksMissing(missing,
+  total)`. The disclosure note and outcome lines reuse the chat card's own keys
+  (`DESCRIPTIONS.chatCardNote`, `TEXT.chatCardSolutions`/`chatCardFailure`/`chatCardLimit`/
+  `chatCardError`/`chatCardCancelled`): both show one Prolog goal's outcome.
+- Values join `, ` (qualifier, grade) and `; ` (preferences, times), as `marksView` returns them.
+
 ## Acceptance
 
-- U1 with the real engine and the real controller, every prepared question's rendered rows equal
-  ann-u1's join over the live marks, label + value per pair, in order; the grade sits on the
-  first statement of each document run alone.
+- U1 with the real engine, every prepared question's `marksView` over its live answer and marks
+  solutions yields, per statement, the readings an independent reading of the bag's compiled
+  heads predicts (label + value per pair, in order); the grade sits on the first statement of
+  each document run alone.
 - U2 the panel renders exactly what the join returns: PID-unique values planted in a marks
   solution reach the DOM verbatim, in their pairs; a statement with no marks renders no `<dl>`.
 - U3 each of `failure`, `limit`, `error`, `cancelled`, a missing document, an undecodable solution
