@@ -101,6 +101,27 @@ const REQUIRED = Object.freeze([
     ],
   },
   {
+    suite: 'tests/marks-readings-live.test.ts',
+    why: "each statement's shown marks read the heads its own sentences compiled, live, the grade once per document run",
+    cases: [
+      'live statement marks readings U1 when-to-use-opioids reads every statement from compiled heads with grade once per document run',
+      'live statement marks readings U1 starting-opioid-therapy reads every statement from compiled heads with grade once per document run',
+      'live statement marks readings U1 acute-pain-prescription-duration reads every statement from compiled heads with grade once per document run',
+      'live statement marks readings U1 opioid-follow-up reads every statement from compiled heads with grade once per document run',
+      'live statement marks readings U1 opioid-safety reads every statement from compiled heads with grade once per document run',
+      'live statement marks readings U1 continuing-or-tapering-opioids reads every statement from compiled heads with grade once per document run',
+      'live statement marks readings U1 opioid-use-disorder-treatment reads every statement from compiled heads with grade once per document run',
+    ],
+  },
+  {
+    suite: 'tests/marks-panel.dom.test.ts',
+    why: 'the panel shows exactly the values the live join returns, in the ruled pairs',
+    cases: [
+      'answer statement facts U2 renders PID-unique values verbatim in Qualifier, Grade, Preferred, Time pairs',
+      'answer statement facts U2 keeps multi-statement facts aligned and the grade on the first statement of its document run',
+    ],
+  },
+  {
     suite: 'tests/marks-view.test.ts',
     why: "each statement shows the marks of its own group's sentences and no other document's",
     cases: [
@@ -191,6 +212,15 @@ const REQUIRED = Object.freeze([
  * @type {readonly Requirement[]}
  */
 const LIFECYCLE = Object.freeze([
+  {
+    suite: 'tests/marks-panel.dom.test.ts',
+    why: 'a document whose marks did not return says so, and loading says nothing yet',
+    cases: [
+      'marks availability notice U3 failure counts every missing document without dropping the answer',
+      'marks availability notice U3 unavailable counts every document when the engine has no marks path',
+      'marks availability notice U3 loading renders no premature notice or facts',
+    ],
+  },
   {
     suite: 'tests/chat-controller.test.ts',
     why: 'a chat turn settles into a terminal state, and a stopped or failed turn lands no label',

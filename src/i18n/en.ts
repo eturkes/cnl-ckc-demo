@@ -196,6 +196,11 @@ export const LABELS = {
   technicalSummary: 'Technical details',
   sourcePicker: 'Select a source to inspect',
   selectedEvidence: 'Selected evidence',
+  marksQualifier: 'Qualifier',
+  marksGrade: 'Grade',
+  marksPreferred: 'Preferred',
+  marksTime: 'Time',
+  marksGoals: 'Prolog goal behind these annotations',
 
   evidenceEyebrow: 'Evidence',
   evidenceHeading: 'Proof to source',
@@ -336,6 +341,9 @@ export const TEXT = {
     `Inspect source ${String(index)}${document === undefined ? '' : `, ${document}`}`,
   sourceOrdinal: (index: number) => `Source ${String(index)}`,
   sourceCount: (n: number) => plural(n, 'source'),
+  marksMissing: (missing: number, total: number) =>
+    `The knowledge base returned no annotations for ${String(missing)} of ` +
+    `${plural(total, 'source document')}. Statements from those documents show no annotations.`,
 
   traceIdle: () => 'Select a citation to trace that part of the answer.',
   traceLoading: () => 'Re-proving the selected source contribution.',

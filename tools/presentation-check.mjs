@@ -121,7 +121,14 @@ const CONTAINMENT = [
   { file: 'src/demo/RunControls.svelte', selectors: ['.status', '.alert'] },
   {
     file: 'src/demo/AnswerPanel.svelte',
-    selectors: ['.answer-point', '.document-id', '.source-card blockquote', '.canonical code'],
+    selectors: [
+      '.answer-point',
+      '.facts dd',
+      '.mark-goals code',
+      '.document-id',
+      '.source-card blockquote',
+      '.canonical code',
+    ],
   },
   {
     file: 'src/provenance/ProvenanceLadder.svelte',

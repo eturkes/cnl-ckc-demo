@@ -1,7 +1,9 @@
 <script lang="ts">
+  import type { PlSolution } from '../engine/protocol.js';
   import { messages } from '../i18n/locale.svelte.js';
   import ProvenanceLadder from '../provenance/ProvenanceLadder.svelte';
   import type { GraphFocus, ProvenanceState } from '../provenance/model.js';
+  import { marksView, type MarksState } from '../questions/marks.js';
 
   import { synthesizeAnswer, type AnswerRow } from './describe.js';
 
@@ -18,6 +20,10 @@
     onSelect: (index: number) => void;
     provenance?: ProvenanceState;
     onGraphFocus?: (focus: GraphFocus) => void;
+    /** The answer's solutions in `rows` order: the marks join keys on each one's `Source`. */
+    solutions?: readonly PlSolution[];
+    /** The knowledge base's marks on this answer (`DemoController.marks`). */
+    marks?: MarksState;
   }
 
   let {
@@ -30,6 +36,8 @@
     onSelect,
     provenance = { kind: 'idle' },
     onGraphFocus = () => undefined,
+    solutions = [],
+    marks = { kind: 'idle' },
   }: Props = $props();
 
   const uid = $props.id();
@@ -42,6 +50,42 @@
   );
   const selectedRow = $derived(rows[resolvedIndex]);
   let explanation = $state<HTMLDetailsElement>();
+
+  const view = $derived(marksView(marks, points, rows, solutions));
+  /** Each statement's facts row, in the ruled order; an empty list renders no row. */
+  const facts = $derived(
+    view.statements.map((statement) =>
+      statement === undefined
+        ? []
+        : [
+            { label: t.LABELS.marksQualifier, value: statement.qualifier },
+            { label: t.LABELS.marksGrade, value: statement.grade },
+            { label: t.LABELS.marksPreferred, value: statement.preferences.join('; ') },
+            { label: t.LABELS.marksTime, value: statement.times.join('; ') },
+          ].filter(({ value }) => value !== ''),
+    ),
+  );
+  /** The marks goal and what the engine returned, once it settles. */
+  const goal = $derived.by(() => {
+    if (marks.kind !== 'settled') return undefined;
+    const { outcome } = marks;
+    const returned =
+      outcome.kind === 'solutions' || outcome.kind === 'limit' || outcome.kind === 'cancelled'
+        ? outcome.solutions
+        : [];
+    let status = '';
+    if (outcome.kind === 'failure') status = t.TEXT.chatCardFailure();
+    else if (outcome.kind === 'limit')
+      status = t.TEXT.chatCardLimit(outcome.limit, outcome.solutions.length);
+    else if (outcome.kind === 'cancelled') status = t.TEXT.chatCardCancelled();
+    else if (outcome.kind === 'error') status = t.TEXT.chatCardError(outcome.error.code);
+    else if (outcome.kind === 'rejected') status = t.TEXT.chatCardError(outcome.reason);
+    return {
+      text: marks.goal,
+      displays: returned.map((solution) => solution.display['Marks'] ?? ''),
+      status,
+    };
+  });
 
   const inspect = (source: number): void => {
     if (explanation !== undefined) explanation.open = true;
@@ -87,38 +131,72 @@
                 <p class="summary">{summary}</p>
               {/if}
 
+              {#snippet citations(sources: readonly number[])}
+                <span class="citations">
+                  {#each sources as source (source)}
+                    <button
+                      type="button"
+                      aria-label={t.TEXT.inspectSource(source + 1)}
+                      onclick={() => inspect(source)}>{source + 1}</button
+                    >
+                  {/each}
+                </span>
+              {/snippet}
+
+              {#snippet factsRow(pairs: readonly { label: string; value: string }[])}
+                {#if pairs.length > 0}
+                  <dl class="facts">
+                    {#each pairs as pair (pair.label)}
+                      <div>
+                        <dt>{pair.label}</dt>
+                        <dd>{pair.value}</dd>
+                      </div>
+                    {/each}
+                  </dl>
+                {/if}
+              {/snippet}
+
+              <!-- A div, not a p: the facts row is a dl, which a p cannot hold. -->
               {#if points.length === 1}
-                {#each points as point (point.text)}
-                  <p class="answer-point">
+                {#each points as point, index (point.text)}
+                  <div class="answer-point">
                     {point.text}
-                    <span class="citations">
-                      {#each point.sources as source (source)}
-                        <button
-                          type="button"
-                          aria-label={t.TEXT.inspectSource(source + 1)}
-                          onclick={() => inspect(source)}>{source + 1}</button
-                        >
-                      {/each}
-                    </span>
-                  </p>
+                    {@render citations(point.sources)}
+                    {@render factsRow(facts[index] ?? [])}
+                  </div>
                 {/each}
               {:else if points.length > 1}
                 <ul class="answer-list">
-                  {#each points as point (point.text)}
+                  {#each points as point, index (point.text)}
                     <li class="answer-point">
                       {point.text}
-                      <span class="citations">
-                        {#each point.sources as source (source)}
-                          <button
-                            type="button"
-                            aria-label={t.TEXT.inspectSource(source + 1)}
-                            onclick={() => inspect(source)}>{source + 1}</button
-                          >
-                        {/each}
-                      </span>
+                      {@render citations(point.sources)}
+                      {@render factsRow(facts[index] ?? [])}
                     </li>
                   {/each}
                 </ul>
+              {/if}
+
+              {#if view.notice}
+                <p class="marks-missing">{t.TEXT.marksMissing(view.missing, view.total)}</p>
+              {/if}
+
+              {#if goal !== undefined}
+                <details class="mark-goals">
+                  <summary>{t.LABELS.marksGoals}</summary>
+                  <p class="mark-goals-note">{t.DESCRIPTIONS.chatCardNote}</p>
+                  <code class="mark-goal">{goal.text}</code>
+                  {#if goal.displays.length > 0}
+                    <ol>
+                      {#each goal.displays as display, index (index)}
+                        <li><code>{display}</code></li>
+                      {/each}
+                    </ol>
+                  {/if}
+                  {#if goal.status !== ''}
+                    <p class="mark-goals-status">{goal.status}</p>
+                  {/if}
+                </details>
               {/if}
             {/if}
 
@@ -306,6 +384,74 @@
 
   .citations button:hover {
     background: var(--surface-sunken);
+  }
+
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem 1.1rem;
+    margin: 0.35rem 0 0;
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
+  .facts div {
+    display: flex;
+    gap: 0.35rem;
+    min-width: 0;
+  }
+
+  .facts dt {
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+
+  .facts dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .marks-missing {
+    max-width: 52rem;
+    margin: 0.75rem 0 0;
+    color: var(--warn);
+    font-size: 0.8rem;
+  }
+
+  .mark-goals {
+    max-width: 52rem;
+    margin-top: 1rem;
+    font-size: 0.75rem;
+  }
+
+  .mark-goals summary {
+    color: var(--action);
+    font-weight: 650;
+    cursor: pointer;
+  }
+
+  .mark-goals-note,
+  .mark-goals-status {
+    margin: 0.5rem 0 0;
+    color: var(--text-muted);
+  }
+
+  .mark-goals ol {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0.5rem 0 0;
+    padding-left: 1.2rem;
+  }
+
+  .mark-goals code {
+    display: block;
+    font-family: var(--font-code);
+    font-size: 0.68rem;
+    overflow-wrap: anywhere;
+  }
+
+  .mark-goal {
+    margin-top: 0.5rem;
   }
 
   .explanation {

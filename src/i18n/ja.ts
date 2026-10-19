@@ -177,6 +177,11 @@ export const LABELS = {
   explanationSummary: '出典と説明',
   technicalSummary: '技術的な詳細',
   sourcePicker: '調べる出典を選択',
+  marksQualifier: '修飾語',
+  marksGrade: 'グレード',
+  marksPreferred: '優先',
+  marksTime: '時期',
+  marksGoals: 'これらの注記の根拠となるPrologゴール',
   selectedEvidence: '選択された根拠',
 
   evidenceEyebrow: '根拠',
@@ -306,6 +311,9 @@ export const TEXT = {
     `出典${String(index)}を調べる${document === undefined ? '' : `、${document}`}`,
   sourceOrdinal: (index: number) => `出典${String(index)}`,
   sourceCount: (n: number) => `出典${String(n)}件`,
+  marksMissing: (missing: number, total: number) =>
+    `出典文書${String(total)}件のうち${String(missing)}件について、知識ベースは注記を返しませんでした。` +
+    'これらの文書の記述には注記を表示していません。',
 
   traceIdle: () => '出典を選択すると、回答のその部分を追跡します。',
   traceLoading: () => '選択された出典の寄与を再証明しています。',

@@ -194,7 +194,7 @@ worker before its caller resumes (`chat-c2.md`).
 - [x] 69f2dae ann-u1 `kernel` the marks goal — `clinical_marks/3` in the image, catalog v4 `marksGoal`,
   `AnswerService.marks`, `src/questions/marks.ts` decode + render, the controller's marks state.
   Contract `.agent/contracts/ann-u1.md`.
-- [ ] ann-u2 `kernel` a qualifier leaves the verb slot — parser, answer term, renderer, reference
+- [x] f806b80 ann-u2 `kernel` a qualifier leaves the verb slot — parser, answer term, renderer, reference
   producer, chat guide; T9 declared edits. Contract `.agent/contracts/ann-u2.md`; closes both
   queue rows on the verb slot.
 - [ ] ann-u3 `kernel` the answer panel's facts rows + en/ja copy — notices, the goal disclosure,

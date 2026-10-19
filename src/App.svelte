@@ -14,6 +14,7 @@
     type GraphFocus as SemanticGraphFocus,
     type SemanticGraphNode,
   } from './graph/index.js';
+  import type { PlSolution } from './engine/protocol.js';
   import { ChatController } from './chat/ChatController.svelte.js';
   import ChatPanel from './chat/ChatPanel.svelte';
   import { HttpChatClient } from './chat/client.js';
@@ -79,12 +80,17 @@
   const t = $derived(messages.current);
   const viewState = $derived(demo.state);
   const description = $derived(describeState(viewState));
-  const rows = $derived<AnswerRow[]>(
+  const solutions = $derived<readonly PlSolution[]>(
     viewState.kind === 'settled'
-      ? answerRows(viewState.id, solutionsOf(viewState.result))
+      ? solutionsOf(viewState.result)
       : viewState.kind === 'running' || viewState.kind === 'cancelling'
-        ? answerRows(viewState.id, viewState.solutions ?? [])
+        ? (viewState.solutions ?? [])
         : [],
+  );
+  const rows = $derived<AnswerRow[]>(
+    viewState.kind === 'settled' || viewState.kind === 'running' || viewState.kind === 'cancelling'
+      ? answerRows(viewState.id, solutions)
+      : [],
   );
   const serialized = $derived(
     viewState.kind === 'settled' && 'serialized' in viewState.result
@@ -214,6 +220,8 @@
           busy={description.busy}
           summary={description.summary}
           provenance={demo.provenance}
+          {solutions}
+          marks={demo.marks}
           onSelect={(index: number) => {
             demo.selectSolution(index);
           }}

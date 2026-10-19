@@ -119,6 +119,22 @@ is why attribution and nonendorsement cannot live inside the About disclosure.
 - Disabling a focused button drops focus to `body`, so whether Cancel held focus must be read
   in `$effect.pre` and acted on in `$effect`.
 
+## Answer annotations
+
+Each settled statement carries one facts row (`dl.facts`) beneath it: Qualifier, Grade, Preferred,
+Time, each pair only where the knowledge base marks one (`.agent/contracts/ann-u3.md`). The
+panel derives nothing itself: `marksView` (`src/questions/marks.ts`) returns every value, the
+once-per-document-run grade included, and the script maps it to label/value pairs.
+
+- A one-statement answer renders its statement in a `div`: a `dl` cannot sit in a `p`.
+- **A missing mark never reads as an absent one.** A document whose marks did not return —
+  failed, stopped, undecodable or misaligned — counts in `TEXT.marksMissing`, shown after the
+  statements; `loading` shows nothing.
+- `details.mark-goals` lists the marks goal and each returned solution verbatim, reusing the
+  chat card's note and outcome wording: both show one Prolog goal's outcome.
+- Labels translate; values stay English in both locales, like the statements they annotate.
+- While a run is busy there is no row, notice or disclosure: the marks goal runs after settle.
+
 ## Page viewer
 
 - The ladder's guideline page is drawn by PDF.js (`src/provenance/pdf-viewer.ts`), never a
@@ -193,7 +209,7 @@ read out of the vendored bag **at run time** through `verifyBag`.
 | bound | value | why |
 |---|---|---|
 | `TYPEAHEAD_MS` (`QuestionCombobox.svelte`) | 500 ms | the typeahead buffer's life, the APG figure; `pnpm test:browser` K5 grades both sides of it |
-| `DEMO_BUDGET` (`DemoController.svelte.ts`) | 5 000 000 inferences, 5 000 ms | one prepared question's request-wide budget; shipped catalog peaks sit orders of magnitude below it |
+| `DEMO_BUDGET` (`DemoController.svelte.ts`) | 5 000 000 inferences, 5 000 ms | one prepared question's request-wide budget, its marks goal's too; shipped catalog peaks sit orders of magnitude below it |
 | `CHAT_BUDGET` (`DemoController.svelte.ts`) | `DEMO_BUDGET`, answer cap 50 | one read-only chat goal; the model reads at most `TOOL_RESULT_MAX` of it, the card shows all |
 | `TOOL_RESULT_MAX` (`src/chat/result.ts`) | 8 000 characters | the text one call hands the model, ~2 000 tokens; a cut names what it left out |
 | `MAX_MESSAGE` (`ChatPanel.svelte`) | 4 000 characters | the bridge's own `MESSAGE_MAX`, held in the field |
