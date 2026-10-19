@@ -58,6 +58,7 @@
     ),
   );
   const goals = $derived(marks?.goals ?? []);
+  const failed = $derived(goals.filter((goal) => !goal.ok).length);
 
   const inspect = (source: number): void => {
     if (explanation !== undefined) explanation.open = true;
@@ -115,18 +116,29 @@
                 </span>
               {/snippet}
 
-              {#if points.length > 0}
+              {#snippet statement(point: AnswerPoint, index: number)}
+                <PointMarks
+                  text={point.text}
+                  marks={markOf(point)}
+                  showGrade={gradeShown[index] ?? true}>{@render cite(point)}</PointMarks
+                >
+              {/snippet}
+
+              <!-- A div, not the shipped <p>: the facts row is a <dl>, which a <p> cannot hold. -->
+              {#if points.length === 1 && points[0] !== undefined}
+                <div class="answer-point">{@render statement(points[0], 0)}</div>
+              {:else if points.length > 1}
                 <ul class="answer-list">
                   {#each points as point, index (point.text)}
-                    <li class="answer-point">
-                      <PointMarks
-                        text={point.text}
-                        marks={markOf(point)}
-                        showGrade={gradeShown[index] ?? true}>{@render cite(point)}</PointMarks
-                      >
-                    </li>
+                    <li class="answer-point">{@render statement(point, index)}</li>
                   {/each}
                 </ul>
+              {/if}
+
+              {#if failed > 0}
+                <p class="marks-missing">
+                  {failed} of {goals.length} annotation goals returned no result, so some marks are missing.
+                </p>
               {/if}
 
               {#if goals.length > 0}
@@ -464,6 +476,12 @@
     font-family: var(--font-code);
     font-size: 0.82rem;
     overflow-wrap: anywhere;
+  }
+
+  .marks-missing {
+    margin: 0.75rem 0 0;
+    color: var(--warn);
+    font-size: 0.8rem;
   }
 
   .mark-goals {

@@ -192,6 +192,15 @@ Closed queue run (`dN` = the row's ordinal in the queue at `24bbb5d`):
 - [x] `38ce061` sync-close: reviewer-10 over `.agent/contracts/sync-close.md` C1–C8 — 5 pass,
   F1 (major, range-pairing guard) + F2–F5 fixed or recorded; release lanes green on `e73ed6c`.
 
+## ITERATE — answer panel: grades, qualifiers and thresholds
+
+- [x] `18e62f4` r0: `prototype/answer-annotations/`, a copy of the shipped page whose answer panel
+  reads grade, qualifier and interval heads through live read-only goals; three variants.
+- [x] `7513577` r1 + r2 (user rulings): variant A, source grade labels, preferences, thresholds =
+  time bounds; `Qualifier:` first, grade once per document run.
+- [x] r3 = the user's go; closing review L1–L4 + `Phase: IMPLEMENT` in the commit after
+  `7513577`.
+
 ## Phase
 
 IMPLEMENT closed twice, both ledgered in `.agent/review.md` with no open row: u3–u15 on 32/32

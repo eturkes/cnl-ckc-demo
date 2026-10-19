@@ -45,7 +45,7 @@ export interface AnnotationRun {
   /** Point text → its marks. */
   points: Map<string, PointMarks>;
   /** Every goal this run sent, with its verbatim engine solutions. */
-  goals: { goal: string; display: string }[];
+  goals: { goal: string; display: string; ok: boolean }[];
 }
 
 type Run = (goal: string) => Promise<QueryOutcome> | undefined;
@@ -191,10 +191,10 @@ export const annotate = async (
   const ask = async (goal: string): Promise<PlTerm[]> => {
     const outcome = await run(goal);
     if (outcome?.kind !== 'solutions') {
-      goals.push({ goal, display: outcome === undefined ? 'not run' : outcome.kind });
+      goals.push({ goal, display: outcome === undefined ? 'not run' : outcome.kind, ok: false });
       return [];
     }
-    goals.push({ goal, display: outcome.solutions[0]?.display.X ?? '' });
+    goals.push({ goal, display: outcome.solutions[0]?.display.X ?? '', ok: true });
     return list(outcome.solutions[0]);
   };
 

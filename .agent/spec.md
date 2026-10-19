@@ -24,6 +24,10 @@ questions by deterministic Prolog execution.
 - `prototype/answer-annotations/` — ITERATE prototype: the shipped page with an answer panel
   showing each statement's grade, qualifiers, preferences and time bounds, read by live
   read-only goals. `pnpm dev`, open `/prototype/answer-annotations/`, select a question, Run.
+  Shortcuts that look real: the facts-row labels are English in both locales; marks read the
+  sentences' STORED heads by `clause/2`, not a derivation under the clinical premises; the
+  goals ride the chat's read-only path and budget; nouns render mechanically (`ER LA opioid`);
+  `tsconfig.json` includes `prototype/**` for lint + check, removed when the prototype retires.
 - `server/chat.mjs` + `server/chat-guide.md` — local chat bridge to `codex app-server`.
   `pnpm chat:dev` beside `pnpm dev`, after `CODEX_HOME=~/.config/cnl-ckc-demo/codex codex login`.
 
@@ -140,16 +144,17 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   the alternative. Thresholds in this scope are the time bounds the 12 recommendation documents
   carry (`at least 1 week after therapy start`); the comparison thresholds of the
   implementation-consideration documents stay in the chat and the graph. Every mark comes from
-  a live read-only goal over the KB's annotation predicates, listed with its verbatim solution
-  beside the answer. The two rival displays — marks inside the sentence, statements grouped
-  under a grade heading — are retired.
+  a live read-only goal over the KB's annotation predicates. The two rival displays — marks
+  inside the sentence, statements grouped under a grade heading — are retired.
 - **A qualifier reads `Qualifier: <words>`, first in the row.** One label serves every class;
   upstream's class names (`manner`, `usuality`, `focus`) and function glosses never show.
 - **A grade shows once per run of statements from one source document.** The first statement
   of each document's run carries the grade; the statements after it that draw on the same
   documents leave it out. Qualifiers, preferences and time bounds stay on every statement.
 
-**MAIN:** premise display = deduplicated steps inside the EXISTING ladder rungs, never a new
+**MAIN:** the prototype lists each annotation goal beside the answer with its verbatim engine
+solution, and says so when a goal returns no result, so a missing mark never reads as an absent
+one. premise display = deduplicated steps inside the EXISTING ladder rungs, never a new
 step type (4,491 leaves / 451 premises), carrying hypothetical origin and no source line.
 u6's oracle is GREEN at base — it guards the compiled KB, which the answer-path defect never
 broke; its RED-under-dependency-removal witness is a firing record, and its credit is the
@@ -164,9 +169,9 @@ worker before its caller resumes (`chat-c2.md`).
 
 ## Tasks
 
-- [ ] iterate r1: variant A + grade labels + preferences + thresholds scope, ruled by the user.
-- [ ] iterate r2: qualifier label + placement and grade-once-per-document, ruled by the user.
-- [ ] iterate r3: user reviews the round-2 state live; go, or another round.
+- [ ] IMPLEMENT answer-panel annotations — re-implement the approved prototype under the gates:
+  annotation goals compiled with the answer path, i18n copy, retire `prototype/` + its tsconfig
+  include at close. Waits on the IMPLEMENT body (user).
 - [ ] owed (user): live review of the graph annotations (sync-u2 `e73ed6c`, `.claude/rules/ui.md`
   `User review`) — `pnpm dev`, open the graph, select an answer's Find in graph (rec07 for time
   limits, rec05 for qualifiers, rec03 for a preference) and read the new relationships.
@@ -192,7 +197,7 @@ worker before its caller resumes (`chat-c2.md`).
 
 ## Phase
 
-ITERATE — answer panel: the knowledge base's grades, qualifiers and thresholds
+IMPLEMENT — answer panel: the knowledge base's grades, qualifiers and thresholds
 > Pull the latest `../cnl-ckc` and update `cnl-ckc-demo` accordingly.
 > [Scope, chosen:] Sync + graph + answers — Also show grades, qualifiers and thresholds in the
 > answer panel. That changes an accepted surface, so that part routes to ITERATE after the sync
