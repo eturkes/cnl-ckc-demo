@@ -80,7 +80,14 @@ const replaceAt = (value: PlTerm, path: readonly number[], replacement: PlTerm):
 const malformed: [string, PlTerm][] = [];
 for (const [path, node] of walk(term)) {
   const at = path.join('.') || 'root';
-  const variants: [string, PlTerm][] = [['variable', { kind: 'variable', id: 0 }]];
+  const variants: [string, PlTerm][] = [
+    ['variable', { kind: 'variable', id: 0 }],
+    ['dict', { kind: 'dict', tag: 'marks', entries: {} }],
+    ['rational', { kind: 'rational', numerator: 1, denominator: 2 }],
+  ];
+  if (node.kind !== 'integer') variants.push(['float kind', { kind: 'float', value: 1 }]);
+  if (node.kind !== 'list')
+    variants.push(['improper kind', { kind: 'improper-list', items: [], tail: atom('tail') }]);
   if (node.kind === 'compound')
     variants.push(
       ['functor', { ...node, functor: 'wrong' }],
@@ -168,6 +175,30 @@ describe('marks decoder', () => {
       groups: [[{ sentence: 1, qualifiers: [], preferences: [], times: [] }]],
     };
     expect(decodeMarks(marksTerm(empty))).toEqual(empty);
+    const boundary: DocumentMarks = {
+      document: ' ',
+      grades: [{ dimension: 'strength', value: ' ', label: ' ' }],
+      groups: [
+        [
+          {
+            sentence: Number.MAX_SAFE_INTEGER,
+            qualifiers: [{ kind: ' ', word: ' ' }],
+            preferences: [{ preferred: ' ', alternative: ' ' }],
+            times: [
+              {
+                kind: 'interval',
+                role: 'before',
+                comparison: 'eq',
+                count: 0,
+                unit: ' ',
+                anchor: ' ',
+              },
+            ],
+          },
+        ],
+      ],
+    };
+    expect(decodeMarks(marksTerm(boundary))).toEqual(boundary);
   });
   it.each(malformed)('M9 refuses malformed %s', (_name, value) => {
     expect(decodeMarks(value)).toBeUndefined();
