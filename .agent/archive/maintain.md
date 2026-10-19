@@ -201,13 +201,33 @@ Closed queue run (`dN` = the row's ordinal in the queue at `24bbb5d`):
 - [x] r3 = the user's go; closing review L1–L4 + `Phase: IMPLEMENT` in the commit after
   `7513577`.
 
+## IMPLEMENT — answer panel: grades, qualifiers and thresholds
+
+- [x] `69f2dae` ann-u1 `kernel`: the marks goal — `clinical_marks/3` over one per-sentence
+  derivation shared with the answer, catalog v4 `marksGoal`, `AnswerService.marks`,
+  `src/questions/marks.ts`, the controller's marks state; contract `.agent/contracts/ann-u1.md`,
+  reviewed before code by consultant-2.
+- [x] `f806b80` ann-u2 `kernel`: a qualifier leaves the verb slot — `action/5`, the parser lift,
+  three build refusals, every rendered answer byte-identical; contract
+  `.agent/contracts/ann-u2.md`, reviewed before code by consultant-3.
+- [x] `35d2c9c` ann-u3 `kernel`: the facts rows, the notice, the goal disclosure, en + ja
+  copy; contract `.agent/contracts/ann-u3.md`, reviewed late by consultant-4; `ee2a52b` fixed
+  the narrow-width label wrap operator-1 found.
+- [x] `f858a15` ann-u4 `docs`: README, prototype retired under tag
+  `prototype-answer-annotations`.
+- [x] `99aef83` ann-review: 16/16 rows against `.agent/contracts/ann-review.md`, none open
+  (`.agent/review.md` `## ann close`).
+- [x] ann-close = the commit after `99aef83`: release lanes green, `Phase` back to MAINTAIN.
+
 ## Phase
 
-IMPLEMENT closed twice, both ledgered in `.agent/review.md` with no open row: u3–u15 on 32/32
-rows against `.agent/contracts/review-implement.md`, and u16 free-text intake (u16a–u16h) on
-14/14 rows against `.agent/contracts/review-u16.md`. Unit summaries →
+IMPLEMENT closed three times, each ledgered in `.agent/review.md` with no open row: u3–u15 on
+32/32 rows against `.agent/contracts/review-implement.md`, u16 free-text intake (u16a–u16h) on
+14/14 rows against `.agent/contracts/review-u16.md`, and the answer-panel annotations
+(ann-u1–u4) on 16/16 rows against `.agent/contracts/ann-review.md`. Unit summaries →
 `.agent/archive/units-m5.md`.
 
-`prototype/` never existed here. The PROTOTYPE-phase role was played by the expedited M2–M4
-surfaces, shipped in place and redeveloped under M5 by user ruling, so there is no tree to
-retire and no `prototype` tag to cut; `.claude/rules/stack.md` already records the carve-out.
+The expedited M2–M4 surfaces had no prototype tree: they played the PROTOTYPE role in place and
+were redeveloped under M5 by user ruling (`.claude/rules/stack.md`). The answer panel's ITERATE
+prototype, `prototype/answer-annotations/`, retired at its IMPLEMENT close under tag
+`prototype-answer-annotations`.

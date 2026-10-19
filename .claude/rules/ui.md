@@ -127,9 +127,10 @@ panel derives nothing itself: `marksView` (`src/questions/marks.ts`) returns eve
 once-per-document-run grade included, and the script maps it to label/value pairs.
 
 - A one-statement answer renders its statement in a `div`: a `dl` cannot sit in a `p`.
-- **A missing mark never reads as an absent one.** A document whose marks did not return —
-  failed, stopped, undecodable or misaligned — counts in `TEXT.marksMissing`, shown after the
-  statements; `loading` shows nothing.
+- **A missing mark never reads as an absent one.** A document whose marks are not usable —
+  failed, stopped, undecodable, duplicated or misaligned — counts in `TEXT.marksMissing`, shown
+  after the statements; `loading` shows nothing. The notice says the annotations could not be
+  shown, never that the knowledge base returned none (user ruling).
 - `details.mark-goals` lists the marks goal and each returned solution verbatim, reusing the
   chat card's note and outcome wording: both show one Prolog goal's outcome.
 - Labels translate; values stay English in both locales, like the statements they annotate.

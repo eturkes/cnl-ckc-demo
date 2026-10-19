@@ -190,19 +190,6 @@ worker before its caller resumes (`chat-c2.md`).
 
 ## Tasks
 
-- [x] 69f2dae ann-u1 `kernel` the marks goal — `clinical_marks/3` in the image, catalog v4 `marksGoal`,
-  `AnswerService.marks`, `src/questions/marks.ts` decode + render, the controller's marks state.
-  Contract `.agent/contracts/ann-u1.md`.
-- [x] f806b80 ann-u2 `kernel` a qualifier leaves the verb slot — parser, answer term, renderer, reference
-  producer, chat guide; T9 declared edits. Contract `.agent/contracts/ann-u2.md`; closes both
-  queue rows on the verb slot.
-- [x] 35d2c9c ann-u3 `kernel` the answer panel's facts rows + en/ja copy — notices, the goal disclosure,
-  `operator` visual QA; the live review is owed to the user. Contract `.agent/contracts/ann-u3.md`.
-- [x] f858a15 ann-u4 `docs` README, rules, claims + census; retire `prototype/` (`prototype-answer-annotations`
-  tag) and its tsconfig include.
-- [ ] ann-review — one `reviewer` per lens over the scope diff + MAIN's security lens, rows in
-  `.agent/review.md`; accepted fixes land before close.
-- [ ] ann-close — `Phase` resumes `MAINTAIN — the whole product`, rules upkeep.
 - [ ] owed (user): live review of the answer panel's facts rows (ann-u3 `35d2c9c`,
   `.claude/rules/ui.md` `User review`) — `pnpm dev`; run "When and how should clinicians
   reassess opioid therapy?" (time bounds), "When should clinicians continue, taper, or
@@ -234,9 +221,4 @@ worker before its caller resumes (`chat-c2.md`).
 
 ## Phase
 
-IMPLEMENT — answer panel: the knowledge base's grades, qualifiers and thresholds
-> Pull the latest `../cnl-ckc` and update `cnl-ckc-demo` accordingly.
-> [Scope, chosen:] Sync + graph + answers — Also show grades, qualifiers and thresholds in the
-> answer panel. That changes an accepted surface, so that part routes to ITERATE after the sync
-> lands.
-Suspended: MAINTAIN — the whole product, free-text intake folded in
+MAINTAIN — the whole product, free-text intake and answer-panel annotations folded in

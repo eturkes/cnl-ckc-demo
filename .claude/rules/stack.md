@@ -27,7 +27,7 @@ User-ruled, binding on every role.
   PROTOTYPE, ITERATE + IMPLEMENT, inapplicable to them by user ruling. They played the
   PROTOTYPE role in place and were redeveloped under M5's gates (`.agent/spec.md`
   `Decisions`), so `Artifacts` records no prototype path, IMPLEMENT's retire-at-close has
-  nothing to retire, and no `prototype-<scope>` tag exists. A future PROTOTYPE or ITERATE
+  nothing to retire, and they carry no `prototype-<scope>` tag. Every later PROTOTYPE or ITERATE
   scope follows the template: its prototype lives at an isolated path and retires at its
   IMPLEMENT close (user ruling).
 
