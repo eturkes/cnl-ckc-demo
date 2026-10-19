@@ -141,20 +141,41 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   preferences and its time bounds. The grade reads in the source's own labels alone
   (`Category A recommendation, Evidence type 4 recommendation`, strength first), never in the
   KB's common values. A preference reads `Preferred: X`, or `X over Y` where the source names
-  the alternative. Thresholds in this scope are the time bounds the 12 recommendation documents
-  carry (`at least 1 week after therapy start`); the comparison thresholds of the
+  the alternative. Thresholds in this scope are the time bounds AND the orderings the 12
+  recommendation documents carry — `at least 1 week after therapy start`, and `before opioid
+  prescription` beside them in the Time row; the comparison thresholds of the
   implementation-consideration documents stay in the chat and the graph. Every mark comes from
   a live read-only goal over the KB's annotation predicates. The two rival displays — marks
   inside the sentence, statements grouped under a grade heading — are retired.
+- **The facts-row labels translate; their values stay English**, like the statements they
+  annotate. Japanese labels: `グレード`, `修飾語`, `優先`, `時期`.
+- **A qualifier before the verb leaves the verb slot.** `clinical_rule/3` and the answer term
+  carry it apart, so the verb names the event's own lemma; every rendered answer stays
+  byte-identical, and the T9 frozen spans move as declared edits. The answer-term digests
+  outside T9 that this moves — T1 `terms`, T12/T14 `baselineHelper` — re-pin as approved figure
+  edits.
+- **An answer derives each of its sentences exactly once.** The all-or-nothing check counted
+  derivations, so a duplicated clause could stand in for a missing sentence; one per-sentence
+  document derivation now serves the answer and its marks alike. `clinical-answer-live` A4's
+  pinned clause text moves with it, an approved edit.
+- **The catalog-version case derives the refused version from the emitted one**
+  (`tests/questions-catalog-version.test.ts`), an approved edit that the catalog's v4 bump forces.
 - **A qualifier reads `Qualifier: <words>`, first in the row.** One label serves every class;
   upstream's class names (`manner`, `usuality`, `focus`) and function glosses never show.
 - **A grade shows once per run of statements from one source document.** The first statement
   of each document's run carries the grade; the statements after it that draw on the same
   documents leave it out. Qualifiers, preferences and time bounds stay on every statement.
 
-**MAIN:** the prototype lists each annotation goal beside the answer with its verbatim engine
-solution, and says so when a goal returns no result, so a missing mark never reads as an absent
-one. premise display = deduplicated steps inside the EXISTING ladder rungs, never a new
+**MAIN:** the marks are ONE compiled goal per question, `clinical_marks/3` at the end of
+`PROOF_SOURCE`: it re-derives each document's sentences under their premises as
+`clinical_advice/4` does and reads the grade, qualifier, preference, interval and order heads out
+of that derivation, all-or-nothing per document. The generated catalog carries it as
+`marksGoal`; the controller runs it on the engine queue once the answer settles and before the
+trace, because every `solve` clears the proof cache. The answer spine — `clinical_advice/3,4`,
+its proof, the ladder — stays untouched, so a marks failure costs a notice, never an answer. The
+answer lists the marks goal with its verbatim engine solutions and says so when a document's
+marks are missing, so a missing mark never reads as an absent one. An adverb after an object or a
+modifier (rec04 S5–S6, rec11 S2) stays in that text: its verb already names the event. premise display = deduplicated steps inside the EXISTING ladder rungs, never a new
 step type (4,491 leaves / 451 premises), carrying hypothetical origin and no source line.
 u6's oracle is GREEN at base — it guards the compiled KB, which the answer-path defect never
 broke; its RED-under-dependency-removal witness is a firing record, and its credit is the
@@ -169,9 +190,19 @@ worker before its caller resumes (`chat-c2.md`).
 
 ## Tasks
 
-- [ ] IMPLEMENT answer-panel annotations — re-implement the approved prototype under the gates:
-  annotation goals compiled with the answer path, i18n copy, retire `prototype/` + its tsconfig
-  include at close. Waits on the IMPLEMENT body (user).
+- [ ] ann-u1 `kernel` the marks goal — `clinical_marks/3` in the image, catalog v4 `marksGoal`,
+  `AnswerService.marks`, `src/questions/marks.ts` decode + render, the controller's marks state.
+  Contract `.agent/contracts/ann-u1.md`.
+- [ ] ann-u2 `kernel` a qualifier leaves the verb slot — parser, answer term, renderer, reference
+  producer, chat guide; T9 declared edits. Contract `.agent/contracts/ann-u2.md`; closes both
+  queue rows on the verb slot.
+- [ ] ann-u3 `kernel` the answer panel's facts rows + en/ja copy — notices, the goal disclosure,
+  `operator` visual QA; the live review is owed to the user. Contract `.agent/contracts/ann-u3.md`.
+- [ ] ann-u4 `docs` README, rules, claims + census; retire `prototype/` (`prototype-answer-annotations`
+  tag) and its tsconfig include.
+- [ ] ann-review — one `reviewer` per lens over the scope diff + MAIN's security lens, rows in
+  `.agent/review.md`; accepted fixes land before close.
+- [ ] ann-close — `Phase` resumes `MAINTAIN — the whole product`, rules upkeep.
 - [ ] owed (user): live review of the graph annotations (sync-u2 `e73ed6c`, `.claude/rules/ui.md`
   `User review`) — `pnpm dev`, open the graph, select an answer's Find in graph (rec07 for time
   limits, rec05 for qualifiers, rec03 for a preference) and read the new relationships.
