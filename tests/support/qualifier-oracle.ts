@@ -67,7 +67,7 @@ const actionFromAce = (source: string, vocabulary: ReadonlySet<string>): Action 
   // Quantity bounds open no `at` phrase; hyphenated tokens stay in their noun phrase.
   const boundaries = [
     ...complement.matchAll(
-      /(?:^| )(above|after|against|at(?! (?:least|most)\b)|before|during|for|from|in|of|to|with|within) /gu,
+      /(?:^| )(above|after|against|at(?! (?:least|most)\b)|before|during|for|from|in|of|on|to|with|within) /gu,
     ),
   ];
   const object = complement.slice(0, boundaries[0]?.index ?? complement.length).trimEnd();
