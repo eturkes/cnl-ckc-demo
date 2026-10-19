@@ -22,7 +22,8 @@ import { messages } from '../i18n/locale.svelte.js';
 import type { ProvenanceState } from '../provenance/model.js';
 import { QUESTION_CATALOG, type QuestionId } from '../questions/catalog.js';
 import { serializeAnswer } from '../questions/serialize.js';
-import { AnswerService, type AnswerResult } from '../questions/service.js';
+import { AnswerService, type AnswerResult, type MarksOutcome } from '../questions/service.js';
+import type { MarksState } from '../questions/marks.js'; // STUB (tester-4)
 
 /**
  * Bounds every demo run. These are working values, not the `BUDGET_MAX` ceilings:
@@ -67,6 +68,8 @@ export interface DemoEngine {
     signal?: AbortSignal,
     onSolution?: (solution: PlSolution) => void,
   ): Promise<AnswerResult>;
+  // STUB (tester-4)
+  marks?(id: QuestionId, budget: BudgetSpec, signal?: AbortSignal): Promise<MarksOutcome>;
   prove?(input: ProofInput, budget: BudgetSpec, signal?: AbortSignal): Promise<ProofOutcome>;
   /** One model-written goal, always through the engine's read-only allowlist. */
   runGoal?(goal: string, budget: BudgetSpec, signal?: AbortSignal): Promise<QueryOutcome>;
@@ -123,6 +126,7 @@ export class DemoController {
   selected = $state<QuestionId | null>(null);
   solutionIndex = $state(-1);
   provenance = $state.raw<ProvenanceState>({ kind: 'idle' });
+  marks = $state.raw<MarksState>({ kind: 'idle' }); // STUB (tester-4)
   /**
    * What the booted engine reported, kept past `idle`.
    *

@@ -10,7 +10,10 @@
 // interpreter already compiles into the saved image, so a runtime load buys nothing.
 // It carries a 10 s watchdog of its own; it is a `BudgetSpec` it never takes.
 
-import type { EngineClient } from '../engine/client.js';
+import type { EngineClient, QueryOutcome } from '../engine/client.js';
+
+// STUB (tester-4)
+export type MarksOutcome = QueryOutcome | { kind: 'rejected'; reason: 'unknown-id' };
 import type { BudgetSpec, EngineError, LimitKind, PlSolution } from '../engine/protocol.js';
 
 import { QUESTION_CATALOG, type QuestionId, isQuestionId } from './catalog.js';
@@ -42,6 +45,11 @@ export class AnswerService {
 
   constructor(client: EngineClient) {
     this.#client = client;
+  }
+
+  // STUB (tester-4)
+  marks(_id: unknown, _budget: BudgetSpec, _signal?: AbortSignal): Promise<MarksOutcome> {
+    return Promise.resolve({ kind: 'failure' });
   }
 
   /**
