@@ -14,6 +14,11 @@ The shipped answers are produced at run time. They are not stored UI fixtures.
 - A bounded SWI-Prolog/WASM query engine with cancellation and worker recovery.
 - One deterministic, cited answer assembled from every matching structured Prolog
   solution, with no separately authored summaries and an exact source-passage fallback.
+- A facts row under each answer statement that shows what the knowledge base marks on it: the
+  grade of its recommendation in the guideline's own labels, its qualifiers such as
+  `carefully`, the option it prefers, and its time bounds and orderings. A Prolog goal reads
+  these marks when the answer is ready, and the answer lists that goal with the engine's
+  solutions.
 - A six-step evidence ladder: live proof, compiled clause, controlled sentence,
   coverage region, aligned source passage, and physical guideline PDF page.
 - Explicit projection-loss and `unreviewed` disclosures.
@@ -46,6 +51,9 @@ The shipped answers are produced at run time. They are not stored UI fixtures.
 - Every compiled document is labelled `unreviewed`; no human adjudication is
   recorded.
 - The seven questions are prepared examples.
+- A statement without a facts row has no grade, qualifier, preference or time bound in the
+  knowledge base, unless a note under the answer says that the marks of its document are
+  missing.
 - A **KB** tag shows that the cited query ran, not that the sentence restates its
   result. The wording is the model's. Compare the sentence with the solutions in the
   query's card.
@@ -82,6 +90,11 @@ question, and select **Run**. Select a numbered citation to inspect its proof an
 source. **Find in graph** activates the lazy graph and moves directly to that
 answer map. Orange paths come only from the selected source contribution; muted
 branches show how its primary concept connects elsewhere in the knowledge base.
+
+Each statement shows its facts row: **Qualifier**, **Grade**, **Preferred** and **Time**. The
+grade shows on the first statement from each source document. If the knowledge base returns no
+marks for a document, a note under the answer says so. Open **Prolog goal behind these
+annotations** to read the goal and the engine's solutions.
 
 ### Chat
 

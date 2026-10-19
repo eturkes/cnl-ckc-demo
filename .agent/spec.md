@@ -21,13 +21,6 @@ questions by deterministic Prolog execution.
 ## Artifacts
 
 - `src/` + `index.html` — the demo. `pnpm dev`; production `pnpm build && pnpm preview`.
-- `prototype/answer-annotations/` — ITERATE prototype: the shipped page with an answer panel
-  showing each statement's grade, qualifiers, preferences and time bounds, read by live
-  read-only goals. `pnpm dev`, open `/prototype/answer-annotations/`, select a question, Run.
-  Shortcuts that look real: the facts-row labels are English in both locales; marks read the
-  sentences' STORED heads by `clause/2`, not a derivation under the clinical premises; the
-  goals ride the chat's read-only path and budget; nouns render mechanically (`ER LA opioid`);
-  `tsconfig.json` includes `prototype/**` for lint + check, removed when the prototype retires.
 - `server/chat.mjs` + `server/chat-guide.md` — local chat bridge to `codex app-server`.
   `pnpm chat:dev` beside `pnpm dev`, after `CODEX_HOME=~/.config/cnl-ckc-demo/codex codex login`.
 
@@ -197,7 +190,7 @@ worker before its caller resumes (`chat-c2.md`).
 - [x] f806b80 ann-u2 `kernel` a qualifier leaves the verb slot — parser, answer term, renderer, reference
   producer, chat guide; T9 declared edits. Contract `.agent/contracts/ann-u2.md`; closes both
   queue rows on the verb slot.
-- [ ] ann-u3 `kernel` the answer panel's facts rows + en/ja copy — notices, the goal disclosure,
+- [x] 35d2c9c ann-u3 `kernel` the answer panel's facts rows + en/ja copy — notices, the goal disclosure,
   `operator` visual QA; the live review is owed to the user. Contract `.agent/contracts/ann-u3.md`.
 - [ ] ann-u4 `docs` README, rules, claims + census; retire `prototype/` (`prototype-answer-annotations`
   tag) and its tsconfig include.
