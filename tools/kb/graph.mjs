@@ -578,6 +578,9 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
   /** `<document>\0<context>\0<event>\0<object>` → the reading of the pp clause an annotation types. */
   /** @type {Map<string, readonly [string, string]>} */
   const headTypings = new Map();
+  /** `<document>\0<sentence>\0<quantity>` of every head interval, which a range must pair with. */
+  /** @type {Set<string>} */
+  const headIntervals = new Set();
   const typingKey = (/** @type {string} */ document, /** @type {string[]} */ parts) =>
     [document, ...parts.map((part) => part.trim())].join('\u0000');
   for (const clause of parsedClauses) {
@@ -597,10 +600,22 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
       if (reading === undefined) throw new Error(`graph: line ${String(clause.line)}: order ${second} is no relation`);
       headTypings.set(typingKey(clause.document, [context, subject, third]), reading);
     }
+    if (clause.predicate === 'guideline_interval') {
+      headIntervals.add(`${clause.document}\u0000${String(clause.sentence ?? 0)}\u0000${third.trim()}`);
+    }
     if (clause.predicate === 'guideline_interval' && fifth.trim() === 'none') {
       const reading = OFFSET_READINGS.get(termLabel(second));
       if (reading === undefined) throw new Error(`graph: line ${String(clause.line)}: interval role ${second}`);
       headTypings.set(typingKey(clause.document, [context, subject, third]), reading);
+    }
+  }
+  // A range folds into its low quantity's interval reading, so a range no interval reads would
+  // vanish from the graph: refuse it.
+  for (const [sentence, facts] of sentenceFacts) {
+    for (const low of facts.range.keys()) {
+      if (!headIntervals.has(`${sentence}\u0000${low}`)) {
+        throw new Error(`graph: range ${low} in ${sentence.replace('\u0000', ' S')} pairs with no interval`);
+      }
     }
   }
 
@@ -819,6 +834,12 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
         if (reading === undefined) throw new Error(`graph: line ${String(clause.line)}: interval role ${second}`);
         bodyTypings.set([context, subject, third].map((part) => part.trim()).join('\u0000'), reading);
       }
+    }
+    for (const low of bodyFacts.range.keys()) {
+      const paired = clause.body.some(
+        (call) => call.name === 'guideline_interval' && call.args[3]?.trim() === low,
+      );
+      if (!paired) throw new Error(`graph: line ${String(clause.line)}: range ${low} pairs with no interval`);
     }
     for (const call of clause.body) {
       if (call.name !== 'guideline_unit') continue;

@@ -41,7 +41,7 @@ const CATEGORY_A_GOAL =
 
 /** Declares the static schema predicate dynamic first; a bare `assertz` is refused. */
 const OVERLAY = [
-  ':- dynamic guideline_document/3.',
+  ':- dynamic guideline_document/4.',
   "guideline_document('zz-overlay-doc','zz-overlay',unreviewed,none).",
 ].join('\n');
 const OVERLAY_GOAL = "guideline_document('zz-overlay-doc',T,_,_),T='zz-overlay'.";

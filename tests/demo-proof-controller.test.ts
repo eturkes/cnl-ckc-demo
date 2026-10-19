@@ -49,7 +49,7 @@ const step = (line: number): ProofStep => ({
   kind: 'clause',
   line,
   head: `guideline_document(doc_${String(line)},title,unreviewed,none)`,
-  predicate: 'guideline_document/3',
+  predicate: 'guideline_document/4',
   document: `doc-${String(line)}`,
   sentence: 1,
   children: [],

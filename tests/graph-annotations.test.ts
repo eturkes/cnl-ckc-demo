@@ -504,6 +504,30 @@ describe('graph annotations', () => {
     ]);
   });
 
+  it('refuses a range that pairs with no interval, by name', () => {
+    const [path, bytes] = [...files].find(([name]) =>
+      name.endsWith('/pl/cdc2022-opioid-s47-16.pl'),
+    ) ?? [undefined, undefined];
+    if (path === undefined || bytes === undefined) throw new Error('no ranged document to plant');
+    const lines = Buffer.from(bytes).toString('utf8').split('\n');
+    const range = lines.find((line) => line.startsWith('guideline_range('));
+    const low =
+      /^guideline_range\('\$guideline_id'\(context,[^)]*\),\[[^\]]*\]\),(.*?\[[^\]]*\]\)),/u.exec(
+        range ?? '',
+      )?.[1];
+    if (low === undefined) throw new Error('no range low to unpair');
+    const planted = new Map(files);
+    planted.set(
+      path,
+      Buffer.from(
+        lines
+          .filter((line) => !(line.startsWith('guideline_interval(') && line.includes(`,${low},`)))
+          .join('\n'),
+      ),
+    );
+    expect(() => deriveSemanticGraph(planted)).toThrow(/pairs with no interval/u);
+  });
+
   it('refuses a constant unit its quantity noun does not restate, by name', () => {
     const [path, bytes] = [...files].find(
       ([name, content]) =>

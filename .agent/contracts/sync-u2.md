@@ -52,7 +52,7 @@ no context slot. Edges carry `label` (forward reading) and, where the reading tu
 | preference, `Alternative = none` | `preference` | `Preferred` → value `preferred` | `preference` / `preference of` |
 | qualifier | `qualifier` | `Event` → value `<Word>` | `<Class>` / `<Class> of` |
 | interval, `Anchor` named | `time` | `Event` → `Anchor` | `B after` / `B before`; `B before` / `B after`; `B apart from` both ways |
-| interval, `Anchor = none` | `time` | `Event` → the quantity node | `duration` / `duration of`; `after-offset` / `after-offset for`; `before-offset` / `before-offset for`; `distance` / `distance for` |
+| interval, `Anchor = none` | — | folds into the `guideline_pp` edge it types (same endpoints) | that edge reads `duration` / `duration of`; `after offset` / `after offset for`; `before offset` / `before offset for`; `distance` / `distance for` |
 | order | — | folds into its `guideline_pp` edge | that edge reads `occurs before` / `occurs after` (swapped from the target) |
 | recurrence | `time` | `Event` → the quantity node | `recurrence gap` / `recurrence gap of` |
 | frequency | `time` | `Event` → `Counted` | `count C per P` / `count C per P in` |
@@ -80,7 +80,8 @@ no context slot. Edges carry `label` (forward reading) and, where the reading tu
 
 - `GRAPH_EDGE_KINDS` gains `grade`, `preference`, `qualifier`, `time`, `threshold`;
   `EDGE_SOURCE_ROLES`: an event source for `qualifier` and `time`, an entity source for
-  `grade`; `preference` and `threshold` admit an entity or a value source.
+  `grade` and `preference` (upstream preference endpoints are plain referents); `threshold`
+  admits an entity or a value source (a converted quantity's node).
 - `parseEdge` reads the optional `inverse`; `graphRelation(edge, from)` returns it at the
   target end, and stays the ONE derivation of a reading: `EdgeView` gains `inverse`, and
   `edgeLabelFrom` reads it in place of the view's own `REVERSED_RELATIONS` table, which retires.

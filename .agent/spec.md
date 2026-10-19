@@ -54,7 +54,7 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   negation, 7 `can`, i.e. 39% of the corpus's 197 negation contexts — the body-level scopes
   whose identity binds at query time. They gain no covering edges; each records its body
   literals instead, and the body-relation dedup keys on scope (mnt-d49 ruling), so the shipped
-  population is 24,947 total / 1,431 operator. u11's S3 is ONE-WAY: every operator-bearing edge
+  population is 25,490 total / 1,431 operator. u11's S3 is ONE-WAY: every operator-bearing edge
   resolves to exactly one scope record, an unreferenced record is legal, and the unreferenced
   count is pinned so it cannot drift.
 - **Security lane.** Live `pnpm audit` in the gate, no allowlist; static analysis = ESLint
@@ -147,7 +147,7 @@ worker before its caller resumes (`chat-c2.md`).
 - [x] c511755 sync-u1 `kernel` the upstream sync to `83569b1d`: bag `g8a51bf0c8722` vendored, the
   19-indicator schema and `schema.pl` loaded, the clinical grammar's two new forms, six exports,
   the guard + chat guide on the new schema, every corpus figure re-pinned.
-- [ ] sync-u2 `kernel` graph projection of the time, strength and unit annotations and the
+- [x] e73ed6c sync-u2 `kernel` graph projection of the time, strength and unit annotations and the
   comparison conditions (user: in this request; the answer panel's share routes to ITERATE after
   the sync lands). Contract `.agent/contracts/sync-u2.md`, reviewed by `consultant-1` before code.
   - Accept: its A1–A5 green, `pnpm gate` + `pnpm graph:check` green; a live review owed
