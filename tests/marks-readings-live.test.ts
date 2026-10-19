@@ -7,7 +7,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { DEMO_BUDGET } from '../src/demo/DemoController.svelte.js';
-import { answerRows, synthesizeAnswer } from '../src/demo/describe.js';
+import { answerRows, synthesizeAnswer, type AnswerPoint } from '../src/demo/describe.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
 import { decodeTerm, type PlTerm } from '../src/engine/terms.js';
 import { QUESTION_CATALOG, QUESTION_IDS } from '../src/questions/catalog.js';
@@ -215,34 +215,59 @@ describe('live statement marks readings', () => {
         return { document, grade: heads.grade, readings };
       });
 
-      let priorDocuments: string[] = [];
-      const expected = points.map((point): Pair[] => {
-        const contributors = point.sources.map((index) =>
-          need(documents[index], 'missing contributor'),
-        );
-        const currentDocuments = contributors.map(({ document }) => document);
-        const readings = point.sources.flatMap((index) =>
-          (rows[index]?.items ?? []).flatMap((text, item) =>
-            text === point.text ? need(documents[index]?.readings[item], 'missing group') : [],
-          ),
-        );
-        expect(readings.length, `${id}: point has no source sentence`).toBeGreaterThan(0);
-        const grade = isDeepStrictEqual(priorDocuments, currentDocuments)
-          ? ''
-          : contributors
-              .map((document) => document.grade)
-              .filter(Boolean)
-              .join('; ');
-        priorDocuments = currentDocuments;
-        return pairs({
-          qualifier: unique(readings.flatMap((reading) => reading.qualifiers)).join(', '),
-          grade,
-          preferences: unique(readings.flatMap((reading) => reading.preferences)),
-          times: unique(readings.flatMap((reading) => reading.times)),
+      const reference = (order: readonly AnswerPoint[]): Pair[][] => {
+        let priorDocuments: string[] = [];
+        return order.map((point): Pair[] => {
+          const contributors = point.sources.map((index) =>
+            need(documents[index], 'missing contributor'),
+          );
+          const currentDocuments = contributors.map(({ document }) => document);
+          const readings = point.sources.flatMap((index) =>
+            (rows[index]?.items ?? []).flatMap((text, item) =>
+              text === point.text ? need(documents[index]?.readings[item], 'missing group') : [],
+            ),
+          );
+          expect(readings.length, `${id}: point has no source sentence`).toBeGreaterThan(0);
+          const grade = isDeepStrictEqual(priorDocuments, currentDocuments)
+            ? ''
+            : contributors
+                .map((document) => document.grade)
+                .filter(Boolean)
+                .join('; ');
+          priorDocuments = currentDocuments;
+          return pairs({
+            qualifier: unique(readings.flatMap((reading) => reading.qualifiers)).join(', '),
+            grade,
+            preferences: unique(readings.flatMap((reading) => reading.preferences)),
+            times: unique(readings.flatMap((reading) => reading.times)),
+          });
         });
-      });
+      };
+      const expected = reference(points);
       expect(view.statements.map(pairs), id).toEqual(expected);
       expect(expected.flat().some(([label]) => label === 'Grade')).toBe(true);
+
+      for (let seed = 0; seed < 24; seed += 1) {
+        let random = seed + 1;
+        const order = [...points];
+        for (let index = order.length - 1; index > 0; index -= 1) {
+          random = (Math.imul(random, 1_664_525) + 1_013_904_223) >>> 0;
+          const other = random % (index + 1);
+          [order[index], order[other]] = [
+            need(order[other], 'generated point absent'),
+            need(order[index], 'generated point absent'),
+          ];
+        }
+        const generated = marksView(
+          { kind: 'settled', id, goal: entry.marksGoal, outcome: marks },
+          order,
+          rows,
+          answer.solutions,
+        );
+        expect(generated.statements.map(pairs), `${id}: generated order ${String(seed)}`).toEqual(
+          reference(order),
+        );
+      }
     },
   );
 });
