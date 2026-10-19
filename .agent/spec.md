@@ -21,6 +21,9 @@ questions by deterministic Prolog execution.
 ## Artifacts
 
 - `src/` + `index.html` — the demo. `pnpm dev`; production `pnpm build && pnpm preview`.
+- `prototype/answer-annotations/` — ITERATE prototype: the shipped page with an answer panel
+  showing each statement's grade, qualifiers and time bounds, read by live read-only goals.
+  `pnpm dev`, open `/prototype/answer-annotations/`; `?variant=facts|inline|graded`.
 - `server/chat.mjs` + `server/chat-guide.md` — local chat bridge to `codex app-server`.
   `pnpm chat:dev` beside `pnpm dev`, after `CODEX_HOME=~/.config/cnl-ckc-demo/codex codex login`.
 
@@ -144,6 +147,8 @@ worker before its caller resumes (`chat-c2.md`).
 
 ## Tasks
 
+- [ ] iterate r1: user picks among the annotation variants A facts, B inline, C graded; rules on
+  thresholds beyond the 12 recommendation documents.
 - [ ] owed (user): live review of the graph annotations (sync-u2 `e73ed6c`, `.claude/rules/ui.md`
   `User review`) — `pnpm dev`, open the graph, select an answer's Find in graph (rec07 for time
   limits, rec05 for qualifiers, rec03 for a preference) and read the new relationships.

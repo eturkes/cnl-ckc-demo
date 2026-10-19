@@ -25,6 +25,8 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.svelte",
+    "prototype/**/*.ts",
+    "prototype/**/*.svelte",
     "tests/**/*.ts",
     "tools/**/*.mjs",
     "server/**/*.mjs",
