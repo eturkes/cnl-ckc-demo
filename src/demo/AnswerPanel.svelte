@@ -401,12 +401,15 @@
     min-width: 0;
   }
 
+  /* The label keeps its width; only the value wraps, or a narrow screen splits `Grade`. */
   .facts dt {
+    flex: none;
     color: var(--text-muted);
     font-weight: 700;
   }
 
   .facts dd {
+    min-width: 0;
     margin: 0;
     overflow-wrap: anywhere;
   }
