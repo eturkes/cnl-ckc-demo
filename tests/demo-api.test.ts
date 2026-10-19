@@ -13,7 +13,8 @@ import { describe, expect, it } from 'vitest';
 const SOURCE = fileURLToPath(new URL('../src/demo/DemoController.svelte.ts', import.meta.url));
 
 // `CHAT_BUDGET` + `runGoal` = the chat's path onto the one engine queue (`chat-c4.md`, user
-// ruling); the original pin fired on exactly those two names.
+// ruling); the original pin fired on exactly those two names. `marks` = the settled answer's
+// knowledge-base marks (`.agent/contracts/ann-u1.md` Interface); the pin fired on it alone.
 const DECLARED_EXPORTS = [
   'CHAT_BUDGET',
   'DEMO_BUDGET',
@@ -29,6 +30,7 @@ const DECLARED_MEMBERS = [
   'constructor',
   'contract',
   'dispose',
+  'marks',
   'provenance',
   'retry',
   'run',

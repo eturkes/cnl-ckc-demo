@@ -157,7 +157,8 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
 - **An answer derives each of its sentences exactly once.** The all-or-nothing check counted
   derivations, so a duplicated clause could stand in for a missing sentence; one per-sentence
   document derivation now serves the answer and its marks alike. `clinical-answer-live` A4's
-  pinned clause text moves with it, an approved edit.
+  pinned clause text moves with it, an approved edit, as do T1's `advice` digest of that clause
+  and its `records` digest of the catalog that gains `marksGoal`.
 - **The catalog-version case derives the refused version from the emitted one**
   (`tests/questions-catalog-version.test.ts`), an approved edit that the catalog's v4 bump forces.
 - **A qualifier reads `Qualifier: <words>`, first in the row.** One label serves every class;

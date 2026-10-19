@@ -10,7 +10,7 @@
 // interpreter already compiles into the saved image, so a runtime load buys nothing.
 // It carries a 10 s watchdog of its own; it is a `BudgetSpec` it never takes.
 
-import type { EngineClient } from '../engine/client.js';
+import type { EngineClient, QueryOutcome } from '../engine/client.js';
 import type { BudgetSpec, EngineError, LimitKind, PlSolution } from '../engine/protocol.js';
 
 import { QUESTION_CATALOG, type QuestionId, isQuestionId } from './catalog.js';
@@ -36,6 +36,9 @@ export type AnswerResult =
   | { kind: 'limit'; id: QuestionId; limit: LimitKind; serialized: string; solutions: PlSolution[] }
   | { kind: 'cancelled'; id: QuestionId; serialized: string; solutions: PlSolution[] }
   | { kind: 'error'; id: QuestionId; error: EngineError };
+
+/** The marks goal's outcome as the engine returned it, or the refusal of an unknown id. */
+export type MarksOutcome = QueryOutcome | { kind: 'rejected'; reason: 'unknown-id' };
 
 export class AnswerService {
   readonly #client: EngineClient;
@@ -92,5 +95,14 @@ export class AnswerService {
         return exhaustive;
       }
     }
+  }
+
+  /**
+   * Run one catalog question's marks goal: the grade, qualifiers, preferences and time marks the
+   * knowledge base derives for each of its answer documents. An id in, never goal text.
+   */
+  async marks(id: unknown, budget: BudgetSpec, signal?: AbortSignal): Promise<MarksOutcome> {
+    if (!isQuestionId(id)) return { kind: 'rejected', reason: 'unknown-id' };
+    return this.#client.query(QUESTION_CATALOG[id].marksGoal, budget, signal);
   }
 }

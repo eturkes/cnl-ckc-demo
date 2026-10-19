@@ -159,10 +159,10 @@ describe('clinical records', () => {
       records: sha12(JSON.stringify(artifacts.records)),
       names: sha12(JSON.stringify(artifacts.names)),
     }).toEqual({
-      advice: 'eafc1f7f65b0',
+      advice: '1211444663ba',
       selections: '8ca30f2c6f1d',
       passages: 'a8ff3e7a31e5',
-      records: '23898631ca0a',
+      records: '0863e0e431ee',
       names: '1d112e138ee5',
     });
     expect({

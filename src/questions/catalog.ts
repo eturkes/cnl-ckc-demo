@@ -35,6 +35,8 @@ export interface CatalogEntry {
   question: string;
   /** Compiled goal in the bag's canonical prefix form. Never assembled from `question`. */
   goal: string;
+  /** Compiled goal reading the knowledge base's marks on each answer document. */
+  marksGoal: string;
   /** Empty means an existence question, which answers yes or no rather than rows. */
   projection: readonly ProjectionVar[];
   provenance: Provenance;
@@ -47,7 +49,7 @@ const PROVENANCES: readonly string[] = ['bag-derived'];
  * emitted `catalogVersion` has, so a bump that nobody read here would be absorbed in
  * silence — the entry shape would change under a reader still trusting the old one.
  */
-const CATALOG_VERSION = 3;
+const CATALOG_VERSION = 4;
 
 const build = (): Readonly<Record<QuestionId, CatalogEntry>> => {
   if (generated.catalogVersion !== CATALOG_VERSION) {
@@ -74,6 +76,7 @@ const build = (): Readonly<Record<QuestionId, CatalogEntry>> => {
     if (!PROVENANCES.includes(entry.provenance))
       throw new Error(`${id}: unknown provenance ${entry.provenance}`);
     if (entry.goal === '') throw new Error(`${id}: empty goal`);
+    if (entry.marksGoal === '') throw new Error(`${id}: empty marks goal`);
     catalog[id] = Object.freeze({
       ...entry,
       id,

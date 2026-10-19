@@ -143,6 +143,9 @@ record is `.claude/rules/firing.md`.
 | `tests/m1u5-port.dom.test.ts` | off | active option scrolls to start rather than nearest block | mutate | `inv m1u5-port.dom: active option scroll aligns at start` |
 | `tests/m1u7-port.dom.test.ts` | off | About disclosure omits first contracted font licence link | mutate | `inv m1u7-port.dom: first font licence link omitted` |
 | `tests/m1u7-port.test.ts` | off | a root token outside the role names | mutate | `inv m1u7-port: a non-role root token planted` |
+| `tests/marks-controller.test.ts` | off | marks state never leaves idle; no marks call ahead of the trace | text | `.agent/contracts/ann-u1.md 17/23 RED at base` |
+| `tests/marks-live.test.ts` | answer | no compiled marks goal; a duplicated clause stands in for a missing sentence | text | `.agent/contracts/ann-u1.md 12/13 RED at base` |
+| `tests/marks-view.test.ts` | answer | decoder, readings and join return the stub's fixed values | text | `.agent/contracts/ann-u1.md 405/405 RED at base` |
 | `tests/mutant-anchors.test.ts` | off | exported-query mutant names an anchor absent from its producer | mutate | `inv mutant-anchors: exported-query mutant retains a stale anchor` |
 | `tests/page-viewer.dom.test.ts` | off | failed page draw leaves retry button disabled | mutate | `C3 a failed page draw keeps Load page viewer disabled` |
 | `tests/passage-locate.test.ts` | off | locator keeps standalone bullet items that the extracted passage drops | commit | `005903a pnpm exec vitest run tests/passage-locate.test.ts` → rc 1, 2/8 red` |

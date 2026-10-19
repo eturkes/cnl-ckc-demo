@@ -42,7 +42,8 @@ repo's deltas.
   review snapshots the u16 commit bodies cite. Chat request: red suites
   `worktree-agent-a890c938619fd3157` `8026d4e` (c1), `wt/chat-tester-2` `06483be` (c3),
   `wt/chat-tester-3` `fd876eb` (c2), `wt/chat-tester-4` `4bd88bc` (c4); gated snapshots
-  `wip/chat-c1`…`wip/chat-c4`.
+  `wip/chat-c1`…`wip/chat-c4`. Answer-panel annotations: red suites `wt/tester-4` `49a7727`
+  (ann-u1; tests `df73961`, stubs at the tip), `wt/tester-5` `f64bb2d` (ann-u2).
 - Research probe branches held as evidence, worktrees removed: `wt/res-m1-1` `36cc56f`
   (swipl-wasm load/worker/terms/trace/perf/test/errors/deploy), `wt/res-m1-2` `5863141`
   (cytoscape layout/perf/test, axe, contrast, combobox), `wt/res-m2-2` `0a48b79` (every

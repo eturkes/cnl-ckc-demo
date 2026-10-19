@@ -76,6 +76,29 @@ const REQUIRED = Object.freeze([
     ],
   },
   {
+    suite: 'tests/marks-live.test.ts',
+    why: "the panel's marks derive at run time over guideline_* under each sentence's premises, never read back, and an answer derives each sentence once",
+    cases: [
+      'compiled marks catalog and derivation M2 every marks goal settles solutions under DEMO_BUDGET in answer document and Source order',
+      'compiled marks catalog and derivation M3 groups partition every content sentence by its answer consequent, in gate order',
+      'compiled marks catalog and derivation M4 every grade and its entity label equal the independent ordered bag-head parse',
+      'compiled marks catalog and derivation M5 every sentence keeps the bag-head annotation order, repetitions and empty lists',
+      'compiled guideline marks binding M6 unprovable bodies remove exactly four documents; an unprovable grade drops only that grade',
+      'compiled guideline marks binding M6 a top-level assumed gate head cannot become a KB mark',
+      'compiled guideline marks binding M6 clinical_marks has no facts and refuses a direct static assertion',
+      'compiled guideline marks binding M7 bag-side label and quantity mutations move exactly their marks and readings',
+      'compiled guideline marks binding M8 each unresolved or unsupported branch removes only its document marks, not its answer',
+      'compiled guideline marks binding A7 a duplicate S2 clause cannot stand in for missing S3; only rec03 loses answer and marks',
+    ],
+  },
+  {
+    suite: 'tests/marks-view.test.ts',
+    why: "each statement shows the marks of its own group's sentences and no other document's",
+    cases: [
+      'statement joins M11 joins every (solution,item) pair despite repeated text and permuted documents',
+    ],
+  },
+  {
     suite: 'tests/clinical-inference.test.ts',
     why: 'the evaluator is complete, exhaustively site-bound and side-effect free',
     cases: [

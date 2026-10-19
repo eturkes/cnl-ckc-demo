@@ -1,8 +1,9 @@
 // `clinicalArtifacts` owns the deliberately curated question topics, but every
 // answer statement and source coordinate is re-read from the bag on each build.
 // The resulting goals run `clinical_advice/3`, which the PVM carries as a single derivation
-// rule over `clinical_derive/4` — no answer fact is compiled in, and the predicate is static
-// so none can be asserted.
+// rule over `clinical_derived/2` — no answer fact is compiled in, and the predicate is static
+// so none can be asserted. Each entry's `marksGoal` runs `clinical_marks/3` over that same
+// derivation (v4).
 
 import { clinicalArtifacts } from './clinical.mjs';
 
@@ -17,4 +18,4 @@ export const catalogRecords = (files) => {
 
 /** @param {ReturnType<typeof clinicalArtifacts>['records']} records */
 export const catalogJson = (records) =>
-  `${JSON.stringify({ catalogVersion: 3, entries: records }, undefined, 2)}\n`;
+  `${JSON.stringify({ catalogVersion: 4, entries: records }, undefined, 2)}\n`;

@@ -585,7 +585,7 @@ const contentSites = (source, selected) => {
 
 /**
  * @param {Map<string, Uint8Array>} files
- * @returns {{ records: Array<{ id: string, question: string, goal: string, projection: Array<{ variable: string, descriptor: string }>, provenance: 'bag-derived' }>, names: string[], source: string, helper: string, answers: Map<string, string[]>, sentences: Array<{ question: string, document: string, clause: AdviceClause }> }}
+ * @returns {{ records: Array<{ id: string, question: string, goal: string, marksGoal: string, projection: Array<{ variable: string, descriptor: string }>, provenance: 'bag-derived' }>, names: string[], source: string, helper: string, answers: Map<string, string[]>, sentences: Array<{ question: string, document: string, clause: AdviceClause }> }}
  */
 export const clinicalArtifacts = (files) => {
   const documents = payloadDocuments(files);
@@ -704,6 +704,7 @@ export const clinicalArtifacts = (files) => {
       id: question.id,
       question: question.question,
       goal: `clinical_advice(${qid},Source,Answer)`,
+      marksGoal: `clinical_marks(${qid},Source,Marks)`,
       projection: [{ variable: 'Answer', descriptor: 'noun(clinical-advice,countable)' }],
       provenance: /** @type {'bag-derived'} */ ('bag-derived'),
     };
@@ -723,12 +724,13 @@ export const clinicalArtifacts = (files) => {
     // there is nothing to look up and nothing an `assertz` can fabricate: every solution
     // runs `clinical_derive/4`, which reads its cited heads out of the stored
     // `clinical_gate/4` body and binds `Rule` only after the derivation succeeds.
-    // `clinical_derive/4` and `app/3` are defined in the proof source appended after this
-    // block; one consult defines the whole file before any query runs.
-    // An answer is ALL-OR-NOTHING. `findall/3` alone collects whatever happens to derive,
-    // so one unproven sentence would ship a silently truncated answer that still reads as
-    // complete. Counting the document's gates and demanding the same number of derivations
-    // is what makes a missing premise or an erased cited clause remove the whole answer.
+    // `clinical_derived/2`, `clinical_derive/4` and `app/3` are defined in the proof source
+    // appended after this block; one consult defines the whole file before any query runs.
+    // An answer is ALL-OR-NOTHING: `clinical_derived/2` derives every gate sentence exactly
+    // once, in gate order, and fails when one fails. Counting derivations against gates let a
+    // duplicated clause stand in for a missing sentence, and the answer then read as
+    // complete. The marks goal (`clinical_marks/3`) calls the same derivation, so the answer
+    // and its marks never enumerate a document differently.
     // ONE clause carries the answer AND its proof: `/3` is a projection of `/4`, so the
     // shown derivation cannot drift from the answer it explains. Nothing precomputed
     // remains for a proof request to read back.
@@ -736,12 +738,11 @@ export const clinicalArtifacts = (files) => {
     `clinical_advice(Q,'$guideline_id'(product,Doc,First,ref(1),[]),` +
     `clinical_answer(Doc,Groups,Passage),Proof) :- ` +
     `clinical_source(Q,Doc,First), clinical_passage(Doc,Passage), ` +
-    `findall(S,clause(clinical_gate(Doc,S,_,_),_,_),Sentences), length(Sentences,N), ` +
-    `findall(R-P,clinical_derive(Doc,_,R,P),Derived), length(Derived,N), ` +
+    `clinical_derived(Doc,Derived), ` +
     `clinical_split(Derived,Rules,Proofs), clinical_groups(Rules,Groups), ` +
     `clinical_join(Proofs,Proof).\n` +
     `clinical_split([],[],[]).\n` +
-    `clinical_split([R-P|T],[R|Rs],[P|Ps]) :- clinical_split(T,Rs,Ps).\n` +
+    `clinical_split([d(_,R,P)|T],[R|Rs],[P|Ps]) :- clinical_split(T,Rs,Ps).\n` +
     `clinical_join([],[]).\n` +
     `clinical_join([P|T],J) :- clinical_join(T,J0), app(P,J0,J).\n` +
     // Reassemble the per-sentence rules into group terms exactly as `groupClauses` does:

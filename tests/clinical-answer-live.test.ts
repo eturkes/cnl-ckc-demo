@@ -84,7 +84,7 @@ describe('runtime clinical answers', () => {
       'clinical_advice(Q,Source,Answer) :- clinical_advice(Q,Source,Answer,_).',
     );
     expect(clauses[1]).toContain(':- clinical_source(');
-    expect(clauses[1]).toContain('findall(R-P,clinical_derive(Doc,_,R,P),Derived)');
+    expect(clauses[1]).toContain('clinical_derived(Doc,Derived)');
     expect(helperLines.filter((line) => line.startsWith('clinical_advice_source('))).toEqual([]);
   });
 

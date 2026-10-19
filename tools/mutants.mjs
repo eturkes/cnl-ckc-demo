@@ -869,9 +869,9 @@ export const MUTANTS = [
     label: 'inv clinical-answer-live: partial document answer admitted',
     edits: [
       {
-        path: 'tools/kb/clinical.mjs',
-        old: 'length(Derived,N), ',
-        new: 'length(Derived,M), M =< N, ',
+        path: 'tools/kb/proof.mjs',
+        old: 'clinical_derive(Doc,S,Rule,P), !, clinical_derived(Ss,Doc,T).\n',
+        new: 'clinical_derive(Doc,S,Rule,P), !, clinical_derived(Ss,Doc,T).\nclinical_derived([_|Ss],Doc,T) :- clinical_derived(Ss,Doc,T).\n',
       },
     ],
     check: {
@@ -883,9 +883,9 @@ export const MUTANTS = [
     label: 'inv clinical-binding: erased clause leaves partial answer',
     edits: [
       {
-        path: 'tools/kb/clinical.mjs',
-        old: 'length(Derived,N), ',
-        new: 'length(Derived,M), M =< N, ',
+        path: 'tools/kb/proof.mjs',
+        old: 'clinical_derive(Doc,S,Rule,P), !, clinical_derived(Ss,Doc,T).\n',
+        new: 'clinical_derive(Doc,S,Rule,P), !, clinical_derived(Ss,Doc,T).\nclinical_derived([_|Ss],Doc,T) :- clinical_derived(Ss,Doc,T).\n',
       },
     ],
     check: { test: 'tests/clinical-binding.test.ts', name: 'E2 erasing one cited clause' },
@@ -905,9 +905,9 @@ export const MUTANTS = [
     label: 'inv clinical-proof-live: erased clause retains partial proof',
     edits: [
       {
-        path: 'tools/kb/clinical.mjs',
-        old: 'length(Derived,N), ',
-        new: 'length(Derived,M), M =< N, ',
+        path: 'tools/kb/proof.mjs',
+        old: 'clinical_derive(Doc,S,Rule,P), !, clinical_derived(Ss,Doc,T).\n',
+        new: 'clinical_derive(Doc,S,Rule,P), !, clinical_derived(Ss,Doc,T).\nclinical_derived([_|Ss],Doc,T) :- clinical_derived(Ss,Doc,T).\n',
       },
     ],
     check: { test: 'tests/clinical-proof-live.test.ts', name: 'B5 erasing a cited clause line' },
@@ -1337,8 +1337,8 @@ export const MUTANTS = [
     edits: [
       {
         path: 'src/questions/service.ts',
-        old: "    if (!isQuestionId(id)) return { kind: 'rejected', reason: 'unknown-id' };",
-        new: "    if (typeof id === 'string') id = id.toLowerCase();\n    if (!isQuestionId(id)) return { kind: 'rejected', reason: 'unknown-id' };",
+        old: "    if (!isQuestionId(id)) return { kind: 'rejected', reason: 'unknown-id' };\n    const entry = QUESTION_CATALOG[id];",
+        new: "    if (typeof id === 'string') id = id.toLowerCase();\n    if (!isQuestionId(id)) return { kind: 'rejected', reason: 'unknown-id' };\n    const entry = QUESTION_CATALOG[id];",
       },
     ],
     check: {

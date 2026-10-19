@@ -124,14 +124,15 @@ recurrence_window 4, range 8, grade 24, preference 26, qualifier 273, unit 59.
 
 - The catalog is **GENERATED, not transcribed**: `tools/kb/catalog.mjs` re-exports
   `clinicalArtifacts`, so `kb:build` emits `kb/generated/question-catalog.json` —
-  `{catalogVersion: 3, entries}`, 7 entries of `id question goal projection provenance` —
+  `{catalogVersion: 4, entries}`, 7 entries of `id question goal marksGoal projection provenance` —
   from the bag alone; `kb:asset-check` re-derives it and fails on any mismatch. The rejected
   alternative — repo-source goals policed by a bag-divergence gate step — measured
   1036.812 ms against a 0.631 ms median.
 - The shipped catalog is the **clinical** one. `CLINICAL_QUESTIONS` owns the curated topics
   and every answer statement and source coordinate is re-read from the bag on each build; its
-  goals run `clinical_advice/3`. Nothing on the catalog path reads the bag's `queries/` tree
-  — that tree belongs to the legacy export lane below.
+  goals run `clinical_advice/3`, and each entry's `marksGoal` runs `clinical_marks/3` over the
+  same derivation (`.claude/rules/proof.md` `The marks goal`). Nothing on the catalog path reads
+  the bag's `queries/` tree — that tree belongs to the legacy export lane below.
 - Query goals reach the engine from the catalog, never from the image.
 - **The build cache keys on inputs, never on producer code.** It compares the bag input, the
   payload source, the toolchain and the catalog, so an edit to a producer (`graph.mjs`,

@@ -93,4 +93,38 @@ clinical_derive(Doc,S,Rule,P) :- clinical_depth(D), clinical_derive(Doc,S,D,Rule
 clinical_derive(Doc,S,D,Rule,P) :- clause(clinical_gate(Doc,S,_,_),Body,_), gate_heads(Body,Heads), clinical_context(Doc,S,As), derive_all(Heads,D,As,P), clinical_rule(Doc,S,Rule).
 mi(G,D,P) :- derive(G,D,[],P,proved).
 mi_limited(G,D) :- derive(G,D,[],_,limit), !.
+clinical_derived(Doc,Derived) :- findall(S,clause(clinical_gate(Doc,S,_,_),_,_),Sentences), clinical_derived(Sentences,Doc,Derived).
+clinical_derived([],_,[]).
+clinical_derived([S|Ss],Doc,[d(S,Rule,P)|T]) :- clinical_derive(Doc,S,Rule,P), !, clinical_derived(Ss,Doc,T).
+clinical_marks(Q,'$guideline_id'(product,Doc,First,ref(1),[]),marks(Doc,Grades,Groups)) :- clinical_source(Q,Doc,First), clinical_derived(Doc,Derived), mark_sentences(Derived,Marked), clinical_split(Derived,Rules,_), clinical_groups(Rules,Answer), mark_groups(Answer,Marked,Groups), mark_grades(Doc,Grades).
+mark_member(X,[X|_]).
+mark_member(X,[_|T]) :- mark_member(X,T).
+mark_sentences([],[]).
+mark_sentences([d(S,R,P)|T],[m(R,sentence(S,Qs,Ps,Ts))|M]) :- mark_nodes(P), mark_qualifiers(P,Qs), mark_preferences(P,P,Ps), mark_times(P,P,Ts), mark_sentences(T,M).
+mark_nodes([]).
+mark_nodes([node(_,H,_)|T]) :- \+ mark_uncovered(H), mark_nodes(T).
+mark_uncovered(guideline_recurrence(_,_,_,_)).
+mark_uncovered(guideline_frequency(_,_,_,_,_)).
+mark_uncovered(guideline_recurrence_window(_,_,_,_,_,_,_)).
+mark_uncovered(guideline_range(_,_,_)).
+mark_qualifiers([],[]).
+mark_qualifiers([node(_,guideline_qualifier(_,_,C,W),_)|T],[qualifier(C,W)|Qs]) :- !, mark_qualifiers(T,Qs).
+mark_qualifiers([_|T],Qs) :- mark_qualifiers(T,Qs).
+mark_preferences([],_,[]).
+mark_preferences([node(_,guideline_preference(_,_,R,A),_)|T],P,[preference(N,M)|Ps]) :- !, mark_noun(R,P,N), mark_alternative(A,P,M), mark_preferences(T,P,Ps).
+mark_preferences([_|T],P,Ps) :- mark_preferences(T,P,Ps).
+mark_alternative(none,_,none) :- !.
+mark_alternative(A,P,N) :- mark_noun(A,P,N).
+mark_times([],_,[]).
+mark_times([node(_,guideline_interval(_,_,Role,Q,U,A),_)|T],P,[interval(Role,C,N,U,X)|Ts]) :- !, A \== none, mark_quantity(Q,P,C,N), mark_noun(A,P,X), mark_times(T,P,Ts).
+mark_times([node(_,guideline_order(_,_,Relation,A),_)|T],P,[order(Relation,X)|Ts]) :- !, mark_noun(A,P,X), mark_times(T,P,Ts).
+mark_times([_|T],P,Ts) :- mark_times(T,P,Ts).
+mark_quantity(Q,P,C,N) :- mark_member(node(_,guideline_cardinality(_,Q,_,C,N),_),P), !.
+mark_noun(R,P,N) :- mark_member(node(_,guideline_entity(_,R,N,_),_),P), !.
+mark_noun(R,P,N) :- mark_member(node(_,guideline_property(_,R,N,_),_),P), !.
+mark_groups([],_,[]).
+mark_groups([rule(_,Su,Mo,A)|T],Marked,[group(Ss)|Gs]) :- findall(X,(mark_member(m(rule(_,Su1,Mo1,A1),X),Marked),Su1 == Su,Mo1 == Mo,A1 == A),Ss), Ss \== [], mark_groups(T,Marked,Gs).
+mark_grades(Doc,Grades) :- findall(G,(G = guideline_grade(actual,'$guideline_id'(product,Doc,_,_,_),_,_,_),derive(G,1,[],_,proved)),Heads), mark_labels(Heads,Grades).
+mark_labels([],[]).
+mark_labels([guideline_grade(_,_,D,V,L)|T],[grade(D,V,N)|Gs]) :- derive(guideline_entity(actual,L,N,_),1,[],_,proved), !, mark_labels(T,Gs).
 `;

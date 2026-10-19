@@ -19,7 +19,7 @@ describe('question catalog version seam', () => {
     }));
 
     await expect(import('../src/questions/catalog.js')).rejects.toThrow(
-      /question catalog version 4 is unsupported/iu,
+      `question catalog version ${String(generated.catalogVersion + 1)} is unsupported`,
     );
   });
 

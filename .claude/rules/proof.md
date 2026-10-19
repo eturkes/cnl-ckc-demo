@@ -140,8 +140,8 @@ Emitted beside `clinical_advice/3,4`: `clinical_rule(Doc,S,Rule)`
 
 `derive/5` threads an assumption list through the existing interpreter, with an
 `assumption(H)` leaf placed **before** the depth cap and before `resolve/3`; plus `assumed/2`,
-`derive_all/4`, `gate_heads/2`, `clinical_depth(2)`, `clinical_context/3` and
-`clinical_derive/4,5`. `mi/3` and `mi_limited/2` keep arity and behaviour by passing `[]`, so
+`derive_all/4`, `gate_heads/2`, `clinical_depth(2)`, `clinical_context/3`,
+`clinical_derive/4,5` and `clinical_derived/2`. `mi/3` and `mi_limited/2` keep arity and behaviour by passing `[]`, so
 the shipped proof RPC is untouched. No write path ships; a direct `assertz` is still refused.
 
 - **`PROOF_SOURCE` is LAST in `payloadSource`** (payload → clinical helper → proof), so no
@@ -181,6 +181,32 @@ precomputed is left for a proof request to read back — `clinical_advice_source
   has no clause for `=`/2 and the conjunction dies before the proof is reached.
 - A wrong answer term yields `failure`, not a proof: the arm cuts, `clinical_advice/4` fails,
   and no fallback can fabricate one.
+- **A document derives each gate sentence exactly once.** `clinical_derived/2` takes the FIRST
+  derivation of every `clinical_gate/4` sentence, in gate order, and fails when one fails.
+  Counting derivations against gates is unsound: a duplicated clause derives one sentence twice
+  and stands in for a missing one, and the answer still reads complete
+  (`tests/marks-live.test.ts` A7).
+
+## The marks goal
+
+`clinical_marks(Q,Source,Marks)` (end of `PROOF_SOURCE`, `.agent/contracts/ann-u1.md`) is the
+answer panel's grade, qualifier, preference and time marks, one solution per answer document.
+
+- It calls `clinical_derived/2`, the answer's own derivation, and reads each sentence's marks
+  off the TOP-LEVEL items of that sentence's proof — the gate heads that derived under its
+  premises. A top-level item that is not `node/3` fails the sentence, so an assumed head never
+  reads as a KB mark. Grades derive through `derive/5` at depth 1; the S1 grade facts are no
+  gate heads.
+- **All-or-nothing per document, and separate from the answer.** An unresolved referent,
+  quantity, anchor or grade label, an anchorless interval, or a time head no reading covers
+  (recurrence, frequency, recurrence window, range) leaves the document without a marks
+  solution, while its answer still derives: a marks failure costs the panel a notice, never an
+  answer.
+- Groups come from the answer's own `clinical_groups/2`; each takes the sentences whose rule
+  has its consequent, so group i is the answer's group i.
+- The marks goal runs on the answer path's engine queue after the answer settles and before the
+  trace: every `solve` clears the proof cache, so a marks call queued behind the trace would
+  evict the proof it just cached.
 
 ## Binding a test to real execution
 

@@ -67,6 +67,13 @@ const CONTROLS = [
     expect: 'P6.2 EngineClient.query no longer requires a budget',
   },
   {
+    name: 'P6.2 marks',
+    file: 'src/questions/service.ts',
+    apply: (text) =>
+      text.replace(/marks\(id: unknown, budget: BudgetSpec, signal/, 'marks(id: unknown, signal'),
+    expect: 'P6.2 AnswerService.marks no longer requires a budget',
+  },
+  {
     name: 'P6.3',
     file: 'src/engine/session.ts',
     apply: (text) => `import 'swipl-wasm';\n${text}`,
@@ -177,11 +184,15 @@ check(
   /\bask\(\s*id: [^,]+,\s*budget: BudgetSpec,\s*signal\?: AbortSignal[,)]/.test(serviceSource),
   'P6.2 AnswerService.ask no longer requires a budget as its second parameter',
 );
+check(
+  /\bmarks\(\s*id: [^,]+,\s*budget: BudgetSpec,\s*signal\?: AbortSignal[,)]/.test(serviceSource),
+  'P6.2 AnswerService.marks no longer requires a budget as its second parameter',
+);
 for (const file of files) {
   const text = read(file);
   // `engine.prolog.query` is the raw SWI handle inside the worker, below the budget
   // boundary; every other receiver is the budgeted client or service.
-  for (const match of text.matchAll(/([A-Za-z0-9_$.#[\]]*?)\.(query|ask)\(/g)) {
+  for (const match of text.matchAll(/([A-Za-z0-9_$.#[\]]*?)\.(query|ask|marks)\(/g)) {
     const [whole, receiver = '', method] = match;
     if (receiver.endsWith('prolog')) continue;
     const open = match.index + whole.length - 1;

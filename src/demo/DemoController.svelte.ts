@@ -21,8 +21,9 @@ import type {
 import { messages } from '../i18n/locale.svelte.js';
 import type { ProvenanceState } from '../provenance/model.js';
 import { QUESTION_CATALOG, type QuestionId } from '../questions/catalog.js';
+import type { MarksState } from '../questions/marks.js';
 import { serializeAnswer } from '../questions/serialize.js';
-import { AnswerService, type AnswerResult } from '../questions/service.js';
+import { AnswerService, type AnswerResult, type MarksOutcome } from '../questions/service.js';
 
 /**
  * Bounds every demo run. These are working values, not the `BUDGET_MAX` ceilings:
@@ -55,9 +56,10 @@ const PROOF_BUDGET: Readonly<BudgetSpec> = Object.freeze({
 });
 
 /**
- * The controller's whole view of the engine: one boot, one budgeted ask, the selected proof,
- * one read-only chat goal, one dispose. The chat goal is the one goal text from outside the
- * catalog, and it reaches the engine through the read-only allowlist alone (`readonly.ts`).
+ * The controller's whole view of the engine: one boot, one budgeted ask, the answer's marks, the
+ * selected proof, one read-only chat goal, one dispose. The chat goal is the one goal text from
+ * outside the catalog, and it reaches the engine through the read-only allowlist alone
+ * (`readonly.ts`).
  */
 export interface DemoEngine {
   boot(onProgress?: (progress: BootProgress) => void): Promise<BootOutcome>;
@@ -67,6 +69,8 @@ export interface DemoEngine {
     signal?: AbortSignal,
     onSolution?: (solution: PlSolution) => void,
   ): Promise<AnswerResult>;
+  /** The catalog question's marks goal; an id in, never goal text. */
+  marks?(id: QuestionId, budget: BudgetSpec, signal?: AbortSignal): Promise<MarksOutcome>;
   prove?(input: ProofInput, budget: BudgetSpec, signal?: AbortSignal): Promise<ProofOutcome>;
   /** One model-written goal, always through the engine's read-only allowlist. */
   runGoal?(goal: string, budget: BudgetSpec, signal?: AbortSignal): Promise<QueryOutcome>;
@@ -79,6 +83,7 @@ export const createDemoEngine = (): DemoEngine => {
   return {
     boot: (onProgress) => client.boot(onProgress),
     ask: (id, budget, signal, onSolution) => service.ask(id, budget, signal, onSolution),
+    marks: (id, budget, signal) => service.marks(id, budget, signal),
     prove: (input, budget, signal) => client.prove(input, budget, signal),
     runGoal: (goal, budget, signal) =>
       client.query(goal, budget, signal, undefined, { readonly: true }),
@@ -123,6 +128,8 @@ export class DemoController {
   selected = $state<QuestionId | null>(null);
   solutionIndex = $state(-1);
   provenance = $state.raw<ProvenanceState>({ kind: 'idle' });
+  /** The settled answer's knowledge-base marks (`.agent/contracts/ann-u1.md`). */
+  marks = $state.raw<MarksState>({ kind: 'idle' });
   /**
    * What the booted engine reported, kept past `idle`.
    *
@@ -142,6 +149,8 @@ export class DemoController {
   #engineTail: Promise<void> = Promise.resolve();
   #proofController: AbortController | undefined;
   #proofToken = 0;
+  #marksController: AbortController | undefined;
+  #marksToken = 0;
   #disposed = false;
 
   constructor(engine: DemoEngine = createDemoEngine()) {
@@ -206,6 +215,7 @@ export class DemoController {
     this.#disposed = true;
     this.#active?.controller.abort();
     this.#proofController?.abort();
+    this.#marksController?.abort();
     this.#active = undefined;
     this.#engine.dispose();
   }
@@ -264,6 +274,10 @@ export class DemoController {
     this.#proofController = undefined;
     this.#proofToken += 1;
     this.provenance = { kind: 'idle' };
+    this.#marksController?.abort();
+    this.#marksController = undefined;
+    this.#marksToken += 1;
+    this.marks = { kind: 'idle' };
     this.solutionIndex = -1;
     this.state = { kind: 'running', id };
 
@@ -293,7 +307,11 @@ export class DemoController {
       this.state = { kind: 'settled', id, result };
       this.solutionIndex = solutionsOf(result).length > 0 ? 0 : -1;
       const first = solutionsOf(result)[0];
-      if (first !== undefined) void this.#trace(id, 0, first);
+      if (first === undefined) return;
+      // Marks enter the engine queue ahead of the trace: every `solve` clears the session's
+      // proof cache, so marks queued behind the trace would evict the proof it just cached.
+      void this.#mark(id);
+      void this.#trace(id, 0, first);
     };
     // A rejected `ask()` is an outcome, not an escape. Rethrowing it left `running`
     // set while `run()`'s only caller discards the promise, so the view stayed busy
@@ -311,6 +329,37 @@ export class DemoController {
     return done;
   }
 
+  async #mark(id: QuestionId): Promise<void> {
+    const marks = this.#engine.marks?.bind(this.#engine);
+    if (marks === undefined) {
+      this.marks = { kind: 'unavailable' };
+      return;
+    }
+    this.#marksController?.abort();
+    const controller = new AbortController();
+    this.#marksController = controller;
+    const token = ++this.#marksToken;
+    const { marksGoal: goal } = QUESTION_CATALOG[id];
+    this.marks = { kind: 'loading', id, goal };
+    let outcome: MarksOutcome;
+    try {
+      // A call the queue reaches after a newer run aborted it never goes out.
+      outcome = await this.#exclusive(() =>
+        controller.signal.aborted
+          ? Promise.resolve<MarksOutcome>({ kind: 'cancelled', solutions: [] })
+          : marks(id, DEMO_BUDGET, controller.signal),
+      );
+    } catch (cause) {
+      outcome = {
+        kind: 'error',
+        error: { code: 'worker', message: cause instanceof Error ? cause.message : String(cause) },
+      };
+    }
+    if (this.#disposed || controller.signal.aborted || token !== this.#marksToken) return;
+    this.#marksController = undefined;
+    this.marks = { kind: 'settled', id, goal, outcome };
+  }
+
   async #trace(id: QuestionId, solution: number, selected: PlSolution): Promise<void> {
     const prove = this.#engine.prove?.bind(this.#engine);
     if (prove === undefined) {
@@ -325,12 +374,15 @@ export class DemoController {
     this.provenance = { kind: 'loading', solution };
     let outcome: ProofOutcome;
     try {
+      // Queued behind the marks call, a trace a newer run or a dispose aborted never goes out.
       outcome = await this.#exclusive(() =>
-        prove(
-          { goal: QUESTION_CATALOG[id].goal, selected: selected.display },
-          PROOF_BUDGET,
-          controller.signal,
-        ),
+        controller.signal.aborted
+          ? Promise.resolve<ProofOutcome>({ kind: 'cancelled' })
+          : prove(
+              { goal: QUESTION_CATALOG[id].goal, selected: selected.display },
+              PROOF_BUDGET,
+              controller.signal,
+            ),
       );
     } catch (cause) {
       outcome = {

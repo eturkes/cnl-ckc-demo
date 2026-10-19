@@ -333,6 +333,7 @@ describe('canonical order', () => {
     id: QUESTION_IDS[0],
     question: 'ordinal probe',
     goal: 'true',
+    marksGoal: 'true',
     projection: [{ variable: 'S', descriptor: 'noun(sentence,countable)' }],
     provenance: 'bag-derived',
   };

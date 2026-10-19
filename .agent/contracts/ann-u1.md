@@ -91,8 +91,8 @@ path, which this unit replaces. Reviewed before code by `consultant-2`
   {`before`, `after`}; `Count` a non-negative safe integer; `Alternative` `none` or a noun.
 - Readings (the graph's words, `tools/kb/graph.mjs` `COMPARISON_WORDS`): nouns `-`/`_` → space;
   grade = labels, strength first whatever the input order, initial capital, `, `-joined;
-  qualifier = words deduplicated after normalization in first-appearance order (one word under
-  two classes shows once); preference `X` or `X over Y`; interval `<bound> after|before <anchor>`
+  qualifier = words deduplicated after normalization in first-appearance order, `, `-joined (one
+  word under two classes shows once); preference `X` or `X over Y`; interval `<bound> after|before <anchor>`
   or `within <bound> of <anchor>`, `<bound>` = comparison words + count + unit, plural `s` when
   the count is not 1; order `before|after <anchor>`. Identical readings show once.
 - Join: for EVERY (solution i, item k) pair, item k of row i takes group k of solution i's
@@ -221,3 +221,18 @@ grade, `; `-joined in contributor order.
   `marksGoal`, no `marks.ts` exports, and the shipped answer accepting the A7 image — never a
   collection error alone; command in the commit body. Firing inputs: the M6–M8 and A7 images and
   the M9 malformed table.
+
+## Red witness (`tester-4`, diff-blind, `wt/tester-4`)
+
+- `tests/marks-live.test.ts` 12/13 RED at base `5124d88` + stubs `49a7727`: `pnpm exec vitest run
+  tests/marks-live.test.ts`; `M3 constructed grouping` base-GREEN — it pins the shipped
+  `clinical_groups/2` — and uncredited, since `pnpm stryker` mutates no Prolog. A7 is RED on the
+  shipped answer itself: the duplicated-clause image kept rec03 (12 answers, 11 expected).
+- `tests/marks-view.test.ts` 405/405 RED at base + stubs `49a7727`: `pnpm exec vitest run
+  tests/marks-view.test.ts`.
+- `tests/marks-controller.test.ts` 17/23 RED at base + stubs `49a7727`: `pnpm exec vitest run
+  tests/marks-controller.test.ts`; the 6 `M12 idle without solutions` cases base-GREEN — the
+  shipped controller never starts a marks call — and uncredited.
+- Against MAIN's implementation: 441/441 green. The suites caught two gaps the implementation
+  had: `Source` joined by display text, not by term; a queued trace dispatched after a newer run
+  aborted it.
