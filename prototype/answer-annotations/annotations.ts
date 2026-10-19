@@ -19,6 +19,12 @@ export interface Qualifier {
   word: string;
 }
 
+export interface Preference {
+  preferred: string;
+  /** `none` when the source names no other option. */
+  alternative: string;
+}
+
 export interface Timing {
   role: string;
   comparison: string;
@@ -31,6 +37,7 @@ export interface PointMarks {
   documents: string[];
   grades: Grade[];
   qualifiers: Qualifier[];
+  preferences: Preference[];
   timing: Timing[];
 }
 
@@ -48,6 +55,10 @@ const quote = (atom: string): string => `'${atom.replaceAll('\\', '\\\\').replac
 const gid = (document: string, sentence = '_'): string =>
   `'$guideline_id'(product,${quote(document)},${sentence},_,_)`;
 
+/** A referent's noun: an entity, else the property a copula referent resolves to (sync-u2 R15). */
+const noun = (ref: string, out: string): string =>
+  `(clause(guideline_entity(_,${ref},${out},_),_);clause(guideline_property(_,${ref},${out},_),_))`;
+
 export const gradeGoal = (document: string): string =>
   `findall(g(D,V,N),(guideline_grade(actual,${gid(document)},D,V,L),guideline_entity(actual,L,N,_)),X)`;
 
@@ -57,9 +68,13 @@ export const ruleGoal = (document: string): string =>
 export const qualifierGoal = (document: string): string =>
   `findall(q(S,K,W),(E=${gid(document, 'S')},clause(guideline_qualifier(_,E,K,W),_)),X)`;
 
+export const preferenceGoal = (document: string): string =>
+  `findall(p(S,P,A),(E=${gid(document, 'S')},clause(guideline_preference(_,E,PR,AR),_),${noun('PR', 'P')},` +
+  `(AR==none->A=none;${noun('AR', 'A')})),X)`;
+
 export const timingGoal = (document: string): string =>
   `findall(t(S,Role,C,N,U,A),(E=${gid(document, 'S')},clause(guideline_interval(_,E,Role,Q,U,R),_),` +
-  `clause(guideline_cardinality(_,Q,_,C,N),_),clause(guideline_entity(_,R,A,_),_)),X)`;
+  `clause(guideline_cardinality(_,Q,_,C,N),_),${noun('R', 'A')}),X)`;
 
 const args = (term: PlTerm | undefined, functor: string, arity: number): PlTerm[] | undefined =>
   term?.kind === 'compound' && term.functor === functor && term.args.length === arity
@@ -85,8 +100,9 @@ const ruleKey = (rule: PlTerm): string | undefined => {
   return parts === undefined ? undefined : parts.slice(1).map(key).join('|');
 };
 
-export const words = (value: string): string =>
-  value.replace(/[_-]+/gu, ' ').replace(/^(?:a|an|the) /u, '');
+export const words = (value: string): string => value.replace(/[_-]+/gu, ' ');
+
+const upperInitial = (value: string): string => value.charAt(0).toUpperCase() + value.slice(1);
 
 const COMPARISON: Record<string, string> = {
   eq: '',
@@ -111,9 +127,19 @@ export const timingText = ({ role, comparison, count, unit, anchor }: Timing): s
   return role === 'within' ? `within ${bound} of ${target}` : `${bound} ${role} ${target}`;
 };
 
-export const gradeValue = (grade: Grade): string => words(grade.value);
+/** The source's own grade labels, strength first (user ruling r1: source label only). */
+/** The documents a statement draws on; a run of equal keys shares one grade line. */
+export const documentKey = (marks: PointMarks | undefined): string =>
+  marks === undefined ? '' : marks.documents.join('|');
 
-export const gradeLabel = (grade: Grade): string => words(grade.label);
+export const gradeText = (grades: readonly Grade[]): string =>
+  [...grades]
+    .sort((a, b) => (a.dimension === 'strength' ? -1 : b.dimension === 'strength' ? 1 : 0))
+    .map((grade) => upperInitial(words(grade.label)))
+    .join(', ');
+
+export const preferenceText = ({ preferred, alternative }: Preference): string =>
+  alternative === 'none' ? words(preferred) : `${words(preferred)} over ${words(alternative)}`;
 
 const dedupe = <T>(items: T[]): T[] => {
   const seen = new Set<string>();
@@ -128,8 +154,32 @@ const dedupe = <T>(items: T[]): T[] => {
 const answerTerm = (solution: PlSolution): PlTerm | undefined =>
   Object.values(solution.bindings).find((term) => args(term, 'clinical_answer', 3) !== undefined);
 
+const bySentence = <T>(
+  rows: PlTerm[],
+  functor: string,
+  arity: number,
+  read: (a: PlTerm[]) => T,
+) => {
+  const out = new Map<number, T[]>();
+  for (const row of rows) {
+    const parts = args(row, functor, arity);
+    if (parts === undefined) continue;
+    const s = int(parts[0]);
+    out.set(s, [...(out.get(s) ?? []), read(parts.slice(1))]);
+  }
+  return out;
+};
+
+interface DocumentMarks {
+  grades: Grade[];
+  rules: Map<string, number[]>;
+  qualifiers: Map<number, Qualifier[]>;
+  preferences: Map<number, Preference[]>;
+  timing: Map<number, Timing[]>;
+}
+
 /**
- * Run the four annotation goals per answer document and key the marks by rendered point text.
+ * Run the five annotation goals per answer document and key the marks by rendered point text.
  * Item i of a structured answer renders rule i of its `clinical_answer/3` term; that rule's
  * subject, mode and actions locate the sentences whose stored annotation heads apply.
  */
@@ -148,18 +198,9 @@ export const annotate = async (
     return list(outcome.solutions[0]);
   };
 
-  const documents = new Map<
-    string,
-    {
-      grades: Grade[];
-      rules: Map<string, number[]>;
-      qualifiers: Map<number, Qualifier[]>;
-      timing: Map<number, Timing[]>;
-    }
-  >();
+  const documents = new Map<string, DocumentMarks>();
   for (const solution of solutions) {
-    const term = answerTerm(solution);
-    const document = text(args(term, 'clinical_answer', 3)?.[0]);
+    const document = text(args(answerTerm(solution), 'clinical_answer', 3)?.[0]);
     if (document === '' || documents.has(document)) continue;
     const grades = (await ask(gradeGoal(document))).flatMap((g) => {
       const [d, v, n] = args(g, 'g', 3) ?? [];
@@ -169,25 +210,24 @@ export const annotate = async (
     for (const r of await ask(ruleGoal(document))) {
       const [s, rule] = args(r, 'r', 2) ?? [];
       const k = rule === undefined ? undefined : ruleKey(rule);
-      if (k === undefined) continue;
-      rules.set(k, [...(rules.get(k) ?? []), int(s)]);
+      if (k !== undefined) rules.set(k, [...(rules.get(k) ?? []), int(s)]);
     }
-    const qualifiers = new Map<number, Qualifier[]>();
-    for (const q of await ask(qualifierGoal(document))) {
-      const [s, k, w] = args(q, 'q', 3) ?? [];
-      if (s === undefined) continue;
-      qualifiers.set(int(s), [...(qualifiers.get(int(s)) ?? []), { kind: text(k), word: text(w) }]);
-    }
-    const timing = new Map<number, Timing[]>();
-    for (const t of await ask(timingGoal(document))) {
-      const [s, role, c, n, u, a] = args(t, 't', 6) ?? [];
-      if (s === undefined) continue;
-      timing.set(int(s), [
-        ...(timing.get(int(s)) ?? []),
-        { role: text(role), comparison: text(c), count: int(n), unit: text(u), anchor: text(a) },
-      ]);
-    }
-    documents.set(document, { grades, rules, qualifiers, timing });
+    const qualifiers = bySentence(await ask(qualifierGoal(document)), 'q', 3, ([k, w]) => ({
+      kind: text(k),
+      word: text(w),
+    }));
+    const preferences = bySentence(await ask(preferenceGoal(document)), 'p', 3, ([p, a]) => ({
+      preferred: text(p),
+      alternative: text(a),
+    }));
+    const timing = bySentence(await ask(timingGoal(document)), 't', 6, ([role, c, n, u, a]) => ({
+      role: text(role),
+      comparison: text(c),
+      count: int(n),
+      unit: text(u),
+      anchor: text(a),
+    }));
+    documents.set(document, { grades, rules, qualifiers, preferences, timing });
   }
 
   const points = new Map<string, PointMarks>();
@@ -196,77 +236,29 @@ export const annotate = async (
     const parts = args(term, 'clinical_answer', 3);
     const document = text(parts?.[0]);
     const data = documents.get(document);
-    if (term === undefined || parts === undefined || data === undefined) continue;
-    const presented = presentClinicalAdvice(term);
+    const presented = term === undefined ? undefined : presentClinicalAdvice(term);
+    if (parts === undefined || data === undefined || presented?.structured !== true) continue;
     const rules = parts[1]?.kind === 'list' ? parts[1].items : [];
-    if (presented?.structured !== true) continue;
     presented.items.forEach((item, index) => {
       const rule = rules[index];
       const k = rule === undefined ? undefined : ruleKey(rule);
       const sentences = k === undefined ? [] : (data.rules.get(k) ?? []);
-      const marks = points.get(item) ?? { documents: [], grades: [], qualifiers: [], timing: [] };
-      marks.documents = dedupe([...marks.documents, document]);
-      marks.grades = dedupe([...marks.grades, ...data.grades]);
-      marks.qualifiers = dedupe([
-        ...marks.qualifiers,
-        ...sentences.flatMap((s) => data.qualifiers.get(s) ?? []),
-      ]);
-      marks.timing = dedupe([
-        ...marks.timing,
-        ...sentences.flatMap((s) => data.timing.get(s) ?? []),
-      ]);
-      points.set(item, marks);
+      const of = <T>(table: Map<number, T[]>): T[] => sentences.flatMap((s) => table.get(s) ?? []);
+      const marks = points.get(item) ?? {
+        documents: [],
+        grades: [],
+        qualifiers: [],
+        preferences: [],
+        timing: [],
+      };
+      points.set(item, {
+        documents: dedupe([...marks.documents, document]),
+        grades: dedupe([...marks.grades, ...data.grades]),
+        qualifiers: dedupe([...marks.qualifiers, ...of(data.qualifiers)]),
+        preferences: dedupe([...marks.preferences, ...of(data.preferences)]),
+        timing: dedupe([...marks.timing, ...of(data.timing)]),
+      });
     });
   }
   return { points, goals };
 };
-
-export interface Segment {
-  text: string;
-  /** The annotation kind this run of text carries; absent = plain text. */
-  mark?: string;
-}
-
-/** The bound phrase the sentence itself spells, e.g. `at least 1 week`. */
-const boundPhrase = ({ comparison, count, unit }: Timing): string =>
-  [COMPARISON[comparison] ?? comparison, String(count), count === 1 ? unit : `${unit}s`]
-    .filter((part) => part !== '')
-    .join(' ');
-
-/** Split a rendered statement where it spells a qualifier word or a time bound. */
-export const segments = (text: string, marks: PointMarks | undefined): Segment[] => {
-  if (marks === undefined) return [{ text }];
-  const phrases = [
-    ...marks.qualifiers.map(({ word, kind }) => ({ phrase: word, mark: kind })),
-    ...marks.timing.map((timing) => ({ phrase: boundPhrase(timing), mark: 'time' })),
-  ];
-  const hits: { start: number; end: number; mark: string }[] = [];
-  const lower = text.toLowerCase();
-  for (const { phrase, mark } of phrases) {
-    const needle = phrase.toLowerCase();
-    for (let at = lower.indexOf(needle); at >= 0; at = lower.indexOf(needle, at + 1)) {
-      const before = lower[at - 1] ?? ' ';
-      const after = lower[at + needle.length] ?? ' ';
-      if (/[a-z0-9]/u.test(before) || /[a-z0-9]/u.test(after)) continue;
-      if (hits.some((hit) => at < hit.end && at + needle.length > hit.start)) continue;
-      hits.push({ start: at, end: at + needle.length, mark });
-    }
-  }
-  hits.sort((a, b) => a.start - b.start);
-  const out: Segment[] = [];
-  let cursor = 0;
-  for (const hit of hits) {
-    if (hit.start > cursor) out.push({ text: text.slice(cursor, hit.start) });
-    out.push({ text: text.slice(hit.start, hit.end), mark: hit.mark });
-    cursor = hit.end;
-  }
-  if (cursor < text.length) out.push({ text: text.slice(cursor) });
-  return out;
-};
-
-/** One line per grade dimension, strength first. */
-export const gradeSignature = (grades: readonly Grade[]): string =>
-  [...grades]
-    .sort((a, b) => a.dimension.localeCompare(b.dimension) * -1)
-    .map((grade) => `${grade.dimension}:${grade.value}`)
-    .join('|');

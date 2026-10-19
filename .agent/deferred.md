@@ -16,6 +16,15 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   re-vendored bag corrects its region page, or carries a recorded producer reason, and the
   census in `tests/passage-locate.test.ts` moves with it. `pri` low. **User ruling**: keep it
   owed to the producer — no demo-side declared limit.
+- **`clinical_rule/3` puts a qualifier in the action's verb slot** — `tools/kb/clinical.mjs`
+  reads a sentence like `should carefully weigh a benefit` as `action(positive,carefully,"weigh
+  a benefit",…)`: the adverb fills `verb` and the verb moves into `object`. The rendering still
+  reads right, because the words concatenate in order, but a consumer of the structure gets the
+  wrong verb (rec04, rec05, rec07, rec08, rec09, rec11). The answer-annotation prototype reads
+  `guideline_qualifier/4` instead. Accept: every `clinical_rule/3` action whose sentence carries
+  a `guideline_qualifier/4` head names the event's own lemma in `verb`, with the qualifier
+  carried apart or dropped from the term, and the T9 frozen surfaces move as declared edits.
+  `pri` low.
 - **The binding replay lane cannot read the 19-indicator bag** — `pnpm binding:replay`: its archived arm loads the
   `a944fca` producer, whose provenance arity table refuses `guideline_document/4`, so since the
   `83569b1d` re-vendor the lane exits 1 before it erases anything (`ProvenanceError:

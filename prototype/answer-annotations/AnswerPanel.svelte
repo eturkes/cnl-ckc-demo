@@ -5,9 +5,8 @@
 
   import { synthesizeAnswer, type AnswerPoint, type AnswerRow } from '../../src/demo/describe.js';
 
-  import { gradeLabel, gradeSignature, gradeValue, type AnnotationRun } from './annotations.js';
+  import { documentKey, type AnnotationRun } from './annotations.js';
   import PointMarks from './PointMarks.svelte';
-  import type { Variant } from './variant.js';
 
   interface Props {
     rows: AnswerRow[];
@@ -24,7 +23,6 @@
     onGraphFocus?: (focus: GraphFocus) => void;
     /** PROTOTYPE: annotation goals' results; `null` while they run. */
     marks?: AnnotationRun | null;
-    variant?: Variant;
   }
 
   let {
@@ -38,7 +36,6 @@
     provenance = { kind: 'idle' },
     onGraphFocus = () => undefined,
     marks = null,
-    variant = 'facts',
   }: Props = $props();
 
   const uid = $props.id();
@@ -53,22 +50,13 @@
   let explanation = $state<HTMLDetailsElement>();
 
   const markOf = (point: AnswerPoint) => marks?.points.get(point.text);
-  /** Variant C: points in answer order, grouped under each distinct grade. */
-  const groups = $derived.by(() => {
-    const out: {
-      key: string;
-      grades: NonNullable<ReturnType<typeof markOf>>['grades'];
-      points: AnswerPoint[];
-    }[] = [];
-    for (const point of points) {
-      const grades = markOf(point)?.grades ?? [];
-      const key = gradeSignature(grades);
-      const group = out.find((candidate) => candidate.key === key);
-      if (group === undefined) out.push({ key, grades, points: [point] });
-      else group.points.push(point);
-    }
-    return out;
-  });
+  /** r2: a grade shows on the first statement of each document's run. */
+  const gradeShown = $derived(
+    points.map(
+      (point, index) =>
+        index === 0 || documentKey(markOf(point)) !== documentKey(markOf(points[index - 1]!)),
+    ),
+  );
   const goals = $derived(marks?.goals ?? []);
 
   const inspect = (source: number): void => {
@@ -127,45 +115,14 @@
                 </span>
               {/snippet}
 
-              {#if variant === 'graded'}
-                {#each groups as group (group.key)}
-                  <section class="grade-group">
-                    {#if group.grades.length > 0}
-                      <header class="grade-head">
-                        {#each group.grades as grade (grade.dimension)}
-                          <p>
-                            <span class="grade-dimension">{grade.dimension}</span>
-                            <strong>{gradeValue(grade)}</strong>
-                            <span class="grade-source">{gradeLabel(grade)}</span>
-                          </p>
-                        {/each}
-                      </header>
-                    {:else if marks !== null}
-                      <header class="grade-head"><p>No grade recorded</p></header>
-                    {/if}
-                    <ul class="answer-list">
-                      {#each group.points as point (point.text)}
-                        <li class="answer-point">
-                          <PointMarks
-                            text={point.text}
-                            marks={markOf(point)}
-                            inline={true}
-                            showGrade={false}>{@render cite(point)}</PointMarks
-                          >
-                        </li>
-                      {/each}
-                    </ul>
-                  </section>
-                {/each}
-              {:else if points.length > 0}
+              {#if points.length > 0}
                 <ul class="answer-list">
-                  {#each points as point (point.text)}
+                  {#each points as point, index (point.text)}
                     <li class="answer-point">
                       <PointMarks
                         text={point.text}
                         marks={markOf(point)}
-                        inline={variant === 'inline'}
-                        showGrade={true}>{@render cite(point)}</PointMarks
+                        showGrade={gradeShown[index] ?? true}>{@render cite(point)}</PointMarks
                       >
                     </li>
                   {/each}
@@ -507,50 +464,6 @@
     font-family: var(--font-code);
     font-size: 0.82rem;
     overflow-wrap: anywhere;
-  }
-
-  .grade-group + .grade-group {
-    margin-top: 1.3rem;
-  }
-
-  .grade-head {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.3rem 1.6rem;
-    margin: 0 0 0.75rem;
-    border-left: 4px solid var(--action);
-    padding: 0.35rem 0 0.35rem 0.8rem;
-  }
-
-  .grade-head p {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0 0.45rem;
-    align-items: baseline;
-    margin: 0;
-  }
-
-  .grade-dimension {
-    color: var(--text-muted);
-    font-size: 0.75rem;
-    font-weight: 700;
-  }
-
-  .grade-dimension::first-letter {
-    text-transform: uppercase;
-  }
-
-  .grade-head strong {
-    font-size: 1.15rem;
-  }
-
-  .grade-head strong::first-letter {
-    text-transform: uppercase;
-  }
-
-  .grade-source {
-    color: var(--text-muted);
-    font-size: 0.75rem;
   }
 
   .mark-goals {

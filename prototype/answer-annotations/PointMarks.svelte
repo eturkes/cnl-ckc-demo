@@ -1,66 +1,56 @@
 <script lang="ts">
-  // PROTOTYPE: one statement's annotations, in the facts or inline premise.
+  // PROTOTYPE: one statement plus the facts row its annotation goals returned (r1: variant A;
+  // r2: qualifier first under one label, grade once per document run).
   import type { Snippet } from 'svelte';
 
-  import {
-    gradeLabel,
-    gradeValue,
-    segments,
-    timingText,
-    words,
-    type PointMarks,
-  } from './annotations.js';
+  import { gradeText, preferenceText, timingText, type PointMarks } from './annotations.js';
 
   interface Props {
     text: string;
     marks: PointMarks | undefined;
-    inline: boolean;
-    /** The graded variant shows the grade in its group heading instead. */
+    /** False while the previous statement shares this one's grade (r2: once per document run). */
     showGrade: boolean;
-    /** Citations, rendered after the statement and before any facts row. */
+    /** Citations, rendered after the statement and before the facts row. */
     children?: Snippet;
   }
 
-  let { text, marks, inline, showGrade, children }: Props = $props();
+  let { text, marks, showGrade, children }: Props = $props();
 
-  const parts = $derived(inline ? segments(text, marks) : [{ text }]);
-  const grades = $derived(showGrade ? (marks?.grades ?? []) : []);
-  const qualifiers = $derived(marks?.qualifiers ?? []);
+  const grade = $derived(showGrade ? gradeText(marks?.grades ?? []) : '');
+  const qualifiers = $derived([...new Set((marks?.qualifiers ?? []).map(({ word }) => word))]);
+  const preferences = $derived((marks?.preferences ?? []).map(preferenceText));
   const timing = $derived((marks?.timing ?? []).map(timingText));
-  const pending = $derived(marks === undefined);
+  const any = $derived(
+    grade !== '' || qualifiers.length > 0 || preferences.length > 0 || timing.length > 0,
+  );
 </script>
 
-<span class="statement">
-  {#each parts as part, index (index)}
-    {#if part.mark === undefined}{part.text}{:else}<mark data-kind={part.mark}
-        >{part.text}<span class="kind">{words(part.mark)}</span></mark
-      >{/if}
-  {/each}
-</span>
-{#if inline && grades.length > 0}
-  <span class="grade-tag"
-    >{grades.map((grade) => `${grade.dimension} ${gradeValue(grade)}`).join(', ')}</span
-  >
-{/if}
+{text}
 {@render children?.()}
 
-{#if !inline && !pending && (grades.length > 0 || qualifiers.length > 0 || timing.length > 0)}
+{#if any}
   <dl class="facts">
-    {#each grades as grade (grade.dimension)}
+    {#if qualifiers.length > 0}
       <div>
-        <dt>{grade.dimension}</dt>
-        <dd>{gradeValue(grade)} <span class="source-label">({gradeLabel(grade)})</span></dd>
+        <dt>Qualifier</dt>
+        <dd>{qualifiers.join(', ')}</dd>
       </div>
-    {/each}
-    {#each qualifiers as qualifier (qualifier.kind + qualifier.word)}
+    {/if}
+    {#if grade !== ''}
       <div>
-        <dt>{qualifier.kind}</dt>
-        <dd>{qualifier.word}</dd>
+        <dt>Grade</dt>
+        <dd>{grade}</dd>
       </div>
-    {/each}
+    {/if}
+    {#if preferences.length > 0}
+      <div>
+        <dt>Preferred</dt>
+        <dd>{preferences.join('; ')}</dd>
+      </div>
+    {/if}
     {#if timing.length > 0}
       <div>
-        <dt>time</dt>
+        <dt>Time</dt>
         <dd>{timing.join('; ')}</dd>
       </div>
     {/if}
@@ -68,21 +58,6 @@
 {/if}
 
 <style>
-  mark {
-    border-bottom: 2px solid var(--action);
-    padding: 0 0.05em;
-    background: transparent;
-    color: inherit;
-  }
-
-  .kind {
-    margin-left: 0.2em;
-    color: var(--text-muted);
-    font-size: 0.66rem;
-    font-style: italic;
-    vertical-align: 0.3em;
-  }
-
   .facts {
     display: flex;
     flex-wrap: wrap;
@@ -103,26 +78,8 @@
     font-weight: 700;
   }
 
-  dt::first-letter {
-    text-transform: uppercase;
-  }
-
   dd {
     margin: 0;
     overflow-wrap: anywhere;
-  }
-
-  .source-label {
-    color: var(--text-muted);
-  }
-
-  .grade-tag {
-    margin-left: 0.4rem;
-    border: 1px solid var(--border);
-    border-radius: 0.25rem;
-    padding: 0.05rem 0.35rem;
-    color: var(--text-muted);
-    font-size: 0.7rem;
-    white-space: nowrap;
   }
 </style>

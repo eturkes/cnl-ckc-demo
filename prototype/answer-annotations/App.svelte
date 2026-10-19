@@ -27,8 +27,6 @@
   import { untrack } from 'svelte';
 
   import { annotate, type AnnotationRun } from './annotations.js';
-  import VariantSwitch from './VariantSwitch.svelte';
-  import { variantFromUrl, type Variant } from './variant.js';
 
   interface Props {
     /** Injected by tests; the shipped app lets `App` build and own the default. */
@@ -110,7 +108,6 @@
       live = false;
     };
   });
-  let variant = $state<Variant>(variantFromUrl(location.href));
 
   const serialized = $derived(
     viewState.kind === 'settled' && 'serialized' in viewState.result
@@ -161,12 +158,6 @@
   };
 </script>
 
-<VariantSwitch
-  {variant}
-  onChange={(next: Variant) => {
-    variant = next;
-  }}
-/>
 <div class="site-shell">
   <header class="site-header">
     <div class="header-inner">
@@ -251,7 +242,6 @@
           }}
           onGraphFocus={showInGraph}
           {marks}
-          {variant}
         />
       </div>
     </section>
