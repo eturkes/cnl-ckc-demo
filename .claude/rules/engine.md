@@ -150,7 +150,7 @@ leaves its frame open, and every later query then resolves outside the KB:
   doubling text (`atom_concat/3`), never raises `resource_error(memory)`: the allocator prints
   FATAL `Could not allocate memory: Out of memory` and the runtime throws
   `WebAssembly.RuntimeError` `Aborted()`. Its state is undefined afterwards — the next query died
-  in one Node run and answered 337 documents in another — so the session never calls it again
+  in one Node run and answered the whole corpus in another — so the session never calls it again
   (`.agent/contracts/chat-c2.md`): the trapping query or proof settles `limit` `'heap'` when the
   drained FATAL line names memory, else error `aborted`; every later request is refused
   `aborted`; `EngineClient` recreates the worker before that caller resumes. `pnpm exec vitest

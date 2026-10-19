@@ -40,9 +40,9 @@ describe('generated semantic graph scopes', () => {
       can: counts.get('can') ?? 0,
       must: counts.get('must') ?? 0,
     };
-    expect(partition).toEqual({ should: 857, '-': 156, may: 156, can: 85, must: 9 });
-    expect(Object.values(partition).reduce((sum, count) => sum + count, 0)).toBe(1_263);
-    expect(scopes).toHaveLength(1_263);
+    expect(partition).toEqual({ should: 961, '-': 197, may: 159, can: 181, must: 15 });
+    expect(Object.values(partition).reduce((sum, count) => sum + count, 0)).toBe(1_513);
+    expect(scopes).toHaveLength(1_513);
   });
 
   it('adds no scope-specific node kind', () => {

@@ -18,6 +18,30 @@ export const selectedDocuments = new Set(
   CLINICAL_QUESTIONS.flatMap((question) => question.sources.map(({ document }) => document)),
 );
 
+/**
+ * Every schema predicate a content clause, a premise or an erasure can touch. The image holds
+ * them static, so an overlay declares them dynamic first (`.claude/rules/kb-build.md`).
+ */
+export const CONTENT_PREDICATES = [
+  ['guideline_entity', 4],
+  ['guideline_cardinality', 5],
+  ['guideline_event', 3],
+  ['guideline_arg', 4],
+  ['guideline_operator', 3],
+  ['guideline_pp', 4],
+  ['guideline_property', 4],
+  ['guideline_interval', 6],
+  ['guideline_recurrence', 4],
+  ['guideline_frequency', 5],
+  ['guideline_order', 4],
+  ['guideline_recurrence_window', 7],
+  ['guideline_range', 3],
+  ['guideline_grade', 5],
+  ['guideline_preference', 4],
+  ['guideline_qualifier', 4],
+  ['guideline_unit', 3],
+] as const;
+
 export const sha12 = (text: string): string =>
   createHash('sha256').update(text).digest('hex').slice(0, 12);
 export const orderedHash = (values: readonly string[]): string => sha12(values.join('\0'));

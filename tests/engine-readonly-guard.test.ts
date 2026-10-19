@@ -4,9 +4,12 @@ import { describe, expect, it } from 'vitest';
 import { guardGoal, READONLY_GOAL_MAX } from '../src/engine/readonly.js';
 import type { PlTerm } from '../src/engine/terms.js';
 
-const KB = `guideline_arg/4 guideline_cardinality/5 guideline_document/3
-  guideline_entity/4 guideline_event/3 guideline_operator/3 guideline_pp/4
-  guideline_property/4 guideline_schema_version/1 clinical_advice/3 clinical_advice/4
+const KB = `guideline_arg/4 guideline_cardinality/5 guideline_document/4
+  guideline_entity/4 guideline_event/3 guideline_frequency/5 guideline_grade/5
+  guideline_interval/6 guideline_operator/3 guideline_order/4 guideline_pp/4
+  guideline_preference/4 guideline_property/4 guideline_qualifier/4 guideline_range/3
+  guideline_recurrence/4 guideline_recurrence_window/7 guideline_schema_version/1
+  guideline_unit/3 clinical_advice/3 clinical_advice/4
   clinical_rule/3 clinical_premise/4 clinical_gate/4 clinical_source/3 clinical_passage/2
   clinical_context/3 clinical_derive/4`.split(/\s+/u);
 const DATA = String.raw`=/2 \=/2 ==/2 \==/2 @</2 @>/2 @=</2 @>=/2 compare/3
@@ -16,7 +19,7 @@ const DATA = String.raw`=/2 \=/2 ==/2 \==/2 @</2 @>/2 @=</2 @>=/2 compare/3
   max_list/2 min_list/2 '$member'/2 '$append'/3 sub_string/5 string_concat/3
   split_string/4 string_lower/2 string_upper/2 string_code/3 string_codes/2
   string_length/2 sub_atom_icasechk/3 atom_length/2 text_to_string/2 copy_term/2
-  term_variables/2 arg/3 =../2`
+  term_variables/2 arg/3 =../2 guideline_satisfies/4 guideline_satisfies/6`
   .replaceAll("'", '')
   .split(/\s+/u);
 const CONTROL: ReadonlyArray<readonly [string, readonly number[]]> = [
@@ -159,7 +162,7 @@ describe('independent read-only grammar', () => {
   });
 
   it('G10 admits every declared data predicate and refuses neighboring arities', () => {
-    expect(KB).toHaveLength(18);
+    expect(KB).toHaveLength(28);
     for (const pi of [...KB, ...DATA]) {
       expect(compare(fromIndicator(pi)), pi).toBe(true);
       const term = fromIndicator(pi);
@@ -214,7 +217,7 @@ describe('independent read-only grammar', () => {
     expect(graded).toBeGreaterThan(1000);
   });
 
-  it('G10 restricts clause heads to the eighteen KB indicators and leaves bodies as data', () => {
+  it('G10 restricts clause heads to the twenty-eight KB indicators and leaves bodies as data', () => {
     for (const pi of KB)
       expect(
         compare(compound('clause', fromIndicator(pi), compound('assertz', atom('x')))),

@@ -79,8 +79,8 @@ const REQUIRED = Object.freeze([
     suite: 'tests/clinical-inference.test.ts',
     why: 'the evaluator is complete, exhaustively site-bound and side-effect free',
     cases: [
-      'clinical assumption evaluator P3 derives all 48 sentences at cap 2 and exactly 47 at cap 1',
-      'clinical assumption evaluator P4 fails the derivation for every one of the 686 cited clauses erased alone',
+      'clinical assumption evaluator P3 derives all 53 sentences at cap 2 and exactly 51 at cap 1',
+      'clinical assumption evaluator P4 fails the derivation for every one of the 723 cited clauses erased alone',
       'clinical assumption evaluator P5 yields no full document recommendation under either negative control',
       'clinical assumption evaluator P7 mutates no world state and leaves every schema predicate static',
       'clinical assumption evaluator P8 keeps every derivation inside the reviewed proof budget',
@@ -247,7 +247,7 @@ const MEANING = Object.freeze([
     suite: 'tests/graph-orphan-scopes.test.ts',
     why: 'a negation or modal context with no edge of its own still rides every relation it scopes',
     cases: [
-      'orphan operator contexts O1 records a literal set on exactly the 71 contexts no edge touches',
+      'orphan operator contexts O1 records a literal set on exactly the 83 contexts no edge touches',
       'orphan operator contexts O2 shows each orphan operator on at least one edge',
       'orphan operator contexts O3 shows no orphan literal through an edge of another world',
       'orphan operator contexts O4 matches the literal set re-derived from the bag',

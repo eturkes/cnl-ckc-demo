@@ -99,6 +99,8 @@ const aceSentences = (files, document) => {
 };
 
 const METADATA = /^A recommendation is a category-[A-Z]-recommendation and is an evidence-type-[1-4]-recommendation\.$/u;
+/** The controlled form of a recommendation to refrain: SHOULD over a negation. */
+const RECOMMENDED = 'it is recommended that ';
 const PREPOSITIONS = new Set([
   'above',
   'after',
@@ -113,24 +115,30 @@ const PREPOSITIONS = new Set([
   'on',
   'to',
   'with',
+  'within',
 ]);
 
 /** @typedef {{ preposition: string, value: string }} AdviceModifier */
 /** @typedef {{ polarity: 'positive' | 'negative', verb: string, object: string, modifiers: AdviceModifier[] }} AdviceAction */
-/** @typedef {{ sentence: number, original: string, condition?: string, subject: string, mode: 'should' | 'can' | 'fact', actions: AdviceAction[] }} AdviceClause */
+/** @typedef {{ sentence: number, original: string, condition?: string, subject: string, mode: 'should' | 'can' | 'fact', form?: 'recommended', actions: AdviceAction[] }} AdviceClause */
 /** @typedef {{ conditions: string[], subject: string, mode: AdviceClause['mode'], actions: AdviceAction[], sentences: number[] }} AdviceGroup */
+
+/** `at least` and `at most` bound a quantity; their `at` opens no modifier. @param {string[]} tokens @param {number} index */
+const opensModifier = (tokens, index) =>
+  PREPOSITIONS.has(/** @type {string} */ (tokens[index])) &&
+  !(tokens[index] === 'at' && (tokens[index + 1] === 'least' || tokens[index + 1] === 'most'));
 
 /** @param {string} text */
 const splitComplement = (text) => {
   const tokens = text === '' ? [] : text.split(' ');
-  const first = tokens.findIndex((token) => PREPOSITIONS.has(token));
+  const first = tokens.findIndex((_, index) => opensModifier(tokens, index));
   const object = (first < 0 ? tokens : tokens.slice(0, first)).join(' ');
   /** @type {AdviceModifier[]} */
   const modifiers = [];
   for (let index = first; index >= 0 && index < tokens.length; ) {
     const preposition = /** @type {string} */ (tokens[index]);
     let end = index + 1;
-    while (end < tokens.length && !PREPOSITIONS.has(/** @type {string} */ (tokens[end]))) {
+    while (end < tokens.length && !opensModifier(tokens, end)) {
       end += 1;
     }
     const value = tokens.slice(index + 1, end).join(' ');
@@ -166,7 +174,9 @@ const actionSource = (action) =>
 /** @param {AdviceClause} clause */
 const clauseSource = (clause) => {
   let main;
-  if (clause.mode === 'fact') {
+  if (clause.form === 'recommended') {
+    main = `${RECOMMENDED}${clause.subject} does ${clause.actions.map(actionSource).join(' and does ')}`;
+  } else if (clause.mode === 'fact') {
     const [first] = clause.actions;
     if (
       clause.actions.length === 1 &&
@@ -211,6 +221,8 @@ export const parseAdviceSentence = (original, sentence) => {
 
   /** @type {AdviceClause['mode']} */
   let mode;
+  /** @type {AdviceClause['form']} */
+  let form;
   /** @type {string} */
   let subject;
   /** @type {AdviceAction[]} */
@@ -219,7 +231,22 @@ export const parseAdviceSentence = (original, sentence) => {
   const can = main.indexOf(' can ');
   const isNot = main.indexOf(' is not ');
   const increases = main.indexOf(' increases ');
-  if (should >= 0) {
+  const is = main.indexOf(' is ');
+  if (main.startsWith(RECOMMENDED)) {
+    // SHOULD over a negation: the recommended conduct is refraining, which English writes
+    // `should not`. Controlled `should not` compiles to ¬SHOULD (no obligation), which is why
+    // the corpus spells refraining this way.
+    const rest = main.slice(RECOMMENDED.length);
+    const does = rest.indexOf(' does not ');
+    if (does < 0) throw new Error(`controlled sentence ${sentence} recommends no refraining`);
+    mode = 'should';
+    form = 'recommended';
+    subject = rest.slice(0, does);
+    actions = rest
+      .slice(does + 6)
+      .split(' and does ')
+      .map(parseAction);
+  } else if (should >= 0) {
     mode = 'should';
     subject = main.slice(0, should);
     actions = main
@@ -244,6 +271,10 @@ export const parseAdviceSentence = (original, sentence) => {
       .slice(increases + 11)
       .split(' and increases ')
       .map((text) => parseAction(`increases ${text}`));
+  } else if (is >= 0) {
+    mode = 'fact';
+    subject = main.slice(0, is);
+    actions = [parseAction(`is ${main.slice(is + 4)}`)];
   } else {
     throw new Error(`controlled sentence ${sentence} uses an unsupported clause form`);
   }
@@ -256,6 +287,7 @@ export const parseAdviceSentence = (original, sentence) => {
     ...(condition === undefined ? {} : { condition }),
     subject,
     mode,
+    ...(form === undefined ? {} : { form }),
     actions,
   };
   const rebuilt = clauseSource(parsed);
@@ -472,6 +504,11 @@ const premiseGoals = (body) =>
         const control = controlOperator(goal);
         if (control !== undefined) {
           throw new Error(`clinical antecedent uses unsupported control form ${control}`);
+        }
+        // A comparison is computed from the quantities it reads; assuming one would grant a
+        // threshold no premise meets.
+        if (goal.startsWith('guideline_satisfies(')) {
+          throw new Error('clinical antecedent compares a quantity, which no premise may assume');
         }
         return [goal];
       });

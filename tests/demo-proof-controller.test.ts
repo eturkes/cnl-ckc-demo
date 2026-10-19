@@ -48,7 +48,7 @@ const answer = (id: QuestionId, count = 2): AnswerResult => ({
 const step = (line: number): ProofStep => ({
   kind: 'clause',
   line,
-  head: `guideline_document(doc_${String(line)},title,unreviewed)`,
+  head: `guideline_document(doc_${String(line)},title,unreviewed,none)`,
   predicate: 'guideline_document/3',
   document: `doc-${String(line)}`,
   sentence: 1,

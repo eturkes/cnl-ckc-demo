@@ -95,10 +95,10 @@ const unjustified = (all: readonly Fold[], textOf: (line: number) => string): st
   });
 
 describe('condition-supports folds', () => {
-  it('records 25 negated folds: 18 hide a negation behind an unnegated twin, 7 fold into a negated one', () => {
+  it('records 28 negated folds: 20 hide a negation behind an unnegated twin, 8 fold into a negated one', () => {
     const negated = folds.filter((fold) => negatedWorld(fold.world));
-    expect(negated).toHaveLength(25);
-    expect(hiding(folds)).toHaveLength(18);
+    expect(negated).toHaveLength(28);
+    expect(hiding(folds)).toHaveLength(20);
   });
 
   it('every negation-hiding fold keeps a twin its own clause states unnegated', () => {

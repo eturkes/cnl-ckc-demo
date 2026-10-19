@@ -5,7 +5,7 @@ import { parseEvent } from '../src/chat/events.js';
 const events: Record<string, unknown>[] = [
   { type: 'conversation', id: 'thread-1' },
   { type: 'commentary', text: 'Reading the knowledge base.' },
-  { type: 'query', call: 'q1', goal: 'guideline_document(D,T,S).' },
+  { type: 'query', call: 'q1', goal: 'guideline_document(D,T,S,V).' },
   { type: 'answer', text: '{"segments":[]}' },
   { type: 'error', reason: 'codex', message: 'upstream-marker' },
   { type: 'done' },

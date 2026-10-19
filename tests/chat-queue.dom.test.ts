@@ -13,7 +13,7 @@ import type { AnswerResult } from '../src/questions/service.js';
 
 const CONTRACT = { schemaVersion: 1, documents: 337 };
 const ID = QUESTION_IDS[0];
-const GOAL = 'guideline_document(D,T,S).';
+const GOAL = 'guideline_document(D,T,S,V).';
 const deferred = <T>() => {
   let resolve!: (value: T) => void;
   let reject!: (reason: unknown) => void;

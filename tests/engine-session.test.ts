@@ -92,7 +92,7 @@ const roundTrips = (goal: string): boolean => {
 
 describe('P1 boot and live contract', () => {
   it('P1.3 reads schema and document count out of the engine', () => {
-    expect(manifest.contract).toEqual({ schemaVersion: 1, documents: 337 });
+    expect(manifest.contract).toEqual({ schemaVersion: 1, documents: 385 });
   });
 
   it('P1.3 agrees with the manifest the build wrote', async () => {
@@ -164,7 +164,7 @@ describe('P5 real goals through the shipped surface', () => {
   });
 
   it('P2.3 reports a failing goal as failure, not as an empty success', async () => {
-    const solved = await session.solve('guideline_document(no_such_document,_,_).', BUDGET);
+    const solved = await session.solve('guideline_document(no_such_document,_,_,_).', BUDGET);
     expect(solved.kind).toBe('failure');
   });
 
@@ -303,9 +303,11 @@ describe('Q corpus census', () => {
     const archive = readdirSync(join(ROOT, 'kb')).find((name) => name.endsWith('.tar.gz'));
     if (archive === undefined) throw new Error('vendored bag is missing');
     const { source } = payloadSource(verifyBag(readFileSync(join(ROOT, 'kb', archive))).files);
+    // A `%` comment is no term: the schema block's licence line spells `Apache-2.0`.
     const floats = (text: string): string[] =>
       text
         .replace(/'(?:[^'\\]|\\.|'')*'|"(?:[^"\\]|\\.|"")*"/gu, "''")
+        .replace(/%[^\n]*/gu, '')
         .match(/(?<![\w.])\d+\.\d+(?:[eE]|(?![\w.]))/gu) ?? [];
     expect(floats(`${source}\nguideline_probe('1.5', 2.5, 3.0e2).`), 'planted').toEqual([
       '2.5',
@@ -427,7 +429,7 @@ describe('Q corpus census', () => {
         new Uint8Array(0),
       ),
       session.handle(
-        { id: 'second', kind: 'query', goal: 'guideline_document(D,_,_).', budget: BUDGET },
+        { id: 'second', kind: 'query', goal: 'guideline_document(D,_,_,_).', budget: BUDGET },
         new Uint8Array(0),
       ),
     ]);

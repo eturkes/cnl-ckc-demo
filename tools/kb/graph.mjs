@@ -372,6 +372,25 @@ const callNode = (nodes, globalReferences, localReferences, call, document, sent
   return documentId(document);
 };
 
+/**
+ * Clause kinds the projection leaves out: the document record, and the time, strength and unit
+ * annotations, each a property of a referent the projected clauses already show.
+ */
+const UNPROJECTED = new Set([
+  'guideline_schema_version',
+  'guideline_document',
+  'guideline_interval',
+  'guideline_recurrence',
+  'guideline_frequency',
+  'guideline_order',
+  'guideline_recurrence_window',
+  'guideline_range',
+  'guideline_grade',
+  'guideline_preference',
+  'guideline_qualifier',
+  'guideline_unit',
+]);
+
 /** @param {Map<string, number>} counts @param {string} key */
 const increment = (counts, key) => counts.set(key, (counts.get(key) ?? 0) + 1);
 
@@ -471,9 +490,7 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
   };
 
   for (const clause of parsedClauses) {
-    if (clause.predicate === 'guideline_schema_version' || clause.predicate === 'guideline_document') {
-      continue;
-    }
+    if (UNPROJECTED.has(clause.predicate)) continue;
     /** @type {Map<string, string>} */
     const localReferences = new Map();
     // First pass makes variables in arg/pp conditions resolve regardless of body order.

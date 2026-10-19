@@ -136,7 +136,7 @@ describe('clinical records', () => {
     }).toEqual({
       strings: 'dacbfac1c8b4',
       order: 'ba17af72c3d2',
-      terms: '59a516ba9989',
+      terms: 'a32c00ce2572',
     });
     expect(order).toEqual([
       'cdc2022-opioid-rec01',
@@ -176,12 +176,12 @@ describe('clinical records', () => {
       advice: 2,
       selections: 12,
       passages: 12,
-      rules: 48,
-      premises: 346,
-      gates: 48,
+      rules: 53,
+      premises: 451,
+      gates: 53,
     });
   });
-  it('T3 total site coverage: 686 lines, equality both ways, ACE↔PL bijection', () => {
+  it('T3 total site coverage: 723 lines, equality both ways, ACE↔PL bijection', () => {
     const expectedCases = scanContentSites();
     const expected = new Map(
       expectedCases.map(({ document, sentence, sites }) => [
@@ -195,11 +195,11 @@ describe('clinical records', () => {
     const expectedLines = [...expected.values()].flat();
     const actualLines = gateRecords.flatMap(({ lines }) => lines);
 
-    expect(expectedCases).toHaveLength(48);
+    expect(expectedCases).toHaveLength(53);
     expect(expectedCases.every(({ sites }) => sites.length > 0)).toBe(true);
     expect(aceSentenceKeys().sort()).toEqual([...expected.keys()].sort());
-    expect(gateRecords).toHaveLength(48);
-    expect(actual.size).toBe(48);
+    expect(gateRecords).toHaveLength(53);
+    expect(actual.size).toBe(53);
     expect([...actual.keys()].sort()).toEqual([...expected.keys()].sort());
     for (const [key, lines] of expected) {
       expect(actual.get(key), key).toEqual(lines);
@@ -207,8 +207,8 @@ describe('clinical records', () => {
         [...lines].sort((left, right) => left - right),
       );
     }
-    expect(actualLines).toHaveLength(686);
-    expect(new Set(actualLines).size).toBe(686);
+    expect(actualLines).toHaveLength(723);
+    expect(new Set(actualLines).size).toBe(723);
     expect(actualLines.sort((left, right) => left - right)).toEqual(
       expectedLines.sort((left, right) => left - right),
     );
@@ -221,10 +221,10 @@ describe('clinical records', () => {
     );
 
     expect(raw).toEqual(reference);
-    expect(raw).toHaveLength(48);
+    expect(raw).toHaveLength(53);
     expect(raw.every(({ marker }) => /^% S[1-9][0-9]*: \S/u.test(marker))).toBe(true);
-    expect(vector).toHaveLength(686);
-    expect(sha12(JSON.stringify(vector))).toBe('5eb476c05d18');
+    expect(vector).toHaveLength(723);
+    expect(sha12(JSON.stringify(vector))).toBe('4430307a6b09');
 
     for (const expected of raw) {
       const key = keyOf(expected.document, expected.sentence);
@@ -432,10 +432,10 @@ describe('clinical records', () => {
         expect([...(ids[left] ?? new Set())].some((id) => ids[right]?.has(id))).toBe(false);
       }
     }
-    const rec01s2 = gates.find(
-      ({ document, sentence }) => document === 'cdc2022-opioid-rec01' && sentence === 2,
+    const rec01s3 = gates.find(
+      ({ document, sentence }) => document === 'cdc2022-opioid-rec01' && sentence === 3,
     );
-    expect(rec01s2?.heads.some((head) => head.includes("'acute-pain'"))).toBe(true);
+    expect(rec01s3?.heads.some((head) => head.includes("'acute-pain'"))).toBe(true);
   });
   it('T9 frozen surfaces: parsed clauses, canonical presentation, passage bytes', () => {
     const baseClinical = execFileSync('git', ['show', '22053ef:tools/kb/clinical.mjs'], {
@@ -462,12 +462,64 @@ describe('clinical records', () => {
       Object.fromEntries(
         boundaries.map(([name, start, end]) => [name, sha12(span(source, start, end))]),
       );
-    expect(hashes(currentClinical)).toEqual(hashes(baseClinical));
+    // Declared edits of the 22053ef parser, by user ruling (upstream sync to `83569b1d`): the
+    // recommended-refraining form, the positive copula, quantity bounds that open no modifier,
+    // and `within`. Every other byte of these spans holds.
+    const clinicalEdits: readonly (readonly [string, string])[] = [
+      ["  'with',\n]);", "  'with',\n  'within',\n]);"],
+      [
+        "mode: 'should' | 'can' | 'fact', actions: AdviceAction[] }} AdviceClause */",
+        "mode: 'should' | 'can' | 'fact', form?: 'recommended', actions: AdviceAction[] }} AdviceClause */",
+      ],
+      [
+        '/** @param {string} text */\nconst splitComplement',
+        "/** `at least` and `at most` bound a quantity; their `at` opens no modifier. @param {string[]} tokens @param {number} index */\nconst opensModifier = (tokens, index) =>\n  PREPOSITIONS.has(/** @type {string} */ (tokens[index])) &&\n  !(tokens[index] === 'at' && (tokens[index + 1] === 'least' || tokens[index + 1] === 'most'));\n\n/** @param {string} text */\nconst splitComplement",
+      ],
+      [
+        '  const first = tokens.findIndex((token) => PREPOSITIONS.has(token));',
+        '  const first = tokens.findIndex((_, index) => opensModifier(tokens, index));',
+      ],
+      [
+        '    while (end < tokens.length && !PREPOSITIONS.has(/** @type {string} */ (tokens[end]))) {',
+        '    while (end < tokens.length && !opensModifier(tokens, end)) {',
+      ],
+      [
+        "  let main;\n  if (clause.mode === 'fact') {",
+        "  let main;\n  if (clause.form === 'recommended') {\n    main = `${RECOMMENDED}${clause.subject} does ${clause.actions.map(actionSource).join(' and does ')}`;\n  } else if (clause.mode === 'fact') {",
+      ],
+      [
+        '  let mode;\n  /** @type {string} */\n  let subject;',
+        "  let mode;\n  /** @type {AdviceClause['form']} */\n  let form;\n  /** @type {string} */\n  let subject;",
+      ],
+      [
+        "  const increases = main.indexOf(' increases ');\n  if (should >= 0) {",
+        "  const increases = main.indexOf(' increases ');\n  const is = main.indexOf(' is ');\n  if (main.startsWith(RECOMMENDED)) {\n    // SHOULD over a negation: the recommended conduct is refraining, which English writes\n    // `should not`. Controlled `should not` compiles to ¬SHOULD (no obligation), which is why\n    // the corpus spells refraining this way.\n    const rest = main.slice(RECOMMENDED.length);\n    const does = rest.indexOf(' does not ');\n    if (does < 0) throw new Error(`controlled sentence ${sentence} recommends no refraining`);\n    mode = 'should';\n    form = 'recommended';\n    subject = rest.slice(0, does);\n    actions = rest\n      .slice(does + 6)\n      .split(' and does ')\n      .map(parseAction);\n  } else if (should >= 0) {",
+      ],
+      [
+        '      .map((text) => parseAction(`increases ${text}`));\n  } else {',
+        "      .map((text) => parseAction(`increases ${text}`));\n  } else if (is >= 0) {\n    mode = 'fact';\n    subject = main.slice(0, is);\n    actions = [parseAction(`is ${main.slice(is + 4)}`)];\n  } else {",
+      ],
+      [
+        '    mode,\n    actions,\n  };',
+        '    mode,\n    ...(form === undefined ? {} : { form }),\n    actions,\n  };',
+      ],
+    ];
+    let expectedClinical = baseClinical;
+    for (const [from, to] of clinicalEdits) {
+      expect(
+        expectedClinical.split(from),
+        `tools/kb/clinical.mjs declares one edit of ${from}`,
+      ).toHaveLength(2);
+      expectedClinical = expectedClinical.replace(from, () => to);
+    }
+    expect(hashes(currentClinical)).toEqual(hashes(expectedClinical));
 
     // Unfrozen by user ruling, each a declared edit of the 22053ef bytes; every other byte of
     // these surfaces holds. Queue row d39: two what-only headers deleted. Inline-disable row:
     // the one frozen lint directive states its reason. Upstream coverage grammar: the
-    // `inexpressible` uncovered class (`ckc-spec` `uncovered_class_ok`).
+    // `inexpressible` uncovered class (`ckc-spec` `uncovered_class_ok`). Upstream sync to
+    // `83569b1d`: the 19-indicator schema (`guideline_document/4`) and the comparison built-ins
+    // that rule bodies call.
     const unfrozen: Readonly<Record<string, readonly (readonly [string, string])[]>> = {
       'src/questions/serialize.ts': [
         ["// Canonical answer serialization, in the bag's own result grammar.\n//\n", ''],
@@ -483,6 +535,15 @@ describe('clinical records', () => {
         [
           '      !/^uncovered\\((?:heading|process|external|aim|descriptive|notice): [^\\r\\n]+\\)$/u.test(status)\n',
           '      !/^uncovered\\((?:heading|process|external|aim|descriptive|notice|inexpressible): [^\\r\\n]+\\)$/u.test(\n        status,\n      )\n',
+        ],
+        ["  ['guideline_document', 3],\n", "  ['guideline_document', 4],\n"],
+        [
+          "  ['guideline_operator', 3],\n]);\n",
+          "  ['guideline_operator', 3],\n  ['guideline_interval', 6],\n  ['guideline_recurrence', 4],\n  ['guideline_frequency', 5],\n  ['guideline_order', 4],\n  ['guideline_recurrence_window', 7],\n  ['guideline_range', 3],\n  ['guideline_grade', 5],\n  ['guideline_preference', 4],\n  ['guideline_qualifier', 4],\n  ['guideline_unit', 3],\n]);\n\n/** The schema's comparison built-ins: a rule body may call one, and no document defines one. */\nconst BODY_BUILTINS = new Set(['guideline_satisfies/4', 'guideline_satisfies/6']);\n",
+        ],
+        [
+          '      if (expected === undefined || call.args.length !== expected) {\n',
+          '      if (\n        (expected === undefined || call.args.length !== expected) &&\n        !BODY_BUILTINS.has(`${call.name}/${call.args.length}`)\n      ) {\n',
         ],
       ],
     };
@@ -532,14 +593,14 @@ describe('clinical records', () => {
       presentations: [presentations.length, orderedHash(presentations)],
       passages: [orderedPassages.length, sha12(JSON.stringify(orderedPassages))],
     }).toEqual({
-      parsed: [48, 'a445b21c3d93'],
-      presentations: [12, '59a516ba9989'],
+      parsed: [53, '7f794627e0d7'],
+      presentations: [12, 'a32c00ce2572'],
       passages: [12, '1e11a0c96231'],
     });
     expect({
       rules: helperLines.filter((line) => line.startsWith('clinical_rule(')).length,
       gates: gateRecords.length,
-    }).toEqual({ rules: 48, gates: 48 });
+    }).toEqual({ rules: 53, gates: 53 });
   });
   it('T10 lossless guard fails closed on a non-rebuildable sentence', () => {
     const valid = CLINICAL_QUESTIONS.flatMap(({ sources }) =>
@@ -553,11 +614,11 @@ describe('clinical records', () => {
           .map((sentence, index) => parseAdviceSentence(sentence, index + 2));
       }),
     );
-    expect(valid).toHaveLength(48);
+    expect(valid).toHaveLength(53);
     expect(() =>
       parseAdviceSentence('If then every clinician should consider opioid-therapy.', 99),
     ).toThrowError(/^controlled sentence 99 is not lossless\n {2}source: /u);
-    expect(gateRecords).toHaveLength(48);
+    expect(gateRecords).toHaveLength(53);
   });
   it('T11 determinism: two derivations and a reversed file map agree byte for byte', async () => {
     const first = clinicalArtifacts(bagFiles);
@@ -613,9 +674,9 @@ describe('clinical records', () => {
   }, 300_000);
   it('T12 budget delta measured and reproducible, no ceiling', async () => {
     const frozen = baselineHelper();
-    expect(Buffer.byteLength(frozen)).toBe(15_480);
-    expect(sha12(frozen)).toBe('7a8bb9e7cc6d');
-    expect(gateRecords).toHaveLength(48);
+    expect(Buffer.byteLength(frozen)).toBe(17_188);
+    expect(sha12(frozen)).toBe('e9f3efdde6cb');
+    expect(gateRecords).toHaveLength(53);
 
     const [first, second] = await repeatedDerivations();
     const delta = (derivation: Derivation) => ({
@@ -679,7 +740,7 @@ describe('clinical records', () => {
         name,
       ).toMatch(expected);
     }
-    expect(gateRecords).toHaveLength(48);
+    expect(gateRecords).toHaveLength(53);
   });
   it('T14 ruled readings: record order, traversal order, ordinals, fresh anonymous', async () => {
     const errorMessage = (run: () => unknown): string => {
@@ -714,8 +775,8 @@ describe('clinical records', () => {
       sites: lines.length,
       uniqueSites: new Set(lines).size,
       clinicalSiteFacts: helperLines.filter((line) => line.startsWith('clinical_site(')).length,
-    }).toEqual({ rules: 48, gates: 48, sites: 686, uniqueSites: 686, clinicalSiteFacts: 0 });
-    expect(new Set(gates.map(({ document, sentence }) => keyOf(document, sentence))).size).toBe(48);
+    }).toEqual({ rules: 53, gates: 53, sites: 723, uniqueSites: 723, clinicalSiteFacts: 0 });
+    expect(new Set(gates.map(({ document, sentence }) => keyOf(document, sentence))).size).toBe(53);
     expect(
       sha12(
         JSON.stringify(
@@ -724,7 +785,7 @@ describe('clinical records', () => {
           ),
         ),
       ),
-    ).toBe('5eb476c05d18');
+    ).toBe('4430307a6b09');
 
     for (const prefix of ['clinical_rule(', 'clinical_premise(', 'clinical_gate(']) {
       const order = [
@@ -749,7 +810,7 @@ describe('clinical records', () => {
         markers.push(line);
       }
     }
-    expect(markers).toHaveLength(60);
+    expect(markers).toHaveLength(65);
     expect(markers.every((marker) => /^% S[1-9][0-9]*: \S/u.test(marker))).toBe(true);
     expect(aceSentenceKeys().sort()).toEqual(
       cases.map(({ document, sentence }) => keyOf(document, sentence)).sort(),
@@ -842,8 +903,8 @@ describe('clinical records', () => {
       index === 0 ? `${line.split(' :- ')[0]}.` : line,
     );
 
-    expect(Buffer.byteLength(baselineHelper())).toBe(15_480);
-    expect(sha12(baselineHelper())).toBe('7a8bb9e7cc6d');
+    expect(Buffer.byteLength(baselineHelper())).toBe(17_188);
+    expect(sha12(baselineHelper())).toBe('e9f3efdde6cb');
     const [first, second] = await repeatedDerivations();
     const deltas = (derivation: Derivation) => [
       Buffer.byteLength(derivation.headSource) - Buffer.byteLength(derivation.baseSource),

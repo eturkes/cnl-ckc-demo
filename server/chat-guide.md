@@ -42,7 +42,7 @@ only these predicates exist and anything else is refused.
   `sub_string/5` `string_concat/3` `split_string/4` `string_lower/2` `string_upper/2`
   `string_code/3` `string_codes/2` `string_length/2` `sub_atom_icasechk/3` `atom_length/2`
   `text_to_string/2`, `copy_term/2` `term_variables/2` `arg/3` `=../2`,
-  `clause/2` over a KB predicate.
+  `guideline_satisfies/4,6`, `clause/2` over a KB predicate.
 - Absent: `member/2` (use `'$member'/2`), `append/3` (use `'$append'/3`), `nth0`, `nth1`,
   `last`, `sum_list`, `aggregate_all`, `maplist`, `functor/3` (use `=..`), `string_chars/2` (use `string_codes/2`), every atom builder (`atom_concat`,
   `atom_string`, `sub_atom`, `term_to_atom`, …), `assert`, `retract`, `call/N`, `M:Goal`.
@@ -52,12 +52,13 @@ only these predicates exist and anything else is refused.
 Twelve recommendation documents, `cdc2022-opioid-rec01` … `cdc2022-opioid-rec12`, carry the
 clinical records:
 
-- `clinical_rule(Doc, Sentence, rule(Conditions, Agent, Modality, Actions))` — 48 rules.
+- `clinical_rule(Doc, Sentence, rule(Conditions, Agent, Modality, Actions))` — 53 rules.
   `Conditions` = list of strings (empty = unconditional); `Modality` = `should`, `can` or `fact`;
   `Actions` = list of `action(Polarity, Verb, Object, Modifiers)`, `Polarity` = `positive` or
-  `negative`, `Modifiers` = list of `modifier(Preposition, String)`. Example: `rule([],"Every
-clinician",should,[action(positive,maximize,"a nonopioid-therapy",[modifier(for,"an
-acute-pain")])])`.
+  `negative`, `Modifiers` = list of `modifier(Preposition, String)`. A recommendation to refrain
+  is `should` with a `negative` action. `Verb` is the action's first word, so an adverb such as
+  `carefully` can stand there with the verb opening `Object`. Example:
+  `rule([],"Every clinician",should,[action(positive,establish,"a pain-goal",[modifier(with,"a patient")])])`.
 - `clinical_passage(Doc, Text)` — the guideline's own prose for each recommendation (12).
 - `clinical_advice(QuestionId, Source, clinical_answer(Doc, Rules, Passage))` — the demo's
   built-in questions answered per document, derived live; `QuestionId` is one of
@@ -67,15 +68,36 @@ acute-pain")])])`.
 - `clinical_source(QuestionId, Doc, Sentence)` — which document and sentence answer each
   built-in question (12).
 - `clinical_derive(Doc, Sentence, Rule, Proof)` — derives one rule through the compiled
-  guideline clauses; slower (all 48 take under a second), use it to show a rule is derived.
+  guideline clauses; slower (all 53 take under a second), use it to show a rule is derived.
 
-All 337 documents (`recNN`, `recNN-impNN`, `sNN-NN`) are compiled to `guideline_*` clauses —
-`guideline_entity/4`, `guideline_event/3`, `guideline_arg/4`, `guideline_operator/3`,
-`guideline_cardinality/5`, `guideline_pp/4`, `guideline_property/4`, `guideline_document/3`.
-They are universal statements over clinicians: calling `guideline_operator(actual,C,should)`
-directly FAILS, correctly, because the KB holds no clinician instance. Search their structure
-with `clause/2` instead, for example
-`clause(guideline_entity(_,'$guideline_id'(_,Doc,S,_,_),Noun,_),_)`.
+All 385 documents (`recNN`, `recNN-impNN`, `sNN-NN`) are compiled to `guideline_*` clauses:
+
+- Relations: `guideline_entity/4`, `guideline_event/3`, `guideline_arg/4`,
+  `guideline_operator/3`, `guideline_cardinality/5`, `guideline_pp/4`, `guideline_property/4`,
+  and `guideline_document(Doc, Ace, Ulex, Vocabulary)`.
+- Strength: `guideline_grade(actual, Rec, Dimension, Value, Label)` — each recommendation
+  document's grade, `Dimension` = `strength` (`strong`, `conditional`) or `evidence` (`high`,
+  `moderate`, `low`, `very_low`);
+  `guideline_preference(Context, Event, Preferred, Alternative)`, `Alternative` = `none` when no
+  other option is named;
+  `guideline_qualifier(Context, Event, Class, Word)`, `Class` = `usuality`, `ideality`, `focus`,
+  `manner`, `force`, `possibility` or `applicability`.
+- Time: `guideline_interval(Context, Event, Role, Quantity, Unit, Anchor)`,
+  `guideline_order(Context, Event, Relation, Anchor)`,
+  `guideline_recurrence(Context, Event, Quantity, Unit)`, `guideline_frequency/5`,
+  `guideline_recurrence_window/7`, `guideline_range/3`, and
+  `guideline_unit(Context, Quantity, Unit)`.
+- Comparison built-ins: `guideline_satisfies(Comparison, Count, Bound, Limit)` and
+  `guideline_satisfies(Comparison, Count, Unit, Bound, Limit, LimitUnit)` test whether a stated
+  quantity meets a bound, for example `guideline_satisfies(exactly,60,geq,50)`. They read no KB
+  clause, so a goal still needs a KB predicate beside them.
+
+Most clauses are universal statements over clinicians: calling
+`guideline_operator(actual,C,should)` directly FAILS, correctly, because the KB holds no
+clinician instance. Search their structure with `clause/2` instead, for example
+`clause(guideline_entity(_,'$guideline_id'(_,Doc,S,_,_),Noun,_),_)` or
+`clause(guideline_qualifier(_,_,Class,Word),_)`. Grades are plain facts, so
+`guideline_grade(actual,'$guideline_id'(product,Doc,_,_,_),strength,Value,_)` answers directly.
 
 Good first goals: `clinical_rule(D,S,R)` for an overview (one solution per rule — a single
 `findall` list would arrive as one oversized solution);

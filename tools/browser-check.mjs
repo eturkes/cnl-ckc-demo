@@ -444,7 +444,7 @@ const CANCEL_PROBE = `(async () => {
     const outcome = await client.query('between(1,100000000,X).', budget, controller.signal);
     const elapsed = performance.now() - started;
     // Same engine, straight after: a cooperative cancel must not cost the session.
-    const after = await client.query('guideline_document(D,_,_).', { ...budget, answerCap: 1 });
+    const after = await client.query('guideline_document(D,_,_,_).', { ...budget, answerCap: 1 });
     return {
       documents: booted.contract.documents,
       kind: outcome.kind,
@@ -581,7 +581,7 @@ const KILL_PROBE = `(async () => {
     // Joins the recreation the deadline already started; single-flight keeps it at one.
     const recreated = await client.reset();
     const cycle = performance.now() - started;
-    const after = await client.query('findall(D,guideline_document(D,_,_),Ds),length(Ds,N).', {
+    const after = await client.query('findall(D,guideline_document(D,_,_,_),Ds),length(Ds,N).', {
       ...BUDGET_MAX,
       answerCap: 1,
     });

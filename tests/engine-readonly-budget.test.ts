@@ -22,7 +22,7 @@ const DEMO_BUDGET: BudgetSpec = {
   wallClockMs: 5000,
   answerCap: 32,
 };
-const DOCUMENTS = 'findall(D,guideline_document(D,_,_),Ds),length(Ds,N)';
+const DOCUMENTS = 'findall(D,guideline_document(D,_,_,_),Ds),length(Ds,N)';
 // The control's untouched reservation shrinks the time to its real abort. The shared battery
 // engine boots WITHOUT it: under a ~100 MB heap the battery's own retained stacks exhausted malloc,
 // `split_string/4` aborted the runtime mid-battery and the next case hung in it — a harness

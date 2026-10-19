@@ -113,7 +113,7 @@ const READONLY_PARSE =
   `${countTerms('1', '_S1')},_L=_L1;_L=_L0),(_L==bad->N=bad;length(_L,N)).`;
 
 const SCHEMA_GOAL = 'findall(V,guideline_schema_version(V),Vs),sort(Vs,Us),length(Us,N),Us=[S].';
-const DOCUMENTS_GOAL = 'findall(D,guideline_document(D,_,_),Ds),length(Ds,N).';
+const DOCUMENTS_GOAL = 'findall(D,guideline_document(D,_,_,_),Ds),length(Ds,N).';
 const STACK_FLAG_GOAL = 'current_prolog_flag(stack_limit,V).';
 
 const PROOF_TREE = 'ProofTree_';
@@ -279,7 +279,7 @@ export class EngineSession {
   #poisoned: string | undefined;
   /**
    * Set once a WASM trap aborted the runtime, by its cause. The runtime's state is undefined
-   * after a trap — one trapped runtime died, another answered 337 documents — so nothing calls
+   * after a trap — one trapped runtime died, another answered the whole corpus — so nothing calls
    * into it again: every later request is refused `aborted` and the client recreates the worker.
    */
   #aborted: 'heap' | 'aborted' | undefined;

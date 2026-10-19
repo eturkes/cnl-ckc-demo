@@ -15,6 +15,7 @@ import type { Engine } from '../src/engine/session.js';
 import { QUESTION_CATALOG, QUESTION_IDS } from '../src/questions/catalog.js';
 import { PROOF_SOURCE } from '../tools/kb/proof.mjs';
 import {
+  CONTENT_PREDICATES,
   gateRecords,
   orderedHash,
   ROOT,
@@ -34,14 +35,12 @@ let engine: Engine;
 let mutableEngine: Engine;
 let initialSchema: string[];
 
-const SCHEMA_PREDICATES = [
-  ['guideline_entity', 4],
-  ['guideline_cardinality', 5],
-  ['guideline_event', 3],
-  ['guideline_arg', 4],
-  ['guideline_operator', 3],
-  ['guideline_pp', 4],
-  ['guideline_property', 4],
+const SCHEMA_PREDICATES = CONTENT_PREDICATES;
+/** Every schema indicator, the record pair included, for the static-state reading. */
+const STATIC_PREDICATES = [
+  ['guideline_schema_version', 1],
+  ['guideline_document', 4],
+  ...CONTENT_PREDICATES,
 ] as const;
 
 /**
@@ -98,7 +97,7 @@ export const bounded = (
   );
 
 const schemaState = (target: Engine): string[] =>
-  SCHEMA_PREDICATES.map(([name, arity]) => {
+  STATIC_PREDICATES.map(([name, arity]) => {
     const call = `${name}(${Array.from({ length: arity }, () => '_').join(',')})`;
     const result = row(
       `predicate_property(${call},number_of_clauses(N)),` +
@@ -131,9 +130,20 @@ describe('clinical assumption evaluator', () => {
       `(current_predicate(mi/3)->Mi=yes;Mi=no),` +
         `(current_predicate(mi_limited/2)->Limited=yes;Limited=no),` +
         `(mi_limited(guideline_schema_version(1),0)->AtZero=yes;AtZero=no),` +
-        `(mi_limited(guideline_schema_version(1),1)->AtOne=yes;AtOne=no).`,
+        `(mi_limited(guideline_schema_version(1),1)->AtOne=yes;AtOne=no),` +
+        // Declared limit: no arm for a comparison built-in, so a derivation through one fails
+        // closed (queue row `The meta-interpreter fails closed on a comparison built-in`).
+        `(guideline_satisfies(exactly,60,geq,50)->Plain=yes;Plain=no),` +
+        `(mi(guideline_satisfies(exactly,60,geq,50),5,_)->Derived=yes;Derived=no).`,
     );
-    expect(shape).toMatchObject({ Mi: 'yes', Limited: 'yes', AtZero: 'yes', AtOne: 'no' });
+    expect(shape).toMatchObject({
+      Mi: 'yes',
+      Limited: 'yes',
+      AtZero: 'yes',
+      AtOne: 'no',
+      Plain: 'yes',
+      Derived: 'no',
+    });
 
     const hashes = Object.fromEntries(
       QUESTION_IDS.map((id) => {
@@ -150,30 +160,30 @@ describe('clinical assumption evaluator', () => {
     // with empty child lists read off a precomputed site list — with the live derivation.
     // The hashes are what catch any later drift in the rendered proof.
     expect(hashes).toEqual({
-      'when-to-use-opioids': 'e712cd499669',
-      'starting-opioid-therapy': 'f124bb2959f5',
-      'acute-pain-prescription-duration': '841dd969f62a',
-      'opioid-follow-up': '47a79b4437c5',
-      'opioid-safety': '8fcd62be1144',
-      'continuing-or-tapering-opioids': '922e572b52ac',
-      'opioid-use-disorder-treatment': '29a98e558e16',
+      'when-to-use-opioids': 'dc94706c2fe6',
+      'starting-opioid-therapy': 'b339fd5e2e48',
+      'acute-pain-prescription-duration': '03b8378ba157',
+      'opioid-follow-up': '7d59a8f29093',
+      'opioid-safety': '5b76f4feb6fc',
+      'continuing-or-tapering-opioids': 'b97489b1029f',
+      'opioid-use-disorder-treatment': '38790df34383',
     });
   });
 
   it('P2 moves no content-site line and no gate line list', () => {
     const siteLines = scanContentSites().flatMap(({ sites }) => sites.map(({ line }) => line));
-    expect(siteLines).toHaveLength(686);
-    expect(orderedHash(siteLines.map(String))).toBe('211e14164a47');
+    expect(siteLines).toHaveLength(723);
+    expect(orderedHash(siteLines.map(String))).toBe('07838d25d90c');
 
     const gateLines = gateRecords.flatMap(({ lines }) => lines);
-    expect(gateRecords).toHaveLength(48);
+    expect(gateRecords).toHaveLength(53);
     expect(
       orderedHash(
         gateRecords.map(
           ({ document, sentence, lines }) => `${document}:${String(sentence)}:${lines.join(',')}`,
         ),
       ),
-    ).toBe('4a9aa7427273');
+    ).toBe('8bc6b9625034');
     expect([...gateLines].sort((left, right) => left - right)).toEqual(
       [...siteLines].sort((left, right) => left - right),
     );
@@ -190,7 +200,7 @@ describe('clinical assumption evaluator', () => {
     }
   });
 
-  it('P3 derives all 48 sentences at cap 2 and exactly 47 at cap 1', () => {
+  it('P3 derives all 53 sentences at cap 2 and exactly 51 at cap 1', () => {
     expect(String(row('clinical_depth(D).').D)).toBe('2');
 
     const states = new Map<number, Map<string, string>>();
@@ -211,7 +221,8 @@ describe('clinical assumption evaluator', () => {
     }
 
     expect([...states.get(1)!.entries()].filter(([, state]) => state !== 'proved')).toEqual([
-      ['cdc2022-opioid-rec05:5', 'failed'],
+      ['cdc2022-opioid-rec05:7', 'failed'],
+      ['cdc2022-opioid-rec05:8', 'failed'],
     ]);
     expect([...states.get(2)!.values()].filter((state) => state !== 'proved')).toEqual([]);
     expect([...states.get(3)!.values()].filter((state) => state !== 'proved')).toEqual([]);
@@ -237,7 +248,7 @@ describe('clinical assumption evaluator', () => {
     expect(defaultFailures).toEqual([]);
   });
 
-  it('P4 fails the derivation for every one of the 686 cited clauses erased alone', () => {
+  it('P4 fails the derivation for every one of the 723 cited clauses erased alone', () => {
     let erased = 0;
     for (const gate of gateRecords) {
       const document = atom(gate.document);
@@ -264,7 +275,7 @@ describe('clinical assumption evaluator', () => {
         erased += 1;
       }
     }
-    expect(erased).toBe(686);
+    expect(erased).toBe(723);
 
     for (const gate of gateRecords) {
       expect(
@@ -376,7 +387,7 @@ describe('clinical assumption evaluator', () => {
     expect(PROOF_SOURCE).not.toMatch(
       /\b(?:assertz|asserta|retract|retractall|erase|dynamic)\s*(?:\(|\/)\s*/u,
     );
-    expect(initialSchema).toHaveLength(SCHEMA_PREDICATES.length);
+    expect(initialSchema).toHaveLength(19);
     expect(initialSchema.every((state) => state.includes(':static:'))).toBe(true);
     expect(schemaState(engine)).toEqual(initialSchema);
 
@@ -416,18 +427,9 @@ describe('clinical assumption evaluator', () => {
     }
 
     expect(worst.milliseconds, worst.key).toBeLessThan(PROOF_BUDGET_MAX.wallClockMs);
-    expect(
-      [
-        'cdc2022-opioid-rec01:3',
-        'cdc2022-opioid-rec02:3',
-        'cdc2022-opioid-rec02:8',
-        'cdc2022-opioid-rec05:4',
-      ].map((key) => [key, capTwo.get(key)]),
-    ).toEqual([
-      ['cdc2022-opioid-rec01:3', 'proved'],
-      ['cdc2022-opioid-rec02:3', 'proved'],
-      ['cdc2022-opioid-rec02:8', 'proved'],
-      ['cdc2022-opioid-rec05:4', 'proved'],
+    // The gate native resolution exhausts (`clinical-gate-live` T2) still proves here.
+    expect(['cdc2022-opioid-rec05:6'].map((key) => [key, capTwo.get(key)])).toEqual([
+      ['cdc2022-opioid-rec05:6', 'proved'],
     ]);
   }, 60_000);
 

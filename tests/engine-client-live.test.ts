@@ -42,9 +42,9 @@ const CATEGORY_A_GOAL =
 /** Declares the static schema predicate dynamic first; a bare `assertz` is refused. */
 const OVERLAY = [
   ':- dynamic guideline_document/3.',
-  "guideline_document('zz-overlay-doc','zz-overlay',unreviewed).",
+  "guideline_document('zz-overlay-doc','zz-overlay',unreviewed,none).",
 ].join('\n');
-const OVERLAY_GOAL = "guideline_document('zz-overlay-doc',T,_),T='zz-overlay'.";
+const OVERLAY_GOAL = "guideline_document('zz-overlay-doc',T,_,_),T='zz-overlay'.";
 
 const budget: BudgetSpec = { ...BUDGET_MAX, wallClockMs: 30_000 };
 
@@ -158,7 +158,7 @@ describe('shipped client over the real image', () => {
 
     const replacement = await engine.reset('R34 hard cancel');
     expect(replacement).toEqual({ kind: 'booted', contract: manifest.contract });
-    expect(manifest.contract.documents).toBe(337);
+    expect(manifest.contract.documents).toBe(385);
     expect(spawned).toHaveLength(2);
     expect(spawned[0]?.terminated).toBe(true);
 

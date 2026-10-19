@@ -28,16 +28,17 @@ applied. This is the whole basis of the clinical inference path; do not re-deriv
 defect.
 
 Real inference over the compiled clauses is measured feasible: asserting one hypothetical
-clinician entity + cardinality makes `should` operators, `maximize` events (7),
-`nonopioid-therapy` entities (3) and the full operator→event→arg→entity join all derive. The
-blocker was ever a missing clinical context premise, never a missing KB.
+clinician entity + cardinality makes `should` operator contexts derive, and a sentence whose
+antecedent names more — a patient with a pain, as the `maximize` recommendations do — derives
+once its own premises apply. The blocker was ever a missing clinical context premise, never a
+missing KB.
 
 ## Premises are scaffolding, not patient facts
 
-A clinical premise is universal-instantiation scaffolding, not a patient fact: 346 raw
-`clinical_premise` facts normalize to 42 shapes once the per-sentence skolem is removed, and
+A clinical premise is universal-instantiation scaffolding, not a patient fact: 451 raw
+`clinical_premise` facts normalize to 51 shapes once the per-sentence skolem is removed, and
 the two commonest (`guideline_cardinality(actual,_H,na,eq,1)`,
-`guideline_entity(actual,_H,clinician,countable)`) sit in 46 and 45 of the 46 sentences.
+`guideline_entity(actual,_H,clinician,countable)`) sit in 51 and 48 of the 51 sentences.
 Matching a patient description to premises therefore cannot pick a recommendation; the
 discriminator is the rule's own condition in `clinical_rule/3`.
 
@@ -58,11 +59,13 @@ The loaded `swipl-bundle-no-data` image is CLOSED: `autoload=false`, `unknown=er
 its own helpers over the shipped `app/3`, and must spell `forall(C,A)` as `\+ (C, \+ A)`.
 
 `clause/2` and `clause/3` reach every static schema predicate (`dynamic=no` throughout).
-Rules dominate: arg 2351/2513, cardinality 1693/1834, entity 1693/1834, event 1170/1254,
-operator 1158/1193, pp 981/1003, property 7/16; `document` and `schema_version` are all facts.
+Rules dominate: arg 2777/2949, cardinality 1897/2052, entity 1897/2052, event 1399/1492,
+operator 1388/1431, pp 1160/1190, property 36/45, interval 32/33, recurrence 10/11,
+frequency 1/1, order 83/87, recurrence_window 4/4, range 8/8, preference 26/26, qualifier
+269/273, unit 57/59; `document`, `schema_version` and `grade` are all facts.
 
-The interpreter compiles INTO the image (+964 B, boot 116.977 ms vs 123.216 ms for
-boot+consult). Runtime `consult` buys nothing and is fail-open — it is rejected.
+The interpreter compiles INTO the image. Runtime `consult` buys nothing and is fail-open — it
+is rejected.
 
 ## Meta-interpreter design
 
@@ -79,12 +82,13 @@ boot+consult). Runtime `consult` buys nothing and is fail-open — it is rejecte
   1; deterministic maxima 6403 inferences and outer depth ≥20. Worst synchronous proof step
   291.419 ms, so a cooperative cancel cannot interrupt mid-proof and the main-thread watchdog
   is mandatory. Node figures only.
-- `resolve/3` whitelists the nine `guideline_*` predicates alone.
+- `resolve/3` whitelists the 19 schema indicators alone; a comparison built-in
+  (`guideline_satisfies/4,6`) has no arm, so a derivation through one fails closed.
 
 ## Clause identity
 
-Identity = `clause/3` reference → `clause_property(Ref, file(…) + line_count(L))`. All 10321
-`L` values are unique, and the provenance chunks' exact clause text recovers 10321/10321 of them
+Identity = `clause/3` reference → `clause_property(Ref, file(…) + line_count(L))`. All 12507
+`L` values are unique, and the provenance chunks' exact clause text recovers 12507/12507 of them
 (`tests/proof-identity.test.ts`; the census pins both counts).
 
 **Rendering `clause/2` output reproduces the committed `clause_sha256` 0/10321 times**:
@@ -96,8 +100,8 @@ Proofs come from the live meta-interpreter, never from committed trace artifacts
 ## Source-fragment / antecedent records (`clinical.mjs`)
 
 Emitted beside `clinical_advice/3,4`: `clinical_rule(Doc,S,Rule)`
-(48, one per selected content sentence), `clinical_premise(Doc,S,N,Literal)` (346), and
-`clinical_gate(Doc,S,Rule,[Lines])` (48, covering all **686** content sites), over one
+(53, one per selected content sentence), `clinical_premise(Doc,S,N,Literal)` (451), and
+`clinical_gate(Doc,S,Rule,[Lines])` (53, covering all **723** content sites), over one
 `clinical_use(Line,Head)` exact-site helper.
 
 - **A build-time GROUND head still drives `clause/3`.** It unifies against the stored head's
@@ -106,23 +110,30 @@ Emitted beside `clinical_advice/3,4`: `clinical_rule(Doc,S,Rule)`
 - Heads and premises share ONE skolem map per sentence
   (`'$clinical_hypothetical'(Doc,S,N)`), which is what keeps a premise applying to its own
   clause.
-- Census: 12 documents, 48 content sentences, **686 sites / 686 unique lines**, 0
-  multi-antecedent violations, 46/48 antecedents non-`true`, exactly 1 NAF (`rec05:S5`).
+- Census: 12 documents, 53 content sentences, **723 sites / 723 unique lines**, 0
+  multi-antecedent violations, 51/53 antecedents non-`true`, exactly 2 NAF (`rec05:S7`,
+  `rec05:S8`).
 - **Exactly 2 gates prove on the bare KB** — the two `true`-antecedent sentences. The other
-  46 correctly fail until premises apply the universal.
-- **44 gates resolve natively**; 4 exhaust 200,000 inferences with only their own premises
-  asserted (`rec01:3`, `rec02:3`, `rec02:8`, `rec05:4`) on the corpus's recursive rule-head
-  chains. 44 + 4 = 48. That is not contamination — the control proves under the identical
-  shape — and the assumption evaluator terminates all four.
+  51 correctly fail until premises apply the universal.
+- **52 gates resolve natively**; 1 exhausts 200,000 inferences with only its own premises
+  asserted (`rec05:6`) on the corpus's recursive rule-head chains. 52 + 1 = 53. That is not
+  contamination — the control proves under the identical shape — and the assumption evaluator
+  terminates it.
 - **An independent site enumerator must close the open sentence at a `% file:` boundary.**
   Without that reset each document's 2 preamble facts count as content sites and the total
-  reads 710 instead of 686 — a plausible-looking wrong number.
-- **48 fragments and 38 groups are one dataset at two granularities.** Reassembling the 48
+  reads 747 instead of 723 — a plausible-looking wrong number.
+- **53 fragments and 43 groups are one dataset at two granularities.** Reassembling the 53
   per-sentence `clinical_rule/3` by consequent — conditions concatenated in sentence order —
-  reproduces all 38 shipped `clinical_answer` group terms byte for byte over 12 documents, 0
+  reproduces all 43 shipped `clinical_answer` group terms byte for byte over 12 documents, 0
   divergences.
-- `clinical.mjs:325` is `groupTerm`, **not** a second byte guard. The single fail-closed
-  rebuild-equality guard is at `:261-266`.
+- `clinical.mjs:357` is `groupTerm`, **not** a second byte guard. The single fail-closed
+  rebuild-equality guard is at `:293-298`.
+- **A recommendation to refrain renders `should not`.** The corpus writes it `it is
+  recommended that X does not V` — SHOULD over a negation, which English writes `X should not
+  V` — so the parser reads it as `should` with a negative action and keeps the surface form
+  only to rebuild the sentence. `X is preferred for Y` reads as a fact with a positive copula.
+  An antecedent comparison (`guideline_satisfies`) refuses the build: a premise may never
+  assume a threshold.
 - The exact shipped passage is aligned ENGLISH prose from the provenance model, not ACE.
 
 ## Query-local assumption evaluator (`proof.mjs`)
@@ -140,15 +151,15 @@ the shipped proof RPC is untouched. No write path ships; a direct `assertz` is s
   `clinical_use/2` runs `call(Body)`, which demands the very premises the evaluator supplies,
   so executing `clinical_gate/4` is circular. `clause(clinical_gate(D,S,_,_),Body,_)` plus a
   conjunction walk yields all ground heads without executing anything.
-- Measured on the shipped image, reproduced independently with 0 divergences: cap 2 → **48/48
-  sentences and 12/12 documents**; cap 1 → 47/48, failing `cdc2022-opioid-rec05:5` alone; cap
-  3 adds nothing. **686/686** single-site erasures fail their sentence, 0 survivors, ~5 s, all
-  48 re-deriving after `snapshot/1` rolls back. **3,930** assumption leaves over 346 unique
-  premises, none carrying a source line; every proof's line set is exactly its gate's list.
-  Worst step 11.8 ms of a 1000 ms envelope.
-- Negative controls: premises-withheld → **0 of 12 documents** (2 of 48 sentences survive —
+- Measured on the shipped image, reproduced independently with 0 divergences: cap 2 → **53/53
+  sentences and 12/12 documents**; cap 1 → 51/53, failing the two NAF sentences
+  `cdc2022-opioid-rec05:7` and `:8`; cap 3 adds nothing. **723/723** single-site erasures fail
+  their sentence, 0 survivors, ~5 s, all 53 re-deriving after `snapshot/1` rolls back.
+  **4,491** assumption leaves over 451 unique premises, none carrying a source line; every
+  proof's line set is exactly its gate's list. Worst step 8.2 ms of a 1000 ms envelope.
+- Negative controls: premises-withheld → **0 of 12 documents** (2 of 53 sentences survive —
   the two `true`-antecedent gates — so **the control's grain is the DOCUMENT**);
-  schema-erased → 0 of 48 sentences.
+  schema-erased → 0 of 53 sentences.
 
 ## The clinical answer and its proof are ONE clause
 
@@ -160,13 +171,13 @@ precomputed is left for a proof request to read back — `clinical_advice_source
 
 - The arm sits before the depth cap and cuts, so the outer `mi/3` depth of 1 still reaches
   it; `clinical_depth(2)` governs inside.
-- Measured over the shipped image: **686 clause nodes** — exactly the cited-site census, all
-  at top level with their bodies as children — **3,930 assumption leaves** and **15 NAF
-  marks**, all 15 in `rec05`. Per document 9–144 clause nodes and 76–1,026 assumptions.
-  All 12 proofs cost 430 ms total, 7–72 ms each, against a 1,000 ms budget.
+- Measured over the shipped image: **723 clause nodes** — exactly the cited-site census, all
+  at top level with their bodies as children — **4,491 assumption leaves** and **19 NAF
+  marks**, all 19 in `rec05`. Per document 9–154 clause nodes and 76–1,086 assumptions.
+  All 12 proofs cost 584 ms total, 11–88 ms each, against a 1,000 ms budget.
 - **A constrained proof goal must bind INSIDE the answer argument**
   (`clinical_advice('q',_,clinical_answer('doc',_,_))`). A trailing `Answer = …` conjunct
-  fails: `resolve/3` whitelists the nine `guideline_*` predicates alone, so the interpreter
+  fails: `resolve/3` whitelists the 19 schema indicators alone, so the interpreter
   has no clause for `=`/2 and the conjunction dies before the proof is reached.
 - A wrong answer term yields `failure`, not a proof: the arm cuts, `clinical_advice/4` fails,
   and no fallback can fabricate one.

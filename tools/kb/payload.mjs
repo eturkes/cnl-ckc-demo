@@ -7,6 +7,20 @@
 const PAYLOAD = /^data\/guidelines\/[^/]+\/pl\/[^/]+\.pl$/u;
 
 /**
+ * The schema's comparison built-ins (`guideline_satisfies/4,6`), which rule bodies call and no
+ * document defines. Upstream's replay loads it ahead of every document; it is no document itself,
+ * so it rides outside the `% file:` markers that count documents.
+ */
+export const SCHEMA_PATH = 'data/guidelines/schema.pl';
+
+/** @param {Map<string, Uint8Array>} files @returns {string} */
+export const payloadSchema = (files) => {
+  const bytes = files.get(SCHEMA_PATH);
+  if (bytes === undefined) throw new Error(`bag carries no ${SCHEMA_PATH}`);
+  return Buffer.from(bytes).toString('utf8');
+};
+
+/**
  * @param {Map<string, Uint8Array>} files
  * @returns {{ source: string, names: string[] }}
  */

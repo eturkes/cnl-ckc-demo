@@ -22,7 +22,7 @@ const manifest = JSON.parse(Buffer.from(readGenerated('kb-manifest.json')).toStr
 const pvm = readGenerated('kb.pvm');
 const qlf = readGenerated('kb.qlf');
 // Ground the findall template outside its scope: fresh variable names are engine-local.
-const DOCUMENT_GOAL = 'findall(D,guideline_document(D,_,_),Ds),length(Ds,N),D=all_documents.';
+const DOCUMENT_GOAL = 'findall(D,guideline_document(D,_,_,_),Ds),length(Ds,N),D=all_documents.';
 const TIMEOUT = 120_000;
 
 type Options = ConstructorParameters<typeof EngineSession>[0] & {
@@ -79,7 +79,7 @@ const displayOf = async (session: EngineSession, goal = DOCUMENT_GOAL) => {
 const changeContract = (engine: Engine, field: keyof EngineContract): void => {
   const goal =
     field === 'documents'
-      ? "dynamic(guideline_document/3),assertz(guideline_document('$d10-extra',probe,unreviewed))."
+      ? "dynamic(guideline_document/4),assertz(guideline_document('$d10-extra',probe,unreviewed,none))."
       : `dynamic(guideline_schema_version/1),retractall(guideline_schema_version(_)),assertz(guideline_schema_version(${manifest.contract.schemaVersion + 1})).`;
   runOnce(engine, goal);
 };

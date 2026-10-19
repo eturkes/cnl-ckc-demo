@@ -144,13 +144,23 @@ const restore = (): void => {
 const KB_GOALS = [
   'guideline_arg(A,B,C,D)',
   'guideline_cardinality(A,B,C,D,E)',
-  'guideline_document(A,B,C)',
+  'guideline_document(A,B,C,D)',
   'guideline_entity(A,B,C,D)',
   'guideline_event(A,B,C)',
+  'guideline_frequency(A,B,C,D,E)',
+  'guideline_grade(A,B,C,D,E)',
+  'guideline_interval(A,B,C,D,E,F)',
   'guideline_operator(A,B,C)',
+  'guideline_order(A,B,C,D)',
   'guideline_pp(A,B,C,D)',
+  'guideline_preference(A,B,C,D)',
   'guideline_property(A,B,C,D)',
+  'guideline_qualifier(A,B,C,D)',
+  'guideline_range(A,B,C)',
+  'guideline_recurrence(A,B,C,D)',
+  'guideline_recurrence_window(A,B,C,D,E,F,G)',
   'guideline_schema_version(A)',
+  'guideline_unit(A,B,C)',
   'clinical_advice(A,B,C)',
   'clinical_advice(A,B,C,D)',
   'clinical_rule(A,B,C)',
@@ -161,13 +171,15 @@ const KB_GOALS = [
   'clinical_context(A,B,C)',
   'clinical_derive(A,B,C,D)',
 ].map((goal) => `once(${goal})`);
+const RULE_DOCUMENTS = 'findall(D,clinical_rule(D,_,_),Ds),sort(Ds,U),length(U,N)';
+const BARE_SHOULD = 'guideline_operator(actual,C,should)';
 const ADMITTED = [
   ...KB_GOALS,
-  'findall(D,clinical_rule(D,_,_),Ds),sort(Ds,U),length(U,N)',
+  RULE_DOCUMENTS,
   'setof(D,S^R^clinical_rule(D,S,R),Ds)',
   'clause(guideline_entity(A,B,C,D),Body)',
   'clinical_passage(D,T),sub_string(T,_,_,_,"nonopioid")',
-  'guideline_operator(actual,C,should)',
+  BARE_SHOULD,
 ];
 
 const BUILTINS: [string, string][] = [
@@ -227,6 +239,8 @@ const BUILTINS: [string, string][] = [
   ['term_variables/2', 'term_variables(f(X,Y),Vs)'],
   ['arg/3', 'arg(1,f(a),X)'],
   ['=../2', 'f(a) =.. L'],
+  ['guideline_satisfies/4', 'guideline_satisfies(geq,60,geq,50)'],
+  ['guideline_satisfies/6', 'guideline_satisfies(geq,4,hour,geq,4,hour)'],
 ];
 
 // G4 amendment: each answer gets its own first-occurrence variable numbering.
@@ -382,9 +396,9 @@ describe('live read-only session', () => {
     async (goal) => {
       const result = await request(goal);
       expect(['solutions', 'failure'], JSON.stringify(result)).toContain(result.kind);
-      if (goal === ADMITTED[18])
+      if (goal === RULE_DOCUMENTS)
         expect(solutions(result)[0]?.bindings.N).toEqual({ kind: 'integer', value: 12 });
-      if (goal === ADMITTED[22]) expect(result.kind).toBe('failure');
+      if (goal === BARE_SHOULD) expect(result.kind).toBe('failure');
     },
     120_000,
   );
@@ -473,7 +487,7 @@ describe('live read-only session', () => {
 
   it('G6 refusal keeps the same session booted and the next read-only query usable', async () => {
     const refusal = await request('assertz(probe_c1(1))');
-    const after = await request('findall(D,guideline_document(D,_,_),Ds),length(Ds,N)');
+    const after = await request('findall(D,guideline_document(D,_,_,_),Ds),length(Ds,N)');
     try {
       expect(session.booted).toBe(true);
       expect(solutions(after)[0]?.bindings.N).toEqual({

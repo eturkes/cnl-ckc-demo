@@ -12,8 +12,8 @@
 // and before `resolve/3` and commits, so an assumed literal never also resolves
 // against a KB clause and never fabricates a `line(L)` for a hypothesis.
 //
-// Cap 2 is the least sufficient depth: cap 1 proves 47 of the 48 content
-// sentences, failing only the corpus's one NAF antecedent.
+// Cap 2 is the least sufficient depth: cap 1 proves 51 of the 53 content
+// sentences, failing only the corpus's two NAF antecedents.
 //
 // `gate_heads/2` reads u1's cited heads out of the STORED `clinical_gate/4`
 // body. Calling the gate instead is circular — `clinical_use/2` runs `call(Body)`,
@@ -28,22 +28,42 @@
 
 export const PROOF_SOURCE = String.raw`schema_goal(guideline_arg(_,_,_,_)).
 schema_goal(guideline_cardinality(_,_,_,_,_)).
-schema_goal(guideline_document(_,_,_)).
+schema_goal(guideline_document(_,_,_,_)).
 schema_goal(guideline_entity(_,_,_,_)).
 schema_goal(guideline_event(_,_,_)).
+schema_goal(guideline_frequency(_,_,_,_,_)).
+schema_goal(guideline_grade(_,_,_,_,_)).
+schema_goal(guideline_interval(_,_,_,_,_,_)).
 schema_goal(guideline_operator(_,_,_)).
+schema_goal(guideline_order(_,_,_,_)).
 schema_goal(guideline_pp(_,_,_,_)).
+schema_goal(guideline_preference(_,_,_,_)).
 schema_goal(guideline_property(_,_,_,_)).
+schema_goal(guideline_qualifier(_,_,_,_)).
+schema_goal(guideline_range(_,_,_)).
+schema_goal(guideline_recurrence(_,_,_,_)).
+schema_goal(guideline_recurrence_window(_,_,_,_,_,_,_)).
 schema_goal(guideline_schema_version(_)).
+schema_goal(guideline_unit(_,_,_)).
 resolve(guideline_arg(A,B,C,D),Body,L) :- clause(guideline_arg(A,B,C,D),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 resolve(guideline_cardinality(A,B,C,D,E),Body,L) :- clause(guideline_cardinality(A,B,C,D,E),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
-resolve(guideline_document(A,B,C),Body,L) :- clause(guideline_document(A,B,C),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
+resolve(guideline_document(A,B,C,D),Body,L) :- clause(guideline_document(A,B,C,D),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 resolve(guideline_entity(A,B,C,D),Body,L) :- clause(guideline_entity(A,B,C,D),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 resolve(guideline_event(A,B,C),Body,L) :- clause(guideline_event(A,B,C),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
+resolve(guideline_frequency(A,B,C,D,E),Body,L) :- clause(guideline_frequency(A,B,C,D,E),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
+resolve(guideline_grade(A,B,C,D,E),Body,L) :- clause(guideline_grade(A,B,C,D,E),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
+resolve(guideline_interval(A,B,C,D,E,F),Body,L) :- clause(guideline_interval(A,B,C,D,E,F),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 resolve(guideline_operator(A,B,C),Body,L) :- clause(guideline_operator(A,B,C),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
+resolve(guideline_order(A,B,C,D),Body,L) :- clause(guideline_order(A,B,C,D),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 resolve(guideline_pp(A,B,C,D),Body,L) :- clause(guideline_pp(A,B,C,D),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
+resolve(guideline_preference(A,B,C,D),Body,L) :- clause(guideline_preference(A,B,C,D),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 resolve(guideline_property(A,B,C,D),Body,L) :- clause(guideline_property(A,B,C,D),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
+resolve(guideline_qualifier(A,B,C,D),Body,L) :- clause(guideline_qualifier(A,B,C,D),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
+resolve(guideline_range(A,B,C),Body,L) :- clause(guideline_range(A,B,C),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
+resolve(guideline_recurrence(A,B,C,D),Body,L) :- clause(guideline_recurrence(A,B,C,D),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
+resolve(guideline_recurrence_window(A,B,C,D,E,F,G),Body,L) :- clause(guideline_recurrence_window(A,B,C,D,E,F,G),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 resolve(guideline_schema_version(A),Body,L) :- clause(guideline_schema_version(A),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
+resolve(guideline_unit(A,B,C),Body,L) :- clause(guideline_unit(A,B,C),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 app([],L,L).
 app([H|T],L,[H|R]) :- app(T,L,R).
 has(X,[H|_]) :- X == H, !.

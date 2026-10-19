@@ -43,7 +43,7 @@ const drifted: ImageLoader = async (image) => {
   const engine = await loadImage(image);
   engine.prolog
     .query(
-      "dynamic(guideline_document/3),assertz(guideline_document('$d5-extra',probe,unreviewed)).",
+      "dynamic(guideline_document/4),assertz(guideline_document('$d5-extra',probe,unreviewed,none)).",
     )
     .once();
   return engine;

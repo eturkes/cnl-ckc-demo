@@ -11,7 +11,7 @@ import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import type { Engine } from '../src/engine/session.js';
-import { gateRecords, keyOf, ROOT } from './clinical-test-support.js';
+import { CONTENT_PREDICATES, gateRecords, keyOf, ROOT } from './clinical-test-support.js';
 
 const require = createRequire(import.meta.url);
 const factory = require('swipl-wasm/dist/loadImageDefault.js') as
@@ -39,23 +39,13 @@ beforeAll(async () => {
     print: () => {},
     printErr: (line: unknown) => diagnostics.push(String(line)),
   });
-  for (const predicate of [
-    'guideline_entity/4',
-    'guideline_cardinality/5',
-    'guideline_event/3',
-    'guideline_arg/4',
-    'guideline_operator/3',
-    'guideline_pp/4',
-    'guideline_property/4',
-  ]) {
-    row(`dynamic(${predicate}).`);
-  }
+  for (const [name, arity] of CONTENT_PREDICATES) row(`dynamic(${name}/${String(arity)}).`);
 }, 120_000);
 
 describe('clinical gate binding', () => {
   it('T2 each gate executes every line it names, under its own premises', () => {
-    expect(gateRecords).toHaveLength(48);
-    expect([...engine.prolog.query('clause(clinical_gate(_,_,_,_),_,_).')]).toHaveLength(48);
+    expect(gateRecords).toHaveLength(53);
+    expect([...engine.prolog.query('clause(clinical_gate(_,_,_,_),_,_).')]).toHaveLength(53);
     expect(String(row("(clinical_gate('cdc2022-opioid-rec01',2,_,_) -> R=yes ; R=no).").R)).toBe(
       'no',
     );
@@ -79,22 +69,15 @@ describe('clinical gate binding', () => {
       }
     }
 
-    expect(bounded.sort()).toEqual(
-      [
-        'cdc2022-opioid-rec01:3',
-        'cdc2022-opioid-rec02:3',
-        'cdc2022-opioid-rec02:8',
-        'cdc2022-opioid-rec05:4',
-      ].sort(),
-    );
+    expect(bounded.sort()).toEqual(['cdc2022-opioid-rec05:6']);
     expect(failures).toEqual([]);
-    // 44 + the 4 bounded gates = 48. Session 1 recorded 46 native, which cannot hold.
-    expect(native).toHaveLength(44);
+    // 52 + the 1 bounded gate = 53.
+    expect(native).toHaveLength(52);
     expect(diagnostics).toEqual([]);
   }, 120_000);
   it('T15 exact-site refutation: deletion fails, same-head reassertion stays failed', () => {
     const samples = [
-      ['cdc2022-opioid-rec01', 2, 9],
+      ['cdc2022-opioid-rec01', 2, 5],
       ['cdc2022-opioid-rec04', 2, 6],
     ] as const;
     for (const [documentId, sentence, siteCount] of samples) {

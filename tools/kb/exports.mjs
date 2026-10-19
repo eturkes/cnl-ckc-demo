@@ -22,7 +22,9 @@ export const EXPORTED = Object.freeze([
   'category-a-recommendations',
   'dosage-reduction-content',
   'evidence-type-1-recommendation',
+  'long-term-therapy-onset',
   'recommendation-exists',
+  'tablet-use-spacing',
 ]);
 
 /** The suite holding the byte oracle. `binding:check` requires each of its cases to pass. */

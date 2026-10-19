@@ -103,16 +103,18 @@ server refuses, and a `--graph-*` palette set to `initial`). The mocked suite ca
     fill off its neighbour's label outline.
   - The legend swatches in `SemanticGraph.svelte` read the same tokens, so legend and canvas
     cannot drift.
-- The graph carries **0 self-edges of 20,980**, so `canvas.ts` filters none.
+- The graph carries **0 self-edges of 24,947**, so `canvas.ts` filters none.
 
 ## Data shape
 
-- Deterministic full graph = **2,901 typed nodes / 20,980 typed edges**, extracted by static
+- Deterministic full graph = **3,420 typed nodes / 24,947 typed edges**, extracted by static
   `clause/2` sweep. Runtime predicate calls expose only the derivable minority.
 - Explicit edge schemas = 7 (`entity/4`, `cardinality/5`, `event/3`, `arg/4`, `pp/4`,
-  `property/4`, `operator/3`), plus **9,804 `implies` edges**. That single figure hides two
-  mechanisms: **9,053 rule-context implications + 751 synthesized event-support shortcuts**.
-  The 751 are the defect site at `graph.mjs:398`.
+  `property/4`, `operator/3`), plus **11,527 `implies` edges**. That single figure hides two
+  mechanisms: **10,554 rule-context implications + 973 synthesized event-support shortcuts**,
+  the shortcuts synthesized in `deriveSemanticGraph`'s consequent-event block.
+- The time, strength and unit annotations project nothing yet: `graph.mjs` `UNPROJECTED` lists
+  them beside the document record, and any other clause kind fails the build by name.
 
 ## Projection scope — the model carries it, the shown edge reads it
 
@@ -121,26 +123,26 @@ edges, and `operator-context` is still absent from `CONCEPT_NODE_KINDS`. **u12 m
 onto the surviving edges instead** (`SemanticGraphEdge.scopeOperators`, ordered outermost
 first), which is the user's edge-state ruling made real in `src/graph/model.ts`.
 
-- Projection = **1,300 nodes / 2,668 grouped edges** out of 2,901 / 20,980. The nodes are
-  1,084 entity + 151 event + 65 value; the headline counts the 1,235 entity/event alone and
-  names the 65 as attributes, because calling a value node a concept is what S9 caught.
-- **1,912 of the 2,668 groups carry an ordered scope**, and **372 of them carry a far scope**
-  (737 edge occurrences). Grouping keys on both sequences — `conceptEdgeKey` spreads
+- Projection = **1,520 nodes / 3,299 grouped edges** out of 3,420 / 24,947. The nodes are
+  1,143 entity + 166 event + 211 value; the headline counts the 1,309 entity/event alone and
+  names the 211 as attributes, because calling a value node a concept is what S9 caught.
+- **2,254 of the 3,299 groups carry an ordered scope**, and **446 of them carry a far scope**
+  (940 edge occurrences). Grouping keys on both sequences — `conceptEdgeKey` spreads
   `scopeOperators` then `farScopeOperators` in order — so two occurrences differing only in
   scope ORDER, or only at the far end, stay distinct groups. The corpus holds zero permuted
   pairs, so the guarantee is structural plus the constructed case at
   `tests/graph-model.test.ts:303`, never a corpus witness.
-- u13's `farScopeOperators` is what moved the group count off 2,630 and the scoped count off
-  1,584: a far end that differs splits what used to be one group. Re-derive both from
-  `conceptEdgeCount` rather than quoting them forward.
-- Scope-keyed dedup split 2,381 → 2,615 groups; the remaining 15 are the non-unit cardinality
-  edges the projection now admits (`relation !== 'na eq 1'`), 12 of which carry scope.
-- Modal census, unchanged by u12: 156 `-` (negation), 857 `should`, 156 `may`, 85 `can`,
-  9 `must` = **1,263 operator contexts**, of which 71 carry no edge at all and stay orphaned by
-  user ruling. Each of the 71 records the body literals in its world (`scopes[].literals`), and
+- A far end that differs splits what would be one group, so the group and scoped counts move
+  with `farScopeOperators`: re-derive both from `conceptEdgeCount` rather than quoting them
+  forward.
+- Grouping keys on scope, and the projection admits the non-unit cardinality edges
+  (`relation !== 'na eq 1'`).
+- Modal census: 197 `-` (negation), 961 `should`, 159 `may`, 181 `can`, 15 `must` =
+  **1,513 operator contexts**, of which 83 carry no edge at all and stay orphaned by user
+  ruling. Each of the 83 records the body literals in its world (`scopes[].literals`), and
   `tests/graph-orphan-scopes.test.ts` (`MEANING`) proves every relation literal rides an edge
   of its own world. The body-relation dedup keys on that world: a relation asserted plainly and
-  under a negation in one sentence is two edges, +16 `argument` (`.agent/contracts/mnt-d49.md`).
+  under a negation in one sentence is two edges (`.agent/contracts/mnt-d49.md`).
   The `condition supports` dedup stays scope-blind, and what each fold hides is graded: a negated
   occurrence folds either behind a twin its own clause states unnegated, or into a negated twin
   whose edge already shows the negation. `tests/graph-condition-merges.test.ts` reads every kept
@@ -155,7 +157,7 @@ that — `pnpm graph:check` is the only grader of rendered output.
 
 **A spanning shortcut now shows both ends.** A synthesized `condition supports` edge records
 the producer's single `edge.scope` for its SOURCE end; the model reads the TARGET end off the
-`event` edge declaring that event on the same line (`edge:512:0` witnesses `edge:512:12`) and
+`event` edge declaring that event on the same line (`edge:657:0` witnesses `edge:657:13`) and
 stores it as `farScopeOperators`. A `condition supports` edge whose target has no such witness
 is refused by name — that refusal is what caught `graph-check.mjs`'s fallback fixture omitting
 the witness entirely.
@@ -181,7 +183,7 @@ Four forms on the resolved pair: `<rel> · <near>`, `<rel>`, `<rel> · <near> �
 `<rel> → <far>`. `→` means one thing everywhere: the end AWAY from the reader. Nothing is
 trimmed or composed across ends — `[-]` against `[-, should]` writes both sides in full,
 because eliding the repeat would render a nested pair identically to a divergent one, and the
-38 contradicting cases are where that would lie.
+67 contradicting cases are where that would lie.
 
 ## Shipped bounds
 

@@ -75,7 +75,7 @@ const engineValue = async (goal: string, name: string): Promise<unknown> => {
 
 /** The invariant every budget trip must leave behind. */
 const expectEngineSound = async (): Promise<void> => {
-  expect(await engineValue('findall(D,guideline_document(D,_,_),Ds),length(Ds,N).', 'N')).toBe(
+  expect(await engineValue('findall(D,guideline_document(D,_,_,_),Ds),length(Ds,N).', 'N')).toBe(
     manifest.contract.documents,
   );
   const solved = await session.solve(CATEGORY_A_GOAL, budget());
@@ -322,7 +322,7 @@ describe('P5 fail-closed inputs', () => {
   });
 
   it('P5.2 keeps an honest zero-solution goal distinct from every limit', async () => {
-    const solved = await session.solve('guideline_document(no_such_document,_,_).', budget());
+    const solved = await session.solve('guideline_document(no_such_document,_,_,_).', budget());
     expect(solved.kind).toBe('failure');
   });
 

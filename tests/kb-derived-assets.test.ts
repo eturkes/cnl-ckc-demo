@@ -37,9 +37,9 @@ const evidence = (id: string): EvidenceChunk => {
 
 describe('bag-derived provenance assets', () => {
   it('joins every document and exact combined-source clause once', () => {
-    expect(provenance.stats).toMatchObject({ documents: 337, clauses: 10_321 });
-    expect(provenance.chunks).toHaveLength(337);
-    expect(new Set(provenance.chunks.map(({ path }) => path)).size).toBe(337);
+    expect(provenance.stats).toMatchObject({ documents: 385, clauses: 12_507 });
+    expect(provenance.chunks).toHaveLength(385);
+    expect(new Set(provenance.chunks.map(({ path }) => path)).size).toBe(385);
 
     const combined = payloadSource(files).source.split('\n');
     const lines = new Set<number>();
@@ -172,20 +172,20 @@ describe('static semantic graph asset', () => {
       expect(graph.model.stats.byEdgeKind[kind], kind).toBeGreaterThanOrEqual(minimum);
     }
     expect(graph.model.stats.byEdgeKind).toEqual({
-      argument: 3821,
-      cardinality: 1834,
-      entity: 1834,
-      event: 1254,
-      implies: 9804,
-      operator: 1193,
-      preposition: 1197,
-      property: 43,
+      argument: 4738,
+      cardinality: 2052,
+      entity: 2052,
+      event: 1492,
+      implies: 11527,
+      operator: 1431,
+      preposition: 1509,
+      property: 146,
     });
     expect(graph.model.stats).toMatchObject({
-      documents: 337,
-      clauses: 10_321,
-      nodes: 2901,
-      edges: 20_980,
+      documents: 385,
+      clauses: 12_507,
+      nodes: 3420,
+      edges: 24_947,
     });
   });
 

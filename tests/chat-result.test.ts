@@ -86,7 +86,7 @@ describe('model reads engine-authored text', () => {
   });
 
   it('D2 real failure reports zero solutions and a completed goal', async () => {
-    const outcome = await query('guideline_document(chat_d2_absent_document,_,_).');
+    const outcome = await query('guideline_document(chat_d2_absent_document,_,_,_).');
     expect(outcome).toEqual({ kind: 'failure' });
     expect(toolResult(outcome)).toMatchObject({ ok: true, shown: 0, total: 0 });
     expect(toolResult(outcome).text).toContain('failure');
@@ -104,7 +104,7 @@ describe('model reads engine-authored text', () => {
   });
 
   it('D2 real answer-cap limit names its limit and preserves partial display', async () => {
-    const outcome = await query('guideline_document(D,T,S).', { ...BUDGET_MAX, answerCap: 1 });
+    const outcome = await query('guideline_document(D,T,S,V).', { ...BUDGET_MAX, answerCap: 1 });
     expect(outcome.kind).toBe('limit');
     if (outcome.kind !== 'limit') throw new Error('expected limit');
     expect(outcome.limit).toBe('answer-cap');
@@ -115,7 +115,7 @@ describe('model reads engine-authored text', () => {
   });
 
   it('D2 long real result cuts only between solutions and names omitted rows', async () => {
-    const outcome = await query('guideline_document(D,T,S).');
+    const outcome = await query('guideline_document(D,T,S,V).');
     const rows = rowsOf(outcome);
     expect(rows.map(lineOf).join('\n').length).toBeGreaterThan(8000);
     const result = toolResult(outcome);
@@ -130,7 +130,7 @@ describe('model reads engine-authored text', () => {
   });
 
   it('D2 first oversized real solution is shown partially with an accurate character marker', async () => {
-    const outcome = await query('findall(D,guideline_document(D,_,_),Documents).');
+    const outcome = await query('findall(D,guideline_document(D,_,_,_),Documents).');
     expect(outcome.kind).toBe('solutions');
     const rows = rowsOf(outcome);
     expect(rows).toHaveLength(1);

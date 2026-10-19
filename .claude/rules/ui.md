@@ -82,7 +82,7 @@ built from the five fields of `'$guideline_id'(Role,DocId,Sentence,Locator,Deps)
 renders the engine's own display text. `tests/questions-live.test.ts` `answer humanizer` grades
 a live answer against this grammar.
 
-The bag labels all 337 documents `unreviewed`. Upstream counts
+The bag labels all 385 documents `unreviewed`. Upstream counts
 `approved`/`rejected`/`contested`/`stale`/`unreviewed`, so the label means **no adjudication
 decision was recorded** — never that a check failed. Say so wherever it surfaces.
 

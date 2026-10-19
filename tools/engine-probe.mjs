@@ -29,7 +29,7 @@ const corpus = String(documents);
 const PRELUDE = `
   const { EngineClient } = await import('/src/engine/client.ts');
   const { BUDGET_MAX } = await import('/src/engine/budget.ts');
-  const DOCS = 'findall(D,guideline_document(D,_,_),Ds),length(Ds,N).';`;
+  const DOCS = 'findall(D,guideline_document(D,_,_,_),Ds),length(Ds,N).';`;
 
 /** @param {string} body @returns {string} an async page expression returning `body`'s result */
 const scenario = (body) => `(async () => {${PRELUDE}\n${body}\n})()`;

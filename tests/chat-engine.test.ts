@@ -21,7 +21,7 @@ describe('demo chat engine adapter', () => {
     const query = vi.spyOn(EngineClient.prototype, 'query').mockResolvedValue(outcome);
     const engine = createDemoEngine();
     const signal = new AbortController().signal;
-    const goal = 'guideline_document(no_such_document,_,_).';
+    const goal = 'guideline_document(no_such_document,_,_,_).';
     try {
       expect(typeof engine.runGoal).toBe('function');
       if (!engine.runGoal) throw new Error('chat engine adapter absent');

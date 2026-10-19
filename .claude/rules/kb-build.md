@@ -12,7 +12,7 @@ paths:
 ## Vendored bag
 
 - `kb/cnl-ckc-kb-g<sha>.tar.gz` + a `.sha256` sidecar. BagIt 1.0; verify = `pnpm kb:build`,
-  in memory, never extracting. 1041 payload + 5 tag entries + the tagmanifest = 1047 members.
+  in memory, never extracting. 1195 payload + 5 tag entries + the tagmanifest = 1201 members.
 - **Archive dialect**: POSIX ustar magic (`ustar\0` + `00`) that ALSO carries five GNU
   `././@LongLink` (`L`) headers for names over 100 chars. A resolving parser (Python
   `tarfile.getmembers`) hides those pseudo-entries — a raw reader must handle `L` or it
@@ -21,10 +21,11 @@ paths:
 - The name + root dir tag upstream's **input head** — the last commit changing `guidelines/`,
   the vendored compiler or the lexicon — not repo HEAD. The bag's `release-manifest.tsv` holds
   content digests alone (no `meta head` row), so the name is the bag's sole commit provenance.
-- Payload = 337 docs × 3 representations — `ace/` (source ACE), `pl/` (compiled Prolog,
-  schema v1), `align/` (source↔ACE alignment, backs the trace view) — plus `queries/`
-  (4 `.ace` questions, `pl/` compiled goals, `answers/` expected solutions, `traces/`),
-  `source/`, `audit/`.
+- Payload = 385 docs × 3 representations — `ace/` (source ACE), `pl/` (compiled Prolog,
+  schema `1`, 19 indicators), `align/` (source↔ACE alignment, backs the trace view) — plus
+  `data/guidelines/schema.pl` (the comparison built-ins, below), `queries/` (6 `.ace`
+  questions, `pl/` compiled goals, `answers/` expected solutions, `traces/`), `source/`,
+  `audit/`, `vocabulary.tsv`.
 - Rights profile = `redistributable` (public-domain MMWR) → source passages may ship whole in
   the UI. The bag records `swipl 9.2.9` as its compiler; the 10.1.13 WASM runtime loads it.
 - Regenerate = upstream's Rust `ckc` (Verus-verified kernel; no Python left): `ckc dist build
@@ -58,14 +59,15 @@ Upstream's reviewer surface (`ckc ui`) is specified in Verus under `cnl-ckc`'s
 (coverage grammar — `tests/kb-derived-assets.test.ts` grades every declared class),
 `evidence_of` + `payload_of` (coverage row → source payload), `align.rs` `align_outcome`
 (source↔ACE span groups), `ui.rs` `alignment` + `aligned_text`. Its `tests/ui/` fixture corpus
-(15 green + 84 red case families) is the adversarial oracle for provenance joins and hostile
+(21 green + 85 red case families) is the adversarial oracle for provenance joins and hostile
 input. No graph command or graph artifact exists upstream.
 
 ## Generated payload
 
 `pnpm kb:build` → `kb/generated/{kb.pvm,kb.qlf,kb-manifest.json}`, gitignored. Input = the
-337 `pl/` payload files, sorted, joined with `% file:<path>` markers; the manifest records
-that concatenation's sha256 as the build input.
+385 `pl/` payload files, sorted, joined with `% file:<path>` markers, then `schema.pl` and the
+two helpers; the manifest records the sha256 of that whole consulted source as the build
+input.
 
 - **Byte-reproducible.** `qsave_program` writes a ZIP whose entry timestamps and whose
   embedded `state.qlf` source mtime both come from wall-clock reads. Pinning `Date.now` for
@@ -82,28 +84,41 @@ that concatenation's sha256 as the build input.
   closed on any diagnostic. `qsave_program` legitimately emits two `library(shlib)` warnings
   under WASM; that pair is the only tolerated noise, tolerated **at image save alone** — the
   same text drained from a runtime consult is fatal and poisons its engine.
-- `payloadSource` assembles payload → clinical helper → proof source, in that order. The
-  `PAYLOAD` regex admits `data/guidelines/*/pl/*.pl` only, so the bag's `queries/` tree is
-  **not** in the PVM.
+- `payloadSource` assembles payload → schema → clinical helper → proof source, in that
+  order, so no later block can move a document line. The `PAYLOAD` regex admits
+  `data/guidelines/*/pl/*.pl` only, so the bag's `queries/` tree is **not** in the PVM.
+  `schema.pl` rides its own `% schema:` block: it is no document, and every `% file:` marker
+  counts one (`requireEveryDocument`).
 - The saved PVM is the shipping form, QLF the fallback: the PVM boots without consulting the
   corpus at all.
 
 ## Schema predicates
 
-All 9 are multifile and **static** (`dynamic=false`): `schema_version`, `document`,
-`guideline_entity/4`, `guideline_cardinality/5`, `guideline_event/3`, `guideline_arg/4`,
-`guideline_pp/4`, `guideline_property/4`, `guideline_operator/3`. A direct `assertz` raises a
-permission error → any overlay must call `dynamic/1` first; the overlay is visible to queries
-and gone after a fresh image load.
+All 19 indicators are multifile and **static** (`dynamic=false`): `guideline_schema_version/1`,
+`guideline_document/4`; the relations `guideline_entity/4`, `guideline_cardinality/5`,
+`guideline_event/3`, `guideline_arg/4`, `guideline_pp/4`, `guideline_property/4`,
+`guideline_operator/3`; the time annotations `guideline_interval/6`, `guideline_recurrence/4`,
+`guideline_frequency/5`, `guideline_order/4`, `guideline_recurrence_window/7`,
+`guideline_range/3`; the strength annotations `guideline_grade/5`, `guideline_preference/4`,
+`guideline_qualifier/4`; and `guideline_unit/3`. A direct `assertz` raises a permission error →
+any overlay must call `dynamic/1` first; the overlay is visible to queries and gone after a
+fresh image load.
 
-Clause counts: version 337, document 337, entity 1834, cardinality 1834, event 1254, arg
-2513, pp 1003, property 16, operator 1193.
+`schema.pl` defines the comparison built-ins `guideline_satisfies/4,6` (over
+`guideline_within/4` + `guideline_scale/3`), which rule bodies and the `tablet-use-spacing`
+export call and no document defines. Upstream's traces record each call as a `builtin(G)` leaf;
+the demo's meta-interpreter has no such arm and fails closed on one (`.agent/deferred.md` row
+`The meta-interpreter fails closed on a comparison built-in`).
 
-**Counting vocabulary, kept distinct.** Static clause SITES ≠ derivable SOLUTIONS: 1,834
-`guideline_entity/4` sites yield 316 derivable entity solutions, and 1,254 event sites yield
-232. Runtime predicate calls expose only the derivable minority — the full graph needs static
-`clause/2` extraction. Corpus via SWI-Prolog, authoritative: **800 noun atoms, 127 verbs,
-337 docs**, 0.6 s co-load.
+Clause counts: version 385, document 385, entity 2052, cardinality 2052, event 1492, arg
+2949, pp 1190, property 45, operator 1431, interval 33, recurrence 11, frequency 1, order 87,
+recurrence_window 4, range 8, grade 24, preference 26, qualifier 273, unit 59.
+
+**Counting vocabulary, kept distinct.** Static clause SITES ≠ derivable SOLUTIONS: 2,052
+`guideline_entity/4` sites yield 318 derivable entity solutions, and 1,492 event sites yield
+229. Runtime predicate calls expose only the derivable minority — the full graph needs static
+`clause/2` extraction. Corpus via SWI-Prolog, authoritative: **826 noun atoms, 146 verbs,
+385 docs**, 0.6 s co-load.
 
 ## Question catalog
 
@@ -137,7 +152,7 @@ the compiled KB still answers the upstream export exactly; `pnpm kb:export-check
 (`tools/kb/export-check.mjs`) is its early preflight, refusing a bag whose exported query set
 drifted. It is a diagnostic lane, separate from the catalog above.
 
-- `tools/kb/exports.mjs` declares the four exported query ids in `EXPORTED` and refuses any
+- `tools/kb/exports.mjs` declares the six exported query ids in `EXPORTED` and refuses any
   bag whose exported set differs, naming every offender. Goal TEXT stays derived from the
   bag; **which questions exist is declared**, because an extra or renamed query file
   otherwise enlarges the lane with a check that agrees with itself.
@@ -151,9 +166,10 @@ drifted. It is a diagnostic lane, separate from the catalog above.
 - The comparison covers the WHOLE `'$guideline_answers'` envelope, not its solution list
   alone: `query_sha256` is the sha256 of the query file itself, so the identity the oracle
   records is recomputed from the bag rather than copied out of the oracle. The live term is
-  rendered by `writeq` inside the image; all four match byte for byte.
+  rendered by `writeq` inside the image; all six match byte for byte.
 - Live yield: category-A 7 solutions, dosage-reduction 2, evidence-type-1 1,
-  recommendation-exists `yes`.
+  long-term-therapy-onset 1, recommendation-exists `yes`, tablet-use-spacing 1. The last two
+  exercise the time annotations, `guideline_unit/3` and `guideline_satisfies/6`.
 - Sort = SWI standard order over decoded terms, never a byte sort of rendered text. The two
   diverge on mixed shapes (`10` precedes `'2'` numerically, follows it lexically). Lists
   order as their `'[|]'/2` chain; `[]` orders as an atom. Live `findall` order already equals
@@ -164,15 +180,15 @@ drifted. It is a diagnostic lane, separate from the catalog above.
   inventory, so deleting the file, renaming one of them or skipping it fails the gate; the
   `D2 guards` case is not required.
 - The lane is GREEN at base. Its firing is going RED when the payload stops supporting an
-  export: erasing the single `category-A-recommendation` entity line drops that document from
-  the category-A statement while the other three exports still match. Its credit is the
+  export: erasing one `category-A-recommendation` entity line drops that document from the
+  category-A statement while the other five exports still match. Its credit is the
   default-operator mutants `pnpm stryker` shows it killing in `exports.mjs`, `paths.mjs` and
   `produce.mjs` (`.agent/contracts/mnt5-stryker.md`).
 
 ## Oracles and reach
 
 - Committed `queries/answers/*.pl` and `queries/traces/*.pl` are **regression oracles only,
-  never response data**. The export lane byte-matches all four committed answers on every
+  never response data**. The export lane byte-matches all six committed answers on every
   gate run.
 - Forbidden-reach check = a byte scan over `src`, `tools`, `server`, `vite.config.ts`, `index.html`
   and the runtime-loaded `kb/generated` assets in

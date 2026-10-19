@@ -33,25 +33,25 @@ describe('clinical compiler differential', () => {
     expect(producer).toContain("import { parseAdviceSentence } from './kb/clinical.mjs';");
     expect(differential.D1.divergences, evidence(differential.D1.divergences)).toEqual([]);
     expect(differential.D1).toMatchObject({
-      expectedRecords: 48,
-      actualRecords: 48,
-      expectedSites: 686,
-      actualSites: 686,
+      expectedRecords: 53,
+      actualRecords: 53,
+      expectedSites: 723,
+      actualSites: 723,
     });
   });
 
   it('D2: preserves premise order and opaque-skolem sharing', () => {
     expect(differential.D2.divergences, evidence(differential.D2.divergences)).toEqual([]);
-    expect(differential.D2).toMatchObject({ expectedPremises: 346, actualPremises: 346 });
+    expect(differential.D2).toMatchObject({ expectedPremises: 451, actualPremises: 451 });
   });
 
   it('D3: keeps one rule and its unifying gate per sentence', () => {
     expect(differential.D3.divergences, evidence(differential.D3.divergences)).toEqual([]);
     expect(differential.D3).toMatchObject({
-      expectedRules: 48,
-      actualRules: 48,
-      expectedGates: 48,
-      actualGates: 48,
+      expectedRules: 53,
+      actualRules: 53,
+      expectedGates: 53,
+      actualGates: 53,
     });
   });
 
@@ -60,26 +60,27 @@ describe('clinical compiler differential', () => {
     expect(differential.D4).toMatchObject({
       expectedDocuments: 12,
       actualDocuments: 12,
-      expectedGroups: 38,
-      actualGroups: 38,
+      expectedGroups: 43,
+      actualGroups: 43,
     });
   });
 
   it('D8: reproduces the superseded oracle census', () => {
     expect(summary).toMatchObject({
-      sites: 686,
-      sentences: 48,
-      premises: 346,
-      distinctAntecedents: 28,
-      groups: 38,
+      sites: 723,
+      sentences: 53,
+      premises: 451,
+      distinctAntecedents: 37,
+      groups: 43,
       premiseShapes: {
-        'guideline_entity/4': 108,
-        'guideline_cardinality/5': 108,
-        'guideline_operator/3': 4,
-        'guideline_event/3': 34,
-        'guideline_arg/4': 68,
-        'guideline_pp/4': 23,
-        'guideline_property/4': 1,
+        'guideline_entity/4': 133,
+        'guideline_cardinality/5': 133,
+        'guideline_operator/3': 5,
+        'guideline_event/3': 47,
+        'guideline_arg/4': 94,
+        'guideline_pp/4': 27,
+        'guideline_property/4': 5,
+        'guideline_qualifier/4': 7,
       },
     });
     expect(
@@ -87,17 +88,17 @@ describe('clinical compiler differential', () => {
         Object.entries(summary.documents).map(([document, { sites }]) => [document, sites]),
       ),
     ).toEqual({
-      'cdc2022-opioid-rec01': 43,
-      'cdc2022-opioid-rec02': 73,
-      'cdc2022-opioid-rec03': 54,
-      'cdc2022-opioid-rec04': 72,
+      'cdc2022-opioid-rec01': 41,
+      'cdc2022-opioid-rec02': 83,
+      'cdc2022-opioid-rec03': 30,
+      'cdc2022-opioid-rec04': 76,
       'cdc2022-opioid-rec06': 9,
-      'cdc2022-opioid-rec07': 144,
-      'cdc2022-opioid-rec08': 54,
-      'cdc2022-opioid-rec09': 57,
+      'cdc2022-opioid-rec07': 154,
+      'cdc2022-opioid-rec08': 76,
+      'cdc2022-opioid-rec09': 58,
       'cdc2022-opioid-rec10': 44,
-      'cdc2022-opioid-rec11': 15,
-      'cdc2022-opioid-rec05': 72,
+      'cdc2022-opioid-rec11': 16,
+      'cdc2022-opioid-rec05': 87,
       'cdc2022-opioid-rec12': 49,
     });
   });

@@ -37,19 +37,20 @@ const visibleSemantics = (document: string, sentence: number, line: number): rea
 
 describe('semantic graph source fidelity review', () => {
   it('keeps polarity and modality visible for a negated recommendation', () => {
-    // ACE: If an opioid-benefit does not outweigh an opioid-risk then every
-    // clinician should not consider an opioid-therapy for an acute-pain.
-    const semantics = visibleSemantics('cdc2022-opioid-rec01', 3, 506);
+    // ACE: If an opioid-benefit does not likely outweigh an opioid-risk and there is a clinician
+    // then it is recommended that the clinician does not consider an opioid-therapy for an
+    // acute-pain.
+    const semantics = visibleSemantics('cdc2022-opioid-rec01', 3, 651);
 
     expect(semantics.some((label) => /\bshould\b/iu.test(label))).toBe(true);
     expect(semantics.some((label) => /\b(?:not|negative|negated)\b/iu.test(label))).toBe(true);
   });
 
   it('keeps modal force and numeric scope visible for a qualified action', () => {
-    // ACE: An opioid-continuation may initiate a long-term-opioid-therapy after 30 days.
-    const semantics = visibleSemantics('cdc2022-opioid-rec02-imp21', 1, 1795);
+    // ACE: An opioid-continuation can possibly initiate a long-term-opioid-therapy after 30 days.
+    const semantics = visibleSemantics('cdc2022-opioid-rec02-imp21', 1, 2401);
 
-    expect(semantics.some((label) => /\bmay\b/iu.test(label))).toBe(true);
+    expect(semantics.some((label) => /\bcan\b/iu.test(label))).toBe(true);
     expect(semantics.some((label) => /\b30\b/u.test(label))).toBe(true);
   });
 
@@ -71,8 +72,9 @@ describe('semantic graph source fidelity review', () => {
     const negative = edges.find(({ label }) => label === '-');
     const should = edges.find(({ label }) => label === 'should');
 
-    expect(negative).toBeDefined();
-    expect(should?.source).toBe(negative?.target);
+    // SHOULD over a negation: the refraining sits inside the recommendation.
+    expect(should).toBeDefined();
+    expect(negative?.source).toBe(should?.target);
   });
 
   it('does not turn a negated premise into positive event support', () => {
@@ -94,7 +96,7 @@ describe('semantic graph source fidelity review', () => {
       edges: { id: string; source: string }[];
     };
     malformed.edges = malformed.edges.map((edge) =>
-      edge.id === 'edge:513:0' ? { ...edge, source: 'document:cdc2022-opioid-rec01' } : edge,
+      edge.id === 'edge:658:0' ? { ...edge, source: 'document:cdc2022-opioid-rec01' } : edge,
     );
 
     expect(() => parseSemanticGraph(malformed)).toThrow(GraphDataError);
@@ -104,15 +106,15 @@ describe('semantic graph source fidelity review', () => {
     const view = graph.answerSubgraph({
       document: 'cdc2022-opioid-rec01',
       sentences: [3],
-      lines: [506],
+      lines: [651],
     });
 
-    expect(view?.highlight.edges).not.toContain('edge:512:12');
+    expect(view?.highlight.edges).not.toContain('edge:657:13');
   });
 
   it('reverses a directed relation label when HTML navigation starts at its target', () => {
     // ACE: If a benefit outweighs a risk then every clinician should ... continue an opioid-therapy.
-    const support = graph.edge('edge:4501:11');
+    const support = graph.edge('edge:6094:11');
     if (support === undefined) throw new Error('missing positive condition-support edge');
 
     expect(graphRelationLabel(support, support.target)).toBe('supported by condition · should');

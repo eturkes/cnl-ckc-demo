@@ -356,7 +356,7 @@ const bodyCalls = (source) => {
 
 const ARITIES = new Map([
   ['guideline_schema_version', 1],
-  ['guideline_document', 3],
+  ['guideline_document', 4],
   ['guideline_entity', 4],
   ['guideline_cardinality', 5],
   ['guideline_event', 3],
@@ -364,7 +364,20 @@ const ARITIES = new Map([
   ['guideline_pp', 4],
   ['guideline_property', 4],
   ['guideline_operator', 3],
+  ['guideline_interval', 6],
+  ['guideline_recurrence', 4],
+  ['guideline_frequency', 5],
+  ['guideline_order', 4],
+  ['guideline_recurrence_window', 7],
+  ['guideline_range', 3],
+  ['guideline_grade', 5],
+  ['guideline_preference', 4],
+  ['guideline_qualifier', 4],
+  ['guideline_unit', 3],
 ]);
+
+/** The schema's comparison built-ins: a rule body may call one, and no document defines one. */
+const BODY_BUILTINS = new Set(['guideline_satisfies/4', 'guideline_satisfies/6']);
 
 /**
  * Parse the exact source string fed to SWI. Array position + 1 is therefore the
@@ -424,7 +437,10 @@ export const parseClauseSites = (files) => {
     const body = bodySource === '' ? [] : bodyCalls(bodySource);
     for (const call of body) {
       const expected = ARITIES.get(call.name);
-      if (expected === undefined || call.args.length !== expected) {
+      if (
+        (expected === undefined || call.args.length !== expected) &&
+        !BODY_BUILTINS.has(`${call.name}/${call.args.length}`)
+      ) {
         refuse('prolog-body-arity', `${call.name}/${call.args.length}`);
       }
     }

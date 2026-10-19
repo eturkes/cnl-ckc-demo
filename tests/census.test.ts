@@ -91,7 +91,7 @@ const of =
 
 const PREDICATES = {
   version: 'guideline_schema_version(_)',
-  document: 'guideline_document(_,_,_)',
+  document: 'guideline_document(_,_,_,_)',
   entity: 'guideline_entity(_,_,_,_)',
   cardinality: 'guideline_cardinality(_,_,_,_,_)',
   event: 'guideline_event(_,_,_)',
@@ -99,6 +99,16 @@ const PREDICATES = {
   pp: 'guideline_pp(_,_,_,_)',
   property: 'guideline_property(_,_,_,_)',
   operator: 'guideline_operator(_,_,_)',
+  interval: 'guideline_interval(_,_,_,_,_,_)',
+  recurrence: 'guideline_recurrence(_,_,_,_)',
+  frequency: 'guideline_frequency(_,_,_,_,_)',
+  order: 'guideline_order(_,_,_,_)',
+  recurrence_window: 'guideline_recurrence_window(_,_,_,_,_,_,_)',
+  range: 'guideline_range(_,_,_)',
+  grade: 'guideline_grade(_,_,_,_,_)',
+  preference: 'guideline_preference(_,_,_,_)',
+  qualifier: 'guideline_qualifier(_,_,_,_)',
+  unit: 'guideline_unit(_,_,_)',
 } as const;
 
 const loadImage: ImageLoader = async (image) => {
@@ -375,7 +385,24 @@ const CENSUS: Row[] = [
     file: PROOF,
     anchor: 'Rules dominate: arg',
     figures: (
-      ['arg', 'cardinality', 'entity', 'event', 'operator', 'pp', 'property'] as const
+      [
+        'arg',
+        'cardinality',
+        'entity',
+        'event',
+        'operator',
+        'pp',
+        'property',
+        'interval',
+        'recurrence',
+        'frequency',
+        'order',
+        'recurrence_window',
+        'range',
+        'preference',
+        'qualifier',
+        'unit',
+      ] as const
     ).flatMap((name) => [
       fig(`${name} rules`, `${name} ${N}/`, `rules.${name}`),
       fig(`${name} clauses`, `${name} \\d+/${N}`, `clauses.${name}`),
@@ -470,7 +497,7 @@ const CENSUS: Row[] = [
   },
   {
     file: GRAPH,
-    anchor: '- Modal census, ',
+    anchor: '- Modal census: ',
     figures: [
       fig('negation contexts', `${N} \`-\` \\(negation\\)`, 'modal.-'),
       fig('should contexts', `${N} \`should\``, 'modal.should'),
@@ -497,11 +524,11 @@ describe('stated censuses', () => {
 
   it('refuses a figure altered in the real rules text, and an emptied table', () => {
     const altered = grade(CENSUS, (file) =>
-      file === KB ? read(file).replace('entity 1834,', 'entity 1835,') : read(file),
+      file === KB ? read(file).replace('entity 2052,', 'entity 2053,') : read(file),
     );
     expect(altered).toEqual([
       expect.stringMatching(
-        /^\.claude\/rules\/kb-build\.md:\d+ states entity clauses = 1835, derived 1834$/u,
+        /^\.claude\/rules\/kb-build\.md:\d+ states entity clauses = 2053, derived 2052$/u,
       ),
     ]);
     expect(grade([], read)).toEqual(['CENSUS table is empty, so no stated figure is graded']);

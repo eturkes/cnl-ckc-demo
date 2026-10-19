@@ -16,7 +16,7 @@ import { ROOT } from './clinical-test-support.js';
 const require = createRequire(import.meta.url);
 const GENERATED = join(ROOT, 'kb', 'generated');
 const SCHEMA = [
-  'guideline_document(_,_,_)',
+  'guideline_document(_,_,_,_)',
   'guideline_entity(_,_,_,_)',
   'guideline_cardinality(_,_,_,_,_)',
   'guideline_event(_,_,_)',
@@ -25,6 +25,16 @@ const SCHEMA = [
   'guideline_property(_,_,_,_)',
   'guideline_operator(_,_,_)',
   'guideline_schema_version(_)',
+  'guideline_interval(_,_,_,_,_,_)',
+  'guideline_recurrence(_,_,_,_)',
+  'guideline_frequency(_,_,_,_,_)',
+  'guideline_order(_,_,_,_)',
+  'guideline_recurrence_window(_,_,_,_,_,_,_)',
+  'guideline_range(_,_,_)',
+  'guideline_grade(_,_,_,_,_)',
+  'guideline_preference(_,_,_,_)',
+  'guideline_qualifier(_,_,_,_)',
+  'guideline_unit(_,_,_)',
 ];
 
 let engine: Engine;

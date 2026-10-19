@@ -152,7 +152,7 @@ describe('P4 hard-cancel recovery', () => {
     // Not awaited: the reset is still booting its replacement when the query is posted,
     // which is exactly the window P4.7 names.
     const resetting = engine.reset('P4.7 hard cancel');
-    const during = engine.query('guideline_document(D,_,_).', budget({ answerCap: 1 }));
+    const during = engine.query('guideline_document(D,_,_,_).', budget({ answerCap: 1 }));
 
     const [booted, outcome] = await Promise.all([resetting, during]);
     expect(booted).toEqual({ kind: 'booted', contract: manifest.contract });
@@ -166,7 +166,7 @@ describe('P4 hard-cancel recovery', () => {
     // Two spawns, not three: the mid-respawn request attached to the live generation.
     expect(spawned).toHaveLength(2);
     // The engine the reset produced is usable, so the failed request cost nothing.
-    const after = await engine.query('guideline_document(D,_,_).', budget({ answerCap: 1 }));
+    const after = await engine.query('guideline_document(D,_,_,_).', budget({ answerCap: 1 }));
     expect(after.kind).toBe('limit');
   }, 180_000);
 
@@ -226,7 +226,7 @@ describe('Q budget corpus — several limits armed at once', () => {
     expect(solved.limit).toBe('inference');
     expect(solved.solutions).toHaveLength(0);
     // The engine survives a four-way trip; a limit is never a discard.
-    const sound = await session.solve('guideline_document(D,_,_).', budget({ answerCap: 1 }));
+    const sound = await session.solve('guideline_document(D,_,_,_).', budget({ answerCap: 1 }));
     expect(sound.kind).toBe('limit');
   }, 120_000);
 });

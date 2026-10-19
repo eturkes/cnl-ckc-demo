@@ -8,7 +8,7 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
 `med` set to one line each.
 
 - **Two coverage passages do not locate on their recorded page** — the owned page viewer
-  marks a passage where its page's text holds it (`tests/passage-locate.test.ts`: 321 whole, 14
+  marks a passage where its page's text holds it (`tests/passage-locate.test.ts`: 366 whole, 17
   continuing, 2 not found). `cdc2022-opioid-rec06` and `rec07` record page 14 (producer
   `coverage.tsv` B3-09, B3-10 `p14`), yet each passage sits whole on page 13, where BOX 3
   begins; the producer's own census places both there (`audit/census-map.tsv` `p013.C13`–`C15`).
@@ -16,6 +16,30 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   re-vendored bag corrects its region page, or carries a recorded producer reason, and the
   census in `tests/passage-locate.test.ts` moves with it. `pri` low. **User ruling**: keep it
   owed to the producer — no demo-side declared limit.
+- **The binding replay lane cannot read the 19-indicator bag** — `pnpm binding:replay`: its archived arm loads the
+  `a944fca` producer, whose provenance arity table refuses `guideline_document/4`, so since the
+  `83569b1d` re-vendor the lane exits 1 before it erases anything (`ProvenanceError:
+  prolog-arity: guideline_document/4`) instead of reading archived-red and working-green. The
+  lane assumes both trees parse one bag, which a schema-changing re-vendor breaks; `pnpm
+  binding:replay HEAD` still runs both arms on the working producer. Accept: the lane reads
+  archived-red and working-green again — each arm on the bag its own tree vendored, erasing its
+  own first cited line — or it retires with its firing kept in `.agent/contracts/m5u3.md`.
+  `pri` med. A grader change: it needs the user's approval.
+- **The meta-interpreter fails closed on a comparison built-in** — `derive/5`
+  (`tools/kb/proof.mjs`) resolves the 19 schema indicators alone, so a derivation through a rule
+  body that calls `guideline_satisfies/4,6` (30 documents, the `tablet-use-spacing` export)
+  fails while the plain query succeeds; upstream's traces record each call as a `builtin(G)`
+  leaf. No shipped proof reaches one: every catalog goal derives through the 12 recommendation
+  documents, none of which compares a quantity. Accept: a proof through a comparison-bearing
+  rule settles `proof`, the comparison a line-free leaf the decoder and the ladder both show,
+  seen red on the unfixed tree. `pri` low.
+- **A qualifier adverb takes the verb slot of a clinical action** — the clinical parser reads an
+  action's first word as its verb, so `should carefully evaluate an individual-benefit` records
+  verb `carefully` and object `evaluate an individual-benefit`. The rendered sentence is right;
+  the `clinical_rule/3` structure the chat reads is not. Accept: every action whose sentence
+  carries a `guideline_qualifier` records the adverb apart from its verb, and every rendered
+  answer stays byte-identical. `pri` low. Belongs with the routed answer-panel scope, which
+  shows qualifiers.
 - **`pnpm mutate` credits a timeout-only kill** — a vitest check that fails only by `Test timed
   out` exits 1, and `tools/mutate.mjs` reads exit 1 as killed, so a mutant that merely stalls its
   check, or a check starved by load, counts as bound (`mnt5-reviewer-2` F4: the first
@@ -114,6 +138,7 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 
 | defect | accept |
 | --- | --- |
+| The binding replay lane cannot read the 19-indicator bag | the lane reads archived-red and working-green again — each arm on the bag its own tree vendored, erasing its own first cited line — or it retires with its firing kept in `.agent/contracts/m5u3.md` |
 | `pnpm mutate` credits a timeout-only kill | a mutant whose vitest check fails only by timeout reads `INCONCLUSIVE` and fails the run, shown by a planted stalling mutant |
 | `claims:check` covers one line of each `Artifacts` entry | each `Artifacts` bullet grades as one unit with its continuation lines, and a planted change on a continuation line is refused by `claims:check` as a stale row |
 | The inventory resolves a bare-path `text` record and a `none` gate step | the copy:check row planted as `text` + `tools/copy-check.mjs`, then as `none`, is refused by name — `names no verbatim text`, `a gate step needs a firing record` — and the real inventory still passes |

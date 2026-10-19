@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { buildImage, buildQlf, saveDiagnostics } from '../tools/kb/produce.mjs';
 
 const BOOT_TIMEOUT = 120_000;
-const DOCUMENT = (id: string): string => `guideline_document(${id},title,2022).\n`;
+const DOCUMENT = (id: string): string => `guideline_document(${id},title,2022,none).\n`;
 
 /** The exact shape `payloadSource` emits: one `% file:` marker per payload document. */
 const payload = (bodies: string[]): string =>

@@ -137,7 +137,7 @@ export const readContract = (engine) => {
     .query('findall(V,guideline_schema_version(V),Vs),sort(Vs,Us),length(Us,D),max_list(Us,Hi),min_list(Us,Lo).')
     .once();
   const documents = engine.prolog
-    .query('findall(D,guideline_document(D,_,_),Ds),length(Ds,N).')
+    .query('findall(D,guideline_document(D,_,_,_),Ds),length(Ds,N).')
     .once();
   const version = engine.prolog.query('current_prolog_flag(version_data,swi(Ma,Mi,Pa,_)).').once();
   if (Number(schema['D']) !== 1 || Number(schema['Hi']) !== Number(schema['Lo'])) {

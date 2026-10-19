@@ -50,11 +50,11 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   repo — verification integrity off the answer path too, the assurance tiers, and the IMPLEMENT +
   MAINTAIN teammate dispatch. This retires the integrity waiver; every check it excused sits beside
   its firing record in `.agent/contracts/mnt5-inventory.md`. Binding → `.claude/rules/stack.md`.
-- **Orphan operator contexts stay orphaned.** 71 operator-context nodes carry no edge — 64
-  negation, 7 `can`, i.e. 41% of the corpus's 156 negation contexts — the body-level scopes
+- **Orphan operator contexts stay orphaned.** 83 operator-context nodes carry no edge — 76
+  negation, 7 `can`, i.e. 39% of the corpus's 197 negation contexts — the body-level scopes
   whose identity binds at query time. They gain no covering edges; each records its body
   literals instead, and the body-relation dedup keys on scope (mnt-d49 ruling), so the shipped
-  population is 20,980 total / 1,193 operator. u11's S3 is ONE-WAY: every operator-bearing edge
+  population is 24,947 total / 1,431 operator. u11's S3 is ONE-WAY: every operator-bearing edge
   resolves to exactly one scope record, an unreferenced record is legal, and the unreferenced
   count is pinned so it cannot drift.
 - **Security lane.** Live `pnpm audit` in the gate, no allowlist; static analysis = ESLint
@@ -69,12 +69,12 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   cases that hold up the polarity ruling rather than the non-negotiable; each table carries its
   own `gradeTable`, its own emptied-table control and its own count in the success line.
   Wiring → `.claude/rules/gate.md`.
-- **A spanning edge shows BOTH endpoint scopes.** 736 of 751 synthesized `condition supports`
-  occurrences — 333 of 344 projected groups — join endpoints under DIFFERENT scopes, commonest
-  `[] → [should]` 527. `EdgeView` therefore gains `farScope` and R2 carries near end then far
+- **A spanning edge shows BOTH endpoint scopes.** 939 of 973 synthesized `condition supports`
+  occurrences — 445 of 465 projected groups — join endpoints under DIFFERENT scopes, commonest
+  `[] → [should]` 624. `EdgeView` therefore gains `farScope` and R2 carries near end then far
   end; `scope` stays byte-for-byte what the producer recorded, because composing the two would
   manufacture a chain no `scopes` record holds. Amendment recorded at `.agent/contracts/m5u8.md`
-  with the original text; approving unit `.agent/contracts/m5u13.md` V6. The 38 cases whose ends
+  with the original text; approving unit `.agent/contracts/m5u13.md` V6. The 67 cases whose ends
   CONTRADICT rather than nest are each justified by their own clause
   (`tests/graph-shortcut-justification.test.ts`); the shipped edge population does not move.
 - **An edge label is READER-RELATIVE; the data stays direction-fixed.** `scope` is always the
@@ -107,6 +107,17 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   C6 — stay accepted-open, the closes proposed for C1, A11+ and C6 included; none becomes a queue
   row. Facts per id → `.agent/contracts/mnt5-inventory.md` `## Accepted-open re-ruling`.
 
+- **A re-vendored bag moves its figures, never its rulings.** Every corpus-derived figure in the
+  rules, `Decisions` and the pinned checks is re-derived from the new bag and re-pinned, each
+  check's red on the new bag recorded in the commit body; check logic stays as it is unless the
+  user approves an edit. The upstream sync to `83569b1d` (bag `g8a51bf0c8722`: 385 documents, 19
+  schema indicators, comparison built-ins in `schema.pl`) is the first such re-pin; its approved
+  edits are E27's comment-blind float scan, the read-only guard's allowlist widened to the new
+  schema, and the nested-operator MEANING case following the inverted nesting.
+- **A recommendation to refrain reads `should not`.** The corpus spells SHOULD over a negation
+  `it is recommended that X does not V`; the answer renders `X should not V`, the parser
+  keeping the surface form only to rebuild the sentence. T9 carries it, and the positive copula
+  `X is preferred for Y`, as declared edits of `22053ef`.
 - **The chat is the free-text intake.** It replaced the TypeSafe rule-selection intake, whose
   code, suites, gate rows, census rows and binding entries are gone. `gpt-6.1-sol`, effort
   `medium`, over one persistent `codex app-server` under a dedicated `CODEX_HOME`
@@ -119,7 +130,7 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
     `chat-plan.md`.
 
 **MAIN:** premise display = deduplicated steps inside the EXISTING ladder rungs, never a new
-step type (3,930 leaves / 346 premises), carrying hypothetical origin and no source line.
+step type (4,491 leaves / 451 premises), carrying hypothetical origin and no source line.
 u6's oracle is GREEN at base — it guards the compiled KB, which the answer-path defect never
 broke; its RED-under-dependency-removal witness is a firing record, and its credit is the
 default-operator mutants `pnpm stryker` shows it killing in its three imports — every survivor,
@@ -133,6 +144,15 @@ worker before its caller resumes (`chat-c2.md`).
 
 ## Tasks
 
+- [ ] sync-u1 `kernel` the upstream sync to `83569b1d`: bag `g8a51bf0c8722` vendored, the
+  19-indicator schema and `schema.pl` loaded, the clinical grammar's two new forms, six
+  exports, the guard + chat guide on the new schema, every corpus figure re-pinned.
+  - Accept: `pnpm gate` green; the 12 catalog answers derive live and render structured;
+    `kb:export-check` reads 6 of 6; T9 holds with its declared edits.
+- [ ] sync-u2 graph projection of the time, strength and unit annotations (user: in this
+  request; the answer panel's share routes to ITERATE after the sync lands).
+- [ ] sync-close request close: closing review, rules upkeep, ticked rows archived, then the
+  route of the answer-panel share to ITERATE.
 - [ ] m6 `low` coverage passages — waits on the producer correcting B3-09/B3-10 `p14`.
 - [ ] m8 `med` `pnpm mutate` refuses a timeout-only kill — owed (user): a grader change, left queued;
   `wip/m8-mutate-timeout` `7ea4369` (new row).

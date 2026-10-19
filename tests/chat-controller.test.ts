@@ -27,7 +27,7 @@ const solution = (text: string): QueryOutcome => ({
 const first = solution("'engine answer 日本語'");
 const second: QueryOutcome = { kind: 'failure' };
 const goal1 = 'guideline_schema_version(V).';
-const goal2 = 'guideline_document(no_such_document,_,_).';
+const goal2 = 'guideline_document(no_such_document,_,_,_).';
 const answerText = (source = 'kb', queries = ['q1'], urls: string[] = []): string =>
   JSON.stringify({ segments: [{ text: 'Model wording.', source, queries, urls }] });
 const assistant = (controller: ChatController): AssistantMessage => {

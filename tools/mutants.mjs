@@ -643,8 +643,8 @@ export const MUTANTS = [
     edits: [
       {
         path: 'kb/generated/provenance/documents/cdc2022-opioid-rec01-imp01.json',
-        old: '"line": 22,',
-        new: '"line": 21,',
+        old: '"line": 42,',
+        new: '"line": 41,',
       },
     ],
     check: { test: 'tests/proof-identity.test.ts', name: 'keys every schema clause by a unique' },
@@ -1096,7 +1096,7 @@ export const MUTANTS = [
         new: '              keptWorld: world(clause, call),',
       },
     ],
-    check: { test: 'tests/graph-condition-merges.test.ts', name: 'records 25 negated folds' },
+    check: { test: 'tests/graph-condition-merges.test.ts', name: 'records 28 negated folds' },
   },
   {
     label: 'inv graph-model: scope terminal reference unchecked',
@@ -1145,7 +1145,7 @@ export const MUTANTS = [
     ],
     check: {
       test: 'tests/graph-shortcut-justification.test.ts',
-      name: 'records the 38 shortcuts whose endpoint scopes contradict',
+      name: 'records the 67 shortcuts whose endpoint scopes contradict',
     },
   },
   {
