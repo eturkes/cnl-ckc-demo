@@ -226,3 +226,11 @@ In location order, as `pnpm stryker` prints it.
 | `tools/kb/exports.mjs:102:58` | StringLiteral | "\"\"" | Survived |
 | `tools/kb/exports.mjs:102:69` | StringLiteral | "\"Stryker was here!\"" | Survived |
 | `tools/kb/exports.mjs:131:46` | StringLiteral | "\"\"" | Survived |
+
+## Re-run after the upstream sync (`38ce061`)
+
+`pnpm stryker` rc 0 over the same three modules after `paths.mjs` gained the `% schema:` block:
+`survivors: Killed 110, NoCoverage 73, Survived 57, Timeout 10, collection failure 49`. The
+survivor table above predates that block, so its `paths.mjs` line anchors no longer name the
+current mutants; regenerating the table and ruling each survivor stays owed under the
+`.agent/deferred.md` row `` `pnpm stryker`'s surviving mutants carry no ruling ``.

@@ -72,10 +72,10 @@ is rejected.
 - An unbounded naive meta-interpreter exhausts the 1 GiB stack in ~8.5 s on the corpus's
   recursive rule-head chains. The shipping design is **depth-capped**: conjunction preserves
   the cap, each `clause/2` expansion decrements it, cap 0 fails closed before head expansion.
-- **Cap 1 is complete for plain queries** — projected-value multisets equal the plain query
+- **Cap 1 is complete for plain queries**, measured over the retired M2 legacy catalog — projected-value multisets equal the plain query
   for all six catalog goals and hold to cap 20. Cap-1 live `sentence(Doc,S)` multisets equal
   all four committed trace oracles exactly, zero divergences.
-- Re-proving the SELECTED solution returns the byte-identical proof from the all-solutions
+- Over that legacy catalog, re-proving the SELECTED solution returns the byte-identical proof from the all-solutions
   run for all 18 slots; medians 0.097–291.419 ms. MI over ALL solutions costs 0.518–2.914 s
   on the four broad goals against 0.017–0.096 ms plain — **never put it in the UI path.**
 - Selected-proof budget: cap 1, stack 16 MiB, outer depth 100, 100000 inferences, answer cap

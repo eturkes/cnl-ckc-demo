@@ -144,16 +144,9 @@ worker before its caller resumes (`chat-c2.md`).
 
 ## Tasks
 
-- [x] c511755 sync-u1 `kernel` the upstream sync to `83569b1d`: bag `g8a51bf0c8722` vendored, the
-  19-indicator schema and `schema.pl` loaded, the clinical grammar's two new forms, six exports,
-  the guard + chat guide on the new schema, every corpus figure re-pinned.
-- [x] e73ed6c sync-u2 `kernel` graph projection of the time, strength and unit annotations and the
-  comparison conditions (user: in this request; the answer panel's share routes to ITERATE after
-  the sync lands). Contract `.agent/contracts/sync-u2.md`, reviewed by `consultant-1` before code.
-  - Accept: its A1–A5 green, `pnpm gate` + `pnpm graph:check` green; a live review owed
-    (`.claude/rules/ui.md` `User review`).
-- [ ] sync-close request close: closing review, rules upkeep, ticked rows archived, then the
-  route of the answer-panel share to ITERATE.
+- [ ] owed (user): live review of the graph annotations (sync-u2 `e73ed6c`, `.claude/rules/ui.md`
+  `User review`) — `pnpm dev`, open the graph, select an answer's Find in graph (rec07 for time
+  limits, rec05 for qualifiers, rec03 for a preference) and read the new relationships.
 - [ ] m6 `low` coverage passages — waits on the producer correcting B3-09/B3-10 `p14`.
 - [ ] m8 `med` `pnpm mutate` refuses a timeout-only kill — owed (user): a grader change, left queued;
   `wip/m8-mutate-timeout` `7ea4369` (new row).

@@ -180,6 +180,18 @@ Closed queue run (`dN` = the row's ordinal in the queue at `24bbb5d`):
 - [x] `8c186d2` find: a heap recreation that joined an in-flight reset waited on its unbounded boot → it arms its own boot deadline.
 - [x] `28c37bc` Close: 4 lenses × 2 reviewers, round-2 re-review all pass; 46/46 mutants killed under the exit-1 rule.
 
+## Sync to upstream `83569b1d` (request: "Pull the latest ../cnl-ckc and update cnl-ckc-demo accordingly")
+
+- [x] `c511755` sync-u1 `kernel`: bag `g8a51bf0c8722` vendored, the 19-indicator schema and
+  `schema.pl` loaded, the clinical grammar's two new forms, six exports, the guard + chat guide on
+  the new schema, every corpus figure re-pinned (user rulings: scope, T9 edits, re-pins, E27 scan,
+  guard widening, nested-operator MEANING case).
+- [x] `e73ed6c` sync-u2 `kernel`: the graph projects grades, preferences, qualifiers, time limits
+  and comparison thresholds; contract `.agent/contracts/sync-u2.md`, reviewed before code by
+  consultant-1 (direction right, ten rows changed, all adopted).
+- [x] `38ce061` sync-close: reviewer-10 over `.agent/contracts/sync-close.md` C1–C8 — 5 pass,
+  F1 (major, range-pairing guard) + F2–F5 fixed or recorded; release lanes green on `e73ed6c`.
+
 ## Phase
 
 IMPLEMENT closed twice, both ledgered in `.agent/review.md` with no open row: u3–u15 on 32/32
