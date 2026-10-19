@@ -129,6 +129,24 @@ const REQUIRED = Object.freeze([
     ],
   },
   {
+    suite: 'tests/marks-run-boundary.test.ts',
+    why: "a document whose marks did not return still ends its grade run, so the next run's first statement keeps its grade",
+    cases: ['R2 grade runs follow answer-source boundaries even when one source has no marks'],
+  },
+  {
+    suite: 'tests/marks-run-boundary.dom.test.ts',
+    why: "the rendered grade follows the answer's own document runs, marks returned or not",
+    cases: ['R5 the first statement after a source-set change keeps its available grade'],
+  },
+  {
+    suite: 'tests/marks-admitted.test.ts',
+    why: 'a mark the term cannot carry leaves its document without marks, and a body literal outside the schema is never assumed',
+    cases: [
+      'G2 an alternative whose noun is the sentinel none leaves its document without marks',
+      'G3 a body literal that is no schema relation is never assumed',
+    ],
+  },
+  {
     suite: 'tests/clinical-inference.test.ts',
     why: 'the evaluator is complete, exhaustively site-bound and side-effect free',
     cases: [

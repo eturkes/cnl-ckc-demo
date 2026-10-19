@@ -1,10 +1,9 @@
 // Every word of the demo's own prose, as data, in English.
 //
-// The bucket split is editorial, not a heuristic: the project holds instructions
-// to 20 words per sentence and everything else to 25, and a validator cannot tell
-// the two apart by reading a string. Declaring the bucket is what makes both
-// limits mechanically checkable. `tools/copy-check.mjs` grades this file on every
-// gate run and grades `ja.ts` for parity against it.
+// The bucket split is editorial: an instruction holds one step per sentence, and a
+// validator cannot tell an instruction from a description by reading a string.
+// `tools/copy-check.mjs` grades this file for banned filler on every gate run and
+// grades `ja.ts` for parity against it; sentence length stays a judgment.
 //
 // `TEXT` holds every string that interpolates a value. Sentence word order is decided
 // inside the locale file, because Japanese reorders what English concatenates — a
@@ -18,7 +17,7 @@
 // values, document ids and engine error messages. Those are payload — the demo
 // answers in the language its knowledge base is written in.
 
-/** Imperative text. One instruction per sentence, 20 words per sentence. */
+/** Imperative text. One instruction per sentence. */
 export const INSTRUCTIONS = {
   selectQuestion: 'Select a prepared clinical question.',
   runQuestion: 'Select Run to get a deterministic answer from the knowledge base.',
@@ -33,7 +32,7 @@ export const INSTRUCTIONS = {
   chatOrPick: 'Or select a prepared question below.',
 } as const;
 
-/** Explanatory text. 25 words per sentence. */
+/** Explanatory text. */
 export const DESCRIPTIONS = {
   wordmark: 'Clinical Knowledge Compiler',
 
@@ -152,9 +151,8 @@ export const DESCRIPTIONS = {
 } as const;
 
 /**
- * Chrome: headings, controls and accessible names. Short by nature, so the word
- * limit rarely binds — the value of grading them is the banned-filler sweep and
- * the parity check against `ja.ts`.
+ * Chrome: headings, controls and accessible names, graded by the banned-filler sweep
+ * and the parity check against `ja.ts`.
  *
  * `languageSwitch` is ASCII in BOTH locales on purpose. Naming the target language
  * in its own script would put Japanese glyphs on the English page, and the browser
@@ -342,8 +340,8 @@ export const TEXT = {
   sourceOrdinal: (index: number) => `Source ${String(index)}`,
   sourceCount: (n: number) => plural(n, 'source'),
   marksMissing: (missing: number, total: number) =>
-    `The knowledge base returned no annotations for ${String(missing)} of ` +
-    `${plural(total, 'source document')}. Statements from those documents show no annotations.`,
+    `Annotations from ${String(missing)} of ${plural(total, 'source document')} could not be ` +
+    `shown. No statement shows annotations from ${missing === 1 ? 'that document' : 'those documents'}.`,
 
   traceIdle: () => 'Select a citation to trace that part of the answer.',
   traceLoading: () => 'Re-proving the selected source contribution.',

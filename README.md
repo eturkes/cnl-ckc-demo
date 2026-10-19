@@ -51,9 +51,12 @@ The shipped answers are produced at run time. They are not stored UI fixtures.
 - Every compiled document is labelled `unreviewed`; no human adjudication is
   recorded.
 - The seven questions are prepared examples.
-- A statement without a facts row has no grade, qualifier, preference or time bound in the
-  knowledge base, unless a note under the answer says that the marks of its document are
-  missing.
+- The facts rows appear shortly after the answer is complete, together with the "Prolog goal
+  behind these annotations" disclosure. If the annotations of a document could not be shown,
+  a note under the answer says so. When that disclosure shows and no such note shows, a
+  statement that has no facts row has no qualifier, preference or time bound in the knowledge
+  base. A grade shows only on the first statement of each run of statements from the same
+  documents.
 - A **KB** tag shows that the cited query ran, not that the sentence restates its
   result. The wording is the model's. Compare the sentence with the solutions in the
   query's card.

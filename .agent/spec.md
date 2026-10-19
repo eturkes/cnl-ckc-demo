@@ -154,6 +154,12 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   and its `records` digest of the catalog that gains `marksGoal`.
 - **The catalog-version case derives the refused version from the emitted one**
   (`tests/questions-catalog-version.test.ts`), an approved edit that the catalog's v4 bump forces.
+- **The controller API pin admits `marks`** (`tests/demo-api.test.ts` `DECLARED_MEMBERS`), an
+  approved edit: the facts rows' state is the one member ann-u1 declares.
+- **The missing-annotations notice says the annotations could not be shown** — never that the
+  knowledge base returned none — and that no statement shows annotations from the documents
+  concerned, because `missing` also counts marks that returned unusable, and a statement shared
+  with another document keeps that document's annotations.
 - **A qualifier reads `Qualifier: <words>`, first in the row.** One label serves every class;
   upstream's class names (`manner`, `usuality`, `focus`) and function glosses never show.
 - **A grade shows once per run of statements from one source document.** The first statement
@@ -161,12 +167,12 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   documents leave it out. Qualifiers, preferences and time bounds stay on every statement.
 
 **MAIN:** the marks are ONE compiled goal per question, `clinical_marks/3` at the end of
-`PROOF_SOURCE`: it re-derives each document's sentences under their premises as
-`clinical_advice/4` does and reads the grade, qualifier, preference, interval and order heads out
-of that derivation, all-or-nothing per document. The generated catalog carries it as
-`marksGoal`; the controller runs it on the engine queue once the answer settles and before the
-trace, because every `solve` clears the proof cache. The answer spine — `clinical_advice/3,4`,
-its proof, the ladder — stays untouched, so a marks failure costs a notice, never an answer. The
+`PROOF_SOURCE`: it reads the grade, qualifier, preference, interval and order heads out of
+`clinical_derived/2`, the one per-sentence derivation `clinical_advice/4` also calls,
+all-or-nothing per document. The generated catalog carries it as `marksGoal`; the controller
+runs it on the engine queue once the answer settles and before the trace, because every `solve`
+clears the proof cache. A marks failure leaves the answer, its proof and the ladder as they
+are: it costs a notice, never an answer. The
 answer lists the marks goal with its verbatim engine solutions and says so when a document's
 marks are missing, so a missing mark never reads as an absent one. An adverb after an object or a
 modifier (rec04 S5–S6, rec11 S2) stays in that text: its verb already names the event. premise display = deduplicated steps inside the EXISTING ladder rungs, never a new
@@ -197,6 +203,12 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] ann-review — one `reviewer` per lens over the scope diff + MAIN's security lens, rows in
   `.agent/review.md`; accepted fixes land before close.
 - [ ] ann-close — `Phase` resumes `MAINTAIN — the whole product`, rules upkeep.
+- [ ] owed (user): live review of the answer panel's facts rows (ann-u3 `35d2c9c`,
+  `.claude/rules/ui.md` `User review`) — `pnpm dev`; run "When and how should clinicians
+  reassess opioid therapy?" (time bounds), "When should clinicians continue, taper, or
+  discontinue opioids?" (qualifiers) and "How should clinicians start opioid therapy?" (a
+  preference); read each statement's facts row; open "Prolog goal behind these annotations";
+  switch to Japanese and to the dark theme.
 - [ ] owed (user): live review of the graph annotations (sync-u2 `e73ed6c`, `.claude/rules/ui.md`
   `User review`) — `pnpm dev`, open the graph, select an answer's Find in graph (rec07 for time
   limits, rec05 for qualifiers, rec03 for a preference) and read the new relationships.

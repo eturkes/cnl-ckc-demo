@@ -4,8 +4,8 @@ Request: IMPLEMENT — answer panel annotations (`.agent/spec.md` `Decisions`: o
 statement, `Qualifier` first, grade once per document run, time bounds and orderings, labels
 translated and values English). Tier `kernel`: each row is a claim the panel makes in the
 knowledge base's name, and a wrong row reaches the reader unseen. Depends on ann-u1 (marks state,
-readings, join). The approved look is the ITERATE prototype's (`prototype/answer-annotations/`,
-captured at `.scratch/probe-ui/`): a muted bold label, its value, no colon, pairs spaced on one
+readings, join). The approved look is the ITERATE prototype's (tag `prototype-answer-annotations`,
+`prototype/answer-annotations/`): a muted bold label, its value, no colon, pairs spaced on one
 wrapping line, 0.78rem; a link-coloured disclosure after the statements.
 
 ## Design
@@ -13,13 +13,13 @@ wrapping line, 0.78rem; a link-coloured disclosure after the statements.
 - `AnswerPanel.svelte` takes the controller's `marks` state and renders, under each settled
   statement, one `<dl class="facts">`: Qualifier, Grade (shown), Preferred, Time — each pair
   present only when it has a value; no `<dl>` when none has. Values are ann-u1's readings joined
-  `, ` (qualifiers, grade labels) or `; ` (preferences, times), computed in the script, never in
+  as the join below states, computed in the script, never in
   markup, by the one join ann-u1 ships — the component derives nothing of its own.
 - A one-statement answer renders its statement in a `<div class="answer-point">`: a `<dl>` cannot
   sit in a `<p>`.
-- Notice: a settled answer whose marks are `failed` or `unavailable`, or `ready` with a missing
-  document, shows one `TEXT.marksMissing(missing, total)` line after the statements. `loading`
-  and a complete set show none.
+- Notice: a settled answer whose marks are `unavailable`, or `settled` with an answer document
+  missing (`marksView` `missing > 0`), shows one `TEXT.marksMissing(missing, total)` line after
+  the statements. `loading` and a complete set show none.
 - Disclosure `<details class="mark-goals">` after the statements once the marks settle: the
   catalog's marks goal and each solution's verbatim `display.Marks`, or the outcome when no
   solution returned.
@@ -32,8 +32,8 @@ wrapping line, 0.78rem; a link-coloured disclosure after the statements.
 
 ## Interface (binding names; tests and implementation both hold to them)
 
-- `AnswerPanel.svelte` props gain `solutions: readonly PlSolution[]` (the answer's solutions, in
-  `rows` order) and `marks: MarksState` (default `{ kind: 'idle' }`); `App.svelte` passes the
+- `AnswerPanel.svelte` props gain `solutions?: readonly PlSolution[]` (the answer's solutions, in
+  `rows` order, default `[]`) and `marks?: MarksState` (default `{ kind: 'idle' }`); `App.svelte` passes the
   settled result's solutions and `demo.marks`. The panel calls `marksView(marks, points, rows,
   solutions)` once and renders its `statements`, `notice`, `missing` and `total`.
 - DOM, per statement `.answer-point`: `dl.facts` holding one `div` per pair, `dt` = the label,
@@ -44,9 +44,12 @@ wrapping line, 0.78rem; a link-coloured disclosure after the statements.
   `Grade`/`グレード`, `LABELS.marksPreferred` `Preferred`/`優先`, `LABELS.marksTime`
   `Time`/`時期`, `LABELS.marksGoals` (the disclosure summary), `TEXT.marksMissing(missing,
   total)`. The disclosure note and outcome lines reuse the chat card's own keys
-  (`DESCRIPTIONS.chatCardNote`, `TEXT.chatCardSolutions`/`chatCardFailure`/`chatCardLimit`/
-  `chatCardError`/`chatCardCancelled`): both show one Prolog goal's outcome.
-- Values join `, ` (qualifier, grade) and `; ` (preferences, times), as `marksView` returns them.
+  (`DESCRIPTIONS.chatCardNote`, `TEXT.chatCardFailure`/`chatCardLimit`/`chatCardError`/
+  `chatCardCancelled`): both show one Prolog goal's outcome; a `solutions` outcome shows its
+  solutions and no status line.
+- Values join as `marksView` returns them: `, ` between a statement's qualifier words and between
+  one document's grade labels; `; ` between the grades of several documents, between preferences
+  and between times.
 
 ## Acceptance
 
@@ -61,10 +64,13 @@ wrapping line, 0.78rem; a link-coloured disclosure after the statements.
 - U4 the disclosure lists the goal and each solution's display byte-equal to the engine's.
 - U5 Japanese: the labels render the ruled terms; every value is byte-equal to the English one.
 - U6 the busy state is unchanged: the shipped streaming cases hold.
-- U7 `pnpm visual-qa` fits every state with the rows present; `operator` visual QA at 320, 375
-  and 1280 px, both themes, both locales, against `Decisions`; the user's live review is owed
+- U7 `pnpm visual-qa` fits every state, each answered state held until the marks settle and the
+  first answer's marks disclosure open; `operator` visual QA at 320, 375 and 1280 px, both
+  themes, both locales, against `Decisions`; the user's live review is owed
   (`.claude/rules/ui.md` `User review`).
-- Red witness: U1–U5 RED at base (no rows, no keys), command in the commit body.
+- Red witness: every panel case asserting a row, key, notice or disclosure RED at base; the
+  cases asserting absence base-GREEN, uncredited; U1 base-GREEN by design (`marksView` shipped
+  in ann-u1), credited by `pnpm stryker` — counts and commands in the sections below.
 
 ## Red witness (`tester-6`, diff-blind, `wt/tester-6` `c7c0943`)
 

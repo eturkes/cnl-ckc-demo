@@ -115,7 +115,7 @@ author Q3 — the 43 shipped statements, byte-identical:
 
 - Input validation Q3's well-formed terms never fail — `malformed` 46–47 (2), `asAtom`/
   `asString`/`asList`/`asCompound`/`nonempty` 51 54 57 64 68 (16), the polarity and modality
-  guards 81 94 96 (3), `presentClinicalAdvice`'s outer guards, fallback and `catch` 164–189 (31):
+  guards 81 94 96 (3), `presentClinicalAdvice`'s outer guards, fallback and `catch` 164–189 (33):
   behaviour Q3's contract leaves open, recorded. Graded elsewhere: `questions-live` `fails
   closed to the carried source passage for malformed inner structure` and `degrades to engine
   text for an unknown term shape`, `qualifier-slot` `Q1 the renderer accepts action/5 and

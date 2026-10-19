@@ -144,6 +144,10 @@ Emitted beside `clinical_advice/3,4`: `clinical_rule(Doc,S,Rule)`
 `clinical_derive/4,5` and `clinical_derived/2`. `mi/3` and `mi_limited/2` keep arity and behaviour by passing `[]`, so
 the shipped proof RPC is untouched. No write path ships; a direct `assertz` is still refused.
 
+- **An assumption stands in for a schema relation alone** (`schema_goal/1`). An antecedent
+  literal the build carries into a premise without being one — `fail`, say — is never
+  assumed, so a clause body that cannot hold derives no answer and no marks
+  (`tests/marks-admitted.test.ts`).
 - **`PROOF_SOURCE` is LAST in `payloadSource`** (payload → clinical helper → proof), so no
   edit to it can move a content-site line or a `clinical_gate/4` line list. That is what makes
   proof-source work line-safe by construction.
@@ -198,7 +202,8 @@ answer panel's grade, qualifier, preference and time marks, one solution per ans
   reads as a KB mark. Grades derive through `derive/5` at depth 1; the S1 grade facts are no
   gate heads.
 - **All-or-nothing per document, and separate from the answer.** An unresolved referent,
-  quantity, anchor or grade label, an anchorless interval, or a time head no reading covers
+  quantity, anchor or grade label, an anchorless interval, an alternative whose noun is `none`
+  (the term's own no-alternative sentinel), or a time head no reading covers
   (recurrence, frequency, recurrence window, range) leaves the document without a marks
   solution, while its answer still derives: a marks failure costs the panel a notice, never an
   answer.

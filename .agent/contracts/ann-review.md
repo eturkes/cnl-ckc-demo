@@ -30,3 +30,19 @@ security lens is MAIN's alone. Verdicts `pass:` / `fail(low|med|high):`; evidenc
 | K1 | CLAUDE.md conformance | Authoring (agent-optimized internal text, human-facing register for README + copy), comments carry the why only |
 | K2 | CLAUDE.md conformance | Engineering + Session flow: units, tiers, contracts before code, teammates, gates at every commit, records current |
 | S1 | security (MAIN) | every untrusted input this scope reaches traced to its sinks; raw-HTML sinks; data exposure |
+
+## Red witnesses of the fixes
+
+Each reproduces on the fixed tree by restoring the reviewed bytes of the one file it guards:
+`git show ee2a52b:<file> > <file> && pnpm exec vitest run <suites>`, then restore.
+
+- `tests/marks-run-boundary.test.ts` + `tests/marks-run-boundary.dom.test.ts` (R2/R5), file
+  `src/questions/marks.ts`: 2/2 RED at `ee2a52b` — `expected [ 'A grade', '' ] to deeply equal [
+  'A grade', 'A grade' ]`. Written by reviewer-12 as `tests/marks-reviewer-12{,.dom}.test.ts` on
+  `wt/reviewer-12` `dfe4c38`, adopted unchanged under these names.
+- `tests/marks-admitted.test.ts` (G2 + G3), file `tools/kb/proof.mjs`: 2/2 RED at `ee2a52b`; each
+  case builds its own planted image, so no `kb:build`. G2 `expected [ 'cdc2022-opioid-rec03',
+  …(1) ] to have a length of 1 but got 2`; G3 `expected [ { '$tag': 'bindings' } ] to have a
+  length of +0 but got 1`. G3 keeps reviewer-14's assertions (`wt/reviewer-14` `09fc7a2`,
+  `tests/marks-all-or-nothing.review.test.ts`); G2 asserts MAIN's fail-closed remedy, where
+  reviewer-14's witness (`tests/marks-guarantees.review.test.ts`) asserted the noun kept.

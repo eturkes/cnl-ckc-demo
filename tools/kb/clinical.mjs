@@ -561,8 +561,8 @@ const unwrap = (goal) => {
 /**
  * Every content-bearing clause site per selected sentence, keyed `document\0sentence`.
  *
- * It keeps EVERY `guideline_*` clause a sentence compiles to, not just the first: 686
- * sites over 48 sentences, and the whole set is what a derivation must cite.
+ * It keeps EVERY `guideline_*` clause a sentence compiles to, not just the first: the whole
+ * set is what a derivation must cite.
  *
  * @param {string} source @param {Set<string>} selected
  */

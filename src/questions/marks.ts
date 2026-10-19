@@ -339,7 +339,7 @@ const sameDocuments = (left: readonly string[], right: readonly string[]): boole
 
 const statementMarks = (
   contributions: readonly Contribution[],
-  previous: readonly string[],
+  continuesRun: boolean,
 ): StatementMarks => {
   const documents = unique(contributions.map(({ document }) => document.document));
   const grades = documents.map((name) =>
@@ -350,9 +350,7 @@ const statementMarks = (
   const sentences = contributions.flatMap(({ group: members }) => members);
   return {
     qualifier: qualifierReading(sentences.flatMap(({ qualifiers }) => qualifiers)),
-    grade: sameDocuments(documents, previous)
-      ? ''
-      : grades.filter((reading) => reading !== '').join('; '),
+    grade: continuesRun ? '' : grades.filter((reading) => reading !== '').join('; '),
     preferences: unique(sentences.flatMap(({ preferences }) => preferences.map(preferenceReading))),
     times: unique(sentences.flatMap(({ times }) => times.map(timeReading))),
   };
@@ -362,7 +360,8 @@ const statementMarks = (
  * The marks each synthesized statement shows. Statement text k of answer solution i takes group k
  * of that solution's document marks, over EVERY (solution, item) pair, so a statement repeated
  * inside one document or across two unites all of its groups. A grade shows on the first
- * statement of each run of statements drawing on the same documents.
+ * statement of each run of statements drawing on the same documents — the documents of its
+ * answer solutions, marks returned or not, so a missing document still ends its run.
  */
 export const marksView = (
   state: MarksState,
@@ -397,14 +396,15 @@ export const marksView = (
     });
   });
   let previous: readonly string[] = [];
-  const statements = contributions.map((contributors) => {
-    if (contributors.length === 0) {
-      previous = [];
-      return undefined;
-    }
-    const statement = statementMarks(contributors, previous);
-    previous = unique(contributors.map(({ document }) => document.document));
-    return statement;
+  const statements = contributions.map((contributors, index) => {
+    const documents = unique(
+      (points[index]?.sources ?? []).map(
+        (source) => rows[source]?.document ?? `#${String(source)}`,
+      ),
+    );
+    const continuesRun = sameDocuments(documents, previous);
+    previous = documents;
+    return contributors.length === 0 ? undefined : statementMarks(contributors, continuesRun);
   });
   return { statements, missing, total, notice: missing > 0 };
 };

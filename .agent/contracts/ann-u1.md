@@ -66,7 +66,8 @@ path, which this unit replaces. Reviewed before code by `consultant-2`
   `guideline_cardinality/5` node in the same proof; its unit is the interval's own argument.
 - All-or-nothing per document, each branch its own refusal: an unresolved preferred or
   alternative referent, interval quantity, interval anchor, order anchor or grade label; an
-  interval anchor `none`; a `guideline_recurrence/4`, `guideline_frequency/5`,
+  interval anchor `none`; an alternative whose noun is `none`, the term's no-alternative sentinel
+  (ann-review G2); a `guideline_recurrence/4`, `guideline_frequency/5`,
   `guideline_recurrence_window/7` or `guideline_range/3` node. Each leaves that document with no
   solution — never a partial set. The answer is untouched either way.
 - Grouping: `clinical_groups/2` — the answer's own code — orders the groups; each group then

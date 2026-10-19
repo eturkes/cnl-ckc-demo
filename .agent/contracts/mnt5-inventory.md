@@ -143,10 +143,13 @@ record is `.claude/rules/firing.md`.
 | `tests/m1u5-port.dom.test.ts` | off | active option scrolls to start rather than nearest block | mutate | `inv m1u5-port.dom: active option scroll aligns at start` |
 | `tests/m1u7-port.dom.test.ts` | off | About disclosure omits first contracted font licence link | mutate | `inv m1u7-port.dom: first font licence link omitted` |
 | `tests/m1u7-port.test.ts` | off | a root token outside the role names | mutate | `inv m1u7-port: a non-role root token planted` |
+| `tests/marks-admitted.test.ts` | answer | an alternative noun `none` read as no alternative; a body `fail` assumed as a premise | text | `.agent/contracts/ann-review.md case builds its own planted image, so no` |
 | `tests/marks-controller.test.ts` | off | marks state never leaves idle; no marks call ahead of the trace | text | `.agent/contracts/ann-u1.md 17/23 RED at base` |
 | `tests/marks-live.test.ts` | answer | no compiled marks goal; a duplicated clause stands in for a missing sentence | text | `.agent/contracts/ann-u1.md 12/13 RED at base` |
 | `tests/marks-panel.dom.test.ts` | answer | panel ignores marks: no facts row, notice or goal disclosure | text | `.agent/contracts/ann-u3.md 28/36 RED at base` |
 | `tests/marks-readings-live.test.ts` | answer | default-operator mutants of the readings and join | text | `.agent/contracts/ann-u3.md 497 mutants, **272 killed** by U1's live readings` |
+| `tests/marks-run-boundary.dom.test.ts` | answer | a missing document's grade run merged into the next | text | `.agent/contracts/ann-review.md Written by reviewer-12 as` |
+| `tests/marks-run-boundary.test.ts` | answer | a missing document's grade run merged into the next | text | `.agent/contracts/ann-review.md Written by reviewer-12 as` |
 | `tests/marks-view.test.ts` | answer | decoder, readings and join return the stub's fixed values | text | `.agent/contracts/ann-u1.md 405/405 RED at base` |
 | `tests/mutant-anchors.test.ts` | off | exported-query mutant names an anchor absent from its producer | mutate | `inv mutant-anchors: exported-query mutant retains a stale anchor` |
 | `tests/page-viewer.dom.test.ts` | off | failed page draw leaves retry button disabled | mutate | `C3 a failed page draw keeps Load page viewer disabled` |

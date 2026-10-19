@@ -312,8 +312,8 @@ export const TEXT = {
   sourceOrdinal: (index: number) => `出典${String(index)}`,
   sourceCount: (n: number) => `出典${String(n)}件`,
   marksMissing: (missing: number, total: number) =>
-    `出典文書${String(total)}件のうち${String(missing)}件について、知識ベースは注記を返しませんでした。` +
-    'これらの文書の記述には注記を表示していません。',
+    `出典文書${String(total)}件のうち${String(missing)}件の注記を表示できませんでした。` +
+    `${missing === 1 ? 'その文書' : 'それらの文書'}の注記は、どの記述にも表示していません。`,
 
   traceIdle: () => '出典を選択すると、回答のその部分を追跡します。',
   traceLoading: () => '選択された出典の寄与を再証明しています。',

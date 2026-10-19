@@ -14,7 +14,8 @@ const SOURCE = fileURLToPath(new URL('../src/demo/DemoController.svelte.ts', imp
 
 // `CHAT_BUDGET` + `runGoal` = the chat's path onto the one engine queue (`chat-c4.md`, user
 // ruling); the original pin fired on exactly those two names. `marks` = the settled answer's
-// knowledge-base marks (`.agent/contracts/ann-u1.md` Interface); the pin fired on it alone.
+// knowledge-base marks (`.agent/contracts/ann-u1.md` Interface, user ruling); the pin fired on it
+// alone.
 const DECLARED_EXPORTS = [
   'CHAT_BUDGET',
   'DEMO_BUDGET',

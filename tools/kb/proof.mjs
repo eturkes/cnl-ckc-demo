@@ -77,7 +77,7 @@ derive(M:A,D,As,P,S) :- !, (M == user -> derive(A,D,As,P,S) ; P=[], S=limit).
 derive((A,B),D,As,P,S) :- !, derive_conjunction(A,B,D,As,P,S).
 derive(\+ A,D,As,[naf(A)],S) :- !, findall(R,derive(A,D,As,_,R),Rs), naf_status(Rs,S).
 derive(clinical_advice(Q,Source,Answer),_,_,P,proved) :- !, clinical_advice(Q,Source,Answer,P).
-derive(H,_,As,[assumption(H)],proved) :- assumed(H,As), !.
+derive(H,_,As,[assumption(H)],proved) :- schema_goal(H), assumed(H,As), !.
 derive(H,0,_,[],limit) :- schema_goal(H), !.
 derive(H,D,As,[node(line(L),H,Sub)],S) :- D > 0, D1 is D-1, resolve(H,B,L), derive(B,D1,As,Sub,S).
 derive_conjunction(A,B,D,As,P,proved) :- derive(A,D,As,PA,proved), derive(B,D,As,PB,proved), app(PA,PB,P).
@@ -114,7 +114,7 @@ mark_preferences([],_,[]).
 mark_preferences([node(_,guideline_preference(_,_,R,A),_)|T],P,[preference(N,M)|Ps]) :- !, mark_noun(R,P,N), mark_alternative(A,P,M), mark_preferences(T,P,Ps).
 mark_preferences([_|T],P,Ps) :- mark_preferences(T,P,Ps).
 mark_alternative(none,_,none) :- !.
-mark_alternative(A,P,N) :- mark_noun(A,P,N).
+mark_alternative(A,P,N) :- mark_noun(A,P,N), N \== none.
 mark_times([],_,[]).
 mark_times([node(_,guideline_interval(_,_,Role,Q,U,A),_)|T],P,[interval(Role,C,N,U,X)|Ts]) :- !, A \== none, mark_quantity(Q,P,C,N), mark_noun(A,P,X), mark_times(T,P,Ts).
 mark_times([node(_,guideline_order(_,_,Relation,A),_)|T],P,[order(Relation,X)|Ts]) :- !, mark_noun(A,P,X), mark_times(T,P,Ts).

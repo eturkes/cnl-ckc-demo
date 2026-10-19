@@ -99,6 +99,8 @@ const walk = async (browser, url, width) => {
     const id = questionOf(await option.getAttribute('id'), fail);
     await option.click();
     await runAndSettle(page, false);
+    // The facts rows land once the marks goal settles, after the answer itself.
+    await page.waitForSelector('details.mark-goals', { timeout: TIMEOUT });
     await measure(page, width, `answered ${id}`);
     if (index === 0) {
       // The richest page: every disclosure of the first answer open at once.
@@ -110,6 +112,7 @@ const walk = async (browser, url, width) => {
       await page.waitForSelector('.ladder .page-viewer[data-state="rendered"]', {
         timeout: TIMEOUT,
       });
+      await page.locator('details.mark-goals > summary').click();
       await page.locator('details.about summary').click();
       await measure(page, width, 'every disclosure open');
     }
