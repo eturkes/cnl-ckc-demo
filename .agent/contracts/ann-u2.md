@@ -90,3 +90,39 @@ that lands this contract. Reviewed before code by `consultant-3`
   negative example goal answers on the rebuilt image.
 - Red witness: Q1, Q2 and Q6 RED at base on behaviour (arity 4, no refusals, guide at arity 4),
   command in the commit body; Q3 is the declared base-GREEN case above.
+
+## Red witness (`tester-5`, diff-blind, `wt/tester-5` `f64bb2d`)
+
+- `tests/qualifier-slot.test.ts` 15/18 RED at base `5124d88`, no stubs: `pnpm exec vitest run
+  tests/qualifier-slot.test.ts` — arity 4 everywhere, no refusal on any planted mutant, the guide
+  at arity 4. Base-GREEN, declared: Q3 (its credit below) and the two Q4 cases, which pin the
+  shipped lossless guard beside T10 and stay uncredited.
+- Against MAIN's implementation: 18/18 green. The suite caught two gaps the implementation had:
+  a hyphenated leading qualifier refused as a verb before the lift; the guide not naming the
+  list as the leading qualifiers.
+
+## Q3 credit (`pnpm stryker`, default operators, MAIN's run)
+
+`STRYKER_SUITE=tests/qualifier-slot.test.ts STRYKER_TESTNAME='Q3 all 43'
+STRYKER_MUTATE=src/questions/advice.ts pnpm exec stryker run tools/mutation/stryker.config.mjs
+--timeoutMS 60000 && node tools/mutation/survivors.mjs`: 214 mutants, **155 killed** by Q3's
+output alone, 47 survived, 12 uncovered, 0 timed out. At Stryker's default timeout the same run
+read 132 killed + 23 timed out: every timeout sat in `renderAction`/`renderRule` behind Q3's
+~3.5 s engine boot, and none counts as a kill.
+
+Every survivor by `advice.ts` line (count), each ruled against Q3's contract by MAIN, who did not
+author Q3 — the 43 shipped statements, byte-identical:
+
+- Input validation Q3's well-formed terms never fail — `malformed` 46–47 (2), `asAtom`/
+  `asString`/`asList`/`asCompound`/`nonempty` 51 54 57 64 68 (16), the polarity and modality
+  guards 81 94 96 (3), `presentClinicalAdvice`'s outer guards, fallback and `catch` 164–189 (31):
+  behaviour Q3's contract leaves open, recorded. Graded elsewhere: `questions-live` `fails
+  closed to the carried source passage for malformed inner structure` and `degrades to engine
+  text for an unknown term shape`, `qualifier-slot` `Q1 the renderer accepts action/5 and
+  rejects every malformed qualifier-list shape`.
+- `words` 112 (1): the article regex without `+` on its hyphen group — EQUIVALENT: `an x-y-z`
+  matches as `an x-y` and keeps `-z`, the same output for every input.
+- `words` 113 (1) and 115 (1): `every clinician that does` occurs in no shipped answer, and the
+  `every clinician` regex mutant renders the shipped subjects identically: the inputs Q3 owns
+  never reach the difference. Recorded open.
+- `coordinate` 122 (2): an empty coordination occurs in no shipped answer. Recorded open.

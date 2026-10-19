@@ -13,7 +13,12 @@ export default {
   // `related: false`: every mutant runs that one suite, never the suites vitest relates to it.
   vitest: { configFile: 'tools/mutation/vitest.config.mjs', related: false },
   // The production modules the suite imports; `tests/clinical-test-support.ts` is test code.
-  mutate: ['tools/kb/exports.mjs', 'tools/kb/paths.mjs', 'tools/kb/produce.mjs'],
+  // `STRYKER_MUTATE` (comma-separated) names another suite's modules beside `STRYKER_SUITE`.
+  mutate: process.env['STRYKER_MUTATE']?.split(',') ?? [
+    'tools/kb/exports.mjs',
+    'tools/kb/paths.mjs',
+    'tools/kb/produce.mjs',
+  ],
   reporters: ['clear-text', 'progress', 'html', 'json'],
   // D5 builds a whole image per run; more workers on 8 cores stretch a run past its timeout.
   concurrency: 4,

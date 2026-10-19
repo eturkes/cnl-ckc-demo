@@ -92,6 +92,15 @@ const REQUIRED = Object.freeze([
     ],
   },
   {
+    suite: 'tests/qualifier-slot.test.ts',
+    why: "the answer term names each action's own verb, and every rendered answer stays byte-identical",
+    cases: [
+      'qualifier slot Q1 live clinical_rule actions have all 75 keyed values and 19 atom qualifier lists',
+      'qualifier slot Q1 live clinical_advice groups retain 63 oracle actions and 17 atom qualifier lists',
+      'qualifier slot Q3 all 43 live rendered statements stay byte-identical in document/group order',
+    ],
+  },
+  {
     suite: 'tests/marks-view.test.ts',
     why: "each statement shows the marks of its own group's sentences and no other document's",
     cases: [

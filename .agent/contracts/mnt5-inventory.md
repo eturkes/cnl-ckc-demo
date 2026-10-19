@@ -156,6 +156,7 @@ record is `.claude/rules/firing.md`.
 | `tests/question-combobox.browser.test.ts` | off | open combobox never exposes its active descendant | mutate | `inv question-combobox.browser: active descendant never exposed` |
 | `tests/question-combobox.dom.test.ts` | off | closed ArrowUp opens at selection instead of last option | mutate | `I07 closed ArrowUp opens at the selection` |
 | `tests/question-link.dom.test.ts` | off | unknown URL id selects first catalog question instead of clearing selection | mutate | `inv question-link.dom: unknown id falls back to first question` |
+| `tests/qualifier-slot.test.ts` | answer | a qualifier stays in the verb slot; no refusal on a planted mutant | text | `.agent/contracts/ann-u2.md 15/18 RED at base` |
 | `tests/questions-catalog-version.test.ts` | off | unsupported catalog version resolves a full executable catalog | commit | `1ecad59 RED at base `44406bd`: `npx vitest run tests/questions-catalog-version.test.ts` → rc 1` |
 | `tests/questions-live.test.ts` | off | answer rows sort rendered bytes rather than Prolog term order | mutate | `c12 row sort by rendered bytes` |
 | `tests/questions-u4-port.test.ts` | off | id-only answer service accepts case-folded question ids | mutate | `inv questions-u4-port: service accepts case-folded ids` |

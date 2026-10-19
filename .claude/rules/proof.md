@@ -126,8 +126,8 @@ Emitted beside `clinical_advice/3,4`: `clinical_rule(Doc,S,Rule)`
   per-sentence `clinical_rule/3` by consequent — conditions concatenated in sentence order —
   reproduces all 43 shipped `clinical_answer` group terms byte for byte over 12 documents, 0
   divergences.
-- `clinical.mjs:357` is `groupTerm`, **not** a second byte guard. The single fail-closed
-  rebuild-equality guard is at `:293-298`.
+- `clinical.mjs:382` is `groupTerm`, **not** a second byte guard. The single fail-closed
+  rebuild-equality guard is at `:317-322`.
 - **A recommendation to refrain renders `should not`.** The corpus writes it `it is
   recommended that X does not V` — SHOULD over a negation, which English writes `X should not
   V` — so the parser reads it as `should` with a negative action and keeps the surface form

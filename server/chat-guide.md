@@ -54,11 +54,12 @@ clinical records:
 
 - `clinical_rule(Doc, Sentence, rule(Conditions, Agent, Modality, Actions))` — 53 rules.
   `Conditions` = list of strings (empty = unconditional); `Modality` = `should`, `can` or `fact`;
-  `Actions` = list of `action(Polarity, Verb, Object, Modifiers)`, `Polarity` = `positive` or
-  `negative`, `Modifiers` = list of `modifier(Preposition, String)`. A recommendation to refrain
-  is `should` with a `negative` action. `Verb` is the action's first word, so an adverb such as
-  `carefully` can stand there with the verb opening `Object`. Example:
-  `rule([],"Every clinician",should,[action(positive,establish,"a pain-goal",[modifier(with,"a patient")])])`.
+  `Actions` = list of `action(Polarity, Verb, Object, Modifiers, Qualifiers)`, `Polarity` =
+  `positive` or `negative`, `Modifiers` = list of `modifier(Preposition, String)`, `Qualifiers` =
+  the leading qualifier words, those before the verb, as atoms (`[carefully]`, `[]` when none); a
+  qualifier after the object stays in the object's text. A recommendation to refrain is `should`
+  with a `negative` action. Example:
+  `rule([],"Every clinician",should,[action(positive,establish,"a pain-goal",[modifier(with,"a patient")],[])])`.
 - `clinical_passage(Doc, Text)` — the guideline's own prose for each recommendation (12).
 - `clinical_advice(QuestionId, Source, clinical_answer(Doc, Rules, Passage))` — the demo's
   built-in questions answered per document, derived live; `QuestionId` is one of
@@ -101,6 +102,6 @@ clinician instance. Search their structure with `clause/2` instead, for example
 
 Good first goals: `clinical_rule(D,S,R)` for an overview (one solution per rule — a single
 `findall` list would arrive as one oversized solution);
-`clinical_rule(D,S,rule(_,_,_,[action(negative,V,O,_)|_]))` for what clinicians should not
+`clinical_rule(D,S,rule(_,_,_,[action(negative,V,O,_,_)|_]))` for what clinicians should not
 do;
 `clinical_passage(D,T), sub_string(T,_,_,_,"nonopioid")` to search the prose.

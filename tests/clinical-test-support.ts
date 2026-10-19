@@ -371,6 +371,17 @@ export const canonicalGeneratedTerms = (
   );
 };
 
+/** The corpus vocabulary's qualifier words: the parser's required third argument. */
+export const qualifierWords = (files: Map<string, Uint8Array> = bagFiles): Set<string> =>
+  new Set(
+    Buffer.from(files.get(filePath(files, '/vocabulary.tsv')) ?? [])
+      .toString('utf8')
+      .split('\n')
+      .map((line) => line.split('\t'))
+      .filter(([kind, word]) => kind === 'qualifier' && word !== undefined && word !== '')
+      .map(([, word]) => word as string),
+  );
+
 export const filePath = (files: Map<string, Uint8Array>, suffix: string): string => {
   const matches = [...files.keys()].filter((name) => name.endsWith(suffix));
   if (matches.length !== 1)

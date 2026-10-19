@@ -160,13 +160,13 @@ describe('clinical assumption evaluator', () => {
     // with empty child lists read off a precomputed site list — with the live derivation.
     // The hashes are what catch any later drift in the rendered proof.
     expect(hashes).toEqual({
-      'when-to-use-opioids': 'dc94706c2fe6',
-      'starting-opioid-therapy': 'b339fd5e2e48',
-      'acute-pain-prescription-duration': '03b8378ba157',
-      'opioid-follow-up': '7d59a8f29093',
-      'opioid-safety': '5b76f4feb6fc',
-      'continuing-or-tapering-opioids': 'b97489b1029f',
-      'opioid-use-disorder-treatment': '38790df34383',
+      'when-to-use-opioids': 'ba0baa8ff550',
+      'starting-opioid-therapy': '3c403c2e38a7',
+      'acute-pain-prescription-duration': '1636ab67d542',
+      'opioid-follow-up': '54c9c90f4df4',
+      'opioid-safety': '8945c7f0350d',
+      'continuing-or-tapering-opioids': '2b8228242189',
+      'opioid-use-disorder-treatment': 'aa2c23a827f8',
     });
   });
 

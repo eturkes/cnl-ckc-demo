@@ -21,6 +21,8 @@ interface Action {
   verb: string;
   object: string;
   modifiers: Modifier[];
+  /** The qualifier words before the verb, in surface order. */
+  qualifiers: string[];
 }
 
 interface Rule {
@@ -74,7 +76,7 @@ const parseModifier = (term: PlTerm): Modifier => {
 };
 
 const parseAction = (term: PlTerm): Action => {
-  const action = asCompound(term, 'action', 4);
+  const action = asCompound(term, 'action', 5);
   const polarity = asAtom(action.args[0]);
   if (polarity !== 'positive' && polarity !== 'negative') return malformed();
   return {
@@ -82,6 +84,7 @@ const parseAction = (term: PlTerm): Action => {
     verb: nonempty(asAtom(action.args[1])),
     object: asString(action.args[2]),
     modifiers: asList(action.args[3]).map(parseModifier),
+    qualifiers: asList(action.args[4]).map((word) => nonempty(asAtom(word))),
   };
 };
 
@@ -123,7 +126,7 @@ const coordinate = (items: readonly string[], conjunction: 'and' | 'or'): string
 };
 
 const renderAction = (action: Action): string => {
-  const verb = words(action.verb);
+  const verb = [...action.qualifiers, action.verb].map(words).join(' ');
   const predicate =
     action.polarity === 'positive' ? verb : verb === 'is' ? 'is not' : `not ${verb}`;
   return [

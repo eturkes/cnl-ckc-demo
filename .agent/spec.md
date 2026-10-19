@@ -152,8 +152,8 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
 - **A qualifier before the verb leaves the verb slot.** `clinical_rule/3` and the answer term
   carry it apart, so the verb names the event's own lemma; every rendered answer stays
   byte-identical, and the T9 frozen spans move as declared edits. The answer-term digests
-  outside T9 that this moves — T1 `terms`, T12/T14 `baselineHelper` — re-pin as approved figure
-  edits.
+  outside T9 that this moves — T1 `terms`, T12/T14 `baselineHelper`, `clinical-inference` P1's
+  seven goal-and-proof digests — re-pin as approved figure edits.
 - **An answer derives each of its sentences exactly once.** The all-or-nothing check counted
   derivations, so a duplicated clause could stand in for a missing sentence; one per-sentence
   document derivation now serves the answer and its marks alike. `clinical-answer-live` A4's
@@ -191,7 +191,7 @@ worker before its caller resumes (`chat-c2.md`).
 
 ## Tasks
 
-- [ ] ann-u1 `kernel` the marks goal — `clinical_marks/3` in the image, catalog v4 `marksGoal`,
+- [x] 69f2dae ann-u1 `kernel` the marks goal — `clinical_marks/3` in the image, catalog v4 `marksGoal`,
   `AnswerService.marks`, `src/questions/marks.ts` decode + render, the controller's marks state.
   Contract `.agent/contracts/ann-u1.md`.
 - [ ] ann-u2 `kernel` a qualifier leaves the verb slot — parser, answer term, renderer, reference

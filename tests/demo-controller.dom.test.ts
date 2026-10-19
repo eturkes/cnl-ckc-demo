@@ -114,6 +114,7 @@ const structuredAnswer = (): AnswerResult => ({
                                 },
                               ],
                             },
+                            { kind: 'list', items: [] },
                           ],
                         },
                       ],

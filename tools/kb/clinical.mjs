@@ -119,7 +119,7 @@ const PREPOSITIONS = new Set([
 ]);
 
 /** @typedef {{ preposition: string, value: string }} AdviceModifier */
-/** @typedef {{ polarity: 'positive' | 'negative', verb: string, object: string, modifiers: AdviceModifier[] }} AdviceAction */
+/** @typedef {{ polarity: 'positive' | 'negative', verb: string, object: string, modifiers: AdviceModifier[], qualifiers: string[] }} AdviceAction */
 /** @typedef {{ sentence: number, original: string, condition?: string, subject: string, mode: 'should' | 'can' | 'fact', form?: 'recommended', actions: AdviceAction[] }} AdviceClause */
 /** @typedef {{ conditions: string[], subject: string, mode: AdviceClause['mode'], actions: AdviceAction[], sentences: number[] }} AdviceGroup */
 
@@ -160,14 +160,34 @@ const parseAction = (text) => {
   }
   const space = rest.indexOf(' ');
   const verb = space < 0 ? rest : rest.slice(0, space);
-  if (!SIMPLE_ATOM.test(verb)) throw new Error(`clinical action has invalid verb ${verb}`);
   const complement = splitComplement(space < 0 ? '' : rest.slice(space + 1));
-  return { polarity, verb, ...complement };
+  return { polarity, verb, ...complement, qualifiers: /** @type {string[]} */ ([]) };
+};
+
+/**
+ * Move the qualifier words that open an action out of its verb slot. The surface puts the adverb
+ * first (`carefully weigh a benefit`), so the first word alone names the adverb as the verb. The
+ * verb is checked here, after the lift: a hyphenated qualifier (`very-gradually`) is no verb atom.
+ * @param {AdviceAction} action @param {ReadonlySet<string>} qualifiers @returns {AdviceAction}
+ */
+const liftQualifiers = (action, qualifiers) => {
+  let { verb, object } = action;
+  /** @type {string[]} */
+  const lifted = [];
+  while (qualifiers.has(verb) && object !== '') {
+    lifted.push(verb);
+    const space = object.indexOf(' ');
+    verb = space < 0 ? object : object.slice(0, space);
+    object = space < 0 ? '' : object.slice(space + 1);
+  }
+  if (!SIMPLE_ATOM.test(verb)) throw new Error(`clinical action has invalid verb ${verb}`);
+  return { ...action, verb, object, qualifiers: lifted };
 };
 
 /** Reassemble an action byte for byte, before the sentence grammar adds its modal. @param {AdviceAction} action */
 const actionSource = (action) =>
-  `${action.polarity === 'negative' ? 'not ' : ''}${action.verb}` +
+  `${action.polarity === 'negative' ? 'not ' : ''}` +
+  `${action.qualifiers.map((word) => `${word} `).join('')}${action.verb}` +
   `${action.object === '' ? '' : ` ${action.object}`}` +
   action.modifiers.map(({ preposition, value }) => ` ${preposition} ${value}`).join('');
 
@@ -203,9 +223,12 @@ const clauseSource = (clause) => {
  * byte-for-byte before it can enter the image; a future grammar form fails the KB
  * build instead of being guessed into plausible clinical prose.
  *
- * @param {string} original @param {number} sentence @returns {AdviceClause}
+ * The qualifier words the corpus vocabulary declares leave the verb slot of the action they open.
+ *
+ * @param {string} original @param {number} sentence @param {ReadonlySet<string>} qualifiers
+ * @returns {AdviceClause}
  */
-export const parseAdviceSentence = (original, sentence) => {
+export const parseAdviceSentence = (original, sentence, qualifiers) => {
   if (!original.endsWith('.')) throw new Error(`controlled sentence ${sentence} has no period`);
   let main = original.slice(0, -1);
   /** @type {string | undefined} */
@@ -278,6 +301,7 @@ export const parseAdviceSentence = (original, sentence) => {
   } else {
     throw new Error(`controlled sentence ${sentence} uses an unsupported clause form`);
   }
+  actions = actions.map((action) => liftQualifiers(action, qualifiers));
   if (subject === '' || actions.length === 0) {
     throw new Error(`controlled sentence ${sentence} has an empty clause component`);
   }
@@ -351,7 +375,8 @@ const modifierTerm = (modifier) =>
 /** @param {AdviceAction} action */
 const actionTerm = (action) =>
   `action(${action.polarity},${encodedAtom(action.verb)},${quotedString(action.object)},` +
-  `[${action.modifiers.map(modifierTerm).join(',')}])`;
+  `[${action.modifiers.map(modifierTerm).join(',')}],` +
+  `[${action.qualifiers.map((word) => encodedAtom(word)).join(',')}])`;
 
 /** @param {AdviceGroup} group */
 const groupTerm = (group) =>
@@ -584,6 +609,85 @@ const contentSites = (source, selected) => {
 };
 
 /**
+ * The qualifier words the document's corpus declares (`vocabulary.tsv` `qualifier` rows): the
+ * closed class the parser lifts out of an action's verb slot.
+ * @param {Map<string, Uint8Array>} files @param {string} acePath
+ */
+const qualifierVocabulary = (files, acePath) => {
+  const path = acePath.replace(/\/ace\/[^/]+\.ace$/u, '/vocabulary.tsv');
+  const bytes = path === acePath ? undefined : files.get(path);
+  if (bytes === undefined) throw new Error(`${path}: the qualifier vocabulary is missing`);
+  const words = new Set(
+    new TextDecoder('utf-8', { fatal: true })
+      .decode(bytes)
+      .split('\n')
+      .flatMap((line) => {
+        const [kind, word = ''] = line.split('\t');
+        return kind === 'qualifier' && word !== '' ? [word] : [];
+      }),
+  );
+  if (words.size === 0) throw new Error(`${path}: the vocabulary declares no qualifier`);
+  return words;
+};
+
+/**
+ * A head's top-level arguments, a quoted atom unquoted.
+ * @param {string} head @param {string} name @returns {string[]}
+ */
+const headArguments = (head, name) => {
+  if (!head.startsWith(`${name}(`) || !head.endsWith(')')) return [];
+  const inner = head.slice(name.length + 1, -1);
+  /** @type {string[]} */
+  const parts = [];
+  let depth = 0;
+  let start = 0;
+  for (let index = 0; index < inner.length; ) {
+    const char = inner[index];
+    if (char === "'") {
+      index = quotedEnd(inner, index);
+      continue;
+    }
+    if (char === '(' || char === '[') depth += 1;
+    else if (char === ')' || char === ']') depth -= 1;
+    else if (char === ',' && depth === 0) {
+      parts.push(inner.slice(start, index));
+      start = index + 1;
+    }
+    index += 1;
+  }
+  parts.push(inner.slice(start));
+  return parts.map((part) => (part.startsWith("'") ? part.slice(1, -1) : part));
+};
+
+/**
+ * Hold each parsed action to its own sentence's compiled heads: a lifted qualifier must be one
+ * the sentence compiles, and a modal action's verb must name one of its events. A copula is
+ * checked first: its `is` names the event `be`, so a qualifier on it would otherwise surface as
+ * a missing event.
+ * @param {string} document @param {AdviceClause} clause @param {Array<{ head: string }>} sites
+ */
+const checkActions = (document, clause, sites) => {
+  const at = `${document}:${String(clause.sentence)}`;
+  const argument = (/** @type {string} */ name, /** @type {number} */ position) =>
+    new Set(sites.flatMap(({ head }) => headArguments(head, name).slice(position, position + 1)));
+  const words = argument('guideline_qualifier', 3);
+  const lemmas = argument('guideline_event', 2);
+  for (const action of clause.actions) {
+    if (action.verb === 'is' && action.qualifiers.length > 0) {
+      throw new Error(`${at}: a copula carries the qualifier ${action.qualifiers.join(' ')}`);
+    }
+    for (const word of action.qualifiers) {
+      if (!words.has(word)) {
+        throw new Error(`${at}: qualifier ${word} names no guideline_qualifier head of its sentence`);
+      }
+    }
+    if (clause.mode !== 'fact' && !lemmas.has(action.verb)) {
+      throw new Error(`${at}: verb ${action.verb} names no guideline_event head of its sentence`);
+    }
+  }
+};
+
+/**
  * @param {Map<string, Uint8Array>} files
  * @returns {{ records: Array<{ id: string, question: string, goal: string, marksGoal: string, projection: Array<{ variable: string, descriptor: string }>, provenance: 'bag-derived' }>, names: string[], source: string, helper: string, answers: Map<string, string[]>, sentences: Array<{ question: string, document: string, clause: AdviceClause }> }}
  */
@@ -641,7 +745,10 @@ export const clinicalArtifacts = (files) => {
       if (content.length === 0) {
         throw new Error(`${selection.document}: recommendation has no clinical clauses`);
       }
-      const parsed = content.map((sentence, index) => parseAdviceSentence(sentence, index + 2));
+      const vocabulary = qualifierVocabulary(files, ace.path);
+      const parsed = content.map((sentence, index) =>
+        parseAdviceSentence(sentence, index + 2, vocabulary),
+      );
       for (const clause of parsed) {
         const record = contentIndex.get(`${selection.document}\u0000${String(clause.sentence)}`);
         if (record === undefined || record.clauses.length === 0) {
@@ -649,6 +756,7 @@ export const clinicalArtifacts = (files) => {
             `${selection.document}: no content sites for sentence ${String(clause.sentence)}`,
           );
         }
+        checkActions(selection.document, clause, record.clauses);
         const bodies = [...new Set(record.clauses.map(({ body }) => body))];
         if (bodies.length !== 1) {
           throw new Error(

@@ -30,7 +30,7 @@ const DOCUMENT_ORDER = Object.freeze([
   'cdc2022-opioid-rec12',
 ]);
 
-/** @typedef {{ polarity: 'positive' | 'negative', verb: string, object: string, modifiers: Array<{ preposition: string, value: string }> }} AdviceAction */
+/** @typedef {{ polarity: 'positive' | 'negative', verb: string, object: string, modifiers: Array<{ preposition: string, value: string }>, qualifiers: string[] }} AdviceAction */
 /** @typedef {{ sentence: number, original: string, condition?: string, subject: string, mode: 'should' | 'can' | 'fact', actions: AdviceAction[] }} AdviceClause */
 /** @typedef {{ conditions: string[], subject: string, mode: AdviceClause['mode'], actions: AdviceAction[], sentences: number[] }} AdviceGroup */
 /** @typedef {{ line: number, head: string, body: string }} ReferenceSite */
@@ -241,12 +241,29 @@ const actionTerm = (action) =>
   `action(${action.polarity},${encodedAtom(action.verb)},${quotedString(action.object)},` +
   `[${action.modifiers
     .map(({ preposition, value }) => `modifier(${encodedAtom(preposition)},${quotedString(value)})`)
-    .join(',')}])`;
+    .join(',')}],[${action.qualifiers.map((word) => encodedAtom(word)).join(',')}])`;
 
 /** @param {AdviceGroup} group */
 const fragmentTerm = (group) =>
   `rule([${group.conditions.map(quotedString).join(',')}],${quotedString(group.subject)},` +
   `${group.mode},[${group.actions.map(actionTerm).join(',')}])`;
+
+/**
+ * The corpus vocabulary's qualifier words, read here rather than through the producer.
+ * @param {Map<string, Uint8Array>} files @param {string} acePath @returns {Set<string>}
+ */
+const referenceQualifiers = (files, acePath) => {
+  const corpus = acePath.slice(0, acePath.lastIndexOf('/ace/'));
+  const bytes = files.get(`${corpus}/vocabulary.tsv`);
+  if (bytes === undefined) throw new Error(`${corpus}: no vocabulary.tsv`);
+  const rows = new TextDecoder('utf-8', { fatal: true }).decode(bytes).split('\n');
+  return new Set(
+    rows
+      .map((row) => row.split('\t'))
+      .filter(([kind, word]) => kind === 'qualifier' && word !== undefined && word !== '')
+      .map(([, word]) => /** @type {string} */ (word)),
+  );
+};
 
 /** @param {Map<string, Uint8Array>} files @param {string} document */
 const adviceClauses = (files, document) => {
@@ -261,8 +278,10 @@ const adviceClauses = (files, document) => {
   const [metadata, ...content] = text.slice(0, -1).split('\n');
   if (metadata === undefined || !METADATA.test(metadata))
     throw new Error(`${document}: invalid metadata`);
+  const qualifiers = referenceQualifiers(files, path);
   return content.map(
-    (source, index) => /** @type {AdviceClause} */ (parseAdviceSentence(source, index + 2)),
+    (source, index) =>
+      /** @type {AdviceClause} */ (parseAdviceSentence(source, index + 2, qualifiers)),
   );
 };
 

@@ -27,6 +27,7 @@ import {
   gateRecords,
   filePath,
   helperLines,
+  qualifierWords,
   keyOf,
   mutatePlSentence,
   orderedHash,
@@ -136,7 +137,7 @@ describe('clinical records', () => {
     }).toEqual({
       strings: 'dacbfac1c8b4',
       order: 'ba17af72c3d2',
-      terms: 'a32c00ce2572',
+      terms: '78328287b5af',
     });
     expect(order).toEqual([
       'cdc2022-opioid-rec01',
@@ -464,7 +465,8 @@ describe('clinical records', () => {
       );
     // Declared edits of the 22053ef parser, by user ruling (upstream sync to `83569b1d`): the
     // recommended-refraining form, the positive copula, quantity bounds that open no modifier,
-    // and `within`. Every other byte of these spans holds.
+    // and `within`; then (ann-u2) the leading qualifier lifted out of the verb slot into the
+    // action's fifth argument. Every other byte of these spans holds.
     const clinicalEdits: readonly (readonly [string, string])[] = [
       ["  'with',\n]);", "  'with',\n  'within',\n]);"],
       [
@@ -503,6 +505,35 @@ describe('clinical records', () => {
         '    mode,\n    actions,\n  };',
         '    mode,\n    ...(form === undefined ? {} : { form }),\n    actions,\n  };',
       ],
+      // User ruling (ann-u2): a qualifier before the verb leaves the verb slot.
+      [
+        '  if (!SIMPLE_ATOM.test(verb)) throw new Error(`clinical action has invalid verb ${verb}`);\n  const complement = splitComplement(',
+        '  const complement = splitComplement(',
+      ],
+      [
+        'modifiers: AdviceModifier[] }} AdviceAction */',
+        'modifiers: AdviceModifier[], qualifiers: string[] }} AdviceAction */',
+      ],
+      [
+        '  return { polarity, verb, ...complement };\n};\n',
+        "  return { polarity, verb, ...complement, qualifiers: /** @type {string[]} */ ([]) };\n};\n\n/**\n * Move the qualifier words that open an action out of its verb slot. The surface puts the adverb\n * first (`carefully weigh a benefit`), so the first word alone names the adverb as the verb. The\n * verb is checked here, after the lift: a hyphenated qualifier (`very-gradually`) is no verb atom.\n * @param {AdviceAction} action @param {ReadonlySet<string>} qualifiers @returns {AdviceAction}\n */\nconst liftQualifiers = (action, qualifiers) => {\n  let { verb, object } = action;\n  /** @type {string[]} */\n  const lifted = [];\n  while (qualifiers.has(verb) && object !== '') {\n    lifted.push(verb);\n    const space = object.indexOf(' ');\n    verb = space < 0 ? object : object.slice(0, space);\n    object = space < 0 ? '' : object.slice(space + 1);\n  }\n  if (!SIMPLE_ATOM.test(verb)) throw new Error(`clinical action has invalid verb ${verb}`);\n  return { ...action, verb, object, qualifiers: lifted };\n};\n",
+      ],
+      [
+        "  `${action.polarity === 'negative' ? 'not ' : ''}${action.verb}` +",
+        "  `${action.polarity === 'negative' ? 'not ' : ''}` +\n  `${action.qualifiers.map((word) => `${word} `).join('')}${action.verb}` +",
+      ],
+      [
+        ' * @param {string} original @param {number} sentence @returns {AdviceClause}\n */\nexport const parseAdviceSentence = (original, sentence) => {',
+        ' * The qualifier words the corpus vocabulary declares leave the verb slot of the action they open.\n *\n * @param {string} original @param {number} sentence @param {ReadonlySet<string>} qualifiers\n * @returns {AdviceClause}\n */\nexport const parseAdviceSentence = (original, sentence, qualifiers) => {',
+      ],
+      [
+        "uses an unsupported clause form`);\n  }\n  if (subject === '' || actions.length === 0) {",
+        "uses an unsupported clause form`);\n  }\n  actions = actions.map((action) => liftQualifiers(action, qualifiers));\n  if (subject === '' || actions.length === 0) {",
+      ],
+      [
+        "  `[${action.modifiers.map(modifierTerm).join(',')}])`;",
+        "  `[${action.modifiers.map(modifierTerm).join(',')}],` +\n  `[${action.qualifiers.map((word) => encodedAtom(word)).join(',')}])`;",
+      ],
     ];
     let expectedClinical = baseClinical;
     for (const [from, to] of clinicalEdits) {
@@ -521,6 +552,25 @@ describe('clinical records', () => {
     // `83569b1d`: the 19-indicator schema (`guideline_document/4`) and the comparison built-ins
     // that rule bodies call.
     const unfrozen: Readonly<Record<string, readonly (readonly [string, string])[]>> = {
+      // User ruling (ann-u2): the renderer reads the leading qualifiers before the verb.
+      'src/questions/advice.ts': [
+        [
+          '  modifiers: Modifier[];\n}',
+          '  modifiers: Modifier[];\n  /** The qualifier words before the verb, in surface order. */\n  qualifiers: string[];\n}',
+        ],
+        [
+          "  const action = asCompound(term, 'action', 4);",
+          "  const action = asCompound(term, 'action', 5);",
+        ],
+        [
+          '    modifiers: asList(action.args[3]).map(parseModifier),\n  };',
+          '    modifiers: asList(action.args[3]).map(parseModifier),\n    qualifiers: asList(action.args[4]).map((word) => nonempty(asAtom(word))),\n  };',
+        ],
+        [
+          '  const verb = words(action.verb);',
+          "  const verb = [...action.qualifiers, action.verb].map(words).join(' ');",
+        ],
+      ],
       'src/questions/serialize.ts': [
         ["// Canonical answer serialization, in the bag's own result grammar.\n//\n", ''],
       ],
@@ -573,7 +623,7 @@ describe('clinical records', () => {
           .split('\n');
         return sentences
           .slice(1)
-          .map((sentence, index) => parseAdviceSentence(sentence, index + 2));
+          .map((sentence, index) => parseAdviceSentence(sentence, index + 2, qualifierWords()));
       }),
     );
     const provenance = deriveProvenance(bagFiles);
@@ -593,8 +643,8 @@ describe('clinical records', () => {
       presentations: [presentations.length, orderedHash(presentations)],
       passages: [orderedPassages.length, sha12(JSON.stringify(orderedPassages))],
     }).toEqual({
-      parsed: [53, '7f794627e0d7'],
-      presentations: [12, 'a32c00ce2572'],
+      parsed: [53, '151b69193658'],
+      presentations: [12, '78328287b5af'],
       passages: [12, '1e11a0c96231'],
     });
     expect({
@@ -611,12 +661,16 @@ describe('clinical records', () => {
           .trimEnd()
           .split('\n')
           .slice(1)
-          .map((sentence, index) => parseAdviceSentence(sentence, index + 2));
+          .map((sentence, index) => parseAdviceSentence(sentence, index + 2, qualifierWords()));
       }),
     );
     expect(valid).toHaveLength(53);
     expect(() =>
-      parseAdviceSentence('If then every clinician should consider opioid-therapy.', 99),
+      parseAdviceSentence(
+        'If then every clinician should consider opioid-therapy.',
+        99,
+        qualifierWords(),
+      ),
     ).toThrowError(/^controlled sentence 99 is not lossless\n {2}source: /u);
     expect(gateRecords).toHaveLength(53);
   });
@@ -674,8 +728,8 @@ describe('clinical records', () => {
   }, 300_000);
   it('T12 budget delta measured and reproducible, no ceiling', async () => {
     const frozen = baselineHelper();
-    expect(Buffer.byteLength(frozen)).toBe(17_188);
-    expect(sha12(frozen)).toBe('e9f3efdde6cb');
+    expect(Buffer.byteLength(frozen)).toBe(17_362);
+    expect(sha12(frozen)).toBe('5fc791406ec6');
     expect(gateRecords).toHaveLength(53);
 
     const [first, second] = await repeatedDerivations();
@@ -903,8 +957,8 @@ describe('clinical records', () => {
       index === 0 ? `${line.split(' :- ')[0]}.` : line,
     );
 
-    expect(Buffer.byteLength(baselineHelper())).toBe(17_188);
-    expect(sha12(baselineHelper())).toBe('e9f3efdde6cb');
+    expect(Buffer.byteLength(baselineHelper())).toBe(17_362);
+    expect(sha12(baselineHelper())).toBe('5fc791406ec6');
     const [first, second] = await repeatedDerivations();
     const deltas = (derivation: Derivation) => [
       Buffer.byteLength(derivation.headSource) - Buffer.byteLength(derivation.baseSource),
