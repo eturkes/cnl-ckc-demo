@@ -169,4 +169,9 @@ worker before its caller resumes (`chat-c2.md`).
 
 ## Phase
 
-MAINTAIN — the whole product, free-text intake folded in.
+ITERATE — answer panel: the knowledge base's grades, qualifiers and thresholds
+> Pull the latest `../cnl-ckc` and update `cnl-ckc-demo` accordingly.
+> [Scope, chosen:] Sync + graph + answers — Also show grades, qualifiers and thresholds in the
+> answer panel. That changes an accepted surface, so that part routes to ITERATE after the sync
+> lands.
+Suspended: MAINTAIN — the whole product, free-text intake folded in
