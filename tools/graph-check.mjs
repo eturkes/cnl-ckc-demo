@@ -129,7 +129,7 @@ const FALLBACK_SCOPE_READINGS = [
   },
 ];
 const FALLBACK_SCOPE_ASSET = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   nodes: [
     { id: 'document:fixture-scope', kind: 'document', label: 'scope fixture' },
     {

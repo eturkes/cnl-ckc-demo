@@ -184,16 +184,25 @@ describe('orphan operator contexts', () => {
   it('O3 shows no orphan literal through an edge of another world', () => {
     expect(gradeShown(shipped)).toEqual([]);
     const moved = clone();
-    const [index = -1] = orphanIndexes(moved);
+    // The first orphan literal with a same-predicate edge of another world in its sentence to
+    // move onto: an annotation literal may have none.
+    const [index = -1, literal, elsewhere] =
+      orphanIndexes(moved)
+        .flatMap((candidate) =>
+          (moved.scopes[candidate]?.literals ?? []).flatMap((entry) => {
+            if (entry.edge === null) return [];
+            const other = moved.edges.find(
+              (edge) =>
+                edge.predicate === entry.predicate &&
+                edge.document === moved.scopes[candidate]?.document &&
+                edge.sentence === moved.scopes[candidate].sentence &&
+                !within(moved, edge, candidate),
+            );
+            return other === undefined ? [] : [[candidate, entry, other] as const];
+          }),
+        )
+        .at(0) ?? [];
     const scope = moved.scopes[index];
-    const literal = scope?.literals?.find(({ edge }) => edge !== null);
-    const elsewhere = moved.edges.find(
-      (edge) =>
-        edge.predicate === literal?.predicate &&
-        edge.document === scope?.document &&
-        edge.sentence === scope.sentence &&
-        !within(moved, edge, index),
-    );
     if (literal === undefined || elsewhere === undefined) throw new Error('no edge to move onto');
     literal.edge = elsewhere.id;
     expect(gradeShown(moved)).toEqual([

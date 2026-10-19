@@ -11,6 +11,8 @@ export interface EdgeView {
   source: string;
   target: string;
   relation: string;
+  /** The relation read from the target end (`graphRelation(edge, edge.target)`). */
+  inverse: string;
   scope: readonly string[];
   farScope: readonly string[] | null;
   state: 'context' | 'highlight';
@@ -63,14 +65,6 @@ export const edgeCapDisclosure = (
   });
 };
 
-const REVERSED_RELATIONS: Readonly<Record<string, string>> = Object.freeze({
-  actor: 'acts in',
-  target: 'target of',
-  participant: 'participates in',
-  action: 'action for',
-  'condition supports': 'supported by condition',
-});
-
 /**
  * Read an edge from either endpoint. The fields are direction-fixed, but the READING is
  * reader-relative (user ruling): the node you selected reports its own end first and `→` always
@@ -80,7 +74,7 @@ const REVERSED_RELATIONS: Readonly<Record<string, string>> = Object.freeze({
 export const edgeLabelFrom = (edge: EdgeView, from: string): string | null => {
   if (edge.label === null) return null;
   const atTarget = from === edge.target;
-  const relation = atTarget ? (REVERSED_RELATIONS[edge.relation] ?? edge.relation) : edge.relation;
+  const relation = atTarget ? edge.inverse : edge.relation;
   const { near, far } = scopeReading(edge.scope, edge.farScope, atTarget);
   return edgeLabel(relation, near, far);
 };
@@ -102,6 +96,7 @@ export const edgeViewsOf = (
         source: edge.source,
         target: edge.target,
         relation,
+        inverse: graphRelation(edge, edge.target),
         scope,
         farScope,
         state: highlighted.has(edge.id) ? 'highlight' : 'context',

@@ -1099,6 +1099,17 @@ export const MUTANTS = [
     check: { test: 'tests/graph-condition-merges.test.ts', name: 'records 28 negated folds' },
   },
   {
+    label: 'inv graph-annotations: threshold scope taken from the comparison goal',
+    edits: [
+      {
+        path: 'tools/kb/graph.mjs',
+        old: "            'condition bound of',\n            card.call,",
+        new: "            'condition bound of',\n            call,",
+      },
+    ],
+    check: { test: 'tests/graph-annotations.test.ts', name: 'A4 holds every threshold' },
+  },
+  {
     label: 'inv graph-model: scope terminal reference unchecked',
     edits: [
       {
@@ -1128,8 +1139,8 @@ export const MUTANTS = [
     edits: [
       {
         path: 'src/graph/model.ts',
-        old: "  Object.freeze({ argument: 'event', preposition: 'event' });",
-        new: "  Object.freeze({ preposition: 'event' });",
+        old: "  argument: ['event'],\n  preposition: ['event'],",
+        new: "  preposition: ['event'],",
       },
     ],
     check: { test: 'tests/graph-semantics.review.test.ts', name: 'rejects an argument edge' },

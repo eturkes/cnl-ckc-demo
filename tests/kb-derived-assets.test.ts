@@ -162,30 +162,57 @@ describe('static semantic graph asset', () => {
       ['guideline_property', 'property'],
       ['guideline_operator', 'operator'],
     ]);
+    // Two folds emit no edge of their own (`.agent/contracts/sync-u2.md`): a cardinality whose
+    // quantity a head unit types reads in that quantity's node, and a property whose referent no
+    // entity or event declares IS that property's node. Every other site maps to an edge.
+    const key = (document: string, reference: string | undefined): string =>
+      `${document}\u0000${String(reference).trim()}`;
+    const unitTyped = new Set(
+      provenance.clauses
+        .filter(({ predicate }) => predicate === 'guideline_unit')
+        .map(({ document, head }) => key(document, head.args[1])),
+    );
+    const declared = new Set(
+      provenance.clauses
+        .filter(
+          ({ predicate }) => predicate === 'guideline_entity' || predicate === 'guideline_event',
+        )
+        .map(({ document, head }) => key(document, head.args[1])),
+    );
+    const folded = (clause: (typeof provenance.clauses)[number]): boolean =>
+      (clause.predicate === 'guideline_cardinality' &&
+        unitTyped.has(key(clause.document, clause.head.args[1]))) ||
+      (clause.predicate === 'guideline_property' &&
+        !declared.has(key(clause.document, clause.head.args[1])));
     const expected = new Map<string, number>();
     for (const clause of provenance.clauses) {
       const kind = predicateKinds.get(clause.predicate);
-      if (kind !== undefined) expected.set(kind, (expected.get(kind) ?? 0) + 1);
+      if (kind !== undefined && !folded(clause)) expected.set(kind, (expected.get(kind) ?? 0) + 1);
     }
     expected.set('implies', provenance.clauses.filter(({ kind }) => kind === 'rule').length);
     for (const [kind, minimum] of expected) {
       expect(graph.model.stats.byEdgeKind[kind], kind).toBeGreaterThanOrEqual(minimum);
     }
     expect(graph.model.stats.byEdgeKind).toEqual({
-      argument: 4738,
-      cardinality: 2052,
+      argument: 4737,
+      cardinality: 1993,
       entity: 2052,
       event: 1492,
-      implies: 11527,
+      grade: 24,
+      implies: 11793,
       operator: 1431,
+      preference: 26,
       preposition: 1509,
-      property: 146,
+      property: 7,
+      qualifier: 357,
+      threshold: 39,
+      time: 30,
     });
     expect(graph.model.stats).toMatchObject({
       documents: 385,
       clauses: 12_507,
-      nodes: 3420,
-      edges: 24_947,
+      nodes: 3374,
+      edges: 25_490,
     });
   });
 

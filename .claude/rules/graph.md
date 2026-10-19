@@ -103,18 +103,40 @@ server refuses, and a `--graph-*` palette set to `initial`). The mocked suite ca
     fill off its neighbour's label outline.
   - The legend swatches in `SemanticGraph.svelte` read the same tokens, so legend and canvas
     cannot drift.
-- The graph carries **0 self-edges of 24,947**, so `canvas.ts` filters none.
+- The graph carries **0 self-edges of 25,490**, so `canvas.ts` filters none; the producer refuses
+  one by name.
 
 ## Data shape
 
-- Deterministic full graph = **3,420 typed nodes / 24,947 typed edges**, extracted by static
+- Deterministic full graph = **3,374 typed nodes / 25,490 typed edges**, extracted by static
   `clause/2` sweep. Runtime predicate calls expose only the derivable minority.
-- Explicit edge schemas = 7 (`entity/4`, `cardinality/5`, `event/3`, `arg/4`, `pp/4`,
-  `property/4`, `operator/3`), plus **11,527 `implies` edges**. That single figure hides two
-  mechanisms: **10,554 rule-context implications + 973 synthesized event-support shortcuts**,
-  the shortcuts synthesized in `deriveSemanticGraph`'s consequent-event block.
-- The time, strength and unit annotations project nothing yet: `graph.mjs` `UNPROJECTED` lists
-  them beside the document record, and any other clause kind fails the build by name.
+- Explicit edge schemas = 15 — the 7 relations (`entity/4`, `cardinality/5`, `event/3`,
+  `arg/4`, `pp/4`, `property/4`, `operator/3`), 7 annotations (`grade/5`, `preference/4`,
+  `qualifier/4`, `interval/6`, `recurrence/4`, `frequency/5`, `recurrence_window/7`) and the
+  comparison built-in `satisfies` — plus **11,793 `implies` edges**. That single figure hides
+  two mechanisms: **10,820 rule-context implications + 973 synthesized event-support
+  shortcuts**, the shortcuts synthesized in `deriveSemanticGraph`'s consequent-event block.
+
+## Annotations (`.agent/contracts/sync-u2.md`)
+
+The time, strength and unit annotations and the comparison conditions project under the
+meaning ruling: each edge takes its clause's context as scope — a threshold the context of the
+cardinality it constrains, since `guideline_satisfies` has none — and an edge that reads
+differently from its target carries `inverse`, which `graphRelation` alone reads for both the
+canvas and the HTML list.
+
+- Kinds `grade` (recommendation → `strength: …`/`evidence: …`), `preference` (`preferred over`,
+  or → `preferred` when no alternative is named), `qualifier` (event → word, relation = class),
+  `time` (an anchored interval, recurrence, frequency or recurrence window, its bounds in the
+  label) and `threshold` (`condition bound`).
+- A quantity a unit types reads as its own value node — `at least 1 week`, a range folded in as
+  `at least 4 to 7 day` — never the noun every same-unit referent shares; a converted condition's
+  quantity is one referent-specific `time quantity` node whose bound rides its threshold. An order
+  and an anchorless interval fold into the pp edge they type (`occurs before`, `duration`).
+- A property referent no entity or event declares resolves to the property's own value node,
+  and the copula's `argument 2` reaches it; an adjective on a declared noun stays a `property`
+  edge. The producer refuses a property referent no edge reaches, and a constant unit unequal to
+  its quantity's noun (a consumer limit).
 
 ## Projection scope — the model carries it, the shown edge reads it
 
@@ -123,10 +145,10 @@ edges, and `operator-context` is still absent from `CONCEPT_NODE_KINDS`. **u12 m
 onto the surviving edges instead** (`SemanticGraphEdge.scopeOperators`, ordered outermost
 first), which is the user's edge-state ruling made real in `src/graph/model.ts`.
 
-- Projection = **1,520 nodes / 3,299 grouped edges** out of 3,420 / 24,947. The nodes are
-  1,143 entity + 166 event + 211 value; the headline counts the 1,309 entity/event alone and
-  names the 211 as attributes, because calling a value node a concept is what S9 caught.
-- **2,254 of the 3,299 groups carry an ordered scope**, and **446 of them carry a far scope**
+- Projection = **1,468 nodes / 3,239 grouped edges** out of 3,374 / 25,490. The nodes are
+  1,139 entity + 166 event + 163 value; the headline counts the 1,305 entity/event alone and
+  names the 163 as attributes, because calling a value node a concept is what S9 caught.
+- **2,342 of the 3,239 groups carry an ordered scope**, and **446 of them carry a far scope**
   (940 edge occurrences). Grouping keys on both sequences — `conceptEdgeKey` spreads
   `scopeOperators` then `farScopeOperators` in order — so two occurrences differing only in
   scope ORDER, or only at the far end, stay distinct groups. The corpus holds zero permuted

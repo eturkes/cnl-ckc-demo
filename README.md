@@ -25,6 +25,9 @@ The shipped answers are produced at run time. They are not stored UI fixtures.
 - Parser, document, cardinality, and modality nodes stay in the provenance
   graph. The primary ontology view hides those nodes. It keeps modality and
   negation visible as state on the relationships themselves.
+- Graph relationships for the annotations of the knowledge base: the grade of each
+  recommendation, preferred options, qualifiers such as `carefully`, time limits with their
+  bounds, and the numeric thresholds of conditions.
 - A chat. The model writes Prolog goals, and the page runs each goal read-only in its own
   engine. Every part of an answer names its source. **KB** marks a query that ran, and its
   card shows the goal and the engine's solutions. **Web** marks a page that the turn's search

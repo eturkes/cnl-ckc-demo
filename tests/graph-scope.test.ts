@@ -145,22 +145,22 @@ describe('generated semantic graph scopes', () => {
     expect(new Set(nested.map(({ id }) => id)).size).toBe(2);
   });
 
-  it('bumps producer and reader together and makes a v1 reader refuse v2 by name', () => {
+  it('bumps producer and reader together and makes a v2 reader refuse v3 by name', () => {
     const asset = readGraphAsset();
-    if (asset.schemaVersion !== 2) {
-      throw new Error(`semantic graph producer schema ${String(asset.schemaVersion)}, expected 2`);
+    if (asset.schemaVersion !== 3) {
+      throw new Error(`semantic graph producer schema ${String(asset.schemaVersion)}, expected 3`);
     }
 
     expect(() => parseSemanticGraph(asset)).not.toThrow();
-    expect(() => parseSemanticGraph({ ...asset, schemaVersion: 1 })).toThrow(
-      'semantic graph schema 1, expected 2',
+    expect(() => parseSemanticGraph({ ...asset, schemaVersion: 2 })).toThrow(
+      'semantic graph schema 2, expected 3',
     );
-    const readAsVersionOne = (value: Record<string, unknown>): void => {
-      if (value.schemaVersion !== 1) {
-        throw new Error(`semantic graph schema ${String(value.schemaVersion)}, expected 1`);
+    const readAsVersionTwo = (value: Record<string, unknown>): void => {
+      if (value.schemaVersion !== 2) {
+        throw new Error(`semantic graph schema ${String(value.schemaVersion)}, expected 2`);
       }
     };
-    expect(() => readAsVersionOne(asset)).toThrow('semantic graph schema 2, expected 1');
+    expect(() => readAsVersionTwo(asset)).toThrow('semantic graph schema 3, expected 2');
   });
 
   it('validates the emitted scope shape and refuses an empty scopes table by name', async () => {

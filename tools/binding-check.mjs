@@ -253,6 +253,15 @@ const MEANING = Object.freeze([
       'orphan operator contexts O4 matches the literal set re-derived from the bag',
     ],
   },
+  {
+    suite: 'tests/graph-annotations.test.ts',
+    why: 'an annotation or comparison edge carries the scope of the clause that states it',
+    cases: [
+      'graph annotations A1 every annotation clause and goal projects exactly its row',
+      'graph annotations A2 reads each fixture from both ends under its scope, dashed where negated',
+      'graph annotations A4 holds every threshold to the world of the cardinality it constrains',
+    ],
+  },
 ]);
 
 const VITEST = join(ROOT, 'node_modules', 'vitest', 'vitest.mjs');

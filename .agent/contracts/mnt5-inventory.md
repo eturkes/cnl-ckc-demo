@@ -125,6 +125,7 @@ record is `.claude/rules/firing.md`.
 | `tests/graph-condition-merges.test.ts` | off | merged relation records the folded world's scope as the kept world's scope | mutate | `inv graph-condition-merges: kept scope replaced by folded scope` |
 | `tests/graph-live.test.ts` | off | neighborhood depth cutoff excludes all first-degree neighbors | mutate | `inv graph-live: neighborhood depth cutoff off by one` |
 | `tests/graph-model.test.ts` | off | scope chain may terminate at another context's reference | mutate | `inv graph-model: scope terminal reference unchecked` |
+| `tests/graph-annotations.test.ts` | off | threshold scope taken from the comparison goal | mutate | `inv graph-annotations: threshold scope taken from the comparison goal` |
 | `tests/graph-orphan-scopes.test.ts` | off | scope-blind relation dedup merges negated relations into another world's edge | commit | `85e51fc the new producer with the world removed from the dedup key → O3 red, refusing exactly 157` |
 | `tests/graph-scope.test.ts` | off | validator accepts the empty scopes table | mutate | `inv graph-scope: empty scope table accepted` |
 | `tests/graph-semantics.review.test.ts` | off | argument edges no longer require event sources | mutate | `inv graph-semantics.review: argument source role unchecked` |

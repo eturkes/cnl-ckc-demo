@@ -1,4 +1,4 @@
-export const GRAPH_SCHEMA_VERSION = 2;
+export const GRAPH_SCHEMA_VERSION = 3;
 export const DEFAULT_NEIGHBOR_LIMIT = 80;
 export const MAX_NEIGHBOR_LIMIT = 240;
 export const DEFAULT_EDGE_LIMIT = 480;
@@ -23,13 +23,28 @@ export const GRAPH_EDGE_KINDS = [
   'property',
   'operator',
   'implies',
+  'grade',
+  'preference',
+  'qualifier',
+  'time',
+  'threshold',
 ] as const;
 export type SemanticGraphEdgeKind = (typeof GRAPH_EDGE_KINDS)[number];
 
-// guideline_arg/4 and guideline_pp/4 bind their second argument to an event
-// reference; the producer serializes that reference as the edge source.
-const EDGE_SOURCE_ROLES: Partial<Readonly<Record<SemanticGraphEdgeKind, SemanticGraphNodeKind>>> =
-  Object.freeze({ argument: 'event', preposition: 'event' });
+// guideline_arg/4 and guideline_pp/4 bind their second argument to an event reference, as do
+// the qualifier and time annotations; the producer serializes that reference as the edge source.
+// A converted time quantity is a value node, so a threshold may start at one.
+const EDGE_SOURCE_ROLES: Partial<
+  Readonly<Record<SemanticGraphEdgeKind, readonly SemanticGraphNodeKind[]>>
+> = Object.freeze({
+  argument: ['event'],
+  preposition: ['event'],
+  qualifier: ['event'],
+  time: ['event'],
+  grade: ['entity'],
+  preference: ['entity'],
+  threshold: ['entity', 'value'],
+});
 
 export const GRAPH_SCOPE_OPERATORS = ['-', 'should', 'may', 'can', 'must'] as const;
 export type SemanticGraphScopeOperator = (typeof GRAPH_SCOPE_OPERATORS)[number];
@@ -64,6 +79,8 @@ export interface SemanticGraphEdge {
   scope?: number;
   /** Producer relation before reader-facing scope is composed into a label. */
   relation?: string;
+  /** The relation read from the target end, where the producer composes one. */
+  inverse?: string;
   /** Ordered outermost-first scope recorded at the source/near endpoint. */
   scopeOperators?: readonly SemanticGraphScopeOperator[];
   /** Target/far endpoint scope when non-empty and different from the near endpoint. */
@@ -230,18 +247,19 @@ const parseEdge = (
   if (!isRecord(value)) throw new GraphDataError(`${at} must be an object`);
   const kind = enumText(value.kind, GRAPH_EDGE_KINDS, `${at}.kind`);
   const source = text(value.source, `${at}.source`);
-  const requiredSourceKind = EDGE_SOURCE_ROLES[kind];
+  const requiredSourceKinds = EDGE_SOURCE_ROLES[kind];
   const sourceKind = nodes.get(source)?.kind;
   if (
-    requiredSourceKind !== undefined &&
+    requiredSourceKinds !== undefined &&
     sourceKind !== undefined &&
-    sourceKind !== requiredSourceKind
+    !requiredSourceKinds.includes(sourceKind)
   ) {
-    const article = /^[aeiou]/u.test(kind) ? 'an' : 'a';
+    const withArticle = (word: string): string => `${/^[aeiou]/u.test(word) ? 'an' : 'a'} ${word}`;
     throw new GraphDataError(
-      `${at}.source must reference an ${requiredSourceKind} for ${article} ${kind} edge`,
+      `${at}.source must reference ${requiredSourceKinds.map(withArticle).join(' or ')} for ${withArticle(kind)} edge`,
     );
   }
+  const inverse = optionalText(value, 'inverse', at);
   const sentence = value.sentence === null ? null : integer(value.sentence, `${at}.sentence`, 1);
   const scope = value.scope === undefined ? undefined : integer(value.scope, `${at}.scope`);
   return Object.freeze({
@@ -255,6 +273,7 @@ const parseEdge = (
     line: integer(value.line, `${at}.line`, 1),
     predicate: text(value.predicate, `${at}.predicate`),
     ...(scope === undefined ? {} : { scope }),
+    ...(inverse === undefined ? {} : { inverse }),
   });
 };
 
@@ -610,8 +629,9 @@ const conceptRole = (edge: SemanticGraphEdge): number => {
     if (relation === 'argument 1') return 1;
     return 3;
   }
-  if (edge.kind === 'preposition') return 3;
-  if (edge.kind === 'property') return 2;
+  if (edge.kind === 'preposition' || edge.kind === 'preference' || edge.kind === 'time') return 3;
+  if (edge.kind === 'property' || edge.kind === 'qualifier' || edge.kind === 'grade') return 2;
+  if (edge.kind === 'threshold') return 2;
   return 1;
 };
 
@@ -1325,8 +1345,13 @@ export const graphNodeKindLabel = (node: SemanticGraphNode): string => {
   return 'document';
 };
 
+/**
+ * The ONE reading of a relation from either end: the view's `EdgeView.inverse` and the HTML
+ * list both read it here, so the two surfaces cannot turn a relation two different ways.
+ */
 export const graphRelation = (edge: SemanticGraphEdge, from?: string): string => {
   const relation = edgeRelation(edge);
+  if (edge.inverse !== undefined && from === edge.target) return edge.inverse;
   if (edge.kind === 'argument') {
     const outward = from === undefined || from === edge.source;
     if (relation === 'argument 1') return outward ? 'actor' : 'acts in';
