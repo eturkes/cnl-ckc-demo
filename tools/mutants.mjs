@@ -1531,4 +1531,15 @@ export const MUTANTS = [
     ],
     check: { test: 'tests/engine-term-identity.test.ts', name: 'zero-arity compound' },
   },
+  {
+    label: 'm15 claims:check reads the first line of each Artifacts bullet alone',
+    edits: [
+      {
+        path: 'tools/claims-sweep.mjs',
+        old: "  for (const unit of units(artifacts?.[1] ?? '')) {\n    if (unit.text.startsWith('- ')) {\n      rows.push({\n        source: 'spec',\n        at: '.agent/spec.md Artifacts',\n        hash: digest(unit.text),\n        claim: cell(unit.text),",
+        new: "  for (const line of (artifacts?.[1] ?? '').split('\\n')) {\n    if (line.trim().startsWith('- ')) {\n      rows.push({\n        source: 'spec',\n        at: '.agent/spec.md Artifacts',\n        hash: digest(line.trim()),\n        claim: cell(line.trim()),",
+      },
+    ],
+    check: ['node', 'tools/claims-sweep.mjs'],
+  },
 ];
