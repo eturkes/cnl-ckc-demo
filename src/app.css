@@ -139,14 +139,15 @@
   /* The graph is painted on a `<canvas>`, so `src/graph/canvas.ts` resolves these
    * through `getComputedStyle` on its container instead of inheriting them. The
    * selected node is filled `--action` and the canvas is `--surface-sunken`, so
-   * those two carry the graph as well and need no graph-specific twin.
+   * those two carry the graph as well and need no graph-specific twin. `pnpm palette:check`
+   * holds the five node fills apart, colour-blind readers included.
    */
   --graph-label: #ffffff;
-  --graph-document: #245c73;
-  --graph-entity: #176b68;
-  --graph-event: #956019;
-  --graph-operator: #75558a;
-  --graph-value: #5d6871;
+  --graph-document: #696cb7;
+  --graph-entity: #0f7558;
+  --graph-event: #734300;
+  --graph-operator: #792d74;
+  --graph-value: #342a36;
   --graph-edge: #78838f;
   --graph-path: #b34a21;
 
@@ -179,11 +180,11 @@
    * leave that one node reading backwards against every other.
    */
   --graph-label: #101820;
-  --graph-document: #4996b5;
-  --graph-entity: #309b97;
-  --graph-event: #bb8031;
-  --graph-operator: #9c84ac;
-  --graph-value: #848e96;
+  --graph-document: #7f82d8;
+  --graph-entity: #5fb28f;
+  --graph-event: #e0a949;
+  --graph-operator: #eb8ed0;
+  --graph-value: #d4d1d7;
   --graph-edge: #5c6672;
   --graph-path: #cf7552;
 

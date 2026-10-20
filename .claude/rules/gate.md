@@ -4,8 +4,8 @@
 every step fails closed:
 
 `audit:check → secret:check → kb:build → kb:asset-check → kb:export-check → engine:check →
-copy:check → contrast:check → presentation:check → claims:check → spec:check → spec:lint →
-format:check → lint → check → binding:check → build`
+copy:check → contrast:check → palette:check → presentation:check → claims:check → spec:check →
+spec:lint → format:check → lint → check → binding:check → build`
 
 `gate:chain` is authoritative if that list ever diverges from it; `tests/inventory.test.ts`
 rosters the steps from the same text, and the runner refuses a segment other than
@@ -90,6 +90,11 @@ Step semantics a reader cannot get from the script name:
   that names a milestone, unit, claim-registry row or review row (`M1`–`M5`, `u12`, `R045`,
   `U7-26`; user ruling). Components render catalog values alone, and `index.html` mirrors
   `DESCRIPTIONS`, so the two catalogs hold every shipped string.
+- `palette:check` (`tools/palette-check.mjs`) = `CLAUDE.md` `Execution` palette safety for the
+  graph's five node fills `--graph-{document,entity,event,operator,value}`: every pair in both
+  themes at OKLab ΔE×100 ≥ 15 plain and ≥ 8 under Machado protan + deutan. The method is
+  coloraide's, ported so the gate needs no Python; `tests/palette-check.test.ts` holds the port
+  to coloraide's own figures. `contrast:check` keeps each fill's 3:1 against the canvas.
 - `claims:check` (`tools/claims-sweep.mjs`) grades COVERAGE of `docs/claims.md`, never truth.
   No tool here can decide whether a sentence is true, so judgment stays in the committed
   registry and the check owns what a tool can decide: it re-derives the claim set from the tree

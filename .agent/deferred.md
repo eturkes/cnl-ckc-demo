@@ -86,16 +86,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   dict fails closed with `DecodeError`, and the `nativeCompound` fixtures in
   `tests/engine-u2-port.test.ts` build wrapper instances so every case keeps its assertion.
   `pri` low. Changing a graded suite's fixtures needs the user's approval.
-- **The graph's node palette fails the computed palette-safety check** — `CLAUDE.md`
-  `Execution` Charts + figures wants OKLab ΔE×100 ≥ 15 between categorical marks and ≥ 8 under
-  Machado protan + deutan simulation, all pairs for a map, computed in the gate. The five node
-  fills `--graph-{document,entity,event,operator,value}` fail 7 of 10 pairs in each theme —
-  entity vs value 1.5 protan in the light theme — and no gate step computes it; node kind also
-  rides shape, legend and label. Accept: a gate step computes every pair of those fills in both
-  themes, refuses a planted pair below a floor by name, and passes on a redesigned palette that
-  still clears `contrast:check` and `graph:check`'s `palette` rule; the gate change is approved in
-  that unit, and the new look gets the user's live review (`.claude/rules/ui.md` `User review`).
-  `pri` high. **User ruling**: queued by the template refresh, which changes no colour.
 - **`pnpm stryker`'s surviving mutants carry no ruling** — `.agent/contracts/mnt5-stryker.md` lists
   137 mutants left alive in the three modules `tests/legacy-export-lane.test.ts` imports (64
   `Survived`, 73 `NoCoverage`), characterised by the record's author alone. `CLAUDE.md`
@@ -135,7 +125,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 | `pnpm mutate` credits a timeout-only kill | a mutant whose vitest check fails only by timeout reads `INCONCLUSIVE` and fails the run, shown by a planted stalling mutant |
 | `claims:check` covers one line of each `Artifacts` entry | each `Artifacts` bullet grades as one unit with its continuation lines, and a planted change on a continuation line is refused by `claims:check` as a stale row |
 | The inventory resolves a bare-path `text` record and a `none` gate step | the copy:check row planted as `text` + `tools/copy-check.mjs`, then as `none`, is refused by name — `names no verbatim text`, `a gate step needs a firing record` — and the real inventory still passes |
-| **high** The graph's node palette fails the computed palette-safety check | a gate step computes every pair of those fills in both themes, refuses a planted pair below a floor by name, and passes on a redesigned palette that still clears `contrast:check` and `graph:check`'s `palette` rule; the gate change is approved in that unit, and the new look gets the user's live review (`.claude/rules/ui.md` `User review`) |
 | `pnpm stryker`'s surviving mutants carry no ruling | every listed mutant carries a non-author ruling against the m5u6 contract in that record — specified behaviour → a test that kills it through observable behaviour, seen red on the mutant; behaviour the contract leaves open → recorded as open |
 | graph.md's renderer-surface figures are stale | each figure re-derives from the tree — a `tests/census.test.ts` `CENSUS` row or a stated command — or leaves the claim, and R129 re-adjudicates `true` |
 

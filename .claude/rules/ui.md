@@ -6,6 +6,8 @@ paths:
   - "index.html"
   - "tools/copy-check.mjs"
   - "tools/contrast.mjs"
+  - "tools/palette-check.mjs"
+  - "tests/palette-check.test.ts"
   - "tools/presentation-check.mjs"
   - "tools/smoke.mjs"
   - "tools/browser.mjs"
@@ -51,15 +53,17 @@ fill takes LARGE against the canvas. A pair graded here is only the graph's if t
 paints that value — `graph:check`'s `palette` rule is what decides that half
 (`.claude/rules/graph.md`).
 
-**Palette safety (`CLAUDE.md` `Execution` Charts + figures) is queued, not met** (user ruling).
-The five node fills `--graph-{document,entity,event,operator,value}` fail its computed check in
-both themes — 7 of 10 pairs, entity vs value at OKLab ΔE×100 1.5 under Machado protan
-simulation against a floor of 8 — so the `.agent/deferred.md` row
-`The graph's node palette fails the computed palette-safety check` carries the redesign and its
-gate step. Until it lands, `contrast:check` grades the graph colours and node kind also rides
-shape, legend and label. The figures regenerate from a scratch probe until that step lands:
-coloraide over each pair of the fills' hex values in `src/app.css`, `delta_e(method='ok') × 100`
-plain and after `filter('protan'|'deutan', 1.0, method='machado')` on both colours.
+**Palette safety (`CLAUDE.md` `Execution` Charts + figures) = `pnpm palette:check`**: every pair
+of the five node fills `--graph-{document,entity,event,operator,value}`, both themes, at OKLab
+ΔE×100 ≥ 15 plain and ≥ 8 under Machado protan + deutan. A new fill also clears `contrast:check`
+— its label at 4.5:1 and itself at 3:1 against the canvas — and keeps its kind's hue in both
+themes. The white light-theme label caps every light fill's luminance, which is why the light
+set is dark. Redesign by search over all five fills, never by hand-tuning one: each fill moves
+four distances in each of three visions, and the bounds leave a narrow feasible set.
+
+`tests/palette-check.test.ts` holds the port to coloraide 8.13.1's figures; its `ORACLE` table
+regenerates from `tests/support/palette-oracle.py` (`uv run --with coloraide==8.13.1 python -I
+tests/support/palette-oracle.py '<json pairs>'`).
 
 ## Copy
 
