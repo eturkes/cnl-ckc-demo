@@ -55,13 +55,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   `.claude/rules/firing.md` row records the original firing, the derived-set guard kept, or a
   recorded reason keeps it. `pri` low. A grader change: it needs the user's approval.
   **User ruling**: left queued; `wip/m13-copy-sweep` `3a438c3` holds the change with its firing shown.
-- **`claims:check` reads rules frontmatter as a claim** — `units()` (`tools/claims-sweep.mjs`)
-  parses a rules file's YAML frontmatter as prose, so a `paths:` glob holding a digit becomes a
-  registry row: `.claude/rules/firing.md`'s `".agent/contracts/mnt5-inventory.md"` glob, joined
-  with the closing `---`, is R073. Accept: the sweep skips a leading frontmatter block, the
-  registry re-seeds without that row, and a planted frontmatter glob holding a digit stays out
-  of the claim set. `pri` low. A grader change: it needs the user's approval.
-  **User ruling**: left queued; `wip/m14-frontmatter` `e13a620` holds the change with its firing shown.
 - **`claims:check` covers one line of each `Artifacts` entry** — `claimSet`
   (`tools/claims-sweep.mjs`) keeps the first line of each `.agent/spec.md` `Artifacts` bullet,
   so a run command on a continuation line sits outside the registry: the chat bridge's

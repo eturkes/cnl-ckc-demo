@@ -1531,4 +1531,9 @@ export const MUTANTS = [
     ],
     check: { test: 'tests/engine-term-identity.test.ts', name: 'zero-arity compound' },
   },
+  {
+    label: 'm14 claims:check reads rules frontmatter as prose',
+    edits: [{ path: 'tools/claims-sweep.mjs', old: '    if (index < body) return;\n', new: '' }],
+    check: ['node', 'tools/claims-sweep.mjs'],
+  },
 ];
