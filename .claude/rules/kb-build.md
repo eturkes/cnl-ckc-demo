@@ -30,7 +30,8 @@ paths:
   the UI. The bag records `swipl 9.2.9` as its compiler; the 10.1.13 WASM runtime loads it.
 - Regenerate = upstream's Rust `ckc` (Verus-verified kernel; no Python left):
   `tools/kb/regenerate-bag.sh <cnl-ckc checkout> [<rev>]` clones the checkout at `<rev>` under
-  `.scratch/ckc/`, so the checkout is only read, builds `ckc` there with a project-local
+  `.scratch/ckc/`, so the checkout is only read — it refuses a checkout that lies inside that
+  scratch tree or holds it — builds `ckc` there with a project-local
   toolchain (plain `cargo build` compiles the ghost-erased kernel, so Verus is not needed), runs
   `ckc dist build`, and exits 0 only when the bag's `release-manifest.tsv` equals the one
   committed at `<rev>` — and, when `kb/` vendors a bag of the same name, when that bag is

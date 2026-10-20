@@ -56,7 +56,7 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
 - **`claims:check` reads rules frontmatter as a claim** — `units()` (`tools/claims-sweep.mjs`)
   parses a rules file's YAML frontmatter as prose, so a `paths:` glob holding a digit becomes a
   registry row: `.claude/rules/firing.md`'s `".agent/contracts/mnt5-inventory.md"` glob, joined
-  with the closing `---`, is R073. Accept: the sweep skips a leading frontmatter block, the
+  with the closing `---`, is a registry row of its own. Accept: the sweep skips a leading frontmatter block, the
   registry re-seeds without that row, and a planted frontmatter glob holding a digit stays out
   of the claim set. `pri` low. A grader change: it needs the user's approval.
   **User ruling**: left queued twice, at `f25bb35` and in the question after `8076cb7`;

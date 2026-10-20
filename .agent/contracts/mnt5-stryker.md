@@ -46,7 +46,7 @@ behaviour, and the n6 run shows it killed:
 
 The ruling of each mutant still alive is the last column of the table below. Register, from the
 same review: m5u6 D1 and D3 count 4 exports where `EXPORTED` declares 6 since the upstream sync
-(`docs/claims.md` R439 + R441 say so), and its heading `Why RED-under-dependency-removal is the
+(the registry rows for `.agent/contracts/m5u6.md` D1 and D3 say so), and its heading `Why RED-under-dependency-removal is the
 whole credit` predates the default-operator credit law, which `.claude/rules/kb-build.md`
 `Legacy export lane` states: D5 is the firing record, these kills are the credit.
 

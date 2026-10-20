@@ -19,3 +19,34 @@ are out of scope: nothing of theirs ships.
 | F1 | records | `.agent/spec.md` (Decisions, Tasks), `.agent/deferred.md`, `.claude/rules/` (gate, firing, ui, graph, kb-build, waves), `.agent/contracts/mnt5-inventory.md` and every re-adjudicated `docs/claims.md` row state what the tree at `69d4bea` does; each queued row cites a branch that holds what it says. |
 | F2 | records | The bodies of the landed commits above: each measurement, red witness and quoted firing reproduces by its recorded command, and no sentence claims beyond what it measured. |
 | S1 | security | MAIN: no new path takes untrusted input — the vite upgrade, `regenerate-bag.sh`'s arguments, `binding-replay.mjs`'s ref, `palette-check.mjs`'s CSS read. |
+
+## Verdicts
+
+`reviewer-19` (reviewer, GPT teammate, non-author), read at `f610bd3`: 8/8 rows, validator rc 0.
+A1 A2 B1 D1 pass — its own coloraide differential 2,056 pairs × 3, max error 9.95e-14; the palette
+suite 4/4; `binding:replay` rc 0 and its `HEAD` control rc 1; the five comparisons exact. Findings,
+each fixed in the review commit after `f610bd3`:
+
+- E1.1 (major) `tools/kb/regenerate-bag.sh` removed `.scratch/ckc/src` before cloning even when that
+  clone was the checkout passed in (its `rm`-intercepting probe: `ASSERTION FAILED: regenerate-bag
+  removes its input checkout`, rc 1) → physical paths, and a checkout inside the scratch tree or
+  holding it is refused before any removal (the same probe: rc 2 for the clone, the scratch root and
+  an ancestor; PASS for `../cnl-ckc`); the ordinary run at `8a51bf0c` still rebuilds `kb/`'s bag
+  byte for byte. kb-build.md states the refusal (F1's read-only clause).
+- C1.1 / F1.1 (minor) registry ids re-issue on every seed, so the Stryker record's `R439 + R441`, the
+  n7 Tasks row's `R129` and the frontmatter queue row's `R073` named other claims → each cites its
+  source unit instead (the registry rows for `m5u6.md` D1/D3, graph.md `Renderer seam`, the
+  frontmatter glob). Row C1 above keeps its original wording: those were the pre-seed ids of m5u6 D1
+  and D3.
+- F1.2 (minor) R289's `git rev-parse --short=7 <nine refs>` exits 128 → `git for-each-ref` over
+  `refs/heads/wip/n*`.
+- F2.1 (minor) `83cd690`'s body calls vitest's `tests` figure "Suite CPU"; it is the summed elapsed
+  duration of the test files (230.23 s → 182.67 s), not CPU time. The numbers stand.
+
+Unconfirmed by the reviewer, recorded as such: the load readings and the toEqual / Buffer.compare
+microbench in `83cd690`'s body (printed to MAIN's tool output, not saved).
+
+S1 (MAIN): pass — the vite upgrade is a dev tool clearing three advisories; `regenerate-bag.sh` quotes
+every argument and resolves `<rev>` to a SHA before checkout; `binding-replay.mjs` interpolates its
+`ref` argument into `sh -c` as it did before n2 (a local CLI argument: register only); `palette-check.mjs`
+reads `src/app.css` alone.

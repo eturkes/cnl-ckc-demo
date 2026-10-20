@@ -12,10 +12,14 @@
 set -eu
 
 [ $# -ge 1 ] || { echo "usage: $0 <cnl-ckc checkout> [<rev>]" >&2; exit 2; }
-CKC=$(cd "$1" && pwd)
+CKC=$(cd "$1" && pwd -P)
 REV=${2:-HEAD}
-ROOT=$(cd "$(dirname "$0")/../.." && pwd)
+ROOT=$(cd "$(dirname "$0")/../.." && pwd -P)
 S=$ROOT/.scratch/ckc
+# The checkout is only read, so it may neither lie inside the scratch tree rewritten below (its own
+# earlier clone included) nor hold that tree. Physical paths, so a symlink cannot hide either.
+case "$CKC/" in "$S/"*) echo "regenerate-bag: $CKC lies inside $S, which this script rewrites" >&2; exit 2 ;; esac
+case "$S/" in "$CKC/"*) echo "regenerate-bag: $S lies inside the checkout $CKC" >&2; exit 2 ;; esac
 
 COMMIT=$(git -C "$CKC" rev-parse --verify "$REV^{commit}")
 rm -rf "$S/src" "$S/dist"

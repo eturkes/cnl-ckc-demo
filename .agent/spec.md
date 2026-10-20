@@ -223,7 +223,8 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] n5 `med` the inventory refuses a bare-path `text` record and a `none` gate step — owed (user):
   approval of the grader change, left queued; `wip/n5-inventory` `ee0f5b2`.
 - [x] 6325451 n6 `med` every `pnpm stryker` survivor carries a non-author ruling against m5u6.
-- [x] b8dbff8 n7 `med` graph.md's renderer-surface figures re-derive from the tree; R129 adjudicates `true`.
+- [x] b8dbff8 n7 `med` graph.md's renderer-surface figures re-derive from the tree; the registry row for
+  graph.md's `Renderer seam` adjudicates `true`.
 - [ ] n8 `low` coverage passages — waits on the producer: `../cnl-ckc` `83569b1d` still records
   B3-09/B3-10 `p14`.
 - [ ] n9 `low` the meta-interpreter derives through a comparison built-in — owed (user): approval of
