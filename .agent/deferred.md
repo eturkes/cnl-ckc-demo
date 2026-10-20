@@ -48,13 +48,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   firing record became `inv m1u7-port: a non-role root token planted`. Re-open trigger: a user
   ruling that restores a sentence-length check. Accept: C6 returns with that check and is seen
   red on a planted over-long sentence. `pri` low. **User ruling**: retire the caps and delete C6.
-- **`copy:check` grades component prose twice** — `gradeLiterals` refuses every literal a
-  component renders bar the brand mark, so `gradeComponents`' filler sweep over the same
-  `componentText` can never be the sole refusal; the cap retirement left it holding that sweep
-  and the empty-set guard alone. Accept: the sweep leaves with its control and its
-  `.claude/rules/firing.md` row records the original firing, the derived-set guard kept, or a
-  recorded reason keeps it. `pri` low. A grader change: it needs the user's approval.
-  **User ruling**: left queued; `wip/m13-copy-sweep` `3a438c3` holds the change with its firing shown.
 - **`claims:check` reads rules frontmatter as a claim** — `units()` (`tools/claims-sweep.mjs`)
   parses a rules file's YAML frontmatter as prose, so a `paths:` glob holding a digit becomes a
   registry row: `.claude/rules/firing.md`'s `".agent/contracts/mnt5-inventory.md"` glob, joined

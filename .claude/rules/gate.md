@@ -81,10 +81,10 @@ Step semantics a reader cannot get from the script name:
   undeclared-API allowlist, and a `terms.ts` export-surface pin.
 - `copy:check` (`tools/copy-check.mjs`) runs two graders over `src/i18n/`: English on banned
   filler, Japanese on key parity plus the J2–J4 register rules. What may stay untranslated, and
-  why sentence length is no check, are in `.claude/rules/i18n.md`. A third grades every
-  `.svelte` file it finds by walking `src/`: the literal prose a component renders — markup
-  text nodes and human-facing attribute values, expressions stripped — through the filler
-  sweep, so prose written into a new component instead of the catalog cannot escape it. A
+  why sentence length is no check, are in `.claude/rules/i18n.md`. A third walks `src/`
+  and refuses any literal a `.svelte` file renders — markup text nodes and human-facing
+  attribute values, expressions stripped — bar the brand mark, so prose written into a
+  component instead of the catalog cannot ship. A
   `WORDMARK` table pins the accepted wordmark: both catalog values, the `<h1>` that renders it
   and the `CNL / CKC` brand mark. `INTERNAL_ID` refuses any catalog string, in either locale,
   that names a milestone, unit, claim-registry row or review row (`M1`–`M5`, `u12`, `R045`,

@@ -33,7 +33,7 @@ record is `.claude/rules/firing.md`.
 | `kb:asset-check` | seven planted forbidden-reach inputs | text | `.claude/rules/firing.md seven planted `src/zz-forbidden-reach-control.ts` inputs` |
 | `kb:export-check` | one declared query dropped from the bag | text | `.claude/rules/firing.md one declared query dropped from the verified bag` |
 | `engine:check` | one perturbed pinned surface per predicate | text | `.claude/rules/firing.md one perturbed pinned surface per predicate` |
-| `copy:check` | a banned word in a double-quoted value, and fifteen more | text | `.claude/rules/firing.md the same value rewritten as a double-quoted sentence holding a banned word` |
+| `copy:check` | a banned word in a double-quoted value, and fourteen more | text | `.claude/rules/firing.md the same value rewritten as a double-quoted sentence holding a banned word` |
 | `contrast:check` | `--text` collapsed onto `--surface` | text | `.claude/rules/firing.md `--text` collapsed onto `--surface`` |
 | `presentation:check` | one `@font-face` renamed out of `app.css`, and five more | text | `.claude/rules/firing.md one `@font-face` renamed out of `app.css`` |
 | `claims:check` | the claim set re-derived from one rules file, and five more | text | `.claude/rules/firing.md the claim set re-derived from ONE rules file, contracts dropped` |
