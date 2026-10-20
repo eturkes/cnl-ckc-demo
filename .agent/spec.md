@@ -199,24 +199,40 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] owed (user): live review of the graph annotations (sync-u2 `e73ed6c`, `.claude/rules/ui.md`
   `User review`) — `pnpm dev`, open the graph, select an answer's Find in graph (rec07 for time
   limits, rec05 for qualifiers, rec03 for a preference) and read the new relationships.
-- [ ] m6 `low` coverage passages — waits on the producer correcting B3-09/B3-10 `p14`.
-- [ ] m8 `med` `pnpm mutate` refuses a timeout-only kill — owed (user): a grader change, left queued;
-  `wip/m8-mutate-timeout` `7ea4369` (new row).
-- [ ] m13 `low` `copy:check` grades component prose once — owed (user): a grader change, left
-  queued; `wip/m13-copy-sweep` `3a438c3` (refresh row).
-- [ ] m14 `low` `claims:check` skips rules frontmatter — owed (user): a grader change, left queued;
-  `wip/m14-frontmatter` `e13a620` (refresh row).
-- [ ] m15 `med` `claims:check` grades each `Artifacts` bullet whole — owed (user): a grader change,
-  left queued; `wip/m15-artifacts` `e7e1844` (refresh row).
-- [ ] m19 `med` the inventory refuses a bare-path `text` record and a `none` gate step — owed
-  (user): a grader change; `wip/f4-inventory` `ac40f9c` (review find F4).
-- [ ] m20 `low` the decoder's first compound arm admits a wrapper instance alone — owed (user): the
-  u2-port fixtures change (review register).
 - [ ] owed (user): live reviews of four approved visual units (`.claude/rules/ui.md` `User review`)
   — d5 `d6714d7` phased boot status, d17 `04ada8c` solutions rendered as they arrive, d41
   `9056d3d` the owned PDF.js page viewer, d43 `db0736f` the document-first provenance browser.
 - [ ] owed (user): live review of the chat panel (c5 V8) — `pnpm chat:dev` + `pnpm dev`, ask a
   question, open a KB tag and a Web source, try Stop and New conversation.
+- [ ] n1 `high` graph node palette: a gate step computes palette safety over the five node fills
+  in both themes; a redesigned palette passes it, `contrast:check` and `graph:check` `palette`.
+- [ ] n2 `med` `binding:replay` reads archived-red / working-green on each arm's own bag, or
+  retires — a grader change.
+- [ ] n3 `med` `pnpm mutate` refuses a timeout-only kill — a grader change; `wip/m8-mutate-timeout`
+  `7ea4369`.
+- [ ] n4 `med` `claims:check` grades each `Artifacts` bullet whole — a grader change;
+  `wip/m15-artifacts` `e7e1844`.
+- [ ] n5 `med` the inventory refuses a bare-path `text` record and a `none` gate step — a grader
+  change; `wip/f4-inventory` `ac40f9c`.
+- [ ] n6 `med` every `pnpm stryker` survivor carries a non-author ruling against m5u6.
+- [ ] n7 `med` graph.md's renderer-surface figures re-derive from the tree; R129 adjudicates `true`.
+- [ ] n8 `low` coverage passages — waits on the producer: `../cnl-ckc` `83569b1d` still records
+  B3-09/B3-10 `p14`.
+- [ ] n9 `low` the meta-interpreter derives through a comparison built-in — changes P1's declared
+  `Derived: 'no'` pin (`tests/clinical-inference.test.ts`) and the ladder's leaf set.
+- [ ] n10 `low` C6 — waits on a user ruling that restores a sentence-length check.
+- [ ] n11 `low` `copy:check` grades component prose once — a grader change; `wip/m13-copy-sweep`
+  `3a438c3`.
+- [ ] n12 `low` `claims:check` skips rules frontmatter — a grader change; `wip/m14-frontmatter`
+  `e13a620`.
+- [ ] n13 `low` the decoder's first compound arm refuses a dict — the u2-port fixtures change.
+- [ ] n14 `low` `binding:check` below 38.3 s at equal strength — base `94117ee` 49.2 s (load 5.6).
+- [ ] n15 `low` a committed script regenerates the bag; `kb-build.md` names it.
+- [ ] Close: MAINTAIN request — work every `.agent/deferred.md` row in rank order (n1–n15 = the 15
+  rows at `94117ee`; new finds fund after them). Met when: each row closed by its own acceptance
+  check in its own commit, recorded blocked on the user with what it owes, waiting on its re-open
+  trigger, or routed; `pnpm gate` green on a clean tree at the closing commit. One chained
+  `AskUserQuestion` collects every approval once the agent-side work is done.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
