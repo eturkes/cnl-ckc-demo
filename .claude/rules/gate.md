@@ -160,7 +160,7 @@ committed state:
 | `pnpm stryker` | the default-operator credit `CLAUDE.md` `Engineering` grants a base-green suite — by default the legacy export lane's: Stryker mutates the three modules that suite imports and runs it alone per mutant (`STRYKER_SUITE`, `STRYKER_TESTNAME` and `STRYKER_MUTATE` select another suite, one case in it and its modules — ann-u2's Q3 over `src/questions/advice.ts`), then `tools/mutation/survivors.mjs` lists every mutant left alive, splitting Stryker's `Survived` by whether a test ran — a mutant that fails the suite at collection is replayed by hand and never credited. Reported, never graded; the record is `.agent/contracts/mnt5-stryker.md`. Run it alone |
 | `pnpm chat:live` | the chat path in a real browser: with `pnpm chat:dev` + `pnpm dev` up and the user's login under `~/.config/cnl-ckc-demo/codex`, one fixed KB question must settle answered with a KB part whose card holds the goal and an engine solution, and no page error (`.agent/contracts/chat-c7.md` L1). Keyed and billed to the user's ChatGPT plan, so outside every gate; its firing input calls no model (table above) |
 | `pnpm chat:probe` | live model behaviour on six fixed questions, one JSON report of every part's label, card and source (L2). Reported, never graded: the model has no determinism control; the gate grades the bridge against a scripted fake (`tests/chat-server.test.ts`) and the page against recorded turns |
-| `pnpm binding:replay` | that `clinical-binding` E2 is load-bearing: the same erasure is invisible at `a944fca` and drops exactly one document now. Since the 19-indicator bag its archived arm refuses the bag before erasing (`.agent/deferred.md` row `The binding replay lane cannot read the 19-indicator bag`) |
+| `pnpm binding:replay` | that `clinical-binding` E2 is load-bearing: erasing the first clause line a tree's helper cites is invisible at `a944fca` and drops exactly that document now |
 
 **A server spawned through `pnpm exec` outlives `child.kill()`.** `spawn('pnpm', ['exec', 'vite', ...])` builds a pnpm → vite tree, so signalling
 the child reaps the wrapper and orphans vite; the orphan holds the inherited stdout and stderr
@@ -179,10 +179,12 @@ the page also loads. Its own credibility is second-hand and stays that way on pu
 A2 against the live derivation.
 
 `binding:replay` reads git history, so it needs a full clone; that is why it stays out of
-`release:check` and out of CI. It varies the answer-path producer alone — `payloadSource` from
-the ref under test, the bag, the image build and the loader from the working tree — and exits
-1 unless the archived arm is red and the working arm green. Control: `pnpm binding:replay HEAD`
-exits 1, both arms green.
+`release:check` and out of CI. Each arm runs its own tree whole — the bag that tree vendored,
+its producer and image build, the first line its own helper cites — because a schema-changing
+re-vendor leaves one build machinery unable to read both bags (`a944fca`'s reads
+`guideline_document/3`, the 19-indicator bag's `/4`); the swipl-wasm loader is the one shared
+piece. It exits 1 unless the archived arm is red and the working arm green. Control: `pnpm
+binding:replay HEAD` exits 1, both arms green.
 
 `pnpm release:check` = `gate && kb:reproduce && smoke && browser:check && graph:check &&
 readme:check && test:browser && engine:probe`.
