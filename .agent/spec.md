@@ -219,17 +219,19 @@ worker before its caller resumes (`chat-c2.md`).
 - [x] b8dbff8 n7 `med` graph.md's renderer-surface figures re-derive from the tree; R129 adjudicates `true`.
 - [ ] n8 `low` coverage passages — waits on the producer: `../cnl-ckc` `83569b1d` still records
   B3-09/B3-10 `p14`.
-- [ ] n9 `low` the meta-interpreter derives through a comparison built-in — changes P1's declared
-  `Derived: 'no'` pin (`tests/clinical-inference.test.ts`) and the ladder's leaf set.
+- [ ] n9 `low` the meta-interpreter derives through a comparison built-in — owed (user): P1's declared
+  `Derived: 'no'` pin flips and the ladder gains a checked-comparisons list; `wip/n9-comparison`
+  `3cf1d13` (contract `n9-comparison.md`, consultant-5 before code).
 - [ ] n10 `low` C6 — waits on a user ruling that restores a sentence-length check.
-- [ ] n11 `low` `copy:check` grades component prose once — a grader change; `wip/m13-copy-sweep`
-  `3a438c3`.
-- [ ] n12 `low` `claims:check` skips rules frontmatter — a grader change; `wip/m14-frontmatter`
-  `e13a620`.
-- [ ] n13 `low` the decoder's first compound arm refuses a dict — the u2-port fixtures change.
+- [ ] n11 `low` `copy:check` grades component prose once — a grader change; `wip/n11-copy-sweep`
+  `ca26be9` (m13's `3a438c3` re-applied).
+- [ ] n12 `low` `claims:check` skips rules frontmatter — a grader change; `wip/n12-frontmatter`
+  `b52e01f` (m14's `e13a620` re-applied).
+- [ ] n13 `low` the decoder's first compound arm refuses a dict — the u2-port fixtures change
+  (`nativeCompound`, P3.10's order); `wip/n13-decoder` `eca6aca`.
 - [x] 83cd690 n14 `low` `binding:check` below 38.3 s at equal strength — 35.7–36.9 s at comparable load
   (base `94117ee` 49.2 s).
-- [ ] n15 `low` a committed script regenerates the bag; `kb-build.md` names it.
+- [x] 64d5e81 n15 `low` a committed script regenerates the bag; `kb-build.md` names it.
 - [ ] Close: MAINTAIN request — work every `.agent/deferred.md` row in rank order (n1–n15 = the 15
   rows at `94117ee`; new finds fund after them). Met when: each row closed by its own acceptance
   check in its own commit, recorded blocked on the user with what it owes, waiting on its re-open
