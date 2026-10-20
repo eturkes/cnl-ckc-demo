@@ -28,26 +28,19 @@ paths:
   `audit/`, `vocabulary.tsv`.
 - Rights profile = `redistributable` (public-domain MMWR) → source passages may ship whole in
   the UI. The bag records `swipl 9.2.9` as its compiler; the 10.1.13 WASM runtime loads it.
-- Regenerate = upstream's Rust `ckc` (Verus-verified kernel; no Python left): `ckc dist build
-  <outdir>` run in a `cnl-ckc` checkout (`$CKC`), then copy the tarball + sidecar into `kb/`.
-  `ckc dist` is the release boundary and `ckc compile`/`ckc queries` write `pl/` + `queries/`
-  upstream — all regeneration inputs, never runtime deps. Build `ckc` project-locally so the
-  checkout stays byte-clean (`<ch>` = `$CKC/rust/rust-toolchain.toml` `channel`; plain
-  `cargo build` compiles the ghost-erased kernel, so Verus is not needed):
+- Regenerate = upstream's Rust `ckc` (Verus-verified kernel; no Python left):
+  `tools/kb/regenerate-bag.sh <cnl-ckc checkout> [<rev>]` clones the checkout at `<rev>` under
+  `.scratch/ckc/`, so the checkout is only read, builds `ckc` there with a project-local
+  toolchain (plain `cargo build` compiles the ghost-erased kernel, so Verus is not needed), runs
+  `ckc dist build`, and exits 0 only when the bag's `release-manifest.tsv` equals the one
+  committed at `<rev>` — and, when `kb/` vendors a bag of the same name, when that bag is
+  byte-identical to the rebuild. Vendoring = copying the tarball + sidecar from
+  `.scratch/ckc/dist/` into `kb/`. `ckc dist` is the release boundary and `ckc compile`/
+  `ckc queries` write `pl/` + `queries/` upstream — all regeneration inputs, never runtime deps.
 
-  ```sh
-  CKC=<cnl-ckc checkout> S=$PWD/.scratch/ckc T=$S/rustup/toolchains/<ch>-x86_64-unknown-linux-gnu/bin
-  RUSTUP_HOME=$S/rustup rustup toolchain install <ch> --profile minimal
-  (cd "$CKC/rust" && PATH=$T:$PATH CARGO_HOME=$S/cargo CARGO_TARGET_DIR=$S/target \
-    cargo build --release --locked --offline -q -p ckc)
-  (cd "$CKC" && $S/target/release/ckc dist build $S/dist)
-  ```
-
-  `CLAUDE.md` `Authoring` routes this recipe to a committed script; the port is queued
-  (`.agent/deferred.md` row `kb-build.md keeps the bag regeneration recipe inline`).
-
-  Accept a bag only when its `release-manifest.tsv` equals upstream's committed one byte for
-  byte and `ckc check` passes at that commit; a second `dist build` is byte-identical.
+  Accept a bag only when the script exits 0 at its input head, `ckc check` passes there
+  (`../target/release/ckc check` run in `.scratch/ckc/src`), and a second run rebuilds it byte
+  for byte.
 - Read the bag as an agent: `tar xzf kb/cnl-ckc-kb-*.tar.gz -C .scratch/ &&
   ln -sfn cnl-ckc-kb-* .scratch/kb`.
 

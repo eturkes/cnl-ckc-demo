@@ -227,7 +227,8 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] n12 `low` `claims:check` skips rules frontmatter — a grader change; `wip/m14-frontmatter`
   `e13a620`.
 - [ ] n13 `low` the decoder's first compound arm refuses a dict — the u2-port fixtures change.
-- [ ] n14 `low` `binding:check` below 38.3 s at equal strength — base `94117ee` 49.2 s (load 5.6).
+- [x] 83cd690 n14 `low` `binding:check` below 38.3 s at equal strength — 35.7–36.9 s at comparable load
+  (base `94117ee` 49.2 s).
 - [ ] n15 `low` a committed script regenerates the bag; `kb-build.md` names it.
 - [ ] Close: MAINTAIN request — work every `.agent/deferred.md` row in rank order (n1–n15 = the 15
   rows at `94117ee`; new finds fund after them). Met when: each row closed by its own acceptance
