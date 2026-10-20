@@ -71,14 +71,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   its continuation lines, and a planted change on a continuation line is refused by
   `claims:check` as a stale row. `pri` med. A grader change: it needs the user's approval.
   **User ruling**: left queued; `wip/m15-artifacts` `e7e1844` holds the change with its firing shown.
-- **The inventory resolves a bare-path `text` record and a `none` gate step** —
-  `tests/inventory.test.ts` resolves a `text` record by `body.includes(anchor)`, which an empty
-  anchor always satisfies, and admits `none` for a gate step as well as a lane, so the inventory
-  can certify a gate with no firing record (`mnt5-reviewer-3` F4). Accept: the copy:check row
-  planted as `text` + `tools/copy-check.mjs`, then as `none`, is refused by name — `names no
-  verbatim text`, `a gate step needs a firing record` — and the real inventory still passes.
-  `pri` med. A change to m2's grading check: it needs the user's approval. **Owed (user)**: the
-  approval; `wip/f4-inventory` `ac40f9c` holds the change with its firing shown.
 - **The decoder's first compound arm reads a dict whose keys spell a compound** — `decodeTerm`
   admits a plain object where `$t` is `t` and `functor` is a string, so the dict
   `_{'$t': t, functor: foo, foo: [[a]]}` decodes as `foo(a)` instead of failing closed; the
@@ -134,7 +126,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 | The binding replay lane cannot read the 19-indicator bag | the lane reads archived-red and working-green again — each arm on the bag its own tree vendored, erasing its own first cited line — or it retires with its firing kept in `.agent/contracts/m5u3.md` |
 | `pnpm mutate` credits a timeout-only kill | a mutant whose vitest check fails only by timeout reads `INCONCLUSIVE` and fails the run, shown by a planted stalling mutant |
 | `claims:check` covers one line of each `Artifacts` entry | each `Artifacts` bullet grades as one unit with its continuation lines, and a planted change on a continuation line is refused by `claims:check` as a stale row |
-| The inventory resolves a bare-path `text` record and a `none` gate step | the copy:check row planted as `text` + `tools/copy-check.mjs`, then as `none`, is refused by name — `names no verbatim text`, `a gate step needs a firing record` — and the real inventory still passes |
 | **high** The graph's node palette fails the computed palette-safety check | a gate step computes every pair of those fills in both themes, refuses a planted pair below a floor by name, and passes on a redesigned palette that still clears `contrast:check` and `graph:check`'s `palette` rule; the gate change is approved in that unit, and the new look gets the user's live review (`.claude/rules/ui.md` `User review`) |
 | `pnpm stryker`'s surviving mutants carry no ruling | every listed mutant carries a non-author ruling against the m5u6 contract in that record — specified behaviour → a test that kills it through observable behaviour, seen red on the mutant; behaviour the contract leaves open → recorded as open |
 | graph.md's renderer-surface figures are stale | each figure re-derives from the tree — a `tests/census.test.ts` `CENSUS` row or a stated command — or leaves the claim, and R129 re-adjudicates `true` |

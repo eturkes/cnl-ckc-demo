@@ -142,6 +142,20 @@ describe('check inventory', () => {
     expect(gradeInventory(inventory, known)).toEqual([]);
   });
 
+  it('refuses a gate step whose record is a bare path or none, by step', () => {
+    const row = inventory.split('\n').find((line) => line.startsWith('| `copy:check` |'));
+    if (row === undefined) throw new Error('no copy:check row to plant');
+    const [check = '', firing = ''] = cells(row);
+    const planted = (kind: string, anchor: string): string =>
+      inventory.replace(row, `| ${check} | ${firing} | ${kind} | ${anchor} |`);
+    expect(gradeInventory(planted('text', '`tools/copy-check.mjs`'), known)).toEqual([
+      'copy:check: tools/copy-check.mjs names no verbatim text',
+    ]);
+    expect(gradeInventory(planted('none', 'grades nothing'), known)).toEqual([
+      'copy:check: a gate step needs a firing record',
+    ]);
+  });
+
   it('refuses an inventory missing a suite row, by suite', () => {
     const [first] = table(inventory, 'Suites');
     const line = inventory.split('\n').find((row) => row.startsWith(`| ${first?.[0] ?? '?'} |`));

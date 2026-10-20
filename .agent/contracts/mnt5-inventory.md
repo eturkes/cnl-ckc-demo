@@ -15,9 +15,9 @@ Record kinds — `anchor` holds what the kind resolves:
 |---|---|---|
 | `mutate` | a `tools/mutants.mjs` label | the label exists and, for a suite, its vitest check runs that suite; `pnpm mutate '<label>'` reruns the firing |
 | `commit` | `<sha> <verbatim text of its body>` | the body records this check red on a present-but-wrong implementation or input; form graded, text rematched at harvest |
-| `text` | `<path> <verbatim text>` | the file holds the text: a firing-input row the check runs on every run, or a recorded firing |
+| `text` | `<path> <verbatim text>` | the file holds the text, which must not be empty: a firing-input row the check runs on every run, or a recorded firing |
 | `queue` | a `.agent/deferred.md` row title | the row is live and carries the acceptance check that gives this check a firing |
-| `none` | the reason | a lane that grades nothing — it reports; never a suite |
+| `none` | the reason | a lane that grades nothing — it reports; never a suite or a gate step |
 
 A `commit` record never counts a collection failure, an import error or a missing fixture: the
 red must come from a case of the named check failing on behaviour. The full bar for a suite's
