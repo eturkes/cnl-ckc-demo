@@ -96,13 +96,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   still clears `contrast:check` and `graph:check`'s `palette` rule; the gate change is approved in
   that unit, and the new look gets the user's live review (`.claude/rules/ui.md` `User review`).
   `pri` high. **User ruling**: queued by the template refresh, which changes no colour.
-- **`binding:check` dominates the full gate** — 38.3 s of a 63.6 s `pnpm gate` on 8 cores at load
-  3.7, the next step `lint` 10.2 s; `pnpm gate` prints each step's wall-clock. `CLAUDE.md`
-  `Execution` queues a dominating step for a speedup at equal strength (parallel runner,
-  content-keyed cache, incremental target, faster tool). Accept: `pnpm gate` prints
-  `binding:check` below 38.3 s on the same host and load, and every check still fires on its
-  planted bad input — its six controls, the `REQUIRED`, `LIFECYCLE` and `MEANING` rolls and
-  `tests/inventory.test.ts`. `pri` low.
 - **kb-build.md keeps the bag regeneration recipe inline** — `CLAUDE.md` `Authoring` routes a
   multi-step recipe to a committed script the rule names; `.claude/rules/kb-build.md`
   `Vendored bag` spells its `rustup` + `cargo build` + `ckc dist build` steps inline. Accept: a

@@ -107,6 +107,18 @@ const deriveOnce = async (): Promise<Derivation> => {
   return { baseSource, headSource, baseImage, headImage, baseQlf, headQlf };
 };
 
+/**
+ * The first byte offset where two artifacts differ, -1 when they are byte-identical. `toEqual`
+ * walks a Buffer element by element — 4.9 s for one 3 MB QLF — while `equals` is a memcmp.
+ */
+const firstDifference = (actual: Uint8Array, expected: Uint8Array): number => {
+  const [left, right] = [Buffer.from(actual), Buffer.from(expected)];
+  if (left.equals(right)) return -1;
+  let at = 0;
+  while (at < left.length && at < right.length && left[at] === right[at]) at += 1;
+  return at;
+};
+
 let derivations: Promise<readonly [Derivation, Derivation]> | undefined;
 const repeatedDerivations = (): Promise<readonly [Derivation, Derivation]> => {
   derivations ??= (async () => [await deriveOnce(), await deriveOnce()] as const)();
@@ -724,7 +736,7 @@ describe('clinical records', () => {
 
     const [left, right] = await repeatedDerivations();
     expect(right.headSource).toBe(left.headSource);
-    expect(Buffer.from(right.headImage)).toEqual(Buffer.from(left.headImage));
+    expect(firstDifference(right.headImage, left.headImage), 'head image').toBe(-1);
   }, 300_000);
   it('T12 budget delta measured and reproducible, no ceiling', async () => {
     const frozen = baselineHelper();
@@ -742,10 +754,10 @@ describe('clinical records', () => {
     expect(delta(second)).toEqual(firstDelta);
     expect(Object.values(firstDelta).every(Number.isInteger)).toBe(true);
     expect(firstDelta.payload).not.toBe(0);
-    expect(Buffer.from(second.baseImage)).toEqual(Buffer.from(first.baseImage));
-    expect(Buffer.from(second.headImage)).toEqual(Buffer.from(first.headImage));
-    expect(Buffer.from(second.baseQlf)).toEqual(Buffer.from(first.baseQlf));
-    expect(Buffer.from(second.headQlf)).toEqual(Buffer.from(first.headQlf));
+    expect(firstDifference(second.baseImage, first.baseImage), 'base image').toBe(-1);
+    expect(firstDifference(second.headImage, first.headImage), 'head image').toBe(-1);
+    expect(firstDifference(second.baseQlf, first.baseQlf), 'base QLF').toBe(-1);
+    expect(firstDifference(second.headQlf, first.headQlf), 'head QLF').toBe(-1);
   }, 300_000);
   it('T13 malformed payload fails closed across the pinned fault category', () => {
     const message = (run: () => unknown): string => {
