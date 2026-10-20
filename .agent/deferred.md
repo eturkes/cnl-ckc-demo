@@ -103,13 +103,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   `binding:check` below 38.3 s on the same host and load, and every check still fires on its
   planted bad input — its six controls, the `REQUIRED`, `LIFECYCLE` and `MEANING` rolls and
   `tests/inventory.test.ts`. `pri` low.
-- **graph.md's renderer-surface figures are stale** — `.claude/rules/graph.md` `Renderer seam`
-  states `Renderer surface = 12,282 B of 81,924 B graph surface = 15.0%` and `39 of 1,070 lines in
-  SemanticGraph.svelte are canvas-coupled`; the tree measures `src/graph/canvas.ts` 12,504 B of
-  100,993 B under `src/graph/` and 1,146 `SemanticGraph.svelte` lines, and no census row grades
-  them (`docs/claims.md` R129 `false`). The isolation half holds. Accept: each figure re-derives
-  from the tree — a `tests/census.test.ts` `CENSUS` row or a stated command — or leaves the claim,
-  and R129 re-adjudicates `true`. `pri` med.
 - **kb-build.md keeps the bag regeneration recipe inline** — `CLAUDE.md` `Authoring` routes a
   multi-step recipe to a committed script the rule names; `.claude/rules/kb-build.md`
   `Vendored bag` spells its `rustup` + `cargo build` + `ckc dist build` steps inline. Accept: a
@@ -128,7 +121,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 | `claims:check` covers one line of each `Artifacts` entry | each `Artifacts` bullet grades as one unit with its continuation lines, and a planted change on a continuation line is refused by `claims:check` as a stale row |
 | The inventory resolves a bare-path `text` record and a `none` gate step | the copy:check row planted as `text` + `tools/copy-check.mjs`, then as `none`, is refused by name — `names no verbatim text`, `a gate step needs a firing record` — and the real inventory still passes |
 | **high** The graph's node palette fails the computed palette-safety check | a gate step computes every pair of those fills in both themes, refuses a planted pair below a floor by name, and passes on a redesigned palette that still clears `contrast:check` and `graph:check`'s `palette` rule; the gate change is approved in that unit, and the new look gets the user's live review (`.claude/rules/ui.md` `User review`) |
-| graph.md's renderer-surface figures are stale | each figure re-derives from the tree — a `tests/census.test.ts` `CENSUS` row or a stated command — or leaves the claim, and R129 re-adjudicates `true` |
 
 ## Accepted-open
 

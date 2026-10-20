@@ -215,7 +215,7 @@ worker before its caller resumes (`chat-c2.md`).
   `wip/n4-artifacts` `49b1143` (m15's `e7e1844` re-applied).
 - [ ] n5 `med` the inventory refuses a bare-path `text` record and a `none` gate step — a grader
   change; `wip/n5-inventory` `ee0f5b2` (f4's `ac40f9c` re-applied).
-- [ ] n6 `med` every `pnpm stryker` survivor carries a non-author ruling against m5u6.
+- [x] 6325451 n6 `med` every `pnpm stryker` survivor carries a non-author ruling against m5u6.
 - [ ] n7 `med` graph.md's renderer-surface figures re-derive from the tree; R129 adjudicates `true`.
 - [ ] n8 `low` coverage passages — waits on the producer: `../cnl-ckc` `83569b1d` still records
   B3-09/B3-10 `p14`.
