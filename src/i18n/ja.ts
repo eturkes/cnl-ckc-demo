@@ -83,6 +83,9 @@ export const DESCRIPTIONS = {
   proofNegationOrigin:
     'エンジンは知識ベースでこの目標を探索し、何も導出しませんでした。' +
     '節はその不在を必要とするため、証明はそれを記録します。',
+  proofComparisonOrigin:
+    'エンジンは、節が示すしきい値と値を比較しました。' +
+    'この比較はガイドラインの文ではなく知識ベースのスキーマの一部なので、出典の行がありません。',
 
   reviewUnreviewed: 'このコンパイル済み文書について、人による裁定は記録されていません。',
   reviewRecorded: 'これは知識ベースの書き出しに記録されたレビューラベルです。',
@@ -191,6 +194,7 @@ export const LABELS = {
   liveProof: '実行時のProlog証明',
   proofAssumed: '仮定 (知識ベース外)',
   proofAbsent: '不成立を確認',
+  proofCompared: 'スキーマで確認',
   evidenceLoading: '選択された文書の根拠を読み込んでいます。',
   evidenceRetry: '根拠を再取得',
   compiledClause: 'コンパイル済みの節',
@@ -328,6 +332,7 @@ export const TEXT = {
   proofStepCount: (n: number) => `証明ステップ${String(n)}件`,
   proofPremiseCount: (n: number) => `仮定した前提${String(n)}件`,
   proofNegationCount: (n: number) => `不成立を確認した目標${String(n)}件`,
+  proofComparisonCount: (n: number) => `確認した比較${String(n)}件`,
   proofStepLine: (line: number) => `${String(line)}行目`,
   clauseJoin: (n: number) => `出典の行で対応付けられた正確な節が${String(n)}件あります。`,
   alignAce: (phrase: string) => `制御文の語句を対応表示: ${phrase}`,

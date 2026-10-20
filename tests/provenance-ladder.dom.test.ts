@@ -281,6 +281,81 @@ describe('proof-to-source provenance ladder', () => {
     expect([...(ladder?.children ?? [])]).toHaveLength(6);
   });
 
+  it('K7 lists each comparison once, line-free and badged, and keeps the graph focus clause-only', () => {
+    vi.stubGlobal('fetch', vi.fn());
+    // One case renders four ladders; each is torn down as afterEach tears down the last.
+    const reset = (): void => {
+      cleanup?.();
+      cleanup = undefined;
+      host?.remove();
+      host = undefined;
+    };
+    const compared: ProvenanceState = {
+      kind: 'ready',
+      solution: 0,
+      steps: [
+        {
+          kind: 'clause',
+          line: 77,
+          head: 'guideline_property(example,dose)',
+          predicate: 'guideline_property/5',
+          document: 'cdc2022-opioid-rec01-imp01',
+          sentence: 1,
+          children: [
+            { kind: 'comparison', goal: 'guideline_satisfies(geq,4,hour,geq,4,hour)' },
+            { kind: 'assumption', head: 'guideline_entity(actual,c,clinician)', predicate: 'x/3' },
+          ],
+        },
+        { kind: 'comparison', goal: 'guideline_satisfies(exactly,3,geq,2)' },
+        {
+          kind: 'clause',
+          line: 78,
+          head: 'guideline_operator(actual,c,should)',
+          predicate: 'guideline_operator/3',
+          document: 'cdc2022-opioid-rec01-imp01',
+          sentence: 1,
+          children: [{ kind: 'comparison', goal: 'guideline_satisfies(geq,4,hour,geq,4,hour)' }],
+        },
+      ],
+    };
+    const focuses: GraphFocus[] = [];
+    const root = render(compared, (focus) => focuses.push(focus));
+    const checked = rowsOf(root, 'premises').filter((row) =>
+      row.textContent?.includes('checked by the schema'),
+    );
+    expect(checked.map((row) => row.querySelector('code')?.textContent)).toEqual([
+      'guideline_satisfies(geq,4,hour,geq,4,hour)',
+      'guideline_satisfies(exactly,3,geq,2)',
+    ]);
+    for (const row of checked) expect(row.textContent).not.toMatch(/line \d/u);
+    expect(root.textContent).toContain('2 checked comparisons');
+    expect(root.textContent).toContain('The comparison belongs to the knowledge-base schema');
+    expect(root.textContent).toContain('2 proof steps');
+    clickNamed(root, 'Find in graph ↗');
+    expect(focuses).toEqual([
+      { document: 'cdc2022-opioid-rec01-imp01', sentence: 1, sentences: [1], lines: [77, 78] },
+    ]);
+    reset();
+
+    locale.set('ja');
+    const japanese = render(compared);
+    expect(japanese.textContent).toContain('確認した比較2件');
+    expect(japanese.textContent).toContain('スキーマで確認');
+    reset();
+    locale.set('en');
+
+    // A proof without one shows no such list; a documentless one keeps the ladder hidden.
+    expect(render(mixed).textContent).not.toContain('checked by the schema');
+    reset();
+    const documentless = render({
+      kind: 'ready',
+      solution: 0,
+      steps: [{ kind: 'comparison', goal: 'guideline_satisfies(exactly,60,geq,50)' }],
+    });
+    expect(documentless.querySelector('details.ladder')).toBeNull();
+    expect(documentless.textContent).not.toContain('checked by the schema');
+  });
+
   it('C7 renders both locales, and C9 axe stays clean with every disclosure open', async () => {
     vi.stubGlobal(
       'fetch',

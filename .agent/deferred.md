@@ -25,14 +25,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   archived-red and working-green again — each arm on the bag its own tree vendored, erasing its
   own first cited line — or it retires with its firing kept in `.agent/contracts/m5u3.md`.
   `pri` med. A grader change: it needs the user's approval.
-- **The meta-interpreter fails closed on a comparison built-in** — `derive/5`
-  (`tools/kb/proof.mjs`) resolves the 19 schema indicators alone, so a derivation through a rule
-  body that calls `guideline_satisfies/4,6` (30 documents, the `tablet-use-spacing` export)
-  fails while the plain query succeeds; upstream's traces record each call as a `builtin(G)`
-  leaf. No shipped proof reaches one: every catalog goal derives through the 12 recommendation
-  documents, none of which compares a quantity. Accept: a proof through a comparison-bearing
-  rule settles `proof`, the comparison a line-free leaf the decoder and the ladder both show,
-  seen red on the unfixed tree. `pri` low.
 - **`pnpm mutate` credits a timeout-only kill** — a vitest check that fails only by `Test timed
   out` exits 1, and `tools/mutate.mjs` reads exit 1 as killed, so a mutant that merely stalls its
   check, or a check starved by load, counts as bound (`mnt5-reviewer-2` F4: the first

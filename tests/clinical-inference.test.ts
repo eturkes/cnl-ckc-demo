@@ -131,8 +131,7 @@ describe('clinical assumption evaluator', () => {
         `(current_predicate(mi_limited/2)->Limited=yes;Limited=no),` +
         `(mi_limited(guideline_schema_version(1),0)->AtZero=yes;AtZero=no),` +
         `(mi_limited(guideline_schema_version(1),1)->AtOne=yes;AtOne=no),` +
-        // Declared limit: no arm for a comparison built-in, so a derivation through one fails
-        // closed (queue row `The meta-interpreter fails closed on a comparison built-in`).
+        // A comparison built-in derives as a line-free `builtin/1` leaf (`.agent/contracts/n9-comparison.md`).
         `(guideline_satisfies(exactly,60,geq,50)->Plain=yes;Plain=no),` +
         `(mi(guideline_satisfies(exactly,60,geq,50),5,_)->Derived=yes;Derived=no).`,
     );
@@ -142,7 +141,7 @@ describe('clinical assumption evaluator', () => {
       AtZero: 'yes',
       AtOne: 'no',
       Plain: 'yes',
-      Derived: 'no',
+      Derived: 'yes',
     });
 
     const hashes = Object.fromEntries(

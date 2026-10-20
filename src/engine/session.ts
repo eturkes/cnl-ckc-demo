@@ -864,10 +864,11 @@ export class EngineSession {
   /**
    * Decode the MI's proof list into a structured-clone-safe tree.
    *
-   * The interpreter discharges a goal three ways and each arrives as its own
+   * The interpreter discharges a goal four ways and each arrives as its own
    * functor: `node/3` resolved against a compiled clause, `assumption/1` was
-   * granted as a query-local premise, `naf/1` was proved absent. Every arm is
-   * decoded — dropping one would under-report what the derivation actually used.
+   * granted as a query-local premise, `naf/1` was proved absent, `builtin/1` was a
+   * comparison evaluated in place. Every arm is decoded — dropping one would
+   * under-report what the derivation actually used.
    */
   #proofSteps(engine: Engine, term: PlTerm, late: () => boolean): ProofStep[] {
     if (term.kind !== 'list') throw new DecodeError('proof tree is not a list');
@@ -889,6 +890,12 @@ export class EngineSession {
         const goal = item.args[0];
         if (goal === undefined) throw new DecodeError('negation carries no goal');
         steps.push({ kind: 'negation', goal: this.#display(engine, display(goal), late) });
+        continue;
+      }
+      if (item.functor === 'builtin' && item.args.length === 1) {
+        const goal = item.args[0];
+        if (goal?.kind !== 'compound') throw new DecodeError('comparison carries an invalid goal');
+        steps.push({ kind: 'comparison', goal: this.#display(engine, display(goal), late) });
         continue;
       }
       if (item.functor !== 'node' || item.args.length !== 3) {

@@ -21,6 +21,11 @@
 // binds `Rule` only after `derive_all/4` succeeds, so the fragment data is gated
 // on a real derivation rather than looked up.
 //
+// A comparison built-in (`guideline_satisfies/4,6`, defined in `schema.pl`, in no document) is
+// evaluated where it stands and leaves a line-free `builtin(G)` leaf, as upstream's traces record
+// it: no clause states it, no depth is spent on it, and no premise can stand in for it, since an
+// assumption replaces a schema relation alone.
+//
 // The `clinical_advice/3` arm hands its proof straight to `clinical_advice/4`,
 // the same clause that assembles the answer. One derivation therefore produces
 // both, so the displayed proof cannot drift from the answer it explains, and no
@@ -45,6 +50,8 @@ schema_goal(guideline_recurrence(_,_,_,_)).
 schema_goal(guideline_recurrence_window(_,_,_,_,_,_,_)).
 schema_goal(guideline_schema_version(_)).
 schema_goal(guideline_unit(_,_,_)).
+comparison_goal(guideline_satisfies(_,_,_,_)).
+comparison_goal(guideline_satisfies(_,_,_,_,_,_)).
 resolve(guideline_arg(A,B,C,D),Body,L) :- clause(guideline_arg(A,B,C,D),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 resolve(guideline_cardinality(A,B,C,D,E),Body,L) :- clause(guideline_cardinality(A,B,C,D,E),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 resolve(guideline_document(A,B,C,D),Body,L) :- clause(guideline_document(A,B,C,D),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
@@ -77,6 +84,7 @@ derive(M:A,D,As,P,S) :- !, (M == user -> derive(A,D,As,P,S) ; P=[], S=limit).
 derive((A,B),D,As,P,S) :- !, derive_conjunction(A,B,D,As,P,S).
 derive(\+ A,D,As,[naf(A)],S) :- !, findall(R,derive(A,D,As,_,R),Rs), naf_status(Rs,S).
 derive(clinical_advice(Q,Source,Answer),_,_,P,proved) :- !, clinical_advice(Q,Source,Answer,P).
+derive(G,_,_,[builtin(G)],proved) :- comparison_goal(G), !, call(G).
 derive(H,_,As,[assumption(H)],proved) :- schema_goal(H), assumed(H,As), !.
 derive(H,0,_,[],limit) :- schema_goal(H), !.
 derive(H,D,As,[node(line(L),H,Sub)],S) :- D > 0, D1 is D-1, resolve(H,B,L), derive(B,D1,As,Sub,S).

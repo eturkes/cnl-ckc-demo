@@ -136,11 +136,21 @@ export interface ProofNegation {
 }
 
 /**
- * One entry of the live proof tree. The three arms are the three ways the
+ * A comparison built-in the interpreter evaluated: `guideline_satisfies/4,6` is defined by the
+ * schema, by no document, so it carries no line and no premise stands in for it.
+ */
+export interface ProofComparison {
+  kind: 'comparison';
+  /** Canonical text of the evaluated call. */
+  goal: string;
+}
+
+/**
+ * One entry of the live proof tree. The four arms are the four ways the
  * interpreter discharges a goal, and they are kept distinct so a reader never has
  * to tell a quoted clause from a hypothesis by looking at its text.
  */
-export type ProofStep = ProofClause | ProofAssumption | ProofNegation;
+export type ProofStep = ProofClause | ProofAssumption | ProofNegation | ProofComparison;
 
 /** Every terminal result of a selected-solution proof request. */
 export type ProofOutcome =

@@ -82,8 +82,10 @@ is rejected.
   1; deterministic maxima 6403 inferences and outer depth ≥20. Worst synchronous proof step
   291.419 ms, so a cooperative cancel cannot interrupt mid-proof and the main-thread watchdog
   is mandatory. Node figures only.
-- `resolve/3` whitelists the 19 schema indicators alone; a comparison built-in
-  (`guideline_satisfies/4,6`) has no arm, so a derivation through one fails closed.
+- `resolve/3` whitelists the 19 schema indicators alone. A comparison built-in
+  (`guideline_satisfies/4,6`) has its own arm: `call/1` evaluates it where it stands, at any
+  depth, and the proof records a line-free `builtin(G)` leaf, as upstream's traces do; no
+  premise can stand in for it (`tests/proof-comparison.test.ts`).
 
 ## Clause identity
 
