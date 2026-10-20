@@ -209,14 +209,13 @@ worker before its caller resumes (`chat-c2.md`).
   `9056d3d` the owned PDF.js page viewer, d43 `db0736f` the document-first provenance browser.
 - [ ] owed (user): live review of the chat panel (c5 V8) — `pnpm chat:dev` + `pnpm dev`, ask a
   question, open a KB tag and a Web source, try Stop and New conversation.
-- [ ] n1 `high` graph node palette: a gate step computes palette safety over the five node fills
-  in both themes; a redesigned palette passes it, `contrast:check` and `graph:check` `palette` —
-  approved (user); landed from `wip/n1-palette` `c774baf`.
+- [x] b0ee8d8 n1 `high` graph node palette: `pnpm palette:check` in the gate and a redesigned palette
+  that passes it, `contrast:check` and `graph:check` `palette` — approved (user).
 - [ ] owed (user): live review of the graph's new node colours (n1, `.claude/rules/ui.md` `User
   review`) — `pnpm dev`, open the graph, read concepts, actions and attributes in both themes, and
   select an answer's Find in graph to see the proof path and the selected node beside them.
-- [ ] n2 `med` `binding:replay` reads archived-red / working-green on each arm's own bag, or
-  retires — a grader change; `wip/n2-replay` `60a74c4`.
+- [ ] n2 `med` `binding:replay` reads archived-red / working-green on each arm's own bag — per-tree
+  arms approved (user); landed from `wip/n2-replay` `60a74c4`.
 - [ ] n3 `med` `pnpm mutate` refuses a timeout-only kill — a grader change;
   `wip/n3-mutate-timeout` `2235854` (m8's `7ea4369` re-applied).
 - [ ] n4 `med` `claims:check` grades each `Artifacts` bullet whole — a grader change;
