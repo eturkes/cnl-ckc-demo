@@ -1531,4 +1531,15 @@ export const MUTANTS = [
     ],
     check: { test: 'tests/engine-term-identity.test.ts', name: 'zero-arity compound' },
   },
+  {
+    label: 'n13 a dict spelling a compound with a string name takes the first arm',
+    edits: [
+      {
+        path: 'src/engine/terms.ts',
+        old: "if (value.$t === 't' && typeof value.functor === 'string' && wrapperCompound(value)) {",
+        new: "if (value.$t === 't' && typeof value.functor === 'string') {",
+      },
+    ],
+    check: { test: 'tests/engine-term-identity.test.ts', name: 'string name' },
+  },
 ];

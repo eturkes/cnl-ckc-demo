@@ -43,11 +43,14 @@ const CATEGORY_A_GOAL =
   "guideline_entity(actual,B,'category-A-recommendation',countable)," +
   'guideline_cardinality(actual,B,na,eq,1),guideline_event(actual,C,be),' +
   'guideline_arg(actual,C,1,A),guideline_arg(actual,C,2,B).';
-const nativeCompound = (functor: string, args: unknown[]): unknown => ({
-  $t: 't',
-  functor,
-  [functor]: [args],
-});
+/** swipl-wasm's `PrologCompound` keeps `arity` on its own prototype, which the decoder requires. */
+class NativeCompound {
+  arity(): number {
+    return 0;
+  }
+}
+const nativeCompound = (functor: string, args: unknown[]): unknown =>
+  Object.assign(new NativeCompound(), { $t: 't', functor, [functor]: [args] });
 const atom = (text: string): string => `'${text.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`;
 const delay = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -232,11 +235,13 @@ describe('P3 term decode/encode port', () => {
       (typeof names)[number],
       (...args: unknown[]) => unknown
     >;
+    const literal = 'pack(foo(bar,7),[a,b],[a|tail],1r3,"same",pair(A,A))';
+    // Built before the spies: a value constructed through a spied `Compound` carries the spy's
+    // prototype, which owns no `arity`, so the decoder would refuse it as no wrapper instance.
+    const row = engine.prolog.query(`X = ${literal}.`).once() as Record<string, unknown>;
+    const native = row.X;
     const spies = names.map((name) => vi.spyOn(helpers, name));
     try {
-      const literal = 'pack(foo(bar,7),[a,b],[a|tail],1r3,"same",pair(A,A))';
-      const row = engine.prolog.query(`X = ${literal}.`).once() as Record<string, unknown>;
-      const native = row.X;
       expect(native).toBeDefined();
       const term = decodeTerm(native);
       const encoded = createEncoder(engine.prolog)(term);

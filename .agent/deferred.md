@@ -79,13 +79,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   verbatim text`, `a gate step needs a firing record` — and the real inventory still passes.
   `pri` med. A change to m2's grading check: it needs the user's approval. **Owed (user)**: the
   approval; `wip/f4-inventory` `ac40f9c` holds the change with its firing shown.
-- **The decoder's first compound arm reads a dict whose keys spell a compound** — `decodeTerm`
-  admits a plain object where `$t` is `t` and `functor` is a string, so the dict
-  `_{'$t': t, functor: foo, foo: [[a]]}` decodes as `foo(a)` instead of failing closed; the
-  `functor` and `$t` arms admit a wrapper instance alone since the mnt5 review (F1). Accept: that
-  dict fails closed with `DecodeError`, and the `nativeCompound` fixtures in
-  `tests/engine-u2-port.test.ts` build wrapper instances so every case keeps its assertion.
-  `pri` low. Changing a graded suite's fixtures needs the user's approval.
 - **The graph's node palette fails the computed palette-safety check** — `CLAUDE.md`
   `Execution` Charts + figures wants OKLab ΔE×100 ≥ 15 between categorical marks and ≥ 8 under
   Machado protan + deutan simulation, all pairs for a map, computed in the gate. The five node
