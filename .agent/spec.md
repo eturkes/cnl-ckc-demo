@@ -205,15 +205,16 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] owed (user): live review of the chat panel (c5 V8) — `pnpm chat:dev` + `pnpm dev`, ask a
   question, open a KB tag and a Web source, try Stop and New conversation.
 - [ ] n1 `high` graph node palette: a gate step computes palette safety over the five node fills
-  in both themes; a redesigned palette passes it, `contrast:check` and `graph:check` `palette`.
+  in both themes; a redesigned palette passes it, `contrast:check` and `graph:check` `palette` —
+  owed (user): the gate change's approval, then the live review; `wip/n1-palette` `c774baf`.
 - [ ] n2 `med` `binding:replay` reads archived-red / working-green on each arm's own bag, or
-  retires — a grader change.
-- [ ] n3 `med` `pnpm mutate` refuses a timeout-only kill — a grader change; `wip/m8-mutate-timeout`
-  `7ea4369`.
+  retires — a grader change; `wip/n2-replay` `60a74c4`.
+- [ ] n3 `med` `pnpm mutate` refuses a timeout-only kill — a grader change;
+  `wip/n3-mutate-timeout` `2235854` (m8's `7ea4369` re-applied).
 - [ ] n4 `med` `claims:check` grades each `Artifacts` bullet whole — a grader change;
-  `wip/m15-artifacts` `e7e1844`.
+  `wip/n4-artifacts` `49b1143` (m15's `e7e1844` re-applied).
 - [ ] n5 `med` the inventory refuses a bare-path `text` record and a `none` gate step — a grader
-  change; `wip/f4-inventory` `ac40f9c`.
+  change; `wip/n5-inventory` `ee0f5b2` (f4's `ac40f9c` re-applied).
 - [ ] n6 `med` every `pnpm stryker` survivor carries a non-author ruling against m5u6.
 - [ ] n7 `med` graph.md's renderer-surface figures re-derive from the tree; R129 adjudicates `true`.
 - [ ] n8 `low` coverage passages — waits on the producer: `../cnl-ckc` `83569b1d` still records

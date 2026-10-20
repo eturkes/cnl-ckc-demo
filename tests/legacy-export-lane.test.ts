@@ -7,16 +7,18 @@
 // `tests/`: proving live output against the committed answers is exactly what makes them
 // oracles, and production reading them would make the demo's answers a lookup.
 
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import type { Engine } from '../src/engine/session.js';
 import type { ExportedQuery } from '../tools/kb/exports.mjs';
-import { EXPORTED, exportedQueries, statementGoal } from '../tools/kb/exports.mjs';
-import { payloadSource } from '../tools/kb/paths.mjs';
+import { EXPORTED, exportedQueries, LANE_SUITE, statementGoal } from '../tools/kb/exports.mjs';
+import { loadManifest, payloadSource } from '../tools/kb/paths.mjs';
 import { buildImage } from '../tools/kb/produce.mjs';
 
 import { bagFiles, ROOT } from './clinical-test-support.js';
@@ -120,6 +122,81 @@ describe('legacy export lane', () => {
     expect(twin).not.toBe(first.path);
     expect(() => exportedQueries(new Map(bagFiles).set(twin, bytesOf(first.path)))).toThrow(
       `${first.id} is exported by two guidelines`,
+    );
+  });
+
+  it('D1 the preflight reads the manifest kb:build wrote over the vendored bag', () => {
+    // `kb:export-check` verifies the bag `loadManifest` names; a lookup that lost its path
+    // reads no manifest and refuses a sound tree.
+    const manifest = loadManifest();
+    if (manifest === undefined) throw new Error('loadManifest read no manifest at kb/generated');
+    const bag = readFileSync(join(ROOT, 'kb', manifest.source.bag));
+    expect(createHash('sha256').update(bag).digest('hex')).toBe(manifest.source.sha256);
+  });
+
+  it('D1 a file outside a guideline query directory, or past its .pl, joins no export', () => {
+    const [first] = queries;
+    if (first === undefined) throw new Error('the lane declared no exports');
+    const sibling = first.path.replace(/[^/]+\.pl$/u, 'zz-not-an-export.pl.bak');
+    const nested = `data/archive/${first.path.replace(/[^/]+\.pl$/u, 'zz-decoy.pl')}`;
+    const planted = new Map(bagFiles)
+      .set(sibling, bytesOf(first.path))
+      .set(nested, bytesOf(first.path));
+    expect(exportedQueries(planted).map(({ id }) => id)).toEqual([...EXPORTED]);
+  });
+
+  it('D2 every offender is named apart, under the declared count', () => {
+    const [first, second] = queries;
+    if (first === undefined || second === undefined)
+      throw new Error('the lane declared < 2 exports');
+    const rename = (query: ExportedQuery, name: string): string =>
+      query.path.replace(/[^/]+\.pl$/u, `${name}.pl`);
+    const extra = new Map(bagFiles)
+      .set(rename(first, 'zz-a'), bytesOf(first.path))
+      .set(rename(first, 'zz-b'), bytesOf(first.path));
+    expect(() => exportedQueries(extra)).toThrow(
+      `legacy export lane: bag exports differ from the declared set of ${String(EXPORTED.length)}; unexpected [zz-a, zz-b]`,
+    );
+    const swapped = new Map(bagFiles);
+    swapped.delete(first.path);
+    swapped.delete(second.path);
+    swapped.set(rename(first, 'zz-a'), bytesOf(first.path));
+    swapped.set(rename(second, 'zz-b'), bytesOf(second.path));
+    expect(() => exportedQueries(swapped)).toThrow(
+      `; unexpected [zz-a, zz-b]; missing [${first.id}, ${second.id}]`,
+    );
+  });
+
+  it('D3 a projection of two variables keeps both columns', () => {
+    const [first] = queries;
+    if (first === undefined) throw new Error('the lane declared no exports');
+    const text = new TextDecoder('utf-8', { fatal: true }).decode(bytesOf(first.path));
+    const line = text
+      .split('\n')
+      .find((candidate) => candidate.startsWith("'$guideline_query_projection'("));
+    if (line === undefined) throw new Error(`${first.id}: no projection line to replace`);
+    const two =
+      "'$guideline_query_projection'(goal(','('='(A,1),'='(B,2)))," +
+      'answers([answer(A,noun(a,countable)),answer(B,noun(b,countable))])).';
+    const planted = new Map(bagFiles).set(
+      first.path,
+      new TextEncoder().encode(text.replace(line, two)),
+    );
+    const query = exportedQueries(planted).find(({ id }) => id === first.id);
+    if (query === undefined) throw new Error(`${first.id}: the planted query did not parse`);
+    expect(query.projected).toEqual(['A', 'B']);
+    expect(statement(engine, query)).toContain('result(solutions([sol([1,2])]))');
+  });
+
+  it('D6 binding:check requires this file under the name LANE_SUITE carries', () => {
+    expect(LANE_SUITE).toBe(relative(ROOT, fileURLToPath(import.meta.url)));
+  });
+
+  it('D7 the shipped image was built from exactly the payload source, so the lane compiled nothing into it', () => {
+    // `kb:build` records the digest of the whole consulted source as the image's build input.
+    const { source } = payloadSource(bagFiles);
+    expect(loadManifest()?.input.sha256).toBe(
+      createHash('sha256').update(source, 'utf8').digest('hex'),
     );
   });
 

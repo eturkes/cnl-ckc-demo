@@ -96,14 +96,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   still clears `contrast:check` and `graph:check`'s `palette` rule; the gate change is approved in
   that unit, and the new look gets the user's live review (`.claude/rules/ui.md` `User review`).
   `pri` high. **User ruling**: queued by the template refresh, which changes no colour.
-- **`pnpm stryker`'s surviving mutants carry no ruling** — `.agent/contracts/mnt5-stryker.md` lists
-  137 mutants left alive in the three modules `tests/legacy-export-lane.test.ts` imports (64
-  `Survived`, 73 `NoCoverage`), characterised by the record's author alone. `CLAUDE.md`
-  `Engineering` rules each survivor against the contract by someone other than the test's
-  author, an unruled one queued here in MAINTAIN. Accept: every listed mutant carries a non-author
-  ruling against the m5u6 contract in that record — specified behaviour → a test that kills it
-  through observable behaviour, seen red on the mutant; behaviour the contract leaves open →
-  recorded as open. `pri` med.
 - **`binding:check` dominates the full gate** — 38.3 s of a 63.6 s `pnpm gate` on 8 cores at load
   3.7, the next step `lint` 10.2 s; `pnpm gate` prints each step's wall-clock. `CLAUDE.md`
   `Execution` queues a dominating step for a speedup at equal strength (parallel runner,
@@ -136,7 +128,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 | `claims:check` covers one line of each `Artifacts` entry | each `Artifacts` bullet grades as one unit with its continuation lines, and a planted change on a continuation line is refused by `claims:check` as a stale row |
 | The inventory resolves a bare-path `text` record and a `none` gate step | the copy:check row planted as `text` + `tools/copy-check.mjs`, then as `none`, is refused by name — `names no verbatim text`, `a gate step needs a firing record` — and the real inventory still passes |
 | **high** The graph's node palette fails the computed palette-safety check | a gate step computes every pair of those fills in both themes, refuses a planted pair below a floor by name, and passes on a redesigned palette that still clears `contrast:check` and `graph:check`'s `palette` rule; the gate change is approved in that unit, and the new look gets the user's live review (`.claude/rules/ui.md` `User review`) |
-| `pnpm stryker`'s surviving mutants carry no ruling | every listed mutant carries a non-author ruling against the m5u6 contract in that record — specified behaviour → a test that kills it through observable behaviour, seen red on the mutant; behaviour the contract leaves open → recorded as open |
 | graph.md's renderer-surface figures are stale | each figure re-derives from the tree — a `tests/census.test.ts` `CENSUS` row or a stated command — or leaves the claim, and R129 re-adjudicates `true` |
 
 ## Accepted-open
