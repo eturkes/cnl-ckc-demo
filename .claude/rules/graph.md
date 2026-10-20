@@ -90,7 +90,8 @@ server refuses, and a `--graph-*` palette set to `initial`). The mocked suite ca
   only way a token reaches it — and this keeps R6's `(container, onSelect)` signature intact,
   which a theme parameter would have broken. A missing token is a mount failure, not a black
   node: `SemanticGraph.svelte` then shows the HTML relation view.
-  - `tools/contrast.mjs` grades all of them in BOTH themes, and `graph:check`'s `palette` rule
+  - `tools/contrast.mjs` grades all of them in BOTH themes, `tools/palette-check.mjs` holds the
+    five node fills apart for colour-blind readers too, and `graph:check`'s `palette` rule
     grades the rendered value against the token, so a hardcoded hex reddens even though the
     static table still passes.
   - The dark theme **inverts the node** — light fill, dark label — because the selected node is

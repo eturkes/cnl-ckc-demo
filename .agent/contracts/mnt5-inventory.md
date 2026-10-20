@@ -35,6 +35,7 @@ record is `.claude/rules/firing.md`.
 | `engine:check` | one perturbed pinned surface per predicate | text | `.claude/rules/firing.md one perturbed pinned surface per predicate` |
 | `copy:check` | a banned word in a double-quoted value, and fifteen more | text | `.claude/rules/firing.md the same value rewritten as a double-quoted sentence holding a banned word` |
 | `contrast:check` | `--text` collapsed onto `--surface` | text | `.claude/rules/firing.md `--text` collapsed onto `--surface`` |
+| `palette:check` | a fill collapsed onto another; a pair only colour-blind readers confuse; `FILLS` emptied | text | `.claude/rules/firing.md a pink/cyan pair only colour-blind readers confuse` |
 | `presentation:check` | one `@font-face` renamed out of `app.css`, and five more | text | `.claude/rules/firing.md one `@font-face` renamed out of `app.css`` |
 | `claims:check` | the claim set re-derived from one rules file, and five more | text | `.claude/rules/firing.md the claim set re-derived from ONE rules file, contracts dropped` |
 | `spec:check` | an open unit as a plain bullet, a ticked row without its SHA | text | `.claude/rules/firing.md the first open unit written as a plain bullet, then with a star bullet` |
@@ -153,6 +154,7 @@ record is `.claude/rules/firing.md`.
 | `tests/marks-view.test.ts` | answer | decoder, readings and join return the stub's fixed values | text | `.agent/contracts/ann-u1.md 405/405 RED at base` |
 | `tests/mutant-anchors.test.ts` | off | exported-query mutant names an anchor absent from its producer | mutate | `inv mutant-anchors: exported-query mutant retains a stale anchor` |
 | `tests/page-viewer.dom.test.ts` | off | failed page draw leaves retry button disabled | mutate | `C3 a failed page draw keeps Load page viewer disabled` |
+| `tests/palette-check.test.ts` | off | protan simulated with the identity matrix | mutate | `inv palette-check: protan simulated with the identity matrix` |
 | `tests/passage-locate.test.ts` | off | locator keeps standalone bullet items that the extracted passage drops | commit | `005903a pnpm exec vitest run tests/passage-locate.test.ts` → rc 1, 2/8 red` |
 | `tests/proof-identity.test.ts` | off | a provenance chunk keys a clause by the wrong line | mutate | `inv proof-identity: a provenance chunk keys a clause by the wrong line` |
 | `tests/proof-live.test.ts` | off | inference exhaustion is misclassified as depth exhaustion | mutate | `inv proof-live: inference exhaustion reported as depth` |

@@ -104,7 +104,7 @@ const tokenBlock = (css, selector, name) => {
  *
  * @param {string} value @param {string} name @returns {[number, number, number]}
  */
-const rgb = (value, name) => {
+export const rgb = (value, name) => {
   const hex = /^#([\da-f]{3}|[\da-f]{6})$/i.exec(value.trim())?.[1];
   if (hex === undefined) throw new Error(`${name}: ${value} is not a hex colour`);
   // `replace` rather than a spread: spreading the match group loses its string
@@ -159,7 +159,12 @@ const gradePairs = (themes) => {
   return failures;
 };
 
-const main = () => {
+/**
+ * Both themes' tokens out of `src/app.css`: the dark block overrides the light one.
+ *
+ * @returns {{light: Map<string, string>, dark: Map<string, string>}}
+ */
+export const themeTokens = () => {
   const css = readFileSync(CSS, 'utf8');
   const light = tokenBlock(css, /:root\s*\{([^}]*)\}/, ':root');
   const darkOverrides = tokenBlock(
@@ -169,6 +174,11 @@ const main = () => {
   );
   const dark = new Map(light);
   for (const [name, value] of darkOverrides) dark.set(name, value);
+  return { light, dark };
+};
+
+const main = () => {
+  const { light, dark } = themeTokens();
   if (PAIRS.length === 0) throw new Error('the pair table is empty');
 
   // Control: the shipped tokens with one foreground collapsed onto its own background. It
@@ -200,4 +210,4 @@ const main = () => {
   console.log(`contrast: ${String(PAIRS.length * 2)} light/dark pairs pass, control: ${control}`);
 };
 
-main();
+if (process.argv[1] === import.meta.filename) main();

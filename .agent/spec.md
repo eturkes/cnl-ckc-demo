@@ -162,6 +162,11 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   with another document keeps that document's annotations.
 - **A qualifier reads `Qualifier: <words>`, first in the row.** One label serves every class;
   upstream's class names (`manner`, `usuality`, `focus`) and function glosses never show.
+- **The graph's node fills pass palette safety in the gate.** `pnpm palette:check` holds every pair
+  of the five node fills apart in both themes — OKLab ΔE×100 ≥ 15 plain, ≥ 8 under Machado protan +
+  deutan — and the redesigned fills keep each kind's hue: green concepts, ochre actions, neutral
+  attributes, darker in the light theme because its white labels cap each fill's luminance. A gate
+  change approved with the new look, whose live review is owed. Law → `.claude/rules/ui.md`.
 - **A grade shows once per run of statements from one source document.** The first statement
   of each document's run carries the grade; the statements after it that draw on the same
   documents leave it out. Qualifiers, preferences and time bounds stay on every statement.
@@ -206,7 +211,10 @@ worker before its caller resumes (`chat-c2.md`).
   question, open a KB tag and a Web source, try Stop and New conversation.
 - [ ] n1 `high` graph node palette: a gate step computes palette safety over the five node fills
   in both themes; a redesigned palette passes it, `contrast:check` and `graph:check` `palette` —
-  owed (user): the gate change's approval, then the live review; `wip/n1-palette` `c774baf`.
+  approved (user); landed from `wip/n1-palette` `c774baf`.
+- [ ] owed (user): live review of the graph's new node colours (n1, `.claude/rules/ui.md` `User
+  review`) — `pnpm dev`, open the graph, read concepts, actions and attributes in both themes, and
+  select an answer's Find in graph to see the proof path and the selected node beside them.
 - [ ] n2 `med` `binding:replay` reads archived-red / working-green on each arm's own bag, or
   retires — a grader change; `wip/n2-replay` `60a74c4`.
 - [ ] n3 `med` `pnpm mutate` refuses a timeout-only kill — a grader change;
@@ -232,6 +240,7 @@ worker before its caller resumes (`chat-c2.md`).
 - [x] 83cd690 n14 `low` `binding:check` below 38.3 s at equal strength — 35.7–36.9 s at comparable load
   (base `94117ee` 49.2 s).
 - [x] 64d5e81 n15 `low` a committed script regenerates the bag; `kb-build.md` names it.
+- [x] 77292ff find `high`: three vite 8.2.0–8.2.3 advisories reddened `audit:check` → vite 8.3.4.
 - [ ] Close: MAINTAIN request — work every `.agent/deferred.md` row in rank order (n1–n15 = the 15
   rows at `94117ee`; new finds fund after them). Met when: each row closed by its own acceptance
   check in its own commit, recorded blocked on the user with what it owes, waiting on its re-open

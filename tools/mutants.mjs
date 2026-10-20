@@ -760,6 +760,17 @@ export const MUTANTS = [
     },
   },
   {
+    label: 'inv palette-check: protan simulated with the identity matrix',
+    edits: [
+      {
+        path: 'tools/palette-check.mjs',
+        old: '    [0.152286, 1.052583, -0.204868],\n    [0.114503, 0.786281, 0.099216],\n    [-0.003882, -0.048116, 1.051998],',
+        new: '    [1, 0, 0],\n    [0, 1, 0],\n    [0, 0, 1],',
+      },
+    ],
+    check: { test: 'tests/palette-check.test.ts', name: 'P1 matches coloraide' },
+  },
+  {
     label: 'inv chat-client: malformed event line skipped',
     edits: [
       {
