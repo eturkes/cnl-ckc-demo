@@ -23,7 +23,10 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   leaf. No shipped proof reaches one: every catalog goal derives through the 12 recommendation
   documents, none of which compares a quantity. Accept: a proof through a comparison-bearing
   rule settles `proof`, the comparison a line-free leaf the decoder and the ladder both show,
-  seen red on the unfixed tree. `pri` low.
+  seen red on the unfixed tree. `pri` low. Changing P1's declared `Derived: 'no'` pin and adding a
+  list to the ladder (an accepted surface) need the user's approval. **User ruling**: left queued
+  (the question after `8076cb7`); `wip/n9-comparison` `3cf1d13` holds the unit — contract `n9-comparison.md`
+  reviewed before code by consultant-5, red witnesses shown, gate green.
 - **`pnpm mutate` credits a timeout-only kill** — a vitest check that fails only by `Test timed
   out` exits 1, and `tools/mutate.mjs` reads exit 1 as killed, so a mutant that merely stalls its
   check, or a check starved by load, counts as bound (`mnt5-reviewer-2` F4: the first
@@ -31,7 +34,9 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   `.scratch/review/mutant.mjs` refuses it per mutant, outside any gate. Accept: a mutant whose
   vitest check fails only by timeout reads `INCONCLUSIVE` and fails the run, shown by a planted
   stalling mutant. `pri` med. A grader change: it needs the user's approval.
-  **User ruling**: left queued; `wip/m8-mutate-timeout` `7ea4369` holds the change with its firing shown.
+  **User ruling**: left queued twice, at `f25bb35` and in the question after `8076cb7`;
+  `wip/n3-mutate-timeout` `2235854` holds `7ea4369` re-applied with its firing re-shown and its
+  records landed.
 - **C6 left `tests/m1u7-port.test.ts` with the sentence caps** — the archived m1u7 contract's C6
   (a 30-word sentence planted in `INSTRUCTIONS` or `DESCRIPTIONS` fails `copy:check`) lost its
   subject when the caps retired; both cases and their mutant
@@ -45,14 +50,18 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   and the empty-set guard alone. Accept: the sweep leaves with its control and its
   `.claude/rules/firing.md` row records the original firing, the derived-set guard kept, or a
   recorded reason keeps it. `pri` low. A grader change: it needs the user's approval.
-  **User ruling**: left queued; `wip/m13-copy-sweep` `3a438c3` holds the change with its firing shown.
+  **User ruling**: left queued twice, at `f25bb35` and in the question after `8076cb7`;
+  `wip/n11-copy-sweep` `ca26be9` holds `3a438c3` re-applied with its firing re-shown and its
+  records landed.
 - **`claims:check` reads rules frontmatter as a claim** — `units()` (`tools/claims-sweep.mjs`)
   parses a rules file's YAML frontmatter as prose, so a `paths:` glob holding a digit becomes a
   registry row: `.claude/rules/firing.md`'s `".agent/contracts/mnt5-inventory.md"` glob, joined
   with the closing `---`, is R073. Accept: the sweep skips a leading frontmatter block, the
   registry re-seeds without that row, and a planted frontmatter glob holding a digit stays out
   of the claim set. `pri` low. A grader change: it needs the user's approval.
-  **User ruling**: left queued; `wip/m14-frontmatter` `e13a620` holds the change with its firing shown.
+  **User ruling**: left queued twice, at `f25bb35` and in the question after `8076cb7`;
+  `wip/n12-frontmatter` `b52e01f` holds `e13a620` re-applied with its firing re-shown and its
+  records landed.
 - **`claims:check` covers one line of each `Artifacts` entry** — `claimSet`
   (`tools/claims-sweep.mjs`) keeps the first line of each `.agent/spec.md` `Artifacts` bullet,
   so a run command on a continuation line sits outside the registry: the chat bridge's
@@ -61,22 +70,27 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   register G1, the same at `e9ffcb7`). Accept: each `Artifacts` bullet grades as one unit with
   its continuation lines, and a planted change on a continuation line is refused by
   `claims:check` as a stale row. `pri` med. A grader change: it needs the user's approval.
-  **User ruling**: left queued; `wip/m15-artifacts` `e7e1844` holds the change with its firing shown.
+  **User ruling**: left queued twice, at `f25bb35` and in the question after `8076cb7`;
+  `wip/n4-artifacts` `49b1143` holds `e7e1844` re-applied with its firing re-shown and its
+  records landed.
 - **The inventory resolves a bare-path `text` record and a `none` gate step** —
   `tests/inventory.test.ts` resolves a `text` record by `body.includes(anchor)`, which an empty
   anchor always satisfies, and admits `none` for a gate step as well as a lane, so the inventory
   can certify a gate with no firing record (`mnt5-reviewer-3` F4). Accept: the copy:check row
   planted as `text` + `tools/copy-check.mjs`, then as `none`, is refused by name — `names no
   verbatim text`, `a gate step needs a firing record` — and the real inventory still passes.
-  `pri` med. A change to m2's grading check: it needs the user's approval. **Owed (user)**: the
-  approval; `wip/f4-inventory` `ac40f9c` holds the change with its firing shown.
+  `pri` med. A change to m2's grading check: it needs the user's approval. **User ruling**: left
+  queued (the question after `8076cb7`); `wip/n5-inventory` `ee0f5b2` holds `ac40f9c` re-applied with the
+  firing record it owed.
 - **The decoder's first compound arm reads a dict whose keys spell a compound** — `decodeTerm`
   admits a plain object where `$t` is `t` and `functor` is a string, so the dict
   `_{'$t': t, functor: foo, foo: [[a]]}` decodes as `foo(a)` instead of failing closed; the
   `functor` and `$t` arms admit a wrapper instance alone since the mnt5 review (F1). Accept: that
   dict fails closed with `DecodeError`, and the `nativeCompound` fixtures in
   `tests/engine-u2-port.test.ts` build wrapper instances so every case keeps its assertion.
-  `pri` low. Changing a graded suite's fixtures needs the user's approval.
+  `pri` low. Changing a graded suite's fixtures needs the user's approval. **User ruling**: left
+  queued (the question after `8076cb7`); `wip/n13-decoder` `eca6aca` holds the change with both fixture edits
+  (`nativeCompound` wrapper instances, P3.10 building its value before spying).
 ## Index — one line per `high` + `med` row
 
 Generated by `pnpm queue:index` from the rows above — each title beside its acceptance check's
