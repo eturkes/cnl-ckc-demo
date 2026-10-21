@@ -52,17 +52,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   **User ruling**: left queued twice, at `f25bb35` and in the question after `8076cb7`;
   `wip/n12-frontmatter` `b52e01f` holds `e13a620` re-applied with its firing re-shown and its
   records landed.
-- **`claims:check` covers one line of each `Artifacts` entry** — `claimSet`
-  (`tools/claims-sweep.mjs`) keeps the first line of each `.agent/spec.md` `Artifacts` bullet,
-  so a run command on a continuation line sits outside the registry: the chat bridge's
-  `pnpm chat:dev` line can change, even to a command that does not exist, with the claim set and
-  `claims:check` unchanged, while the same change on a first line moves it (`sync-reviewer-6`
-  register G1, the same at `e9ffcb7`). Accept: each `Artifacts` bullet grades as one unit with
-  its continuation lines, and a planted change on a continuation line is refused by
-  `claims:check` as a stale row. `pri` med. A grader change: it needs the user's approval.
-  **User ruling**: left queued twice, at `f25bb35` and in the question after `8076cb7`;
-  `wip/n4-artifacts` `49b1143` holds `e7e1844` re-applied with its firing re-shown and its
-  records landed.
 - **The inventory resolves a bare-path `text` record and a `none` gate step** —
   `tests/inventory.test.ts` resolves a `text` record by `body.includes(anchor)`, which an empty
   anchor always satisfies, and admits `none` for a gate step as well as a lane, so the inventory
@@ -98,7 +87,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 
 | defect | accept |
 | --- | --- |
-| `claims:check` covers one line of each `Artifacts` entry | each `Artifacts` bullet grades as one unit with its continuation lines, and a planted change on a continuation line is refused by `claims:check` as a stale row |
 | The inventory resolves a bare-path `text` record and a `none` gate step | the copy:check row planted as `text` + `tools/copy-check.mjs`, then as `none`, is refused by name — `names no verbatim text`, `a gate step needs a firing record` — and the real inventory still passes |
 
 ## Accepted-open

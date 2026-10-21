@@ -98,7 +98,8 @@ Step semantics a reader cannot get from the script name:
 - `claims:check` (`tools/claims-sweep.mjs`) grades COVERAGE of `docs/claims.md`, never truth.
   No tool here can decide whether a sentence is true, so judgment stays in the committed
   registry and the check owns what a tool can decide: it re-derives the claim set from the tree
-  — u14's adjudicated shipped rows, `.agent/spec.md` `Artifacts`, `.claude/rules/`,
+  — u14's adjudicated shipped rows, `.agent/spec.md` `Artifacts` (each bullet whole, with its
+  continuation lines), `.claude/rules/`,
   `.agent/contracts/m5u*.md` acceptance rows — and refuses a registry that has drifted from it
   by row count, by row anchor, by a row whose `hash` no longer digests its claim, or by leaving
   a row unadjudicated. A claim unit is a bullet with

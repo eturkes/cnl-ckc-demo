@@ -212,10 +212,9 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] owed (user): live review of the graph's new node colours (n1, `.claude/rules/ui.md` `User
   review`) — `pnpm dev`, open the graph, read concepts, actions and attributes in both themes, and
   select an answer's Find in graph to see the proof path and the selected node beside them.
-- [ ] n3 `med` `pnpm mutate` refuses a timeout-only kill — approved (user); lands from
-  `wip/n3-mutate-timeout` `2235854`.
-- [ ] n4 `med` `claims:check` grades each `Artifacts` bullet whole — owed (user): approval of the
-  grader change, left queued again; `wip/n4-artifacts` `49b1143`.
+- [x] 6507d44 n3 `med` `pnpm mutate` refuses a timeout-only kill — approved (user).
+- [ ] n4 `med` `claims:check` grades each `Artifacts` bullet whole — approved (user); lands from
+  `wip/n4-artifacts` `49b1143`.
 - [ ] n5 `med` the inventory refuses a bare-path `text` record and a `none` gate step — owed (user):
   approval of the grader change, left queued; `wip/n5-inventory` `ee0f5b2`.
 - [ ] n8 `low` coverage passages — waits on the producer: `../cnl-ckc` `83569b1d` still records
