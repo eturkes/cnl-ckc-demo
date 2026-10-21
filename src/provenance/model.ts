@@ -253,7 +253,7 @@ export const proofClauses = (steps: readonly ProofStep[]): ProofClause[] =>
  *
  * Dedup is per PROOF, not per clause: one premise applies to its whole sentence and is
  * re-assumed under every clause that sentence cites, so the raw leaves repeat an order of
- * magnitude more often than they differ — 3,930 leaves over 346 distinct literals.
+ * magnitude more often than they differ (`.claude/rules/proof.md` counts both).
  */
 export const proofAssumptions = (steps: readonly ProofStep[]): string[] => [
   ...new Set(

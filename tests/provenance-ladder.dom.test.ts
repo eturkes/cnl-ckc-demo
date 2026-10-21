@@ -51,8 +51,8 @@ const ready: ProvenanceState = {
 
 /**
  * A proof carrying all three arms, with the SAME premise re-assumed under two clauses and a
- * repeat inside one clause. That repetition is the real shape — 3,930 leaves collapse to 346
- * distinct literals — so a display that forgets to dedup fails here.
+ * repeat inside one clause. That repetition is the real shape (`.claude/rules/proof.md` counts
+ * the leaves and the distinct literals), so a display that forgets to dedup fails here.
  */
 const mixed: ProvenanceState = {
   kind: 'ready',
