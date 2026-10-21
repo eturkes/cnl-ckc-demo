@@ -78,11 +78,16 @@ export const gradeIndex = (queue) => {
   );
 };
 
+/** @param {string} queue @returns {string} the queue with its index derived from its rows */
+export const rewriteIndex = (queue) => {
+  const { start, end } = tableSpan(queue);
+  return `${queue.slice(0, start)}${indexTable(queueRows(queue))}${queue.slice(end)}`;
+};
+
 if (process.argv[1]?.endsWith('queue.mjs')) {
   const path = join(ROOT, QUEUE);
-  const queue = readFileSync(path, 'utf8');
-  const { start, end } = tableSpan(queue);
-  writeFileSync(path, `${queue.slice(0, start)}${indexTable(queueRows(queue))}${queue.slice(end)}`);
+  const queue = rewriteIndex(readFileSync(path, 'utf8'));
+  writeFileSync(path, queue);
   console.log(
     `queue:index — ${String(indexTable(queueRows(queue)).split('\n').length - 2)} index lines`,
   );

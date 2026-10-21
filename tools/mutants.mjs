@@ -1580,4 +1580,15 @@ export const MUTANTS = [
     ],
     check: { test: 'tests/engine-term-identity.test.ts', name: 'string name' },
   },
+  {
+    label: 'n17 the repeated-index control repeats nothing on an empty index',
+    edits: [
+      {
+        path: 'tools/claims-sweep.mjs',
+        old: "  const indexed =\n    indexLine(queue) === undefined\n      ? rewriteIndex(queue.replace('\\n## Index — ', `\\n${plantedRow}\\n## Index — `))\n      : queue;\n",
+        new: '  const indexed = queue;\n',
+      },
+    ],
+    check: ['node', 'tools/claims-sweep.mjs'],
+  },
 ];

@@ -13,7 +13,7 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { requireFiring } from './control.mjs';
-import { gradeIndex, QUEUE, queueRows } from './queue.mjs';
+import { gradeIndex, QUEUE, queueRows, rewriteIndex } from './queue.mjs';
 
 const REGISTRY = 'docs/claims.md';
 
@@ -515,13 +515,26 @@ if (process.argv.includes('--seed')) {
     },
     () => gradeIndex(queue.replace('\n## Index — ', `\n${plantedRow}\n## Index — `)),
   );
-  // The index's first data line, whatever its rank: a queue holding no `high` row still has one.
-  const firstIndexLine =
-    /^\| --- \| --- \|\n(\|.*)$/mu.exec(queue.slice(queue.indexOf('\n## Index — ')))?.[1] ?? '';
+  // The index's first data line, whatever its rank. A queue holding no `high` or `med` row has an
+  // empty index, so a copy carrying the planted `med` row, its index rewritten, stands in.
+  /** @param {string} text @returns {string | undefined} */
+  const indexLine = (text) =>
+    /^\| --- \| --- \|\n(\|.*)$/mu.exec(text.slice(text.indexOf('\n## Index — ')))?.[1];
+  const indexed =
+    indexLine(queue) === undefined
+      ? rewriteIndex(queue.replace('\n## Index — ', `\n${plantedRow}\n## Index — `))
+      : queue;
+  const firstIndexLine = indexLine(indexed) ?? '';
   const repeatedIndex = requireFiring(
     'claims:check',
-    { mutation: 'the first index line repeated', expect: ['repeats or reorders its lines'] },
-    () => gradeIndex(queue.replace(firstIndexLine, `${firstIndexLine}\n${firstIndexLine}`)),
+    {
+      mutation:
+        indexed === queue
+          ? 'the first index line repeated'
+          : 'the first index line repeated, a med row planted into the empty index',
+      expect: ['repeats or reorders its lines'],
+    },
+    () => gradeIndex(indexed.replace(firstIndexLine, `${firstIndexLine}\n${firstIndexLine}`)),
   );
 
   // A command holding an escaped pipe must come back from the seed's merge byte-identical.
