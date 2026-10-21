@@ -1,7 +1,8 @@
 // n9 (`.agent/contracts/n9-comparison.md`): the meta-interpreter evaluates the comparison
 // built-ins `guideline_satisfies/4,6` where they stand and records each as a line-free
 // `builtin(G)` leaf, as upstream's traces do — over the shipped saved image, through `derive/5`
-// under premises, and through the session's proof RPC.
+// under premises, and through the session's proof RPC. V1 (`.agent/contracts/n19-review-page.md`)
+// holds the review page's goal to a proof whose ladder lists one comparison.
 
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -11,7 +12,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import { PROOF_BUDGET_MAX } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
-import { proofClauses } from '../src/provenance/model.js';
+import { proofClauses, proofComparisons } from '../src/provenance/model.js';
+import { COMPARISON_GOAL } from '../src/review/goal.js';
 import { exportedQueries } from '../tools/kb/exports.mjs';
 
 import { bagFiles, ROOT } from './clinical-test-support.js';
@@ -134,5 +136,14 @@ describe('comparison built-ins in the meta-interpreter', () => {
     expect(comparisons).toEqual([
       { kind: 'comparison', goal: 'guideline_satisfies(geq,4,hour,geq,4,hour)' },
     ]);
+  });
+
+  it('V1 the review page proves a goal whose ladder lists one checked comparison', async () => {
+    const outcome = await session.prove({ constrainedGoal: COMPARISON_GOAL }, PROOF_BUDGET_MAX);
+    expect(outcome.kind).toBe('proof');
+    const steps = outcome.kind === 'proof' ? outcome.steps : [];
+    // The ladder renders its ready branch only for a proof whose clauses name a document.
+    expect(proofClauses(steps).some(({ document }) => document !== undefined)).toBe(true);
+    expect(proofComparisons(steps)).toEqual(['guideline_satisfies(geq,4,hour,geq,4,hour)']);
   });
 });
