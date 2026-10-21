@@ -46,6 +46,13 @@ const budget = (overrides: Partial<BudgetSpec> = {}): BudgetSpec => ({
   ...overrides,
 });
 const delay = (ms = 0): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+/**
+ * The outcome once the event loop has turned, else `pending`. A scripted event settles its callers
+ * synchronously, so a caller still open here is the defect, refused by assertion rather than left
+ * to hang into the test timeout.
+ */
+const settled = <T>(outcome: Promise<T>): Promise<T | 'pending'> =>
+  Promise.race([outcome, delay().then(() => 'pending' as const)]);
 
 let image: Uint8Array;
 let session: EngineSession;
@@ -334,7 +341,7 @@ describe('worker lifecycle events', () => {
     await delay();
     expect(clock.armed.size).toBe(2);
     workers[0]?.emit('messageerror', {});
-    for (const outcome of await Promise.all([first, second])) {
+    for (const outcome of await Promise.all([settled(first), settled(second)])) {
       expect(outcome).toMatchObject({
         kind: 'error',
         error: { code: 'worker', message: 'client could not deserialize a response' },
@@ -444,7 +451,7 @@ describe('protocol correlation and worker-level failure', () => {
       error: { code: 'worker', message: 'unhandled rejection in worker: boom' },
     });
 
-    for (const outcome of await Promise.all([first, second])) {
+    for (const outcome of await Promise.all([settled(first), settled(second)])) {
       expect(outcome).toMatchObject({
         kind: 'error',
         error: { code: 'worker', message: 'unhandled rejection in worker: boom' },
