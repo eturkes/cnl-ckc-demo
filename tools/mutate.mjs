@@ -6,7 +6,7 @@
 // go red; a green row is a fix nothing binds. Exit 0 = every mutant killed.
 //
 // Outside `pnpm gate`: one vitest run per mutant. It needs a built `kb/generated`, and it must
-// run alone — CPU contention turns a 5000 ms test timeout into a false kill.
+// run alone — CPU contention turns a 5000 ms test timeout into an INCONCLUSIVE run.
 
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -52,6 +52,29 @@ const argvOf = (check) =>
   Array.isArray(check) ? check : ['pnpm', 'exec', 'vitest', 'run', check.test, '-t', check.name];
 
 /**
+ * A vitest run whose every failure is a timeout proves nothing about its mutant: a check the
+ * mutant stalled, or one starved by load, exits 1 exactly like a refusal. The JUnit report is
+ * read because vitest's JSON report carries a timeout's stack alone, never its message.
+ *
+ * @param {string} report a vitest JUnit report path @returns {boolean}
+ */
+const timedOutOnly = (report) => {
+  let xml;
+  try {
+    xml = readFileSync(report, 'utf8');
+  } catch {
+    return false;
+  }
+  const messages = [...xml.matchAll(/<(?:failure|error)\b[^>]*\bmessage="([^"]*)"/gu)].map(
+    ([, message]) => message ?? '',
+  );
+  return (
+    messages.length > 0 &&
+    messages.every((message) => /^(?:Test|Hook) timed out in \d+ms/u.test(message))
+  );
+};
+
+/**
  * A kill means something only if the check passes on the pristine tree and, for a vitest
  * check, its `-t` filter selects at least one test — a filter that matches nothing exits 0.
  */
@@ -79,12 +102,37 @@ try {
       process.exit(2);
     }
   }
+  // Control: a check failing by timeout alone must read as one. `--testTimeout=1` stalls every
+  // case of a real suite, each of which spawns a process.
+  const stalled = join(scratch, 'stalled.xml');
+  spawnSync(
+    'pnpm',
+    [
+      'exec',
+      'vitest',
+      'run',
+      'tests/spec-check.test.ts',
+      '--testTimeout=1',
+      '--reporter=junit',
+      `--outputFile=${stalled}`,
+    ],
+    { cwd: ROOT, stdio: 'ignore' },
+  );
+  if (!timedOutOnly(stalled)) {
+    process.stderr.write(
+      'mutate: control did not fire — a suite run at --testTimeout=1 did not read as timed out alone\n',
+    );
+    process.exit(2);
+  }
 } finally {
   rmSync(scratch, { recursive: true, force: true });
 }
 
-/** @type {{label: string, rc: number | null}[]} */
+/** @type {{label: string, rc: number | null | 'timeout'}[]} */
 const rows = [];
+const runs = mkdtempSync(join(tmpdir(), 'cnl-ckc-mutate-run-'));
+process.on('exit', () => rmSync(runs, { recursive: true, force: true }));
+const report = join(runs, 'mutant.xml');
 for (const { label, edits, check } of chosen) {
   try {
     for (const { path, old, new: replacement } of edits) {
@@ -94,8 +142,12 @@ for (const { label, edits, check } of chosen) {
       if (count !== 1) throw new Error(`${label}: anchor occurs ${String(count)} times in ${path}`);
       writeFileSync(join(ROOT, path), text.replace(old, replacement));
     }
-    const [command = 'false', ...args] = argvOf(check);
-    rows.push({ label, rc: spawnSync(command, args, { cwd: ROOT, stdio: 'ignore' }).status });
+    rmSync(report, { force: true });
+    const [command = 'false', ...args] = Array.isArray(check)
+      ? check
+      : [...argvOf(check), '--reporter=junit', `--outputFile=${report}`];
+    const status = spawnSync(command, args, { cwd: ROOT, stdio: 'ignore' }).status;
+    rows.push({ label, rc: status === 1 && timedOutOnly(report) ? 'timeout' : status });
   } catch (cause) {
     restore();
     process.stderr.write(`mutate: ${cause instanceof Error ? cause.message : String(cause)}\n`);
@@ -106,14 +158,23 @@ for (const { label, edits, check } of chosen) {
   }
 }
 
-// Only a refusal kills: exit status 1. A signal (`null`) or another status means the check
-// crashed or was interrupted, which proves nothing about the mutant.
+// Only a refusal kills: exit status 1, from a vitest check with a failure other than a timeout
+// behind it. A signal (`null`), another status or a vitest run failing by timeout alone proves
+// nothing about the mutant.
 const width = Math.max(...rows.map(({ label }) => label.length));
 for (const { label, rc } of rows) {
   const verdict =
-    rc === 1 ? 'RED — killed' : rc === 0 ? 'GREEN — the check does not bind' : 'INCONCLUSIVE';
+    rc === 1
+      ? 'RED — killed'
+      : rc === 0
+        ? 'GREEN — the check does not bind'
+        : rc === 'timeout'
+          ? 'INCONCLUSIVE — failed by timeout alone'
+          : 'INCONCLUSIVE';
   process.stdout.write(`${label.padEnd(width)}  rc=${String(rc)}  ${verdict}\n`);
 }
 const killed = rows.filter(({ rc }) => rc === 1).length;
-process.stdout.write(`mutate: ${String(killed)}/${String(rows.length)} mutants killed\n`);
+process.stdout.write(
+  `mutate: ${String(killed)}/${String(rows.length)} mutants killed; control: a suite run at --testTimeout=1 read as timed out alone\n`,
+);
 process.exitCode = killed === rows.length ? 0 : 1;

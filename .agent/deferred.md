@@ -27,16 +27,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   list to the ladder (an accepted surface) need the user's approval. **User ruling**: left queued
   (the question after `8076cb7`); `wip/n9-comparison` `3cf1d13` holds the unit — contract `n9-comparison.md`
   reviewed before code by consultant-5, red witnesses shown, gate green.
-- **`pnpm mutate` credits a timeout-only kill** — a vitest check that fails only by `Test timed
-  out` exits 1, and `tools/mutate.mjs` reads exit 1 as killed, so a mutant that merely stalls its
-  check, or a check starved by load, counts as bound (`mnt5-reviewer-2` F4: the first
-  chat-server-fake mutant waited 5000 ms on a child that never exited). The scratch sweep
-  `.scratch/review/mutant.mjs` refuses it per mutant, outside any gate. Accept: a mutant whose
-  vitest check fails only by timeout reads `INCONCLUSIVE` and fails the run, shown by a planted
-  stalling mutant. `pri` med. A grader change: it needs the user's approval.
-  **User ruling**: left queued twice, at `f25bb35` and in the question after `8076cb7`;
-  `wip/n3-mutate-timeout` `2235854` holds `7ea4369` re-applied with its firing re-shown and its
-  records landed.
 - **C6 left `tests/m1u7-port.test.ts` with the sentence caps** — the archived m1u7 contract's C6
   (a 30-word sentence planted in `INSTRUCTIONS` or `DESCRIPTIONS` fails `copy:check`) lost its
   subject when the caps retired; both cases and their mutant
@@ -108,7 +98,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 
 | defect | accept |
 | --- | --- |
-| `pnpm mutate` credits a timeout-only kill | a mutant whose vitest check fails only by timeout reads `INCONCLUSIVE` and fails the run, shown by a planted stalling mutant |
 | `claims:check` covers one line of each `Artifacts` entry | each `Artifacts` bullet grades as one unit with its continuation lines, and a planted change on a continuation line is refused by `claims:check` as a stale row |
 | The inventory resolves a bare-path `text` record and a `none` gate step | the copy:check row planted as `text` + `tools/copy-check.mjs`, then as `none`, is refused by name — `names no verbatim text`, `a gate step needs a firing record` — and the real inventory still passes |
 
