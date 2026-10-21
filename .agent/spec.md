@@ -230,12 +230,11 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] n10 `low` C6 — waits on a user ruling that restores a sentence-length check.
 - [x] 93c41eb n11 `low` `copy:check` grades component prose once — approved (user).
 - [x] 66aa4b7 n12 `low` `claims:check` skips rules frontmatter — approved (user).
-- [ ] n13 `low` the decoder's first compound arm refuses a dict — approved (user); lands from
-  `wip/n13-decoder` `eca6aca`.
+- [x] 2e7e8be n13 `low` the decoder's first compound arm refuses a dict — approved (user).
 - [ ] n16 `low` find: `binding:check`'s wall drifts with the host (51.1 / 42.7 s at the close) — waits on
   its re-open trigger: three consecutive gates above 45 s, each from a 1-min load below 2.
 - [ ] n17 `med` find: `claims:check`'s repeated-index control cannot fire on an empty index — owed
-  (user): approval of the grader change.
+  (user): approval of the grader change; `wip/n17-index-control` `f312d8a`.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
