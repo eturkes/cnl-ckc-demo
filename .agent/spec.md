@@ -213,10 +213,9 @@ worker before its caller resumes (`chat-c2.md`).
   review`) — `pnpm dev`, open the graph, read concepts, actions and attributes in both themes, and
   select an answer's Find in graph to see the proof path and the selected node beside them.
 - [x] 6507d44 n3 `med` `pnpm mutate` refuses a timeout-only kill — approved (user).
-- [ ] n4 `med` `claims:check` grades each `Artifacts` bullet whole — approved (user); lands from
-  `wip/n4-artifacts` `49b1143`.
-- [ ] n5 `med` the inventory refuses a bare-path `text` record and a `none` gate step — owed (user):
-  approval of the grader change, left queued; `wip/n5-inventory` `ee0f5b2`.
+- [x] 2e9e67c n4 `med` `claims:check` grades each `Artifacts` bullet whole — approved (user).
+- [ ] n5 `med` the inventory refuses a bare-path `text` record and a `none` gate step — approved
+  (user); lands from `wip/n5-inventory` `ee0f5b2`.
 - [ ] n8 `low` coverage passages — waits on the producer: `../cnl-ckc` `83569b1d` still records
   B3-09/B3-10 `p14`.
 - [ ] n9 `low` the meta-interpreter derives through a comparison built-in — owed (user): approval of
@@ -231,6 +230,8 @@ worker before its caller resumes (`chat-c2.md`).
   u2-port fixture edits, left queued; `wip/n13-decoder` `eca6aca`.
 - [ ] n16 `low` find: `binding:check`'s wall drifts with the host (51.1 / 42.7 s at the close) — waits on
   its re-open trigger: three consecutive gates above 45 s, each from a 1-min load below 2.
+- [ ] n17 `med` find: `claims:check`'s repeated-index control cannot fire on an empty index — owed
+  (user): approval of the grader change.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
