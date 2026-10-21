@@ -72,9 +72,9 @@ or labelling attribute a component renders, the `CNL / CKC` brand mark aside, an
 `src/demo/copy.ts` retains invariant data alone. The locale seam, its consumer pattern and the payload boundary are in
 `.claude/rules/i18n.md`.
 
-`tools/copy-check.mjs` is static — there is no TS runner here. It grades `src/i18n/en.ts` and
-the literal prose of every `.svelte` file under `src/` for banned filler, and holds `ja.ts` at
-key parity. Sentence length is a judgment, never a check (user ruling).
+`tools/copy-check.mjs` is static — there is no TS runner here. It grades `src/i18n/en.ts` for
+banned filler, refuses any literal a `.svelte` file under `src/` renders bar the brand mark, and
+holds `ja.ts` at key parity. Sentence length is a judgment, never a check (user ruling).
 
 **The seven question strings are payload, not copy.** They are generated from the compiled
 goals, and rewriting one would make the displayed question differ from the question that runs.

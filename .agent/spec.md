@@ -222,11 +222,10 @@ worker before its caller resumes (`chat-c2.md`).
   approved (user).
 - [ ] n8 `low` coverage passages — waits on the producer: `../cnl-ckc` `83569b1d` still records
   B3-09/B3-10 `p14`.
-- [ ] n9 `low` the meta-interpreter derives through a comparison built-in — approved (user); lands
-  from `wip/n9-comparison` `3cf1d13`.
+- [x] c7b9b7d n9 `low` the meta-interpreter derives through a comparison built-in — approved (user).
 - [ ] n10 `low` C6 — waits on a user ruling that restores a sentence-length check.
-- [ ] n11 `low` `copy:check` grades component prose once — owed (user): approval of the grader
-  change, left queued again; `wip/n11-copy-sweep` `ca26be9`.
+- [ ] n11 `low` `copy:check` grades component prose once — approved (user); lands from
+  `wip/n11-copy-sweep` `ca26be9`.
 - [ ] n12 `low` `claims:check` skips rules frontmatter — owed (user): approval of the grader change,
   left queued again; `wip/n12-frontmatter` `b52e01f`.
 - [ ] n13 `low` the decoder's first compound arm refuses a dict — owed (user): approval of the two
