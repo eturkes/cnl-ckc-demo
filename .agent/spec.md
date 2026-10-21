@@ -174,6 +174,10 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   line-free `builtin(G)` leaf, and the ladder lists each distinct comparison after the goals proved
   absent; no current catalog proof holds one. Approved edits (n9): that ladder list, and
   `tests/clinical-inference.test.ts` P1's pin `Derived: 'no'` → `'yes'`.
+- **Every compound arm of the decoder admits a wrapper instance alone**, so a dict whose keys
+  spell a compound fails closed. Approved edit (n13): `tests/engine-u2-port.test.ts` builds
+  `nativeCompound` values shaped like swipl-wasm's own, and P3.10 builds its value before spying;
+  every assertion stays.
 
 **MAIN:** the marks are ONE compiled goal per question, `clinical_marks/3` at the end of
 `PROOF_SOURCE`: it reads the grade, qualifier, preference, interval and order heads out of
@@ -225,10 +229,9 @@ worker before its caller resumes (`chat-c2.md`).
 - [x] c7b9b7d n9 `low` the meta-interpreter derives through a comparison built-in — approved (user).
 - [ ] n10 `low` C6 — waits on a user ruling that restores a sentence-length check.
 - [x] 93c41eb n11 `low` `copy:check` grades component prose once — approved (user).
-- [ ] n12 `low` `claims:check` skips rules frontmatter — approved (user); lands from
-  `wip/n12-frontmatter` `b52e01f`.
-- [ ] n13 `low` the decoder's first compound arm refuses a dict — owed (user): approval of the two
-  u2-port fixture edits, left queued; `wip/n13-decoder` `eca6aca`.
+- [x] 66aa4b7 n12 `low` `claims:check` skips rules frontmatter — approved (user).
+- [ ] n13 `low` the decoder's first compound arm refuses a dict — approved (user); lands from
+  `wip/n13-decoder` `eca6aca`.
 - [ ] n16 `low` find: `binding:check`'s wall drifts with the host (51.1 / 42.7 s at the close) — waits on
   its re-open trigger: three consecutive gates above 45 s, each from a 1-min load below 2.
 - [ ] n17 `med` find: `claims:check`'s repeated-index control cannot fire on an empty index — owed

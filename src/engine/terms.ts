@@ -106,7 +106,8 @@ export function decodeTerm(value: unknown): PlTerm {
   if (value.$t === 'l' && Array.isArray(value.v) && 't' in value) {
     return { kind: 'improper-list', items: value.v.map(decodeTerm), tail: decodeTerm(value.t) };
   }
-  if (value.$t === 't' && typeof value.functor === 'string') {
+  // A dict's own keys can spell this shape too; only a wrapper instance takes it.
+  if (value.$t === 't' && typeof value.functor === 'string' && wrapperCompound(value)) {
     return compound(value.functor, value[value.functor]);
   }
   // A compound NAMED `functor` writes its arguments over the name it was just given. A dict

@@ -33,9 +33,10 @@ paths:
   `Compound` as the atom of its name, so `createEncoder` refuses `foo()` by name rather than send
   `foo`. `tests/engine-term-identity.test.ts`.
 - **A dict never takes a wrapper arm**: a dict reaches the decoder as a plain object — an anonymous
-  one with no `$tag` — so its own keys can spell the `functor` or `$t` shape above, and a
-  `'__proto__'` key sets its prototype. Those arms admit a value whose prototype OWNS the
-  wrapper's `arity` method: no term decodes into a function, so such a dict fails closed.
+  one with no `$tag` — so its own keys can spell any compound shape above, a string name
+  included, and a `'__proto__'` key sets its prototype. Every compound arm admits a value whose
+  prototype OWNS the wrapper's `arity` method: no term decodes into a function, so such a dict
+  fails closed.
 - An improper list re-encodes as `List(prefix, '[|]'(last, Tail))`: the wrapper's `List` tests
   `if (tail)`, so an atom `''` or integer `0` tail passed straight to it collapses to `[]`,
   while a chain of `'[|]'/2` compounds recurses per cell and overflows on a long list.

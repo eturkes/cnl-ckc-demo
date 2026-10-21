@@ -181,6 +181,16 @@ it('refuses a dict whose keys spell a compound named functor or $t', () => {
   }
 });
 
+it('refuses a dict whose keys spell a compound with a string name', () => {
+  for (const goal of [
+    "X = _{'$t': t, functor: foo, foo: [[a]]}.",
+    "X = d{'$t': t, functor: foo, foo: [[a]]}.",
+    "X = _{'$t': t, functor: foo, foo: [[a]], '__proto__': f(a)}.",
+  ]) {
+    expect(() => goalTerm(goal), goal).toThrow(DecodeError);
+  }
+});
+
 it('refuses to re-encode a decoded dict, standalone or as an improper-list tail (user ruling)', () => {
   // swipl-wasm has no supported path to re-enter a TAGGED dict: re-encoded, `tag{a:0}` came back
   // as `_{'$tag':tag,a:0}`, no variant of the original. Refusing it fails closed.

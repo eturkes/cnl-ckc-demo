@@ -23,15 +23,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   firing record became `inv m1u7-port: a non-role root token planted`. Re-open trigger: a user
   ruling that restores a sentence-length check. Accept: C6 returns with that check and is seen
   red on a planted over-long sentence. `pri` low. **User ruling**: retire the caps and delete C6.
-- **The decoder's first compound arm reads a dict whose keys spell a compound** — `decodeTerm`
-  admits a plain object where `$t` is `t` and `functor` is a string, so the dict
-  `_{'$t': t, functor: foo, foo: [[a]]}` decodes as `foo(a)` instead of failing closed; the
-  `functor` and `$t` arms admit a wrapper instance alone since the mnt5 review (F1). Accept: that
-  dict fails closed with `DecodeError`, and the `nativeCompound` fixtures in
-  `tests/engine-u2-port.test.ts` build wrapper instances so every case keeps its assertion.
-  `pri` low. Changing a graded suite's fixtures needs the user's approval. **User ruling**: left
-  queued (the question after `8076cb7`); `wip/n13-decoder` `eca6aca` holds the change with both fixture edits
-  (`nativeCompound` wrapper instances, P3.10 building its value before spying).
 - **`binding:check` still dominates the gate, and its wall drifts with the host** — after n14
   (`83cd690`: 35.7–36.9 s at comparable load) the closing gates on `0acbd24` printed 51.1 s and
   42.7 s from a 1-min load near 2, while the same tree's summed test-file durations rose from
