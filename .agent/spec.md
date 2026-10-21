@@ -220,6 +220,10 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] owed (user): live review of the graph's new node colours (n1, `.claude/rules/ui.md` `User
   review`) — `pnpm dev`, open the graph, read concepts, actions and attributes in both themes, and
   select an answer's Find in graph to see the proof path and the selected node beside them.
+- [ ] owed (user): live review of n9's checked-comparisons list in the ladder (`c7b9b7d`,
+  `.claude/rules/ui.md` `User review`) — no catalog question's proof holds a comparison, so the live
+  interface has no click path to it yet; rule whether the review waits for such a question or
+  needs a way to reach the list.
 - [ ] n8 `low` coverage passages — waits on the producer: `../cnl-ckc` `83569b1d` still records
   B3-09/B3-10 `p14`.
 - [ ] n10 `low` C6 — waits on a user ruling that restores a sentence-length check.
