@@ -209,22 +209,15 @@ worker before its caller resumes (`chat-c2.md`).
   `9056d3d` the owned PDF.js page viewer, d43 `db0736f` the document-first provenance browser.
 - [ ] owed (user): live review of the chat panel (c5 V8) — `pnpm chat:dev` + `pnpm dev`, ask a
   question, open a KB tag and a Web source, try Stop and New conversation.
-- [x] b0ee8d8 n1 `high` graph node palette: `pnpm palette:check` in the gate and a redesigned palette
-  that passes it, `contrast:check` and `graph:check` `palette` — approved (user).
 - [ ] owed (user): live review of the graph's new node colours (n1, `.claude/rules/ui.md` `User
   review`) — `pnpm dev`, open the graph, read concepts, actions and attributes in both themes, and
   select an answer's Find in graph to see the proof path and the selected node beside them.
-- [x] 74282a4 n2 `med` `binding:replay` reads archived-red / working-green on each arm's own bag —
-  per-tree arms approved (user).
 - [ ] n3 `med` `pnpm mutate` refuses a timeout-only kill — owed (user): approval of the grader change,
   left queued again; `wip/n3-mutate-timeout` `2235854`.
 - [ ] n4 `med` `claims:check` grades each `Artifacts` bullet whole — owed (user): approval of the
   grader change, left queued again; `wip/n4-artifacts` `49b1143`.
 - [ ] n5 `med` the inventory refuses a bare-path `text` record and a `none` gate step — owed (user):
   approval of the grader change, left queued; `wip/n5-inventory` `ee0f5b2`.
-- [x] 6325451 n6 `med` every `pnpm stryker` survivor carries a non-author ruling against m5u6.
-- [x] b8dbff8 n7 `med` graph.md's renderer-surface figures re-derive from the tree; the registry row for
-  graph.md's `Renderer seam` adjudicates `true`.
 - [ ] n8 `low` coverage passages — waits on the producer: `../cnl-ckc` `83569b1d` still records
   B3-09/B3-10 `p14`.
 - [ ] n9 `low` the meta-interpreter derives through a comparison built-in — owed (user): approval of
@@ -237,15 +230,6 @@ worker before its caller resumes (`chat-c2.md`).
   left queued again; `wip/n12-frontmatter` `b52e01f`.
 - [ ] n13 `low` the decoder's first compound arm refuses a dict — owed (user): approval of the two
   u2-port fixture edits, left queued; `wip/n13-decoder` `eca6aca`.
-- [x] 83cd690 n14 `low` `binding:check` below 38.3 s at equal strength — 35.7–36.9 s at comparable load
-  (base `94117ee` 49.2 s).
-- [x] 64d5e81 n15 `low` a committed script regenerates the bag; `kb-build.md` names it.
-- [x] 77292ff find `high`: three vite 8.2.0–8.2.3 advisories reddened `audit:check` → vite 8.3.4.
-- [ ] Close: MAINTAIN request — work every `.agent/deferred.md` row in rank order (n1–n15 = the 15
-  rows at `94117ee`; new finds fund after them). Met when: each row closed by its own acceptance
-  check in its own commit, recorded blocked on the user with what it owes, waiting on its re-open
-  trigger, or routed; `pnpm gate` green on a clean tree at the closing commit. One chained
-  `AskUserQuestion` collects every approval once the agent-side work is done.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase

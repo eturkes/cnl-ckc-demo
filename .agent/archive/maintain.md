@@ -219,6 +219,33 @@ Closed queue run (`dN` = the row's ordinal in the queue at `24bbb5d`):
   (`.agent/review.md` `## ann close`).
 - [x] ann-close = the commit after `99aef83`: release lanes green, `Phase` back to MAINTAIN.
 
+## Queue run n1–n15 (MAINTAIN request opened at `94117ee`)
+
+Request: work every `.agent/deferred.md` row in rank order (n1–n15 = the 15 rows at `94117ee`; new
+finds fund after them). Met when: each row closed by its own acceptance check in its own commit,
+recorded blocked on the user with what it owes, waiting on its re-open trigger, or routed; `pnpm
+gate` green on a clean tree at the closing commit. Left open in `Tasks`: n3 n4 n5 n9 n11 n12 n13
+(approval left queued, each on a `wip/n*` branch), n8 (the producer), n10 (its trigger), and the
+live reviews owed.
+
+- [x] `b0ee8d8` n1 `high` `pnpm palette:check` in the gate (coloraide's method ported, a 54-row
+  differential) and a searched palette that passes it — approved (user); its live review is owed.
+- [x] `74282a4` n2 `med` `binding:replay`: each arm runs its own tree's bag, producer and build —
+  per-tree arms approved (user).
+- [x] `6325451` n6 `med` reviewer-18 ruled the 138 Stryker survivors against m5u6 (14 specified →
+  six lane cases kill them, 120 open, 4 equivalent); the record carries every ruling.
+- [x] `b8dbff8` n7 `med` graph.md's renderer-seam claim keeps what a command decides.
+- [x] `83cd690` n14 `low` binding:check 49.2 s → 35.7–36.9 s at comparable load (exact byte
+  comparison in clinical-records T11/T12); a later same-moment A/B held, 36.3 / 41.4 s against
+  47.9 / 48.7 s.
+- [x] `64d5e81` n15 `low` `tools/kb/regenerate-bag.sh` rebuilds the vendored bag byte for byte at
+  `8a51bf0c`.
+- [x] `77292ff` find `high`: three vite 8.2.0–8.2.3 advisories reddened `audit:check` → vite 8.3.4.
+- [x] `61982a9` Close: check set `.agent/contracts/n-close.md`; reviewer-19 (reviewer) 8/8 — A1 A2
+  B1 D1 pass; E1.1 (major) the regeneration script could delete its own clone → refused; C1.1 F1.1
+  F1.2 F2.1 (minor) records → fixed; re-review 5/5 pass; `pnpm release:check` rc 0, `pnpm mutate`
+  127/127 killed, `pnpm binding:replay` rc 0 with its `HEAD` control rc 1.
+
 ## Phase
 
 IMPLEMENT closed three times, each ledgered in `.agent/review.md` with no open row: u3–u15 on
