@@ -21,3 +21,25 @@ rows; anything outside them is a register entry.
 | R1 | records | `.agent/spec.md` (the two new Decisions bullets, Tasks), `.agent/deferred.md` (pruned rows, n17's row, the index), `.claude/rules/` (gate, firing, i18n, ui, proof, kb-build, engine, waves), `.agent/contracts/` (mnt5-inventory, n9-comparison) and every `docs/claims.md` row re-adjudicated since `5a22cf6` state what the tree at `7d72c77` does. |
 | R2 | records | The bodies of the eight commits above: each red witness, firing and measurement reproduces by its recorded command on its recorded revision, and no sentence claims beyond what it measured. |
 | S1 | security | MAIN: no new path takes untrusted input — n9's `call/1` (which goals reach `derive/5`), n13's decoder on model-written goal results, `mutate.mjs`'s report read, `claims-sweep.mjs`'s and `queue.mjs`'s file reads. |
+
+## Verdicts
+
+`reviewer-20` (reviewer, GPT teammate, non-author), read at `1330e65` + `f312d8a`, each red and gate
+replayed on its recorded revision in its own worktrees: 10/10 rows, validator rc 0. M1 C1 C2 C3 C4
+K1 K2 N1 R2 pass — a runner-seam probe 11/11 (missing and unreadable reports, a failed control),
+every recorded base-red reproduced, the eight landing gates and `f312d8a`'s rc 0, mutants
+`inv census`, `m15`, `m14`, `inv proof-comparison`, `n13` and `n17` each 1/1 killed, `pnpm smoke`
+rc 0 at `c7b9b7d` and `2e7e8be`. Unconfirmed, recorded as such: the commit bodies' historical gate
+walls and 1-min loads. Finding, fixed in the review commit after `1330e65`:
+
+- R1.1 (minor) R108's recorded command `rg -n 'const claimlike\|source: .contract.\|units(artifacts\|lines.indexOf(.---., 1)' tools/claims-sweep.mjs`
+  exits 2, `regex parse error … unclosed group` → the literal form `rg -n -F -e 'const claimlike'
+  -e "source: 'contract'" -e 'units(artifacts' -e "lines.indexOf('---', 1)"
+  tools/claims-sweep.mjs`, rc 0, the four anchors at lines 81, 121, 178 and 223.
+
+S1 (MAIN): pass — the proof RPC's one caller passes `QUESTION_CATALOG[id].goal`
+(`src/demo/DemoController.svelte.ts` `#trace`) and the chat path never calls `prove`, so no
+model-written goal reaches `derive/5`; `comparison_goal/1` limits `call/1` to
+`guideline_satisfies/4|6`, which the read-only guard already admits; n13 narrows the decoder;
+`mutate.mjs` reads a JUnit report in its own temp directory; `claims-sweep.mjs` and `queue.mjs` read
+repo files.
