@@ -23,15 +23,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   firing record became `inv m1u7-port: a non-role root token planted`. Re-open trigger: a user
   ruling that restores a sentence-length check. Accept: C6 returns with that check and is seen
   red on a planted over-long sentence. `pri` low. **User ruling**: retire the caps and delete C6.
-- **`claims:check` reads rules frontmatter as a claim** — `units()` (`tools/claims-sweep.mjs`)
-  parses a rules file's YAML frontmatter as prose, so a `paths:` glob holding a digit becomes a
-  registry row: `.claude/rules/firing.md`'s `".agent/contracts/mnt5-inventory.md"` glob, joined
-  with the closing `---`, is a registry row of its own. Accept: the sweep skips a leading frontmatter block, the
-  registry re-seeds without that row, and a planted frontmatter glob holding a digit stays out
-  of the claim set. `pri` low. A grader change: it needs the user's approval.
-  **User ruling**: left queued twice, at `f25bb35` and in the question after `8076cb7`;
-  `wip/n12-frontmatter` `b52e01f` holds `e13a620` re-applied with its firing re-shown and its
-  records landed.
 - **The decoder's first compound arm reads a dict whose keys spell a compound** — `decodeTerm`
   admits a plain object where `$t` is `t` and `functor` is a string, so the dict
   `_{'$t': t, functor: foo, foo: [[a]]}` decodes as `foo(a)` instead of failing closed; the

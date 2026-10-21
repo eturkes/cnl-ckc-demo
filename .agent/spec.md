@@ -224,10 +224,9 @@ worker before its caller resumes (`chat-c2.md`).
   B3-09/B3-10 `p14`.
 - [x] c7b9b7d n9 `low` the meta-interpreter derives through a comparison built-in — approved (user).
 - [ ] n10 `low` C6 — waits on a user ruling that restores a sentence-length check.
-- [ ] n11 `low` `copy:check` grades component prose once — approved (user); lands from
-  `wip/n11-copy-sweep` `ca26be9`.
-- [ ] n12 `low` `claims:check` skips rules frontmatter — owed (user): approval of the grader change,
-  left queued again; `wip/n12-frontmatter` `b52e01f`.
+- [x] 93c41eb n11 `low` `copy:check` grades component prose once — approved (user).
+- [ ] n12 `low` `claims:check` skips rules frontmatter — approved (user); lands from
+  `wip/n12-frontmatter` `b52e01f`.
 - [ ] n13 `low` the decoder's first compound arm refuses a dict — owed (user): approval of the two
   u2-port fixture edits, left queued; `wip/n13-decoder` `eca6aca`.
 - [ ] n16 `low` find: `binding:check`'s wall drifts with the host (51.1 / 42.7 s at the close) — waits on

@@ -104,7 +104,8 @@ Step semantics a reader cannot get from the script name:
   by row count, by row anchor, by a row whose `hash` no longer digests its claim, or by leaving
   a row unadjudicated. A claim unit is a bullet with
   its continuations, a table row or a paragraph; raw lines would split one assertion in two.
-  A rules unit enters only when it states a digit or a `pnpm` command (`claimlike`), and a
+  A rules unit enters only when it states a digit or a `pnpm` command (`claimlike`), a rules
+  file's leading frontmatter never enters, and a
   contract unit only as an id-keyed acceptance row, so a plain-language rule stays outside the
   registry. Adding a claim that passes those filters to any of those sources therefore reddens
   the gate until the registry answers it, which is the whole point — and editing THIS file is itself such an addition, so the check

@@ -1564,4 +1564,9 @@ export const MUTANTS = [
     ],
     check: { test: 'tests/proof-comparison.test.ts', name: 'K5' },
   },
+  {
+    label: 'm14 claims:check reads rules frontmatter as prose',
+    edits: [{ path: 'tools/claims-sweep.mjs', old: '    if (index < body) return;\n', new: '' }],
+    check: ['node', 'tools/claims-sweep.mjs'],
+  },
 ];
