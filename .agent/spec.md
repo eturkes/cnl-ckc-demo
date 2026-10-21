@@ -230,6 +230,8 @@ worker before its caller resumes (`chat-c2.md`).
   left queued again; `wip/n12-frontmatter` `b52e01f`.
 - [ ] n13 `low` the decoder's first compound arm refuses a dict — owed (user): approval of the two
   u2-port fixture edits, left queued; `wip/n13-decoder` `eca6aca`.
+- [ ] n16 `low` find: `binding:check`'s wall drifts with the host (51.1 / 42.7 s at the close) — waits on
+  its re-open trigger: three consecutive gates above 45 s, each from a 1-min load below 2.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
