@@ -220,17 +220,9 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] owed (user): live review of the graph's new node colours (n1, `.claude/rules/ui.md` `User
   review`) — `pnpm dev`, open the graph, read concepts, actions and attributes in both themes, and
   select an answer's Find in graph to see the proof path and the selected node beside them.
-- [x] 6507d44 n3 `med` `pnpm mutate` refuses a timeout-only kill — approved (user).
-- [x] 2e9e67c n4 `med` `claims:check` grades each `Artifacts` bullet whole — approved (user).
-- [x] 3209ee4 n5 `med` the inventory refuses a bare-path `text` record and a `none` gate step —
-  approved (user).
 - [ ] n8 `low` coverage passages — waits on the producer: `../cnl-ckc` `83569b1d` still records
   B3-09/B3-10 `p14`.
-- [x] c7b9b7d n9 `low` the meta-interpreter derives through a comparison built-in — approved (user).
 - [ ] n10 `low` C6 — waits on a user ruling that restores a sentence-length check.
-- [x] 93c41eb n11 `low` `copy:check` grades component prose once — approved (user).
-- [x] 66aa4b7 n12 `low` `claims:check` skips rules frontmatter — approved (user).
-- [x] 2e7e8be n13 `low` the decoder's first compound arm refuses a dict — approved (user).
 - [ ] n16 `low` find: `binding:check`'s wall drifts with the host (51.1 / 42.7 s at the close) — waits on
   its re-open trigger: three consecutive gates above 45 s, each from a 1-min load below 2.
 - [ ] n17 `med` find: `claims:check`'s repeated-index control cannot fire on an empty index — owed

@@ -246,6 +246,35 @@ live reviews owed.
   F1.2 F2.1 (minor) records → fixed; re-review 5/5 pass; `pnpm release:check` rc 0, `pnpm mutate`
   127/127 killed, `pnpm binding:replay` rc 0 with its `HEAD` control rc 1.
 
+## Queue run, third ask (MAINTAIN request opened at `5a22cf6`)
+
+Request: work every `.agent/deferred.md` row in rank order (10 rows at `5a22cf6`: n3 n4 n5 n8 n9
+n10 n11 n12 n13 n16; new finds fund after them). Met when: each row closed by its own acceptance
+check in its own commit, recorded blocked on the user with what it owes, waiting on its re-open
+trigger, or routed; `pnpm gate` green on a clean tree at the closing commit. The one question asked
+single-select per group (approve / leave queued / retire as a declared limit): all seven approval
+rows approved. Left open in `Tasks`: n8 (the producer), n10 + n16 (their triggers), n17 + n18
+(finds after the question, owed on their `wip/` branches), and the live reviews owed.
+
+- [x] `6507d44` n3 `med` `pnpm mutate` reads a timeout-only vitest failure as `INCONCLUSIVE` —
+  approved (user); the close's full run under it found n18.
+- [x] `2e9e67c` n4 `med` `claims:check` grades each `Artifacts` bullet whole — approved (user).
+- [x] `3209ee4` n5 `med` the inventory refuses a bare-path `text` record and a `none` gate step —
+  approved (user); pruning the last `med` row emptied the index and found n17.
+- [x] `c7b9b7d` n9 `low` the meta-interpreter derives through `guideline_satisfies/4,6`; the
+  ladder lists checked comparisons — approved (user).
+- [x] `93c41eb` n11 `low` `copy:check`'s component filler sweep retired — approved (user).
+- [x] `66aa4b7` n12 `low` `claims:check` skips rules frontmatter — approved (user).
+- [x] `2e7e8be` n13 `low` every compound arm of the decoder admits a wrapper instance alone —
+  approved (user).
+- [x] `7d72c77` n17 `med` find: `claims:check`'s repeated-index control on an empty index → owed,
+  `wip/n17-index-control` `f312d8a`.
+- [x] `f0db5c0` find (reviewer-20 register G1): two comments quoted a stale premise census.
+- [x] `a26a517` n18 `med` find: the R29 + E10 closing cases hang rather than refuse → owed,
+  `wip/n18-bounded-settle` `0d3ab54`.
+- [x] `a780bf5` Close review: check set `.agent/contracts/n-landing-close.md` (`1330e65`);
+  reviewer-20 (reviewer) 10/10 — 9 pass, R1.1 (minor) R108's command → fixed, re-review pass.
+
 ## Phase
 
 IMPLEMENT closed three times, each ledgered in `.agent/review.md` with no open row: u3–u15 on

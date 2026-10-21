@@ -43,3 +43,8 @@ model-written goal reaches `derive/5`; `comparison_goal/1` limits `call/1` to
 `guideline_satisfies/4|6`, which the read-only guard already admits; n13 narrows the decoder;
 `mutate.mjs` reads a JUnit report in its own temp directory; `claims-sweep.mjs` and `queue.mjs` read
 repo files.
+
+Close lanes: the full `pnpm mutate` at `f0db5c0`, the first under n3's runner, killed 129/131 — the
+two left, `R29 messageerror unhandled` and `E10 worker-failure broadcast ignored`, failed by
+timeout alone, alone too → n18 (`a26a517`); `pnpm release:check` rc 0 at `a26a517`; `pnpm
+binding:replay` rc 0 and its `HEAD` control rc 1.
