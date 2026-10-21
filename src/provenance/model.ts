@@ -265,3 +265,10 @@ export const proofAssumptions = (steps: readonly ProofStep[]): string[] => [
 export const proofNegations = (steps: readonly ProofStep[]): string[] => [
   ...new Set(flattenProof(steps).flatMap((step) => (step.kind === 'negation' ? [step.goal] : []))),
 ];
+
+/** The distinct comparisons the derivation evaluated, in first-appearance order. */
+export const proofComparisons = (steps: readonly ProofStep[]): string[] => [
+  ...new Set(
+    flattenProof(steps).flatMap((step) => (step.kind === 'comparison' ? [step.goal] : [])),
+  ),
+];

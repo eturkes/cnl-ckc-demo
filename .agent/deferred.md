@@ -16,17 +16,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   re-vendored bag corrects its region page, or carries a recorded producer reason, and the
   census in `tests/passage-locate.test.ts` moves with it. `pri` low. **User ruling**: keep it
   owed to the producer — no demo-side declared limit.
-- **The meta-interpreter fails closed on a comparison built-in** — `derive/5`
-  (`tools/kb/proof.mjs`) resolves the 19 schema indicators alone, so a derivation through a rule
-  body that calls `guideline_satisfies/4,6` (30 documents, the `tablet-use-spacing` export)
-  fails while the plain query succeeds; upstream's traces record each call as a `builtin(G)`
-  leaf. No shipped proof reaches one: every catalog goal derives through the 12 recommendation
-  documents, none of which compares a quantity. Accept: a proof through a comparison-bearing
-  rule settles `proof`, the comparison a line-free leaf the decoder and the ladder both show,
-  seen red on the unfixed tree. `pri` low. Changing P1's declared `Derived: 'no'` pin and adding a
-  list to the ladder (an accepted surface) need the user's approval. **User ruling**: left queued
-  (the question after `8076cb7`); `wip/n9-comparison` `3cf1d13` holds the unit — contract `n9-comparison.md`
-  reviewed before code by consultant-5, red witnesses shown, gate green.
 - **C6 left `tests/m1u7-port.test.ts` with the sentence caps** — the archived m1u7 contract's C6
   (a 30-word sentence planted in `INSTRUCTIONS` or `DESCRIPTIONS` fails `copy:check`) lost its
   subject when the caps retired; both cases and their mutant

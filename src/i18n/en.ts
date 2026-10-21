@@ -86,6 +86,9 @@ export const DESCRIPTIONS = {
   proofNegationOrigin:
     'The engine searched the knowledge base for this goal and derived nothing. The clause ' +
     'needs that absence, so the proof records it.',
+  proofComparisonOrigin:
+    'The engine compared a value with a threshold that the clause states. The comparison ' +
+    'belongs to the knowledge-base schema, not to a guideline sentence, so it has no source line.',
 
   reviewUnreviewed: 'No human adjudication is recorded for this compiled document.',
   reviewRecorded: 'This is the review label recorded by the knowledge-base export.',
@@ -207,6 +210,7 @@ export const LABELS = {
   liveProof: 'Live Prolog proof',
   proofAssumed: 'assumed, not stated',
   proofAbsent: 'proved absent',
+  proofCompared: 'checked by the schema',
   evidenceLoading: 'Loading the selected document evidence.',
   evidenceRetry: 'Retry evidence',
   compiledClause: 'Compiled clause',
@@ -356,6 +360,7 @@ export const TEXT = {
   proofStepCount: (n: number) => plural(n, 'proof step'),
   proofPremiseCount: (n: number) => plural(n, 'assumed premise'),
   proofNegationCount: (n: number) => plural(n, 'goal proved absent'),
+  proofComparisonCount: (n: number) => plural(n, 'checked comparison'),
   proofStepLine: (line: number) => `line ${String(line)}`,
   clauseJoin: (n: number) => `${plural(n, 'exact clause')} joined by source line.`,
   alignAce: (phrase: string) => `Align controlled phrase: ${phrase}`,

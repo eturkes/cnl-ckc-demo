@@ -7,6 +7,7 @@
     proofAssumptions,
     proofClauses,
     proofNegations,
+    proofComparisons,
     type EvidenceDocument,
     type GraphFocus,
     type ProvenanceState,
@@ -40,6 +41,9 @@
   );
   const negations = $derived(
     provenanceState.kind === 'ready' ? proofNegations(provenanceState.steps) : [],
+  );
+  const comparisons = $derived(
+    provenanceState.kind === 'ready' ? proofComparisons(provenanceState.steps) : [],
   );
   const documentId = $derived(steps.find((step) => step.document !== undefined)?.document);
   const documentSteps = $derived(
@@ -187,6 +191,17 @@
               <ul class="proof-steps premises">
                 {#each negations as negation (negation)}
                   <li><code>{negation}</code> <span>{t.LABELS.proofAbsent}</span></li>
+                {/each}
+              </ul>
+            </details>
+          {/if}
+          {#if comparisons.length > 0}
+            <details class="technical">
+              <summary>{t.TEXT.proofComparisonCount(comparisons.length)}</summary>
+              <p>{t.DESCRIPTIONS.proofComparisonOrigin}</p>
+              <ul class="proof-steps premises">
+                {#each comparisons as comparison (comparison)}
+                  <li><code>{comparison}</code> <span>{t.LABELS.proofCompared}</span></li>
                 {/each}
               </ul>
             </details>

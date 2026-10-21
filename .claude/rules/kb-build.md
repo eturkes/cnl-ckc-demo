@@ -101,8 +101,7 @@ fresh image load.
 `schema.pl` defines the comparison built-ins `guideline_satisfies/4,6` (over
 `guideline_within/4` + `guideline_scale/3`), which rule bodies and the `tablet-use-spacing`
 export call and no document defines. Upstream's traces record each call as a `builtin(G)` leaf;
-the demo's meta-interpreter has no such arm and fails closed on one (`.agent/deferred.md` row
-`The meta-interpreter fails closed on a comparison built-in`).
+the demo's meta-interpreter records it the same way (`.claude/rules/proof.md`).
 
 Clause counts: version 385, document 385, entity 2052, cardinality 2052, event 1492, arg
 2949, pp 1190, property 45, operator 1431, interval 33, recurrence 11, frequency 1, order 87,

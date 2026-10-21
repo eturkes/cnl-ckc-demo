@@ -156,6 +156,7 @@ record is `.claude/rules/firing.md`.
 | `tests/page-viewer.dom.test.ts` | off | failed page draw leaves retry button disabled | mutate | `C3 a failed page draw keeps Load page viewer disabled` |
 | `tests/palette-check.test.ts` | off | protan simulated with the identity matrix | mutate | `inv palette-check: protan simulated with the identity matrix` |
 | `tests/passage-locate.test.ts` | off | locator keeps standalone bullet items that the extracted passage drops | commit | `005903a pnpm exec vitest run tests/passage-locate.test.ts` → rc 1, 2/8 red` |
+| `tests/proof-comparison.test.ts` | off | the decoder reads a comparison as a negation | mutate | `inv proof-comparison: the decoder reads a comparison as a negation` |
 | `tests/proof-identity.test.ts` | off | a provenance chunk keys a clause by the wrong line | mutate | `inv proof-identity: a provenance chunk keys a clause by the wrong line` |
 | `tests/proof-live.test.ts` | off | inference exhaustion is misclassified as depth exhaustion | mutate | `inv proof-live: inference exhaustion reported as depth` |
 | `tests/provenance-ladder.dom.test.ts` | off | graph focus omits the selected proof's source lines | mutate | `inv provenance-ladder.dom: graph focus drops proof lines` |

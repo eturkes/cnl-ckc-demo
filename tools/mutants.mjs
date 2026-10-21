@@ -1553,4 +1553,15 @@ export const MUTANTS = [
     ],
     check: ['node', 'tools/claims-sweep.mjs'],
   },
+  {
+    label: 'inv proof-comparison: the decoder reads a comparison as a negation',
+    edits: [
+      {
+        path: 'src/engine/session.ts',
+        old: "steps.push({ kind: 'comparison', goal: this.#display(engine, display(goal), late) });",
+        new: "steps.push({ kind: 'negation', goal: this.#display(engine, display(goal), late) });",
+      },
+    ],
+    check: { test: 'tests/proof-comparison.test.ts', name: 'K5' },
+  },
 ];
