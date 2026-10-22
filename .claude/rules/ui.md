@@ -239,3 +239,6 @@ read out of the vendored bag **at run time** through `verifyBag`.
   (`pnpm build && pnpm preview`, or `pnpm dev`) with the click path to each changed state, and
   record the review owed until the user rules. Capture folders feed `pnpm visual-qa` and
   `reviewer` passes alone; never ask the user to review captures.
+- The ladder's checked-comparisons list has no catalog path: `pnpm dev` serves it on `/review.html`,
+  the shipped ladder over a live proof that passes `guideline_satisfies/6` (n19, user ruling). The
+  build leaves the page out.

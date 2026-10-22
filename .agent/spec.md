@@ -23,6 +23,9 @@ questions by deterministic Prolog execution.
 - `src/` + `index.html` — the demo. `pnpm dev`; production `pnpm build && pnpm preview`.
 - `server/chat.mjs` + `server/chat-guide.md` — local chat bridge to `codex app-server`.
   `pnpm chat:dev` beside `pnpm dev`, after `CODEX_HOME=~/.config/cnl-ckc-demo/codex codex login`.
+- `review.html` + `src/review/` — development page for the user's live review of the ladder's
+  checked-comparisons list, which no catalog question reaches. `pnpm dev`, then `/review.html`; the
+  build leaves it out.
 
 ## Decisions
 
@@ -173,7 +176,8 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
 - **A comparison built-in derives and shows in the ladder.** `guideline_satisfies/4,6` derives as a
   line-free `builtin(G)` leaf, and the ladder lists each distinct comparison after the goals proved
   absent; no current catalog proof holds one. Approved edits (n9): that ladder list, and
-  `tests/clinical-inference.test.ts` P1's pin `Derived: 'no'` → `'yes'`.
+  `tests/clinical-inference.test.ts` P1's pin `Derived: 'no'` → `'yes'`. Its live review runs on
+  `review.html`, which `pnpm dev` serves and the build leaves out (user ruling, n19).
 - **Every compound arm of the decoder admits a wrapper instance alone**, so a dict whose keys
   spell a compound fails closed. Approved edit (n13): `tests/engine-u2-port.test.ts` builds
   `nativeCompound` values shaped like swipl-wasm's own, and P3.10 builds its value before spying;
@@ -221,9 +225,9 @@ worker before its caller resumes (`chat-c2.md`).
   review`) — `pnpm dev`, open the graph, read concepts, actions and attributes in both themes, and
   select an answer's Find in graph to see the proof path and the selected node beside them.
 - [ ] owed (user): live review of n9's checked-comparisons list in the ladder (`c7b9b7d`,
-  `.claude/rules/ui.md` `User review`) — no catalog question's proof holds a comparison, so the live
-  interface has no click path to it yet; rule whether the review waits for such a question or
-  needs a way to reach the list.
+  `.claude/rules/ui.md` `User review`) — `pnpm dev`, open `/review.html`, expand "Explore the six
+  evidence steps" and "1 checked comparison"; switch to Japanese and to the dark theme, and narrow
+  the window to phone width.
 - [ ] n8 `low` coverage passages — waits on the producer: `../cnl-ckc` `83569b1d` still records
   B3-09/B3-10 `p14`.
 - [ ] n10 `low` C6 — waits on a user ruling that restores a sentence-length check.
@@ -235,6 +239,8 @@ worker before its caller resumes (`chat-c2.md`).
   approved (user).
 - [ ] n20 `med` find: `tests/solution-streaming.test.ts`'s queued-cancel case races a 5 ms timer —
   owed (user): approval of a change to the case; no change drafted yet.
+- [ ] n19 `low` a development page for n9's live review (user ruling) — lands from
+  `wip/n19-review-page` `c1738c5`.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
