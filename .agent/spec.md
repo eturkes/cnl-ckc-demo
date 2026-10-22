@@ -231,8 +231,10 @@ worker before its caller resumes (`chat-c2.md`).
   its re-open trigger: three consecutive gates above 45 s, each from a 1-min load below 2.
 - [x] 6961634 n17 `med` find: `claims:check`'s repeated-index control cannot fire on an empty index —
   approved (user), revised before landing.
-- [ ] n18 `med` find: `pnpm mutate`'s R29 + E10 closing cases hang rather than refuse — approved
-  (user); lands from `wip/n18-bounded-settle` `0d3ab54`.
+- [x] a4e4ff4 n18 `med` find: `pnpm mutate`'s R29 + E10 closing cases hang rather than refuse —
+  approved (user).
+- [ ] n20 `med` find: `tests/solution-streaming.test.ts`'s queued-cancel case races a 5 ms timer —
+  owed (user): approval of a change to the case; no change drafted yet.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
