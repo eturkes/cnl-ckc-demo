@@ -233,14 +233,8 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] n10 `low` C6 — waits on a user ruling that restores a sentence-length check.
 - [ ] n16 `low` find: `binding:check`'s wall drifts with the host (51.1 / 42.7 s at the close) — waits on
   its re-open trigger: three consecutive gates above 45 s, each from a 1-min load below 2.
-- [x] 6961634 n17 `med` find: `claims:check`'s repeated-index control cannot fire on an empty index —
-  approved (user), revised before landing.
-- [x] a4e4ff4 n18 `med` find: `pnpm mutate`'s R29 + E10 closing cases hang rather than refuse —
-  approved (user).
 - [ ] n20 `med` find: `tests/solution-streaming.test.ts`'s queued-cancel case races a 5 ms timer —
   owed (user): approval of a change to the case; no change drafted yet.
-- [ ] n19 `low` a development page for n9's live review (user ruling) — lands from
-  `wip/n19-review-page` `c1738c5`.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase

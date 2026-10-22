@@ -275,6 +275,24 @@ rows approved. Left open in `Tasks`: n8 (the producer), n10 + n16 (their trigger
 - [x] `a780bf5` Close review: check set `.agent/contracts/n-landing-close.md` (`1330e65`);
   reviewer-20 (reviewer) 10/10 — 9 pass, R1.1 (minor) R108's command → fixed, re-review pass.
 
+### Second question round
+
+The user asked for the open questions after the close and approved all four: land n17 + n18 (n17
+revised first — on its branch its mutant lived while the queue held a `high` or `med` row), build a
+development page for n9's live review (n19), serve the app for the owed live reviews, and give the
+MAINTAIN body one closing question for finds made after the first (agents `ebc881d`). Left open in
+`Tasks`: n8, n10, n16, n20 (a find after the round, owed) and the live reviews owed.
+
+- [x] `da0333b` audit find: two advisories against `@vitest/mocker` <4.1.12 → vitest +
+  `@vitest/browser-playwright` 4.1.12.
+- [x] `6961634` n17 `med` `claims:check`'s repeated-index control repeats a planted row's line on
+  every queue — approved (user), revised before landing.
+- [x] `a4e4ff4` n18 `med` the R29 + E10 closing cases bound their waits — approved (user); the full
+  `pnpm mutate` 132/132.
+- [x] `af65e26` n20 `med` find: `tests/solution-streaming.test.ts`'s queued-cancel case races a 5 ms
+  timer → owed (user), no change drafted.
+- [x] `342f333` n19 `low` `review.html`, a development page for n9's live review — user ruling.
+
 ## Phase
 
 IMPLEMENT closed three times, each ledgered in `.agent/review.md` with no open row: u3–u15 on
