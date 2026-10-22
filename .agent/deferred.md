@@ -33,16 +33,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   45 s. Accept: a speedup at equal strength — every check still runs and fires on its planted
   input — that an alternating A/B, two runs per arm against the tree it replaces, shows cutting
   `binding:check`'s wall by at least 15%. `pri` low.
-- **`claims:check`'s repeated-index control cannot fire on an empty index** — the control repeats
-  the index's first data line (`tools/claims-sweep.mjs` `firstIndexLine`); a queue holding no
-  `high` or `med` row has none, so the planted copy grades unchanged and `claims:check` exits 1
-  `control did not fire — the first index line repeated reported nothing, missing "repeats or
-  reorders its lines"` on a sound queue, seen when n5's landing pruned the last `med` row. This
-  row's own index line keeps the control firing meanwhile. Accept: on a queue whose index holds no
-  line, the control repeats the line of a `med` row planted in a copy whose index is rewritten,
-  and `claims:check` passes on the real queue with this row pruned; firing.md's claims:check row
-  records the original control's firing. `pri` med. A grader change: it needs the user's approval.
-  `wip/n17-index-control` `f312d8a` holds the change, its red witness and its mutant, gate green.
 - **`pnpm mutate` reads R29 and E10 INCONCLUSIVE: their closing cases hang rather than refuse** —
   cases C8 and E10 (`tests/engine-cancel.test.ts`) await their callers unbounded, so with either
   fix removed the case hangs into vitest's 5000 ms timeout, and n3's runner reads `INCONCLUSIVE —
@@ -61,7 +51,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 
 | defect | accept |
 | --- | --- |
-| `claims:check`'s repeated-index control cannot fire on an empty index | on a queue whose index holds no line, the control repeats the line of a `med` row planted in a copy whose index is rewritten, and `claims:check` passes on the real queue with this row pruned; firing.md's claims:check row records the original control's firing |
 | `pnpm mutate` reads R29 and E10 INCONCLUSIVE: their closing cases hang rather than refuse | each case bounds its wait and fails by assertion under its mutant — `pnpm mutate 'R29 messageerror unhandled'` and `pnpm mutate 'E10 worker-failure broadcast ignored'` read `RED — killed` — and the full `pnpm mutate` exits 0, the original firing (`rc=timeout INCONCLUSIVE`) recorded |
 
 ## Accepted-open

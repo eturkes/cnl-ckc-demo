@@ -49,11 +49,11 @@ repo's deltas.
 - MAIN's units landed from branches, each cited by its landing commit: `wip/n1-palette` `c774baf`,
   `wip/n2-replay` `60a74c4`, `wip/n3-mutate-timeout` `2235854`, `wip/n4-artifacts` `49b1143`,
   `wip/n5-inventory` `ee0f5b2`, `wip/n9-comparison` `3cf1d13`, `wip/n11-copy-sweep` `ca26be9`,
-  `wip/n12-frontmatter` `b52e01f`, `wip/n13-decoder` `eca6aca`; the branches they re-applied stay
-  too (`wip/m8-mutate-timeout`, `wip/m13-copy-sweep`, `wip/m14-frontmatter`, `wip/m15-artifacts`,
-  `wip/f4-inventory`).
-- MAIN's approval-pending units, cited by their queue rows and `Tasks`: `wip/n17-index-control`
-  `f312d8a`, `wip/n18-bounded-settle` `0d3ab54`.
+  `wip/n12-frontmatter` `b52e01f`, `wip/n13-decoder` `eca6aca`, `wip/n17-index-control` `f312d8a`
+  (revised on landing); the branches they re-applied stay too (`wip/m8-mutate-timeout`,
+  `wip/m13-copy-sweep`, `wip/m14-frontmatter`, `wip/m15-artifacts`, `wip/f4-inventory`).
+- MAIN's approval-pending unit, cited by its queue row and `Tasks`: `wip/n18-bounded-settle`
+  `0d3ab54`.
 - Research probe branches held as evidence, worktrees removed: `wt/res-m1-1` `36cc56f`
   (swipl-wasm load/worker/terms/trace/perf/test/errors/deploy), `wt/res-m1-2` `5863141`
   (cytoscape layout/perf/test, axe, contrast, combobox), `wt/res-m2-2` `0a48b79` (every

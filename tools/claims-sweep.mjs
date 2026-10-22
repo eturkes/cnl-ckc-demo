@@ -13,7 +13,7 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { requireFiring } from './control.mjs';
-import { gradeIndex, QUEUE, queueRows } from './queue.mjs';
+import { gradeIndex, QUEUE, queueRows, rewriteIndex } from './queue.mjs';
 
 const REGISTRY = 'docs/claims.md';
 
@@ -515,13 +515,17 @@ if (process.argv.includes('--seed')) {
     },
     () => gradeIndex(queue.replace('\n## Index — ', `\n${plantedRow}\n## Index — `)),
   );
-  // The index's first data line, whatever its rank: a queue holding no `high` row still has one.
-  const firstIndexLine =
-    /^\| --- \| --- \|\n(\|.*)$/mu.exec(queue.slice(queue.indexOf('\n## Index — ')))?.[1] ?? '';
+  // The planted `med` row's own line, repeated in a copy whose index is rewritten as `pnpm
+  // queue:index` does: a line the real index holds would leave the control blind to an empty one.
+  const indexed = rewriteIndex(queue.replace('\n## Index — ', `\n${plantedRow}\n## Index — `));
+  const plantedLine = '| ZZ control row | never |';
   const repeatedIndex = requireFiring(
     'claims:check',
-    { mutation: 'the first index line repeated', expect: ['repeats or reorders its lines'] },
-    () => gradeIndex(queue.replace(firstIndexLine, `${firstIndexLine}\n${firstIndexLine}`)),
+    {
+      mutation: 'the index line of a planted med row repeated',
+      expect: ['repeats or reorders its lines'],
+    },
+    () => gradeIndex(indexed.replace(plantedLine, `${plantedLine}\n${plantedLine}`)),
   );
 
   // A command holding an escaped pipe must come back from the seed's merge byte-identical.
