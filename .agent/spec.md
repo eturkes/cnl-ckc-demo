@@ -229,10 +229,10 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] n10 `low` C6 — waits on a user ruling that restores a sentence-length check.
 - [ ] n16 `low` find: `binding:check`'s wall drifts with the host (51.1 / 42.7 s at the close) — waits on
   its re-open trigger: three consecutive gates above 45 s, each from a 1-min load below 2.
-- [ ] n17 `med` find: `claims:check`'s repeated-index control cannot fire on an empty index — approved
-  (user), revised before landing; lands from `wip/n17-index-control` `f312d8a`.
-- [ ] n18 `med` find: `pnpm mutate`'s R29 + E10 closing cases hang rather than refuse — owed (user):
-  approval of the two case edits; `wip/n18-bounded-settle` `0d3ab54`.
+- [x] 6961634 n17 `med` find: `claims:check`'s repeated-index control cannot fire on an empty index —
+  approved (user), revised before landing.
+- [ ] n18 `med` find: `pnpm mutate`'s R29 + E10 closing cases hang rather than refuse — approved
+  (user); lands from `wip/n18-bounded-settle` `0d3ab54`.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
