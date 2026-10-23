@@ -209,6 +209,12 @@ readme:check && test:browser && engine:probe`.
   or Dependabot reopens the PR that breaks the gate every week. The exact pin stays
   unignored on purpose: Dependabot opens the `swipl-wasm` PR, and the gate plus the
   undeclared-API re-verification decide it.
+- **`CLAUDE.md` `Execution` `CI gate` is not in force here**: its precondition, a green `main` CI,
+  fails — `Verify` reddens at T9, whose `git show 22053ef` the depth-1 checkout cannot resolve,
+  and `Security scan` at `lint`, which runs with no `kb:build` before it, each a
+  `.agent/deferred.md` row — and `ci.yml` runs one job, on `main` and pull requests alone. So
+  `pnpm gate` runs locally and `ci/*` pushes wait for the fan-out, its own queue row, re-opened
+  once both runs are green; that unit records the workflow and its commands here.
 
 **Never run MAIN's decisive `pnpm gate` while teammates run suites.** Three trees testing at
 once starve the CPU into spurious `Test timed out in 5000ms` failures — `kb-reach`, which

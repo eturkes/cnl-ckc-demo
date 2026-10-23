@@ -228,7 +228,7 @@ worker before its caller resumes (`chat-c2.md`).
   `.claude/rules/ui.md` `User review`) — `pnpm dev`, open `/review.html`, expand "Explore the six
   evidence steps" and "1 checked comparison"; switch to Japanese and to the dark theme, and narrow
   the window to phone width.
-- [ ] n8 `low` coverage passages — waits on the producer: `../cnl-ckc` `83569b1d` still records
+- [ ] n8 `low` coverage passages — waits on the producer: `cnl-ckc` `83569b1d` still records
   B3-09/B3-10 `p14`.
 - [ ] n10 `low` C6 — waits on a user ruling that restores a sentence-length check.
 - [ ] n16 `low` find: `binding:check`'s wall drifts with the host (51.1 / 42.7 s at the close) — waits on
