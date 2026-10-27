@@ -238,7 +238,7 @@ read out of the vendored bag **at run time** through `verifyBag`.
 - **A visual unit's user review = the live interface** (user ruling). Hand over the running app
   (`pnpm build && pnpm preview`, or `pnpm dev`) with the click path to each changed state, and
   record the review owed until the user rules. Capture folders feed `pnpm visual-qa` and
-  `reviewer` passes alone; never ask the user to review captures.
+  `reviewer` passes.
 - The ladder's checked-comparisons list has no catalog path: `pnpm dev` serves it on `/review.html`,
   the shipped ladder over a live proof that passes `guideline_satisfies/6` (n19, user ruling). The
   build leaves the page out.

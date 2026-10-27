@@ -14,8 +14,10 @@ repo's deltas.
 
 ## Worktrees
 
-- A wave that writes code takes one worktree per teammate at `.scratch/worktrees/<name>`. An
-  analysis-only wave takes none and reports into `.scratch/agents/`.
+- A wave that writes code takes one worktree per teammate at `.scratch/worktrees/<name>`; so
+  does a debugging wave, each hypothesis's experiment in its own (`CLAUDE.md` `Session flow`
+  Debugging), even one that edits nothing. An analysis-only wave takes none and reports into
+  `.scratch/agents/`.
 - Toolchain env = symlink the primary `node_modules` into the worktree. `.gitignore`
   therefore spells `node_modules` and `kb/generated` **without a trailing slash** — the slash
   form matches directories only and leaves the symlink untracked.
