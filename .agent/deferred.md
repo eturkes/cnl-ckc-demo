@@ -73,15 +73,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   10. Accept: a gate step runs ShellCheck, resolved the same way locally and in CI, over both
   scripts at rc 0, and its control — a copy of `.agent/spec-lint` with that directive line
   removed — is refused naming `SC2016`. `pri` low.
-- **The README states the missing-annotations note's trigger as the knowledge base returning no
-  marks** — `README.md:98–99` reads "If the knowledge base returns no marks for a document, a
-  note under the answer says so.", while `.agent/spec.md` `Decisions` rules that the notice says
-  the annotations could not be shown, never that the knowledge base returned none, and
-  `.claude/rules/ui.md` counts in `TEXT.marksMissing` every document whose marks are not usable —
-  failed, stopped, undecodable, duplicated or misaligned. Accept: the README paragraph says that
-  the note appears when a document's annotations cannot be shown, without saying that the
-  knowledge base returned none, and `rg -c -F 'knowledge base returns no' README.md` finds 0
-  lines (1 at `9bc5bef`). `pri` low.
 - **KB intake reads a sibling cnl-ckc checkout, not a release** — `tools/kb/regenerate-bag.sh`
   rebuilds the bag from a producer checkout that `CLAUDE.local.md` locates, and
   `.claude/rules/kb-build.md` `Upstream port specifications` makes upstream's Verus specs

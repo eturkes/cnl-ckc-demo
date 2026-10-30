@@ -263,6 +263,7 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] n22 `med` `Security scan` red at `lint` → `security.yml` runs `kb:build` before `lint`.
   - Accept: the queue row's own — a sound run green with all three scanners run, and one planted
     lint violation red at `lint`.
+- [ ] n23 `low` README: the missing-annotations note appears when annotations cannot be shown.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase

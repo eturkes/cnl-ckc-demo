@@ -96,8 +96,8 @@ answer map. Orange paths come only from the selected source contribution; muted
 branches show how its primary concept connects elsewhere in the knowledge base.
 
 Each statement shows its facts row: **Qualifier**, **Grade**, **Preferred** and **Time**. The
-grade shows on the first statement from each source document. If the knowledge base returns no
-marks for a document, a note under the answer says so. Open **Prolog goal behind these
+grade shows on the first statement from each source document. If the annotations from a source
+document cannot be shown, a note under the answer says so. Open **Prolog goal behind these
 annotations** to read the goal and the engine's solutions.
 
 ### Chat
