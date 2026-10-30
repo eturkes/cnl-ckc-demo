@@ -29,5 +29,8 @@ jobs:
       - run: pnpm audit:check
       # Secret scan over the tree, with its own detector-liveness control.
       - run: pnpm secret:check
+      # The type-aware rules resolve every `@kb` import through `kb/generated`, which only
+      # `kb:build` writes; without it each generated-asset member reads as an error type.
+      - run: pnpm kb:build
       # Static analysis: eslint-plugin-security, no-unsanitized, svelte/no-at-html-tags.
       - run: pnpm lint

@@ -260,6 +260,9 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] n21 `med` `Verify` red on `main` at T9 → `ci.yml` checks out full history.
   - Accept: the queue row's own — a sound `Verify` run green with T9 comparing against
     `22053ef`, and one T9-frozen byte changed red at T9.
+- [ ] n22 `med` `Security scan` red at `lint` → `security.yml` runs `kb:build` before `lint`.
+  - Accept: the queue row's own — a sound run green with all three scanners run, and one planted
+    lint violation red at `lint`.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
