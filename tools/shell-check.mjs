@@ -4,7 +4,17 @@
 
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { chmodSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
 
@@ -70,17 +80,25 @@ const binary = async () => {
   return path;
 };
 
-/** @returns {string[]} tracked files named `*.sh` or opening with a POSIX-family shebang */
+/**
+ * A `*.sh` name, or a shebang naming a shell ShellCheck grades: sh, bash, dash, ksh, ash (graded as
+ * dash) or busybox's `sh`.
+ *
+ * @param {string} path
+ * @returns {boolean}
+ */
+const isShellScript = (path) => {
+  if (path.endsWith('.sh')) return true;
+  if (!existsSync(path)) return false;
+  const head = readFileSync(path, 'latin1').slice(0, 128).split('\n')[0] ?? '';
+  return /^#!.*[/ ](?:ba|da|k|a)?sh\b/u.test(head);
+};
+
+/** @returns {string[]} every tracked shell script, repo-relative */
 const scripts = () =>
   execFileSync('git', ['ls-files', '-z'], { cwd: ROOT, encoding: 'utf8' })
     .split('\0')
-    .filter((file) => {
-      if (file === '') return false;
-      if (file.endsWith('.sh')) return true;
-      if (!existsSync(join(ROOT, file))) return false;
-      const head = readFileSync(join(ROOT, file), 'latin1').slice(0, 128).split('\n')[0] ?? '';
-      return /^#!.*[/ ](?:ba|da|k)?sh\b/u.test(head);
-    });
+    .filter((file) => file !== '' && isShellScript(join(ROOT, file)));
 
 /**
  * @param {string} shellcheck
@@ -90,7 +108,8 @@ const scripts = () =>
  */
 const grade = (shellcheck, files, input) => {
   if (files.length === 0) throw new Error('no shell script found, so ShellCheck grades nothing');
-  const run = spawnSync(shellcheck, ['--format=gcc', ...files], {
+  // `--`: a script named `-x.sh` would otherwise read as an option.
+  const run = spawnSync(shellcheck, ['--format=gcc', '--', ...files], {
     cwd: ROOT,
     encoding: 'utf8',
     input,
@@ -127,6 +146,23 @@ const controls = [
     'shell:check',
     { mutation: 'the script set emptied', expect: ['no shell script found'] },
     () => grade(shellcheck, []),
+  ),
+  requireFiring(
+    'shell:check',
+    {
+      mutation: 'an extensionless `#!/bin/ash` script with an unquoted expansion',
+      expect: ['[SC2086]'],
+    },
+    () => {
+      const dir = mkdtempSync(join(tmpdir(), 'shell-check-'));
+      try {
+        const planted = join(dir, 'planted');
+        writeFileSync(planted, '#!/bin/ash\nprintf "%s\\n" $planted\n');
+        return isShellScript(planted) ? grade(shellcheck, [planted]) : ['planted script not found'];
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
   ),
 ];
 

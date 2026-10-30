@@ -131,7 +131,8 @@ Step semantics a reader cannot get from the script name:
   whole spec: a template file, copied in whole at each template refresh and never edited here,
   because its cases live with the template. The wrapper owns this repo's controls alone.
 - `shell:check` (`tools/shell-check.mjs`) runs ShellCheck over every tracked shell script — a `.sh`
-  name or a POSIX-family shebang, found through `git ls-files` so a new script joins unasked. The
+  name or a shebang naming a shell ShellCheck grades (sh, bash, dash, ksh, ash, busybox `sh`),
+  found through `git ls-files` so a new script joins unasked. The
   binary is one pinned release fetched by its `.tar.gz` digest into `node_modules/.cache/shellcheck/`,
   so the gate, CI and the pool hosts run the same ShellCheck whatever the host carries; it needs
   network on first use, like `audit:check`. Pin → `.claude/rules/toolchain.md` `Dependency pins`.

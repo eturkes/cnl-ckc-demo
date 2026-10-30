@@ -1618,4 +1618,15 @@ export const MUTANTS = [
     ],
     check: { test: 'tests/ci-gate.test.ts', name: 'killed watch' },
   },
+  {
+    label: 'n20-close G1-1 shell:check discovery misses ash scripts',
+    edits: [
+      {
+        path: 'tools/shell-check.mjs',
+        old: 'return /^#!.*[/ ](?:ba|da|k|a)?sh\\b/u.test(head);',
+        new: 'return /^#!.*[/ ](?:ba|da|k)?sh\\b/u.test(head);',
+      },
+    ],
+    check: ['pnpm', 'shell:check'],
+  },
 ];
