@@ -207,8 +207,9 @@ readme:check && test:browser && engine:probe`.
   request, and publishes nothing: the demo runs locally (user ruling). Scanners ride the gate,
   so CI covers them without a second definition.
 - `.github/workflows/security.yml` — the scanners alone, on a daily schedule plus push and
-  pull request. The schedule is the point: a new advisory has to redden something on a day
-  nobody pushes.
+  pull request, with `kb:build` ahead of `lint`: the type-aware rules resolve every `@kb` import
+  through `kb/generated`, and without it each generated-asset member reads as an error type. The
+  schedule is the point: a new advisory has to redden something on a day nobody pushes.
 - `renovate.json` — the user's Mend Renovate GitHub app opens weekly PRs for the npm
   dependencies, the `packageManager` pnpm pin, the `devEngines.runtime` Node pin and the Actions,
   and raises vulnerability alerts from osv.dev. Dependabot never bumps `packageManager`, and its
@@ -221,11 +222,11 @@ readme:check && test:browser && engine:probe`.
   `npx --yes --package renovate -- renovate-config-validator --strict` at the repo root, with no
   argument: a path argument grades it as global config.
 - **`CLAUDE.md` `Execution` `CI gate` is not in force here**: its precondition, a green `main` CI,
-  fails — `Verify` reddens at T9, whose `git show 22053ef` the depth-1 checkout cannot resolve,
-  and `Security scan` at `lint`, which runs with no `kb:build` before it, each a
+  fails until `main` carries `ci.yml`'s full-history checkout — `Verify` reddened at T9 on every
+  `main` push before it, its depth-1 checkout unable to resolve `git show 22053ef`, a
   `.agent/deferred.md` row — and `ci.yml` runs one job, on `main` and pull requests alone. So
   `pnpm gate` runs locally and `ci/*` pushes wait for the fan-out, its own queue row, re-opened
-  once both runs are green; that unit records the workflow and its commands here.
+  once `Verify` is green; that unit records the workflow and its commands here.
 
 **Never run MAIN's decisive `pnpm gate` while teammates run suites.** Three trees testing at
 once starve the CPU into spurious `Test timed out in 5000ms` failures — `kb-reach`, which

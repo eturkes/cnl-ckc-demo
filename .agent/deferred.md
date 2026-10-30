@@ -52,13 +52,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   Accept: a `Verify` run on a sound `main` push concludes `success` with T9 still comparing
   against `22053ef`'s bytes, and the same workflow on a tree with one T9-frozen byte changed
   concludes `failure` at T9. `pri` med.
-- **`Security scan` is red at `lint`, which runs with no `kb/generated`** — `security.yml` runs
-  `audit:check`, `secret:check` and `lint` on a fresh install and never `kb:build`, so the
-  type-aware rules read every generated-asset import as an error type: 27 errors
-  (`no-unsafe-member-access` on `.entries`, `.contract`, `.catalogVersion`, …) on `f9a890c`'s
-  scheduled and push runs alike. Accept: a `Security scan` run on a sound tree concludes `success`
-  with all three scanners run, and a run with one planted lint violation concludes `failure` at
-  `lint`. `pri` med.
 - **The CI gate's fan-out is not built** — `CLAUDE.md` `Execution` `CI gate` runs the full gate as
   a parallel CI fan-out on a `ci/<unit>` push once `main` CI is green (`.claude/rules/gate.md`
   `## CI`); `ci.yml` runs one `pnpm gate` job, on `main` and pull requests alone. Re-open trigger:
@@ -104,7 +97,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 | --- | --- |
 | `tests/solution-streaming.test.ts`'s queued-cancel case races a 5 ms timer | the case orders its cancel after step 2 has begun without a wall-clock timer, every assertion kept, and its original false red recorded |
 | `Verify` is red on `main` at T9, whose `git show 22053ef` the CI checkout cannot resolve | a `Verify` run on a sound `main` push concludes `success` with T9 still comparing against `22053ef`'s bytes, and the same workflow on a tree with one T9-frozen byte changed concludes `failure` at T9 |
-| `Security scan` is red at `lint`, which runs with no `kb/generated` | a `Security scan` run on a sound tree concludes `success` with all three scanners run, and a run with one planted lint violation concludes `failure` at `lint` |
 | KB intake reads a sibling cnl-ckc checkout, not a release | `kb/` vendors the bag a named release tag publishes, checked against that release's `.sha256` asset before use, and `pnpm kb:build` is green on it; no tool, check or live law reads a `cnl-ckc` checkout or names `../cnl-ckc` beyond `kb-build.md`'s forbidden-reach scan literal; each upstream source `.claude/rules/` cites as live law is held in this repo or retired from that law; `toolchain.md`'s interim ruling is gone |
 
 ## Accepted-open
