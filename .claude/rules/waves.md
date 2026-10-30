@@ -82,18 +82,17 @@ repo's deltas.
 
 - **A check ships with its red witness in the unit's acceptance row, cited from the commit
   body.** The form is already in the tree: `19/20 RED at base `22053ef``, `5/9 RED at base
-  `e71486e``, each beside the command that reproduces it — `git show <sha>:<producer> >
-  <producer> && pnpm kb:build && npx vitest run <suite>`
-  (`.agent/archive/contracts/m5u1.md:232`, `m5u2.md:216`). A base-GREEN case is declared in
-  that same row with its reason, never manufactured, and stays uncredited until `pnpm stryker`
-  (`tools/mutation/`, one suite per run) shows its suite killing default-operator mutants in the
-  files it imports — the credit `CLAUDE.md` `Engineering` names; `pnpm mutate`'s hand-written
-  mutants are firing records, never that credit. Two shapes satisfy the revision half without a
-  `git show`: a witness that stays inside the run, where the run IS the revision
-  (`engine:check` under `ENGINE_CHECK_CONTROL`), and a differential that names its own arms
-  (`pnpm binding:replay HEAD`). The residue this closes is a hand run written down with no
-  revision and no command, which nobody can read back. The contract is the citable record;
-  `.scratch/` is gitignored.
+  `e71486e`` (`.agent/archive/contracts/m5u1.md:232`, `m5u2.md:216`), each beside the command
+  that reproduces it — today `git show <sha>:<producer> > <producer> && pnpm kb:build && pnpm
+  exec vitest run <suite>`. A base-GREEN case is declared in that same row with its reason, never
+  manufactured, and stays uncredited until `pnpm stryker` (`tools/mutation/`, one suite per run)
+  shows its suite killing default-operator mutants in the files it imports — the credit
+  `CLAUDE.md` `Engineering` names; `pnpm mutate`'s hand-written mutants are firing records, never
+  that credit. Two shapes satisfy the revision half without a `git show`: a witness that stays
+  inside the run, where the run IS the revision (`engine:check` under `ENGINE_CHECK_CONTROL`),
+  and a differential that names its own arms (`pnpm binding:replay HEAD`). The residue this
+  closes is a hand run written down with no revision and no command, which nobody can read back.
+  The contract is the citable record; `.scratch/` is gitignored.
 - **A path outside the teammate's own tree must be ABSOLUTE in the brief** — reports, roster and
   every other `.scratch/` target. `CLAUDE.md` `Teammates` names files repo-relative, which
   resolves inside the worktree, while `.scratch/` sits in the primary tree; MAIN's own cwd also

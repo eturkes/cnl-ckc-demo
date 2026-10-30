@@ -40,9 +40,10 @@ paths:
 - pnpm **12** = `package.json` `packageManager` (exact `12.16.1`; user ruling): any pnpm from 10
   on downloads and runs that version, and the lockfile's first YAML document pins its binaries
   by integrity. It stays the legacy field, never `devEngines.packageManager`: npm refuses every
-  `npx` call inside a project whose `devEngines.packageManager` names pnpm (`EBADDEVENGINES`),
-  and the rules' recipes run `npx vitest`. CI installs it through `pnpm/action-setup`. Corepack
-  is retired: Node 25 and later ship without it.
+  `npx` call inside a project whose `devEngines.packageManager` names pnpm (`EBADDEVENGINES`).
+  npm also refuses wherever the host's Node is not `devEngines.runtime`'s exact pin, so the
+  rules' recipes run `pnpm exec` and `pnpm dlx`, which use the pinned runtime. CI installs it
+  through `pnpm/action-setup`. Corepack is retired: Node 25 and later ship without it.
 - pnpm settings live in `pnpm-workspace.yaml`, because pnpm 11 and later ignore `package.json`
   `pnpm`. `allowBuilds` `esbuild: false` keeps esbuild's install script off, as pnpm 10 left it:
   pnpm 12 fails an install on any build script `allowBuilds` does not list.

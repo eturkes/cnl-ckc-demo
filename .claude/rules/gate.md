@@ -220,7 +220,7 @@ readme:check && test:browser && engine:probe`.
   Renovate opens the `swipl-wasm` and `pdfjs-dist` PRs with their re-verification in the PR
   body, and the gate plus that re-verification decide them. npm updates wait out pnpm's
   `minimumReleaseAge`, which otherwise fails the PR's lockfile update. Validate it with
-  `npx --yes --package renovate -- renovate-config-validator --strict` at the repo root, with no
+  `pnpm dlx --package=renovate renovate-config-validator --strict` at the repo root, with no
   argument: a path argument grades it as global config.
 - `.github/workflows/fanout.yml` — the `CLAUDE.md` `Execution` `CI gate` fan-out: a `ci/**` push
   runs every `gate:chain` step as its own parallel job. `node tools/gate.mjs --plan` derives the
