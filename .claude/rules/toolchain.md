@@ -68,12 +68,12 @@ paths:
 - `swipl-wasm` stays **exact-pinned**: production calls three undeclared APIs off it
   (`.claude/rules/engine.md`), so every version bump re-verifies them against the shipped
   `.d.ts`.
-- Each cap here must also appear in `.github/dependabot.yml`'s `ignore` list, or the weekly
+- Each cap here must also appear in `renovate.json` as an `allowedVersions` rule, or the weekly
   run reopens the same gate-breaking PR.
 - ESLint config needs `@types/node`, and svelte parsing needs `extraFileExtensions`.
 - `@stryker-mutator/core` + `@stryker-mutator/vitest-runner` move together: the runner peers on
-  the EXACT core version, so the `dev-toolchain` group moves both for minor and patch and a
-  major bump moves both by hand. Stryker's default `@stryker-mutator/*` plugin glob searches
+  the EXACT core version, so Renovate's `stryker` group moves both in one PR, majors included.
+  Stryker's default `@stryker-mutator/*` plugin glob searches
   beside core's own install, which pnpm's isolated layout leaves without the runner →
   `tools/mutation/stryker.config.mjs` resolves the runner itself. The runner forces threads and
   has no browser mode, so `pnpm stryker` grades node-project suites alone.
@@ -140,9 +140,11 @@ excludes that glob and `tests/**/*.browser.test.ts`, so `swipl-wasm` keeps its n
 - `browser` = `tests/**/*.browser.test.ts` in real Chromium through `@vitest/browser-playwright`,
   run by `pnpm test:browser`, which points it at the chromiumfish binary — the gate and CI never
   load a browser driver, and `vite.config.ts` imports the provider only under that flag.
-- `@vitest/browser-playwright` peers on the EXACT installed `vitest`; the Dependabot
-  `dev-toolchain` group moves both in one PR for minor and patch, and a major bump moves both by
-  hand. `playwright` is exact-pinned to the `playwright-core` chromiumfish itself drives.
+- `@vitest/browser-playwright` peers on the EXACT installed `vitest`; Renovate's `vitest` group
+  moves `vitest` and every `@vitest/*` in one PR, majors included. `playwright` is exact-pinned
+  and drives chromiumfish's Chromium in `pnpm test:browser`; chromiumfish's own launcher resolves
+  its peer `playwright-core` (`>=1.40`) when it is installed, so the two versions can differ, and
+  `pnpm test:browser` decides a bump of either.
 - Server-side browser commands live in `tests/support/`; `axCombobox` reads Chromium's own
   accessibility tree over CDP.
 

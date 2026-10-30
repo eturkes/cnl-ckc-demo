@@ -1,0 +1,49 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "schedule": ["before 6am on monday"],
+  "osvVulnerabilityAlerts": true,
+  "packageRules": [
+    {
+      "description": "Development minor + patch updates land in one PR, as under Dependabot",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "dev-toolchain"
+    },
+    {
+      "description": "pnpm refuses to lock a release younger than its default 1440-minute minimumReleaseAge, kept by user ruling, so Renovate waits as long",
+      "matchDatasources": ["npm"],
+      "minimumReleaseAge": "1 day"
+    },
+    {
+      "description": "typescript-eslint stable caps TypeScript below 6.1 (.claude/rules/toolchain.md)",
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "<6"
+    },
+    {
+      "description": "Node 24 project-wide, user ruling: devEngines.runtime stays below engines' <25 cap",
+      "matchDepNames": ["node"],
+      "allowedVersions": "<25"
+    },
+    {
+      "description": "The vitest runner peers on the EXACT core version, so both move in one PR",
+      "matchPackageNames": ["@stryker-mutator/core", "@stryker-mutator/vitest-runner"],
+      "groupName": "stryker"
+    },
+    {
+      "description": "@vitest/browser-playwright peers on the EXACT vitest, so both move in one PR",
+      "matchPackageNames": ["vitest", "@vitest/*"],
+      "groupName": "vitest"
+    },
+    {
+      "description": "Exact pin: production calls three undeclared APIs (.claude/rules/engine.md)",
+      "matchPackageNames": ["swipl-wasm"],
+      "prBodyNotes": ["Re-verify the three undeclared APIs against the shipped `.d.ts`."]
+    },
+    {
+      "description": "Exact pin: the owned page viewer uses its text-layer API",
+      "matchPackageNames": ["pdfjs-dist"],
+      "prBodyNotes": ["Run `pnpm browser:check`: its page-viewer leg grades this bump."]
+    }
+  ]
+}

@@ -204,11 +204,17 @@ readme:check && test:browser && engine:probe`.
 - `.github/workflows/security.yml` — the scanners alone, on a daily schedule plus push and
   pull request. The schedule is the point: a new advisory has to redden something on a day
   nobody pushes.
-- `.github/dependabot.yml` — weekly npm + github-actions updates. Its `ignore` list mirrors
-  every version CAP in `.claude/rules/toolchain.md`; adding a cap there means adding it here,
-  or Dependabot reopens the PR that breaks the gate every week. The exact pin stays
-  unignored on purpose: Dependabot opens the `swipl-wasm` PR, and the gate plus the
-  undeclared-API re-verification decide it.
+- `renovate.json` — the user's Mend Renovate GitHub app opens weekly PRs for the npm
+  dependencies, the `packageManager` pnpm pin, the `devEngines.runtime` Node pin and the Actions,
+  and raises vulnerability alerts from osv.dev. Dependabot never bumps `packageManager`, and its
+  alerts miss pnpm 12's two-document lockfile. Its `allowedVersions` rules mirror every version
+  CAP in `.claude/rules/toolchain.md`; adding a cap there means adding it here, or Renovate
+  reopens the PR that breaks the gate every week. The exact pins stay unrestricted on purpose:
+  Renovate opens the `swipl-wasm` and `pdfjs-dist` PRs with their re-verification in the PR
+  body, and the gate plus that re-verification decide them. npm updates wait out pnpm's
+  `minimumReleaseAge`, which otherwise fails the PR's lockfile update. Validate it with
+  `npx --yes --package renovate -- renovate-config-validator --strict` at the repo root, with no
+  argument: a path argument grades it as global config.
 - **`CLAUDE.md` `Execution` `CI gate` is not in force here**: its precondition, a green `main` CI,
   fails — `Verify` reddens at T9, whose `git show 22053ef` the depth-1 checkout cannot resolve,
   and `Security scan` at `lint`, which runs with no `kb:build` before it, each a

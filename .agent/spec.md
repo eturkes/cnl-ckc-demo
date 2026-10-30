@@ -240,6 +240,10 @@ worker before its caller resumes (`chat-c2.md`).
   `.claude/rules/ui.md` `User review`) — `pnpm dev`, open `/review.html`, expand "Explore the six
   evidence steps" and "1 checked comparison"; switch to Japanese and to the dark theme, and narrow
   the window to phone width.
+- [ ] owed (user): install the Mend Renovate GitHub app on `eturkes/cnl-ckc-demo` once `main`
+  carries `renovate.json` (mv4); then close Dependabot's open PRs #3, #8, #17, #18 and #19,
+  which nothing updates once `.github/dependabot.yml` is gone — Renovate reopens what still
+  applies.
 - [ ] n8 `low` coverage passages — waits on the producer: `cnl-ckc` `83569b1d` still records
   B3-09/B3-10 `p14`.
 - [ ] n10 `low` C6 — waits on a user ruling that restores a sentence-length check.
@@ -261,19 +265,16 @@ worker before its caller resumes (`chat-c2.md`).
   `Met when` the full `pnpm gate` passes on a clean tree at the closing commit, here and on the
   new machine. Phase stays MAINTAIN. New machine = `ssh -p 9995 eturkes@59.169.212.33` (off the
   LAN; same ED25519 host key as `192.168.40.74`).
-  - Committed: `778208d` mv1, `8a0a842` mv3, `5e1600b` pause note, and mv5 in this note's
-    commit. Pushed with the user's go: the 130 pre-session `wt/*`, `wip/*` and
+  - Committed: `778208d` mv1, `8a0a842` mv3, `5e1600b` pause note, `053854b` mv5, and mv4 in
+    this note's commit. Pushed with the user's go: the 130 pre-session `wt/*`, `wip/*` and
     `worktree-agent-*` branches + 6 tags. Unpushed: `main` (the user pushes it);
     `wip/machine-move` `3a0d1fb` (drafts, all landed or restored → delete at close, unpushed).
-  - Done uncommitted: mv4 (`renovate.json`, `.github/dependabot.yml` deleted, `toolchain.md` +
-    `gate.md` re-stated; repo-config validator rc 0, planted `notAnOption` rc 1). Step (3):
-    `gate:fast` skipped `audit:check` (`dependency set unchanged`) on the tree, ran it with a
-    comment appended to `pnpm-workspace.yaml` (`Severity: 1 low`, rc 0).
-  - Next: (1) `pnpm claims:seed`, adjudicate the moved rows, full `pnpm gate`, commit mv4.
-    (2) Close: one `reviewer` over `5352dd9..HEAD`; ticked rows → `.agent/archive/maintain.md`.
-    (3) The user pushes `main`. (4) mv2: `.scratch/setup-new-machine.sh` over ssh, `pnpm gate`
-    there; then this note goes.
-- [ ] mv5 `med` chromiumfish under pnpm ≥ 11: `resolveChromiumfish` reads
+  - `gate:fast` audit trigger (step 3): skipped `audit:check` (`dependency set unchanged`) on the
+    tree, ran it with a comment appended to `pnpm-workspace.yaml` (`Severity: 1 low`, rc 0).
+  - Next: (1) Close: one `reviewer` over `5352dd9..HEAD`; ticked rows →
+    `.agent/archive/maintain.md`. (2) The user pushes `main`. (3) mv2:
+    `.scratch/setup-new-machine.sh` over ssh, `pnpm gate` there; then this note goes.
+- [x] 053854b mv5 `med` chromiumfish under pnpm ≥ 11: `resolveChromiumfish` reads
   `global/<n>/node_modules`, while pnpm 11+ installs globals to `global/v11/<hash>/node_modules`,
   so a fresh `pnpm add -g chromiumfish` is not found → resolver reads both layouts.
   - Accept: a suite seen red on the unfixed resolver finds both layouts.
@@ -287,6 +288,10 @@ worker before its caller resumes (`chat-c2.md`).
   `dependabot.yml` gone.
   - Accept: Renovate's own config validator passes `renovate.json`; every cap
     `.claude/rules/toolchain.md` names appears in it.
+  - Renovate 44.198.0 `renovate-config-validator --strict` at the repo root, no argument → rc 0
+    (a path argument grades global config); control: a copy with `notAnOption` → rc 1 naming it.
+    Caps: `typescript` `<6`, `node` `<25`. Added: npm `minimumReleaseAge` `1 day`, since pnpm's
+    cooldown otherwise fails the PR's lockfile update (Renovate `minimumReleaseAgeBuffer` docs).
 - [ ] mv2 machine move: local-only state a fresh GitHub clone on the new machine lacks → committed,
   else handed to the user with a transfer method.
   - Accept: every cited ref resolves in a fresh clone, or the user rules its transfer; each
