@@ -91,7 +91,9 @@ export const failWith = (tool) => (message) => {
 
 /**
  * The chromiumfish launcher module: `CHROMIUMFISH_DIR` names its package directory, else the pnpm
- * global store holds it, scanned newest first because pnpm globals move between store versions.
+ * global store holds it, scanned newest version first because pnpm globals move between store
+ * versions, each version's own tree (pnpm ≤ 10: `global/5`) before its package-set trees
+ * (pnpm ≥ 11: `global/v11/<hash>`, where a fresh `pnpm add -g` lands).
  *
  * @param {(message: string) => never} fail
  * @returns {string} the launcher's file URL
@@ -105,10 +107,15 @@ export const resolveChromiumfish = (fail) => {
       : fail(`CHROMIUMFISH_DIR=${named} holds no dist/index.js`);
   }
   const globals = join(process.env.PNPM_HOME ?? join(homedir(), '.local/share/pnpm'), 'global');
-  const stores = existsSync(globals) ? readdirSync(globals) : [];
-  for (const dir of stores.sort((a, b) => Number(b) - Number(a))) {
-    const entry = join(globals, dir, 'node_modules/chromiumfish/dist/index.js');
-    if (existsSync(entry)) return pathToFileURL(entry).href;
+  const version = (/** @type {string} */ dir) => Number(/^v?(\d+)$/.exec(dir)?.[1] ?? -1);
+  const stores = existsSync(globals) ? readdirSync(globals).filter((dir) => version(dir) >= 0) : [];
+  for (const store of stores.sort((a, b) => version(b) - version(a))) {
+    const root = join(globals, store);
+    const sets = readdirSync(root).sort();
+    for (const dir of [root, ...sets.map((set) => join(root, set))]) {
+      const entry = join(dir, 'node_modules/chromiumfish/dist/index.js');
+      if (existsSync(entry)) return pathToFileURL(entry).href;
+    }
   }
   return fail(
     `chromiumfish missing from ${globals}: set CHROMIUMFISH_DIR to its package directory, ` +

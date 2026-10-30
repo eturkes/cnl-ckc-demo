@@ -85,6 +85,7 @@ record is `.claude/rules/firing.md`.
 | `tests/chat-result.test.ts` | off | refused goal reported as executed | mutate | `inv chat-result: refused goal reported as executed` |
 | `tests/chat-server-fake.test.ts` | off | the fake refusing a missing outputSchema without naming the contract | mutate | `inv chat-server-fake: the fake refuses a missing outputSchema without naming the contract` |
 | `tests/chat-server.test.ts` | off | concurrent first turns use child before initialization | text | `.agent/contracts/chat-close.md (slow-initialize fake) red without the fix (`expected true to be false`` |
+| `tests/chromiumfish-resolve.test.ts` | off | resolver scans one level below each global store version | mutate | `mv5 chromiumfish resolver scans one level` |
 | `tests/clinical-answer-live.test.ts` | answer | partial document answer admitted | mutate | `inv clinical-answer-live: partial document answer admitted` |
 | `tests/clinical-binding.test.ts` | answer | erased clause leaves partial document answer | mutate | `inv clinical-binding: erased clause leaves partial answer` |
 | `tests/clinical-differential.test.ts` | off | premise ordinals start at one | mutate | `inv clinical-differential: premise ordinals start at one` |

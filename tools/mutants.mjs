@@ -1591,4 +1591,15 @@ export const MUTANTS = [
     ],
     check: ['node', 'tools/claims-sweep.mjs'],
   },
+  {
+    label: 'mv5 chromiumfish resolver scans one level',
+    edits: [
+      {
+        path: 'tools/browser.mjs',
+        old: '    for (const dir of [root, ...sets.map((set) => join(root, set))]) {',
+        new: '    for (const dir of [root]) {',
+      },
+    ],
+    check: { test: 'tests/chromiumfish-resolve.test.ts', name: 'pnpm 11' },
+  },
 ];
