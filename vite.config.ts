@@ -152,6 +152,10 @@ export default defineConfig({
           environment: 'jsdom',
           include: ['tests/**/*.dom.test.ts'],
           setupFiles: ['tests/support/dom-setup.ts'],
+          // Node 25+ defines its own `localStorage` global, `undefined` without
+          // `--localstorage-file`, and the jsdom environment keeps a global Node already has, so
+          // jsdom's storage never installs.
+          execArgv: ['--no-experimental-webstorage'],
         },
       },
       ...(browserProject === undefined ? [] : [browserProject]),

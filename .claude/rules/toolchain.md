@@ -15,11 +15,11 @@ paths:
 
 ## Runtime
 
-- Node **24** = `package.json` `devEngines.runtime` (exact `24.21.0`, `onFail: download`) +
-  `engines` (`>=24.15.0 <25`, jsdom 30's floor) + CI `setup-node`, which reads it through
-  `node-version-file: package.json`. pnpm installs that runtime
-  into `node_modules/.bin`, so every `pnpm <script>` and `pnpm exec node` runs on it whatever
-  the host carries. **Bare `node` is the host's** and is never a gate runner.
+- Node **26** = `package.json` `devEngines.runtime` (exact `26.13.0`, `onFail: download`) +
+  `engines` (`>=26.0.0 <27`: every installed package admits 26.0.0) + CI `setup-node`, which
+  reads it through `node-version-file: package.json`. pnpm installs that runtime into
+  `node_modules/.bin`, so every `pnpm <script>` and `pnpm exec node` runs on it whatever the host
+  carries. **Bare `node` is the host's** and is never a gate runner.
 - The chat bridge needs the `codex` CLI on `PATH` (`CHAT_CODEX_BIN` overrides) and a login under
   its dedicated `CODEX_HOME` (`~/.config/cnl-ckc-demo/codex`, `CHAT_CODEX_HOME` overrides); it is
   not a package dependency.

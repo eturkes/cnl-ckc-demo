@@ -73,7 +73,7 @@ United States Government.
 
 ## Prerequisites
 
-- Node.js 24. pnpm downloads the pinned Node 24 runtime and runs every script on it.
+- Node.js 26. pnpm downloads the pinned Node 26 runtime and runs every script on it.
 - pnpm 10 or later. pnpm reads the version that `package.json` pins, then downloads and runs
   that version. To install pnpm, see <https://pnpm.io/installation>.
 - `chromiumfish` for the browser checks, for example `pnpm smoke` and `pnpm browser:check`.

@@ -21,9 +21,9 @@
       "allowedVersions": "<6"
     },
     {
-      "description": "Node 24 project-wide, user ruling: devEngines.runtime stays below engines' <25 cap",
+      "description": "Node 26 project-wide, user ruling: devEngines.runtime stays below engines' <27 cap",
       "matchDepNames": ["node"],
-      "allowedVersions": "<25"
+      "allowedVersions": "<27"
     },
     {
       "description": "The vitest runner peers on the EXACT core version, so both move in one PR",
