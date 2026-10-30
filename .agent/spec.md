@@ -255,7 +255,11 @@ worker before its caller resumes (`chat-c2.md`).
   its re-open trigger: three consecutive gates on one host above its bound (45 s on the Core Ultra
   7 268V, 110 s on the i7-8650U), each from a 1-min load below 2.
 - [ ] n20 `med` find: `tests/solution-streaming.test.ts`'s queued-cancel case races a 5 ms timer —
-  owed (user): approval of a change to the case; no change drafted yet.
+  owed (user): approval of the drafted change, `wip/n20-queued-cancel` `adaee3b` (step 2 queues the
+  cancel as it begins; the original false red reproduced by a planted 6 ms listener stall).
+- [ ] n21 `med` `Verify` red on `main` at T9 → `ci.yml` checks out full history.
+  - Accept: the queue row's own — a sound `Verify` run green with T9 comparing against
+    `22053ef`, and one T9-frozen byte changed red at T9.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase

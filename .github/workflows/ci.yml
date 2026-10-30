@@ -16,6 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        # Full history: `tests/clinical-records.test.ts` T9 compares frozen surfaces against
+        # `git show 22053ef:<path>`, which the default depth-1 checkout cannot resolve.
+        with:
+          fetch-depth: 0
       # pnpm from `packageManager`, Node from `devEngines.runtime`: package.json is the one pin.
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v6
