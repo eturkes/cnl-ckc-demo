@@ -274,6 +274,7 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] n27 `low` Node 26 project-wide (user re-ruling): `devEngines.runtime` `26.13.0`, `engines`
   `>=26.0.0 <27`, Renovate's cap `<27`.
   - Accept: the queue row's own — `pnpm release:check` green on Node 26.
+- [ ] n28 `low` find: the rules' `npx` recipes fail where the host's Node differs from the runtime pin.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
