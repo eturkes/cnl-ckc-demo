@@ -248,8 +248,8 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] owed (user): install the Mend Renovate GitHub app on `eturkes/cnl-ckc-demo` — `main` carries
   `renovate.json` (mv4) since `0466833`; Dependabot's five open PRs are closed, and Renovate
   reopens what still applies.
-- [ ] n8 `low` coverage passages — waits on the producer: `cnl-ckc` `83569b1d` still records
-  B3-09/B3-10 `p14`.
+- [ ] n8 `low` coverage passages — waits on the producer: `cnl-ckc` `737f1d87` (its `origin`
+  HEAD) still records B3-09/B3-10 `p14`.
 - [ ] n10 `low` C6 — waits on a user ruling that restores a sentence-length check.
 - [ ] n16 `low` find: `binding:check`'s wall drifts with the host (51.1 / 42.7 s at the close) — waits on
   its re-open trigger: three consecutive gates on one host above its bound (45 s on the Core Ultra
