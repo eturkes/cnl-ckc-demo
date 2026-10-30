@@ -2,6 +2,7 @@
 paths:
   - "package.json"
   - "pnpm-lock.yaml"
+  - "pnpm-workspace.yaml"
   - "eslint.config.js"
   - "svelte.config.js"
   - "tsconfig.json"
@@ -15,7 +16,8 @@ paths:
 ## Runtime
 
 - Node **24** = `package.json` `devEngines.runtime` (exact `24.21.0`, `onFail: download`) +
-  `engines` (`>=24.15.0 <25`, jsdom 30's floor) + CI `setup-node`. pnpm installs that runtime
+  `engines` (`>=24.15.0 <25`, jsdom 30's floor) + CI `setup-node`, which reads it through
+  `node-version-file: package.json`. pnpm installs that runtime
   into `node_modules/.bin`, so every `pnpm <script>` and `pnpm exec node` runs on it whatever
   the host carries. **Bare `node` is the host's** and is never a gate runner.
 - The chat bridge needs the `codex` CLI on `PATH` (`CHAT_CODEX_BIN` overrides) and a login under
@@ -32,6 +34,26 @@ paths:
   `KB intake reads a sibling cnl-ckc checkout, not a release`. Until that row closes,
   `.claude/rules/kb-build.md` `Upstream port specifications` keeps citing upstream's specs and
   fixture corpus by project and in-project path, and `CLAUDE.local.md` locates the checkout.
+
+## Package manager
+
+- pnpm **12** = `package.json` `packageManager` (exact `12.16.1`; user ruling): any pnpm from 10
+  on downloads and runs that version, and the lockfile's first YAML document pins its binaries
+  by integrity. It stays the legacy field, never `devEngines.packageManager`: npm refuses every
+  `npx` call inside a project whose `devEngines.packageManager` names pnpm (`EBADDEVENGINES`),
+  and the rules' recipes run `npx vitest`. CI installs it through `pnpm/action-setup`. Corepack
+  is retired: Node 25 and later ship without it.
+- pnpm settings live in `pnpm-workspace.yaml`, because pnpm 11 and later ignore `package.json`
+  `pnpm`. `allowBuilds` `esbuild: false` keeps esbuild's install script off, as pnpm 10 left it:
+  pnpm 12 fails an install on any build script `allowBuilds` does not list.
+  `verifyDepsBeforeRun: error` refuses `pnpm run` and `pnpm exec` over stale dependencies (user
+  ruling): its default, `install`, installs behind the script and, when that install fails,
+  warns and runs the script anyway, so a gate could grade a stale tree. It also refuses a tree
+  whose `node_modules` another tree installed, which is why worktrees install their own
+  (`.claude/rules/waves.md` `Worktrees`).
+- `minimumReleaseAge` stays pnpm's default 1440 minutes (user ruling): an install refuses a
+  version published under 24 h ago, so a fix for a fresh advisory installs a day after release
+  and `audit:check` stays red until then.
 
 ## Dependency pins
 
@@ -55,10 +77,10 @@ paths:
   beside core's own install, which pnpm's isolated layout leaves without the runner →
   `tools/mutation/stryker.config.mjs` resolves the runner itself. The runner forces threads and
   has no browser mode, so `pnpm stryker` grades node-project suites alone.
-- `package.json` `pnpm.overrides` `typed-rest-client>qs` = the upgrade the audit ruling asks
+- `pnpm-workspace.yaml` `overrides` `typed-rest-client>qs` = the upgrade the audit ruling asks
   for: `typed-rest-client` 2.3.1, the HTTP client of Stryker's dashboard reporter and
-  `stryker init` (`pnpm stryker` runs neither), pins `qs` 6.15.1, which three
-  moderate advisories reach, and the patched `qs` is 6.16.0. Drop the override once Stryker's
+  `stryker init` (`pnpm stryker` runs neither), pins `qs` 6.15.1, which four
+  moderate advisories reach, and the patched `qs` is 6.16.1. Drop the override once Stryker's
   `typed-rest-client` pins a patched `qs`.
 - Prettier reformats `.claude/` and `.agent/` tool-owned files if unscoped →
   `.prettierignore` restricts it to first-party source. Keep that scoping.
@@ -104,9 +126,9 @@ template reads as unsafe → derive the value in the script block instead.
   Worker builds run inside the main build's transform phase, so their packages are known before
   the main build emits; a bundler-injected `\0` module maps to its shipping package through
   `VIRTUAL`, and an unmapped one fails the build. `closeBundle` grades the written file.
-- `cacheDir` must resolve against the project root. Worktrees reach the toolchain through a
-  `node_modules` symlink, so the default `node_modules/.vite` is ONE physical directory
-  shared by every tree.
+- `cacheDir` must resolve against the project root. A tree that reaches the toolchain through
+  a `node_modules` symlink — Stryker's sandbox, `binding:replay`'s archive — would otherwise
+  share the primary's `node_modules/.vite`.
 
 ## Vitest
 

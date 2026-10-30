@@ -5,7 +5,7 @@
   "type": "module",
   "license": "Apache-2.0 WITH LLVM-exception",
   "description": "Demo: deterministic Prolog queries over the cnl-ckc clinical knowledge base, answered in the browser.",
-  "packageManager": "pnpm@10.34.5",
+  "packageManager": "pnpm@12.16.1",
   "engines": {
     "node": ">=24.15.0 <25"
   },
@@ -100,10 +100,5 @@
     "typescript-eslint": "^8.68.0",
     "vite": "^8.3.4",
     "vitest": "^4.1.12"
-  },
-  "pnpm": {
-    "overrides": {
-      "typed-rest-client>qs": "^6.16.0"
-    }
   }
 }

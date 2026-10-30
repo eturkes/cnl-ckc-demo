@@ -113,9 +113,9 @@ export default defineConfig({
   plugins: [svelte(), licences.main, offlineCache()],
   // Relative base keeps the built demo working under a nested static path.
   base: './',
-  // Worktrees reach the toolchain through a `node_modules` symlink, so the default
-  // `node_modules/.vite` cache is one shared directory across every tree. Resolving
-  // it against the project root instead keeps concurrent builds from racing.
+  // A tree that reaches the toolchain through a `node_modules` symlink (Stryker's sandbox)
+  // would otherwise share the primary's `node_modules/.vite`. Resolving the cache against
+  // the project root keeps concurrent builds from racing.
   cacheDir: '.vite',
   resolve: {
     // The runtime payload is generated and gitignored; the alias is how source

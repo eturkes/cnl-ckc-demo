@@ -74,7 +74,8 @@ United States Government.
 ## Prerequisites
 
 - Node.js 24. pnpm downloads the pinned Node 24 runtime and runs every script on it.
-- pnpm 10, installed through Corepack
+- pnpm 10 or later. pnpm reads the version that `package.json` pins, then downloads and runs
+  that version. To install pnpm, see <https://pnpm.io/installation>.
 - `chromiumfish` for the browser checks, for example `pnpm smoke` and `pnpm browser:check`.
   Install it with `pnpm add -g chromiumfish`. To use a copy in a different location, set
   `CHROMIUMFISH_DIR` to its package directory.
@@ -82,7 +83,6 @@ United States Government.
 ## Run locally
 
 ```sh
-corepack enable
 pnpm install --frozen-lockfile
 pnpm kb:build
 pnpm dev

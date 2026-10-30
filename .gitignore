@@ -1,9 +1,7 @@
-# Dependencies. No trailing slash: worktrees reach the toolchain through a symlink.
+# Dependencies. No trailing slash: a `node_modules` symlink stays ignored too.
 node_modules
 
 # Generated runtime payload: rebuilt from the vendored bag by `pnpm kb:build`.
-# No trailing slash: worktrees reach the payload through a symlink, and the slash
-# form matches directories only, which would leave that symlink untracked-visible.
 kb/generated
 
 # Build output (Vite) + tool caches

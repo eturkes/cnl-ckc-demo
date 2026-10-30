@@ -178,6 +178,18 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   absent; no current catalog proof holds one. Approved edits (n9): that ladder list, and
   `tests/clinical-inference.test.ts` P1's pin `Derived: 'no'` → `'yes'`. Its live review runs on
   `review.html`, which `pnpm dev` serves and the build leaves out (user ruling, n19).
+- **pnpm 12, pinned exactly; Corepack retired.** `packageManager: pnpm@12.16.1`, the legacy
+  field, because npm refuses every `npx` call in a project whose `devEngines.packageManager` names
+  pnpm; any pnpm from 10 on downloads and runs the pin. Its settings live in
+  `pnpm-workspace.yaml`. Corepack leaves the README, CI and `readme:check`, an approved grader
+  edit: Node 25 and later ship without it. `minimumReleaseAge` keeps pnpm's 24-hour default
+  beside the no-allowlist audit, so a fresh advisory's fix installs a day after its release.
+  **Renovate replaces Dependabot** and keeps the pnpm pin, the Node pin, the dependencies and the
+  Actions current, its alerts from osv.dev; the user installs its GitHub app. Law →
+  `.claude/rules/toolchain.md` `Package manager`.
+- **Evidence refs live on `origin`.** Every evidence branch and tag reached GitHub at the machine
+  move; a later close pushes its own with the user's go. Restore recipe →
+  `.claude/rules/waves.md` `Worktrees`.
 - **Every compound arm of the decoder admits a wrapper instance alone**, so a dict whose keys
   spell a compound fails closed. Approved edit (n13): `tests/engine-u2-port.test.ts` builds
   `nativeCompound` values shaped like swipl-wasm's own, and P3.10 builds its value before spying;
@@ -235,14 +247,28 @@ worker before its caller resumes (`chat-c2.md`).
   its re-open trigger: three consecutive gates above 45 s, each from a 1-min load below 2.
 - [ ] n20 `med` find: `tests/solution-streaming.test.ts`'s queued-cancel case races a 5 ms timer —
   owed (user): approval of a change to the case; no change drafted yet.
-- [ ] mv1 `med` audit: live advisories against the unchanged lockfile (undici < 8.12.2 via jsdom,
+- [x] 778208d mv1 `med` audit: live advisories against the unchanged lockfile (undici < 8.12.2 via jsdom,
   fast-uri < 3.1.9 + qs ≤ 6.16.0 via stryker) redden `audit:check` → in-range lockfile bumps.
   - Accept: `pnpm audit --audit-level=moderate` rc 0; `pnpm release:check` green from a fresh
     clone at the commit.
+- [ ] mv3 `med` pnpm 12: the pinned pnpm 10.34.5 trailed its own line and installed through
+  Corepack, which Node 25+ lacks → exact `pnpm@12.16.1`, settings in `pnpm-workspace.yaml`,
+  Corepack out of README, CI and `readme:check`.
+  - Accept: `pnpm gate` + `pnpm release:check` green under pnpm 12; `readme:check` clones and
+    runs the README with no Corepack.
+- [ ] mv4 `low` Renovate replaces Dependabot: Dependabot cannot bump `packageManager`, and its
+  alerts miss pnpm 12's two-document lockfile → `renovate.json` (caps, pins, osv.dev alerts),
+  `dependabot.yml` gone.
+  - Accept: Renovate's own config validator passes `renovate.json`; every cap
+    `.claude/rules/toolchain.md` names appears in it.
+- [ ] mv5 `med` chromiumfish under pnpm ≥ 11: `resolveChromiumfish` reads
+  `global/<n>/node_modules`, while pnpm 11+ installs globals to `global/v11/<hash>/node_modules`,
+  so a fresh `pnpm add -g chromiumfish` is not found → resolver reads both layouts.
+  - Accept: a suite seen red on the unfixed resolver finds both layouts.
 - [ ] mv2 machine move: local-only state a fresh GitHub clone on the new machine lacks → committed,
   else handed to the user with a transfer method.
   - Accept: every cited ref resolves in a fresh clone, or the user rules its transfer; each
-    uncommitted item named to the user.
+    uncommitted item named to the user; `pnpm gate` green on the new machine.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase

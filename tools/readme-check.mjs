@@ -7,13 +7,9 @@
 // blocks excepted — and grades every command's exit status plus the corpus and module counts.
 //
 // Outside `pnpm gate`: it needs a clean clone, a package install and a real browser.
-//
-// One deviation from the README text, sandbox only: `corepack enable` gains
-// `--install-directory <scratch>/bin`, because the bare command writes shims beside the system
-// `corepack` binary. The pnpm it provisions still honours `packageManager`.
 
 import { execFileSync, spawn } from 'node:child_process';
-import { mkdir, mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { delimiter, join } from 'node:path';
@@ -104,18 +100,15 @@ const commands = setupCommands(readme);
 
 const scratch = await mkdtemp(join(tmpdir(), 'cnl-ckc-readme-'));
 const clone = join(scratch, 'repo');
-const bin = join(scratch, 'bin');
 // The outer `pnpm readme:check` put this tree's `node_modules/.bin` on PATH and exported its
 // config as `npm_*`; either one would let the clone borrow the tools it is meant to install.
 const env = Object.fromEntries(
   Object.entries(process.env).filter(([key]) => !/^npm_|^pnpm_config_/iu.test(key)),
 );
-env.PATH = [
-  bin,
-  ...(process.env.PATH ?? '').split(delimiter).filter((p) => !p.startsWith(ROOT)),
-].join(delimiter);
-env.COREPACK_HOME = join(scratch, 'corepack');
-env.COREPACK_ENABLE_DOWNLOAD_PROMPT = '0';
+env.PATH = (process.env.PATH ?? '')
+  .split(delimiter)
+  .filter((p) => !p.startsWith(ROOT))
+  .join(delimiter);
 
 /**
  * Run one README line to completion inside the clone.
@@ -125,8 +118,11 @@ env.COREPACK_ENABLE_DOWNLOAD_PROMPT = '0';
  */
 const run = (command) =>
   new Promise((resolve) => {
-    const line = command === 'corepack enable' ? `${command} --install-directory ${bin}` : command;
-    const child = spawn('sh', ['-c', line], { cwd: clone, env, stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn('sh', ['-c', command], {
+      cwd: clone,
+      env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
     let output = '';
     child.stdout.on('data', (chunk) => (output += String(chunk)));
     child.stderr.on('data', (chunk) => (output += String(chunk)));
@@ -194,7 +190,6 @@ const served = async (command, use) => {
 let browser;
 try {
   execFileSync('git', ['clone', '--quiet', '--no-hardlinks', ROOT, clone]);
-  await mkdir(bin);
   let buildOutput = '';
   let engineDocuments = -1;
   let ran = 0;

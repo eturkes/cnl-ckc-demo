@@ -1,0 +1,7 @@
+# pnpm ≥ 11 reads its settings here alone: a `pnpm` field in package.json is ignored.
+# Each setting's reason → `.claude/rules/toolchain.md` `Package manager`.
+overrides:
+  typed-rest-client>qs: ^6.16.1
+allowBuilds:
+  esbuild: false
+verifyDepsBeforeRun: error

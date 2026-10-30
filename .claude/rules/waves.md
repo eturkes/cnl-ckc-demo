@@ -18,9 +18,12 @@ repo's deltas.
   does a debugging wave, each hypothesis's experiment in its own (`CLAUDE.md` `Session flow`
   Debugging), even one that edits nothing. An analysis-only wave takes none and reports into
   `.scratch/agents/`.
-- Toolchain env = symlink the primary `node_modules` into the worktree. `.gitignore`
-  therefore spells `node_modules` and `kb/generated` **without a trailing slash** — the slash
-  form matches directories only and leaves the symlink untracked.
+- Toolchain env = the worktree's own install: `pnpm install --frozen-lockfile --offline` in the
+  worktree hard-links every package from the shared store (475 packages in 0.45 s). Never
+  symlink the primary's `node_modules`: pnpm records the tree that installed it, so
+  `verifyDepsBeforeRun: error` refuses every `pnpm run` in another tree with
+  `ERR_PNPM_VERIFY_DEPS_BEFORE_RUN` — "The workspace structure has changed since last install",
+  whatever its lockfile.
 - **`kb/generated` must be a real directory in the worktree, never a symlink.** Vite resolves
   a symlinked id to its real path and then refuses it for sitting outside the worktree root:
   every suite pulling a generated asset into the import graph fails to COLLECT with
@@ -28,13 +31,19 @@ repo's deltas.
   broken harness. `NODE_OPTIONS=--preserve-symlinks` trades it for a pnpm resolution failure.
   Seed it with `cp -a --reflink=auto kb/generated <wt>/kb/generated` — 393 files, 29 MB,
   no disk cost on btrfs. The copy is a snapshot: a worktree whose suite depends on freshly
-  built KB bytes gets re-seeded after MAIN's `kb:build`, and `node_modules` stays a symlink
-  because dependency ids resolve through pnpm rather than through the fs allow-list.
+  built KB bytes gets re-seeded after MAIN's `kb:build`.
 - **A cited teammate branch survives the close** (ruling on `CLAUDE.md` `Teammates`, whose close
   removes worktrees + branches): its tip stays in **branch** form (`wt/<name>`), because every
   committed citation — contracts, ledgers, reviewer reports, `.agent/deferred.md` rows — names
   the branch. A close's branch sweep covers its own wave's roster alone; renaming a cited branch
   invalidates the record it was preserving.
+- **Evidence refs live on `origin` under their own names** (user ruling at the machine move):
+  every `wt/*`, `wip/*` and `worktree-agent-*` branch and every tag that move found, so a
+  citation outlives the machine. A later close pushes the evidence branches it keeps with the
+  user's go. A clone gets the tags but holds the branches as `origin/<name>` alone; restore the
+  cited form with
+  `git fetch origin '+refs/heads/wt/*:refs/heads/wt/*' '+refs/heads/wip/*:refs/heads/wip/*'
+  '+refs/heads/worktree-agent-*:refs/heads/worktree-agent-*'`.
 - Surviving evidence branches, cited by the ledger, contracts, commit bodies and queue rows —
   never rename one: `wt/rev-arch` `1e89286` (A8), `wt/rev-graph` `ace618a` (G3),
   `wt/rev-assurance` `5c97965` (C2); u16 red suites `wt/tester-1` `4da48b3`, `wt/tester-2`

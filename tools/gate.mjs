@@ -25,6 +25,8 @@ const TOOL = FAST ? 'gate:fast' : 'gate';
 const SUITE = 'binding:check';
 /** Needs the network; `--fast` runs it only when the dependency set changed. */
 const AUDIT = 'audit:check';
+/** The files that move the dependency set: `pnpm-workspace.yaml` carries the overrides. */
+const DEPENDENCY_FILES = new Set(['package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml']);
 /**
  * Content-keyed where the tool allows. ESLint's cache still keys on the linted file alone, so a
  * type-aware finding that moves with an imported file waits for the full gate.
@@ -206,9 +208,7 @@ if (!FAST) {
     () => redOf(plantedTimes),
   );
   const changed = changedPaths();
-  const auditReached =
-    changed === undefined ||
-    changed.some((path) => path === 'package.json' || path === 'pnpm-lock.yaml');
+  const auditReached = changed === undefined || changed.some((path) => DEPENDENCY_FILES.has(path));
   // `kb:build` first: later steps read `kb/generated`. The tests run last and alone, because
   // suites time out under CPU contention (`.claude/rules/gate.md` load envelope).
   const first = runInOrder([pnpmStep('kb:build')], runInherit);
