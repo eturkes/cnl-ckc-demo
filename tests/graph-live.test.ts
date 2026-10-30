@@ -84,6 +84,8 @@ describe('generated semantic graph', () => {
     expect(model.answerSubgraph(focus)).toEqual(view);
   });
 
+  // Twelve answer maps: 1.5 s on the dev host, 5.5–6.0 s on an i7-8650U under the full suite,
+  // past vitest's 5000 ms default. CPU speed, not load (user-approved timeout).
   it('produces a concept-first answer map for every prepared source contribution', () => {
     const model = new SemanticGraphModel(graph);
     const roots: string[] = [];
@@ -136,5 +138,5 @@ describe('generated semantic graph', () => {
       'continuing-or-tapering-opioids/cdc2022-opioid-rec05: opioid',
       'opioid-use-disorder-treatment/cdc2022-opioid-rec12: opioid-use-disorder',
     ]);
-  });
+  }, 30_000);
 });

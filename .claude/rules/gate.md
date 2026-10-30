@@ -231,4 +231,6 @@ wrong with the tree. The decisive rerun follows `TaskStop`.
 avg 4.6–23.5 on 8 cores (`4dc9179` body); runs at 27–33 timed out 1–20 live tests. That
 measured envelope is the accepted bar — ≤ 2.9× cores — and no per-test timeout was raised
 for load. A red gate under heavier external load is load, not the tree: rerun it once the load
-falls.
+falls. A slower host's CPU is not load: a case that exceeds vitest's 5000 ms default there from a
+1-min load below 2 takes an explicit timeout, approved by the user like any grader change
+(`tests/graph-live.test.ts` answer maps, 30 s: red at 5480 / 5962 ms on an i7-8650U).
