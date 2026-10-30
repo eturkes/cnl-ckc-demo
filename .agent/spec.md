@@ -251,24 +251,57 @@ worker before its caller resumes (`chat-c2.md`).
   fast-uri < 3.1.9 + qs ≤ 6.16.0 via stryker) redden `audit:check` → in-range lockfile bumps.
   - Accept: `pnpm audit --audit-level=moderate` rc 0; `pnpm release:check` green from a fresh
     clone at the commit.
-- [ ] mv3 `med` pnpm 12: the pinned pnpm 10.34.5 trailed its own line and installed through
+- [x] 8a0a842 mv3 `med` pnpm 12: the pinned pnpm 10.34.5 trailed its own line and installed through
   Corepack, which Node 25+ lacks → exact `pnpm@12.16.1`, settings in `pnpm-workspace.yaml`,
   Corepack out of README, CI and `readme:check`.
   - Accept: `pnpm gate` + `pnpm release:check` green under pnpm 12; `readme:check` clones and
     runs the README with no Corepack.
+- [ ] RESUME: finish line = the user's request — everything the new machine needs reaches the
+  repo, else it is named to the user with a transfer method — `Met when` the full `pnpm gate`
+  passes on a clean tree at the closing commit. Phase stays MAINTAIN.
+  - Committed: `778208d` mv1, `8a0a842` mv3 (`pnpm release:check` rc 0 on its clean tree), and
+    this note. Pushed with the user's go: the 130 pre-session `wt/*`, `wip/*` and
+    `worktree-agent-*` branches + 6 tags, each equal to origin by SHA. Unpushed: `main` (the user
+    pushes it) and `wip/machine-move` `3a0d1fb` (a push needs the user's go; a resume on the new
+    machine lacks it until then).
+  - Uncommitted: none in the tree. Drafts on `wip/machine-move` `3a0d1fb`:
+    `tests/chromiumfish-resolve.test.ts` (mv5, red at `8a0a842` unrun), `renovate.json` (mv4,
+    validator unrun), `.scratch/setup-new-machine.sh` (mv2), `.scratch/agents/researcher-1.md`
+    (pnpm, Renovate, CI and Node facts with sources).
+  - Teammates: researcher-1 harvested + stopped, no branch.
+  - Next: (1) mv5 — `git checkout wip/machine-move -- tests/chromiumfish-resolve.test.ts`, see it
+    red at `8a0a842`, then `tools/browser.mjs` `resolveChromiumfish` scans `global/*` newest store
+    version first (`/^v?(\d+)$/`), each store dir and its subdirs; a `tools/mutants.mjs` mutant
+    restoring the one-depth scan + a `.agent/contracts/mnt5-inventory.md` `Suites` row
+    (`mutate`). (2) mv4 — `renovate.json` from the snapshot; `npx --yes --package renovate --
+    renovate-config-validator --strict renovate.json`; delete `.github/dependabot.yml`; re-state
+    `toolchain.md`'s cap-mirror bullet and `gate.md` `CI`'s Dependabot bullet; the user installs
+    the Mend Renovate app. (3) Drive `pnpm gate:fast` with only `pnpm-workspace.yaml` changed:
+    `audit:check` must run. (4) Close: one `reviewer` over `5352dd9..HEAD`, full `pnpm gate`,
+    ticked rows → `.agent/archive/maintain.md`. (5) The user pushes `main`. (6) mv2.
+- [ ] mv5 `med` chromiumfish under pnpm ≥ 11: `resolveChromiumfish` reads
+  `global/<n>/node_modules`, while pnpm 11+ installs globals to `global/v11/<hash>/node_modules`,
+  so a fresh `pnpm add -g chromiumfish` is not found → resolver reads both layouts.
+  - Accept: a suite seen red on the unfixed resolver finds both layouts.
 - [ ] mv4 `low` Renovate replaces Dependabot: Dependabot cannot bump `packageManager`, and its
   alerts miss pnpm 12's two-document lockfile → `renovate.json` (caps, pins, osv.dev alerts),
   `dependabot.yml` gone.
   - Accept: Renovate's own config validator passes `renovate.json`; every cap
     `.claude/rules/toolchain.md` names appears in it.
-- [ ] mv5 `med` chromiumfish under pnpm ≥ 11: `resolveChromiumfish` reads
-  `global/<n>/node_modules`, while pnpm 11+ installs globals to `global/v11/<hash>/node_modules`,
-  so a fresh `pnpm add -g chromiumfish` is not found → resolver reads both layouts.
-  - Accept: a suite seen red on the unfixed resolver finds both layouts.
 - [ ] mv2 machine move: local-only state a fresh GitHub clone on the new machine lacks → committed,
   else handed to the user with a transfer method.
   - Accept: every cited ref resolves in a fresh clone, or the user rules its transfer; each
     uncommitted item named to the user; `pnpm gate` green on the new machine.
+  - User rulings: `.scratch/` stays behind; MAIN sets the new machine up over ssh
+    (`ssh -p 9995 eturkes@192.168.40.74`) once `main` is pushed: clone into
+    `~/Projects/cnl-ckc-demo`, restore the refs, `scp` `CLAUDE.local.md` (its `../cnl-ckc` holds
+    there), `pnpm add -g chromiumfish`, `pnpm gate`. The chat's home gets its own login there:
+    the user runs `CODEX_HOME=~/.config/cnl-ckc-demo/codex codex login --device-auth`, because
+    that machine's `~/.codex` login is not the chat's.
+  - Named to the user, never committed: `CLAUDE.local.md`; the codex login; Claude Code
+    transcripts (unneeded: `spec.md` + `git log` orient); `.dev.vars` (retired TypeSafe key);
+    this machine's `known_hosts` entry for `[192.168.40.74]:9995`; the pnpm v11 store at
+    `/run/host/home/eturkes/.pnpm-store/v11`.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
