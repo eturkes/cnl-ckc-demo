@@ -77,8 +77,9 @@ United States Government.
 - pnpm 10 or later. pnpm reads the version that `package.json` pins, then downloads and runs
   that version. To install pnpm, see <https://pnpm.io/installation>.
 - `chromiumfish` for the browser checks, for example `pnpm smoke` and `pnpm browser:check`.
-  Install it with `pnpm add -g chromiumfish`. To use a copy in a different location, set
-  `CHROMIUMFISH_DIR` to its package directory.
+  Install it with `pnpm add -g chromiumfish`. If pnpm reports that its global bin directory is
+  not in `PATH`, run `pnpm setup`, open a new shell, and install it again. To use a copy in a
+  different location, set `CHROMIUMFISH_DIR` to its package directory.
 
 ## Run locally
 

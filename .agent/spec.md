@@ -265,15 +265,23 @@ worker before its caller resumes (`chat-c2.md`).
   `Met when` the full `pnpm gate` passes on a clean tree at the closing commit, here and on the
   new machine. Phase stays MAINTAIN. New machine = `ssh -p 9995 eturkes@59.169.212.33` (off the
   LAN; same ED25519 host key as `192.168.40.74`).
-  - Committed: `778208d` mv1, `8a0a842` mv3, `5e1600b` pause note, `053854b` mv5, and mv4 in
-    this note's commit. Pushed with the user's go: the 130 pre-session `wt/*`, `wip/*` and
-    `worktree-agent-*` branches + 6 tags. Unpushed: `main` (the user pushes it);
-    `wip/machine-move` `3a0d1fb` (drafts, all landed or restored → delete at close, unpushed).
-  - `gate:fast` audit trigger (step 3): skipped `audit:check` (`dependency set unchanged`) on the
-    tree, ran it with a comment appended to `pnpm-workspace.yaml` (`Severity: 1 low`, rc 0).
-  - Next: (1) Close: one `reviewer` over `5352dd9..HEAD`; ticked rows →
-    `.agent/archive/maintain.md`. (2) The user pushes `main`. (3) mv2:
-    `.scratch/setup-new-machine.sh` over ssh, `pnpm gate` there; then this note goes.
+  - Committed: `778208d` mv1, `8a0a842` mv3, `5e1600b` pause note, `053854b` mv5, `f28bf9b`
+    mv4, and the close review in this note's commit. Pushed with the user's go: the 130
+    pre-session `wt/*`, `wip/*` and `worktree-agent-*` branches + 6 tags. `wip/machine-move`
+    `3a0d1fb` = drafts, all landed or restored → delete at close, unpushed.
+  - User rulings (this resume): MAIN fast-forwards `origin/main` at this close and at the final
+    commit; MAIN closes Dependabot PRs #3 #8 #17 #18 #19 once `main` is pushed, the user installs
+    the Renovate app. Chat login on the new machine: done (device code relayed, `codex login
+    status` → `Logged in using ChatGPT` under `~/.config/cnl-ckc-demo/codex`).
+  - New machine so far: chromiumfish 0.2.8 under `global/v11/<set>` (the install needed pnpm's
+    bin dir on `PATH`, `ERR_PNPM_GLOBAL_BIN_DIR_NOT_IN_PATH` → README `pnpm setup` note).
+  - Next: (1) push `main`; close the five PRs. (2) mv2: `.scratch/setup-new-machine.sh` over
+    ssh (clone, refs, `CLAUDE.local.md`, gate, `test:browser`, `smoke`). (3) Final commit: ticked
+    rows → `.agent/archive/maintain.md`, this note goes, gate, push; `git pull` + `pnpm gate` on
+    the new machine.
+- [ ] mv-close: closing review reviewer-23 (reviewer) over `5352dd9..f28bf9b`, rows R1–R10 fixed
+  before reading → 10/10 pass; register: the `053854b` body's `pnpm mutate mv5` → `rc 1` is the
+  mutant child's status, the runner exits 0. README: `pnpm setup` before a fresh `pnpm add -g`.
 - [x] 053854b mv5 `med` chromiumfish under pnpm ≥ 11: `resolveChromiumfish` reads
   `global/<n>/node_modules`, while pnpm 11+ installs globals to `global/v11/<hash>/node_modules`,
   so a fresh `pnpm add -g chromiumfish` is not found → resolver reads both layouts.
@@ -283,7 +291,7 @@ worker before its caller resumes (`chat-c2.md`).
     red; the pnpm 10 layout and the refusal are base-GREEN regression guards, declared,
     uncredited. Firing record: mutant `mv5 chromiumfish resolver scans one level` (`pnpm mutate
     mv5` → killed). Live: `pnpm test:browser` 11/11 + `pnpm smoke` ok through the v11 install.
-- [ ] mv4 `low` Renovate replaces Dependabot: Dependabot cannot bump `packageManager`, and its
+- [x] f28bf9b mv4 `low` Renovate replaces Dependabot: Dependabot cannot bump `packageManager`, and its
   alerts miss pnpm 12's two-document lockfile → `renovate.json` (caps, pins, osv.dev alerts),
   `dependabot.yml` gone.
   - Accept: Renovate's own config validator passes `renovate.json`; every cap
