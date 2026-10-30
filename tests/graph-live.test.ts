@@ -84,8 +84,8 @@ describe('generated semantic graph', () => {
     expect(model.answerSubgraph(focus)).toEqual(view);
   });
 
-  // Twelve answer maps: 1.5 s on the dev host, 5.5–6.0 s on an i7-8650U under the full suite,
-  // past vitest's 5000 ms default. CPU speed, not load (user-approved timeout).
+  // Twelve answer maps under a user-approved 30 s timeout: a slower host's CPU, not load, once
+  // carried them past vitest's 5000 ms default.
   it('produces a concept-first answer map for every prepared source contribution', () => {
     const model = new SemanticGraphModel(graph);
     const roots: string[] = [];

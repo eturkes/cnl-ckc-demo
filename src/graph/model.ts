@@ -438,16 +438,21 @@ const phraseIncludes = (haystack: readonly string[], needle: readonly string[]):
   );
 };
 
-const lexicalScore = (label: string, text: string, phraseWeight: number): number => {
-  const labelWords = lexicalWords(label);
+/** Scores label words against one text, tokenized once: tokenizing dominated every ranking. */
+const lexicalScorer = (
+  text: string,
+  phraseWeight: number,
+): ((labelWords: readonly string[]) => number) => {
   const textWords = lexicalWords(text);
   const textSet = new Set(textWords);
-  const overlap = labelWords.filter((word) => textSet.has(word)).length;
-  return (
-    (phraseIncludes(textWords, labelWords) ? phraseWeight : 0) +
-    overlap * 320 +
-    (labelWords.length > 0 ? Math.round((overlap / labelWords.length) * 120) : 0)
-  );
+  return (labelWords) => {
+    const overlap = labelWords.filter((word) => textSet.has(word)).length;
+    return (
+      (phraseIncludes(textWords, labelWords) ? phraseWeight : 0) +
+      overlap * 320 +
+      (labelWords.length > 0 ? Math.round((overlap / labelWords.length) * 120) : 0)
+    );
+  };
 };
 
 const scopeCoordinate = (document: string, sentence: number | null, reference: string): string =>
@@ -658,6 +663,8 @@ export class SemanticGraphModel {
   readonly #conceptGroups = new Map<string, readonly SemanticGraphEdge[]>();
   readonly #conceptAdjacent = new Map<string, readonly SemanticGraphEdge[]>();
   readonly #conceptNodeIds = new Set<string>();
+  /** Lexical words per node label, filled on first ranking: at most one entry per node. */
+  readonly #lexicalLabels = new Map<string, readonly string[]>();
   readonly #search: readonly SearchRow[];
 
   constructor(data: SemanticGraphData) {
@@ -881,6 +888,15 @@ export class SemanticGraphModel {
     };
   }
 
+  #labelWords(node: SemanticGraphNode): readonly string[] {
+    let labelWords = this.#lexicalLabels.get(node.id);
+    if (labelWords === undefined) {
+      labelWords = lexicalWords(node.label);
+      this.#lexicalLabels.set(node.id, labelWords);
+    }
+    return labelWords;
+  }
+
   #conceptRepresentatives(preferred = new Set<string>()): readonly SemanticGraphEdge[] {
     return [...this.#conceptGroups.values()]
       .flatMap((group) => {
@@ -921,17 +937,23 @@ export class SemanticGraphModel {
           : eventCandidates.length > 0
             ? eventCandidates
             : candidates;
-    const score = (node: SemanticGraphNode): number => {
-      const documentSpread = new Set(this.conceptIncident(node.id).map((edge) => edge.document))
-        .size;
-      return (
-        lexicalScore(node.label, focus.question ?? '', 5_000) +
-        lexicalScore(node.label, focus.answer ?? '', 2_500) +
-        semanticRole(node) +
-        lexicalWords(node.label).length * 8 -
-        Math.min(documentSpread, 300)
-      );
-    };
+    const question = lexicalScorer(focus.question ?? '', 5_000);
+    const answer = lexicalScorer(focus.answer ?? '', 2_500);
+    const scores = new Map(
+      tier.map((node) => {
+        const labelWords = this.#labelWords(node);
+        const documentSpread = new Set(this.conceptIncident(node.id).map((edge) => edge.document))
+          .size;
+        const score =
+          question(labelWords) +
+          answer(labelWords) +
+          semanticRole(node) +
+          labelWords.length * 8 -
+          Math.min(documentSpread, 300);
+        return [node, score] as const;
+      }),
+    );
+    const score = (node: SemanticGraphNode): number => scores.get(node) ?? 0;
     return [...tier].sort(
       (left, right) => score(right) - score(left) || compareNodes(left, right),
     )[0];
@@ -1020,27 +1042,31 @@ export class SemanticGraphModel {
         : Math.max(evidenceNodes.size, Math.min(MAX_ANSWER_GRAPH_LIMIT, Math.trunc(nodeLimit)));
     const selected = new Set<string>(evidenceNodes);
     selected.add(root.id);
-    const contextWords = `${focus.question ?? ''} ${focus.answer ?? ''}`;
+    const context = lexicalScorer(`${focus.question ?? ''} ${focus.answer ?? ''}`, 2_000);
     const edgeRank = (edge: SemanticGraphEdge, from: string): number => {
       const peer = this.#nodes.get(otherEnd(edge, from));
-      const occurrences = this.#conceptGroups.get(conceptEdgeKey(edge))?.length ?? 1;
+      const key = conceptEdgeKey(edge);
+      const occurrences = this.#conceptGroups.get(key)?.length ?? 1;
       return (
-        (evidenceKeys.has(conceptEdgeKey(edge)) ? 20_000 : 0) +
-        (peer === undefined ? 0 : lexicalScore(peer.label, contextWords, 2_000)) +
+        (evidenceKeys.has(key) ? 20_000 : 0) +
+        (peer === undefined ? 0 : context(this.#labelWords(peer))) +
         conceptRole(edge) * 100 +
         Math.min(occurrences, 99)
       );
     };
-    const rankedEdges = (id: string): SemanticGraphEdge[] =>
-      [...(adjacent.get(id) ?? [])].sort(
+    const rankedEdges = (id: string): SemanticGraphEdge[] => {
+      const edges = adjacent.get(id) ?? [];
+      const ranks = new Map(edges.map((edge) => [edge, edgeRank(edge, id)]));
+      return [...edges].sort(
         (left, right) =>
-          edgeRank(right, id) - edgeRank(left, id) ||
+          (ranks.get(right) ?? 0) - (ranks.get(left) ?? 0) ||
           compareNodes(
             this.#nodes.get(otherEnd(left, id)) as SemanticGraphNode,
             this.#nodes.get(otherEnd(right, id)) as SemanticGraphNode,
           ) ||
           compareEdges(left, right),
       );
+    };
 
     // Keep every direct branch from the topic, then admit a few explanatory
     // peers per branch in rounds. This avoids one high-degree verb consuming the
