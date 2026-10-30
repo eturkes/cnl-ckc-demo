@@ -205,7 +205,8 @@ readme:check && test:browser && engine:probe`.
 
 - `.github/workflows/ci.yml` — runs `pnpm gate` on every push to `main` and every pull
   request, and publishes nothing: the demo runs locally (user ruling). Scanners ride the gate,
-  so CI covers them without a second definition.
+  so CI covers them without a second definition. It checks out full history: T9 compares its
+  frozen surfaces against `git show 22053ef`, which a depth-1 clone cannot resolve.
 - `.github/workflows/security.yml` — the scanners alone, on a daily schedule plus push and
   pull request, with `kb:build` ahead of `lint`: the type-aware rules resolve every `@kb` import
   through `kb/generated`, and without it each generated-asset member reads as an error type. The
@@ -222,11 +223,10 @@ readme:check && test:browser && engine:probe`.
   `npx --yes --package renovate -- renovate-config-validator --strict` at the repo root, with no
   argument: a path argument grades it as global config.
 - **`CLAUDE.md` `Execution` `CI gate` is not in force here**: its precondition, a green `main` CI,
-  fails until `main` carries `ci.yml`'s full-history checkout — `Verify` reddened at T9 on every
-  `main` push before it, its depth-1 checkout unable to resolve `git show 22053ef`, a
-  `.agent/deferred.md` row — and `ci.yml` runs one job, on `main` and pull requests alone. So
-  `pnpm gate` runs locally and `ci/*` pushes wait for the fan-out, its own queue row, re-opened
-  once `Verify` is green; that unit records the workflow and its commands here.
+  holds since `463e882` (`Verify` and `Security scan` green on its push), but its fan-out is not
+  built — `ci.yml` runs one job, on `main` and pull requests alone. So `pnpm gate` runs locally
+  and `ci/*` pushes wait for the fan-out, its own queue row; that unit records the workflow and
+  its commands here.
 
 **Never run MAIN's decisive `pnpm gate` while teammates run suites.** Three trees testing at
 once starve the CPU into spurious `Test timed out in 5000ms` failures — `kb-reach`, which

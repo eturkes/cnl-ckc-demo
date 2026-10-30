@@ -35,19 +35,9 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   Accept: a speedup at equal strength — every check still runs and fires on its planted
   input — that an alternating A/B, two runs per arm against the tree it replaces, shows cutting
   `binding:check`'s wall by at least 15%. `pri` low.
-- **`Verify` is red on `main` at T9, whose `git show 22053ef` the CI checkout cannot resolve** —
-  `actions/checkout@v6` fetches one commit by default, so `tests/clinical-records.test.ts` T9
-  throws `Command failed: git show 22053ef:tools/kb/clinical.mjs` and `binding:check` exits 1 on a
-  sound tree. The 15 latest `main` runs of `ci.yml`, `010655c` to `f9a890c`, concluded `failure`
-  (`gh run list --branch main --workflow Verify`); those on `010655c`, `5a22cf6` and `f9a890c`
-  read at that line. A full clone resolves the commit, so the local `pnpm gate` stays green.
-  Accept: a `Verify` run on a sound `main` push concludes `success` with T9 still comparing
-  against `22053ef`'s bytes, and the same workflow on a tree with one T9-frozen byte changed
-  concludes `failure` at T9. `pri` med.
 - **The CI gate's fan-out is not built** — `CLAUDE.md` `Execution` `CI gate` runs the full gate as
   a parallel CI fan-out on a `ci/<unit>` push once `main` CI is green (`.claude/rules/gate.md`
-  `## CI`); `ci.yml` runs one `pnpm gate` job, on `main` and pull requests alone. Re-open trigger:
-  the `Verify` and `Security scan` rows above closed. Accept: `git push -f origin HEAD:ci/<unit>`
+  `## CI`); `ci.yml` runs one `pnpm gate` job, on `main` and pull requests alone. Accept: `git push -f origin HEAD:ci/<unit>`
   starts a workflow running every `gate:chain` step as its own parallel job; `gh run watch` exits
   0 on a sound tree and nonzero, naming the step, on a tree with one planted red step; and
   `.claude/rules/gate.md` `## CI` records the workflow and its commands. `pri` low.
@@ -82,7 +72,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 
 | defect | accept |
 | --- | --- |
-| `Verify` is red on `main` at T9, whose `git show 22053ef` the CI checkout cannot resolve | a `Verify` run on a sound `main` push concludes `success` with T9 still comparing against `22053ef`'s bytes, and the same workflow on a tree with one T9-frozen byte changed concludes `failure` at T9 |
 | KB intake reads a sibling cnl-ckc checkout, not a release | `kb/` vendors the bag a named release tag publishes, checked against that release's `.sha256` asset before use, and `pnpm kb:build` is green on it; no tool, check or live law reads a `cnl-ckc` checkout or names `../cnl-ckc` beyond `kb-build.md`'s forbidden-reach scan literal; each upstream source `.claude/rules/` cites as live law is held in this repo or retired from that law; `toolchain.md`'s interim ruling is gone |
 
 ## Accepted-open
