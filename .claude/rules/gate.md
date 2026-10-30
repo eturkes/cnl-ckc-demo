@@ -222,11 +222,15 @@ readme:check && test:browser && engine:probe`.
   `minimumReleaseAge`, which otherwise fails the PR's lockfile update. Validate it with
   `npx --yes --package renovate -- renovate-config-validator --strict` at the repo root, with no
   argument: a path argument grades it as global config.
-- **`CLAUDE.md` `Execution` `CI gate` is not in force here**: its precondition, a green `main` CI,
-  holds since `463e882` (`Verify` and `Security scan` green on its push), but its fan-out is not
-  built — `ci.yml` runs one job, on `main` and pull requests alone. So `pnpm gate` runs locally
-  and `ci/*` pushes wait for the fan-out, its own queue row; that unit records the workflow and
-  its commands here.
+- `.github/workflows/fanout.yml` — the `CLAUDE.md` `Execution` `CI gate` fan-out: a `ci/**` push
+  runs every `gate:chain` step as its own parallel job. `node tools/gate.mjs --plan` derives the
+  jobs from the chain, so the chain stays the one list, and a step the chain runs after `kb:build`
+  builds it first in its own job.
+- **The CI gate is in force**: `main`'s CI is green (since `463e882`), so a unit's full gate is
+  `pnpm ci:gate <unit>` on its commit (`tools/ci-gate.mjs`). It pushes the committed HEAD to
+  `ci/<unit>`, watches the fan-out run that push starts, and on green deletes the branch; on red it
+  names every red step and keeps the branch, so the fix is amended and the command run again. It
+  refuses a dirty tree, because the run grades the pushed commit alone.
 
 **Never run MAIN's decisive `pnpm gate` while teammates run suites.** Three trees testing at
 once starve the CPU into spurious `Test timed out in 5000ms` failures — `kb-reach`, which

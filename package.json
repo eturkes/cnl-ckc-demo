@@ -36,6 +36,7 @@
     "format:check": "prettier --check .",
     "gate": "node tools/gate.mjs",
     "gate:fast": "node tools/gate.mjs --fast",
+    "ci:gate": "node tools/ci-gate.mjs",
     "gate:chain": "pnpm audit:check && pnpm secret:check && pnpm kb:build && pnpm kb:asset-check && pnpm kb:export-check && pnpm engine:check && pnpm copy:check && pnpm contrast:check && pnpm palette:check && pnpm presentation:check && pnpm claims:check && pnpm spec:check && pnpm spec:lint && pnpm shell:check && pnpm format:check && pnpm lint && pnpm check && pnpm binding:check && pnpm build",
     "graph:check": "node tools/graph-check.mjs",
     "kb:asset-check": "node tools/kb/check.mjs",

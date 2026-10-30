@@ -1,0 +1,55 @@
+name: Gate fan-out
+
+# `CLAUDE.md` `Execution` `CI gate`: a `ci/<unit>` push runs every `gate:chain` step as its own
+# parallel job. `tools/gate.mjs --plan` derives the jobs from `package.json`, so the chain stays
+# the one list of steps.
+on:
+  push:
+    branches: ['ci/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# An amended unit pushed again supersedes its earlier run.
+concurrency:
+  group: fanout-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      steps: ${{ steps.plan.outputs.steps }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: package.json
+      - id: plan
+        run: echo "steps=$(node tools/gate.mjs --plan)" >> "$GITHUB_OUTPUT"
+
+  step:
+    needs: plan
+    name: ${{ matrix.step }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.steps) }}
+    steps:
+      # Full history: `binding:check` T9 reads `git show 22053ef:<path>`.
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      # pnpm from `packageManager`, Node from `devEngines.runtime`: package.json is the one pin.
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: package.json
+      - run: pnpm install --frozen-lockfile
+      - if: matrix.build
+        run: pnpm kb:build
+      - env:
+          STEP: ${{ matrix.step }}
+        run: pnpm run "$STEP"

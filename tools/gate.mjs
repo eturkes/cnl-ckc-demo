@@ -156,6 +156,14 @@ try {
   process.stderr.write(`${TOOL}: ${cause instanceof Error ? cause.message : String(cause)}\n`);
   process.exit(1);
 }
+if (process.argv.includes('--plan')) {
+  // The CI fan-out's job matrix (`.github/workflows/fanout.yml`), one job per step: a step the
+  // chain runs after `kb:build` reads `kb/generated`, so its job builds it first.
+  const built = names.indexOf('kb:build');
+  const plan = names.map((step, at) => ({ step, build: built !== -1 && at > built }));
+  process.stdout.write(`${JSON.stringify(plan)}\n`);
+  process.exit(0);
+}
 const node = (/** @type {number} */ status) => [
   process.execPath,
   '-e',
