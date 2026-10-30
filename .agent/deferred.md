@@ -54,12 +54,11 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   green on it; no tool, check or live law reads a `cnl-ckc` checkout or names `../cnl-ckc` beyond
   `kb-build.md`'s forbidden-reach scan literal; each upstream source `.claude/rules/` cites as
   live law is held in this repo or retired from that law; `toolchain.md`'s interim ruling is gone.
-  `pri` med. Blocker: the user opens the migration as its own session. Release
-  `kb-2026-10-29-rc.1`, re-cut at producer `737f1d87`, publishes one file,
+  `pri` med. Blocker: the user opens the migration as its own session (user ruling). Release
+  `kb-2026-10-29-rc.1`, re-cut at producer `737f1d87`, publishes
   `cnl-ckc-kb-only-2026-10-29-rc.1.tar.gz` — the bag `cnl-ckc-kb-g673b3c1f3bfd`, 492 documents
-  against the vendored 385 — and no `.sha256` asset: its sha256 rides the SSH-signed tag body
-  (`git verify-tag` against upstream `docs/allowed_signers`) and GitHub's asset `digest`
-  (`c8cc65d6…`), so the Accept clause's `.sha256` asset awaits the user's re-ruling.
+  against the vendored 385 — beside its `.sha256` sidecar, which the user had the producer add
+  (`c8cc65d6…`, equal to GitHub's asset digest and to the SSH-signed tag body's line).
 - **Node 24 is in maintenance; Node 26 is LTS** — Node 24 entered maintenance 2026-10-20 (EOL
   2028-04-30) and Node 26 LTS 2026-10-28 (`nodejs/Release` `schedule.json`), while
   `devEngines.runtime`, `engines` and CI pin 24 by user ruling. Accept: `devEngines.runtime`,
