@@ -35,14 +35,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   Accept: a speedup at equal strength — every check still runs and fires on its planted
   input — that an alternating A/B, two runs per arm against the tree it replaces, shows cutting
   `binding:check`'s wall by at least 15%. `pri` low.
-- **`tests/solution-streaming.test.ts`'s queued-cancel case races a 5 ms timer** — "a cancel
-  queued during a synchronous step waits for that step, whose answer still streams" arms
-  `requestCancel` on a 5 ms timer once answer 1 streams and requires answer 2 to stream before the
-  cancel lands; under full-suite contention the timer can fire first, and the case reads
-  `expected [ '1' ] to deeply equal [ '1', '2' ]` on a sound tree — once in four full gates on
-  `da0333b` + n17 at a 1-min load of 7–15, never in six runs of the suite alone at 17. Accept: the
-  case orders its cancel after step 2 has begun without a wall-clock timer, every assertion kept,
-  and its original false red recorded. `pri` med. Changing a graded case needs the user's approval.
 - **`Verify` is red on `main` at T9, whose `git show 22053ef` the CI checkout cannot resolve** —
   `actions/checkout@v6` fetches one commit by default, so `tests/clinical-records.test.ts` T9
   throws `Command failed: git show 22053ef:tools/kb/clinical.mjs` and `binding:check` exits 1 on a
@@ -90,7 +82,6 @@ first sentence; `claims:check` refuses a stale index. The `low` rows are prose o
 
 | defect | accept |
 | --- | --- |
-| `tests/solution-streaming.test.ts`'s queued-cancel case races a 5 ms timer | the case orders its cancel after step 2 has begun without a wall-clock timer, every assertion kept, and its original false red recorded |
 | `Verify` is red on `main` at T9, whose `git show 22053ef` the CI checkout cannot resolve | a `Verify` run on a sound `main` push concludes `success` with T9 still comparing against `22053ef`'s bytes, and the same workflow on a tree with one T9-frozen byte changed concludes `failure` at T9 |
 | KB intake reads a sibling cnl-ckc checkout, not a release | `kb/` vendors the bag a named release tag publishes, checked against that release's `.sha256` asset before use, and `pnpm kb:build` is green on it; no tool, check or live law reads a `cnl-ckc` checkout or names `../cnl-ckc` beyond `kb-build.md`'s forbidden-reach scan literal; each upstream source `.claude/rules/` cites as live law is held in this repo or retired from that law; `toolchain.md`'s interim ruling is gone |
 

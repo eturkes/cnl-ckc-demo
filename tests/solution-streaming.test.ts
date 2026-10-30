@@ -44,9 +44,16 @@ const loadImage: ImageLoader = async (bytes) => {
 };
 
 let session: EngineSession;
+let engine: Engine;
 
 beforeAll(async () => {
-  session = new EngineSession({ loadImage, expected: contract });
+  session = new EngineSession({
+    loadImage: async (bytes) => {
+      engine = await loadImage(bytes);
+      return engine;
+    },
+    expected: contract,
+  });
   await session.boot(image);
 }, TIMEOUT);
 
@@ -98,16 +105,34 @@ describe('session streaming', () => {
   it(
     'a cancel queued during a synchronous step waits for that step, whose answer still streams',
     async () => {
+      // Step 2 queues the cancel as it begins, a macrotask like a posted message. A timer armed
+      // after answer 1 instead raced the session's own yield before step 2: a stall between the
+      // two arms leaves the cancel due first.
+      const query = engine.prolog.query.bind(engine.prolog);
+      vi.spyOn(engine.prolog, 'query').mockImplementation((goal, bindings) => {
+        const run = query(goal, bindings);
+        if (!goal.includes('2000000')) return run;
+        return {
+          once: () => run.once(),
+          close: () => run.close?.(),
+          [Symbol.iterator]: () => {
+            const steps = run[Symbol.iterator]();
+            let begun = 0;
+            return {
+              next: () => {
+                if ((begun += 1) === 2) setImmediate(() => session.requestCancel('s4'));
+                return steps.next();
+              },
+            };
+          },
+        };
+      });
       const streamed: string[] = [];
       const result = await session.solve(
         'between(1,2,X),(X =:= 2 -> forall(between(1,2000000,_),true) ; true).',
         budget(),
         's4',
-        (solution) => {
-          streamed.push(solution.display.X ?? '');
-          // Armed after answer 1; due long before step 2 ends, yet it cannot fire inside it.
-          if (streamed.length === 1) setTimeout(() => session.requestCancel('s4'), 5);
-        },
+        (solution) => streamed.push(solution.display.X ?? ''),
       );
       expect(result.kind).toBe('cancelled');
       expect(streamed).toEqual(['1', '2']);

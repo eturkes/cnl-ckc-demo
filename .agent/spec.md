@@ -199,6 +199,9 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   case timed out at 5480 / 5962 ms against vitest's 5000 ms default from a 1-min load below 2 —
   CPU speed, not load, so the load-envelope ruling stands (`.claude/rules/gate.md`). Host-bound
   figures read per host: n16's re-open bound is 45 s on the first machine, 110 s on the second.
+- **The queued-cancel case queues its cancel as step 2 begins** (`tests/solution-streaming.test.ts`),
+  an approved edit: its cancel rode a 5 ms timer armed after answer 1, and a stall of 4 ms or more
+  before the session's own yield let it land before step 2 on a sound tree. Every assertion stays.
 
 **MAIN:** the marks are ONE compiled goal per question, `clinical_marks/3` at the end of
 `PROOF_SOURCE`: it reads the grade, qualifier, preference, interval and order heads out of
@@ -254,9 +257,7 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] n16 `low` find: `binding:check`'s wall drifts with the host (51.1 / 42.7 s at the close) — waits on
   its re-open trigger: three consecutive gates on one host above its bound (45 s on the Core Ultra
   7 268V, 110 s on the i7-8650U), each from a 1-min load below 2.
-- [ ] n20 `med` find: `tests/solution-streaming.test.ts`'s queued-cancel case races a 5 ms timer —
-  owed (user): approval of the drafted change, `wip/n20-queued-cancel` `adaee3b` (step 2 queues the
-  cancel as it begins; the original false red reproduced by a planted 6 ms listener stall).
+- [ ] n20 `med` the queued-cancel case queues its cancel as step 2 begins — approved (user).
 - [ ] n21 `med` `Verify` red on `main` at T9 → `ci.yml` checks out full history.
   - Accept: the queue row's own — a sound `Verify` run green with T9 comparing against
     `22053ef`, and one T9-frozen byte changed red at T9.
