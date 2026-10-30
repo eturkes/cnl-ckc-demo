@@ -57,13 +57,14 @@ repo's deltas.
   (ann-u1; tests `df73961`, stubs at the tip), `wt/tester-5` `f64bb2d` (ann-u2), `wt/tester-6`
   `c7c0943` (ann-u3); closing-review witnesses `wt/reviewer-12` `dfe4c38` (R2/R5),
   `wt/reviewer-13` `b5c0cf3` (C1/C2), `wt/reviewer-14` `09fc7a2` (G2/G3).
-- MAIN's units landed from branches, each cited by its landing commit: `wip/n1-palette` `c774baf`,
-  `wip/n2-replay` `60a74c4`, `wip/n3-mutate-timeout` `2235854`, `wip/n4-artifacts` `49b1143`,
-  `wip/n5-inventory` `ee0f5b2`, `wip/n9-comparison` `3cf1d13`, `wip/n11-copy-sweep` `ca26be9`,
-  `wip/n12-frontmatter` `b52e01f`, `wip/n13-decoder` `eca6aca`, `wip/n17-index-control` `f312d8a`
-  (revised on landing), `wip/n18-bounded-settle` `0d3ab54`, `wip/n19-review-page` `c1738c5`; the
-  branches they re-applied stay too (`wip/m8-mutate-timeout`, `wip/m13-copy-sweep`,
-  `wip/m14-frontmatter`, `wip/m15-artifacts`, `wip/f4-inventory`).
+- MAIN's units landed from branches, each cited by its landing commit: `wip/n1-palette`
+  `c774baf`, `wip/n2-replay` `60a74c4`, `wip/n3-mutate-timeout` `2235854`, `wip/n4-artifacts`
+  `49b1143`, `wip/n5-inventory` `ee0f5b2`, `wip/n9-comparison` `3cf1d13`, `wip/n11-copy-sweep`
+  `ca26be9`, `wip/n12-frontmatter` `b52e01f`, `wip/n13-decoder` `eca6aca`,
+  `wip/n17-index-control` `f312d8a` (revised on landing), `wip/n18-bounded-settle` `0d3ab54`,
+  `wip/n19-review-page` `c1738c5`, `wip/n20-queued-cancel` `adaee3b`; the branches they
+  re-applied stay too (`wip/m8-mutate-timeout`, `wip/m13-copy-sweep`, `wip/m14-frontmatter`,
+  `wip/m15-artifacts`, `wip/f4-inventory`).
 - Research probe branches held as evidence, worktrees removed: `wt/res-m1-1` `36cc56f`
   (swipl-wasm load/worker/terms/trace/perf/test/errors/deploy), `wt/res-m1-2` `5863141`
   (cytoscape layout/perf/test, axe, contrast, combobox), `wt/res-m2-2` `0a48b79` (every

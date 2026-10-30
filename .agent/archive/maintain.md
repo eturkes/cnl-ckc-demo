@@ -323,6 +323,40 @@ TypeSafe key), the `known_hosts` entry, the pnpm v11 store.
   took `CLAUDE.local.md`, installed chromiumfish, logged the chat in; `pnpm test:browser` 11/11,
   `pnpm smoke` ok; `pnpm gate` green at `bfeea7d`, 130.1 s.
 
+## Queue run, fourth ask (MAINTAIN request opened at `7b68934`)
+
+Request: work every `.agent/deferred.md` row in rank order (12 rows at `7b68934`; new finds fund
+after them). Met when: each row closed by its own acceptance check in its own commit, recorded
+blocked on the user with what it owes, waiting on its re-open trigger, or routed; the full gate
+green on a clean tree at the closing commit. One question round: n20 approved; MAIN fast-forwards
+`origin/main` now and at close; the KB-release migration keeps its own session, and the user had
+the producer publish the release's `.sha256` sidecar; Node 26 re-ruled. Left open in `Tasks`: n8
+(the producer), n10 + n16 (their triggers), the KB-release session and the live reviews owed. Each
+commit gated on the pool (nixbox) until the fan-out landed, then by `pnpm ci:gate`.
+
+- [x] `59c73d6` n20 `med` the queued-cancel case queues its cancel as step 2 begins — approved
+  (user); draft `wip/n20-queued-cancel` `adaee3b`, landed unchanged.
+- [x] `7bdf8eb` n21 `med` `Verify` checks out full history (`bcd7322`); green on the `main` push
+  `463e882` (run 41002763774), red at T9 on a planted byte (run 40993668331).
+- [x] `601c367` n22 `med` `Security scan` runs `kb:build` before `lint` (`054659a`); green with all
+  three scanners (run 40993664773), red at `lint` on a planted sink (run 40993671437).
+- [x] `1911f18` n23 `low` README: the missing-annotations note appears when annotations cannot be
+  shown.
+- [x] `29cf85c` n24 `low` `pnpm shell:check`: a pinned ShellCheck v0.11.0 over every tracked shell
+  script, fetched by digest.
+- [x] `a81ddbd` n25 `low` `answerSubgraph` tokenizes each text once: the twelve-map case 2.35 s →
+  0.50 s on the i7-8650U, 3,080 views byte-identical.
+- [x] `ca9c009` n26 `low` the CI gate's fan-out (`fanout.yml`, `pnpm ci:gate`, `gate.mjs --plan`):
+  20 jobs green (run 41026506211), a planted `lint` red named (run 41026516113); the CI gate is in
+  force.
+- [x] `4ceb650` n27 `low` Node 26 project-wide (user re-ruling): `26.13.0`, `engines` `>=26.0.0 <27`;
+  the `dom` project runs with `--no-experimental-webstorage`; `pnpm release:check` rc 0 at
+  `e0171c6`.
+- [x] `3fe19ce` n28 `low` find: the rules' `npx` recipes → `pnpm exec` / `pnpm dlx`.
+- [x] `3fbf661` Close review: check set `.agent/contracts/n20-close.md` (`2624230`); reviewer-24
+  (reviewer) 8/8 — T1 C1 P1 D1 R2 pass; C2-1 (major) → `290d46b`, G1-1 (minor) → `c43d83b`, R1-1
+  (minor) → `3fbf661`; re-review 3/3 pass; S1 (MAIN) pass.
+
 ## Phase
 
 IMPLEMENT closed three times, each ledgered in `.agent/review.md` with no open row: u3–u15 on

@@ -20,3 +20,27 @@ outside them is a register entry.
 | R1 | records | `.agent/spec.md` (Tasks, the n20 and Node 26 `Decisions` bullets), `.agent/deferred.md` (pruned rows, the KB-release row, the index), `.claude/rules/` (gate, firing, toolchain, waves), `.agent/contracts/mnt5-inventory.md`, README and every `docs/claims.md` row re-adjudicated since `7b68934` state what the tree at the tip does. |
 | R2 | records | The commit bodies of the units above: each red witness, firing and measurement reproduces by its recorded command on its recorded revision, and no sentence claims beyond what it measured. |
 | S1 | security | MAIN: what each new path admits — `shell-check.mjs`'s fetched binary, `ci-gate.mjs`'s unit argument in a git ref and `gh` arguments, `fanout.yml`'s matrix values in a shell step. |
+
+## Verdicts
+
+`reviewer-24` (reviewer, GPT teammate, non-author), read at `2624230` in its own worktrees, every
+red replayed on its recorded revision: 8/8 rows, validator rc 0. T1 C1 P1 D1 R2 pass — both
+session mutants red on the queued-cancel case, the six cited runs matching SHA, event and
+conclusion, the 3,080-view digest and the A/B direction reproduced, Node 26's `localStorage`
+shadowing reproduced. Findings, each fixed and re-reviewed `pass` at `3fbf661` (3/3, validator
+rc 0):
+
+- C2-1 (major) `tools/ci-gate.mjs` dropped `gh run watch`'s result, so a failed watch beside a
+  green run record printed green and deleted the branch (a mocked harness) → `290d46b`: green needs
+  a watch that ran to its end, a `completed` record and every job green; `tests/ci-gate.test.ts`
+  5/8 red at `2624230`, mutant `n20-close C2-1 …` killed.
+- G1-1 (minor) `tools/shell-check.mjs` discovery skipped a tracked extensionless `#!/bin/ash`
+  script → `c43d83b`: ash admitted, a planted-ash control, `--` before file names; mutant
+  `n20-close G1-1 …` killed.
+- R1-1 (minor) the KB-release row described the first release cut beside the current one →
+  `3fbf661`: one description.
+
+S1 (MAIN): pass — every new spawn takes an argv array, no shell; `ci:gate`'s unit is
+`^[\w.-]+$` and git refuses `ci/..`; `fanout.yml` interpolates `github.ref` into a concurrency key
+alone and `matrix.step` reaches the shell through a quoted env var; `shell:check` fetches a fixed
+URL and checks its digest before writing.
