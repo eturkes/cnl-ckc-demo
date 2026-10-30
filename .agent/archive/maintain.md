@@ -293,6 +293,36 @@ MAINTAIN body one closing question for finds made after the first (agents `ebc88
   timer → owed (user), no change drafted.
 - [x] `342f333` n19 `low` `review.html`, a development page for n9's live review — user ruling.
 
+## Machine move (MAINTAIN request opened at `5352dd9`)
+
+Request: development resumes on a second machine from a fresh GitHub clone; everything local-only
+it needs reaches the repo, else it is named to the user with a transfer method. Met when: the
+full `pnpm gate` green on a clean tree at the closing commit, here and on the new machine
+(`t25-480`, i7-8650U, Node 26.12.1, native pnpm 12.16.1). Paused at `5e1600b`, resumed in a fresh
+session after the machine left the LAN (`ssh -p 9995 eturkes@59.169.212.33`, same ED25519 host
+key). User rulings: the 130 evidence branches + 6 tags pushed; `.scratch/` stays behind; exact
+pnpm 12, Corepack retired; Renovate replaces Dependabot; MAIN sets the new machine up over ssh
+and fast-forwards `origin/main`; the chat's own Codex login by a relayed device code; MAIN closes
+the Dependabot PRs, the user installs the Renovate app (owed in `Tasks`); the answer-map case's
+30 s timeout; n16's trigger per host. Named to the user, never committed: `CLAUDE.local.md`
+(copied by scp), the chat's codex login (done), Claude Code transcripts, `.dev.vars` (retired
+TypeSafe key), the `known_hosts` entry, the pnpm v11 store.
+
+- [x] `778208d` mv1 `med` audit: live advisories (undici, fast-uri, qs) → in-range lockfile bumps;
+  it closed the `audit:check` and `qs` queue rows, pruned in `bfeea7d`.
+- [x] `8a0a842` mv3 `med` pnpm 10.34.5 via Corepack → exact `pnpm@12.16.1`, settings in
+  `pnpm-workspace.yaml`, Corepack out of README, CI and `readme:check` — user ruling.
+- [x] `053854b` mv5 `med` `resolveChromiumfish` reads pnpm ≥ 11's `global/v11/<set>` layout; red at
+  base 2/4, mutant `mv5 chromiumfish resolver scans one level` killed.
+- [x] `f28bf9b` mv4 `low` Renovate replaces Dependabot — user ruling; validator rc 0.
+- [x] `0466833` Close review: reviewer-23 (reviewer) R1–R10 10/10 pass; README names `pnpm setup`
+  for a fresh global install.
+- [x] `bfeea7d` mv6 `med` find: the new machine's gate red at the answer-map case (5480 / 5962 ms,
+  CPU speed) → 30 s timeout — approved (user); n16 per-host trigger; `answerSubgraph` queue row.
+- [x] `bfeea7d` mv2 machine move: the new machine cloned `0466833`, restored 130 refs + 6 tags,
+  took `CLAUDE.local.md`, installed chromiumfish, logged the chat in; `pnpm test:browser` 11/11,
+  `pnpm smoke` ok; `pnpm gate` green at `bfeea7d`, 130.1 s.
+
 ## Phase
 
 IMPLEMENT closed three times, each ledgered in `.agent/review.md` with no open row: u3–u15 on
