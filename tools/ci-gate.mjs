@@ -8,7 +8,8 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { ROOT } from './kb/paths.mjs';
 
 const WORKFLOW = 'Gate fan-out';
-const FIND_MS = 120_000;
+// How long GitHub may take to list the push's run; `CI_GATE_FIND_MS` shortens it for the suite.
+const FIND_MS = Number(process.env.CI_GATE_FIND_MS ?? 120_000);
 
 /** @param {string} command @param {string[]} args @returns {string} */
 const run = (command, ...args) =>
@@ -53,17 +54,31 @@ if (id === undefined) {
   process.exit(1);
 }
 
-spawnSync('gh', ['run', 'watch', String(id), '--exit-status', '--compact', '--interval', '15'], {
-  cwd: ROOT,
-  stdio: 'inherit',
-});
-const view = /** @type {unknown} */ (
-  JSON.parse(run('gh', 'run', 'view', String(id), '--json', 'conclusion,jobs'))
+const watch = spawnSync(
+  'gh',
+  ['run', 'watch', String(id), '--exit-status', '--compact', '--interval', '15'],
+  { cwd: ROOT, stdio: 'inherit' },
 );
-const { conclusion, jobs } =
-  /** @type {{conclusion: string, jobs: {name: string, conclusion: string}[]}} */ (view);
+// A watch that never ran or was killed proves nothing about the run, whatever `view` says next.
+if (watch.error !== undefined || watch.status === null) {
+  const why = watch.error?.message ?? `killed by ${String(watch.signal)}`;
+  process.stderr.write(`ci:gate: gh run watch ${String(id)} failed (${why}); ${branch} kept\n`);
+  process.exit(1);
+}
+const view = /** @type {unknown} */ (
+  JSON.parse(run('gh', 'run', 'view', String(id), '--json', 'status,conclusion,jobs'))
+);
+const { status, conclusion, jobs } =
+  /** @type {{status: string, conclusion: string, jobs: {name: string, conclusion: string}[]}} */ (
+    view
+  );
+if (status !== 'completed') {
+  process.stderr.write(`ci:gate: run ${String(id)} is ${status}, not completed; ${branch} kept\n`);
+  process.exit(1);
+}
 const red = jobs.filter((job) => job.conclusion !== 'success').map((job) => job.name);
-if (conclusion !== 'success' || red.length > 0) {
+// `--exit-status` exits nonzero on a red run, so green needs the watch, the run and every job.
+if (watch.status !== 0 || conclusion !== 'success' || jobs.length === 0 || red.length > 0) {
   process.stderr.write(
     `ci:gate failed — run ${String(id)} ${conclusion}: ${red.join(', ') || 'no job named'}; ` +
       `${branch} kept for the amended push\n`,

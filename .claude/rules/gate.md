@@ -226,11 +226,13 @@ readme:check && test:browser && engine:probe`.
   runs every `gate:chain` step as its own parallel job. `node tools/gate.mjs --plan` derives the
   jobs from the chain, so the chain stays the one list, and a step the chain runs after `kb:build`
   builds it first in its own job.
-- **The CI gate is in force**: `main`'s CI is green (since `463e882`), so a unit's full gate is
-  `pnpm ci:gate <unit>` on its commit (`tools/ci-gate.mjs`). It pushes the committed HEAD to
+- **The CI gate is in force**: `main`'s CI is green, so a unit's full gate is `pnpm ci:gate
+  <unit>` on its commit (`tools/ci-gate.mjs`). It pushes the committed HEAD to
   `ci/<unit>`, watches the fan-out run that push starts, and on green deletes the branch; on red it
-  names every red step and keeps the branch, so the fix is amended and the command run again. It
-  refuses a dirty tree, because the run grades the pushed commit alone.
+  names every red step and keeps the branch, so the fix is amended and the command run again.
+  Green needs a watch that ran to its end, a `completed` run record and every job green; anything
+  else keeps the branch (`tests/ci-gate.test.ts`). It refuses a dirty tree, because the run grades
+  the pushed commit alone.
 
 **Never run MAIN's decisive `pnpm gate` while teammates run suites.** Three trees testing at
 once starve the CPU into spurious `Test timed out in 5000ms` failures — `kb-reach`, which

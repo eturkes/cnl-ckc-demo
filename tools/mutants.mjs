@@ -1602,4 +1602,20 @@ export const MUTANTS = [
     ],
     check: { test: 'tests/chromiumfish-resolve.test.ts', name: 'pnpm 11' },
   },
+  {
+    label: 'n20-close C2-1 ci:gate trusts the run record over a failed watch',
+    edits: [
+      {
+        path: 'tools/ci-gate.mjs',
+        old: 'if (watch.error !== undefined || watch.status === null) {',
+        new: 'if (false) {',
+      },
+      {
+        path: 'tools/ci-gate.mjs',
+        old: "if (watch.status !== 0 || conclusion !== 'success' || jobs.length === 0 || red.length > 0) {",
+        new: "if (conclusion !== 'success' || red.length > 0) {",
+      },
+    ],
+    check: { test: 'tests/ci-gate.test.ts', name: 'killed watch' },
+  },
 ];
