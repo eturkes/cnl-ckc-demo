@@ -5,7 +5,7 @@ every step fails closed:
 
 `audit:check → secret:check → kb:build → kb:asset-check → kb:export-check → engine:check →
 copy:check → contrast:check → palette:check → presentation:check → claims:check → spec:check →
-spec:lint → format:check → lint → check → binding:check → build`
+spec:lint → shell:check → format:check → lint → check → binding:check → build`
 
 `gate:chain` is authoritative if that list ever diverges from it; `tests/inventory.test.ts`
 rosters the steps from the same text, and the runner refuses a segment other than
@@ -130,6 +130,11 @@ Step semantics a reader cannot get from the script name:
 - `spec:lint` (`tools/spec-lint.mjs`) runs `.agent/spec-lint`, the template's shape check over the
   whole spec: a template file, copied in whole at each template refresh and never edited here,
   because its cases live with the template. The wrapper owns this repo's controls alone.
+- `shell:check` (`tools/shell-check.mjs`) runs ShellCheck over every tracked shell script — a `.sh`
+  name or a POSIX-family shebang, found through `git ls-files` so a new script joins unasked. The
+  binary is one pinned release fetched by its `.tar.gz` digest into `node_modules/.cache/shellcheck/`,
+  so the gate, CI and the pool hosts run the same ShellCheck whatever the host carries; it needs
+  network on first use, like `audit:check`. Pin → `.claude/rules/toolchain.md` `Dependency pins`.
 - **The stable censuses the rules state are graded, not trusted.** `tests/census.test.ts` (run by
   `binding:check` with the rest of the suite, after `kb:build`) holds a `CENSUS` table: each row
   anchors one claim unit in `.claude/rules/`, parses each figure out of its text and compares it

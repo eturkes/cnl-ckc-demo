@@ -70,6 +70,9 @@ paths:
   `.d.ts`.
 - Each cap here must also appear in `renovate.json` as an `allowedVersions` rule, or the weekly
   run reopens the same gate-breaking PR.
+- ShellCheck is no package: `tools/shell-check.mjs` pins `VERSION` and each build's `.tar.gz`
+  digest (GitHub's asset `digest`), so Renovate never sees it. A bump edits the version and every
+  digest together; a digest left stale refuses the fetch by name, before any binary is cached.
 - ESLint config needs `@types/node`, and svelte parsing needs `extraFileExtensions`.
 - `@stryker-mutator/core` + `@stryker-mutator/vitest-runner` move together: the runner peers on
   the EXACT core version, so Renovate's `stryker` group moves both in one PR, majors included.

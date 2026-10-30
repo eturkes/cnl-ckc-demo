@@ -264,6 +264,7 @@ worker before its caller resumes (`chat-c2.md`).
   - Accept: the queue row's own — a sound run green with all three scanners run, and one planted
     lint violation red at `lint`.
 - [ ] n23 `low` README: the missing-annotations note appears when annotations cannot be shown.
+- [ ] n24 `low` `pnpm shell:check` in the gate: a pinned ShellCheck over every tracked shell script.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase

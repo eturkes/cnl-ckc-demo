@@ -40,6 +40,7 @@ record is `.claude/rules/firing.md`.
 | `claims:check` | the claim set re-derived from one rules file, and five more | text | `.claude/rules/firing.md the claim set re-derived from ONE rules file, contracts dropped` |
 | `spec:check` | an open unit as a plain bullet, a ticked row without its SHA | text | `.claude/rules/firing.md the first open unit written as a plain bullet, then with a star bullet` |
 | `spec:lint` | a backticked-SHA row planted before the pointer; `## Tasks` as H1 | text | `.claude/rules/firing.md a ticked row planted before the pointer with its SHA in backticks` |
+| `shell:check` | `.agent/spec-lint` without its SC2016 directive; the script set emptied | text | `.claude/rules/firing.md a copy of `.agent/spec-lint` with its `# shellcheck disable=SC2016` line removed` |
 | `format:check` | a source line the formatter rewrites | mutate | `inv format:check: a source line the formatter would rewrite` |
 | `lint` | catalog text through an `{@html}` sink | mutate | `inv lint: a component renders catalog text through an {@html} sink` |
 | `check` | the app mounted on a number | mutate | `inv check: the app mounts on a number instead of its target element` |

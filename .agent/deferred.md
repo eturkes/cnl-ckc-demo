@@ -66,13 +66,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   starts a workflow running every `gate:chain` step as its own parallel job; `gh run watch` exits
   0 on a sound tree and nonzero, naming the step, on a tree with one planted red step; and
   `.claude/rules/gate.md` `## CI` records the workflow and its commands. `pri` low.
-- **No gate step runs ShellCheck over the repo's two shell scripts** — `.agent/spec-lint`, which
-  `spec:lint` runs, and `tools/kb/regenerate-bag.sh` both pass `shellcheck` (rc 0), yet nothing
-  re-runs it, so a regression in either ships green; the template's `# shellcheck disable=SC2016`
-  line guards a checker this repo never invokes, and the copy without it reads `SC2016` at line
-  10. Accept: a gate step runs ShellCheck, resolved the same way locally and in CI, over both
-  scripts at rc 0, and its control — a copy of `.agent/spec-lint` with that directive line
-  removed — is refused naming `SC2016`. `pri` low.
 - **KB intake reads a sibling cnl-ckc checkout, not a release** — `tools/kb/regenerate-bag.sh`
   rebuilds the bag from a producer checkout that `CLAUDE.local.md` locates, and
   `.claude/rules/kb-build.md` `Upstream port specifications` makes upstream's Verus specs
