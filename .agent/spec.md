@@ -235,6 +235,14 @@ worker before its caller resumes (`chat-c2.md`).
   its re-open trigger: three consecutive gates above 45 s, each from a 1-min load below 2.
 - [ ] n20 `med` find: `tests/solution-streaming.test.ts`'s queued-cancel case races a 5 ms timer —
   owed (user): approval of a change to the case; no change drafted yet.
+- [ ] mv1 `med` audit: live advisories against the unchanged lockfile (undici < 8.12.2 via jsdom,
+  fast-uri < 3.1.9 + qs ≤ 6.16.0 via stryker) redden `audit:check` → in-range lockfile bumps.
+  - Accept: `pnpm audit --audit-level=moderate` rc 0; `pnpm release:check` green from a fresh
+    clone at the commit.
+- [ ] mv2 machine move: local-only state a fresh GitHub clone on the new machine lacks → committed,
+  else handed to the user with a transfer method.
+  - Accept: every cited ref resolves in a fresh clone, or the user rules its transfer; each
+    uncommitted item named to the user.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
