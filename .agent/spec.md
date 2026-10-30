@@ -63,8 +63,7 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
 - **Security lane.** Live `pnpm audit` in the gate, no allowlist; static analysis = ESLint
   security rules only, no CodeQL/Semgrep; the `.agent/deferred.md` defects stay deferred into
   MAINTAIN. Wiring → `.claude/rules/gate.md`.
-- **Node 26, project-wide**, re-ruled from Node 24 once Node 26 became LTS. Pinned locally
-  through `devEngines.runtime` and in CI.
+- **Node 26, project-wide.** Pinned locally through `devEngines.runtime` and in CI.
 - **`binding:check` holds declared tables that stay APART.** `REQUIRED` = the answer-path
   register, every row naming the part of the non-negotiable it holds up; `LIFECYCLE` = claims
   the view makes on its own; a lifecycle row never dilutes the non-negotiable roll call. One
@@ -254,7 +253,7 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] owed (user): open the KB-from-release migration as its own session (`.agent/deferred.md`
   row `KB intake reads a sibling cnl-ckc checkout, not a release`; the release's `.sha256` sidecar
   is published).
-- [ ] n8 `low` coverage passages — waits on the producer: `cnl-ckc` `737f1d87` (its `origin`
+- [ ] n8 `low` coverage passages — waits on the producer: `cnl-ckc` `9129d719` (its `origin`
   HEAD) still records B3-09/B3-10 `p14`.
 - [ ] n10 `low` C6 — waits on a user ruling that restores a sentence-length check.
 - [ ] n16 `low` find: `binding:check`'s wall drifts with the host (51.1 / 42.7 s at the close) — waits on
