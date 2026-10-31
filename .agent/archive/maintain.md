@@ -369,3 +369,12 @@ The expedited M2–M4 surfaces had no prototype tree: they played the PROTOTYPE 
 were redeveloped under M5 by user ruling (`.claude/rules/stack.md`). The answer panel's ITERATE
 prototype, `prototype/answer-annotations/`, retired at its IMPLEMENT close under tag
 `prototype-answer-annotations`.
+
+## KB release intake (request: queue row `KB intake reads a sibling cnl-ckc checkout, not a release`)
+
+- [x] b5d3d8b rel-u1 `kernel` re-vendor release `kb-2026-10-29-rc.1` (bag `g673b3c1f3bfd`) —
+  contract, rulings and witnesses `.agent/contracts/rel-u1.md`.
+- [x] 6acb906 find: GHSA-g3hv-75wg-m249 reddened `audit:check` → minimatch overridden to ^11.0.3.
+- [x] 9502c6d rel-u2 `data` intake from the release: `pnpm kb:fetch <tag>` + `--verify`, `kb/release.json`,
+  `vendor/cnl-ckc/`; the queue row `KB intake reads a sibling cnl-ckc checkout, not a release` closed.
+- [x] rel-close: reviewer-25 over every lens (`.agent/contracts/rel-close.md`): K3-1 major, R1-1 + R2-1 minor, all fixed in the close commit.

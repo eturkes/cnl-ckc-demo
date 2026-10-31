@@ -37,6 +37,11 @@ intake reads a sibling cnl-ckc checkout, not a release`; the intake tool is rel-
 
 ## Grader edits, each with the original check's red on the new bag
 
+Each original red reproduces over the rel-u1 tree with the base check restored:
+`git show 4b8b8b3:<suite> > <suite> && pnpm exec vitest run <suite>` (X2: the suite at load 7; X6:
+`git show 4b8b8b3:tools/graph-probe/app.svelte.ts > tools/graph-probe/app.svelte.ts && pnpm
+graph:check`).
+
 | id | check | edit | original red |
 |---|---|---|---|
 | E1 | T9 frozen surfaces | declared edits: ARITIES +3, BODY_BUILTINS +2 with its comment; fact-verb arm | `parseAdviceSentence: d108a28730a4` → `078a98ce9083` |

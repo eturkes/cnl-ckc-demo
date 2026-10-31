@@ -123,6 +123,16 @@ describe('KB release intake', () => {
     expect(() => vendoredEntries([{ path: 'LICENSE', type: 'blob', sha: '0'.repeat(40) }])).toThrow(
       "the tag's tree holds no NOTICE",
     );
+    for (const path of [
+      'tests/ui/../../../escaped.txt',
+      'tests/ui//x',
+      'tests/ui/./x',
+      'tests\\ui\\x',
+    ]) {
+      expect(() => vendoredEntries([{ path, type: 'blob', sha: '0'.repeat(40) }]), path).toThrow(
+        "the tag's tree names an unsafe path",
+      );
+    }
     expect(gitBlobSha(new Uint8Array())).toBe('e69de29bb2d1d6434b8b29ae775ad8c2e48c5391');
   });
 });

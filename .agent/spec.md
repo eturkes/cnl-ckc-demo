@@ -265,23 +265,13 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] owed (user): install the Mend Renovate GitHub app on `eturkes/cnl-ckc-demo` — `main` carries
   `renovate.json` (mv4) since `0466833`; Dependabot's five open PRs are closed, and Renovate
   reopens what still applies.
-- [x] b5d3d8b rel-u1 `kernel` re-vendor release `kb-2026-10-29-rc.1` (bag `g673b3c1f3bfd`) —
-  contract, rulings and witnesses `.agent/contracts/rel-u1.md`.
-- [x] 6acb906 find: GHSA-g3hv-75wg-m249 reddened `audit:check` → minimatch overridden to ^11.0.3.
-- [ ] rel-u2 `data` intake from the release: `pnpm kb:fetch <tag>` (+ `--verify` lane);
-  `kb/release.json` cross-checked by `kb:build` (archive name, sidecar's own name field, bag
-  root, digest) with its firing control; `tools/kb/regenerate-bag.sh` retired; upstream's
-  `check.rs`, `align.rs`, `ui.rs` + `tests/ui/` vendored at the release commit and cited there
-  (user ruling); `toolchain.md` interim ruling gone; `CLAUDE.local.md`, README, n8 re-pointed.
-  Accept: the queue row's own check.
-- [ ] rel-close: one `reviewer` over every lens on the request's diff; release:check lanes; queue
-  rows for the deferred UI surfacing + the tag-signature check.
 - [ ] n8 `low` coverage passages — waits on a `cnl-ckc` release whose bag moves B3-09/B3-10 off
   `p14`: release `kb-2026-10-29-rc.1` still records `p14`.
 - [ ] n10 `low` C6 — waits on a user ruling that restores a sentence-length check.
 - [ ] n16 `low` find: `binding:check`'s wall drifts with the host (51.1 / 42.7 s at the close) — waits on
   its re-open trigger: three consecutive gates on one host above its bound (45 s on the Core Ultra
-  7 268V, 110 s on the i7-8650U), each from a 1-min load below 2.
+  7 268V, 110 s on the i7-8650U), each from a 1-min load below 2. The 492-document bag counts one:
+  141.9 s on the i7-8650U from a load near 1.3 (T11 86.9 s, P4 50.9 s).
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase

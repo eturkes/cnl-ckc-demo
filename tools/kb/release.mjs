@@ -90,8 +90,20 @@ export const gitBlobSha = (bytes) =>
     .update(bytes)
     .digest('hex');
 
+/**
+ * A tree path the vendor tree may hold: relative, `/`-separated, no empty, `.` or `..` segment and
+ * no backslash. The tree listing is untrusted input, and `tests/ui/../..` would pass a prefix test.
+ * @param {string} path
+ */
+const safePath = (path) =>
+  path !== '' &&
+  !path.includes('\\') &&
+  path.split('/').every((segment) => segment !== '' && segment !== '.' && segment !== '..');
+
 /** The tree entries `VENDORED` names, sorted. @param {TreeEntry[]} tree @returns {TreeEntry[]} */
 export const vendoredEntries = (tree) => {
+  const unsafe = tree.find(({ path }) => !safePath(path));
+  if (unsafe !== undefined) refuse(`the tag's tree names an unsafe path ${JSON.stringify(unsafe.path)}`);
   const entries = tree
     .filter(({ type }) => type === 'blob')
     .filter(({ path }) =>
@@ -290,7 +302,11 @@ const vendor = async (tag) => {
   write(join(kbDir, `${fetched.record.archive}.sha256`), fetched.sidecarBytes);
   write(RECORD_PATH, `${JSON.stringify(fetched.record, null, 2)}\n`);
   rmSync(VENDOR_DIR, { recursive: true, force: true });
-  for (const [path, bytes] of fetched.sources) write(join(VENDOR_DIR, path), bytes);
+  for (const [path, bytes] of fetched.sources) {
+    const target = join(VENDOR_DIR, path);
+    if (!target.startsWith(`${VENDOR_DIR}/`)) refuse(`${path} resolves outside vendor/cnl-ckc`);
+    write(target, bytes);
+  }
   write(join(VENDOR_DIR, VENDOR_MANIFEST), provenanceText(fetched.record, fetched.entries));
   process.stdout.write(
     `kb:fetch ok — ${fetched.record.tag}: ${fetched.record.archive} (${fetched.record.bag}), ` +
@@ -321,6 +337,10 @@ const verify = async () => {
     }
     for (const [path, bytes] of fetched.sources) {
       if (!Buffer.from(sources.get(path) ?? []).equals(Buffer.from(bytes))) out.push(`vendor/cnl-ckc/${path} differs from the tag's commit`);
+    }
+    const manifest = provenanceText(fetched.record, fetched.entries);
+    if (Buffer.from(sources.get(VENDOR_MANIFEST) ?? []).toString('utf8') !== manifest) {
+      out.push(`vendor/cnl-ckc/${VENDOR_MANIFEST} differs from the tag's commit tree`);
     }
     for (const path of sources.keys()) {
       if (path !== VENDOR_MANIFEST && !fetched.sources.has(path)) out.push(`vendor/cnl-ckc/${path} is not in the tag's commit`);
