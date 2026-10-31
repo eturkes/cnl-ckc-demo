@@ -632,6 +632,45 @@ describe('clinical records', () => {
           "/** The schema's comparison built-ins: a rule body may call one, and no document defines one. */\nconst BODY_BUILTINS = new Set(['guideline_satisfies/4', 'guideline_satisfies/6']);\n",
           "/** The schema's comparison and arithmetic built-ins: a rule body may call one, and no document defines one. */\nconst BODY_BUILTINS = new Set([\n  'guideline_satisfies/4',\n  'guideline_satisfies/6',\n  'guideline_product/6',\n  'guideline_quotient/6',\n]);\n",
         ],
+        // User ruling (n33, the upstream `tests/ui/` corpus): region ids, an unterminated last
+        // payload and a locator line read as upstream's spec reads them; a missing or orphan ACE
+        // or Prolog file and a non-UTF-8 Prolog file refused.
+        [
+          'const REGION_ID = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,249})$/u;\n',
+          '/** Upstream `parse_row` + `locator_id`: a region id is non-empty and holds no space. */\nconst REGION_ID = /^[^ ]+$/u;\n',
+        ],
+        [
+          '};\n\n/** @param {Map<string, Uint8Array>} files @param {string} root */\nconst parseProjectionNotes = (files, root) => {\n',
+          "};\n\n/** @type {[string, string][]} */\nconst REPRESENTATIONS = [\n  ['ace', '.ace'],\n  ['pl', '.pl'],\n];\n\n/**\n * Each coverage document's ACE and compiled Prolog file present, and no file beside them under\n * `ace/` or `pl/`: an orphan ACE file would ride along unread, and an orphan Prolog file holding\n * no schema clause never reaches the clause-level orphan check. A Prolog file must be UTF-8, which\n * the clause parser would otherwise read with replacement characters; the ACE file is decoded\n * strictly where it is read.\n * @param {Map<string, Uint8Array>} files @param {string} root @param {Map<string, CoverageRow>} documents\n */\nconst requireRepresentations = (files, root, documents) => {\n  for (const [dir, extension] of REPRESENTATIONS) {\n    const prefix = `${root}/${dir}/`;\n    for (const document of documents.keys()) bytesAt(files, `${prefix}${document}${extension}`);\n    for (const [path, bytes] of files) {\n      if (!path.startsWith(prefix)) continue;\n      const name = path.slice(prefix.length);\n      if (!name.endsWith(extension) || !documents.has(name.slice(0, -extension.length))) {\n        refuse('file-orphan', path);\n      }\n      if (dir !== 'pl') continue;\n      try {\n        new TextDecoder('utf-8', { fatal: true }).decode(bytes);\n      } catch (error) {\n        refuse('invalid-utf8', `${path}: ${error instanceof Error ? error.message : String(error)}`);\n      }\n    }\n  }\n};\n\n/** @param {Map<string, Uint8Array>} files @param {string} root */\nconst parseProjectionNotes = (files, root) => {\n",
+        ],
+        [
+          '  const content = requireFinalLf(text, path);\n',
+          "  // Upstream `evidence_of` splits on LF and keeps an unterminated last line as a payload.\n  const content = text.endsWith('\\n') ? text.slice(0, -1) : text;\n",
+        ],
+        [
+          '  /** @type {Map<string, { text: string, page: number, section: string }>} */\n',
+          '  /** @type {Map<string, string>} */\n',
+        ],
+        [
+          "    locators.set(region, {\n      text: payload,\n      page: Number((PAGE.exec(match[2] ?? '') ?? [])[1]),\n      section: match[3] ?? '',\n    });\n",
+          '    locators.set(region, payload);\n',
+        ],
+        [
+          ' * @param {{ locators: Map<string, { text: string, page: number, section: string }>, ordered: string[] }} extraction\n',
+          ' * @param {{ locators: Map<string, string>, ordered: string[] }} extraction\n',
+        ],
+        [
+          'const passageFor = (row, sameFileRows, extraction) => {\n  if (extraction.locators.size > 0) {\n',
+          "const passageFor = (row, sameFileRows, extraction) => {\n  // The coverage row is the region's authority for its page and section; upstream's\n  // `evidence_of` reads a locator line's id alone, so the line's own page and section are\n  // scaffolding the payload never takes.\n  if (extraction.locators.size > 0) {\n",
+        ],
+        [
+          "    const located = extraction.locators.get(row.region) ?? refuse('region-not-found', row.region);\n    if (located.page !== row.page || located.section !== row.section) {\n      refuse('region-metadata', row.region);\n    }\n    return located.text;\n",
+          "    return extraction.locators.get(row.region) ?? refuse('region-not-found', row.region);\n",
+        ],
+        [
+          '  const coverage = parseCoverage(files, guideline.root);\n  const notes = parseProjectionNotes(files, guideline.root);\n',
+          '  const coverage = parseCoverage(files, guideline.root);\n  requireRepresentations(files, guideline.root, coverage.documents);\n  const notes = parseProjectionNotes(files, guideline.root);\n',
+        ],
       ],
     };
     for (const path of [

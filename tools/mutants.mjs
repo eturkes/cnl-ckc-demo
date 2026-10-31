@@ -650,6 +650,17 @@ export const MUTANTS = [
     check: { test: 'tests/kb-release.test.ts', name: 'R2 the vendored upstream tree equals' },
   },
   {
+    label: 'inv upstream-ui: the port lets an orphan ACE or Prolog file ride along',
+    edits: [
+      {
+        path: 'tools/kb/provenance.mjs',
+        old: "refuse('file-orphan', path);",
+        new: 'void path;',
+      },
+    ],
+    check: { test: 'tests/upstream-ui-corpus.test.ts', name: 'U3 red/orphan-ace' },
+  },
+  {
     label: 'inv proof-identity: a provenance chunk keys a clause by the wrong line',
     edits: [
       {

@@ -7,7 +7,8 @@
 import { payloadDocuments } from './payload.mjs';
 
 const GUIDELINE_ID = /^[a-z0-9](?:[a-z0-9-]{0,249})$/u;
-const REGION_ID = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,249})$/u;
+/** Upstream `parse_row` + `locator_id`: a region id is non-empty and holds no space. */
+const REGION_ID = /^[^ ]+$/u;
 const DECIMAL = /^(?:0|[1-9][0-9]*)$/u;
 const PAGE = /^p([1-9][0-9]*)$/u;
 const SOURCE_PATH = /^source\/[A-Za-z0-9][A-Za-z0-9._-]*\.txt$/u;
@@ -169,6 +170,40 @@ const parseCoverage = (files, root) => {
   return { rows, documents };
 };
 
+/** @type {[string, string][]} */
+const REPRESENTATIONS = [
+  ['ace', '.ace'],
+  ['pl', '.pl'],
+];
+
+/**
+ * Each coverage document's ACE and compiled Prolog file present, and no file beside them under
+ * `ace/` or `pl/`: an orphan ACE file would ride along unread, and an orphan Prolog file holding
+ * no schema clause never reaches the clause-level orphan check. A Prolog file must be UTF-8, which
+ * the clause parser would otherwise read with replacement characters; the ACE file is decoded
+ * strictly where it is read.
+ * @param {Map<string, Uint8Array>} files @param {string} root @param {Map<string, CoverageRow>} documents
+ */
+const requireRepresentations = (files, root, documents) => {
+  for (const [dir, extension] of REPRESENTATIONS) {
+    const prefix = `${root}/${dir}/`;
+    for (const document of documents.keys()) bytesAt(files, `${prefix}${document}${extension}`);
+    for (const [path, bytes] of files) {
+      if (!path.startsWith(prefix)) continue;
+      const name = path.slice(prefix.length);
+      if (!name.endsWith(extension) || !documents.has(name.slice(0, -extension.length))) {
+        refuse('file-orphan', path);
+      }
+      if (dir !== 'pl') continue;
+      try {
+        new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+      } catch (error) {
+        refuse('invalid-utf8', `${path}: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+  }
+};
+
 /** @param {Map<string, Uint8Array>} files @param {string} root */
 const parseProjectionNotes = (files, root) => {
   const path = `${root}/audit/projection-notes.tsv`;
@@ -214,14 +249,15 @@ const parseReleaseLabels = (files) => {
  * @param {string} path
  */
 const parseExtraction = (text, path) => {
-  const content = requireFinalLf(text, path);
+  // Upstream `evidence_of` splits on LF and keeps an unterminated last line as a payload.
+  const content = text.endsWith('\n') ? text.slice(0, -1) : text;
   const lines = content.split('\n');
   const firstBlank = lines.indexOf('');
   if (firstBlank < 0) refuse('extraction-header', path);
   const censusMatch = /(?:identify|identifies) (?:the )?([1-9][0-9]*) payloads below/iu.exec(
     lines.slice(0, firstBlank).join('\n'),
   );
-  /** @type {Map<string, { text: string, page: number, section: string }>} */
+  /** @type {Map<string, string>} */
   const locators = new Map();
   const marker = /^\[([^\]| ]+) \| (p[1-9][0-9]*) \| ([^\]]+)\]$/u;
   for (let index = firstBlank + 1; index < lines.length; index += 1) {
@@ -232,11 +268,7 @@ const parseExtraction = (text, path) => {
     if (payload === undefined || payload === '' || marker.test(payload) || locators.has(region)) {
       refuse('extraction-locator', `${path}:${index + 1}`);
     }
-    locators.set(region, {
-      text: payload,
-      page: Number((PAGE.exec(match[2] ?? '') ?? [])[1]),
-      section: match[3] ?? '',
-    });
+    locators.set(region, payload);
     index += 1;
   }
   if (locators.size > 0) {
@@ -258,15 +290,14 @@ const parseExtraction = (text, path) => {
 /**
  * @param {CoverageRow} row
  * @param {CoverageRow[]} sameFileRows
- * @param {{ locators: Map<string, { text: string, page: number, section: string }>, ordered: string[] }} extraction
+ * @param {{ locators: Map<string, string>, ordered: string[] }} extraction
  */
 const passageFor = (row, sameFileRows, extraction) => {
+  // The coverage row is the region's authority for its page and section; upstream's
+  // `evidence_of` reads a locator line's id alone, so the line's own page and section are
+  // scaffolding the payload never takes.
   if (extraction.locators.size > 0) {
-    const located = extraction.locators.get(row.region) ?? refuse('region-not-found', row.region);
-    if (located.page !== row.page || located.section !== row.section) {
-      refuse('region-metadata', row.region);
-    }
-    return located.text;
+    return extraction.locators.get(row.region) ?? refuse('region-not-found', row.region);
   }
   if (sameFileRows.length !== extraction.ordered.length) {
     refuse('ordinal-census', `${row.file}: coverage ${sameFileRows.length}, payloads ${extraction.ordered.length}`);
@@ -557,6 +588,7 @@ const indexClause = (clause) => ({
 export const deriveProvenance = (files) => {
   const guideline = guidelineRoot(files);
   const coverage = parseCoverage(files, guideline.root);
+  requireRepresentations(files, guideline.root, coverage.documents);
   const notes = parseProjectionNotes(files, guideline.root);
   const labels = parseReleaseLabels(files);
   const clauses = parseClauseSites(files);
