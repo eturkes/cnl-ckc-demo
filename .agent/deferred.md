@@ -16,13 +16,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   re-vendored bag corrects its region page, or carries a recorded producer reason, and the
   census in `tests/passage-locate.test.ts` moves with it. `pri` low. **User ruling**: keep it
   owed to the producer — no demo-side declared limit.
-- **Two normalized passages do not locate on their own page** — `cdc2022-opioid-s33-01` (a
-  table: the extraction joins its cells with `: ` and `; `) and `cdc2022-opioid-s57-05` (a list:
-  the extraction drops its item numbers) sit on their recorded pages 33 and 57, in a form the page
-  text layer does not hold, so the owned page viewer marks neither (`tests/passage-locate.test.ts`
-  lists both beside rec06 and rec07). Accept: each locates, whole or continuing, on its recorded
-  page — the locator reading a table row and a numbered item as the extraction joins them — and
-  the census in `tests/passage-locate.test.ts` moves with it. `pri` low.
 - **Scope exclusions and superseded statements do not surface** — the graph projects no
   `guideline_exclusion/1` or `guideline_supersession/4` record and no guard
   (`tools/kb/graph.mjs` `UNPROJECTED`, the evaluation-date comparison skipped), and the answer

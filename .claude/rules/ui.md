@@ -146,11 +146,14 @@ once-per-document-run grade included, and the script maps it to label/value pair
   browser's own PDF frame: the canvas paints the coverage row's physical page and PDF.js's
   transparent text layer carries the marks. Viewer and worker load through `import()` only when
   the reader selects Load page viewer, and both stay out of the offline precache.
-- The passage is marked where the page's text items hold it (`src/provenance/locate.ts`), compared
-  NFKC-folded with whitespace, soft hyphens and case removed, and with any item that is one
-  list bullet alone (`•`, or the symbol-font bullet extracted as `ï`) skipped, because the
-  extracted passage drops list markers. A passage whose start runs off the
-  page end is marked as continuing; otherwise an unlocated passage marks nothing and says so —
+- The passage is marked where the page's text items hold it (`src/provenance/locate.ts`), read
+  the way the producer's extraction headers say it was written: NFKC-folded with whitespace,
+  soft hyphens, case and the table joiners `.` `:` `;` removed, and with any item that is one
+  list bullet (`•`, or the symbol-font bullet extracted as `ï`) or one list label (`1.`, `a.`)
+  alone skipped, because list markers are scaffolding outside the passage. A passage whose start
+  runs off the page end is marked as continuing; failing both, a passage whose sentences sit in
+  order with text between them — a table's sources and abbreviations lines, also scaffolding —
+  is marked sentence by sentence; otherwise an unlocated passage marks nothing and says so —
   never a guess. `tests/passage-locate.test.ts` grades every shipped coverage row.
 - `.page-viewer` carries `data-document`, `data-state`, `data-page` and `data-coverage`, the
   handles `pnpm browser:check` reads.

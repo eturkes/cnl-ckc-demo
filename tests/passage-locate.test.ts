@@ -104,6 +104,81 @@ describe('locatePassage', () => {
     });
   });
 
+  it('reads a table row as the extraction joins its cells and rows', () => {
+    // Table convention: title, header and body rows in reading order, each row `<cell>: <cell>`,
+    // rows joined `; `. The page holds each cell as its own item and no joiner.
+    const items = ['TABLE. Doses for opioids', '', 'Opioid', ' ', 'Factor*', '', 'Codeine', ' '];
+    expect(
+      locatePassage([...items, '0.15', ''], 'Doses for opioids. Opioid: Factor*; Codeine: 0.15.'),
+    ).toEqual({ coverage: 'whole', items: [0, 2, 4, 6, 8] });
+  });
+
+  it('skips a lone list label item and keeps a label inside text', () => {
+    // One sentence, so no label sits at a sentence break the in-order reading could bridge.
+    const items = ['criteria (317):', '1.', ' ', 'taken longer, and', '10.', ' ', 'tolerance:'];
+    expect(
+      locatePassage(
+        [...items, ' a. ', ' ', 'a need, or', 'b.', 'more.'],
+        'criteria (317): taken longer, and tolerance: a need, or more.',
+      ),
+    ).toEqual({ coverage: 'whole', items: [0, 3, 6, 9, 11] });
+    expect(locatePassage(['See item', '2. Then'], 'See item 2. Then')).toEqual({
+      coverage: 'whole',
+      items: [0, 1],
+    });
+    // The label inside text stays page text: a passage without it is not the page's.
+    expect(locatePassage(['See item', '2. Then'], 'See item Then')).toEqual({
+      coverage: 'none',
+      items: [],
+    });
+  });
+
+  it('finds the sentences in order across lines the extraction leaves out', () => {
+    // The sources and abbreviations lines under a table are scaffolding outside the passage.
+    const items = [
+      'Doses for opioids',
+      'Codeine 0.15',
+      'Sources: Adapted from Von Korff 2008.',
+      'Abbreviations: mg = milligram.',
+      '* Multiply the dose.',
+    ];
+    const passage = 'Doses for opioids. Codeine: 0.15. * Multiply the dose.';
+    expect(locatePassage(items, passage)).toEqual({ coverage: 'whole', items: [0, 1, 4] });
+    expect(locatePassage([...items.slice(4), ...items.slice(0, 4)], passage)).toEqual({
+      coverage: 'none',
+      items: [],
+    });
+    expect(locatePassage(items.slice(0, 4), passage)).toEqual({ coverage: 'none', items: [] });
+    expect(
+      locatePassage(
+        items.map((item) => item.replace('0.15', '0.25')),
+        passage,
+      ),
+    ).toEqual({ coverage: 'none', items: [] });
+    // Each sentence must sit after the last, so a page holding a sentence once holds no repeat.
+    expect(locatePassage(items, 'Doses for opioids. Doses for opioids.')).toEqual({
+      coverage: 'none',
+      items: [],
+    });
+  });
+
+  it('reads a passage opening the page as whole though the page ends with its start again', () => {
+    expect(
+      locatePassage(
+        ['Doses for opioids given today.', 'Doses for opioids given'],
+        'Doses for opioids given today.',
+      ),
+    ).toEqual({ coverage: 'whole', items: [0] });
+  });
+
+  it('prefers the passage whole over its sentences scattered earlier on the page', () => {
+    const items = ['Doses for opioids.', 'Other text.', 'Doses for opioids.', 'Codeine 0.15.'];
+    expect(locatePassage(items, 'Doses for opioids. Codeine: 0.15.')).toEqual({
+      coverage: 'whole',
+      items: [2, 3],
+    });
+  });
+
   it('locates nothing in an empty page or for an empty passage', () => {
     expect(locatePassage([], 'anything')).toEqual({ coverage: 'none', items: [] });
     expect(locatePassage(['text'], '   ')).toEqual({ coverage: 'none', items: [] });
@@ -111,7 +186,7 @@ describe('locatePassage', () => {
 });
 
 describe('the shipped corpus', () => {
-  it('locates every coverage passage on its recorded page: 467 whole, 21 continuing, 4 not found', async () => {
+  it('locates every coverage passage on its recorded page: 469 whole, 21 continuing, 2 not found', async () => {
     const task = getDocument({
       data: new Uint8Array(readFileSync(join(PROVENANCE, 'guideline.pdf'))),
     });
@@ -139,16 +214,9 @@ describe('the shipped corpus', () => {
       else expect(located.items.length, document.id).toBeGreaterThan(0);
     }
     await task.destroy();
-    expect(counts).toEqual({ whole: 467, continues: 21, none: 4 });
+    expect(counts).toEqual({ whole: 469, continues: 21, none: 2 });
     // rec06 and rec07 record page 14 while their passage sits whole on page 13: the producer's
-    // page. s33-01 (a table, its cells joined `: ` and `; `) and s57-05 (a list, its item numbers
-    // dropped) sit on their recorded page in a form the extraction normalized: the locator's
-    // limit (`.agent/deferred.md`).
-    expect(unlocated).toEqual([
-      'cdc2022-opioid-rec06',
-      'cdc2022-opioid-rec07',
-      'cdc2022-opioid-s33-01',
-      'cdc2022-opioid-s57-05',
-    ]);
+    // page (`.agent/deferred.md`).
+    expect(unlocated).toEqual(['cdc2022-opioid-rec06', 'cdc2022-opioid-rec07']);
   }, 120_000);
 });

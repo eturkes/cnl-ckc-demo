@@ -272,6 +272,13 @@ worker before its caller resumes (`chat-c2.md`).
   its re-open trigger: three consecutive gates on one host above its bound (45 s on the Core Ultra
   7 268V, 110 s on the i7-8650U), each from a 1-min load below 2. The 492-document bag counts one:
   141.9 s on the i7-8650U from a load near 1.3 (T11 86.9 s, P4 50.9 s).
+- [ ] n29 `low` the page viewer locates s33-01 (a table) and s57-05 (a list) on their recorded
+  pages, reading the producer's extraction conventions — census 469 / 21 / 2.
+- [ ] n30 `low` queue row `Scope exclusions and superseded statements do not surface`; the answer
+  panel's change waits on the user's approval (`Decisions`: accepted surfaces).
+- [ ] n31 `low` queue row `An arithmetic built-in holds one engine step past the wall clock`.
+- [ ] n32 `low` queue row `The release tag's signature goes unchecked`.
+- [ ] n33 `low` queue row `The vendored tests/ui/ corpus runs against no suite`.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
