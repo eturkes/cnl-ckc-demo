@@ -43,9 +43,9 @@ export interface BudgetSpec {
  */
 export const PROOF_BUDGET_MAX: Readonly<BudgetSpec> = Object.freeze({
   stackBytes: 16_777_216,
-  depth: 100,
-  inferences: 100_000,
-  wallClockMs: 1_000,
+  depth: 256,
+  inferences: 300_000,
+  wallClockMs: 3_000,
   answerCap: 1,
 });
 

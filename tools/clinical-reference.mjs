@@ -327,6 +327,33 @@ const groupFragments = (clauses) => {
   return groups;
 };
 
+/**
+ * The scope guards the guideline vocabularies declare. A `scope` row names the key, and a scoped
+ * document ends each `should`, `must` and `may` edge clause with `\+ guideline_exclusion('<key>')`
+ * and no other clause (README-dist `Scope exclusions`), so a sentence's antecedent is read without
+ * it.
+ *
+ * @param {Map<string, Uint8Array>} files @returns {string[]}
+ */
+const scopeGuards = (files) =>
+  [...files]
+    .filter(([name]) => /^data\/guidelines\/[^/]+\/vocabulary\.tsv$/u.test(name))
+    .flatMap(([, bytes]) =>
+      Buffer.from(bytes)
+        .toString('utf8')
+        .split('\n')
+        .map((line) => line.split('\t'))
+        .filter(([kind, , key]) => kind === 'scope' && key !== undefined && key !== '')
+        .map(([, , key]) => `, \\+ guideline_exclusion('${String(key)}')`),
+    );
+
+/** @param {string[]} guards @param {ReferenceSite} site */
+const siteAntecedent = (guards, { head, body }) => {
+  if (!/^guideline_operator\(.*,(?:should|must|may)\)$/u.test(head)) return body;
+  const guard = guards.find((candidate) => body.endsWith(candidate));
+  return guard === undefined ? body : body.slice(0, -guard.length);
+};
+
 /** @param {Map<string, Uint8Array>} files @returns {ReferenceCase[]} */
 const referenceCases = (files) => {
   const selected = new Set(DOCUMENT_ORDER);
@@ -367,11 +394,12 @@ const referenceCases = (files) => {
     }
     current.sites.push({ line: offset + 1, ...splitClause(line) });
   }
+  const guards = scopeGuards(files);
   for (const item of cases) {
     if (item.sites.length === 0) {
       throw new Error(`${item.document}:S${String(item.sentence)} has no content site`);
     }
-    const bodies = [...new Set(item.sites.map(({ body }) => body))];
+    const bodies = [...new Set(item.sites.map((site) => siteAntecedent(guards, site)))];
     if (bodies.length !== 1) {
       throw new Error(
         `${item.document}:S${String(item.sentence)} has ${String(bodies.length)} antecedents`,

@@ -62,7 +62,12 @@ path, which this unit replaces. Reviewed before code by `consultant-2`
   Every list keeps proof order, which is source-line order, with repeats kept: deduplication is
   a reading's job.
 - A referent's noun = its `guideline_entity/4` node in the same proof, else its
-  `guideline_property/4` node (sync-u2 R15). An interval's comparison + count = its quantity's
+  `guideline_property/4` node (sync-u2 R15), else the `guideline_entity/4` assumption that
+  typed it in that proof — the premise that applied the rule, for a referent the sentence's
+  condition introduces. Amended for release `kb-2026-10-29-rc.1` (user ruling): its rec01 S6 and
+  rec02 S2–S3, S10–S13 anchor an order or a preference on such a referent. The mark itself
+  stays a derived head node. Original text: "A referent's noun = its `guideline_entity/4` node
+  in the same proof, else its `guideline_property/4` node (sync-u2 R15).". An interval's comparison + count = its quantity's
   `guideline_cardinality/5` node in the same proof; its unit is the interval's own argument.
 - All-or-nothing per document, each branch its own refusal: an unresolved preferred or
   alternative referent, interval quantity, interval anchor, order anchor or grade label; an

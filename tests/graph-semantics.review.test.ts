@@ -37,18 +37,18 @@ const visibleSemantics = (document: string, sentence: number, line: number): rea
 
 describe('semantic graph source fidelity review', () => {
   it('keeps polarity and modality visible for a negated recommendation', () => {
-    // ACE: If an opioid-benefit does not likely outweigh an opioid-risk and there is a clinician
-    // then it is recommended that the clinician does not consider an opioid-therapy for an
-    // acute-pain.
-    const semantics = visibleSemantics('cdc2022-opioid-rec01', 3, 651);
+    // ACE: If a patient has an acute-pain and an opioid-benefit does not likely outweigh an
+    // opioid-risk for the patient and there is a clinician then it is recommended that the
+    // clinician does not consider an opioid-therapy for the acute-pain.
+    const semantics = visibleSemantics('cdc2022-opioid-rec01', 5, 750);
 
     expect(semantics.some((label) => /\bshould\b/iu.test(label))).toBe(true);
     expect(semantics.some((label) => /\b(?:not|negative|negated)\b/iu.test(label))).toBe(true);
   });
 
   it('keeps modal force and numeric scope visible for a qualified action', () => {
-    // ACE: An opioid-continuation can possibly initiate a long-term-opioid-therapy after 30 days.
-    const semantics = visibleSemantics('cdc2022-opioid-rec02-imp21', 1, 2401);
+    // ACE: It is possible that an opioid-continuation possibly initiates a long-term-opioid-therapy after 30 days.
+    const semantics = visibleSemantics('cdc2022-opioid-rec02-imp21', 1, 2615);
 
     expect(semantics.some((label) => /\bcan\b/iu.test(label))).toBe(true);
     expect(semantics.some((label) => /\b30\b/u.test(label))).toBe(true);
@@ -67,7 +67,7 @@ describe('semantic graph source fidelity review', () => {
   it('keeps a nested operator edge attached to its asserted outer context', () => {
     const edges = graph.data.edges.filter(
       ({ document, sentence, kind }) =>
-        document === 'cdc2022-opioid-rec01' && sentence === 3 && kind === 'operator',
+        document === 'cdc2022-opioid-rec01' && sentence === 5 && kind === 'operator',
     );
     const negative = edges.find(({ label }) => label === '-');
     const should = edges.find(({ label }) => label === 'should');
@@ -81,7 +81,7 @@ describe('semantic graph source fidelity review', () => {
     const inverted = graph.data.edges.find(
       ({ document, sentence, kind, source, target, label }) =>
         document === 'cdc2022-opioid-rec01' &&
-        sentence === 3 &&
+        sentence === 5 &&
         kind === 'implies' &&
         source === 'event:outweigh' &&
         target === 'event:consider' &&
@@ -96,7 +96,7 @@ describe('semantic graph source fidelity review', () => {
       edges: { id: string; source: string }[];
     };
     malformed.edges = malformed.edges.map((edge) =>
-      edge.id === 'edge:658:0' ? { ...edge, source: 'document:cdc2022-opioid-rec01' } : edge,
+      edge.id === 'edge:755:0' ? { ...edge, source: 'document:cdc2022-opioid-rec01' } : edge,
     );
 
     expect(() => parseSemanticGraph(malformed)).toThrow(GraphDataError);
@@ -105,16 +105,16 @@ describe('semantic graph source fidelity review', () => {
   it('does not highlight a direct edge that skips hidden negation contexts', () => {
     const view = graph.answerSubgraph({
       document: 'cdc2022-opioid-rec01',
-      sentences: [3],
-      lines: [651],
+      sentences: [5],
+      lines: [750],
     });
 
-    expect(view?.highlight.edges).not.toContain('edge:657:13');
+    expect(view?.highlight.edges).not.toContain('edge:754:22');
   });
 
   it('reverses a directed relation label when HTML navigation starts at its target', () => {
-    // ACE: If a benefit outweighs a risk then every clinician should ... continue an opioid-therapy.
-    const support = graph.edge('edge:6094:11');
+    // ACE: If … the benefit outweighs the risk then every clinician should … continue the opioid-therapy.
+    const support = graph.edge('edge:6901:27');
     if (support === undefined) throw new Error('missing positive condition-support edge');
 
     expect(graphRelationLabel(support, support.target)).toBe('supported by condition · should');

@@ -95,9 +95,9 @@ const REQUIRED = Object.freeze([
     suite: 'tests/qualifier-slot.test.ts',
     why: "the answer term names each action's own verb, and every rendered answer stays byte-identical",
     cases: [
-      'qualifier slot Q1 live clinical_rule actions have all 75 keyed values and 19 atom qualifier lists',
-      'qualifier slot Q1 live clinical_advice groups retain 63 oracle actions and 17 atom qualifier lists',
-      'qualifier slot Q3 all 43 live rendered statements stay byte-identical in document/group order',
+      'qualifier slot Q1 live clinical_rule actions have all 95 keyed values and 21 atom qualifier lists',
+      'qualifier slot Q1 live clinical_advice groups retain 74 oracle actions and 19 atom qualifier lists',
+      'qualifier slot Q3 all 46 live rendered statements stay byte-identical in document/group order',
     ],
   },
   {
@@ -150,11 +150,22 @@ const REQUIRED = Object.freeze([
     suite: 'tests/clinical-inference.test.ts',
     why: 'the evaluator is complete, exhaustively site-bound and side-effect free',
     cases: [
-      'clinical assumption evaluator P3 derives all 53 sentences at cap 2 and exactly 51 at cap 1',
-      'clinical assumption evaluator P4 fails the derivation for every one of the 723 cited clauses erased alone',
+      'clinical assumption evaluator P3 derives all 58 sentences at cap 4 and exactly 32 at cap 3',
+      'clinical assumption evaluator P4 fails the derivation for every one of the 863 cited clauses erased alone',
       'clinical assumption evaluator P5 yields no full document recommendation under either negative control',
       'clinical assumption evaluator P7 mutates no world state and leaves every schema predicate static',
       'clinical assumption evaluator P8 keeps every derivation inside the reviewed proof budget',
+    ],
+  },
+  {
+    suite: 'tests/proof-guard.test.ts',
+    why: 'a scope guard is searched, never passed by an indicator the interpreter cannot resolve, and an exclusion the premises satisfy blocks its recommendation',
+    cases: [
+      'scope guard resolution G1 names every indicator the bag declares as a schema goal',
+      'scope guard resolution G2 searches the guard: a limit below depth 2, a proof from depth 2',
+      'scope guard resolution G3 an exclusion the premises satisfy blocks the recommendation it guards',
+      'scope guard resolution G4 reads an exclusion and its exception as native Prolog does, in any premise order',
+      'scope guard resolution G5 derives a superseded statement only under an evaluation date before its effective date',
     ],
   },
   {
@@ -327,7 +338,7 @@ const MEANING = Object.freeze([
     suite: 'tests/graph-orphan-scopes.test.ts',
     why: 'a negation or modal context with no edge of its own still rides every relation it scopes',
     cases: [
-      'orphan operator contexts O1 records a literal set on exactly the 83 contexts no edge touches',
+      'orphan operator contexts O1 records a literal set on exactly the 55 contexts no edge touches',
       'orphan operator contexts O2 shows each orphan operator on at least one edge',
       'orphan operator contexts O3 shows no orphan literal through an edge of another world',
       'orphan operator contexts O4 matches the literal set re-derived from the bag',

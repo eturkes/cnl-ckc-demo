@@ -10,7 +10,12 @@ import { decodeTerm } from '../src/engine/terms.js';
 import { decodeMarks, marksView } from '../src/questions/marks.js';
 import { payloadSource } from '../tools/kb/paths.mjs';
 import { buildImage } from '../tools/kb/produce.mjs';
-import { bagFiles, mutatePlSentence, replaceFileText } from './clinical-test-support.js';
+import {
+  bagFiles,
+  mutatePlSentence,
+  replaceFileText,
+  scopeGuard,
+} from './clinical-test-support.js';
 import { compiledText, rawClauses, withHead } from './support/marks-oracle.js';
 
 const require = createRequire(import.meta.url);
@@ -23,7 +28,7 @@ const id = 'starting-opioid-therapy';
 
 const boot = async (files: typeof bagFiles) => {
   const built = await buildImage(payloadSource(files).source);
-  expect(built.contract.documents).toBe(385);
+  expect(built.contract.documents).toBe(492);
   const engine = await load(built.image)({ arguments: ['-q'] });
   const rows = (goal: string): Record<string, unknown>[] =>
     [...engine.prolog.query(goal)] as Record<string, unknown>[];
@@ -90,10 +95,16 @@ it('G2 an alternative whose noun is the sentinel none leaves its document withou
 
 it('G3 a body literal that is no schema relation is never assumed', async () => {
   let changed = 0;
+  // The literal joins the antecedent every clause of the sentence shares, ahead of the scope guard
+  // a deontic edge ends with.
+  const guard = scopeGuard();
   const files = mutatePlSentence(bagFiles, document, 2, (line) => {
     expect(line).toContain(' :- ');
     changed += 1;
-    return `${line.slice(0, -1)}, fail.`;
+    const body = line.slice(0, -1);
+    return body.endsWith(guard)
+      ? `${body.slice(0, -guard.length)}, fail${guard}.`
+      : `${body}, fail.`;
   });
   expect(changed).toBeGreaterThan(1);
   const source = payloadSource(files).source;

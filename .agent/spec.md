@@ -53,11 +53,11 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   repo — verification integrity off the answer path too, the assurance tiers, and the IMPLEMENT +
   MAINTAIN teammate dispatch. This retires the integrity waiver; every check it excused sits beside
   its firing record in `.agent/contracts/mnt5-inventory.md`. Binding → `.claude/rules/stack.md`.
-- **Orphan operator contexts stay orphaned.** 83 operator-context nodes carry no edge — 76
-  negation, 7 `can`, i.e. 39% of the corpus's 197 negation contexts — the body-level scopes
+- **Orphan operator contexts stay orphaned.** 55 operator-context nodes carry no edge — 45
+  negation, 10 `can`, i.e. 20% of the corpus's 220 negation contexts — the body-level scopes
   whose identity binds at query time. They gain no covering edges; each records its body
   literals instead, and the body-relation dedup keys on scope (mnt-d49 ruling), so the shipped
-  population is 25,490 total / 1,431 operator. u11's S3 is ONE-WAY: every operator-bearing edge
+  population is 37,597 total / 1,843 operator. u11's S3 is ONE-WAY: every operator-bearing edge
   resolves to exactly one scope record, an unreferenced record is legal, and the unreferenced
   count is pinned so it cannot drift.
 - **Security lane.** Live `pnpm audit` in the gate, no allowlist; static analysis = ESLint
@@ -71,12 +71,12 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   cases that hold up the polarity ruling rather than the non-negotiable; each table carries its
   own `gradeTable`, its own emptied-table control and its own count in the success line.
   Wiring → `.claude/rules/gate.md`.
-- **A spanning edge shows BOTH endpoint scopes.** 939 of 973 synthesized `condition supports`
-  occurrences — 445 of 465 projected groups — join endpoints under DIFFERENT scopes, commonest
-  `[] → [should]` 624. `EdgeView` therefore gains `farScope` and R2 carries near end then far
+- **A spanning edge shows BOTH endpoint scopes.** 1,367 of 1,496 synthesized `condition
+  supports` occurrences — 569 of 621 projected groups — join endpoints under DIFFERENT scopes,
+  commonest `[] → [should]` 844. `EdgeView` therefore gains `farScope` and R2 carries near end then far
   end; `scope` stays byte-for-byte what the producer recorded, because composing the two would
   manufacture a chain no `scopes` record holds. Amendment recorded at `.agent/contracts/m5u8.md`
-  with the original text; approving unit `.agent/contracts/m5u13.md` V6. The 67 cases whose ends
+  with the original text; approving unit `.agent/contracts/m5u13.md` V6. The 54 cases whose ends
   CONTRADICT rather than nest are each justified by their own clause
   (`tests/graph-shortcut-justification.test.ts`); the shipped edge population does not move.
 - **An edge label is READER-RELATIVE; the data stays direction-fixed.** `scope` is always the
@@ -89,7 +89,7 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   Nothing else is trimmed across ends: a nested pair writes both sides in full, because eliding
   the repeat would render it identically to a divergent one. ONE shared `scopeReading` helper
   composes both surfaces; a second derivation per surface is what R1 forbids. Approved change
-  of the graded case `tests/graph-semantics.review.test.ts:118` →
+  of the graded case `tests/graph-semantics.review.test.ts:120` →
   `'supported by condition · should'`, the original's firing recorded in
   `.agent/contracts/m5u13.md`. Forms + the four-case table → `.claude/rules/graph.md`.
 - **Judgment review reads the SHIPPED SURFACE, not a commit range.** The `reviewer` lenses read the
@@ -115,7 +115,13 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   user approves an edit. The upstream sync to `83569b1d` (bag `g8a51bf0c8722`: 385 documents, 19
   schema indicators, comparison built-ins in `schema.pl`) is the first such re-pin; its approved
   edits are E27's comment-blind float scan, the read-only guard's allowlist widened to the new
-  schema, and the nested-operator MEANING case following the inverted nesting.
+  schema, and the nested-operator MEANING case following the inverted nesting. Release
+  `kb-2026-10-29-rc.1` (bag `g673b3c1f3bfd`: 492 documents, 22 indicators, the scope and
+  supersession guards, arithmetic built-ins) is the second; its approved edits are T9's declared
+  edits (provenance tables, fact verbs), the read-only allowlist widened again, the oracles'
+  scope-guard reading, fact verbs and evaluation-date exemption, A4's planted negated comparison,
+  the marks noun fallback (ann-u1 amended), the proof depth bound 256 and S5's cap re-derived by
+  its own recipe (`.agent/contracts/rel-u1.md`).
 - **A recommendation to refrain reads `should not`.** The corpus spells SHOULD over a negation
   `it is recommended that X does not V`; the answer renders `X should not V`, the parser
   keeping the surface form only to rebuild the sentence. T9 carries it, and the positive copula
@@ -212,7 +218,7 @@ are: it costs a notice, never an answer. The
 answer lists the marks goal with its verbatim engine solutions and says so when a document's
 marks are missing, so a missing mark never reads as an absent one. An adverb after an object or a
 modifier (rec04 S5–S6, rec11 S2) stays in that text: its verb already names the event. premise display = deduplicated steps inside the EXISTING ladder rungs, never a new
-step type (4,491 leaves / 451 premises), carrying hypothetical origin and no source line.
+step type (8,549 leaves / 703 premises), carrying hypothetical origin and no source line.
 u6's oracle is GREEN at base — it guards the compiled KB, which the answer-path defect never
 broke; its RED-under-dependency-removal witness is a firing record, and its credit is the
 default-operator mutants `pnpm stryker` shows it killing in its three imports — every survivor,
@@ -250,11 +256,40 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] owed (user): install the Mend Renovate GitHub app on `eturkes/cnl-ckc-demo` — `main` carries
   `renovate.json` (mv4) since `0466833`; Dependabot's five open PRs are closed, and Renovate
   reopens what still applies.
-- [ ] owed (user): open the KB-from-release migration as its own session (`.agent/deferred.md`
-  row `KB intake reads a sibling cnl-ckc checkout, not a release`; the release's `.sha256` sidecar
-  is published).
-- [ ] n8 `low` coverage passages — waits on the producer: `cnl-ckc` `9129d719` (its `origin`
-  HEAD) still records B3-09/B3-10 `p14`.
+- [ ] rel-u1 `kernel` re-vendor release `kb-2026-10-29-rc.1` (bag `g673b3c1f3bfd`: 492 documents,
+  22 indicators, scope guard on 1220 `should`/`must`/`may` edges, supersession, arithmetic
+  built-ins; all 12 catalog documents rewritten) — this request's `.agent/deferred.md` row `KB
+  intake reads a sibling cnl-ckc checkout, not a release` (user: full sync this session).
+  - User-approved grader edits: T9 declared edits (`provenance.mjs` ARITIES +3, BODY_BUILTINS
+    +`guideline_product/6`,`guideline_quotient/6`; `clinical.mjs` fact verbs {includes,
+    increases, shows}); read-only allowlist +3 indicators +2 built-ins (chat-c1 amended, chat
+    guide). Any other check-logic edit → the user first. Figures re-pin, each red on the new bag
+    recorded.
+  - MI: the 19-indicator whitelist proves `\+ guideline_exclusion(…)` at every depth by never
+    resolving it (fail-open witness) → 22 indicators; `clinical_depth` 2 → 4, NAF unchanged
+    (consultant-1: a fixed NAF budget loses termination across nested negation). UI surfacing of
+    exclusions + supersessions → queue rows (user ruling).
+  - User-approved (second round): proof depth bound 100 → 256 (`PROOF_BUDGET_MAX` + the
+    controller's `PROOF_BUDGET`); S5 graph gzip cap 508,572 → 786,955 B by its own recipe; marks
+    nouns fall back to the entity premise (ann-u1 amended, marks oracle mirrors it); oracle edits:
+    scope-guard reading (T5, T6, clinical-differential, marks-admitted G3), fact verbs + the
+    evaluation-date exemption (qualifier oracle, graph-annotations A1), A4 planted input. Third
+    round: proof inferences 300,000 and wall clock 3,000 ms, 30 s timeouts on P3/M2/M3, an empty
+    predicate read as 0 clauses, `graph:check` C6 tapping an uncovered node
+    (`.agent/contracts/rel-u1.md` X1–X6). The assumption arm
+    enumerates every unifying premise (consultant-1 C5; G4).
+  - Accept: `pnpm gate` green; every catalog sentence derives `proved` with each scope guard
+    resolved, none `limit`; release:check lanes green.
+- [ ] rel-u2 `data` intake from the release: `pnpm kb:fetch <tag>` (+ `--verify` lane);
+  `kb/release.json` cross-checked by `kb:build` (archive name, sidecar's own name field, bag
+  root, digest) with its firing control; `tools/kb/regenerate-bag.sh` retired; upstream's
+  `check.rs`, `align.rs`, `ui.rs` + `tests/ui/` vendored at the release commit and cited there
+  (user ruling); `toolchain.md` interim ruling gone; `CLAUDE.local.md`, README, n8 re-pointed.
+  Accept: the queue row's own check.
+- [ ] rel-close: one `reviewer` over every lens on the request's diff; release:check lanes; queue
+  rows for the deferred UI surfacing + the tag-signature check.
+- [ ] n8 `low` coverage passages — waits on a `cnl-ckc` release whose bag moves B3-09/B3-10 off
+  `p14`: release `kb-2026-10-29-rc.1` still records `p14`.
 - [ ] n10 `low` C6 — waits on a user ruling that restores a sentence-length check.
 - [ ] n16 `low` find: `binding:check`'s wall drifts with the host (51.1 / 42.7 s at the close) — waits on
   its re-open trigger: three consecutive gates on one host above its bound (45 s on the Core Ultra

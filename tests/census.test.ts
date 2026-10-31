@@ -109,6 +109,8 @@ const PREDICATES = {
   preference: 'guideline_preference(_,_,_,_)',
   qualifier: 'guideline_qualifier(_,_,_,_)',
   unit: 'guideline_unit(_,_,_)',
+  exclusion: 'guideline_exclusion(_)',
+  supersession: 'guideline_supersession(_,_,_,_)',
 } as const;
 
 const loadImage: ImageLoader = async (image) => {
@@ -349,7 +351,7 @@ const CENSUS: Row[] = [
   },
   {
     file: KB,
-    anchor: 'payload + 5 tag entries + the tagmanifest',
+    anchor: 'payload + 6 tag entries + the tagmanifest',
     figures: [
       fig('payload entries', `${N} payload \\+`, 'bag.payload'),
       fig('tag entries', `\\+ ${N} tag entries`, 'bag.tags'),
@@ -402,6 +404,7 @@ const CENSUS: Row[] = [
         'preference',
         'qualifier',
         'unit',
+        'exclusion',
       ] as const
     ).flatMap((name) => [
       fig(`${name} rules`, `${name} ${N}/`, `rules.${name}`),
@@ -524,11 +527,11 @@ describe('stated censuses', () => {
 
   it('refuses a figure altered in the real rules text, and an emptied table', () => {
     const altered = grade(CENSUS, (file) =>
-      file === KB ? read(file).replace('entity 2052,', 'entity 2053,') : read(file),
+      file === KB ? read(file).replace('entity 3126,', 'entity 3127,') : read(file),
     );
     expect(altered).toEqual([
       expect.stringMatching(
-        /^\.claude\/rules\/kb-build\.md:\d+ states entity clauses = 2053, derived 2052$/u,
+        /^\.claude\/rules\/kb-build\.md:\d+ states entity clauses = 3127, derived 3126$/u,
       ),
     ]);
     expect(grade([], read)).toEqual(['CENSUS table is empty, so no stated figure is graded']);

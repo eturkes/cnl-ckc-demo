@@ -96,7 +96,7 @@ export const clauseFromAce = (
   }
   const recommended = main.startsWith('it is recommended that ');
   if (recommended) main = main.slice('it is recommended that '.length);
-  const match = /^(.*?) (should|can|does|is|increases) (.+)$/u.exec(main);
+  const match = /^(.*?) (should|can|does|is|includes|increases|shows) (.+)$/u.exec(main);
   if (match === null) throw new Error(`oracle: unrecognized consequent ${main}`);
   const [, subject = '', auxiliary = '', rest = ''] = match;
   const mode =

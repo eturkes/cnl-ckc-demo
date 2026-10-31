@@ -62,8 +62,8 @@ describe('generated semantic graph', () => {
     const model = new SemanticGraphModel(graph);
     const focus = {
       document: 'cdc2022-opioid-rec01',
-      sentences: [2, 3],
-      lines: [645, 651],
+      sentences: [3, 5],
+      lines: [738, 750],
       question: QUESTION_CATALOG['when-to-use-opioids'].question,
       answer:
         'Clinicians should maximize nonopioid therapy for acute pain and should only consider opioid therapy when benefits outweigh risks.',
@@ -126,7 +126,7 @@ describe('generated semantic graph', () => {
     }
     expect(roots).toEqual([
       'when-to-use-opioids/cdc2022-opioid-rec01: opioid-therapy',
-      'when-to-use-opioids/cdc2022-opioid-rec02: opioid-therapy',
+      'when-to-use-opioids/cdc2022-opioid-rec02: opioid-therapy-initiation',
       'starting-opioid-therapy/cdc2022-opioid-rec03: opioid-therapy',
       'starting-opioid-therapy/cdc2022-opioid-rec04: opioid-therapy',
       'acute-pain-prescription-duration/cdc2022-opioid-rec06: acute-pain',

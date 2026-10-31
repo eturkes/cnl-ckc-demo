@@ -235,6 +235,16 @@ const expectedTuple = (site: Site, call: Call, scopes: readonly Facts[]): string
       );
     }
     case 'guideline_satisfies': {
+      // The supersession guard compares the evaluation date, which names no quantity; its
+      // projection is queued with the supersession records (user ruling).
+      if (
+        site.body.some(
+          ({ name, args }) =>
+            name === 'guideline_evaluation_date' && text(args[0]) === text(call.args[1]),
+        )
+      ) {
+        return undefined;
+      }
       const local = scopes[0];
       const card = [...(local?.cards.entries() ?? [])].find(
         ([, value]) =>
@@ -414,10 +424,46 @@ const typedIds = new Set([...typedReferents].map(referenceId));
 const gradeReferences = (graph: RawGraph): string[] =>
   graph.nodes.filter(({ id }) => typedIds.has(id)).map(({ id }) => id);
 
+/**
+ * The A4 input. The corpus states no comparison under a negation box — s31-04 S2's `does not
+ * provably receive … during at least 1 week` is negation as failure — so A4 grades a copy whose S2
+ * states the condition under `-`, the shape an earlier corpus compiled it to (user-approved
+ * planted input). Bodies alone change, so every line and head stays where it was.
+ */
+const negationPlanted = (): Map<string, Uint8Array> => {
+  const [path, bytes] =
+    [...files].find(([name]) => name.endsWith('/pl/cdc2022-opioid-s31-04.pl')) ?? [];
+  if (path === undefined || bytes === undefined) throw new Error('no comparison to negate');
+  let sentence = 0;
+  let planted = 0;
+  const lines = Buffer.from(bytes)
+    .toString('utf8')
+    .split('\n')
+    .map((line) => {
+      const marker = /^% S(\d+):/u.exec(line);
+      if (marker !== null) sentence = Number(marker[1]);
+      if (sentence !== 2 || !line.startsWith('guideline_')) return line;
+      return line.replace(
+        /\\\+ \((guideline_entity\(actual,.*?guideline_interval\(actual,[^)]*\))\)/u,
+        (_, inner: string) => {
+          planted += 1;
+          return `guideline_operator(actual,Neg,-), ${inner.replaceAll('(actual,', '(Neg,')}`;
+        },
+      );
+    });
+  if (planted === 0) throw new Error('no negation-as-failure comparison to negate');
+  const copy = new Map(files);
+  copy.set(path, Buffer.from(lines.join('\n')));
+  return copy;
+};
+const plantedFiles = negationPlanted();
+const planted = deriveSemanticGraph(plantedFiles).model as unknown as RawGraph;
+const plantedModel = modelOf(planted);
+
 /** A4 grader: every negated comparison's threshold reads negated, named by its first goal line. */
 /** Each negated comparison tuple beside the first goal line that states it. */
 const negatedComparisons: { line: number; tuple: string }[] = [];
-for (const site of sites) {
+for (const site of parseClauseSites(plantedFiles) as Site[]) {
   const facts = [factsOf(site.body), documentFacts.get(site.document) ?? emptyFacts()];
   for (const call of site.body) {
     if (call.name !== 'guideline_satisfies') continue;
@@ -483,10 +529,10 @@ describe('graph annotations', () => {
 
   it('A4 holds every threshold to the world of the cardinality it constrains', () => {
     expect(negatedComparisons.length).toBeGreaterThan(0);
-    expect(gradeThresholds(shippedModel)).toEqual([]);
-    const flattened = clone();
+    expect(gradeThresholds(plantedModel)).toEqual([]);
+    const flattened = structuredClone(planted);
     const [first] = negatedComparisons;
-    const shownThreshold = shippedModel.data.edges.find(
+    const shownThreshold = plantedModel.data.edges.find(
       (edge) =>
         edge.kind === 'threshold' &&
         (edge.scopeOperators ?? []).includes('-') &&
@@ -529,16 +575,17 @@ describe('graph annotations', () => {
   });
 
   it('refuses a constant unit its quantity noun does not restate, by name', () => {
+    const unitHead = /^(guideline_unit\(actual,.*),hour\)\.$/mu;
     const [path, bytes] = [...files].find(
       ([name, content]) =>
         name.endsWith('/pl/cdc2022-opioid-rec01-imp03.pl') &&
-        Buffer.from(content).toString('utf8').includes(',hour).'),
+        unitHead.test(Buffer.from(content).toString('utf8')),
     ) ?? [undefined, undefined];
     if (path === undefined || bytes === undefined) throw new Error('no unit head to plant');
     const planted = new Map(files);
     planted.set(
       path,
-      Buffer.from(Buffer.from(bytes).toString('utf8').replace(',hour).', ',day).')),
+      Buffer.from(Buffer.from(bytes).toString('utf8').replace(unitHead, '$1,day).')),
     );
     expect(() => deriveSemanticGraph(planted)).toThrow(/guideline_unit types hour as day/u);
   });

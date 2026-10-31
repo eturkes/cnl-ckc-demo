@@ -92,7 +92,7 @@ const roundTrips = (goal: string): boolean => {
 
 describe('P1 boot and live contract', () => {
   it('P1.3 reads schema and document count out of the engine', () => {
-    expect(manifest.contract).toEqual({ schemaVersion: 1, documents: 385 });
+    expect(manifest.contract).toEqual({ schemaVersion: 1, documents: 492 });
   });
 
   it('P1.3 agrees with the manifest the build wrote', async () => {

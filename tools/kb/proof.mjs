@@ -9,11 +9,16 @@
 // world: the `actual` world holds no clinician instance, so `guideline_operator`
 // correctly fails on the bare KB, and `assertz` would leave a fake instance
 // visible to every later query. The assumption clause sits before the depth cap
-// and before `resolve/3` and commits, so an assumed literal never also resolves
-// against a KB clause and never fabricates a `line(L)` for a hypothesis.
+// and before `resolve/3` and commits to its arm, so an assumed literal never also resolves
+// against a KB clause and never fabricates a `line(L)` for a hypothesis. Inside the arm every
+// unifying premise stays a candidate: a scope guard's exception binds an existential event, and
+// committing to the first premise that unifies read an exclusion one way in one premise order
+// and the other way in the other.
 //
-// Cap 2 is the least sufficient depth: cap 1 proves 51 of the 53 content
-// sentences, failing only the corpus's two NAF antecedents.
+// Cap 4 is the least sufficient depth: every `should`, `must` and `may` edge ends with the scope
+// guard `\+ guideline_exclusion(K)`, which a negation proves only once its inner search finishes
+// without a limit. The guard sits one level below the edge, and under a sentence's premises the
+// exclusion bodies need three more, so cap 3 proves 32 of the 58 content sentences and cap 4 all.
 //
 // `gate_heads/2` reads u1's cited heads out of the STORED `clinical_gate/4`
 // body. Calling the gate instead is circular — `clinical_use/2` runs `call(Body)`,
@@ -21,10 +26,19 @@
 // binds `Rule` only after `derive_all/4` succeeds, so the fragment data is gated
 // on a real derivation rather than looked up.
 //
-// A comparison built-in (`guideline_satisfies/4,6`, defined in `schema.pl`, in no document) is
+// A schema built-in — the comparisons `guideline_satisfies/4,6` and the arithmetic
+// `guideline_product/6`, `guideline_quotient/6`, all defined in `schema.pl`, in no document — is
 // evaluated where it stands and leaves a line-free `builtin(G)` leaf, as upstream's traces record
 // it: no clause states it, no depth is spent on it, and no premise can stand in for it, since an
 // assumption replaces a schema relation alone.
+//
+// `resolve/3` must name every schema indicator. A body goal it cannot resolve fails without a
+// limit, so a negation over an unnamed indicator — the scope guard `\+ guideline_exclusion(K)` —
+// would succeed by never looking.
+//
+// A mark's noun comes from the referent's entity or property node, else from the entity premise
+// that applied the rule: a referent the antecedent introduces reaches the proof as an assumption
+// alone. The mark itself is still a derived head node, never an assumption.
 //
 // The `clinical_advice/3` arm hands its proof straight to `clinical_advice/4`,
 // the same clause that assembles the answer. One derivation therefore produces
@@ -35,7 +49,9 @@ export const PROOF_SOURCE = String.raw`schema_goal(guideline_arg(_,_,_,_)).
 schema_goal(guideline_cardinality(_,_,_,_,_)).
 schema_goal(guideline_document(_,_,_,_)).
 schema_goal(guideline_entity(_,_,_,_)).
+schema_goal(guideline_evaluation_date(_)).
 schema_goal(guideline_event(_,_,_)).
+schema_goal(guideline_exclusion(_)).
 schema_goal(guideline_frequency(_,_,_,_,_)).
 schema_goal(guideline_grade(_,_,_,_,_)).
 schema_goal(guideline_interval(_,_,_,_,_,_)).
@@ -49,14 +65,19 @@ schema_goal(guideline_range(_,_,_)).
 schema_goal(guideline_recurrence(_,_,_,_)).
 schema_goal(guideline_recurrence_window(_,_,_,_,_,_,_)).
 schema_goal(guideline_schema_version(_)).
+schema_goal(guideline_supersession(_,_,_,_)).
 schema_goal(guideline_unit(_,_,_)).
+comparison_goal(guideline_product(_,_,_,_,_,_)).
+comparison_goal(guideline_quotient(_,_,_,_,_,_)).
 comparison_goal(guideline_satisfies(_,_,_,_)).
 comparison_goal(guideline_satisfies(_,_,_,_,_,_)).
 resolve(guideline_arg(A,B,C,D),Body,L) :- clause(guideline_arg(A,B,C,D),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 resolve(guideline_cardinality(A,B,C,D,E),Body,L) :- clause(guideline_cardinality(A,B,C,D,E),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 resolve(guideline_document(A,B,C,D),Body,L) :- clause(guideline_document(A,B,C,D),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 resolve(guideline_entity(A,B,C,D),Body,L) :- clause(guideline_entity(A,B,C,D),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
+resolve(guideline_evaluation_date(A),Body,L) :- clause(guideline_evaluation_date(A),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 resolve(guideline_event(A,B,C),Body,L) :- clause(guideline_event(A,B,C),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
+resolve(guideline_exclusion(A),Body,L) :- clause(guideline_exclusion(A),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 resolve(guideline_frequency(A,B,C,D,E),Body,L) :- clause(guideline_frequency(A,B,C,D,E),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 resolve(guideline_grade(A,B,C,D,E),Body,L) :- clause(guideline_grade(A,B,C,D,E),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 resolve(guideline_interval(A,B,C,D,E,F),Body,L) :- clause(guideline_interval(A,B,C,D,E,F),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
@@ -70,6 +91,7 @@ resolve(guideline_range(A,B,C),Body,L) :- clause(guideline_range(A,B,C),Body,R),
 resolve(guideline_recurrence(A,B,C,D),Body,L) :- clause(guideline_recurrence(A,B,C,D),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 resolve(guideline_recurrence_window(A,B,C,D,E,F,G),Body,L) :- clause(guideline_recurrence_window(A,B,C,D,E,F,G),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 resolve(guideline_schema_version(A),Body,L) :- clause(guideline_schema_version(A),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
+resolve(guideline_supersession(A,B,C,D),Body,L) :- clause(guideline_supersession(A,B,C,D),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 resolve(guideline_unit(A,B,C),Body,L) :- clause(guideline_unit(A,B,C),Body,R), clause_property(R,file('/prolog.pl')), clause_property(R,line_count(L)).
 app([],L,L).
 app([H|T],L,[H|R]) :- app(T,L,R).
@@ -85,7 +107,7 @@ derive((A,B),D,As,P,S) :- !, derive_conjunction(A,B,D,As,P,S).
 derive(\+ A,D,As,[naf(A)],S) :- !, findall(R,derive(A,D,As,_,R),Rs), naf_status(Rs,S).
 derive(clinical_advice(Q,Source,Answer),_,_,P,proved) :- !, clinical_advice(Q,Source,Answer,P).
 derive(G,_,_,[builtin(G)],proved) :- comparison_goal(G), !, call(G).
-derive(H,_,As,[assumption(H)],proved) :- schema_goal(H), assumed(H,As), !.
+derive(H,_,As,[assumption(H)],proved) :- schema_goal(H), \+ \+ assumed(H,As), !, assumed(H,As).
 derive(H,0,_,[],limit) :- schema_goal(H), !.
 derive(H,D,As,[node(line(L),H,Sub)],S) :- D > 0, D1 is D-1, resolve(H,B,L), derive(B,D1,As,Sub,S).
 derive_conjunction(A,B,D,As,P,proved) :- derive(A,D,As,PA,proved), derive(B,D,As,PB,proved), app(PA,PB,P).
@@ -95,7 +117,7 @@ derive_all([],_,_,[]).
 derive_all([H|T],D,As,P) :- derive(H,D,As,PH,proved), derive_all(T,D,As,PT), app(PH,PT,P).
 gate_heads((clinical_use(_,H),B),[H|T]) :- !, gate_heads(B,T).
 gate_heads(_,[]).
-clinical_depth(2).
+clinical_depth(4).
 clinical_context(Doc,S,As) :- findall(L,clinical_premise(Doc,S,_,L),As).
 clinical_derive(Doc,S,Rule,P) :- clinical_depth(D), clinical_derive(Doc,S,D,Rule,P).
 clinical_derive(Doc,S,D,Rule,P) :- clause(clinical_gate(Doc,S,_,_),Body,_), gate_heads(Body,Heads), clinical_context(Doc,S,As), derive_all(Heads,D,As,P), clinical_rule(Doc,S,Rule).
@@ -130,6 +152,10 @@ mark_times([_|T],P,Ts) :- mark_times(T,P,Ts).
 mark_quantity(Q,P,C,N) :- mark_member(node(_,guideline_cardinality(_,Q,_,C,N),_),P), !.
 mark_noun(R,P,N) :- mark_member(node(_,guideline_entity(_,R,N,_),_),P), !.
 mark_noun(R,P,N) :- mark_member(node(_,guideline_property(_,R,N,_),_),P), !.
+mark_noun(R,P,N) :- mark_assumed(guideline_entity(_,R,N,_),P), !.
+mark_assumed(H,P) :- mark_member(I,P), mark_assumed_item(H,I).
+mark_assumed_item(H,assumption(H)).
+mark_assumed_item(H,node(_,_,Sub)) :- mark_assumed(H,Sub).
 mark_groups([],_,[]).
 mark_groups([rule(_,Su,Mo,A)|T],Marked,[group(Ss)|Gs]) :- findall(X,(mark_member(m(rule(_,Su1,Mo1,A1),X),Marked),Su1 == Su,Mo1 == Mo,A1 == A),Ss), Ss \== [], mark_groups(T,Marked,Gs).
 mark_grades(Doc,Grades) :- findall(G,(G = guideline_grade(actual,'$guideline_id'(product,Doc,_,_,_),_,_,_),derive(G,1,[],_,proved)),Heads), mark_labels(Heads,Grades).

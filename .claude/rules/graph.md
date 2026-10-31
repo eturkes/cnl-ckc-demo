@@ -103,18 +103,18 @@ server refuses, and a `--graph-*` palette set to `initial`). The mocked suite ca
     fill off its neighbour's label outline.
   - The legend swatches in `SemanticGraph.svelte` read the same tokens, so legend and canvas
     cannot drift.
-- The graph carries **0 self-edges of 25,490**, so `canvas.ts` filters none; the producer refuses
+- The graph carries **0 self-edges of 37,597**, so `canvas.ts` filters none; the producer refuses
   one by name.
 
 ## Data shape
 
-- Deterministic full graph = **3,374 typed nodes / 25,490 typed edges**, extracted by static
+- Deterministic full graph = **4,877 typed nodes / 37,597 typed edges**, extracted by static
   `clause/2` sweep. Runtime predicate calls expose only the derivable minority.
 - Explicit edge schemas = 15 — the 7 relations (`entity/4`, `cardinality/5`, `event/3`,
   `arg/4`, `pp/4`, `property/4`, `operator/3`), 7 annotations (`grade/5`, `preference/4`,
   `qualifier/4`, `interval/6`, `recurrence/4`, `frequency/5`, `recurrence_window/7`) and the
-  comparison built-in `satisfies` — plus **11,793 `implies` edges**. That single figure hides
-  two mechanisms: **10,820 rule-context implications + 973 synthesized event-support
+  comparison built-in `satisfies` — plus **16,686 `implies` edges**. That single figure hides
+  two mechanisms: **15,190 rule-context implications + 1,496 synthesized event-support
   shortcuts**, the shortcuts synthesized in `deriveSemanticGraph`'s consequent-event block.
 
 ## Annotations (`.agent/contracts/sync-u2.md`)
@@ -145,11 +145,11 @@ edges, and `operator-context` is still absent from `CONCEPT_NODE_KINDS`. **u12 m
 onto the surviving edges instead** (`SemanticGraphEdge.scopeOperators`, ordered outermost
 first), which is the user's edge-state ruling made real in `src/graph/model.ts`.
 
-- Projection = **1,468 nodes / 3,239 grouped edges** out of 3,374 / 25,490. The nodes are
-  1,139 entity + 166 event + 163 value; the headline counts the 1,305 entity/event alone and
-  names the 163 as attributes, because calling a value node a concept is what S9 caught.
-- **2,342 of the 3,239 groups carry an ordered scope**, and **446 of them carry a far scope**
-  (940 edge occurrences). Grouping keys on both sequences — `conceptEdgeKey` spreads
+- Projection = **2,478 nodes / 4,957 grouped edges** out of 4,877 / 37,597. The nodes are
+  2,036 entity + 217 event + 225 value; the headline counts the 2,253 entity/event alone and
+  names the 225 as attributes, because calling a value node a concept is what S9 caught.
+- **2,973 of the 4,957 groups carry an ordered scope**, and **569 of them carry a far scope**
+  (1,367 edge occurrences). Grouping keys on both sequences — `conceptEdgeKey` spreads
   `scopeOperators` then `farScopeOperators` in order — so two occurrences differing only in
   scope ORDER, or only at the far end, stay distinct groups. The corpus holds zero permuted
   pairs, so the guarantee is structural plus the constructed case at
@@ -159,9 +159,9 @@ first), which is the user's edge-state ruling made real in `src/graph/model.ts`.
   forward.
 - Grouping keys on scope, and the projection admits the non-unit cardinality edges
   (`relation !== 'na eq 1'`).
-- Modal census: 197 `-` (negation), 961 `should`, 159 `may`, 181 `can`, 15 `must` =
-  **1,513 operator contexts**, of which 83 carry no edge at all and stay orphaned by user
-  ruling. Each of the 83 records the body literals in its world (`scopes[].literals`), and
+- Modal census: 220 `-` (negation), 1053 `should`, 147 `may`, 458 `can`, 15 `must` =
+  **1,893 operator contexts**, of which 55 carry no edge at all and stay orphaned by user
+  ruling. Each of the 55 records the body literals in its world (`scopes[].literals`), and
   `tests/graph-orphan-scopes.test.ts` (`MEANING`) proves every relation literal rides an edge
   of its own world. The body-relation dedup keys on that world: a relation asserted plainly and
   under a negation in one sentence is two edges (`.agent/contracts/mnt-d49.md`).
@@ -179,7 +179,7 @@ that — `pnpm graph:check` is the only grader of rendered output.
 
 **A spanning shortcut now shows both ends.** A synthesized `condition supports` edge records
 the producer's single `edge.scope` for its SOURCE end; the model reads the TARGET end off the
-`event` edge declaring that event on the same line (`edge:657:0` witnesses `edge:657:13`) and
+`event` edge declaring that event on the same line (`edge:754:0` witnesses `edge:754:22`) and
 stores it as `farScopeOperators`. A `condition supports` edge whose target has no such witness
 is refused by name — that refusal is what caught `graph-check.mjs`'s fallback fixture omitting
 the witness entirely.
@@ -205,7 +205,7 @@ Four forms on the resolved pair: `<rel> · <near>`, `<rel>`, `<rel> · <near> �
 `<rel> → <far>`. `→` means one thing everywhere: the end AWAY from the reader. Nothing is
 trimmed or composed across ends — `[-]` against `[-, should]` writes both sides in full,
 because eliding the repeat would render a nested pair identically to a divergent one, and the
-67 contradicting cases are where that would lie.
+54 contradicting cases are where that would lie.
 
 ## Shipped bounds
 

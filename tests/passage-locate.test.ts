@@ -111,7 +111,7 @@ describe('locatePassage', () => {
 });
 
 describe('the shipped corpus', () => {
-  it('locates every coverage passage on its recorded page: 366 whole, 17 continuing, 2 not found', async () => {
+  it('locates every coverage passage on its recorded page: 467 whole, 21 continuing, 4 not found', async () => {
     const task = getDocument({
       data: new Uint8Array(readFileSync(join(PROVENANCE, 'guideline.pdf'))),
     });
@@ -139,8 +139,16 @@ describe('the shipped corpus', () => {
       else expect(located.items.length, document.id).toBeGreaterThan(0);
     }
     await task.destroy();
-    expect(counts).toEqual({ whole: 366, continues: 17, none: 2 });
-    // Both record page 14 while their passage sits whole on page 13: the producer's page.
-    expect(unlocated).toEqual(['cdc2022-opioid-rec06', 'cdc2022-opioid-rec07']);
+    expect(counts).toEqual({ whole: 467, continues: 21, none: 4 });
+    // rec06 and rec07 record page 14 while their passage sits whole on page 13: the producer's
+    // page. s33-01 (a table, its cells joined `: ` and `; `) and s57-05 (a list, its item numbers
+    // dropped) sit on their recorded page in a form the extraction normalized: the locator's
+    // limit (`.agent/deferred.md`).
+    expect(unlocated).toEqual([
+      'cdc2022-opioid-rec06',
+      'cdc2022-opioid-rec07',
+      'cdc2022-opioid-s33-01',
+      'cdc2022-opioid-s57-05',
+    ]);
   }, 120_000);
 });

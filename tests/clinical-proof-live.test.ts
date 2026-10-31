@@ -150,7 +150,7 @@ describe('live clinical proof', () => {
           graded += 1;
         }
       }
-      expect(graded).toBe(723);
+      expect(graded).toBe(863);
     },
     LIVE_TIMEOUT,
   );
@@ -177,7 +177,7 @@ describe('live clinical proof', () => {
         }
         graded += assumed.length;
       }
-      expect(graded).toBe(4491);
+      expect(graded).toBe(8549);
     },
     LIVE_TIMEOUT,
   );

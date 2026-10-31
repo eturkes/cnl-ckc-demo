@@ -101,6 +101,8 @@ const aceSentences = (files, document) => {
 const METADATA = /^A recommendation is a category-[A-Z]-recommendation and is an evidence-type-[1-4]-recommendation\.$/u;
 /** The controlled form of a recommendation to refrain: SHOULD over a negation. */
 const RECOMMENDED = 'it is recommended that ';
+/** The verbs a controlled fact states; each repeats before every further action it opens. */
+const FACT_VERBS = ['includes', 'increases', 'shows'];
 const PREPOSITIONS = new Set([
   'above',
   'after',
@@ -253,7 +255,9 @@ export const parseAdviceSentence = (original, sentence, qualifiers) => {
   const should = main.indexOf(' should ');
   const can = main.indexOf(' can ');
   const isNot = main.indexOf(' is not ');
-  const increases = main.indexOf(' increases ');
+  const fact = FACT_VERBS.map((verb) => ({ verb, at: main.indexOf(` ${verb} `) }))
+    .filter(({ at }) => at >= 0)
+    .sort((left, right) => left.at - right.at)[0];
   const is = main.indexOf(' is ');
   if (main.startsWith(RECOMMENDED)) {
     // SHOULD over a negation: the recommended conduct is refraining, which English writes
@@ -287,13 +291,14 @@ export const parseAdviceSentence = (original, sentence, qualifiers) => {
     mode = 'fact';
     subject = main.slice(0, isNot);
     actions = [parseAction(`not is ${main.slice(isNot + 8)}`)];
-  } else if (increases >= 0) {
+  } else if (fact !== undefined) {
+    const { verb, at } = fact;
     mode = 'fact';
-    subject = main.slice(0, increases);
+    subject = main.slice(0, at);
     actions = main
-      .slice(increases + 11)
-      .split(' and increases ')
-      .map((text) => parseAction(`increases ${text}`));
+      .slice(at + verb.length + 2)
+      .split(` and ${verb} `)
+      .map((text) => parseAction(`${verb} ${text}`));
   } else if (is >= 0) {
     mode = 'fact';
     subject = main.slice(0, is);
@@ -559,6 +564,18 @@ const unwrap = (goal) => {
 };
 
 /**
+ * The scope guard a scoped document appends to each `should`, `must` and `may` edge clause, and to
+ * no other clause (README-dist `Scope exclusions`). A sentence's antecedent is the body its clauses
+ * share, so it is read without the guard; the guard still runs, since the gate resolves the stored
+ * clause.
+ */
+const SCOPE_GUARD = /, \\\+ guideline_exclusion\('[^'\\]+'\)$/u;
+const DEONTIC_EDGE = /^guideline_operator\(.*,(?:should|must|may)\)$/u;
+
+/** @param {{ head: string, body: string }} clause */
+const antecedent = ({ head, body }) => (DEONTIC_EDGE.test(head) ? body.replace(SCOPE_GUARD, '') : body);
+
+/**
  * Every content-bearing clause site per selected sentence, keyed `document\0sentence`.
  *
  * It keeps EVERY `guideline_*` clause a sentence compiles to, not just the first: the whole
@@ -757,7 +774,7 @@ export const clinicalArtifacts = (files) => {
           );
         }
         checkActions(selection.document, clause, record.clauses);
-        const bodies = [...new Set(record.clauses.map(({ body }) => body))];
+        const bodies = [...new Set(record.clauses.map(antecedent))];
         if (bodies.length !== 1) {
           throw new Error(
             `${selection.document}:${String(clause.sentence)}: ` +

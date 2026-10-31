@@ -164,6 +164,8 @@ describe('compiled marks catalog and derivation', () => {
       `question catalog version ${String(generated.catalogVersion + 1)} is unsupported`,
     );
   });
+  // A 30 s timeout (rel-u1): cap 4's scope-guard searches carried this case past vitest's 5000 ms
+  // default under the suite's own load.
   it('M2 every marks goal settles solutions under DEMO_BUDGET in answer document and Source order', async () => {
     let raw: Engine | undefined;
     const session = new EngineSession({
@@ -214,7 +216,9 @@ describe('compiled marks catalog and derivation', () => {
     console.info('ann-u1 marks measurements', readings);
     expect(readings).toHaveLength(7);
     expect(readings.reduce((count, row) => count + row.documents, 0)).toBe(12);
-  });
+  }, 30_000);
+  // A 30 s timeout (rel-u1): cap 4's scope-guard searches carried this case past vitest's 5000 ms
+  // default under the suite's own load.
   it('M3 groups partition every content sentence by its answer consequent, in gate order', () => {
     const rows = baselineMarks();
     const answers = answerRows(engine);
@@ -257,8 +261,8 @@ describe('compiled marks catalog and derivation', () => {
       groups += row.groups.length;
       sentences += ids.length;
     }
-    expect({ groups, sentences }).toEqual({ groups: 43, sentences: 53 });
-  });
+    expect({ groups, sentences }).toEqual({ groups: 46, sentences: 58 });
+  }, 30_000);
   it('M3 constructed grouping merges A,B,A and changed conditions but splits each changed consequent', () => {
     const a = 'rule(["one"],"subject",should,[action(positive,do,"object",[])])';
     const a2 = 'rule(["three"],"subject",should,[action(positive,do,"object",[])])';
@@ -319,7 +323,7 @@ describe('compiled marks catalog and derivation', () => {
       totals.intervals += item.times.filter(({ kind }) => kind === 'interval').length;
       totals.orders += item.times.filter(({ kind }) => kind === 'order').length;
     }
-    expect(totals).toEqual({ qualifiers: 22, preferences: 5, intervals: 12, orders: 6 });
+    expect(totals).toEqual({ qualifiers: 26, preferences: 5, intervals: 12, orders: 14 });
     for (const row of baselineMarks()) {
       const actual = [...row.groups.flat()].sort(
         (left, right) =>

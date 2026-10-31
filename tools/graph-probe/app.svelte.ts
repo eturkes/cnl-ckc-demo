@@ -23,7 +23,7 @@ import {
   type SemanticGraphNode,
 } from '../../src/graph/model.js';
 
-import { maybeCy, type CyLike } from './cy.js';
+import { maybeCy, type CyLike, type CyNode } from './cy.js';
 
 /** The graph asset, served statically by the probe vite config's `publicDir`. */
 const GRAPH_URL = '/semantic-graph.json';
@@ -367,7 +367,20 @@ const tapLeg = async (
   Pick<InteractionReading, 'tapNode' | 'tapCard' | 'tapCanvasSelected' | 'tapEmitted'>
 > => {
   const container = canvasHost();
-  const victim = cy.nodes().filter((node) => !node.hasClass('selected'))[0];
+  // The victim's centre must lie on no other node's body: fcose can leave two bodies overlapping,
+  // and Cytoscape then hands the tap to the body drawn on top — right for the product, and not the
+  // node this leg expects to select.
+  const covered = (node: CyNode): boolean => {
+    const centre = node.renderedPosition();
+    return (
+      cy.nodes().filter((other) => {
+        if (other.id() === node.id()) return false;
+        const box = other.renderedBoundingBox({ includeLabels: false });
+        return centre.x >= box.x1 && centre.x <= box.x2 && centre.y >= box.y1 && centre.y <= box.y2;
+      }).length > 0
+    );
+  };
+  const victim = cy.nodes().filter((node) => !node.hasClass('selected') && !covered(node))[0];
   if (victim === undefined) throw new Error('probe: the view drew no unselected node');
   const tapNode = victim.data('label');
   // Cytoscape gates every container event on `eventInContainer`: the client point must fall

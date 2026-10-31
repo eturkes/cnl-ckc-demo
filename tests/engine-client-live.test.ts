@@ -158,7 +158,7 @@ describe('shipped client over the real image', () => {
 
     const replacement = await engine.reset('R34 hard cancel');
     expect(replacement).toEqual({ kind: 'booted', contract: manifest.contract });
-    expect(manifest.contract.documents).toBe(385);
+    expect(manifest.contract.documents).toBe(492);
     expect(spawned).toHaveLength(2);
     expect(spawned[0]?.terminated).toBe(true);
 

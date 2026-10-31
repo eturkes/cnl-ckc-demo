@@ -11,39 +11,29 @@ paths:
 
 ## Vendored bag
 
-- `kb/cnl-ckc-kb-g<sha>.tar.gz` + a `.sha256` sidecar. BagIt 1.0; verify = `pnpm kb:build`,
-  in memory, never extracting. 1195 payload + 5 tag entries + the tagmanifest = 1201 members.
+- **The KB enters as a `cnl-ckc` GitHub release alone** (user ruling): `kb/` holds release
+  `kb-2026-10-29-rc.1`'s two assets byte for byte — the archive
+  `cnl-ckc-kb-only-2026-10-29-rc.1.tar.gz` and its `.sha256` sidecar, whose one line names the
+  archive in `sha256sum -c` form. BagIt 1.0; verify = `pnpm kb:build`, in memory, never
+  extracting. 1518 payload + 6 tag entries + the tagmanifest = 1525 members.
 - **Archive dialect**: POSIX ustar magic (`ustar\0` + `00`) that ALSO carries five GNU
   `././@LongLink` (`L`) headers for names over 100 chars. A resolving parser (Python
   `tarfile.getmembers`) hides those pseudo-entries — a raw reader must handle `L` or it
   refuses the real bag. Single root dir, all members regular files, mode 0644, uid/gid 0, one
   mtime, gzip mtime field 0.
-- The name + root dir tag upstream's **input head** — the last commit changing `guidelines/`,
-  the vendored compiler or the lexicon — not repo HEAD. The bag's `release-manifest.tsv` holds
-  content digests alone (no `meta head` row), so the name is the bag's sole commit provenance.
-- Payload = 385 docs × 3 representations — `ace/` (source ACE), `pl/` (compiled Prolog,
-  schema `1`, 19 indicators), `align/` (source↔ACE alignment, backs the trace view) — plus
-  `data/guidelines/schema.pl` (the comparison built-ins, below), `queries/` (6 `.ace`
-  questions, `pl/` compiled goals, `answers/` expected solutions, `traces/`), `source/`,
-  `audit/`, `vocabulary.tsv`.
+- The archive name names the release; the root dir (`cnl-ckc-kb-g<12 hex>`) names upstream's
+  **input head** — the last commit changing `guidelines/`, the vendored compiler or the
+  lexicon — not repo HEAD. The bag's `release-manifest.tsv` holds content digests alone (no
+  `meta head` row), so the root dir is the bag's sole commit provenance.
+- Payload = 492 docs × 3 representations — `ace/` (source ACE), `pl/` (compiled Prolog,
+  schema `1`, 22 indicators), `align/` (source↔ACE alignment, backs the trace view) — plus
+  `data/guidelines/schema.pl` (the comparison and arithmetic built-ins, below), `queries/` (6
+  `.ace` questions, `pl/` compiled goals, `answers/` expected solutions, `traces/`), `source/`,
+  `audit/`, `vocabulary.tsv`. The bag's own `README-dist.md` specifies the schema.
 - Rights profile = `redistributable` (public-domain MMWR) → source passages may ship whole in
-  the UI. The bag records `swipl 9.2.9` as its compiler; the 10.1.13 WASM runtime loads it.
-- Regenerate = upstream's Rust `ckc` (Verus-verified kernel; no Python left):
-  `tools/kb/regenerate-bag.sh <cnl-ckc checkout> [<rev>]` clones the checkout at `<rev>` under
-  `.scratch/ckc/`, so the checkout is only read — it refuses a checkout that lies inside that
-  scratch tree or holds it — builds `ckc` there with a project-local
-  toolchain (plain `cargo build` compiles the ghost-erased kernel, so Verus is not needed), runs
-  `ckc dist build`, and exits 0 only when the bag's `release-manifest.tsv` equals the one
-  committed at `<rev>` — and, when `kb/` vendors a bag of the same name, when that bag is
-  byte-identical to the rebuild. Vendoring = copying the tarball + sidecar from
-  `.scratch/ckc/dist/` into `kb/`. `ckc dist` is the release boundary and `ckc compile`/
-  `ckc queries` write `pl/` + `queries/` upstream — all regeneration inputs, never runtime deps.
-
-  Accept a bag only when the script exits 0 at its input head, `ckc check` passes there
-  (`../target/release/ckc check` run in `.scratch/ckc/src`), and a second run rebuilds it byte
-  for byte.
+  the UI. The bag records `swipl 10.0.2` as its compiler; the 10.1.13 WASM runtime loads it.
 - Read the bag as an agent: `tar xzf kb/cnl-ckc-kb-*.tar.gz -C .scratch/ &&
-  ln -sfn cnl-ckc-kb-* .scratch/kb`.
+  (cd .scratch && ln -sfn cnl-ckc-kb-g* kb)`.
 
 ## Upstream port specifications
 
@@ -59,7 +49,7 @@ input. No graph command or graph artifact exists upstream.
 ## Generated payload
 
 `pnpm kb:build` → `kb/generated/{kb.pvm,kb.qlf,kb-manifest.json}`, gitignored. Input = the
-385 `pl/` payload files, sorted, joined with `% file:<path>` markers, then `schema.pl` and the
+492 `pl/` payload files, sorted, joined with `% file:<path>` markers, then `schema.pl` and the
 two helpers; the manifest records the sha256 of that whole consulted source as the build
 input.
 
@@ -88,30 +78,42 @@ input.
 
 ## Schema predicates
 
-All 19 indicators are multifile and **static** (`dynamic=false`): `guideline_schema_version/1`,
+All 22 indicators are multifile and **static** (`dynamic=false`): `guideline_schema_version/1`,
 `guideline_document/4`; the relations `guideline_entity/4`, `guideline_cardinality/5`,
 `guideline_event/3`, `guideline_arg/4`, `guideline_pp/4`, `guideline_property/4`,
 `guideline_operator/3`; the time annotations `guideline_interval/6`, `guideline_recurrence/4`,
 `guideline_frequency/5`, `guideline_order/4`, `guideline_recurrence_window/7`,
 `guideline_range/3`; the strength annotations `guideline_grade/5`, `guideline_preference/4`,
-`guideline_qualifier/4`; and `guideline_unit/3`. A direct `assertz` raises a permission error →
-any overlay must call `dynamic/1` first; the overlay is visible to queries and gone after a
-fresh image load.
+`guideline_qualifier/4`; `guideline_unit/3`; the scope-exclusion record
+`guideline_exclusion/1`, the supersession record `guideline_supersession/4` and the evaluation
+date `guideline_evaluation_date/1`, which no document states — a program does. A direct
+`assertz` raises a permission error → any overlay must call `dynamic/1` first; the overlay is
+visible to queries and gone after a fresh image load.
 
 `schema.pl` defines the comparison built-ins `guideline_satisfies/4,6` (over
-`guideline_within/4` + `guideline_scale/3`), which rule bodies and the `tablet-use-spacing`
-export call and no document defines. Upstream's traces record each call as a `builtin(G)` leaf;
-the demo's meta-interpreter records it the same way (`.claude/rules/proof.md`).
+`guideline_within/4` + `guideline_scale/3`) and the arithmetic built-ins `guideline_product/6`,
+`guideline_quotient/6` (over exact counts, a non-integer one `rational(P,Q)`), which rule bodies
+and the `tablet-use-spacing` export call and no document defines. Upstream's traces record each
+call as a `builtin(G)` leaf; the demo's meta-interpreter records it the same way
+(`.claude/rules/proof.md`).
 
-Clause counts: version 385, document 385, entity 2052, cardinality 2052, event 1492, arg
-2949, pp 1190, property 45, operator 1431, interval 33, recurrence 11, frequency 1, order 87,
-recurrence_window 4, range 8, grade 24, preference 26, qualifier 273, unit 59.
+**Guards** (README-dist `Scope exclusions`, `Superseded statements`): every `should`, `must` and
+`may` edge clause of a scoped document ends with `\+ guideline_exclusion('cdc-2022-opioid')`,
+and the deontic clauses of the superseded `cdc2022-opioid-rec12-imp08` end with
+`guideline_evaluation_date(V), guideline_satisfies(exactly,V,less,20221229)` before it. A
+sentence's antecedent is therefore read without the scope guard (`tools/kb/clinical.mjs`
+`antecedent`), and the graph projects neither guard.
 
-**Counting vocabulary, kept distinct.** Static clause SITES ≠ derivable SOLUTIONS: 2,052
-`guideline_entity/4` sites yield 318 derivable entity solutions, and 1,492 event sites yield
-229. Runtime predicate calls expose only the derivable minority — the full graph needs static
-`clause/2` extraction. Corpus via SWI-Prolog, authoritative: **826 noun atoms, 146 verbs,
-385 docs**, 0.6 s co-load.
+Clause counts: version 492, document 492, entity 3126, cardinality 3126, event 2415, arg
+4744, pp 1715, property 69, operator 1843, interval 56, recurrence 15, frequency 3, order 165,
+recurrence_window 4, range 8, grade 24, preference 31, qualifier 414, unit 88, exclusion 12,
+supersession 3.
+
+**Counting vocabulary, kept distinct.** Static clause SITES ≠ derivable SOLUTIONS: 3,126
+`guideline_entity/4` sites yield 604 derivable entity solutions, and 2,415 event sites yield
+412. Runtime predicate calls expose only the derivable minority — the full graph needs static
+`clause/2` extraction. Corpus via SWI-Prolog, authoritative: **1476 noun atoms, 194 verbs,
+492 docs**.
 
 ## Question catalog
 
@@ -162,8 +164,8 @@ drifted. It is a diagnostic lane, separate from the catalog above.
   records is recomputed from the bag rather than copied out of the oracle. The live term is
   rendered by `writeq` inside the image; all six match byte for byte.
 - Live yield: category-A 7 solutions, dosage-reduction 2, evidence-type-1 1,
-  long-term-therapy-onset 1, recommendation-exists `yes`, tablet-use-spacing 1. The last two
-  exercise the time annotations, `guideline_unit/3` and `guideline_satisfies/6`.
+  long-term-therapy-onset 1, recommendation-exists `yes`, tablet-use-spacing 4. The last two
+  exercise the time annotations, `guideline_unit/3` and `guideline_satisfies/4,6`.
 - Sort = SWI standard order over decoded terms, never a byte sort of rendered text. The two
   diverge on mixed shapes (`10` precedes `'2'` numerically, follows it lexically). Lists
   order as their `'[|]'/2` chain; `[]` orders as an atom. Live `findall` order already equals

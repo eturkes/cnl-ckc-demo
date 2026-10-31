@@ -8,14 +8,37 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
 `med` set to one line each.
 
 - **Two coverage passages do not locate on their recorded page** — the owned page viewer
-  marks a passage where its page's text holds it (`tests/passage-locate.test.ts`: 366 whole, 17
-  continuing, 2 not found). `cdc2022-opioid-rec06` and `rec07` record page 14 (producer
+  marks a passage where its page's text holds it (`tests/passage-locate.test.ts`: 467 whole, 21
+  continuing, 4 not found). `cdc2022-opioid-rec06` and `rec07` record page 14 (producer
   `coverage.tsv` B3-09, B3-10 `p14`), yet each passage sits whole on page 13, where BOX 3
   begins; the producer's own census places both there (`audit/census-map.tsv` `p013.C13`–`C15`).
   The producer (`cnl-ckc`) owns the fix. Accept: each of the two either locates after a
   re-vendored bag corrects its region page, or carries a recorded producer reason, and the
   census in `tests/passage-locate.test.ts` moves with it. `pri` low. **User ruling**: keep it
   owed to the producer — no demo-side declared limit.
+- **Two normalized passages do not locate on their own page** — `cdc2022-opioid-s33-01` (a
+  table: the extraction joins its cells with `: ` and `; `) and `cdc2022-opioid-s57-05` (a list:
+  the extraction drops its item numbers) sit on their recorded pages 33 and 57, in a form the page
+  text layer does not hold, so the owned page viewer marks neither (`tests/passage-locate.test.ts`
+  lists both beside rec06 and rec07). Accept: each locates, whole or continuing, on its recorded
+  page — the locator reading a table row and a numbered item as the extraction joins them — and
+  the census in `tests/passage-locate.test.ts` moves with it. `pri` low.
+- **Scope exclusions and superseded statements do not surface** — the graph projects no
+  `guideline_exclusion/1` or `guideline_supersession/4` record and no guard
+  (`tools/kb/graph.mjs` `UNPROJECTED`, the evaluation-date comparison skipped), and the answer
+  panel never says that a statement is guarded or superseded; the ladder shows the scope guard as
+  a negation step alone. Accept: the graph projects each exclusion and supersession record under
+  the meaning ruling, the guard conditions included, graded by `tests/graph-annotations.test.ts`
+  A1 without its evaluation-date exemption, and the answer panel names a superseded statement
+  and its source, its live review owed. `pri` low. **User ruling**: carry the semantics through,
+  queue the surfacing.
+- **An arithmetic built-in holds one engine step past the wall clock** — the read-only guard
+  admits `guideline_product/6` and `guideline_quotient/6` (user ruling), whose Euclid loop over a
+  25,000-digit operand — one `is/2` builds in milliseconds — holds a single step 38 s in Node; the
+  client's hard deadline then recreates the worker, as it does for `is/2`'s own 12.5 s on
+  `7**(10**7)`. Accept: the guard bounds the operands a chat goal can hand an arithmetic built-in,
+  or the step ends on the budget, and a G9 row in `tests/engine-readonly-budget.test.ts` drives a
+  25,000-digit quotient to a `limit` or `error` with the engine still answering. `pri` low.
 - **C6 left `tests/m1u7-port.test.ts` with the sentence caps** — the archived m1u7 contract's C6
   (a 30-word sentence planted in `INSTRUCTIONS` or `DESCRIPTIONS` fails `copy:check`) lost its
   subject when the caps retired; both cases and their mutant

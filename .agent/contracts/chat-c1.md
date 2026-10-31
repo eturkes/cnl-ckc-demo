@@ -39,16 +39,20 @@ Goal positions are walked; every other argument is data and never walked.
 - Control, walked: `,`/2, `;`/2, `->`/2, `*->`/2 (both args); `\+`/1, `not`/1, `once`/1,
   `ignore`/1 (the arg); `forall`/2 (both); `findall`/3, `findall`/4, `bagof`/3, `setof`/3
   (arg 2); `^`/2 (arg 2). Atoms `true`, `fail`, `false`, `!`.
-- KB entry points, data args: the 19 schema indicators `guideline_arg/4`,
-  `guideline_cardinality/5`, `guideline_document/4`, `guideline_entity/4`, `guideline_event/3`,
+- KB entry points, data args: the 22 schema indicators `guideline_arg/4`,
+  `guideline_cardinality/5`, `guideline_document/4`, `guideline_entity/4`,
+  `guideline_evaluation_date/1`, `guideline_event/3`, `guideline_exclusion/1`,
   `guideline_frequency/5`, `guideline_grade/5`, `guideline_interval/6`,
   `guideline_operator/3`, `guideline_order/4`, `guideline_pp/4`, `guideline_preference/4`,
   `guideline_property/4`, `guideline_qualifier/4`, `guideline_range/3`,
   `guideline_recurrence/4`, `guideline_recurrence_window/7`, `guideline_schema_version/1`,
-  `guideline_unit/3`; and `clinical_advice/3`, `clinical_advice/4`,
+  `guideline_supersession/4`, `guideline_unit/3`; and `clinical_advice/3`, `clinical_advice/4`,
   `clinical_rule/3`, `clinical_premise/4`, `clinical_gate/4`, `clinical_source/3`,
   `clinical_passage/2`, `clinical_context/3`, `clinical_derive/4` = "every `clinical_*` entry
-  point". `clause/2` = arg 1 non-variable, its indicator one of those twenty-eight.
+  point". `clause/2` = arg 1 non-variable, its indicator one of those thirty-one.
+  Amended for release `kb-2026-10-29-rc.1` (user-approved widening): the schema grew from 19
+  indicators to 22. Original text: "the 19 schema indicators … `guideline_schema_version/1`,
+  `guideline_unit/3` … one of those twenty-eight".
   Amended for the upstream sync to `83569b1d` (user-approved re-pins): the schema grew from
   nine indicators to 19 and `guideline_document` from arity 3 to 4. Original text: "the nine
   schema predicates `guideline_arg/4`, `guideline_cardinality/5`, `guideline_document/3`,
@@ -63,7 +67,11 @@ Goal positions are walked; every other argument is data and never walked.
   sub_atom_icasechk/3 atom_length/2 text_to_string/2`; `copy_term/2 term_variables/2
   arg/3 =../2`; the schema's comparison built-ins `guideline_satisfies/4,6` (integer arithmetic
   over ground arguments; they read no KB clause, so they never count as a KB read — added by
-  the same amendment). Absent from the image and so never admitted: `member/2`,
+  the same amendment); its arithmetic built-ins `guideline_product/6`, `guideline_quotient/6`
+  (added for release `kb-2026-10-29-rc.1`, user-approved). Declared limit: their cost grows with
+  the operands, as `is/2`'s does — `X is 7**(10**7)` holds one step 12.5 s, and a 25,000-digit
+  operand holds `guideline_quotient/6`'s Euclid loop 38 s, in Node — past the wall clock, where
+  the client's hard deadline recreates the worker (chat-c2). Absent from the image and so never admitted: `member/2`,
   `append/3`, `nth0/3`, `nth1/3`, `last/2`, `sum_list/2`, `aggregate_all/3`.
 - Refused, among everything else: every builder of an atom from text or numbers
   (`atom_concat/3`, `atom_string/2`, `atom_codes/2`, `atom_chars/2`, `atom_number/2`,
@@ -114,7 +122,7 @@ Goal positions are walked; every other argument is data and never walked.
 |---|---|
 | G1 | Each refuses with `code: 'guard'`, its message naming the indicator or rule: the 32-step `atom_concat/3` doubling chain; `assertz(probe_c1(1))`; `retract(_)`; `nb_setval(k,1)`; `set_prolog_flag(double_quotes,codes)`; `consult(f)`; `halt`; `user:clinical_rule(D,S,R)`; `lists:append(X,Y,Z)`; `G`; `G = true, G`; `findall(X,G,L)`; `\+ G`; `call(clinical_rule(D,S,R))`; `call(clinical_rule(D),S,R)` (`call/3`); `call(G,X)` (`call/2`); `[f]`; `"text"`; `42`; `clause(H,B)`; `clause(assertz(_),B)`; `catch(true,_,true)`; `string_chars("ab",Cs)`; `functor(f(a),F,N)`; `X = "an invented claim"` and `msort([b,a],L)` (no KB predicate); and each refused builtin nested in control — `(true;assertz(x))`, `forall(true,assertz(x))`, `findall(X,(clinical_rule(X,_,_),assertz(y)),L)`, `once(atom_concat(a,b,C))`, `setof(D,S^R^(clinical_rule(D,S,R),atom_concat(D,x,_)),L)`; a goal of `READONLY_GOAL_MAX + 1` code units; a goal naming variable `_123`. |
 | G2 | A refused goal runs nothing: after `assertz(probe_c1(1))` and `nb_setval(c1_probe,1)` are refused, an unflagged query finds `probe_c1/1` undefined and `nb_current(c1_probe,_)` false. The cap refusal creates no atom: `statistics(atoms,N)` read by unflagged queries before and after equals. |
-| G3 | Each admits — settles `solutions` or `failure`, never `error` — one goal per KB entry point (all twenty-eight since the 83569b1d sync; eighteen before), plus `findall(D,clinical_rule(D,_,_),Ds),sort(Ds,U),length(U,N)` (N = 12), `setof(D,S^R^clinical_rule(D,S,R),Ds)`, `clause(guideline_entity(A,B,C,D),Body)`, `clinical_passage(D,T),sub_string(T,_,_,_,"nonopioid")`, and `guideline_operator(actual,C,should)` (`failure`: correct on the bare KB, `.claude/rules/proof.md`). Plus one small goal per allowlisted builtin, conjoined after `once(guideline_schema_version(_))` so it reads the KB, each settling `solutions` read-only — so a misspelt or image-absent allowlist entry fails here (amended before code, chat-consultant-1 K5). |
+| G3 | Each admits — settles `solutions` or `failure`, never `error` — one goal per KB entry point (all thirty-one since release `kb-2026-10-29-rc.1`; twenty-eight since the 83569b1d sync; eighteen before), plus `findall(D,clinical_rule(D,_,_),Ds),sort(Ds,U),length(U,N)` (N = 12), `setof(D,S^R^clinical_rule(D,S,R),Ds)`, `clause(guideline_entity(A,B,C,D),Body)`, `clinical_passage(D,T),sub_string(T,_,_,_,"nonopioid")`, and `guideline_operator(actual,C,should)` (`failure`: correct on the bare KB, `.claude/rules/proof.md`). Plus one small goal per allowlisted builtin, conjoined after `once(guideline_schema_version(_))` so it reads the KB, each settling `solutions` read-only — so a misspelt or image-absent allowlist entry fails here (amended before code, chat-consultant-1 K5). |
 | G4 | Equivalence: every goal G3 admits, and every `QUESTION_CATALOG` goal, settles under `readonly` with the same `kind` and the same solutions as the same goal unflagged — `bindings` and `display` deep-equal once each solution's variables are renumbered by first occurrence (variable ids in `bindings`, `_<digits>` names in `display`). Amended before code from "`bindings` and `display` deep-equal": `clause(guideline_entity(A,B,C,D),Body)` answers hold unbound variables, whose ids differ between two unflagged runs of the same goal. |
 | G5 | The rendered text is what runs: `clinical_rule(D,S,R) % trailing comment` and `clinical_rule(D,S,R) /* note */` answer like `clinical_rule(D,S,R)`. Rendering round-trips: for a corpus spanning quoted atoms (`'it''s'`), strings, `0'a`, `-1` vs `- 1`, `{q}`, `[]` vs `'[]'`, `3r4`, `1.5`, `'$VAR'(1)`, operator atoms as data (`X = (+)`) and nested lists, the rendered text re-reads to a variant (`=@=`) of the parsed term. |
 | G6 | A refusal leaves the session usable: the next read-only query answers, `booted` stays true, nothing is poisoned. |

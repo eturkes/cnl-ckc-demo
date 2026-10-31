@@ -37,9 +37,9 @@ const evidence = (id: string): EvidenceChunk => {
 
 describe('bag-derived provenance assets', () => {
   it('joins every document and exact combined-source clause once', () => {
-    expect(provenance.stats).toMatchObject({ documents: 385, clauses: 12_507 });
-    expect(provenance.chunks).toHaveLength(385);
-    expect(new Set(provenance.chunks.map(({ path }) => path)).size).toBe(385);
+    expect(provenance.stats).toMatchObject({ documents: 492, clauses: 18_845 });
+    expect(provenance.chunks).toHaveLength(492);
+    expect(new Set(provenance.chunks.map(({ path }) => path)).size).toBe(492);
 
     const combined = payloadSource(files).source.split('\n');
     const lines = new Set<number>();
@@ -68,7 +68,7 @@ describe('bag-derived provenance assets', () => {
       'Nonopioid therapies are at least as effective as opioids for many common types of acute pain. Clinicians should maximize use of nonpharmacologic and nonopioid pharmacologic therapies as appropriate for the specific condition and patient and only consider opioid therapy for acute pain if benefits are anticipated to outweigh risks to the patient. Before prescribing opioid therapy for acute pain, clinicians should discuss with patients the realistic benefits and known risks of opioid therapy (recommendation category: B; evidence type: 3).',
     );
     expect(chunk.ace.sentences.map(({ text }) => text)).toEqual(chunk.ace.text.split('\n'));
-    expect(chunk.ace.sentences.map(({ number }) => number)).toEqual([1, 2, 3, 4]);
+    expect(chunk.ace.sentences.map(({ number }) => number)).toEqual([1, 2, 3, 4, 5, 6]);
     expect(chunk.projection.region).toBe(chunk.region.id);
     expect(chunk.label).toBe('unreviewed');
 
@@ -194,25 +194,25 @@ describe('static semantic graph asset', () => {
       expect(graph.model.stats.byEdgeKind[kind], kind).toBeGreaterThanOrEqual(minimum);
     }
     expect(graph.model.stats.byEdgeKind).toEqual({
-      argument: 4737,
-      cardinality: 1993,
-      entity: 2052,
-      event: 1492,
+      argument: 7545,
+      cardinality: 3038,
+      entity: 3126,
+      event: 2415,
       grade: 24,
-      implies: 11793,
-      operator: 1431,
-      preference: 26,
-      preposition: 1509,
-      property: 7,
-      qualifier: 357,
-      threshold: 39,
-      time: 30,
+      implies: 16_686,
+      operator: 1843,
+      preference: 31,
+      preposition: 2223,
+      property: 9,
+      qualifier: 556,
+      threshold: 62,
+      time: 39,
     });
     expect(graph.model.stats).toMatchObject({
-      documents: 385,
-      clauses: 12_507,
-      nodes: 3374,
-      edges: 25_490,
+      documents: 492,
+      clauses: 18_845,
+      nodes: 4877,
+      edges: 37_597,
     });
   });
 

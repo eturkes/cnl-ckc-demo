@@ -10,7 +10,7 @@ import { GENERATED_DIR, loadManifest } from '../tools/kb/paths.mjs';
 import { verifyImage, verifyQlf } from '../tools/kb/produce.mjs';
 
 /** The corpus size and schema the milestone contract fixes. */
-const DOCUMENTS = 385;
+const DOCUMENTS = 492;
 const SCHEMA_VERSION = 1;
 // The graph asset versions independently of the engine contract and the provenance index;
 // u11 carried it to 2 while those stayed at 1. One shared constant hid that they are three

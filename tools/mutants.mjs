@@ -643,8 +643,8 @@ export const MUTANTS = [
     edits: [
       {
         path: 'kb/generated/provenance/documents/cdc2022-opioid-rec01-imp01.json',
-        old: '"line": 42,',
-        new: '"line": 41,',
+        old: '"line": 48,',
+        new: '"line": 47,',
       },
     ],
     check: { test: 'tests/proof-identity.test.ts', name: 'keys every schema clause by a unique' },

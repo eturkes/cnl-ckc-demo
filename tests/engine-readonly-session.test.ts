@@ -146,7 +146,9 @@ const KB_GOALS = [
   'guideline_cardinality(A,B,C,D,E)',
   'guideline_document(A,B,C,D)',
   'guideline_entity(A,B,C,D)',
+  'guideline_evaluation_date(A)',
   'guideline_event(A,B,C)',
+  'guideline_exclusion(A)',
   'guideline_frequency(A,B,C,D,E)',
   'guideline_grade(A,B,C,D,E)',
   'guideline_interval(A,B,C,D,E,F)',
@@ -160,6 +162,7 @@ const KB_GOALS = [
   'guideline_recurrence(A,B,C,D)',
   'guideline_recurrence_window(A,B,C,D,E,F,G)',
   'guideline_schema_version(A)',
+  'guideline_supersession(A,B,C,D)',
   'guideline_unit(A,B,C)',
   'clinical_advice(A,B,C)',
   'clinical_advice(A,B,C,D)',
@@ -241,6 +244,8 @@ const BUILTINS: [string, string][] = [
   ['=../2', 'f(a) =.. L'],
   ['guideline_satisfies/4', 'guideline_satisfies(geq,60,geq,50)'],
   ['guideline_satisfies/6', 'guideline_satisfies(geq,4,hour,geq,4,hour)'],
+  ['guideline_product/6', 'guideline_product(geq,60,exactly,rational(3,2),S,N)'],
+  ['guideline_quotient/6', 'guideline_quotient(exactly,60,exactly,4,S,N)'],
 ];
 
 // G4 amendment: each answer gets its own first-occurrence variable numbering.

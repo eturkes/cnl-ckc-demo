@@ -13,7 +13,13 @@ import { decodeTerm, type PlTerm } from '../src/engine/terms.js';
 import { QUESTION_CATALOG, QUESTION_IDS } from '../src/questions/catalog.js';
 import { marksView, type StatementMarks } from '../src/questions/marks.js';
 import { verifyBag } from '../tools/kb/bag.mjs';
-import { atomText, compiledText, rawClauses, type RawClause } from './support/marks-oracle.js';
+import {
+  atomText,
+  bodyEntity,
+  compiledText,
+  rawClauses,
+  type RawClause,
+} from './support/marks-oracle.js';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const GENERATED = join(ROOT, 'kb/generated');
@@ -65,10 +71,13 @@ interface HeadReadings {
 // The parser is test support; no marks decoder or production reading supplies this oracle.
 const readHeads = (document: string): HeadReadings => {
   const clauses = rawClauses(compiledText(files, document));
-  const noun = (heads: RawClause[], reference: string | undefined): string => {
+  const noun = (heads: RawClause[], reference: string | undefined, clause?: RawClause): string => {
     const head =
       heads.find((entry) => entry.functor === 'guideline_entity' && entry.args[1] === reference) ??
-      heads.find((entry) => entry.functor === 'guideline_property' && entry.args[1] === reference);
+      heads.find(
+        (entry) => entry.functor === 'guideline_property' && entry.args[1] === reference,
+      ) ??
+      (clause === undefined ? undefined : bodyEntity(clause, reference));
     return normal(atomText(need(head, `${document}: unresolved ${String(reference)}`).args[2]));
   };
   const preamble = clauses.filter(({ sentence }) => sentence === 1);
@@ -88,16 +97,17 @@ const readHeads = (document: string): HeadReadings => {
   for (const sentence of new Set(clauses.map((head) => head.sentence).filter((n) => n > 1))) {
     const heads = clauses.filter((head) => head.sentence === sentence);
     const readings: Readings = { qualifiers: [], preferences: [], times: [] };
-    for (const { functor, args: fields } of heads) {
+    for (const clause of heads) {
+      const { functor, args: fields } = clause;
       if (functor === 'guideline_qualifier') readings.qualifiers.push(normal(atomText(fields[3])));
       if (functor === 'guideline_preference') {
-        const preferred = noun(heads, fields[2]);
+        const preferred = noun(heads, fields[2], clause);
         readings.preferences.push(
-          fields[3] === 'none' ? preferred : `${preferred} over ${noun(heads, fields[3])}`,
+          fields[3] === 'none' ? preferred : `${preferred} over ${noun(heads, fields[3], clause)}`,
         );
       }
       if (functor === 'guideline_order')
-        readings.times.push(`${atomText(fields[2])} ${noun(heads, fields[3])}`);
+        readings.times.push(`${atomText(fields[2])} ${noun(heads, fields[3], clause)}`);
       if (functor === 'guideline_interval') {
         const quantity = need(
           heads.find(
@@ -110,7 +120,7 @@ const readHeads = (document: string): HeadReadings => {
         const comparison = need(boundWords.get(atomText(quantity.args[3])), 'unknown comparison');
         const unit = normal(atomText(fields[4]));
         const bound = `${comparison}${String(count)} ${unit}${count === 1 ? '' : 's'}`;
-        const anchor = noun(heads, fields[5]);
+        const anchor = noun(heads, fields[5], clause);
         const role = atomText(fields[2]);
         readings.times.push(
           role === 'within' ? `within ${bound} of ${anchor}` : `${bound} ${role} ${anchor}`,

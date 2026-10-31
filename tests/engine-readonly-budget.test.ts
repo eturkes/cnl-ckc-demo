@@ -119,6 +119,14 @@ const STRESS: [string, string][] = [
     `${double('string_concat', '"abcd"', 12)},sub_string(S12,B,L,A,Sub),fail`,
   ],
   ['cyclic term', 'X = f(X)'],
+  [
+    'guideline_product over unbounded counts',
+    'between(1,inf,N),guideline_product(exactly,N,exactly,rational(3,2),_,_),fail',
+  ],
+  [
+    'guideline_quotient over unbounded divisors',
+    'between(1,inf,N),guideline_quotient(exactly,N,exactly,N,_,_),fail',
+  ],
   ['$append enumeration', "'$append'(X,Y,Z),fail"],
 ];
 let shared: EngineSession;

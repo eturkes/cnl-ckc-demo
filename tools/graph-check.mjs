@@ -162,7 +162,7 @@ const FALLBACK_SCOPE_ASSET = {
     },
     // The target end's scope witness. A `condition supports` shortcut carries the SOURCE scope
     // alone, so the model reads the target end off the `event` edge declaring that event on the
-    // same line — `edge:657:0` for `edge:657:13` in the shipped bag. Without it the fixture is
+    // same line — `edge:754:0` for `edge:754:22` in the shipped bag. Without it the fixture is
     // not a fixture of the shipped shape and the model refuses it by name.
     {
       id: 'fixture:fallback-event',
@@ -208,14 +208,14 @@ const FALLBACK_SCOPE_ASSET = {
 const SPANNING_SCOPE_READINGS = [
   {
     caseId: 'V6.spanning-forward',
-    edgeId: 'edge:657:13',
+    edgeId: 'edge:754:22',
     direction: 'forward',
     relation: 'condition supports',
     completeScope: ['should', '-'],
   },
   {
     caseId: 'V6.spanning-reverse',
-    edgeId: 'edge:657:13',
+    edgeId: 'edge:754:22',
     direction: 'reverse',
     relation: 'supported by condition',
     completeScope: ['should', '-'],
@@ -451,7 +451,7 @@ const gradeScopeReadings = (rows, table, gradeDash) => {
 const gradeSpanningScope = (rows) => {
   /** @type {string[]} */
   const out = [];
-  if (rows.length === 0) return ['SPANNING_SCOPE_READINGS is empty, so edge:657:13 was not graded'];
+  if (rows.length === 0) return ['SPANNING_SCOPE_READINGS is empty, so edge:754:22 was not graded'];
   for (const row of rows) {
     if (row.rendered === null) {
       out.push(`${row.caseId}/${row.edgeId}: no ${row.direction} row renders the declared edge`);

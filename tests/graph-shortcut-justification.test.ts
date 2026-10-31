@@ -89,8 +89,8 @@ const audit = (textOf: (line: number) => string): string[] =>
   });
 
 describe('contradicting shortcut scopes', () => {
-  it('records the 67 shortcuts whose endpoint scopes contradict', () => {
-    expect(contradicting).toHaveLength(67);
+  it('records the 54 shortcuts whose endpoint scopes contradict', () => {
+    expect(contradicting).toHaveLength(54);
   });
 
   it('justifies each from its own clause: the near chain and the far context', () => {

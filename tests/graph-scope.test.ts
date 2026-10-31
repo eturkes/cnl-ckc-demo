@@ -40,9 +40,9 @@ describe('generated semantic graph scopes', () => {
       can: counts.get('can') ?? 0,
       must: counts.get('must') ?? 0,
     };
-    expect(partition).toEqual({ should: 961, '-': 197, may: 159, can: 181, must: 15 });
-    expect(Object.values(partition).reduce((sum, count) => sum + count, 0)).toBe(1_513);
-    expect(scopes).toHaveLength(1_513);
+    expect(partition).toEqual({ should: 1053, '-': 220, may: 147, can: 458, must: 15 });
+    expect(Object.values(partition).reduce((sum, count) => sum + count, 0)).toBe(1_893);
+    expect(scopes).toHaveLength(1_893);
   });
 
   it('adds no scope-specific node kind', () => {
@@ -61,7 +61,7 @@ describe('generated semantic graph scopes', () => {
 
   it('keeps default zlib gzip size within the scoped graph budget', () => {
     const compressed = gzipSync(readFileSync(GRAPH_PATH));
-    expect(compressed.byteLength).toBeLessThanOrEqual(508_572);
+    expect(compressed.byteLength).toBeLessThanOrEqual(786_955);
   });
 
   it('links every operator edge to a resolvable scope and pins unreferenced records', () => {
@@ -90,12 +90,12 @@ describe('generated semantic graph scopes', () => {
         throw new Error(`edge scope index ${String(scope)} is outside the scopes table`);
       }
     }
-    // User ruling: the 71 edgeless operator contexts stay orphaned, so unreferenced records are
+    // User ruling: the 55 edgeless operator contexts stay orphaned, so unreferenced records are
     // legal. Pinned as an exact count rather than dropped — a relaxed direction that asserts
-    // nothing is green for the same reason a correct one is. Records, not nodes: 1,256 of 1,263
+    // nothing is green for the same reason a correct one is. Records, not nodes: 1,884 of 1,893
     // are referenced because a non-operator edge can cite a context whose own node has no edge.
     const unreferenced = [...asset.scopes.keys()].filter((index) => !referenced.has(index));
-    const expectedUnreferencedScopeRecords = 7;
+    const expectedUnreferencedScopeRecords = 9;
     expect(unreferenced).toHaveLength(expectedUnreferencedScopeRecords);
   });
 

@@ -157,11 +157,11 @@ const gradeIndependent = (graph: Graph): string[] =>
   });
 
 describe('orphan operator contexts', () => {
-  it('O1 records a literal set on exactly the 83 contexts no edge touches', () => {
+  it('O1 records a literal set on exactly the 55 contexts no edge touches', () => {
     const carriers = shipped.scopes.filter(({ literals }) => literals !== undefined);
     expect(carriers.map(({ operator }) => operator).sort()).toEqual([
-      ...Array<string>(76).fill('-'),
-      ...Array<string>(7).fill('can'),
+      ...Array<string>(45).fill('-'),
+      ...Array<string>(10).fill('can'),
     ]);
     expect(gradeCarriers(shipped)).toEqual([]);
     const stripped = clone();
@@ -211,7 +211,7 @@ describe('orphan operator contexts', () => {
   });
 
   it('O4 matches the literal set re-derived from the bag', () => {
-    expect(bagLiterals.size).toBe(83);
+    expect(bagLiterals.size).toBe(55);
     expect(gradeIndependent(shipped)).toEqual([]);
     const short = clone();
     const [index = -1] = orphanIndexes(short);

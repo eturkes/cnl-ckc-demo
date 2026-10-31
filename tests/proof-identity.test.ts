@@ -35,6 +35,9 @@ const SCHEMA = [
   'guideline_preference(_,_,_,_)',
   'guideline_qualifier(_,_,_,_)',
   'guideline_unit(_,_,_)',
+  'guideline_exclusion(_)',
+  'guideline_supersession(_,_,_,_)',
+  'guideline_evaluation_date(_)',
 ];
 
 let engine: Engine;

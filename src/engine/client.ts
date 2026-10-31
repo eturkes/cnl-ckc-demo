@@ -46,7 +46,7 @@ const BOOT_DEADLINE_MS = 30_000;
  *
  * A `:- Goal.` directive runs arbitrary Prolog inside the live engine, so `consult`
  * needs a watchdog for exactly the reason a query does — it has no soft check between
- * solutions and no cancel. Set far above the ~0.9 s a full 385-document corpus consult
+ * solutions and no cancel. Set well above the ~2.8 s a full 492-document corpus consult
  * measures in Node, because only a runaway directive should ever reach it.
  */
 const CONSULT_DEADLINE_MS = 10_000;

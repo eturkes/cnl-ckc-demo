@@ -442,9 +442,10 @@ const callNode = (nodes, globalReferences, localReferences, call, document, sent
 };
 
 /**
- * Clause kinds that emit no edge of their own: the document record, and the annotations that
- * fold into another reading — a unit or a range into its quantity's node, an order into the pp
- * edge it types (`sync-u2.md`).
+ * Clause kinds that emit no edge of their own: the document record, the annotations that fold
+ * into another reading — a unit or a range into its quantity's node, an order into the pp edge it
+ * types (`sync-u2.md`) — and the scope-exclusion, supersession and evaluation-date records, whose
+ * projection is a queued feature (`.agent/deferred.md`).
  */
 const UNPROJECTED = new Set([
   'guideline_schema_version',
@@ -452,6 +453,9 @@ const UNPROJECTED = new Set([
   'guideline_unit',
   'guideline_order',
   'guideline_range',
+  'guideline_exclusion',
+  'guideline_supersession',
+  'guideline_evaluation_date',
 ]);
 
 /** @param {Map<string, number>} counts @param {string} key */
@@ -949,6 +953,11 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
       // starting it. Emit each body relation once per controlled sentence so
       // the reader-facing ontology can show the condition as an ordinary
       // entity/action path without multiplying identical bodies for every head.
+      // The supersession guard compares the evaluation date, which names no quantity; it projects
+      // with the supersession records.
+      const evaluationDates = new Set(
+        clause.body.filter(({ name }) => name === 'guideline_evaluation_date').map(({ args }) => args[0]?.trim()),
+      );
       for (const [index, call] of clause.body.entries()) {
         const condition = (
           /** @type {GraphEdgeKind} */ kind,
@@ -1000,6 +1009,7 @@ export const deriveSemanticGraph = (files, parsedClauses = parseClauseSites(file
             );
           } else condition('property', source, target, propertyLabel(call));
         } else if (call.name === 'guideline_satisfies') {
+          if (evaluationDates.has(call.args[1]?.trim())) continue;
           // No context slot: the bound takes the world of the cardinality whose comparison and
           // count it constrains.
           const card = [...bodyFacts.cardinality.values()].find(

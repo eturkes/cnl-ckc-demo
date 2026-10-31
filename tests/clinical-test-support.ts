@@ -40,6 +40,9 @@ export const CONTENT_PREDICATES = [
   ['guideline_preference', 4],
   ['guideline_qualifier', 4],
   ['guideline_unit', 3],
+  ['guideline_exclusion', 1],
+  ['guideline_supersession', 4],
+  ['guideline_evaluation_date', 1],
 ] as const;
 
 export const sha12 = (text: string): string =>
@@ -93,6 +96,29 @@ export const scanContentSites = (files: Map<string, Uint8Array> = bagFiles): Sen
   }
   return rows;
 };
+
+/**
+ * The scope guard the guideline vocabulary declares: its `scope` row names the key, and a scoped
+ * document ends each `should`, `must` and `may` edge clause with `\+ guideline_exclusion('<key>')`
+ * and no other clause (README-dist `Scope exclusions`).
+ */
+export const scopeGuard = (files: Map<string, Uint8Array> = bagFiles): string => {
+  const rows = Buffer.from(files.get(filePath(files, '/vocabulary.tsv')) ?? [])
+    .toString('utf8')
+    .split('\n')
+    .map((line) => line.split('\t'))
+    .filter(([kind]) => kind === 'scope');
+  const key = rows.length === 1 ? rows[0]?.[2] : undefined;
+  if (key === undefined || key === '')
+    throw new Error('vocabulary.tsv declares no single scope key');
+  return `, \\+ guideline_exclusion('${key}')`;
+};
+
+/** A site's antecedent: its body, less the scope guard on a `should`, `must` or `may` edge. */
+export const antecedentBody = (site: ContentSite, guard: string = scopeGuard()): string =>
+  /^guideline_operator\(.*,(?:should|must|may)\)$/u.test(site.head) && site.body.endsWith(guard)
+    ? site.body.slice(0, -guard.length)
+    : site.body;
 
 export const aceSentenceKeys = (files: Map<string, Uint8Array> = bagFiles): string[] =>
   [...selectedDocuments].flatMap((document) => {

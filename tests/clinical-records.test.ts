@@ -20,6 +20,7 @@ import { buildImage, buildQlf } from '../tools/kb/produce.mjs';
 import { deriveProvenance } from '../tools/kb/provenance.mjs';
 import {
   aceSentenceKeys,
+  antecedentBody,
   artifacts,
   bagFiles,
   canonicalGeneratedTerms,
@@ -149,7 +150,7 @@ describe('clinical records', () => {
     }).toEqual({
       strings: 'dacbfac1c8b4',
       order: 'ba17af72c3d2',
-      terms: '78328287b5af',
+      terms: 'cfeb204c4132',
     });
     expect(order).toEqual([
       'cdc2022-opioid-rec01',
@@ -189,12 +190,12 @@ describe('clinical records', () => {
       advice: 2,
       selections: 12,
       passages: 12,
-      rules: 53,
-      premises: 451,
-      gates: 53,
+      rules: 58,
+      premises: 703,
+      gates: 58,
     });
   });
-  it('T3 total site coverage: 723 lines, equality both ways, ACE↔PL bijection', () => {
+  it('T3 total site coverage: 863 lines, equality both ways, ACE↔PL bijection', () => {
     const expectedCases = scanContentSites();
     const expected = new Map(
       expectedCases.map(({ document, sentence, sites }) => [
@@ -208,11 +209,11 @@ describe('clinical records', () => {
     const expectedLines = [...expected.values()].flat();
     const actualLines = gateRecords.flatMap(({ lines }) => lines);
 
-    expect(expectedCases).toHaveLength(53);
+    expect(expectedCases).toHaveLength(58);
     expect(expectedCases.every(({ sites }) => sites.length > 0)).toBe(true);
     expect(aceSentenceKeys().sort()).toEqual([...expected.keys()].sort());
-    expect(gateRecords).toHaveLength(53);
-    expect(actual.size).toBe(53);
+    expect(gateRecords).toHaveLength(58);
+    expect(actual.size).toBe(58);
     expect([...actual.keys()].sort()).toEqual([...expected.keys()].sort());
     for (const [key, lines] of expected) {
       expect(actual.get(key), key).toEqual(lines);
@@ -220,8 +221,8 @@ describe('clinical records', () => {
         [...lines].sort((left, right) => left - right),
       );
     }
-    expect(actualLines).toHaveLength(723);
-    expect(new Set(actualLines).size).toBe(723);
+    expect(actualLines).toHaveLength(863);
+    expect(new Set(actualLines).size).toBe(863);
     expect(actualLines.sort((left, right) => left - right)).toEqual(
       expectedLines.sort((left, right) => left - right),
     );
@@ -234,10 +235,10 @@ describe('clinical records', () => {
     );
 
     expect(raw).toEqual(reference);
-    expect(raw).toHaveLength(53);
+    expect(raw).toHaveLength(58);
     expect(raw.every(({ marker }) => /^% S[1-9][0-9]*: \S/u.test(marker))).toBe(true);
-    expect(vector).toHaveLength(723);
-    expect(sha12(JSON.stringify(vector))).toBe('4430307a6b09');
+    expect(vector).toHaveLength(863);
+    expect(sha12(JSON.stringify(vector))).toBe('c96eb375a252');
 
     for (const expected of raw) {
       const key = keyOf(expected.document, expected.sentence);
@@ -256,7 +257,7 @@ describe('clinical records', () => {
     expect(
       real.map(({ document, sentence, sites }) => ({
         key: keyOf(document, sentence),
-        bodies: new Set(sites.map(({ body }) => body)).size,
+        bodies: new Set(sites.map((site) => antecedentBody(site))).size,
       })),
     ).toEqual(
       real.map(({ document, sentence }) => ({ key: keyOf(document, sentence), bodies: 1 })),
@@ -273,7 +274,7 @@ describe('clinical records', () => {
     const premises = parsePremiseRecords();
     for (const expected of scanContentSites()) {
       const key = keyOf(expected.document, expected.sentence);
-      const bodies = [...new Set(expected.sites.map(({ body }) => body))];
+      const bodies = [...new Set(expected.sites.map((site) => antecedentBody(site)))];
       expect(bodies, key).toHaveLength(1);
       const positives = positiveGoals(bodies[0] ?? '');
       const gate = gateRecords.find(({ document, sentence }) => keyOf(document, sentence) === key);
@@ -445,10 +446,14 @@ describe('clinical records', () => {
         expect([...(ids[left] ?? new Set())].some((id) => ids[right]?.has(id))).toBe(false);
       }
     }
-    const rec01s3 = gates.find(
-      ({ document, sentence }) => document === 'cdc2022-opioid-rec01' && sentence === 3,
+    const rec01s2 = gates.find(
+      ({ document, sentence }) => document === 'cdc2022-opioid-rec01' && sentence === 2,
     );
-    expect(rec01s3?.heads.some((head) => head.includes("'acute-pain'"))).toBe(true);
+    expect(
+      rec01s2?.heads.some((head) =>
+        head.includes("'at-least-opioid-equal-common-acute-pain-effectiveness'"),
+      ),
+    ).toBe(true);
   });
   it('T9 frozen surfaces: parsed clauses, canonical presentation, passage bytes', () => {
     const baseClinical = execFileSync('git', ['show', '22053ef:tools/kb/clinical.mjs'], {
@@ -546,6 +551,16 @@ describe('clinical records', () => {
         "  `[${action.modifiers.map(modifierTerm).join(',')}])`;",
         "  `[${action.modifiers.map(modifierTerm).join(',')}],` +\n  `[${action.qualifiers.map((word) => encodedAtom(word)).join(',')}])`;",
       ],
+      // User ruling (rel-u1, release `kb-2026-10-29-rc.1`): the fact arm reads every verb
+      // `FACT_VERBS` declares (`includes`, `increases`, `shows`), not `increases` alone.
+      [
+        "  const increases = main.indexOf(' increases ');\n  const is = main.indexOf(' is ');",
+        "  const fact = FACT_VERBS.map((verb) => ({ verb, at: main.indexOf(` ${verb} `) }))\n    .filter(({ at }) => at >= 0)\n    .sort((left, right) => left.at - right.at)[0];\n  const is = main.indexOf(' is ');",
+      ],
+      [
+        "  } else if (increases >= 0) {\n    mode = 'fact';\n    subject = main.slice(0, increases);\n    actions = main\n      .slice(increases + 11)\n      .split(' and increases ')\n      .map((text) => parseAction(`increases ${text}`));",
+        "  } else if (fact !== undefined) {\n    const { verb, at } = fact;\n    mode = 'fact';\n    subject = main.slice(0, at);\n    actions = main\n      .slice(at + verb.length + 2)\n      .split(` and ${verb} `)\n      .map((text) => parseAction(`${verb} ${text}`));",
+      ],
     ];
     let expectedClinical = baseClinical;
     for (const [from, to] of clinicalEdits) {
@@ -607,6 +622,16 @@ describe('clinical records', () => {
           '      if (expected === undefined || call.args.length !== expected) {\n',
           '      if (\n        (expected === undefined || call.args.length !== expected) &&\n        !BODY_BUILTINS.has(`${call.name}/${call.args.length}`)\n      ) {\n',
         ],
+        // User ruling (rel-u1, release `kb-2026-10-29-rc.1`): the 22-indicator schema and its
+        // arithmetic built-ins.
+        [
+          "  ['guideline_unit', 3],\n]);\n",
+          "  ['guideline_unit', 3],\n  ['guideline_exclusion', 1],\n  ['guideline_supersession', 4],\n  ['guideline_evaluation_date', 1],\n]);\n",
+        ],
+        [
+          "/** The schema's comparison built-ins: a rule body may call one, and no document defines one. */\nconst BODY_BUILTINS = new Set(['guideline_satisfies/4', 'guideline_satisfies/6']);\n",
+          "/** The schema's comparison and arithmetic built-ins: a rule body may call one, and no document defines one. */\nconst BODY_BUILTINS = new Set([\n  'guideline_satisfies/4',\n  'guideline_satisfies/6',\n  'guideline_product/6',\n  'guideline_quotient/6',\n]);\n",
+        ],
       ],
     };
     for (const path of [
@@ -655,14 +680,14 @@ describe('clinical records', () => {
       presentations: [presentations.length, orderedHash(presentations)],
       passages: [orderedPassages.length, sha12(JSON.stringify(orderedPassages))],
     }).toEqual({
-      parsed: [53, '151b69193658'],
-      presentations: [12, '78328287b5af'],
+      parsed: [58, '1e921ee543fa'],
+      presentations: [12, 'cfeb204c4132'],
       passages: [12, '1e11a0c96231'],
     });
     expect({
       rules: helperLines.filter((line) => line.startsWith('clinical_rule(')).length,
       gates: gateRecords.length,
-    }).toEqual({ rules: 53, gates: 53 });
+    }).toEqual({ rules: 58, gates: 58 });
   });
   it('T10 lossless guard fails closed on a non-rebuildable sentence', () => {
     const valid = CLINICAL_QUESTIONS.flatMap(({ sources }) =>
@@ -676,7 +701,7 @@ describe('clinical records', () => {
           .map((sentence, index) => parseAdviceSentence(sentence, index + 2, qualifierWords()));
       }),
     );
-    expect(valid).toHaveLength(53);
+    expect(valid).toHaveLength(58);
     expect(() =>
       parseAdviceSentence(
         'If then every clinician should consider opioid-therapy.',
@@ -684,7 +709,7 @@ describe('clinical records', () => {
         qualifierWords(),
       ),
     ).toThrowError(/^controlled sentence 99 is not lossless\n {2}source: /u);
-    expect(gateRecords).toHaveLength(53);
+    expect(gateRecords).toHaveLength(58);
   });
   it('T11 determinism: two derivations and a reversed file map agree byte for byte', async () => {
     const first = clinicalArtifacts(bagFiles);
@@ -740,9 +765,9 @@ describe('clinical records', () => {
   }, 300_000);
   it('T12 budget delta measured and reproducible, no ceiling', async () => {
     const frozen = baselineHelper();
-    expect(Buffer.byteLength(frozen)).toBe(17_362);
-    expect(sha12(frozen)).toBe('5fc791406ec6');
-    expect(gateRecords).toHaveLength(53);
+    expect(Buffer.byteLength(frozen)).toBe(20_785);
+    expect(sha12(frozen)).toBe('a20c441375de');
+    expect(gateRecords).toHaveLength(58);
 
     const [first, second] = await repeatedDerivations();
     const delta = (derivation: Derivation) => ({
@@ -806,7 +831,7 @@ describe('clinical records', () => {
         name,
       ).toMatch(expected);
     }
-    expect(gateRecords).toHaveLength(53);
+    expect(gateRecords).toHaveLength(58);
   });
   it('T14 ruled readings: record order, traversal order, ordinals, fresh anonymous', async () => {
     const errorMessage = (run: () => unknown): string => {
@@ -841,8 +866,8 @@ describe('clinical records', () => {
       sites: lines.length,
       uniqueSites: new Set(lines).size,
       clinicalSiteFacts: helperLines.filter((line) => line.startsWith('clinical_site(')).length,
-    }).toEqual({ rules: 53, gates: 53, sites: 723, uniqueSites: 723, clinicalSiteFacts: 0 });
-    expect(new Set(gates.map(({ document, sentence }) => keyOf(document, sentence))).size).toBe(53);
+    }).toEqual({ rules: 58, gates: 58, sites: 863, uniqueSites: 863, clinicalSiteFacts: 0 });
+    expect(new Set(gates.map(({ document, sentence }) => keyOf(document, sentence))).size).toBe(58);
     expect(
       sha12(
         JSON.stringify(
@@ -851,7 +876,7 @@ describe('clinical records', () => {
           ),
         ),
       ),
-    ).toBe('4430307a6b09');
+    ).toBe('c96eb375a252');
 
     for (const prefix of ['clinical_rule(', 'clinical_premise(', 'clinical_gate(']) {
       const order = [
@@ -876,7 +901,7 @@ describe('clinical records', () => {
         markers.push(line);
       }
     }
-    expect(markers).toHaveLength(65);
+    expect(markers).toHaveLength(70);
     expect(markers.every((marker) => /^% S[1-9][0-9]*: \S/u.test(marker))).toBe(true);
     expect(aceSentenceKeys().sort()).toEqual(
       cases.map(({ document, sentence }) => keyOf(document, sentence)).sort(),
@@ -969,8 +994,8 @@ describe('clinical records', () => {
       index === 0 ? `${line.split(' :- ')[0]}.` : line,
     );
 
-    expect(Buffer.byteLength(baselineHelper())).toBe(17_362);
-    expect(sha12(baselineHelper())).toBe('5fc791406ec6');
+    expect(Buffer.byteLength(baselineHelper())).toBe(20_785);
+    expect(sha12(baselineHelper())).toBe('a20c441375de');
     const [first, second] = await repeatedDerivations();
     const deltas = (derivation: Derivation) => [
       Buffer.byteLength(derivation.headSource) - Buffer.byteLength(derivation.baseSource),

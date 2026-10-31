@@ -80,16 +80,32 @@ export const rawClauses = (text: string): RawClause[] => {
     ];
   });
 };
+/**
+ * The entity literal of `clause`'s own body that types `reference`. A referent the sentence's
+ * condition introduces reaches the heads as a variable, typed by the premise that applies the rule
+ * (ann-u1 amendment, user ruling).
+ */
+export const bodyEntity = (
+  clause: RawClause,
+  reference: string | undefined,
+): RawHead | undefined =>
+  clause.body === 'true'
+    ? undefined
+    : splitArguments(clause.body)
+        .filter((goal) => goal.startsWith('guideline_entity('))
+        .map(parseHead)
+        .find((goal) => goal.args[1] === reference);
 const need = <T>(value: T | undefined, why: string): T => {
   if (value === undefined) throw new Error(`oracle unresolved ${why}`);
   return value;
 };
 export const oracleMarks = (files: Map<string, Uint8Array>, document: string): OracleMarks => {
   const clauses = rawClauses(compiledText(files, document));
-  const noun = (heads: RawClause[], reference: string | undefined): string => {
+  const noun = (heads: RawClause[], reference: string | undefined, clause?: RawClause): string => {
     const entity =
       heads.find((head) => head.functor === 'guideline_entity' && head.args[1] === reference) ??
-      heads.find((head) => head.functor === 'guideline_property' && head.args[1] === reference);
+      heads.find((head) => head.functor === 'guideline_property' && head.args[1] === reference) ??
+      (clause === undefined ? undefined : bodyEntity(clause, reference));
     return atomText(need(entity, `noun ${String(reference)}`).args[2]);
   };
   const preamble = clauses.filter(({ sentence }) => sentence === 1);
@@ -109,17 +125,18 @@ export const oracleMarks = (files: Map<string, Uint8Array>, document: string): O
       .map(({ args }) => ({ kind: atomText(args[2]), word: atomText(args[3]) }));
     const preferences = heads
       .filter(({ functor }) => functor === 'guideline_preference')
-      .map(({ args }) => ({
-        preferred: noun(heads, args[2]),
-        alternative: args[3] === 'none' ? null : noun(heads, args[3]),
+      .map((clause) => ({
+        preferred: noun(heads, clause.args[2], clause),
+        alternative: clause.args[3] === 'none' ? null : noun(heads, clause.args[3], clause),
       }));
-    const times = heads.flatMap(({ functor, args }): TimeMark[] => {
+    const times = heads.flatMap((clause): TimeMark[] => {
+      const { functor, args } = clause;
       if (functor === 'guideline_order')
         return [
           {
             kind: 'order',
             relation: atomText(args[2]) as 'before' | 'after',
-            anchor: noun(heads, args[3]),
+            anchor: noun(heads, args[3], clause),
           },
         ];
       if (functor !== 'guideline_interval') return [];
@@ -136,7 +153,7 @@ export const oracleMarks = (files: Map<string, Uint8Array>, document: string): O
           comparison: atomText(cardinality.args[3]) as Comparison,
           count,
           unit: atomText(args[4]),
-          anchor: noun(heads, args[5]),
+          anchor: noun(heads, args[5], clause),
         },
       ];
     });

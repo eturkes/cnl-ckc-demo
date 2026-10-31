@@ -374,10 +374,18 @@ const ARITIES = new Map([
   ['guideline_preference', 4],
   ['guideline_qualifier', 4],
   ['guideline_unit', 3],
+  ['guideline_exclusion', 1],
+  ['guideline_supersession', 4],
+  ['guideline_evaluation_date', 1],
 ]);
 
-/** The schema's comparison built-ins: a rule body may call one, and no document defines one. */
-const BODY_BUILTINS = new Set(['guideline_satisfies/4', 'guideline_satisfies/6']);
+/** The schema's comparison and arithmetic built-ins: a rule body may call one, and no document defines one. */
+const BODY_BUILTINS = new Set([
+  'guideline_satisfies/4',
+  'guideline_satisfies/6',
+  'guideline_product/6',
+  'guideline_quotient/6',
+]);
 
 /**
  * Parse the exact source string fed to SWI. Array position + 1 is therefore the

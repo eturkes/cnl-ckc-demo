@@ -43,7 +43,9 @@ const KB = new Set([
   'guideline_cardinality/5',
   'guideline_document/4',
   'guideline_entity/4',
+  'guideline_evaluation_date/1',
   'guideline_event/3',
+  'guideline_exclusion/1',
   'guideline_frequency/5',
   'guideline_grade/5',
   'guideline_interval/6',
@@ -57,6 +59,7 @@ const KB = new Set([
   'guideline_recurrence/4',
   'guideline_recurrence_window/7',
   'guideline_schema_version/1',
+  'guideline_supersession/4',
   'guideline_unit/3',
   'clinical_advice/3',
   'clinical_advice/4',
@@ -131,10 +134,15 @@ const BUILTINS = new Set([
   'term_variables/2',
   'arg/3',
   '=../2',
-  // The schema's comparison built-ins: integer arithmetic over ground arguments, no atom built.
-  // They read no KB clause, so they never count as the goal's KB read.
+  // The schema's comparison and arithmetic built-ins: integer arithmetic over ground arguments, no
+  // atom built. They read no KB clause, so they never count as the goal's KB read. Their cost grows
+  // with the operands, as `is/2`'s does: a 25,000-digit operand, which `is/2` builds in
+  // milliseconds, holds `guideline_quotient/6`'s Euclid loop in one step for 38 s in Node, past
+  // the wall clock, and the client's hard deadline then recreates the worker (chat-c2).
   'guideline_satisfies/4',
   'guideline_satisfies/6',
+  'guideline_product/6',
+  'guideline_quotient/6',
 ]);
 
 /** The renderer's own names for unnamed variables; a goal naming one would merge two variables. */

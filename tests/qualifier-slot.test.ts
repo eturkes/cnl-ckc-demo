@@ -227,21 +227,21 @@ describe('qualifier slot', () => {
     const produced = clinicalArtifacts(bagFiles).sentences.flatMap(({ document, clause }) =>
       clause.actions.map((value, index) => [key(document, clause.sentence, index), value] as const),
     );
-    expect(corpus.every(({ vocabulary }) => vocabulary.size === 56)).toBe(true);
-    expect(expected).toHaveLength(75);
-    expect(expected.filter(([, value]) => value.qualifiers.length === 1)).toHaveLength(19);
-    expect(expected.filter(([, value]) => value.qualifiers.length === 0)).toHaveLength(56);
-    expect(produced).toHaveLength(75);
+    expect(corpus.every(({ vocabulary }) => vocabulary.size === 69)).toBe(true);
+    expect(expected).toHaveLength(95);
+    expect(expected.filter(([, value]) => value.qualifiers.length === 1)).toHaveLength(21);
+    expect(expected.filter(([, value]) => value.qualifiers.length === 0)).toHaveLength(74);
+    expect(produced).toHaveLength(95);
     const byKey = new Map(produced);
-    expect(byKey.size).toBe(75);
+    expect(byKey.size).toBe(95);
     expect([...byKey.keys()].sort()).toEqual(expected.map(([id]) => id).sort());
     for (const [id, value] of expected) expect(byKey.get(id), id).toEqual(value);
   });
 
-  it('Q1 live clinical_rule actions have all 75 keyed values and 19 atom qualifier lists', async () => {
+  it('Q1 live clinical_rule actions have all 95 keyed values and 21 atom qualifier lists', async () => {
     const rows = await solve('clinical_rule(Doc,Sentence,Rule)');
-    expect(rows).toHaveLength(53);
-    expect(rows.flatMap(({ bindings }) => actions(bindings.Rule))).toHaveLength(75);
+    expect(rows).toHaveLength(58);
+    expect(rows.flatMap(({ bindings }) => actions(bindings.Rule))).toHaveLength(95);
     const expected = new Map(
       corpus.map(({ document, clause }) => [
         `${document}:${String(clause.sentence)}`,
@@ -262,27 +262,27 @@ describe('qualifier slot', () => {
       observed.push(...values);
     }
     expect([...seen].sort()).toEqual([...expected.keys()].sort());
-    expect(observed.filter(({ qualifiers }) => qualifiers.length === 1)).toHaveLength(19);
-    expect(observed.filter(({ qualifiers }) => qualifiers.length === 0)).toHaveLength(56);
+    expect(observed.filter(({ qualifiers }) => qualifiers.length === 1)).toHaveLength(21);
+    expect(observed.filter(({ qualifiers }) => qualifiers.length === 0)).toHaveLength(74);
   });
 
-  it('Q1 live clinical_advice groups retain 63 oracle actions and 17 atom qualifier lists', () => {
+  it('Q1 live clinical_advice groups retain 74 oracle actions and 19 atom qualifier lists', () => {
     const expected = groupedClauses(corpus);
     const answers = liveAnswers.map(({ bindings }) => {
       const [document, groups] = compound(bindings.Answer, 'clinical_answer', 3);
       return { document: scalar(document, 'atom'), groups: list(groups) };
     });
     expect(answers.map(({ document }) => document)).toEqual(documents);
-    expect(answers.flatMap(({ groups }) => groups)).toHaveLength(43);
-    expect(answers.flatMap(({ groups }) => groups.flatMap(actions))).toHaveLength(63);
+    expect(answers.flatMap(({ groups }) => groups)).toHaveLength(46);
+    expect(answers.flatMap(({ groups }) => groups.flatMap(actions))).toHaveLength(74);
     const observed: Action[] = [];
     for (const { document, groups } of answers) {
       const values = groups.map((rule) => actions(rule).map(action));
       expect(values, document).toEqual(expected.get(document)?.map((clause) => clause.actions));
       observed.push(...values.flat());
     }
-    expect(observed.filter(({ qualifiers }) => qualifiers.length === 1)).toHaveLength(17);
-    expect(observed.filter(({ qualifiers }) => qualifiers.length === 0)).toHaveLength(46);
+    expect(observed.filter(({ qualifiers }) => qualifiers.length === 1)).toHaveLength(19);
+    expect(observed.filter(({ qualifiers }) => qualifiers.length === 0)).toHaveLength(55);
   });
 
   it('Q1 the renderer accepts action/5 and rejects every malformed qualifier-list shape', () => {
@@ -369,7 +369,7 @@ describe('qualifier slot', () => {
         })
         .join('\n'),
     );
-    expect(removed).toBe(56);
+    expect(removed).toBe(69);
     const message = errorMessage(empty);
     expect(message).toContain('vocabulary.tsv');
     expect(message).toMatch(/qualifier/iu);
@@ -487,10 +487,10 @@ describe('qualifier slot', () => {
         }
       }
     }
-    expect(graded).toBe(1120);
+    expect(graded).toBe(1380);
   });
 
-  it('Q3 all 43 live rendered statements stay byte-identical in document/group order', () => {
+  it('Q3 all 46 live rendered statements stay byte-identical in document/group order', () => {
     const presentations = liveAnswers.map(({ bindings, display }) => {
       if (bindings.Answer === undefined) throw new Error('live solution has no Answer binding');
       return presentAnswerTerm(bindings.Answer, display.Answer ?? '');
@@ -499,14 +499,14 @@ describe('qualifier slot', () => {
     expect(presentations).toHaveLength(12);
     expect(presentations.every(({ structured }) => structured)).toBe(true);
     const items = presentations.flatMap((presentation) => presentation.items);
-    expect(items).toHaveLength(43);
+    expect(items).toHaveLength(46);
     expect(createHash('sha256').update(JSON.stringify(items)).digest('hex')).toBe(
-      '8ed9ee9e090f2b69baf398d846866a198bb91b5ce995da31d10600f8cef4f0ea',
+      '3586cbfe6769d90abad67e9fb1f37e2a89ef38e7943681687e726848ee9da67e',
     );
   });
 
-  it('Q4 all 53 ACE sentences rebuild byte for byte with their vocabulary', () => {
-    expect(corpus).toHaveLength(53);
+  it('Q4 all 58 ACE sentences rebuild byte for byte with their vocabulary', () => {
+    expect(corpus).toHaveLength(58);
     for (const { document, vocabulary, clause } of corpus) {
       const parsed = parse(clause.original, clause.sentence, vocabulary);
       expect(rebuildClause(parsed), `${document}:${String(clause.sentence)}`).toBe(clause.original);

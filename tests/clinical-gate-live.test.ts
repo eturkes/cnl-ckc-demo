@@ -44,8 +44,8 @@ beforeAll(async () => {
 
 describe('clinical gate binding', () => {
   it('T2 each gate executes every line it names, under its own premises', () => {
-    expect(gateRecords).toHaveLength(53);
-    expect([...engine.prolog.query('clause(clinical_gate(_,_,_,_),_,_).')]).toHaveLength(53);
+    expect(gateRecords).toHaveLength(58);
+    expect([...engine.prolog.query('clause(clinical_gate(_,_,_,_),_,_).')]).toHaveLength(58);
     expect(String(row("(clinical_gate('cdc2022-opioid-rec01',2,_,_) -> R=yes ; R=no).").R)).toBe(
       'no',
     );
@@ -69,10 +69,9 @@ describe('clinical gate binding', () => {
       }
     }
 
-    expect(bounded.sort()).toEqual(['cdc2022-opioid-rec05:6']);
+    expect(bounded.sort()).toEqual([]);
     expect(failures).toEqual([]);
-    // 52 + the 1 bounded gate = 53.
-    expect(native).toHaveLength(52);
+    expect(native).toHaveLength(58);
     expect(diagnostics).toEqual([]);
   }, 120_000);
   it('T15 exact-site refutation: deletion fails, same-head reassertion stays failed', () => {

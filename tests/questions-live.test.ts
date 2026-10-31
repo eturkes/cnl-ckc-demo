@@ -380,7 +380,7 @@ describe('answer humanizer', () => {
     const presentation = presentAnswerTerm(term, display);
     expect(term.kind).toBe('compound');
     expect(presentation.structured).toBe(true);
-    expect(presentation.items).toHaveLength(3);
+    expect(presentation.items).toHaveLength(5);
     expect(presentation.items.every((item) => item.endsWith('.'))).toBe(true);
     expect(presentation.items.every((item) => !item.includes('-'))).toBe(true);
     expect(presentation.text).toBe(presentation.items.join(' '));

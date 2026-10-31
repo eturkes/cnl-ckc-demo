@@ -49,8 +49,8 @@ export const CHAT_BUDGET: Readonly<BudgetSpec> = Object.freeze({ ...DEMO_BUDGET,
 
 const PROOF_BUDGET: Readonly<BudgetSpec> = Object.freeze({
   stackBytes: 16_777_216,
-  depth: 100,
-  inferences: 100_000,
+  depth: 256,
+  inferences: 300_000,
   wallClockMs: 3_000,
   answerCap: 1,
 });

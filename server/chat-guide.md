@@ -42,7 +42,8 @@ only these predicates exist and anything else is refused.
   `sub_string/5` `string_concat/3` `split_string/4` `string_lower/2` `string_upper/2`
   `string_code/3` `string_codes/2` `string_length/2` `sub_atom_icasechk/3` `atom_length/2`
   `text_to_string/2`, `copy_term/2` `term_variables/2` `arg/3` `=../2`,
-  `guideline_satisfies/4,6`, `clause/2` over a KB predicate.
+  `guideline_satisfies/4,6`, `guideline_product/6`, `guideline_quotient/6`, `clause/2` over a
+  KB predicate.
 - Absent: `member/2` (use `'$member'/2`), `append/3` (use `'$append'/3`), `nth0`, `nth1`,
   `last`, `sum_list`, `aggregate_all`, `maplist`, `functor/3` (use `=..`), `string_chars/2` (use `string_codes/2`), every atom builder (`atom_concat`,
   `atom_string`, `sub_atom`, `term_to_atom`, …), `assert`, `retract`, `call/N`, `M:Goal`.
@@ -52,14 +53,14 @@ only these predicates exist and anything else is refused.
 Twelve recommendation documents, `cdc2022-opioid-rec01` … `cdc2022-opioid-rec12`, carry the
 clinical records:
 
-- `clinical_rule(Doc, Sentence, rule(Conditions, Agent, Modality, Actions))` — 53 rules.
+- `clinical_rule(Doc, Sentence, rule(Conditions, Agent, Modality, Actions))` — 58 rules.
   `Conditions` = list of strings (empty = unconditional); `Modality` = `should`, `can` or `fact`;
   `Actions` = list of `action(Polarity, Verb, Object, Modifiers, Qualifiers)`, `Polarity` =
   `positive` or `negative`, `Modifiers` = list of `modifier(Preposition, String)`, `Qualifiers` =
   the leading qualifier words, those before the verb, as atoms (`[carefully]`, `[]` when none); a
   qualifier after the object stays in the object's text. A recommendation to refrain is `should`
   with a `negative` action. Example:
-  `rule([],"Every clinician",should,[action(positive,establish,"a pain-goal",[modifier(with,"a patient")],[])])`.
+  `rule(["a patient has an opioid-use-disorder"],"every clinician",should,[action(positive,offer,"an evidence-based-medication-treatment",[modifier(for,"the opioid-use-disorder"),modifier(to,"the patient")],[])])`.
 - `clinical_passage(Doc, Text)` — the guideline's own prose for each recommendation (12).
 - `clinical_advice(QuestionId, Source, clinical_answer(Doc, Rules, Passage))` — the demo's
   built-in questions answered per document, derived live; `QuestionId` is one of
@@ -69,9 +70,9 @@ clinical records:
 - `clinical_source(QuestionId, Doc, Sentence)` — which document and sentence answer each
   built-in question (12).
 - `clinical_derive(Doc, Sentence, Rule, Proof)` — derives one rule through the compiled
-  guideline clauses; slower (all 53 take under a second), use it to show a rule is derived.
+  guideline clauses; slower (all 58 take about a second), use it to show a rule is derived.
 
-All 385 documents (`recNN`, `recNN-impNN`, `sNN-NN`) are compiled to `guideline_*` clauses:
+All 492 documents (`recNN`, `recNN-impNN`, `sNN-NN`) are compiled to `guideline_*` clauses:
 
 - Relations: `guideline_entity/4`, `guideline_event/3`, `guideline_arg/4`,
   `guideline_operator/3`, `guideline_cardinality/5`, `guideline_pp/4`, `guideline_property/4`,
@@ -90,8 +91,20 @@ All 385 documents (`recNN`, `recNN-impNN`, `sNN-NN`) are compiled to `guideline_
   `guideline_unit(Context, Quantity, Unit)`.
 - Comparison built-ins: `guideline_satisfies(Comparison, Count, Bound, Limit)` and
   `guideline_satisfies(Comparison, Count, Unit, Bound, Limit, LimitUnit)` test whether a stated
-  quantity meets a bound, for example `guideline_satisfies(exactly,60,geq,50)`. They read no KB
-  clause, so a goal still needs a KB predicate beside them.
+  quantity meets a bound, for example `guideline_satisfies(exactly,60,geq,50)`.
+- Arithmetic built-ins: `guideline_product(C1, N1, C2, N2, C, N)` and
+  `guideline_quotient(C1, N1, C2, N2, C, N)` multiply and divide two stated quantities, for
+  example `guideline_product(exactly,40,exactly,rational(3,2),C,N)` gives `C = exactly, N = 60`;
+  a count that is no integer is `rational(P, Q)`. The built-ins read no KB clause, so a goal
+  still needs a KB predicate beside them.
+- Scope and supersession: `guideline_exclusion('cdc-2022-opioid')` holds when a scope exclusion
+  applies (rules for cancer-related pain, sickle cell disease pain, palliative or end-of-life
+  care, a patient under 18, …). Every `should`, `must` and `may` clause ends with
+  `\+ guideline_exclusion('cdc-2022-opioid')`, so none derives where an exclusion holds.
+  `guideline_supersession(Doc, Sentence, source(Citation, Url), Date)` records a statement that
+  later law replaced (`cdc2022-opioid-rec12-imp08`, from 20221229); its `should`, `must` and
+  `may` statements derive only under a `guideline_evaluation_date(Date)` before that date, which
+  the KB never states.
 
 Most clauses are universal statements over clinicians: calling
 `guideline_operator(actual,C,should)` directly FAILS, correctly, because the KB holds no
