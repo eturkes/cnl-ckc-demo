@@ -288,7 +288,7 @@ worker before its caller resumes (`chat-c2.md`).
   `tests/engine-budgets.test.ts` P2.10 seen red at `9736d24`. Owed the user's approval of three
   case edits the fix forces (P3.1 ×2 built `numlist/3`, absent from the image; E27's concurrent
   pair); draft `wip/n35-error-steps` `9936ffa`.
-- [ ] n36 `low` find: `tests/chat-server.test.ts` parsed a trace line the fake was still writing
+- [x] 661524a n36 `low` find: `tests/chat-server.test.ts` parsed a trace line the fake was still writing
   (CI run 41173655724: B7 `Unterminated string in JSON`). Accept: the reader parses
   newline-terminated records alone, B0 seen red on the old reader.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
