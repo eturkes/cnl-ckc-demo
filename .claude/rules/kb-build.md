@@ -68,9 +68,22 @@ commit (user ruling) at `vendor/cnl-ckc/` — each file at its git blob hash in
 every declared class), `evidence_of` + `payload_of` (coverage row → source payload),
 `vendor/cnl-ckc/rust/ckc-spec/src/align.rs` `align_outcome` (source↔ACE span groups),
 `vendor/cnl-ckc/rust/ckc-spec/src/ui.rs` `alignment` + `aligned_text`. Its fixture corpus
-`vendor/cnl-ckc/tests/ui/` (22 green + 85 red case families) is the adversarial input set for
-provenance joins and hostile input; no suite here runs it yet (`.agent/deferred.md`). No graph
-command or graph artifact exists upstream.
+`vendor/cnl-ckc/tests/ui/` (22 green + 85 red case families) runs in
+`tests/upstream-ui-corpus.test.ts`: the 34 families whose target the port implements go through
+`deriveProvenance` over their own trees — 6 green join, 28 red are refused by the port's reason
+for the refusal upstream records — and the other 73 are named beside the surface the port lacks
+(HTTP, HTML, the adjudication ledger, the source tree's review manifest, README titles, git,
+the multi-guideline index, the CLI, the vocabulary table). The adapter adds bag-only plumbing
+alone (release labels, a PDF stand-in, an alignment where a fixture has none, the fourth
+`guideline_document` argument). Port rules the corpus fixed, each upstream's: a region id is
+any non-empty, space-free id of at most 250 UTF-8 bytes (`parse_row`, `locator_id`; the cap is the
+port's); an extraction's last payload may lack
+its LF (`evidence_of`); a locator line's own page and section are never compared with its
+coverage row, which is the region's authority; every coverage document carries its ACE and
+Prolog file, the Prolog file valid UTF-8, and a file under `ace/` or `pl/` that is no coverage
+document is refused `file-orphan`. A duplicated document id is refused by its first repeat in coverage
+order, as `check.rs` `parse_rows` does, where upstream's reviewer names the sorted-first one. No
+graph command or graph artifact exists upstream.
 
 ## Generated payload
 

@@ -279,9 +279,8 @@ worker before its caller resumes (`chat-c2.md`).
   panel's change waits on the user's approval (`Decisions`: accepted surfaces).
 - [x] 18c83fe n31 `low` queue row `An arithmetic built-in holds one engine step past the wall clock`.
 - [x] 2f439d6 n32 `low` queue row `The release tag's signature goes unchecked`.
-- [ ] n33 `low` queue row `The vendored tests/ui/ corpus runs against no suite` — owed the
-  user's approval: the port's nine edits are declared T9 edits (a grader change); draft
-  `wip/n33-upstream-ui` `5a3e015`, its full gate green (run 41169772631).
+- [ ] n33 `low` queue row `The vendored tests/ui/ corpus runs against no suite` — approved
+  (user): the nine declared T9 edits; draft `wip/n33-upstream-ui` `5a3e015`, landed unchanged.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase

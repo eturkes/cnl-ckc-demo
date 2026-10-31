@@ -44,12 +44,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   Accept: a speedup at equal strength — every check still runs and fires on its planted
   input — that an alternating A/B, two runs per arm against the tree it replaces, shows cutting
   `binding:check`'s wall by at least 15%. `pri` low.
-- **The vendored `tests/ui/` corpus runs against no suite** — `vendor/cnl-ckc/tests/ui/` holds
-  upstream's 22 green and 85 red case families for provenance joins and hostile input, vendored
-  at the release commit (user ruling), and no test here feeds them to `tools/kb/provenance.mjs`
-  or `src/provenance/`. Accept: a suite reads every applicable family and holds the port to its
-  verdict — each green family joined, each red family refused by its recorded reason — with the
-  families that exercise a surface the port lacks listed by name. `pri` low.
 - **A loop of capped arithmetic holds one engine step past the wall clock** — a read-only query
   caps every integer at 1000 bytes (`READONLY_INTEGER_BYTES`, `max_integer_size`'s floor), so no
   single arithmetic call holds a step (costliest measured 109 ms), but the inference budget prices
