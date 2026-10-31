@@ -111,6 +111,7 @@ export const verifySshSignature = (message, armored, signers, namespace) => {
   const inner = { at: 0 };
   const algorithm = sshString(signature, inner).toString();
   const raw = sshString(signature, inner);
+  if (inner.at !== signature.length) refuse('the signature field carries trailing bytes');
   const { key, algorithm: expected, digest } = publicKey(signerKey);
   if (algorithm !== expected) refuse(`signature algorithm ${algorithm} is not ${expected}`);
   const signed = Buffer.concat([

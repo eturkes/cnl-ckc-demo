@@ -88,9 +88,9 @@ graph command or graph artifact exists upstream.
 ## Generated payload
 
 `pnpm kb:build` → `kb/generated/{kb.pvm,kb.qlf,kb-manifest.json}`, gitignored. Input = the
-492 `pl/` payload files, sorted, joined with `% file:<path>` markers, then `schema.pl` and the
-two helpers; the manifest records the sha256 of that whole consulted source as the build
-input.
+492 `pl/` payload files, sorted, joined with `% file:<path>` markers, then `schema.pl`, the
+clinical helper, the proof source and the read-only arithmetic block; the manifest records the
+sha256 of that whole consulted source as the build input.
 
 - **Byte-reproducible.** `qsave_program` writes a ZIP whose entry timestamps and whose
   embedded `state.qlf` source mtime both come from wall-clock reads. Pinning `Date.now` for

@@ -131,7 +131,8 @@ leaves its frame open, and every later query then resolves outside the KB:
 - **A read-only query caps big integers at `READONLY_INTEGER_BYTES`** (`src/engine/readonly.ts`),
   SWI's `max_integer_size` at its floor of 1000 bytes, set before the query and lifted after it,
   both read back. Uncapped, one 25,000-digit `guideline_quotient/6` held a single step for
-  minutes; capped, it trips `resource_error(tripwire(max_integer_size,1000))` at once. The flag
+  minutes. The twins below refuse such an operand first; the cap stays behind them for every
+  integer they never see, and trips `resource_error(tripwire(max_integer_size,1000))`. The flag
   boots unset and refuses to be unset again: `size_t`'s maximum, 4294967295 on wasm32, restores
   the unset state. `tests/engine-readonly-budget.test.ts` G9.
 - **A read-only goal's arithmetic runs through bounded twins** (`tools/kb/readonly-arithmetic.mjs`,

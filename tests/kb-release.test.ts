@@ -279,6 +279,13 @@ describe('KB release intake', () => {
       [sshsigBlob(fields).subarray(0, 12), 'the signature blob ends inside a length'],
       [sshsigBlob([]), 'the signature blob ends inside a length'],
       [
+        sshsigBlob([
+          ...fields.slice(0, 4),
+          Buffer.concat([fields[4] ?? Buffer.alloc(0), Buffer.from([0])]),
+        ]),
+        'the signature field carries trailing bytes',
+      ],
+      [
         sshsigBlob([key, namespace, reserved, Buffer.from('md5'), fields[4] ?? Buffer.alloc(0)]),
         'hash algorithm md5 is not sha256 or sha512',
       ],

@@ -53,7 +53,7 @@ port's domain observes the change.
 | M018 | `tools/kb/provenance.mjs:95:52` | StringLiteral "\"\"" | Survived | equivalent — Buffer.byteLength defaults to UTF-8 with an empty encoding; byte bound unchanged. |
 | M019 | `tools/kb/provenance.mjs:95:74` | StringLiteral "\"\"" | NoCoverage | open — invalid-region reason changed; no applicable family records that reason. |
 | M020 | `tools/kb/provenance.mjs:95:92` | StringLiteral "``" | NoCoverage | open — invalid-region diagnostic detail is outside the required family verdicts. |
-| M022 | `tools/kb/provenance.mjs:101:7` | ConditionalExpression "false" | Survived | open — source-path subguard removed; applicable corpus has only direct safe source paths. |
+| M021 | `tools/kb/provenance.mjs:101:7` | ConditionalExpression "false" | Survived | open — source-path guard removed; applicable corpus has no unsafe source path. |
 | M022 | `tools/kb/provenance.mjs:101:7` | ConditionalExpression "false" | Survived | open — source-path subguard removed; applicable corpus has only direct safe source paths. |
 | M023 | `tools/kb/provenance.mjs:101:7` | LogicalOperator "!SOURCE_PATH.test(path) && path.includes('..')" | Survived | open — unsafe source names accepted by conjunction; no applicable family exercises traversal. |
 | M024 | `tools/kb/provenance.mjs:101:7` | LogicalOperator "(!SOURCE_PATH.test(path) \\|\\| path.includes('..')) && path.inc" | Survived | open — conjunction requires a backslash before refusal; unsafe path families target HTTP, not this port. |
@@ -75,7 +75,7 @@ port's domain observes the change.
 | M040 | `tools/kb/provenance.mjs:135:79` | StringLiteral "\"Stryker was here!\"" | NoCoverage | equivalent — five-field length guard makes status fallback unreachable. |
 | M041 | `tools/kb/provenance.mjs:136:45` | StringLiteral "``" | Survived | open — region-validation detail changes, not a family verdict. |
 | M042 | `tools/kb/provenance.mjs:136:56` | ArithmeticOperator "index - 1" | Survived | open — region diagnostic line numbering is outside the corpus verdict contract. |
-| M044 | `tools/kb/provenance.mjs:139:9` | ConditionalExpression "false" | Survived | open — page validation removed; corpus supplies no five-field coverage row with invalid page. |
+| M043 | `tools/kb/provenance.mjs:139:9` | ConditionalExpression "false" | Survived | open — page/section validation removed; malformed-coverage family fails the earlier field-count check. |
 | M044 | `tools/kb/provenance.mjs:139:9` | ConditionalExpression "false" | Survived | open — page validation removed; corpus supplies no five-field coverage row with invalid page. |
 | M045 | `tools/kb/provenance.mjs:139:9` | LogicalOperator "pageMatch === null && section === ''" | Survived | open — invalid page and empty section both required for refusal; corpus exercises neither. |
 | M046 | `tools/kb/provenance.mjs:139:31` | ConditionalExpression "false" | Survived | open — empty section admitted; no applicable family constrains this branch. |
@@ -114,8 +114,8 @@ port's domain observes the change.
 | M077 | `tools/kb/provenance.mjs:216:56` | ArithmeticOperator "index - 1" | Survived | open — projection document-id diagnostic numbering is outside the contract. |
 | M078 | `tools/kb/provenance.mjs:217:45` | StringLiteral "``" | Survived | open — projection region diagnostic context is outside the contract. |
 | M079 | `tools/kb/provenance.mjs:217:56` | ArithmeticOperator "index - 1" | Survived | open — projection region diagnostic numbering is outside the contract. |
-| M082 | `tools/kb/provenance.mjs:218:9` | ConditionalExpression "false" | Survived | open — projection validation subcondition disabled; corpus has populated unique projection rows. |
-| M082 | `tools/kb/provenance.mjs:218:9` | ConditionalExpression "false" | Survived | open — projection validation subcondition disabled; corpus has populated unique projection rows. |
+| M080 | `tools/kb/provenance.mjs:218:9` | ConditionalExpression "false" | Survived | open — projection validation disabled; no applicable family exercises empty/duplicate projection notes. |
+| M081 | `tools/kb/provenance.mjs:218:9` | ConditionalExpression "false" | Survived | open — projection validation subcondition disabled; corpus has populated unique projection rows. |
 | M082 | `tools/kb/provenance.mjs:218:9` | ConditionalExpression "false" | Survived | open — projection validation subcondition disabled; corpus has populated unique projection rows. |
 | M083 | `tools/kb/provenance.mjs:218:9` | LogicalOperator "(kept === '' \\|\\| dropped === '') && notes.has(document)" | Survived | open — projection guard now requires duplication and empty text; no applicable family targets either defect. |
 | M084 | `tools/kb/provenance.mjs:218:9` | LogicalOperator "kept === '' && dropped === ''" | Survived | open — projection guard requires both texts empty; no applicable family supplies an empty kept/dropped field. |
@@ -178,7 +178,7 @@ port's domain observes the change.
 | M142 | `tools/kb/provenance.mjs:282:32` | StringLiteral "\"Stryker was here!\"" | Survived | open — ordinal filter removes sentinel instead of blanks; neither affected line occurs in applicable ordinal families. |
 | M143 | `tools/kb/provenance.mjs:283:33` | Regex "/[1-9][0-9]*\\. /u" | Survived | open — ordinal prefix pattern can match inside payload; applicable payloads have their numbering at the start. |
 | M144 | `tools/kb/provenance.mjs:283:33` | Regex "/^[1-9][^0-9]*\\. /u" | Survived | open — multi-digit ordinal prefix grammar changes; applicable corpus has only single-digit ordinal numbers. |
-| M146 | `tools/kb/provenance.mjs:284:7` | ConditionalExpression "false" | Survived | open — ordinal census subguard removed; corpus has a matching extraction declaration. |
+| M145 | `tools/kb/provenance.mjs:284:7` | ConditionalExpression "false" | Survived | open — declared ordinal census validation removed; corpus mismatch family instead reaches same-file coverage census. |
 | M146 | `tools/kb/provenance.mjs:284:7` | ConditionalExpression "false" | Survived | open — ordinal census subguard removed; corpus has a matching extraction declaration. |
 | M147 | `tools/kb/provenance.mjs:284:7` | LogicalOperator "censusMatch === null && Number(censusMatch[1]) !== ordered.l" | Survived | open — null census dereference possible outside corpus; applicable ordinal families all declare counts. |
 | M148 | `tools/kb/provenance.mjs:284:31` | ConditionalExpression "false" | Survived | open — declared count mismatch admitted; applicable mismatch concerns coverage rows, not extraction header declaration. |
@@ -202,7 +202,7 @@ port's domain observes the change.
 | M167 | `tools/kb/provenance.mjs:532:37` | StringLiteral "\"Stryker was here!\"" | NoCoverage | equivalent — four-field length guard makes rawSide fallback unreachable. |
 | M168 | `tools/kb/provenance.mjs:532:52` | StringLiteral "\"Stryker was here!\"" | NoCoverage | equivalent — four-field length guard makes rawStart fallback unreachable. |
 | M169 | `tools/kb/provenance.mjs:532:66` | StringLiteral "\"Stryker was here!\"" | NoCoverage | equivalent — four-field length guard makes surface fallback unreachable. |
-| M171 | `tools/kb/provenance.mjs:533:9` | ConditionalExpression "false" | Survived | open — numeric alignment subguard removed; applicable rows use valid decimal group/start fields. |
+| M170 | `tools/kb/provenance.mjs:533:9` | ConditionalExpression "false" | Survived | open — alignment lexical guard removed; corpus red cases target span mismatch, overlap and one-sided groups. |
 | M171 | `tools/kb/provenance.mjs:533:9` | ConditionalExpression "false" | Survived | open — numeric alignment subguard removed; applicable rows use valid decimal group/start fields. |
 | M172 | `tools/kb/provenance.mjs:533:9` | LogicalOperator "!DECIMAL.test(rawGroup) && !DECIMAL.test(rawStart)" | Survived | open — both numeric fields must now be invalid before refusal; no applicable family exercises numeric grammar. |
 | M173 | `tools/kb/provenance.mjs:533:9` | LogicalOperator "(!DECIMAL.test(rawGroup) \\|\\| !DECIMAL.test(rawStart)) && surf" | Survived | open — malformed numeric fields require empty surface for refusal; applicable alignment cases have valid fields. |

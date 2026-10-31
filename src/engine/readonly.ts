@@ -21,8 +21,9 @@ export const READONLY_GOAL_MAX = 2048;
  * `resource_error(tripwire(max_integer_size,1000))` where it would be built. Uncapped, one
  * 25,000-digit `guideline_quotient/6` — two `is/2` calls build its operands in milliseconds —
  * held one step 148 s on the i7-8650U; under the cap the costliest single call measured is 109 ms
- * (400-byte operands). Every KB number fits. A fail-driven loop of capped arithmetic still costs
- * more per inference than the budget prices (`.agent/deferred.md`).
+ * (400-byte operands). Every KB number fits. A loop of capped arithmetic still cost more per
+ * inference than the budget prices, so the bounded twins (`tools/kb/readonly-arithmetic.mjs`)
+ * stand in front of the cap; the cap catches every integer they never see.
  */
 export const READONLY_INTEGER_BYTES = 1000;
 
