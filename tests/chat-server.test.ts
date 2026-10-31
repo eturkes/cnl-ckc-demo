@@ -44,9 +44,12 @@ async function until(predicate: () => boolean, label: string, ms = 4000) {
     await delay(2);
   }
 }
+// The fake appends each record whole, and a poll can read the file mid-write: a record is a
+// newline-terminated line, so the unterminated tail waits for the next poll.
 function rows(path: string): Trace[] {
   return readFileSync(path, 'utf8')
     .split('\n')
+    .slice(0, -1)
     .filter(Boolean)
     .map((line) => JSON.parse(line) as Trace);
 }
@@ -235,6 +238,18 @@ function raw(
 }
 
 describe('chat-c3 bridge contract', { timeout: 20_000 }, () => {
+  it('B0 reads only newline-terminated trace records, so a read mid-write waits for the next poll', () => {
+    mkdirSync(resolve(root, '.scratch'), { recursive: true });
+    const dir = mkdtempSync(resolve(root, '.scratch/chat-trace-'));
+    try {
+      const file = resolve(dir, 'trace.ndjson');
+      writeFileSync(file, '{"stream":"in"}\n{"stream":"ou');
+      expect(rows(file)).toEqual([{ stream: 'in' }]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it('B1 initializes once, pins start parameters, guide, home and every child flag', async () => {
     const s = await setup();
     await (await s.open('plain')).done();

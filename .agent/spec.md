@@ -281,13 +281,16 @@ worker before its caller resumes (`chat-c2.md`).
 - [x] 2f439d6 n32 `low` queue row `The release tag's signature goes unchecked`.
 - [x] 9736d24 n33 `low` queue row `The vendored tests/ui/ corpus runs against no suite` — approved
   (user): the nine declared T9 edits; draft `wip/n33-upstream-ui` `5a3e015`, landed unchanged.
-- [ ] n34 `low` queue row `A loop of capped arithmetic holds one engine step past the wall clock` —
+- [x] d18f034 n34 `low` queue row `A loop of capped arithmetic holds one engine step past the wall clock` —
   user ruling: solve it here, else route to IMPLEMENT.
 - [ ] n35 `low` find: a Prolog exception raised mid-run settled `failure` (swipl-wasm's error step
   carries no `value`). Accept: the query and proof loops settle such a run as error `prolog`,
   `tests/engine-budgets.test.ts` P2.10 seen red at `9736d24`. Owed the user's approval of three
   case edits the fix forces (P3.1 ×2 built `numlist/3`, absent from the image; E27's concurrent
   pair); draft `wip/n35-error-steps` `9936ffa`.
+- [ ] n36 `low` find: `tests/chat-server.test.ts` parsed a trace line the fake was still writing
+  (CI run 41173655724: B7 `Unterminated string in JSON`). Accept: the reader parses
+  newline-terminated records alone, B0 seen red on the old reader.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
