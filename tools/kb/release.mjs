@@ -13,11 +13,16 @@ import { dirname, join, relative } from 'node:path';
 
 import { sha256, verifyBag } from './bag.mjs';
 import { ROOT } from './paths.mjs';
+import { parseSigners, verifySshSignature } from './sshsig.mjs';
 
 export const REPOSITORY = 'eturkes/cnl-ckc';
 export const RECORD_PATH = join(ROOT, 'kb', 'release.json');
 export const VENDOR_DIR = join(ROOT, 'vendor', 'cnl-ckc');
 export const VENDOR_MANIFEST = 'PROVENANCE.tsv';
+/** The release tag as signed: its object id, the signed payload and the armored SSH signature. */
+export const TAG_PATH = join(ROOT, 'kb', 'release-tag.json');
+/** The keys a release tag may be signed with, in `allowed_signers` form. */
+export const SIGNERS_PATH = join(ROOT, 'kb', 'release-signers');
 /** The upstream files the provenance port cites, by path in the tag's commit; `/` ends a tree. */
 export const VENDORED = Object.freeze([
   'LICENSE',
@@ -31,6 +36,7 @@ export const VENDORED = Object.freeze([
 /** @typedef {{ name: string, digest?: string | null, browser_download_url: string }} Asset */
 /** @typedef {{ path: string, type: string, sha: string }} TreeEntry */
 /** @typedef {{ repository: string, tag: string, commit: string, archive: string, sha256: string, bag: string }} ReleaseRecord */
+/** @typedef {{ object: string, payload: string, signature: string }} SignedTag */
 
 /** A refusal names what failed; the caller adds nothing. @param {string} message @returns {never} */
 const refuse = (message) => {
@@ -199,6 +205,82 @@ export const gradeRecord = (record, kbFiles) => {
   return out;
 };
 
+/**
+ * The release tag against `kb/release.json`: signed in the `git` namespace by a pinned signer, it
+ * names the recorded commit and tag, and its body holds exactly one `sha256sum` line for the
+ * archive, equal to the recorded digest. The sidecar and GitHub's asset digest come from the same
+ * release as the archive; this line is the one the signer vouches for.
+ * @param {SignedTag} tag @param {ReleaseRecord} record
+ * @param {{ principal: string, blob: Buffer }[]} signers
+ * @returns {string[]} refusals, each naming the tag
+ */
+export const gradeTag = (tag, record, signers) => {
+  const name = `tag ${record.tag}`;
+  /** @type {string[]} */
+  const out = [];
+  try {
+    verifySshSignature(Buffer.from(tag.payload), tag.signature, signers, 'git');
+  } catch (error) {
+    out.push(`${name}: ${error instanceof Error ? error.message : String(error)}`);
+  }
+  const blank = tag.payload.indexOf('\n\n');
+  const header = new Map(
+    tag.payload
+      .slice(0, Math.max(blank, 0))
+      .split('\n')
+      .map((line) => [line.slice(0, line.indexOf(' ')), line.slice(line.indexOf(' ') + 1)]),
+  );
+  if (header.get('object') !== record.commit || header.get('type') !== 'commit') {
+    out.push(`${name}: signs ${String(header.get('type'))} ${String(header.get('object'))}, release.json records commit ${record.commit}`);
+  }
+  if (header.get('tag') !== record.tag) out.push(`${name}: the signed tag is named ${String(header.get('tag'))}`);
+  // A header line is `<field> <value>`, never a `sha256sum` line, so every match is the body's.
+  const sums = tag.payload
+    .split('\n')
+    .map((line) => /^([0-9a-f]{64}) {2}(\S+)$/u.exec(line))
+    .filter(/** @returns {line is RegExpExecArray} */ (line) => line?.[2] === record.archive);
+  const sum = sums.length === 1 ? sums[0] : undefined;
+  if (sum === undefined) {
+    out.push(`${name}: its body holds ${String(sums.length)} checksum lines for ${record.archive}, expected one`);
+  } else if (sum[1] !== record.sha256) {
+    out.push(`${name}: its body's checksum ${String(sum[1])} is not the archive's ${record.sha256}`);
+  }
+  return out;
+};
+
+/**
+ * The tag with one byte of its signature flipped — the last byte of the blob, inside the raw
+ * signature — the control every tag grading fires first.
+ * @param {SignedTag} tag @returns {SignedTag}
+ */
+export const plantedBadSignature = (tag) => {
+  const lines = tag.signature.trim().split('\n');
+  const blob = Buffer.from(lines.slice(1, -1).join(''), 'base64');
+  blob.writeUInt8(blob.readUInt8(blob.length - 1) ^ 1, blob.length - 1);
+  return { ...tag, signature: [lines[0], blob.toString('base64'), lines.at(-1), ''].join('\n') };
+};
+
+/**
+ * Grade a tag after its control: the planted bad signature must be refused by name.
+ * @param {SignedTag} tag @param {ReleaseRecord} record
+ * @param {{ principal: string, blob: Buffer }[]} signers @returns {string[]}
+ */
+export const gradeTagControlled = (tag, record, signers) => {
+  const control = gradeTag(plantedBadSignature(tag), record, signers);
+  if (!control.some((line) => line.includes('the signature does not verify'))) {
+    refuse('control did not fire: a flipped signature byte graded clean');
+  }
+  return gradeTag(tag, record, signers);
+};
+
+/** @returns {SignedTag} */
+export const readTag = () => {
+  const value = /** @type {unknown} */ (JSON.parse(readFileSync(TAG_PATH, 'utf8')));
+  return /** @type {SignedTag} */ (value);
+};
+
+export const readSigners = () => parseSigners(readFileSync(SIGNERS_PATH, 'utf8'));
+
 /** @returns {ReleaseRecord} */
 export const readRecord = () => {
   const value = /** @type {unknown} */ (JSON.parse(readFileSync(RECORD_PATH, 'utf8')));
@@ -257,15 +339,20 @@ const fetchRelease = async (tag) => {
   const digest = gradeSidecar(Buffer.from(sidecarBytes).toString('utf8'), archive.name, archiveBytes);
   const bag = bagRoot(archiveBytes);
 
-  // A tag ref names a tag object (annotated, signed) or the commit itself.
-  let object = /** @type {{ object: { type: string, sha: string } }} */ (
+  // A signed tag is a tag object; a ref naming the commit itself is a lightweight tag, unsigned.
+  const ref = /** @type {{ object: { type: string, sha: string } }} */ (
     await getJson(`${api}/git/ref/tags/${encodeURIComponent(tag)}`)
   ).object;
-  if (object.type === 'tag') {
-    object = /** @type {{ object: { type: string, sha: string } }} */ (await getJson(`${api}/git/tags/${object.sha}`)).object;
-  }
-  if (object.type !== 'commit') refuse(`tag ${tag} names a ${object.type}, not a commit`);
-  const commit = object.sha;
+  if (ref.type !== 'tag') refuse(`tag ${tag} is a lightweight tag and carries no signature`);
+  const tagObject = /** @type {{ object: { type: string, sha: string }, verification?: { payload?: string | null, signature?: string | null } }} */ (
+    await getJson(`${api}/git/tags/${ref.sha}`)
+  );
+  const { payload, signature } = tagObject.verification ?? {};
+  if (typeof payload !== 'string' || typeof signature !== 'string') refuse(`tag ${tag} carries no signature`);
+  /** @type {SignedTag} */
+  const signedTag = { object: ref.sha, payload, signature };
+  if (tagObject.object.type !== 'commit') refuse(`tag ${tag} names a ${tagObject.object.type}, not a commit`);
+  const commit = tagObject.object.sha;
   const tree = /** @type {{ truncated: boolean, tree: TreeEntry[] }} */ (
     await getJson(`${api}/git/trees/${commit}?recursive=1`)
   );
@@ -282,7 +369,9 @@ const fetchRelease = async (tag) => {
   }
   /** @type {ReleaseRecord} */
   const record = { repository: REPOSITORY, tag, commit, archive: archive.name, sha256: digest, bag };
-  return { record, archiveBytes, sidecarBytes, entries, sources };
+  const refusals = gradeTagControlled(signedTag, record, readSigners());
+  if (refusals.length > 0) refuse(refusals.join('\n'));
+  return { record, archiveBytes, sidecarBytes, entries, sources, tag: signedTag };
 };
 
 /** @param {string} path @param {Uint8Array | string} bytes */
@@ -301,6 +390,7 @@ const vendor = async (tag) => {
   write(join(kbDir, fetched.record.archive), fetched.archiveBytes);
   write(join(kbDir, `${fetched.record.archive}.sha256`), fetched.sidecarBytes);
   write(RECORD_PATH, `${JSON.stringify(fetched.record, null, 2)}\n`);
+  write(TAG_PATH, `${JSON.stringify(fetched.tag, null, 2)}\n`);
   rmSync(VENDOR_DIR, { recursive: true, force: true });
   for (const [path, bytes] of fetched.sources) {
     const target = join(VENDOR_DIR, path);
@@ -329,6 +419,7 @@ const verify = async () => {
     if (JSON.stringify(fetched.record) !== JSON.stringify(recorded)) {
       out.push(`kb/release.json ${JSON.stringify(recorded)}, the release reads ${JSON.stringify(fetched.record)}`);
     }
+    if (JSON.stringify(readTag()) !== JSON.stringify(fetched.tag)) out.push('kb/release-tag.json differs from the release tag');
     if (!Buffer.from(kb.get(recorded.archive) ?? []).equals(Buffer.from(fetched.archiveBytes))) {
       out.push(`kb/${recorded.archive} differs from the release asset`);
     }
@@ -359,7 +450,8 @@ const verify = async () => {
   if (refusals.length > 0) refuse(refusals.join('\n'));
   process.stdout.write(
     `kb:fetch --verify ok — kb/ and vendor/cnl-ckc/ equal release ${recorded.tag} ` +
-      `(${String(fetched.sources.size)} upstream files); control: a flipped archive byte\n`,
+      `(${String(fetched.sources.size)} upstream files), its tag signed by a pinned signer; ` +
+      `controls: a flipped archive byte, a flipped signature byte\n`,
   );
 };
 

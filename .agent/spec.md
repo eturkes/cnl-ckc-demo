@@ -127,7 +127,8 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   its own recipe (`.agent/contracts/rel-u1.md`).
 - **The KB enters as a `cnl-ckc` GitHub release, everything else is held here.** `pnpm kb:fetch
   <tag>` is the one intake: the release's archive and `.sha256` sidecar, checked against GitHub's
-  asset digests, the sidecar and BagIt before use, and recorded in `kb/release.json`, which
+  asset digests, the sidecar, BagIt and the tag's SSH signature by a key pinned in
+  `kb/release-signers` before use, and recorded in `kb/release.json`, which
   `kb:build` holds `kb/` to. Upstream's Verus port specifications and its `tests/ui/` fixture
   corpus are vendored at the tag's commit in `vendor/cnl-ckc/`, each file at its git blob hash
   (user ruling). No tool reads a `cnl-ckc` checkout. Law → `.claude/rules/kb-build.md`.
@@ -276,7 +277,7 @@ worker before its caller resumes (`chat-c2.md`).
   pages, reading the producer's extraction conventions — census 469 / 21 / 2.
 - [ ] n30 `low` queue row `Scope exclusions and superseded statements do not surface`; the answer
   panel's change waits on the user's approval (`Decisions`: accepted surfaces).
-- [ ] n31 `low` queue row `An arithmetic built-in holds one engine step past the wall clock`.
+- [x] 18c83fe n31 `low` queue row `An arithmetic built-in holds one engine step past the wall clock`.
 - [ ] n32 `low` queue row `The release tag's signature goes unchecked`.
 - [ ] n33 `low` queue row `The vendored tests/ui/ corpus runs against no suite`.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.

@@ -23,8 +23,21 @@ paths:
   tag commit, archive, sha256, bag root) and `vendor/cnl-ckc/` (below). `pnpm kb:build` refuses
   a `kb/` that is not the release `kb/release.json` names — archive, sidecar, digest, root;
   control: a record naming another root. `pnpm kb:fetch --verify` fetches the recorded tag again
-  and requires every vendored byte equal (a lane: it needs the network). The tag's SSH signature
-  stays unchecked: GitHub reads its key `unknown_key` (`.agent/deferred.md`).
+  and requires every vendored byte equal (a lane: it needs the network).
+- **The tag vouches for the archive** (`tools/kb/sshsig.mjs`, OpenSSH `PROTOCOL.sshsig` in pure
+  Node, so no host `ssh-keygen`): the intake refuses a lightweight or unsigned tag, and a tag
+  whose SSH signature, namespace `git`, does not verify against a key pinned in
+  `kb/release-signers` (`allowed_signers` form; pinned: `eturkes@bu.edu`, RSA 4096,
+  `SHA256:eJCtE9CPwkojMIH5YMT37SOZ9lSalScUwojKkmD5zuI`, the key that signed
+  `kb-2026-10-29-rc.1`). The signed payload must name the recorded commit and tag, and its body
+  must hold exactly one `sha256sum` line for the archive, equal to the recorded digest — the
+  sidecar and GitHub's asset digest come from the same release as the archive, so that line is
+  the one digest a signer vouches for. RSA signs SSHSIG with `rsa-sha2-512` alone, as OpenSSH
+  does. `kb/release-tag.json` keeps the signed payload and signature, so `tests/kb-release.test.ts`
+  R5–R8 re-verify them offline on every gate run, beside an OpenSSH-made Ed25519 fixture
+  (`tests/support/sshsig/`). Control, before every intake's and every `--verify` tag grading: the
+  tag with one signature byte flipped must be refused `the signature does not verify`. GitHub reads the key `unknown_key`:
+  it is no signing key of the GitHub account, which this check does not need.
 - **Archive dialect**: POSIX ustar magic (`ustar\0` + `00`) that ALSO carries five GNU
   `././@LongLink` (`L`) headers for names over 100 chars. A resolving parser (Python
   `tarfile.getmembers`) hides those pseudo-entries — a raw reader must handle `L` or it

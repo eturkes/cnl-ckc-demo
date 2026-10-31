@@ -44,13 +44,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   Accept: a speedup at equal strength — every check still runs and fires on its planted
   input — that an alternating A/B, two runs per arm against the tree it replaces, shows cutting
   `binding:check`'s wall by at least 15%. `pri` low.
-- **The release tag's signature goes unchecked** — `pnpm kb:fetch` holds the archive to its
-  `.sha256` sidecar and GitHub's asset digest, both published by the same release, and the release
-  notes tie the archive's checksum to an SSH-signed tag; GitHub reads that tag's key
-  `unknown_key`, and no tool here checks the signature against a pinned signer. Accept: the intake
-  refuses a tag whose signature does not verify against a public key pinned in this repo, its
-  body's checksum line equal to the archive's digest, with a planted bad signature refused by
-  name. `pri` low.
 - **The vendored `tests/ui/` corpus runs against no suite** — `vendor/cnl-ckc/tests/ui/` holds
   upstream's 22 green and 85 red case families for provenance joins and hostile input, vendored
   at the release commit (user ruling), and no test here feeds them to `tools/kb/provenance.mjs`
