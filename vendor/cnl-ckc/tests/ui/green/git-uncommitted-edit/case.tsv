@@ -1,0 +1,4 @@
+# argv<TAB>rc<TAB>stderr_fixture<TAB>stdout_fixture
+render @OUT@ @TREE@	0	-	render.stdout.expect
+check @TREE@	0	-	check.stdout.expect
+request POST /g/alpha/doc/a-2.html @TREE@ --body verdict=approved&reviewer=Daniel+Okafor&comment=&review_sha256=3d81ac31bba57190ab36caf57a4e1d6162cac3dda21071c0a3c7d37fc4b0a672&ledger_sha256=cb063360f5edb2febb3dac1b66a17093034172dc3a27039bc83dfe0233a0076a&csrf=tok&commit=13cbf59cb3920fe6809684c6e457e696a77209ff --token tok --now 2026-08-19T12:34:56Z	0	-	post.stdout.golden

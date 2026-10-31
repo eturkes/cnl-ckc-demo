@@ -4,6 +4,7 @@
 CLAUDE.md
 LICENSE
 kb/
+vendor/
 dist/
 coverage/
 .scratch/

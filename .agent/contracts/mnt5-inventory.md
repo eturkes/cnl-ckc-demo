@@ -52,6 +52,7 @@ record is `.claude/rules/firing.md`.
 | check | firing | record | anchor |
 |---|---|---|---|
 | `kb:reproduce` | one asset digest changed in the second manifest | text | `.claude/rules/firing.md one asset digest changed in the second manifest` |
+| `kb:fetch` | `--verify`: a flipped byte in a copy of the vendored archive | text | `.claude/rules/firing.md a copy of the vendored archive with its last byte flipped` |
 | `engine:probe` | a reset cycle without its reset | text | `.claude/rules/gate.md Control: a cycle without its reset must be refused` |
 | `test:browser` | the typeahead window shortened to 100 ms | mutate | `inv test:browser: the typeahead window shortened to 100 ms` |
 | `smoke` | the build served without its hashed PVM, and four more | text | `.claude/rules/firing.md the same build served with its hashed `kb-*.pvm` removed` |
@@ -140,6 +141,7 @@ record is `.claude/rules/firing.md`.
 | `tests/kb-derived-assets.test.ts` | off | coverage parser refuses the upstream inexpressible uncovered class | commit | `9cf5680 > tools/kb/provenance.mjs && pnpm exec vitest run tests/kb-derived-assets.test.ts -t 'admits` |
 | `tests/kb-live.test.ts` | answer | live image verifier reports one extra document | mutate | `inv kb-live: reported document count off by one` |
 | `tests/kb-produce.test.ts` | off | image build accepts fewer documents than payload declares | mutate | `U11 document count floored at >= 1` |
+| `tests/kb-release.test.ts` | off | the vendored-tree grader passes a changed byte | mutate | `inv kb-release: the vendored-tree grader passes a changed byte` |
 | `tests/kb-reach.test.ts` | answer | production reach scan omits src | mutate | `c19 reach scan narrowed off src` |
 | `tests/legacy-export-lane.test.ts` | answer | exported query-set guard accepts undeclared queries | mutate | `c06 undeclared query set accepted` |
 | `tests/licences.test.ts` | off | notice grader accepts package name without its licence text | mutate | `inv licences: package name substitutes for licence text` |

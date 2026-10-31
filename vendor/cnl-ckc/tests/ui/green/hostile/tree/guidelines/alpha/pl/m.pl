@@ -1,0 +1,1 @@
+fixture('</pre><script>alert(1)</script><pre> &lt;script&gt; & " ' 漢 ﷐ 😀 العربية https://example.test/?a=<x>&b="q"').

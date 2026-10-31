@@ -1,0 +1,5 @@
+Fixture evidence
+Region authority: identify the 2 payloads below
+
+1. Ordinal target payload.
+2. Ordinal decoy payload.

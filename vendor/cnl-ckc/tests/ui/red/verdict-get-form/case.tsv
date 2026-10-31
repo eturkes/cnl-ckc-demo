@@ -1,0 +1,6 @@
+# argv<TAB>rc<TAB>stderr_fixture<TAB>stdout_fixture
+request GET /g/alpha/doc/a-10.html @TREE@	0	-	hostile-empty-token.stdout.golden
+request GET /g/alpha/doc/a-10.html @TREE@ --token <&>"'	0	-	hostile-token.stdout.golden
+request GET /g/alpha/records.html @TREE@ --token <&>"'	0	-	records-token-scope.stdout.golden
+request GET /g/alpha/doc/a-2.html @TREE@	0	-	stale.stdout.golden
+request GET /g/alpha/doc/z.html @TREE@	0	-	unreviewed.stdout.golden

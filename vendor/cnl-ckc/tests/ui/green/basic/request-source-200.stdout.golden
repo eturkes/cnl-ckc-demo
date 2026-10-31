@@ -1,0 +1,27 @@
+HTTP 200
+Content-Type: text/plain; charset=utf-8
+Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; script-src 'sha256-tviKvuob1PVK51yhma4eljUQf6go1NNWiWZqPNpsB1I='; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+X-Content-Type-Options: nosniff
+Referrer-Policy: no-referrer
+Cache-Control: no-store
+
+Fixture evidence
+Region authority: identify the 6 payloads below
+
+[r10 | p1 | Fixture section]
+Payload selected for z.
+
+[r2 | p1 | Fixture section]
+Payload selected for a-2.
+
+[r1 | p1 | Fixture section]
+Payload selected for a-10.
+
+[r20 | p1 | Fixture section]
+This passage repeats the a-2 directive.
+
+[r21 | p1 | Fixture section]
+A fixture heading.
+
+[r22 | p2 | Fixture section]
+A pending fixture passage.

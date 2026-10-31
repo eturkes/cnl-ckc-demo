@@ -1,0 +1,5 @@
+Fixture evidence
+Region authority: identify the 2 payloads below
+
+1. Only selected payload.
+2. Extra payload.

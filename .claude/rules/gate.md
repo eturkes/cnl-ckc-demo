@@ -24,8 +24,8 @@ graph and ESLint's per-file cache: a suite reading a changed file through `fs` (
 `pnpm gate`, which alone decides a commit.
 
 **`pnpm gate` green is not `release:check` green.** A report of a gate-only run names
-`kb:reproduce`, `smoke`, `browser:check`, `graph:check`, `readme:check`, `test:browser` and
-`engine:probe` as not-run, by name — the seven `release:check` adds — and `binding:replay`, which is out of both. A step that a diff cannot
+`kb:reproduce`, `smoke`, `browser:check`, `graph:check`, `readme:check`, `test:browser`,
+`engine:probe` and `kb:fetch --verify` as not-run, by name — the eight `release:check` adds — and `binding:replay`, which is out of both. A step that a diff cannot
 reach is still reported that way (`a0d43e2` names `pnpm gate` itself not-run, with the reason
 each step misses the edited files). `none` is the sentinel when nothing was skipped, which is
 what keeps an omitted category distinguishable from an empty one.
@@ -156,12 +156,13 @@ check's files.
 
 ## Lanes
 
-Out of the chain — each needs a real browser or two forced builds, and each reruns from
-committed state:
+Out of the chain — each needs a real browser, two forced builds or the network, and each reruns
+from committed state:
 
 | command | what it alone proves |
 |---|---|
 | `pnpm kb:reproduce` | byte-reproducibility of pvm + qlf + catalog across two forced builds |
+| `pnpm kb:fetch --verify` | that `kb/` and `vendor/cnl-ckc/` are the release `kb/release.json` names, byte for byte: the tag's release assets fetched again and graded like an intake (GitHub's asset digests, the sidecar, the bag root), the tag's commit tree read again with every vendored file at its git blob hash, and nothing vendored beyond it. Control: a copy of the vendored archive with one flipped byte must be refused by the archive's name. Needs the network |
 | `pnpm engine:probe` | the engine lifecycle in a real browser: R38 cap + deadline end an unbounded goal; R39 a worker stuck in one step ended by the main-thread deadline with the main thread free; R41 five reset cycles each killing a hostile loop, dropping consulted state and booting the manifest's corpus; R42 a failing consult poisons its engine and a reset clears it; R45 the runaway-`assertz` abort settling `limit` `'heap'` or error `aborted`, and the next query — no reset — answering the manifest's corpus on the recreated worker. Control: a cycle without its reset must be refused; it fires only while a run ends AT its final record (`.claude/rules/engine.md`) |
 | `pnpm test:browser [file]` | the combobox predicates jsdom can only stub — S1/S7 from Chromium's accessibility tree, K5 on the real clock, K8/K10/P2/P3 under real key and pointer input with focus read after each, B1 through the native `scrollIntoView`, B3 axe with real layout (`tests/question-combobox.browser.test.ts`); and that axe decides the jsdom contrast pin's unreadable pair a violation here (`tests/axe-contrast.browser.test.ts`), the environment that pin would turn red in |
 | `pnpm smoke` | built output answers in a real browser against bag bytes read at run time, the served saved state is current with the bag's input digest, and no request takes the lazy QLF fallback |
@@ -200,7 +201,7 @@ piece. It exits 1 unless the archived arm is red and the working arm green. Cont
 binding:replay HEAD` exits 1, both arms green.
 
 `pnpm release:check` = `gate && kb:reproduce && smoke && browser:check && graph:check &&
-readme:check && test:browser && engine:probe`.
+readme:check && test:browser && engine:probe && kb:fetch --verify`.
 
 ## CI
 

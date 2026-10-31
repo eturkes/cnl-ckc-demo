@@ -1,0 +1,2 @@
+# argv<TAB>rc<TAB>stderr_fixture<TAB>stdout_fixture
+check @TREE@	0	-	check.stdout.expect

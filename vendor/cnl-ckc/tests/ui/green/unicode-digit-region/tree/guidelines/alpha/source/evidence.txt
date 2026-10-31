@@ -1,0 +1,11 @@
+Fixture evidence
+Region authority: identify the 3 payloads below
+
+[region-² | p1 | Fixture section]
+Payload selected for z.
+
+[r2 | p1 | Fixture section]
+Payload selected for a-2.
+
+[r1 | p1 | Fixture section]
+Payload selected for a-10.

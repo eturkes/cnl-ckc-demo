@@ -1,0 +1,4 @@
+# format: docid<TAB>review_sha256<TAB>ace_commit<TAB>verdict<TAB>reviewer<TAB>date<TAB>comment
+a-10	788c59c39469ffa05dcea391455133cdd38d6257ba389c3045f07ab2194986e1		rejected	old-a	2026-01-01T00:00:00Z	old A
+a-2	3d81ac31bba57190ab36caf57a4e1d6162cac3dda21071c0a3c7d37fc4b0a672		rejected	old-b	2026-01-02T00:00:00Z	old B
+z	a130faac3e9cffba5d99800f9cde805b24d748cfed3f6de42c3d09a19c16551e		approved	old-z	2026-01-03T00:00:00Z	old Z

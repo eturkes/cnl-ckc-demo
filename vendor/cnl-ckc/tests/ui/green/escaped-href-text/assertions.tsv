@@ -1,0 +1,4 @@
+# golden-relpath<TAB>contains|absent<TAB>hex-substring
+g/alpha/doc/a.html	contains	687265663d227822
+g/alpha/doc/a.html	contains	266c743b6120687265663d2279222667743b
+g/alpha/doc/a.html	absent	3c6120687265663d2279223e

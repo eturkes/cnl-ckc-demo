@@ -134,6 +134,24 @@ pnpm build
 pnpm preview
 ```
 
+## Knowledge base
+
+The knowledge base comes from a release of
+[cnl-ckc](https://github.com/eturkes/cnl-ckc) on GitHub. `kb/` holds the release archive, its
+checksum file and `kb/release.json`, which names the release. `vendor/cnl-ckc/` holds the
+cnl-ckc specification sources and test fixtures at the commit of that release.
+
+To take a new release, run this command with the release tag:
+
+```sh
+pnpm kb:fetch kb-2026-10-29-rc.1
+```
+
+The command checks the archive against the checksum file of the release and against the
+digest that GitHub records, before it writes a file. `pnpm kb:build` refuses an archive that
+`kb/release.json` does not name. `pnpm kb:fetch --verify` downloads the named release again and
+compares each file with the files in `kb/` and `vendor/cnl-ckc/`.
+
 ## Verification
 
 The normal deterministic gate rebuilds the vendored knowledge-base export and
@@ -149,9 +167,9 @@ browser. `pnpm chat:probe` reports the source labels the model earns on six fixe
 Both spend turns on your ChatGPT plan, so no gate runs them. The gate checks the bridge against
 a scripted model instead.
 
-The release check adds byte-for-byte knowledge-base reproduction and real-browser
+The release check adds byte-for-byte knowledge-base reproduction, real-browser
 proofs for the nested production build, live answers, lazy graph, responsive
-states, and cancellation:
+states, and cancellation, and a new download of the knowledge-base release:
 
 ```sh
 pnpm release:check
@@ -185,9 +203,11 @@ CSP meta tag because deployment headers are the authoritative boundary.
 
 ## Licences
 
-The demo is Apache-2.0 WITH LLVM-exception. Atkinson Hyperlegible Next, Atkinson
-Hyperlegible Mono, Literata, and BIZ UDPGothic are included under the SIL Open Font
-License 1.1; their licence texts are served from `public/licenses/`.
+The demo is Apache-2.0 WITH LLVM-exception. `vendor/cnl-ckc/` holds files of cnl-ckc,
+which keep their own licence: Apache-2.0 WITH LLVM-exception, with the licence and notice
+files in that directory. Atkinson Hyperlegible Next, Atkinson Hyperlegible Mono, Literata, and
+BIZ UDPGothic are included under the SIL Open Font License 1.1; their licence texts are
+served from `public/licenses/`.
 
 The build bundles third-party JavaScript and removes its licence comments. Each build
 therefore writes `licenses/third-party.txt`, which holds the licence file of each bundled

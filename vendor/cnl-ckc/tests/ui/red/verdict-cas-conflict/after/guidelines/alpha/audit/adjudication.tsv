@@ -1,0 +1,2 @@
+# format: docid<TAB>review_sha256<TAB>ace_commit<TAB>verdict<TAB>reviewer<TAB>date<TAB>comment
+a-10	788c59c39469ffa05dcea391455133cdd38d6257ba389c3045f07ab2194986e1	4f1c9abd0e37b25a86c4fd190b7e5382ca6017df	approved	alice	2026-08-19T12:34:56Z	

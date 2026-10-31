@@ -1,0 +1,6 @@
+# argv<TAB>rc<TAB>stderr_fixture<TAB>stdout_fixture
+	2	none.stderr.expect	-
+frobnicate	2	unknown.stderr.expect	-
+render	2	render-missing.stderr.expect	-
+request GET	2	request-missing.stderr.expect	-
+check @TREE@ extra	2	check-extra.stderr.expect	-

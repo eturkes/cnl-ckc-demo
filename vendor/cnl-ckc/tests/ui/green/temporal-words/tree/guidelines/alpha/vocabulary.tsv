@@ -1,0 +1,15 @@
+# format: kind	lemma	value
+relation	during	duration
+spacing	at	interval
+unit	hr	hour
+relation	within&<around>	within
+unit	day	day
+unit	sec&<tick>	second
+relation	after	after
+spacing	at	gap&<frame>
+unit	minute	minute
+relation	for	duration
+unit	yr	year
+relation	before	before
+unit	wk	week
+unit	mo	month

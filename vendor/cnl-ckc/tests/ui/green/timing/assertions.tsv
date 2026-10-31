@@ -1,0 +1,3 @@
+# golden-relpath	contains|absent	hex-substring
+index.html	absent	54696d696e6720617320636f6d70696c6564
+g/alpha/index.html	absent	54696d696e6720617320636f6d70696c6564

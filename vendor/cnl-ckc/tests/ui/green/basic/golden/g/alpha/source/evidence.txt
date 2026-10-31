@@ -1,0 +1,20 @@
+Fixture evidence
+Region authority: identify the 6 payloads below
+
+[r10 | p1 | Fixture section]
+Payload selected for z.
+
+[r2 | p1 | Fixture section]
+Payload selected for a-2.
+
+[r1 | p1 | Fixture section]
+Payload selected for a-10.
+
+[r20 | p1 | Fixture section]
+This passage repeats the a-2 directive.
+
+[r21 | p1 | Fixture section]
+A fixture heading.
+
+[r22 | p2 | Fixture section]
+A pending fixture passage.

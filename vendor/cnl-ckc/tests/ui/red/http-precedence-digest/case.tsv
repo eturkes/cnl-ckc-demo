@@ -1,0 +1,3 @@
+# argv<TAB>rc<TAB>stderr_fixture<TAB>stdout_fixture
+request GET /g/alpha/doc/missing.html @TREE@	0	-	not-found-over-digest.stdout.golden
+request GET /g/alpha/doc/a.html @TREE@	0	-	digest.stdout.golden

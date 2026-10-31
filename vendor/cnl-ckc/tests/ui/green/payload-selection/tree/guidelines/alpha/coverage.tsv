@@ -1,0 +1,7 @@
+# format: id<TAB>file<TAB>page<TAB>section<TAB>status
+# status: ace(<docid>) | restates(<id>) | uncovered(<class>: <one-clause reason>) | pending
+# uncovered classes: heading | process | external | aim | descriptive | notice | inexpressible
+r10	source/locator.txt	p1	Fixture section	ace(loc)
+r20	source/locator.txt	p1	Fixture section	uncovered(heading: locator decoy)
+r2	source/ordinal.txt	p1	Fixture section	ace(ord)
+r1	source/ordinal.txt	p1	Fixture section	uncovered(heading: ordinal decoy)

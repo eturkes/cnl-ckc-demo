@@ -26,6 +26,9 @@ questions by deterministic Prolog execution.
 - `review.html` + `src/review/` — development page for the user's live review of the ladder's
   checked-comparisons list, which no catalog question reaches. `pnpm dev`, then `/review.html`; the
   build leaves it out.
+- `kb/` + `vendor/cnl-ckc/` — release `kb-2026-10-29-rc.1`'s KB archive, its sidecar and
+  `kb/release.json`, and the upstream sources the provenance port cites, at the tag's commit.
+  `pnpm kb:fetch <tag>` vendors a release; `pnpm kb:fetch --verify` re-checks it.
 
 ## Decisions
 
@@ -122,6 +125,12 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   scope-guard reading, fact verbs and evaluation-date exemption, A4's planted negated comparison,
   the marks noun fallback (ann-u1 amended), the proof depth bound 256 and S5's cap re-derived by
   its own recipe (`.agent/contracts/rel-u1.md`).
+- **The KB enters as a `cnl-ckc` GitHub release, everything else is held here.** `pnpm kb:fetch
+  <tag>` is the one intake: the release's archive and `.sha256` sidecar, checked against GitHub's
+  asset digests, the sidecar and BagIt before use, and recorded in `kb/release.json`, which
+  `kb:build` holds `kb/` to. Upstream's Verus port specifications and its `tests/ui/` fixture
+  corpus are vendored at the tag's commit in `vendor/cnl-ckc/`, each file at its git blob hash
+  (user ruling). No tool reads a `cnl-ckc` checkout. Law → `.claude/rules/kb-build.md`.
 - **A recommendation to refrain reads `should not`.** The corpus spells SHOULD over a negation
   `it is recommended that X does not V`; the answer renders `X should not V`, the parser
   keeping the surface form only to rebuild the sentence. T9 carries it, and the positive copula
@@ -256,30 +265,9 @@ worker before its caller resumes (`chat-c2.md`).
 - [ ] owed (user): install the Mend Renovate GitHub app on `eturkes/cnl-ckc-demo` — `main` carries
   `renovate.json` (mv4) since `0466833`; Dependabot's five open PRs are closed, and Renovate
   reopens what still applies.
-- [ ] rel-u1 `kernel` re-vendor release `kb-2026-10-29-rc.1` (bag `g673b3c1f3bfd`: 492 documents,
-  22 indicators, scope guard on 1220 `should`/`must`/`may` edges, supersession, arithmetic
-  built-ins; all 12 catalog documents rewritten) — this request's `.agent/deferred.md` row `KB
-  intake reads a sibling cnl-ckc checkout, not a release` (user: full sync this session).
-  - User-approved grader edits: T9 declared edits (`provenance.mjs` ARITIES +3, BODY_BUILTINS
-    +`guideline_product/6`,`guideline_quotient/6`; `clinical.mjs` fact verbs {includes,
-    increases, shows}); read-only allowlist +3 indicators +2 built-ins (chat-c1 amended, chat
-    guide). Any other check-logic edit → the user first. Figures re-pin, each red on the new bag
-    recorded.
-  - MI: the 19-indicator whitelist proves `\+ guideline_exclusion(…)` at every depth by never
-    resolving it (fail-open witness) → 22 indicators; `clinical_depth` 2 → 4, NAF unchanged
-    (consultant-1: a fixed NAF budget loses termination across nested negation). UI surfacing of
-    exclusions + supersessions → queue rows (user ruling).
-  - User-approved (second round): proof depth bound 100 → 256 (`PROOF_BUDGET_MAX` + the
-    controller's `PROOF_BUDGET`); S5 graph gzip cap 508,572 → 786,955 B by its own recipe; marks
-    nouns fall back to the entity premise (ann-u1 amended, marks oracle mirrors it); oracle edits:
-    scope-guard reading (T5, T6, clinical-differential, marks-admitted G3), fact verbs + the
-    evaluation-date exemption (qualifier oracle, graph-annotations A1), A4 planted input. Third
-    round: proof inferences 300,000 and wall clock 3,000 ms, 30 s timeouts on P3/M2/M3, an empty
-    predicate read as 0 clauses, `graph:check` C6 tapping an uncovered node
-    (`.agent/contracts/rel-u1.md` X1–X6). The assumption arm
-    enumerates every unifying premise (consultant-1 C5; G4).
-  - Accept: `pnpm gate` green; every catalog sentence derives `proved` with each scope guard
-    resolved, none `limit`; release:check lanes green.
+- [x] b5d3d8b rel-u1 `kernel` re-vendor release `kb-2026-10-29-rc.1` (bag `g673b3c1f3bfd`) —
+  contract, rulings and witnesses `.agent/contracts/rel-u1.md`.
+- [x] 6acb906 find: GHSA-g3hv-75wg-m249 reddened `audit:check` → minimatch overridden to ^11.0.3.
 - [ ] rel-u2 `data` intake from the release: `pnpm kb:fetch <tag>` (+ `--verify` lane);
   `kb/release.json` cross-checked by `kb:build` (archive name, sidecar's own name field, bag
   root, digest) with its firing control; `tools/kb/regenerate-bag.sh` retired; upstream's

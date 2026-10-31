@@ -13,6 +13,7 @@ import { deriveCorpusIndex } from './corpus.mjs';
 import { deriveSemanticGraph, GRAPH_SCHEMA_VERSION } from './graph.mjs';
 import { deriveProvenance, PROVENANCE_SCHEMA_VERSION } from './provenance.mjs';
 import { buildImage, buildQlf, swiplWasmVersion, verifyImage, verifyQlf } from './produce.mjs';
+import { gradeRecord, readRecord } from './release.mjs';
 import { GENERATED_DIR, MANIFEST_PATH, ROOT, loadManifest, payloadSource } from './paths.mjs';
 
 /** @typedef {import('../../src/kb/manifest.ts').KbManifest} KbManifest */
@@ -78,6 +79,21 @@ const main = async () => {
     },
   );
   const { bag, digest, files, payload, tags } = readVerifiedBag();
+  // The vendored bag is the release `kb/release.json` names: its archive, its sidecar, its digest
+  // and its root (`.claude/rules/kb-build.md` `Vendored bag`).
+  const record = readRecord();
+  const kbFiles = new Map(
+    readdirSync(join(ROOT, 'kb'))
+      .filter((name) => name.endsWith('.tar.gz') || name.endsWith('.tar.gz.sha256'))
+      .map((name) => [name, readFileSync(join(ROOT, 'kb', name))]),
+  );
+  const recordControl = requireFiring(
+    'kb:build',
+    { mutation: 'release.json naming another bag root', expect: ['bag root'] },
+    () => gradeRecord({ ...record, bag: 'cnl-ckc-kb-g000000000000' }, kbFiles),
+  );
+  const refusals = gradeRecord(record, kbFiles);
+  if (refusals.length > 0) throw new Error(`kb/ is not release ${record.tag}: ${refusals.join('; ')}`);
   const { source, names } = payloadSource(files);
   const inputDigest = sha256(Buffer.from(source, 'utf8'));
   const swiplWasm = swiplWasmVersion();
@@ -100,7 +116,8 @@ const main = async () => {
     assetsIntact(cached)
   ) {
     process.stdout.write(
-      `kb:build cached — ${names.length} files, input ${inputDigest.slice(0, 12)}, control: ${control}\n`,
+      `kb:build cached — ${names.length} files of release ${record.tag}, input ` +
+        `${inputDigest.slice(0, 12)}, controls: ${control}; ${recordControl}\n`,
     );
     return;
   }
@@ -192,7 +209,8 @@ const main = async () => {
       `catalog ${catalog.records.length} entries from ${catalog.names.length} controlled sources, ` +
       `provenance ${provenance.stats.documents} documents/${provenance.stats.clauses} clauses, ` +
       `graph ${graph.model.stats.nodes} nodes/${graph.model.stats.edges} edges, ` +
-      `schema ${contract.schemaVersion}, ${contract.documents} documents, control: ${control}\n`,
+      `schema ${contract.schemaVersion}, ${contract.documents} documents, release ${record.tag}, ` +
+      `controls: ${control}; ${recordControl}\n`,
   );
 };
 

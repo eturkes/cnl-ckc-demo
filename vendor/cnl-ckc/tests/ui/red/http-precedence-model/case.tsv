@@ -1,0 +1,4 @@
+# argv<TAB>rc<TAB>stderr_fixture<TAB>stdout_fixture
+request POST /g/missing/doc/a.html @TREE@	0	-	method-over-model.stdout.golden
+request GET /missing @TREE@	0	-	model-over-404.stdout.golden
+request GET /g/alpha/doc/a.html @TREE@	0	-	model-over-digest.stdout.golden

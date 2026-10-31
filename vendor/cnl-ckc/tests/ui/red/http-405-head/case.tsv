@@ -1,0 +1,2 @@
+# argv<TAB>rc<TAB>stderr_fixture<TAB>stdout_fixture
+request HEAD / @TREE@	0	-	request.stdout.golden

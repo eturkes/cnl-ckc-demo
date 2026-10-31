@@ -16,6 +16,15 @@ paths:
   `cnl-ckc-kb-only-2026-10-29-rc.1.tar.gz` and its `.sha256` sidecar, whose one line names the
   archive in `sha256sum -c` form. BagIt 1.0; verify = `pnpm kb:build`, in memory, never
   extracting. 1518 payload + 6 tag entries + the tagmanifest = 1525 members.
+- **Intake = `pnpm kb:fetch <tag>`** (`tools/kb/release.mjs`), nothing else: the tag's release
+  must publish exactly one `.tar.gz` beside its `.sha256` sibling, each equal to GitHub's own
+  asset digest, the sidecar naming the archive and digesting it, the archive a BagIt bag rooted
+  `cnl-ckc-kb-g<12 hex>`. It writes both assets byte for byte, `kb/release.json` (repository, tag,
+  tag commit, archive, sha256, bag root) and `vendor/cnl-ckc/` (below). `pnpm kb:build` refuses
+  a `kb/` that is not the release `kb/release.json` names — archive, sidecar, digest, root;
+  control: a record naming another root. `pnpm kb:fetch --verify` fetches the recorded tag again
+  and requires every vendored byte equal (a lane: it needs the network). The tag's SSH signature
+  stays unchecked: GitHub reads its key `unknown_key` (`.agent/deferred.md`).
 - **Archive dialect**: POSIX ustar magic (`ustar\0` + `00`) that ALSO carries five GNU
   `././@LongLink` (`L`) headers for names over 100 chars. A resolving parser (Python
   `tarfile.getmembers`) hides those pseudo-entries — a raw reader must handle `L` or it
@@ -37,14 +46,18 @@ paths:
 
 ## Upstream port specifications
 
-Upstream's reviewer surface (`ckc ui`) is specified in Verus under `cnl-ckc`'s
-`rust/ckc-spec/src/`, and those specs are the TypeScript-port specifications behind
-`tools/kb/provenance.mjs` + `src/provenance/`: `check.rs` `status_of` + `uncovered_class_ok`
-(coverage grammar — `tests/kb-derived-assets.test.ts` grades every declared class),
-`evidence_of` + `payload_of` (coverage row → source payload), `align.rs` `align_outcome`
-(source↔ACE span groups), `ui.rs` `alignment` + `aligned_text`. Its `tests/ui/` fixture corpus
-(21 green + 85 red case families) is the adversarial oracle for provenance joins and hostile
-input. No graph command or graph artifact exists upstream.
+Upstream's reviewer surface (`ckc ui`) is specified in Verus, vendored from the release's tag
+commit (user ruling) at `vendor/cnl-ckc/` — each file at its git blob hash in
+`vendor/cnl-ckc/PROVENANCE.tsv`, under upstream's `vendor/cnl-ckc/LICENSE` and
+`vendor/cnl-ckc/NOTICE`. Those specs are the TypeScript-port specifications behind
+`tools/kb/provenance.mjs` + `src/provenance/`: `vendor/cnl-ckc/rust/ckc-spec/src/check.rs`
+`status_of` + `uncovered_class_ok` (coverage grammar — `tests/kb-derived-assets.test.ts` grades
+every declared class), `evidence_of` + `payload_of` (coverage row → source payload),
+`vendor/cnl-ckc/rust/ckc-spec/src/align.rs` `align_outcome` (source↔ACE span groups),
+`vendor/cnl-ckc/rust/ckc-spec/src/ui.rs` `alignment` + `aligned_text`. Its fixture corpus
+`vendor/cnl-ckc/tests/ui/` (22 green + 85 red case families) is the adversarial input set for
+provenance joins and hostile input; no suite here runs it yet (`.agent/deferred.md`). No graph
+command or graph artifact exists upstream.
 
 ## Generated payload
 

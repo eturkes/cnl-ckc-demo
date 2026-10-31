@@ -1,0 +1,6 @@
+# format: id<TAB>file<TAB>page<TAB>section<TAB>status
+# status: ace(<docid>) | restates(<id>) | uncovered(<class>: <one-clause reason>) | pending
+# uncovered classes: heading | process | external | aim | descriptive | notice | inexpressible
+r1	source/plain-a.txt	p1	empty kept	ace(a)
+region-<&>"'%?#漢😀العربية	source/evidence-<&>"' %?# 漢 😀 العربية.txt	page-<&>"' %?# 漢 😀 العربية	</pre><script>alert(1)</script><pre> &lt;script&gt; & " ' 漢 ﷐ 😀 العربية https://example.test/?a=<x>&b="q"	ace(m)
+r3	source/plain-z.txt	p1	empty dropped	ace(z)

@@ -1,0 +1,5 @@
+Fixture evidence
+Region authority: identify the 2 payloads below
+
+1. First ordinal payload.
+2. Final ordinal payload without LF.

@@ -1,0 +1,5 @@
+# argv<TAB>rc<TAB>stderr_fixture<TAB>stdout_fixture
+request GET /g/missing/ @TREE@	0	-	missing-one.stdout.golden
+request GET /different @TREE@	0	-	missing-two.stdout.golden
+request GET /g/alpha @TREE@	0	-	missing-slash.stdout.golden
+request GET /g/alpha// @TREE@	0	-	double-slash.stdout.golden

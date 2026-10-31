@@ -1,0 +1,2 @@
+# argv<TAB>rc<TAB>stderr_fixture<TAB>stdout_fixture
+request POST /g/alpha/doc/a-10.html @TREE@ --body verdict=approved&reviewer=alice&comment=&review_sha256=788c59c39469ffa05dcea391455133cdd38d6257ba389c3045f07ab2194986e1&ledger_sha256=absent&csrf=tok&commit= --token tok --now 2026-08-19T12:34:56Z	0	-	post.stdout.golden

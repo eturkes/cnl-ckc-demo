@@ -1,0 +1,1 @@
+# materialization trigger: POST row must run against a scratch tree copy

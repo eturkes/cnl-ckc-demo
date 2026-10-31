@@ -1,0 +1,6 @@
+Fixture evidence
+Region authority: identify the 1 payloads below
+
+[r1 | p1 | Fixture section]
+Source payload for a.
+ÿ

@@ -1,0 +1,5 @@
+# argv<TAB>rc<TAB>stderr_fixture<TAB>stdout_fixture
+request get / @TREE@	0	-	get.stdout.golden
+request GETTING / @TREE@	0	-	getting.stdout.golden
+request TARGET / @TREE@	0	-	target.stdout.golden
+request  / @TREE@	0	-	empty.stdout.golden

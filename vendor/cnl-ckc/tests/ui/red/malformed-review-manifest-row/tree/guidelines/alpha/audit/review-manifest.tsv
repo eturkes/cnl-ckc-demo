@@ -1,0 +1,4 @@
+# format: docid<TAB>ace_sha256<TAB>coverage_row_sha256<TAB>region_payload_sha256<TAB>semantic_clause_sha256<TAB>review_sha256
+# bundle v2; review_sha256 = sha256 of the labeled component-digest block; regenerate: ckc review-manifest <id>; do not edit.
+a	fe8e12e22bae3f94f6a35a3d69c3f4ec67c126aadcc607140a86bde94450e7d6	97993abdd456a402ce7fe2c9e8edf0d154ff93abd4bc6461a15f102b14b7a94e	4d3a743a528f83e89a97a0673753625e52d985f726908130e825b2f1291bc578	1ab784582355a79abea4f7c65ea5d39c10792eaf54fc9a6e6abd6ed02585dd65	23025a1dc368a8fe5b47cd4168191ba786e033b843f463617f05a4470f40ebc2
+bad-row

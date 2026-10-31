@@ -1,0 +1,30 @@
+# argv<TAB>rc<TAB>stderr_fixture<TAB>stdout_fixture
+request POST /g/alpha/doc/a-10.html @TREE@ --body x --body-hex 78	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --body-hex zz	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --body-hex f	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --now 2026-08-19	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --now 2026-02-30T00:00:00Z	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --now 2026-01-01T00:00:60Z	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --now 2026-01-01T24:00:00Z	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --fault before-replace	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --bogus x	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --header Host	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --header :x	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ @TREE@	2	usage.stderr.expect	-
+request POST --token tok /g/alpha/doc/a-10.html	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --body x --body y	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --body-hex 78 --body-hex 79	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --token a --token b	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --now 2026-08-19T12:34:56Z --now 2026-08-19T12:34:56Z	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --fault after-tmp-write --fault after-tmp-write	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --header	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --body	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --body-hex	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --token	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --now	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --fault	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --commit zz	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --commit 4f1c9ab	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --commit 4F1C9ABD0E37B25A86C4FD190B7E5382CA6017DF	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --commit 4f1c9abd0e37b25a86c4fd190b7e5382ca6017df --commit 4f1c9abd0e37b25a86c4fd190b7e5382ca6017df	2	usage.stderr.expect	-
+request POST /g/alpha/doc/a-10.html @TREE@ --commit 	2	commit-empty.stderr.expect	-

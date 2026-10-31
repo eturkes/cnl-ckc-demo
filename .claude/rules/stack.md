@@ -11,7 +11,8 @@ User-ruled, binding on every role.
 - Entity graph ≈ 1K nodes = **analysis tier, not scale tier** → layout quality, neighborhood
   expansion, shortest path and centrality outrank renderer throughput.
 - **The KB enters by export only.** The producer project `cnl-ckc` is read-only, never linked,
-  never a runtime dependency; the vendored bag under `kb/` is the whole interface.
+  never a runtime dependency; the vendored bag under `kb/` — a `cnl-ckc` GitHub release's
+  archive, taken by `pnpm kb:fetch <tag>`, never from a checkout — is the whole interface.
 - Non-negotiable: every answer the demo presents as the knowledge base's — a prepared question's
   answer, a chat part tagged KB — traces to a genuine Prolog solution. A chat part from the web
   or the model's own knowledge says so in its tag and claims no KB backing.

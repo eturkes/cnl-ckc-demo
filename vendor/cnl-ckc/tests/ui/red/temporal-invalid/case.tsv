@@ -1,0 +1,2 @@
+# argv	rc	stderr_fixture	stdout_fixture
+check @TREE@	1	check.stderr.expect	-

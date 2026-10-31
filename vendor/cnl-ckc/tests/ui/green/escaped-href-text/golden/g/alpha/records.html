@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decision records</title>
+<style>
+body { margin: 0 auto; max-width: 72rem; padding: 0 1.5rem 4rem; font-family: system-ui, sans-serif; line-height: 1.55; color: #111827; background: #ffffff; }
+a { color: #1d4ed8; }
+a:focus-visible, summary:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
+.skip { position: absolute; left: -999px; top: 0; padding: 0.5rem 1rem; background: #ffffff; color: #1d4ed8; }
+.skip:focus { left: 0; z-index: 1; }
+nav.crumbs { padding: 1rem 0; border-bottom: 1px solid #e5e7eb; }
+h1 { font-size: 1.5rem; }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1.05rem; }
+h1 a.source { font-size: 1rem; font-weight: 400; margin-left: 0.5rem; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+th { border-bottom: 2px solid #111827; }
+table.compact { width: auto; }
+table.compact th, table.compact td { padding-right: 2rem; }
+table.records { table-layout: fixed; }
+table.records th { box-sizing: border-box; }
+table.records th:nth-child(1) { width: 12%; }
+table.records th:nth-child(2) { width: 18%; }
+table.records th:nth-child(3) { width: 22%; }
+table.records th:nth-child(4) { width: 10%; }
+.chip { display: inline-block; padding: 0.1rem 0.6rem; border-radius: 999px; font-size: 0.85rem; font-weight: 600; }
+.chip-approved { color: #14532d; background: #dcfce7; }
+.chip-rejected { color: #7f1d1d; background: #fee2e2; }
+.chip-contested { color: #4c1d95; background: #ede9fe; }
+.chip-stale { color: #78350f; background: #fef3c7; }
+.chip-unreviewed { color: #1f2937; background: #e5e7eb; }
+pre { padding: 0.75rem 1rem; border: 1px solid #e5e7eb; white-space: pre-wrap; overflow-x: auto; }
+pre, code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.95rem; }
+pre.prose { font-family: Georgia, serif; font-size: 1.05rem; overflow-wrap: anywhere; }
+dt { font-weight: 600; margin-top: 0.6rem; }
+dd { margin-left: 0; }
+summary { cursor: pointer; }
+section { margin: 1.5rem 0; }
+nav.docnav { padding: 1rem 0; border-top: 1px solid #e5e7eb; }
+nav.docnav a + a { margin-left: 1.5rem; }
+p.provenance span + a { margin-left: 0.75rem; }
+section.superseded p { overflow-wrap: anywhere; }
+footer.scope { margin-top: 2rem; padding: 1rem 0; border-top: 1px solid #e5e7eb; font-size: 0.9rem; }
+form label { display: block; margin-top: 1rem; font-weight: 600; }
+fieldset { border: 0; margin: 1rem 0 0; padding: 0; max-width: 28rem; }
+legend { font-weight: 600; padding: 0; }
+fieldset label { margin-top: 0.5rem; font-weight: 400; }
+input[type="text"], textarea { display: block; box-sizing: border-box; width: 100%; max-width: 28rem; margin-top: 0.3rem; padding: 0.45rem 0.6rem; border: 1px solid #4b5563; font-family: inherit; font-size: 1rem; color: #111827; background: #ffffff; }
+textarea { min-height: 6rem; }
+input[type="radio"], input[type="checkbox"] { accent-color: #111827; }
+input[type="text"]:focus-visible, input[type="radio"]:focus-visible, input[type="checkbox"]:focus-visible, textarea:focus-visible, button:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
+button { margin-top: 1.25rem; padding: 0.5rem 1.2rem; border: 1px solid #111827; font-family: inherit; font-size: 1rem; font-weight: 600; color: #ffffff; background: #111827; }
+mark { background: #dbeafe; color: inherit; text-decoration: underline dotted #4b5563; text-underline-offset: 0.15em; }
+.kw { color: #4b5563; }
+.hl-note { color: #4b5563; font-size: 0.9rem; }
+mark.t1, mark.t13, mark.t25, mark.t37 { background: #fef9c3; }
+mark.t2, mark.t14, mark.t26, mark.t38 { background: #f3e8ff; }
+mark.t3, mark.t15, mark.t27, mark.t39 { background: #ffedd5; }
+mark.t4, mark.t16, mark.t28, mark.t40 { background: #ccfbf1; }
+mark.t5, mark.t17, mark.t29, mark.t41 { background: #ffe4e6; }
+mark.t6, mark.t18, mark.t30, mark.t42 { background: #dcfce7; }
+mark.t7, mark.t19, mark.t31, mark.t43 { background: #fae8ff; }
+mark.t8, mark.t20, mark.t32, mark.t44 { background: #cffafe; }
+mark.t9, mark.t21, mark.t33, mark.t45 { background: #ecfccb; }
+mark.t10, mark.t22, mark.t34, mark.t46 { background: #e0e7ff; }
+mark.t11, mark.t23, mark.t35, mark.t47 { background: #e7e5e4; }
+mark.t0, mark.t12, mark.t24, mark.t36 { text-decoration-color: #2563eb; }
+mark.t1, mark.t13, mark.t25, mark.t37 { text-decoration-color: #a16207; }
+mark.t2, mark.t14, mark.t26, mark.t38 { text-decoration-color: #7c3aed; }
+mark.t3, mark.t15, mark.t27, mark.t39 { text-decoration-color: #c2410c; }
+mark.t4, mark.t16, mark.t28, mark.t40 { text-decoration-color: #0f766e; }
+mark.t5, mark.t17, mark.t29, mark.t41 { text-decoration-color: #be123c; }
+mark.t6, mark.t18, mark.t30, mark.t42 { text-decoration-color: #15803d; }
+mark.t7, mark.t19, mark.t31, mark.t43 { text-decoration-color: #a21caf; }
+mark.t8, mark.t20, mark.t32, mark.t44 { text-decoration-color: #0e7490; }
+mark.t9, mark.t21, mark.t33, mark.t45 { text-decoration-color: #4d7c0f; }
+mark.t10, mark.t22, mark.t34, mark.t46 { text-decoration-color: #4f46e5; }
+mark.t11, mark.t23, mark.t35, mark.t47 { text-decoration-color: #57534e; }
+main:has(mark.t0:hover) mark.t0 { background: #bfdbfe; text-decoration-style: solid; }
+main:has(mark.t1:hover) mark.t1 { background: #fef08a; text-decoration-style: solid; }
+main:has(mark.t2:hover) mark.t2 { background: #e9d5ff; text-decoration-style: solid; }
+main:has(mark.t3:hover) mark.t3 { background: #fed7aa; text-decoration-style: solid; }
+main:has(mark.t4:hover) mark.t4 { background: #99f6e4; text-decoration-style: solid; }
+main:has(mark.t5:hover) mark.t5 { background: #fecdd3; text-decoration-style: solid; }
+main:has(mark.t6:hover) mark.t6 { background: #bbf7d0; text-decoration-style: solid; }
+main:has(mark.t7:hover) mark.t7 { background: #f5d0fe; text-decoration-style: solid; }
+main:has(mark.t8:hover) mark.t8 { background: #a5f3fc; text-decoration-style: solid; }
+main:has(mark.t9:hover) mark.t9 { background: #d9f99d; text-decoration-style: solid; }
+main:has(mark.t10:hover) mark.t10 { background: #c7d2fe; text-decoration-style: solid; }
+main:has(mark.t11:hover) mark.t11 { background: #d6d3d1; text-decoration-style: solid; }
+main:has(mark.t12:hover) mark.t12 { background: #bfdbfe; text-decoration-style: solid; }
+main:has(mark.t13:hover) mark.t13 { background: #fef08a; text-decoration-style: solid; }
+main:has(mark.t14:hover) mark.t14 { background: #e9d5ff; text-decoration-style: solid; }
+main:has(mark.t15:hover) mark.t15 { background: #fed7aa; text-decoration-style: solid; }
+main:has(mark.t16:hover) mark.t16 { background: #99f6e4; text-decoration-style: solid; }
+main:has(mark.t17:hover) mark.t17 { background: #fecdd3; text-decoration-style: solid; }
+main:has(mark.t18:hover) mark.t18 { background: #bbf7d0; text-decoration-style: solid; }
+main:has(mark.t19:hover) mark.t19 { background: #f5d0fe; text-decoration-style: solid; }
+main:has(mark.t20:hover) mark.t20 { background: #a5f3fc; text-decoration-style: solid; }
+main:has(mark.t21:hover) mark.t21 { background: #d9f99d; text-decoration-style: solid; }
+main:has(mark.t22:hover) mark.t22 { background: #c7d2fe; text-decoration-style: solid; }
+main:has(mark.t23:hover) mark.t23 { background: #d6d3d1; text-decoration-style: solid; }
+main:has(mark.t24:hover) mark.t24 { background: #bfdbfe; text-decoration-style: solid; }
+main:has(mark.t25:hover) mark.t25 { background: #fef08a; text-decoration-style: solid; }
+main:has(mark.t26:hover) mark.t26 { background: #e9d5ff; text-decoration-style: solid; }
+main:has(mark.t27:hover) mark.t27 { background: #fed7aa; text-decoration-style: solid; }
+main:has(mark.t28:hover) mark.t28 { background: #99f6e4; text-decoration-style: solid; }
+main:has(mark.t29:hover) mark.t29 { background: #fecdd3; text-decoration-style: solid; }
+main:has(mark.t30:hover) mark.t30 { background: #bbf7d0; text-decoration-style: solid; }
+main:has(mark.t31:hover) mark.t31 { background: #f5d0fe; text-decoration-style: solid; }
+main:has(mark.t32:hover) mark.t32 { background: #a5f3fc; text-decoration-style: solid; }
+main:has(mark.t33:hover) mark.t33 { background: #d9f99d; text-decoration-style: solid; }
+main:has(mark.t34:hover) mark.t34 { background: #c7d2fe; text-decoration-style: solid; }
+main:has(mark.t35:hover) mark.t35 { background: #d6d3d1; text-decoration-style: solid; }
+main:has(mark.t36:hover) mark.t36 { background: #bfdbfe; text-decoration-style: solid; }
+main:has(mark.t37:hover) mark.t37 { background: #fef08a; text-decoration-style: solid; }
+main:has(mark.t38:hover) mark.t38 { background: #e9d5ff; text-decoration-style: solid; }
+main:has(mark.t39:hover) mark.t39 { background: #fed7aa; text-decoration-style: solid; }
+main:has(mark.t40:hover) mark.t40 { background: #99f6e4; text-decoration-style: solid; }
+main:has(mark.t41:hover) mark.t41 { background: #fecdd3; text-decoration-style: solid; }
+main:has(mark.t42:hover) mark.t42 { background: #bbf7d0; text-decoration-style: solid; }
+main:has(mark.t43:hover) mark.t43 { background: #f5d0fe; text-decoration-style: solid; }
+main:has(mark.t44:hover) mark.t44 { background: #a5f3fc; text-decoration-style: solid; }
+main:has(mark.t45:hover) mark.t45 { background: #d9f99d; text-decoration-style: solid; }
+main:has(mark.t46:hover) mark.t46 { background: #c7d2fe; text-decoration-style: solid; }
+main:has(mark.t47:hover) mark.t47 { background: #d6d3d1; text-decoration-style: solid; }
+.hl-note label { margin-right: 0.75rem; }
+main.hl-click pre.prose { color: #4b5563; }
+main.hl-click pre.prose .kw { color: #4b5563; }
+main.hl-click pre.prose mark:not(.hl-pick) { background: none; text-decoration-color: #4b5563; }
+main.hl-click pre.prose mark.hl-pick { color: #111827; }
+body:has(input.hl-toggle:not(:checked)) pre.prose mark { background: none; text-decoration: none; color: inherit; }
+body:has(input.hl-toggle:not(:checked)) pre.prose .kw { color: inherit; }
+button.rw { margin: 0; padding: 0; border: 0; font: inherit; color: inherit; background: none; cursor: pointer; text-decoration: underline solid #1d4ed8 1px; text-underline-offset: 0.35em; }
+button.rw[aria-pressed="true"] { text-decoration-thickness: 3px; }
+p.reading { min-height: 1.55em; margin: 0.5rem 0 0; overflow-wrap: anywhere; }
+p.reading span[data-w=""] { color: #4b5563; }
+@media screen and (max-width: 40rem) { table { display: block; overflow-x: auto; } }
+@media print {
+body { max-width: none; padding: 0; }
+nav.crumbs, nav.docnav, .skip, form, .verdict-entry, .hl-note { display: none; }
+mark, mark[class] { background: none; text-decoration-color: #4b5563; }
+main.hl-click pre.prose, main.hl-click pre.prose mark.hl-pick { color: inherit; }
+main.hl-click pre.prose .kw { color: #4b5563; }
+main.hl-click pre.prose mark:not(.hl-pick) { text-decoration-color: #4b5563; }
+details::details-content { content-visibility: visible; }
+pre { border: none; padding: 0; white-space: pre-wrap; overflow-x: visible; }
+a { color: inherit; text-decoration: none; }
+.chip { border: 1px solid #111827; background: none; color: inherit; }
+button.rw { text-decoration: none; }
+p.reading { display: none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="crumbs"><a href="../../index.html">guidelines</a> / <a href="index.html">alpha</a> / records</nav>
+<main id="main">
+<h1>Decision records</h1>
+<p>No decisions are recorded for the 1 document in this guideline.</p>
+<p>Open a document and record a decision to start this list.</p>
+<nav class="docnav"><a href="index.html">Guideline index</a></nav>
+</main>
+<footer class="scope"><p>This page reports what the loaded guideline documents state. It does not give clinical advice.</p></footer>
+</body>
+</html>

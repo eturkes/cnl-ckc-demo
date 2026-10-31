@@ -1,0 +1,10 @@
+# argv<TAB>rc<TAB>stderr_fixture<TAB>stdout_fixture
+request PUT /g/alpha/doc/a-10.html @TREE@	0	-	put-doc.stdout.golden
+request HEAD /g/alpha/doc/a-10.html @TREE@	0	-	head-doc.stdout.golden
+request post /g/alpha/doc/a-10.html @TREE@	0	-	lower-post-doc.stdout.golden
+request POST /g/alpha/records.html @TREE@ --body verdict=approved&reviewer=alice&comment=&review_sha256=788c59c39469ffa05dcea391455133cdd38d6257ba389c3045f07ab2194986e1&ledger_sha256=absent&csrf=tok&commit= --token tok --now 2026-08-19T12:34:56Z	0	-	post-records.stdout.golden
+request POST /g/alpha/review/a-10.html @TREE@ --body verdict=approved&reviewer=alice&comment=&review_sha256=788c59c39469ffa05dcea391455133cdd38d6257ba389c3045f07ab2194986e1&ledger_sha256=absent&csrf=tok&commit= --token tok --now 2026-08-19T12:34:56Z	0	-	post-retired-review.stdout.golden
+request POST /g/alpha/doc/a-10 @TREE@ --body verdict=approved&reviewer=alice&comment=&review_sha256=788c59c39469ffa05dcea391455133cdd38d6257ba389c3045f07ab2194986e1&ledger_sha256=absent&csrf=tok&commit= --token tok --now 2026-08-19T12:34:56Z	0	-	post-near-shape.stdout.golden
+request GET /g/alpha/doc/missing.html @TREE@	0	-	get-unknown-doc.stdout.golden
+request POST /g/alpha/doc/missing.html @TREE@ --header Origin:https://evil.test --body verdict=approved&reviewer=alice&comment=&review_sha256=788c59c39469ffa05dcea391455133cdd38d6257ba389c3045f07ab2194986e1&ledger_sha256=absent&csrf=tok&commit= --token tok --now 2026-08-19T12:34:56Z	0	-	post-unknown-doc.stdout.golden
+request POST /g/missing/doc/a-10.html @TREE@ --header Host:evil --body verdict=approved&reviewer=alice&comment=&review_sha256=788c59c39469ffa05dcea391455133cdd38d6257ba389c3045f07ab2194986e1&ledger_sha256=absent&csrf=tok&commit= --token tok --now 2026-08-19T12:34:56Z	0	-	post-unknown-gid.stdout.golden

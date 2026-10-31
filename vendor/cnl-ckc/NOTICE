@@ -1,0 +1,15 @@
+cnl-ckc
+Copyright 2026 Emir Turkes
+
+First-party work outside vendor/: Apache-2.0 WITH LLVM-exception (root
+LICENSE), independently reusable. Vendored directories carry their own
+licenses and are excluded from the root license: vendor/ape
+(LGPL-3.0-or-later), vendor/clex (GPL-3.0-or-later, verbatim upstream
+tree). Distribution of the full repository combination conveys under
+GPLv3; every first-party file remains Apache-2.0 WITH LLVM-exception and
+independently reusable. First-party additions inside a vendored tree
+adopt that tree's license; currently that is vendor/ape/prolog/ace_to_pl.pl
+(LGPL-3.0-or-later). Rust dependencies under rust/vendor/ carry their own
+permissive licenses (rust/trust/deps-allowlist.tsv, rust/deny.toml). Pins
+and fork status: vendor/*/PROVENANCE. Guideline source artifacts: rights
+recorded per guideline in guidelines/*/README.md.

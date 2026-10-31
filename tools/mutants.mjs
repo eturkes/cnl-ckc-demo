@@ -639,6 +639,17 @@ export const MUTANTS = [
     check: ['pnpm', 'test:browser', 'tests/question-combobox.browser.test.ts'],
   },
   {
+    label: 'inv kb-release: the vendored-tree grader passes a changed byte',
+    edits: [
+      {
+        path: 'tools/kb/release.mjs',
+        old: 'else if (gitBlobSha(bytes) !== sha) out.push(',
+        new: 'else if (gitBlobSha(bytes) !== sha && false) out.push(',
+      },
+    ],
+    check: { test: 'tests/kb-release.test.ts', name: 'R2 the vendored upstream tree equals' },
+  },
+  {
     label: 'inv proof-identity: a provenance chunk keys a clause by the wrong line',
     edits: [
       {

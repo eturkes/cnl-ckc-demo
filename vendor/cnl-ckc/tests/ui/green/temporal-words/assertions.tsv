@@ -1,0 +1,9 @@
+# golden-relpath	contains|absent	hex-substring
+g/alpha/index.html	absent	736563263c7469636b3e
+g/alpha/index.html	absent	77697468696e263c61726f756e643e
+g/alpha/index.html	absent	676170263c6672616d653e
+g/alpha/doc/h.html	absent	3c68323e54696d6520776f7264733c2f68323e
+g/alpha/doc/t.html	absent	3c68323e54696d6520776f7264733c2f68323e
+g/alpha/records.html	absent	3c68323e54696d6520776f7264733c2f68323e
+g/alpha/source/evidence.txt	absent	3c68323e54696d6520776f7264733c2f68323e
+index.html	absent	3c68323e54696d6520776f7264733c2f68323e

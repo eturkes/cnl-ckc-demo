@@ -1,0 +1,8 @@
+# argv<TAB>rc<TAB>stderr_fixture<TAB>stdout_fixture
+render @OUT@ @TREE@	0	-	render.stdout.expect
+check @TREE@	0	-	check.stdout.expect
+request GET /g/alpha/doc/a-10.html?ignored=1 @TREE@	0	-	request-query-200.stdout.golden
+request GET /g/alpha/doc/%61-10.html @TREE@	0	-	request-encoded-200.stdout.golden
+request GET /g/alpha/source/evidence.txt @TREE@	0	-	request-source-200.stdout.golden
+request GET /g/alpha/source/absent.txt @TREE@	0	-	request-source-404.stdout.golden
+request GET /g/alpha/source/%2e%2e%2fREADME.md @TREE@	0	-	request-source-escape-404.stdout.golden

@@ -1,0 +1,7 @@
+# format: docid<TAB>region<TAB>kept<TAB>dropped
+# per-document projection loss record: what each minimal rule keeps from its verbatim source
+# region and what it drops or interprets. Header bytes, row shape and per-document row
+# coverage are validated by ckc check; kept/dropped prose stays document-owned.
+a	r1		no material detail
+m	region-<&>"'%?#漢😀العربية	</pre><script>alert(1)</script><pre> &lt;script&gt; & " ' 漢 ﷐ 😀 العربية https://example.test/?a=<x>&b="q"	</pre><script>alert(1)</script><pre> &lt;script&gt; & " ' 漢 ﷐ 😀 العربية https://example.test/?a=<x>&b="q"
+z	r3	directive retained	

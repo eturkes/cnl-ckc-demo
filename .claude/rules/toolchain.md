@@ -28,12 +28,6 @@ paths:
   the browser lanes' Chromium = the public `chromiumfish` npm package, located by
   `CHROMIUMFISH_DIR` (its package directory), else the pnpm global store
   (`tools/browser.mjs` `resolveChromiumfish`). README `Prerequisites` + `Chat` name both.
-- **Upstream-source citations stay until the release migration** (interim user ruling on
-  `CLAUDE.md` `Authoring` portability): the KB is to enter as a `cnl-ckc` release's bag alone,
-  everything else self-contained in this repo, per the `.agent/deferred.md` row
-  `KB intake reads a sibling cnl-ckc checkout, not a release`. Until that row closes,
-  `.claude/rules/kb-build.md` `Upstream port specifications` keeps citing upstream's specs and
-  fixture corpus by project and in-project path, and `CLAUDE.local.md` locates the checkout.
 
 ## Package manager
 

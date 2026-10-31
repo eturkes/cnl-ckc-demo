@@ -1,0 +1,8 @@
+# format: docid<TAB>review_sha256<TAB>ace_commit<TAB>verdict<TAB>reviewer<TAB>date<TAB>comment
+approved	7d040af98ad32f58aec6a6970800a7eda6efb556c6d534d1e60a486ba9b14743	4f1c9abd0e37b25a86c4fd190b7e5382ca6017df	approved	reviewer	2026-01-01T00:00:00Z	
+approved	7d040af98ad32f58aec6a6970800a7eda6efb556c6d534d1e60a486ba9b14743	4f1c9abd0e37b25a86c4fd190b7e5382ca6017df	approved	Rita Mensah	2026-02-01T00:00:00Z	A second reviewer read the same version.
+contested	36812e6dd32caa327894f54cf09400e15b3c1d3931f66a2fcb0d85930b400c8e	9d2e7b0c1a3f5e8d4b6a2c7f0e9d1b3a5c8f7e6d	approved	Rita Mensah	2026-01-05T00:00:00Z	
+contested	36812e6dd32caa327894f54cf09400e15b3c1d3931f66a2fcb0d85930b400c8e	9d2e7b0c1a3f5e8d4b6a2c7f0e9d1b3a5c8f7e6d	rejected	Daniel Okafor	2026-02-05T00:00:00Z	The restatement drops a dose limit.
+rejected	f5c35006073865a22434b5cf88cb1f13cef5534194ebe79daa6c2f2b23bdcc29		rejected	reviewer	2026-01-01T00:00:00Z	the restatement drops a limit
+stale	8164cf771b60541c2978de40d64c061cd7ec07d310ff0a9ff2c8d9105415cc16	c81a4f5e2b90d7136ae4f80c25b3d9617fa0e84b	approved	reviewer	2026-01-01T00:00:00Z	
+stale	5b2f4c8e7a1d3096be55c4f2a80d716339ecab04d7f81c6520943ae8bd17c2f5		rejected	Rita Mensah	2026-01-02T00:00:00Z	Recorded before the extraction was corrected.

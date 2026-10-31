@@ -1,0 +1,8 @@
+Fixture evidence
+Region authority: identify the 2 payloads below
+
+[r20 | p1 | Fixture section]
+Locator decoy payload.
+
+[r10 | p1 | Fixture section]
+Locator target payload.

@@ -1,0 +1,10 @@
+A man reads a book before a visit after a trip.
+Every man reads 1 book per 1 day.
+Every man reads at most 2 books per 2 weeks.
+Every man reads exactly 3 books per 1 hour.
+Every man reads at least 4 books per 2 hours.
+Every man reads more than 5 books per 1 minute.
+Every man reads less than 6 books per 3 months.
+A man waits at an interval of at least 1 day during a window of at most 3 weeks of a visit.
+A man waits at an interval of less than 2 months during a window of exactly 1 year of a trip.
+If a man reads after a visit then the man waits.

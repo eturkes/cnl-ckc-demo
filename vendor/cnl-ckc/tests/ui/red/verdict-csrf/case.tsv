@@ -1,0 +1,4 @@
+# argv<TAB>rc<TAB>stderr_fixture<TAB>stdout_fixture
+request POST /g/alpha/doc/a-10.html @TREE@ --body verdict=approved&reviewer=alice&comment=&review_sha256=97b794e99610f963627b2de874564fb9154988090624cd7faf6db151baa31bb6&ledger_sha256=absent&csrf=&commit= --now 2026-08-19T12:34:56Z	0	-	empty.stdout.golden
+request POST /g/alpha/doc/a-10.html @TREE@ --body verdict=approved&reviewer=alice&comment=&review_sha256=97b794e99610f963627b2de874564fb9154988090624cd7faf6db151baa31bb6&ledger_sha256=absent&csrf=nope&commit= --token tok --now 2026-08-19T12:34:56Z	0	-	mismatch.stdout.golden
+request POST /g/alpha/doc/a-10.html @TREE@ --body verdict=approved&reviewer=alice&comment=&review_sha256=97b794e99610f963627b2de874564fb9154988090624cd7faf6db151baa31bb6&ledger_sha256=absent&csrf=a%2Bb&commit= --token a+b --now 2026-08-19T12:34:56Z	0	-	plus-match.stdout.golden

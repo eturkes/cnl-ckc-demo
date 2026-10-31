@@ -1,0 +1,25 @@
+# format: kind	lemma	value
+range	to	minimum
+relation	during	duration
+spacing	at	interval
+approximation	approximate	about
+unit	hr	hour
+relation	within&<around>	within
+unit	day	day
+unit	sec&<tick>	second
+relation	after	after
+spacing	at	gap&<frame>
+unit	minute	minute
+relation	for	duration
+unit	yr	year
+relation	before	before
+unit	wk	week
+unit	mo	month
+window	during	window
+frequency	per	period
+window	within&<window>	frame&<name>
+frequency	each&<time>	period
+range	upto&<end>	minimum
+approximation	approx&<mark>	about
+range	at	minimum
+approximation	to	about
