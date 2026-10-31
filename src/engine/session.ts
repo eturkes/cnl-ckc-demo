@@ -102,13 +102,14 @@ const countTerms = (suffix: string, text: string): string =>
   `error(syntax_error(_),_),_L${suffix}=bad)`;
 
 /**
- * Parse a read-only goal and render the parsed term back, in one query. `numbervars(false)` keeps
- * a `'$VAR'(N)` term from rendering as a variable, and `variable_names` keeps the caller's names,
- * so the rendered text re-reads to a variant of the checked term.
+ * Parse a read-only goal and render it back, in one query. `numbervars(false)` keeps a `'$VAR'(N)`
+ * term from rendering as a variable, and `variable_names` keeps the caller's names, so the rendered
+ * text re-reads to a variant of the checked term — with each arithmetic goal routed to its bounded
+ * twin (`'$ro_rewrite'/2`, `tools/kb/readonly-arithmetic.mjs`), which rewrites nothing else.
  */
 const READONLY_PARSE =
-  'term_string(T,S,[variable_names(Vs)]),' +
-  'term_string(T,C,[quoted(true),ignore_ops(true),numbervars(false),variable_names(Vs)]),' +
+  "term_string(T,S,[variable_names(Vs)]),'$ro_rewrite'(T,R)," +
+  'term_string(R,C,[quoted(true),ignore_ops(true),numbervars(false),variable_names(Vs)]),' +
   `${countTerms('0', 'S')},(_L0==bad->string_concat(S,"\\n.",_S1),` +
   `${countTerms('1', '_S1')},_L=_L1;_L=_L0),(_L==bad->N=bad;length(_L,N)).`;
 

@@ -161,6 +161,7 @@ record is `.claude/rules/firing.md`.
 | `tests/page-viewer.dom.test.ts` | off | failed page draw leaves retry button disabled | mutate | `C3 a failed page draw keeps Load page viewer disabled` |
 | `tests/palette-check.test.ts` | off | protan simulated with the identity matrix | mutate | `inv palette-check: protan simulated with the identity matrix` |
 | `tests/upstream-ui-corpus.test.ts` | off | the port lets an orphan ACE or Prolog file ride along | mutate | `inv upstream-ui: the port lets an orphan ACE or Prolog file ride along` |
+| `tests/readonly-arithmetic.test.ts` | off | a twin whose rewrite enters a `findall/3` template | text | `.agent/contracts/n34-readonly-arithmetic.md The rewrite entering a `findall/3` template` |
 | `tests/passage-locate.test.ts` | off | locator keeps standalone bullet items that the extracted passage drops | commit | `005903a pnpm exec vitest run tests/passage-locate.test.ts` → rc 1, 2/8 red` |
 | `tests/proof-comparison.test.ts` | off | the decoder reads a comparison as a negation | mutate | `inv proof-comparison: the decoder reads a comparison as a negation` |
 | `tests/proof-guard.test.ts` | answer | an interpreter naming 19 of the 22 indicators passes every scope guard | text | `.agent/contracts/rel-u1.md 5/5 RED at base` |

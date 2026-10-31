@@ -62,9 +62,9 @@ repo's deltas.
   `49b1143`, `wip/n5-inventory` `ee0f5b2`, `wip/n9-comparison` `3cf1d13`, `wip/n11-copy-sweep`
   `ca26be9`, `wip/n12-frontmatter` `b52e01f`, `wip/n13-decoder` `eca6aca`,
   `wip/n17-index-control` `f312d8a` (revised on landing), `wip/n18-bounded-settle` `0d3ab54`,
-  `wip/n19-review-page` `c1738c5`, `wip/n20-queued-cancel` `adaee3b`; the branches they
-  re-applied stay too (`wip/m8-mutate-timeout`, `wip/m13-copy-sweep`, `wip/m14-frontmatter`,
-  `wip/m15-artifacts`, `wip/f4-inventory`).
+  `wip/n19-review-page` `c1738c5`, `wip/n20-queued-cancel` `adaee3b`, `wip/n33-upstream-ui`
+  `5a3e015`; the branches they re-applied stay too (`wip/m8-mutate-timeout`, `wip/m13-copy-sweep`,
+  `wip/m14-frontmatter`, `wip/m15-artifacts`, `wip/f4-inventory`).
 - Research probe branches held as evidence, worktrees removed: `wt/res-m1-1` `36cc56f`
   (swipl-wasm load/worker/terms/trace/perf/test/errors/deploy), `wt/res-m1-2` `5863141`
   (cytoscape layout/perf/test, axe, contrast, combobox), `wt/res-m2-2` `0a48b79` (every

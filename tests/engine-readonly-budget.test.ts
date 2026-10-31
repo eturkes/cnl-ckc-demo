@@ -180,6 +180,31 @@ describe('read-only budget battery', () => {
     alive(await run(shared, DOCUMENTS));
   }, 600_000);
 
+  // The loops `.agent/deferred.md` measured under the 1000-byte cap alone on the i7-8650U — 37 s,
+  // 113 s and 138 s per 5,000,000 inferences — each building its operands in its own goal, and a
+  // loop the bounded twins admit, which must end on the inference budget.
+  it.each([
+    [
+      'a 400-byte quotient',
+      'X is 7**1140,Y is 3**2016,between(1,inf,_),guideline_quotient(exactly,X,exactly,Y,_,_),fail',
+    ],
+    ['a 400-byte product', 'X is 7**1140,Y is 3**2016,between(1,inf,_),Z is X*Y,fail'],
+    ['a 250-byte remainder', 'X is 7**712,Y is 3**1260,between(1,inf,_),Z is X*X mod Y,fail'],
+    ['admitted arithmetic', 'between(1,inf,_),Z is 123456789*987654321 mod 1000003,fail'],
+  ])(
+    'G9 a loop of %s ends on the budget before the client deadline',
+    async (_name, loop) => {
+      const started = performance.now();
+      const outcome = await run(shared, `once(guideline_schema_version(_)),${loop}`);
+      const elapsed = performance.now() - started;
+      expect(['limit', 'error'], JSON.stringify(outcome).slice(0, 240)).toContain(outcome.kind);
+      if (outcome.kind === 'error') expect(outcome.error.code).not.toBe('guard');
+      expect(elapsed).toBeLessThan(DEMO_BUDGET.wallClockMs + HARD_GRACE_MS);
+      alive(await run(shared, DOCUMENTS));
+    },
+    600_000,
+  );
+
   it('G9 arithmetic inside the integer cap answers, and the cap ends with its query', async () => {
     const within = await run(
       shared,

@@ -162,9 +162,10 @@ the shipped proof RPC is untouched. No write path ships; a direct `assertz` is s
   literal the build carries into a premise without being one — `fail`, say — is never
   assumed, so a clause body that cannot hold derives no answer and no marks
   (`tests/marks-admitted.test.ts`).
-- **`PROOF_SOURCE` is LAST in `payloadSource`** (payload → clinical helper → proof), so no
-  edit to it can move a content-site line or a `clinical_gate/4` line list. That is what makes
-  proof-source work line-safe by construction.
+- **`PROOF_SOURCE` follows every document and the clinical helper in `payloadSource`**
+  (payload → clinical helper → proof → read-only arithmetic), so no edit to it, or to the
+  read-only block after it, can move a content-site line or a `clinical_gate/4` line list. That
+  is what makes proof-source work line-safe by construction.
 - **Read cited heads from the STORED gate body, never by calling the gate.**
   `clinical_use/2` runs `call(Body)`, which demands the very premises the evaluator supplies,
   so executing `clinical_gate/4` is circular. `clause(clinical_gate(D,S,_,_),Body,_)` plus a

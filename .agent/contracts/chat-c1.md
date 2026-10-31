@@ -68,10 +68,17 @@ Goal positions are walked; every other argument is data and never walked.
   arg/3 =../2`; the schema's comparison built-ins `guideline_satisfies/4,6` (integer arithmetic
   over ground arguments; they read no KB clause, so they never count as a KB read — added by
   the same amendment); its arithmetic built-ins `guideline_product/6`, `guideline_quotient/6`
-  (added for release `kb-2026-10-29-rc.1`, user-approved). Their cost grows with the operands,
-  as `is/2`'s does, so a read-only query caps every integer it builds at 1000 bytes
-  (`READONLY_INTEGER_BYTES`, n31): a 25,000-digit operand trips the cap at once. Amended at n31
-  from the declared limit: "their cost grows with the operands, as `is/2`'s does — `X is
+  (added for release `kb-2026-10-29-rc.1`, user-approved). A read-only goal's arithmetic — each
+  `is/2`, comparison and schema arithmetic or comparison built-in in a goal position — runs
+  through a bounded twin compiled into the image (n34, `tools/kb/readonly-arithmetic.mjs`): one
+  operation per inference over integers within 62 bits and floats, `is/2`'s value wherever it
+  admits the expression, `resource_error(read_only_arithmetic)` past the bound, and the read-only
+  integer cap of 1000 bytes (`READONLY_INTEGER_BYTES`, n31) behind it. A `kb` tag therefore
+  certifies that the rewritten goal ran; the rewrite changes no value it admits
+  (`tests/readonly-arithmetic.test.ts` A2) and no data position (A1). Amended at n34 from n31's
+  text: "Their cost grows with the operands, as `is/2`'s does, so a read-only query caps every
+  integer it builds at 1000 bytes (`READONLY_INTEGER_BYTES`, n31): a 25,000-digit operand trips
+  the cap at once." Amended at n31 from the declared limit: "their cost grows with the operands, as `is/2`'s does — `X is
   7**(10**7)` holds one step 12.5 s, and a 25,000-digit operand holds `guideline_quotient/6`'s
   Euclid loop 38 s, in Node — past the wall clock, where the client's hard deadline recreates the
   worker (chat-c2)". Absent from the image and so never admitted: `member/2`,

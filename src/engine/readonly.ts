@@ -28,8 +28,11 @@ export const READONLY_INTEGER_BYTES = 1000;
 
 export type GuardVerdict = { ok: true } | { ok: false; reason: string };
 
-/** Which arguments of a control construct are goals; the rest are data. */
-const CONTROL: ReadonlyMap<string, readonly number[]> = new Map([
+/**
+ * Which arguments of a control construct are goals; the rest are data. The image's
+ * `'$ro_rewrite'/2` walks exactly these positions (`tests/readonly-arithmetic.test.ts`).
+ */
+export const CONTROL: ReadonlyMap<string, readonly number[]> = new Map([
   [',/2', [0, 1]],
   [';/2', [0, 1]],
   ['->/2', [0, 1]],

@@ -134,6 +134,18 @@ leaves its frame open, and every later query then resolves outside the KB:
   minutes; capped, it trips `resource_error(tripwire(max_integer_size,1000))` at once. The flag
   boots unset and refuses to be unset again: `size_t`'s maximum, 4294967295 on wasm32, restores
   the unset state. `tests/engine-readonly-budget.test.ts` G9.
+- **A read-only goal's arithmetic runs through bounded twins** (`tools/kb/readonly-arithmetic.mjs`,
+  compiled into the image after the proof source): the read-only parse routes each `is/2`, each
+  comparison and each schema arithmetic or comparison built-in in a goal position — the
+  positions `readonly.ts` `CONTROL` names, nothing in a data position — to a twin that evaluates
+  one operation per inference over integers within 62 bits and floats. The inference budget
+  priced every `is/2` at one inference whatever its operands, so under the cap alone a loop of
+  big-integer arithmetic spent 5,000,000 inferences in 37–138 s on the i7-8650U; a twin's
+  operation costs a bounded time, so the budget bounds the step again. Where a twin admits an
+  expression it returns `is/2`'s value; an operand or result past the bound raises
+  `resource_error(read_only_arithmetic)`. This bounds arithmetic alone: a single built-in over a
+  huge structure (`msort/2` over millions) stays one heavy step under the client's hard
+  deadline. `tests/readonly-arithmetic.test.ts`, `tests/engine-readonly-budget.test.ts` G9.
 - **Any caught resource term other than `stack` or `memory` is an unclassified resource error,
   never a solution**: the wrapper's recovery leaves the user's variables unbound, so reading a
   compound `BudgetResource_` as a solution would hand back an answer no goal derived

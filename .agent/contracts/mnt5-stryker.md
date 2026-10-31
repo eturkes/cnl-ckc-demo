@@ -9,7 +9,8 @@ base since it shipped; `pnpm mutate`'s hand-written mutants stay firing records.
 - Tool: StrykerJS 10.0.0 with `@stryker-mutator/vitest-runner` 10.0.0, default mutators,
   `perTest` coverage (the runner's only mode).
 - Scope: the production modules the suite imports — `tools/kb/exports.mjs`,
-  `tools/kb/paths.mjs`, `tools/kb/produce.mjs`, each unchanged since `c511755`.
+  `tools/kb/paths.mjs`, `tools/kb/produce.mjs`, each unchanged from `c511755` to the n6 run;
+  n34 appended the read-only arithmetic block to `paths.mjs` `payloadSource` after it.
   `tests/clinical-test-support.ts` is test code.
 - Command: `pnpm stryker` = `tools/mutation/stryker.config.mjs`, the suite run alone per mutant
   through `tools/mutation/vitest.config.mjs`, then `tools/mutation/survivors.mjs`.
