@@ -273,26 +273,18 @@ worker before its caller resumes (`chat-c2.md`).
   its re-open trigger: three consecutive gates on one host above its bound (45 s on the Core Ultra
   7 268V, 110 s on the i7-8650U), each from a 1-min load below 2. The 492-document bag counts one:
   141.9 s on the i7-8650U from a load near 1.3 (T11 86.9 s, P4 50.9 s).
-- [x] 4ae9f46 n29 `low` the page viewer locates s33-01 (a table) and s57-05 (a list) on their recorded
-  pages, reading the producer's extraction conventions — census 469 / 21 / 2.
-- [ ] n30 `low` queue row `Scope exclusions and superseded statements do not surface` — user
-  ruling: route to ITERATE (`route.md`) once every other row is worked.
-- [x] 18c83fe n31 `low` queue row `An arithmetic built-in holds one engine step past the wall clock`.
-- [x] 2f439d6 n32 `low` queue row `The release tag's signature goes unchecked`.
-- [x] 9736d24 n33 `low` queue row `The vendored tests/ui/ corpus runs against no suite` — approved
-  (user): the nine declared T9 edits; draft `wip/n33-upstream-ui` `5a3e015`, landed unchanged.
-- [x] d18f034 n34 `low` queue row `A loop of capped arithmetic holds one engine step past the wall clock` —
-  user ruling: solve it here, else route to IMPLEMENT.
-- [ ] n35 `low` find: a Prolog exception raised mid-run settled `failure` (swipl-wasm's error step
-  carries no `value`). Accept: the query and proof loops settle such a run as error `prolog`,
-  `tests/engine-budgets.test.ts` P2.10 seen red at `9736d24`. Approved (user): three case edits
-  (P3.1 ×2 built `numlist/3`, absent from the image; E27's concurrent pair); draft
-  `wip/n35-error-steps` `9936ffa`, landed unchanged.
-- [x] 661524a n36 `low` find: `tests/chat-server.test.ts` parsed a trace line the fake was still writing
-  (CI run 41173655724: B7 `Unterminated string in JSON`). Accept: the reader parses
-  newline-terminated records alone, B0 seen red on the old reader.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
 
-MAINTAIN — the whole product, free-text intake and answer-panel annotations folded in
+ITERATE — scope exclusions and superseded statements, surfaced in the graph and the answer panel
+> - **Scope exclusions and superseded statements do not surface** — the graph projects no
+>   `guideline_exclusion/1` or `guideline_supersession/4` record and no guard
+>   (`tools/kb/graph.mjs` `UNPROJECTED`, the evaluation-date comparison skipped), and the answer
+>   panel never says that a statement is guarded or superseded; the ladder shows the scope guard as
+>   a negation step alone. Accept: the graph projects each exclusion and supersession record under
+>   the meaning ruling, the guard conditions included, graded by `tests/graph-annotations.test.ts`
+>   A1 without its evaluation-date exemption, and the answer panel names a superseded statement
+>   and its source, its live review owed. `pri` low. **User ruling**: carry the semantics through,
+>   queue the surfacing.
+Suspended: MAINTAIN — the whole product, free-text intake and answer-panel annotations folded in

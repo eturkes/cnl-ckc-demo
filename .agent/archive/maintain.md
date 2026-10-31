@@ -378,3 +378,32 @@ prototype, `prototype/answer-annotations/`, retired at its IMPLEMENT close under
 - [x] 9502c6d rel-u2 `data` intake from the release: `pnpm kb:fetch <tag>` + `--verify`, `kb/release.json`,
   `vendor/cnl-ckc/`; the queue row `KB intake reads a sibling cnl-ckc checkout, not a release` closed.
 - [x] rel-close: reviewer-25 over every lens (`.agent/contracts/rel-close.md`): K3-1 major, R1-1 + R2-1 minor, all fixed in the close commit.
+
+## Queue run, fifth ask (MAINTAIN request opened at `1ed8b82`)
+
+Request: work every `.agent/deferred.md` row in rank order (8 rows at `1ed8b82`, all `low`; new finds
+fund after them). Met when: each row closed by its own acceptance check in its own commit, recorded
+blocked on the user with what it owes, waiting on its re-open trigger, or routed (`route.md`); the full
+gate green on a clean tree at the closing commit. One question round: n30 routed to ITERATE; n33 landed
+as drafted; the capped-arithmetic loop solved here (n34); the pinned signer and the extended KB-release
+`Decisions` bullet stand. Every commit gated by `pnpm ci:gate` (the fan-out); no local `pnpm gate` ran,
+so n16's trigger stays at 1 of 3.
+
+- [x] `4ae9f46` n29 `low` the page viewer reads the producer's extraction conventions: s33-01 + s57-05
+  locate whole, census 469 / 21 / 2; reviewer-26 9/9 (L3-1 minor fixed).
+- [x] `18c83fe` n31 `low` read-only integers capped at `max_integer_size`'s 1000-byte floor; a compound
+  resource term no longer reads as a solution; reviewer-27 (L1-1 major, three lifecycle leaks, fixed).
+- [x] `2f439d6` n32 `low` the release tag's SSHSIG verified against `kb/release-signers` in pure Node,
+  its checksum line bound to the archive; reviewer-28 8/8 (S1-1 minor fixed).
+- [x] `9736d24` n33 `low` upstream's `tests/ui/` corpus graded (34 applicable, 73 named); four port rules
+  aligned to `check.rs` — approved (user), nine declared T9 edits; researcher-2, classifier-1,
+  reviewer-29.
+- [x] `d18f034` n34 `low` find (n31): read-only arithmetic through bounded twins compiled into the
+  image — user ruling: solve it here.
+- [x] `661524a` n36 `low` find: the chat-server trace reader parsed a partial line (CI flake).
+- [x] `e020f62` n35 `low` find (drafting n34): a Prolog exception raised mid-run settled `failure` →
+  error `prolog` — approved (user, closing question): P3.1 ×2 (`numlist/3` absent) and E27's
+  concurrent pair edited; draft `wip/n35-error-steps` `9936ffa`; the interleave → queue row.
+- [x] `6fcf2c7` Close review: check set `.agent/contracts/n29-close.md` (`20208bc`); reviewer-30
+  (reviewer) 8/8 — U1 U2 U4 U5 U6 pass; U3-1 R1-1 R2-1 (minor) fixed, re-review 3/3 pass; S1 (MAIN)
+  pass. n30 routed to ITERATE (user ruling).

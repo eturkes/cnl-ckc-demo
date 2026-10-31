@@ -16,15 +16,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   re-vendored bag corrects its region page, or carries a recorded producer reason, and the
   census in `tests/passage-locate.test.ts` moves with it. `pri` low. **User ruling**: keep it
   owed to the producer — no demo-side declared limit.
-- **Scope exclusions and superseded statements do not surface** — the graph projects no
-  `guideline_exclusion/1` or `guideline_supersession/4` record and no guard
-  (`tools/kb/graph.mjs` `UNPROJECTED`, the evaluation-date comparison skipped), and the answer
-  panel never says that a statement is guarded or superseded; the ladder shows the scope guard as
-  a negation step alone. Accept: the graph projects each exclusion and supersession record under
-  the meaning ruling, the guard conditions included, graded by `tests/graph-annotations.test.ts`
-  A1 without its evaluation-date exemption, and the answer panel names a superseded statement
-  and its source, its live review owed. `pri` low. **User ruling**: carry the semantics through,
-  queue the surfacing.
 - **C6 left `tests/m1u7-port.test.ts` with the sentence caps** — the archived m1u7 contract's C6
   (a 30-word sentence planted in `INSTRUCTIONS` or `DESCRIPTIONS` fails `copy:check`) lost its
   subject when the caps retired; both cases and their mutant
