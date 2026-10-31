@@ -3,7 +3,7 @@
 // classified from text is classified from the one representation that loses shape.
 
 import type { BudgetSpec, LimitKind } from './protocol.js';
-import type { PlBindings } from './terms.js';
+import type { PlBindings, PlTerm } from './terms.js';
 
 export class BudgetError extends Error {
   override name = 'BudgetError';
@@ -124,6 +124,14 @@ export type Outcome =
   /** A resource error the wrapper caught but this build has no limit state for. */
   | { kind: 'resource'; resource: string };
 
+/** `tripwire(max_integer_size,16)`: a resource term's name and atomic arguments, for a message. */
+const resourceText = (term: PlTerm): string => {
+  if (term.kind === 'atom') return term.value;
+  if (term.kind === 'integer') return String(term.value);
+  if (term.kind !== 'compound') return term.kind;
+  return `${term.functor}(${term.args.map(resourceText).join(',')})`;
+};
+
 /**
  * Read one wrapper result.
  *
@@ -137,6 +145,11 @@ export function readOutcome(bindings: PlBindings): Outcome {
     return limit === undefined
       ? { kind: 'resource', resource: resource.value }
       : { kind: 'limit', limit };
+  }
+  // Any other bound term is a caught resource error too — the read-only integer cap raises
+  // `tripwire(max_integer_size,Bytes)` — and its recovery must never read as a solution.
+  if (resource !== undefined && resource.kind !== 'variable') {
+    return { kind: 'resource', resource: resourceText(resource) };
   }
   const inference = bindings.BudgetInference_;
   if (inference?.kind === 'atom' && inference.value === 'inference_limit_exceeded') {

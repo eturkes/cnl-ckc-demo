@@ -206,6 +206,24 @@ describe('P2 typed limit states', () => {
       kind: 'resource',
       resource: 'threads',
     });
+    // A compound resource term — the read-only integer cap's `tripwire(max_integer_size,Bytes)` —
+    // is caught by the same wrapper and must never read as the solution its recovery leaves.
+    expect(
+      readOutcome({
+        BudgetResource_: {
+          kind: 'compound',
+          functor: 'tripwire',
+          args: [
+            { kind: 'atom', value: 'max_integer_size' },
+            { kind: 'integer', value: 16 },
+          ],
+        },
+      }),
+    ).toEqual({ kind: 'resource', resource: 'tripwire(max_integer_size,16)' });
+    expect(readOutcome({ BudgetResource_: { kind: 'string', value: 'heap' } })).toEqual({
+      kind: 'resource',
+      resource: 'string',
+    });
     // Text that merely looks like a limit is not one.
     expect(readOutcome({ X: { kind: 'string', value: 'inference_limit_exceeded' } }).kind).toBe(
       'solution',
@@ -233,6 +251,62 @@ describe('P3 budget enforcement', () => {
     await session.solve('numlist(1,20000000,L),length(L,_).', budget({ stackBytes: 8388608 }));
     expect(await engineValue('current_prolog_flag(stack_limit,V).', 'V')).toBe(before);
   });
+
+  // P3.1 reads the flag through `solve`, which sets the stack to its own budget first, so it reads
+  // that budget whatever the last query left; this case reads the flags between queries.
+  it('P3.1 leaves the stack and integer flags restored, read between queries', async () => {
+    let engine: Engine | undefined;
+    const own = new EngineSession({
+      loadImage: async (image) => (engine = await loaderWith({})(image)),
+      expected: manifest.contract,
+    });
+    await own.boot(new Uint8Array(readGenerated('kb.pvm')));
+    const flag = (name: string): unknown =>
+      (engine?.prolog.query(`current_prolog_flag(${name},V).`).once() as { V?: unknown }).V;
+    const before = flag('stack_limit');
+    await own.solve('numlist(1,20000000,L),length(L,_).', budget({ stackBytes: 8388608 }));
+    expect(flag('stack_limit')).toBe(before);
+    expect(flag('max_integer_size')).toBeUndefined();
+    await own.solve('X is 10**100.', budget(), '', undefined, true);
+    expect(flag('stack_limit')).toBe(before);
+    expect(flag('max_integer_size')).toBeUndefined();
+  }, 120_000);
+
+  it('P3.1 refuses a read-only run whose integer cap does not take or does not lift', async () => {
+    let engine: Engine | undefined;
+    const own = new EngineSession({
+      loadImage: async (image) => (engine = await loaderWith({})(image)),
+      expected: manifest.contract,
+    });
+    await own.boot(new Uint8Array(readGenerated('kb.pvm')));
+    if (engine === undefined) throw new Error('engine did not load');
+    const { prolog } = engine;
+    const query = prolog.query.bind(prolog);
+    const flag = (name: string): unknown =>
+      (query(`current_prolog_flag(${name},V).`).once() as { V?: unknown }).V;
+    const before = flag('stack_limit');
+    // Below the boot stack, so a run that skips its stack restore shows.
+    const low = budget({ stackBytes: 8388608 });
+    // The planted engine rewrites the cap or the lift; every other goal passes through.
+    const planted = new Map<string, string>();
+    prolog.query = (goal: string, bindings?: Record<string, unknown>) =>
+      query(planted.get(goal) ?? goal, bindings);
+    planted.set(
+      'set_prolog_flag(max_integer_size,1000).',
+      'set_prolog_flag(max_integer_size,2000).',
+    );
+    await expect(own.solve('X = 1.', low, '', undefined, true)).rejects.toThrow(
+      'integer size cap set to 2000',
+    );
+    expect(flag('stack_limit')).toBe(before);
+    expect(flag('max_integer_size')).toBeUndefined();
+    planted.clear();
+    planted.set('set_prolog_flag(max_integer_size,4294967295).', 'true.');
+    await expect(own.solve('X = 1.', low, '', undefined, true)).rejects.toThrow(
+      'integer size cap outlived its read-only query',
+    );
+    expect(flag('stack_limit')).toBe(before);
+  }, 120_000);
 
   it('P3.2 yields early solutions before a limit terminates the run', async () => {
     const solved = await session.solve('between(1,20,X),probe_deep(X).', budget({ depth: 8 }));

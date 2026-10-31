@@ -15,6 +15,17 @@ import type { PlTerm } from './terms.js';
  */
 export const READONLY_GOAL_MAX = 2048;
 
+/**
+ * Largest integer a read-only goal may build, in bytes (SWI's `max_integer_size`, whose floor is
+ * 1000): a bigger one, or a step whose result could be, raises
+ * `resource_error(tripwire(max_integer_size,1000))` where it would be built. Uncapped, one
+ * 25,000-digit `guideline_quotient/6` — two `is/2` calls build its operands in milliseconds —
+ * held one step 148 s on the i7-8650U; under the cap the costliest single call measured is 109 ms
+ * (400-byte operands). Every KB number fits. A fail-driven loop of capped arithmetic still costs
+ * more per inference than the budget prices (`.agent/deferred.md`).
+ */
+export const READONLY_INTEGER_BYTES = 1000;
+
 export type GuardVerdict = { ok: true } | { ok: false; reason: string };
 
 /** Which arguments of a control construct are goals; the rest are data. */
@@ -136,9 +147,7 @@ const BUILTINS = new Set([
   '=../2',
   // The schema's comparison and arithmetic built-ins: integer arithmetic over ground arguments, no
   // atom built. They read no KB clause, so they never count as the goal's KB read. Their cost grows
-  // with the operands, as `is/2`'s does: a 25,000-digit operand, which `is/2` builds in
-  // milliseconds, holds `guideline_quotient/6`'s Euclid loop in one step for 38 s in Node, past
-  // the wall clock, and the client's hard deadline then recreates the worker (chat-c2).
+  // with the operands, as `is/2`'s does, so `READONLY_INTEGER_BYTES` bounds every operand.
   'guideline_satisfies/4',
   'guideline_satisfies/6',
   'guideline_product/6',

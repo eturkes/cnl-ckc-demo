@@ -272,7 +272,7 @@ worker before its caller resumes (`chat-c2.md`).
   its re-open trigger: three consecutive gates on one host above its bound (45 s on the Core Ultra
   7 268V, 110 s on the i7-8650U), each from a 1-min load below 2. The 492-document bag counts one:
   141.9 s on the i7-8650U from a load near 1.3 (T11 86.9 s, P4 50.9 s).
-- [ ] n29 `low` the page viewer locates s33-01 (a table) and s57-05 (a list) on their recorded
+- [x] 4ae9f46 n29 `low` the page viewer locates s33-01 (a table) and s57-05 (a list) on their recorded
   pages, reading the producer's extraction conventions — census 469 / 21 / 2.
 - [ ] n30 `low` queue row `Scope exclusions and superseded statements do not surface`; the answer
   panel's change waits on the user's approval (`Decisions`: accepted surfaces).

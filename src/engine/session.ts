@@ -16,7 +16,7 @@ import {
   wrapGoal,
 } from './budget.js';
 import { notify, PROOF_BUDGET_MAX } from './protocol.js';
-import { guardGoal, READONLY_GOAL_MAX } from './readonly.js';
+import { guardGoal, READONLY_GOAL_MAX, READONLY_INTEGER_BYTES } from './readonly.js';
 import type {
   BootPhase,
   BudgetSpec,
@@ -115,6 +115,14 @@ const READONLY_PARSE =
 const SCHEMA_GOAL = 'findall(V,guideline_schema_version(V),Vs),sort(Vs,Us),length(Us,N),Us=[S].';
 const DOCUMENTS_GOAL = 'findall(D,guideline_document(D,_,_,_),Ds),length(Ds,N).';
 const STACK_FLAG_GOAL = 'current_prolog_flag(stack_limit,V).';
+const INTEGER_FLAG_GOAL = 'current_prolog_flag(max_integer_size,V).';
+const INTEGER_CAP_GOAL = `set_prolog_flag(max_integer_size,${String(READONLY_INTEGER_BYTES)}).`;
+/**
+ * `size_t`'s maximum on the wasm32 build. An image boots with `max_integer_size` unset — integers
+ * bounded by the stack alone — and the flag refuses to be unset again; this value restores that
+ * state, after which the flag reads as absent.
+ */
+const INTEGER_UNCAP_GOAL = 'set_prolog_flag(max_integer_size,4294967295).';
 
 const PROOF_TREE = 'ProofTree_';
 const PROOF_STATE = 'ProofState_';
@@ -435,6 +443,7 @@ export class EngineSession {
     // Any goal may assert or retract, so no earlier proof survives a query, before or after.
     this.#proofs.clear();
     const restore = this.#lowerStack(engine, budget.stackBytes);
+    let uncap = (): void => undefined;
     this.#active = id;
     this.#cancelling = this.#deferred.delete(id);
     const started = Date.now();
@@ -444,13 +453,15 @@ export class EngineSession {
     const encode = createEncoder(engine.prolog);
     const solutions: PlSolution[] = [];
     let spent = 0;
-    const query = engine.prolog.query(meteredGoal(goal, budget));
-    const iterator = query[Symbol.iterator]();
+    let query: ReturnType<Engine['prolog']['query']> | undefined;
     // A cancel held from before dispatch settles the run without proving a solution:
     // the caller asked to stop before any answer existed.
     let stopped: LimitKind | 'cancelled' | undefined = this.#cancelling ? 'cancelled' : undefined;
     let exhausted = false;
     try {
+      if (parsed) uncap = this.#capIntegers(engine);
+      query = engine.prolog.query(meteredGoal(goal, budget));
+      const iterator = query[Symbol.iterator]();
       while (stopped === undefined) {
         const step = iterator.next();
         // A final solution can arrive together with `done: true`; reading `value`
@@ -516,9 +527,18 @@ export class EngineSession {
       else throw cause;
     } finally {
       // A trapped runtime is never called again, its cleanup included.
+      // Each undo runs whatever the one before it throws: an engine left capped or narrowed would
+      // answer every later request under this one's limits.
       if (this.#aborted === undefined) {
-        query.close?.();
-        restore();
+        try {
+          query?.close?.();
+        } finally {
+          try {
+            uncap();
+          } finally {
+            restore();
+          }
+        }
       }
       this.#active = undefined;
       this.#cancelling = false;
@@ -853,6 +873,28 @@ export class EngineSession {
       const now = requireInteger(this.#queryOne(engine, STACK_FLAG_GOAL).V, 'stack limit');
       if (now !== previous) throw new Error(`stack limit restored to ${now}, expected ${previous}`);
     };
+  }
+
+  /**
+   * Cap the integers a read-only goal may build (`READONLY_INTEGER_BYTES`) and hand back the undo.
+   * Both are read back, so a cap that did not take is a thrown error rather than an unbounded run.
+   */
+  #capIntegers(engine: Engine): () => void {
+    const uncap = (): void => {
+      engine.prolog.query(INTEGER_UNCAP_GOAL).once();
+      if (decodeOnce(engine.prolog.query(INTEGER_FLAG_GOAL).once()).kind !== 'failure') {
+        throw new Error('integer size cap outlived its read-only query');
+      }
+    };
+    engine.prolog.query(INTEGER_CAP_GOAL).once();
+    try {
+      const cap = requireInteger(this.#queryOne(engine, INTEGER_FLAG_GOAL).V, 'integer size cap');
+      if (cap !== READONLY_INTEGER_BYTES) throw new Error(`integer size cap set to ${String(cap)}`);
+    } catch (cause) {
+      uncap();
+      throw cause;
+    }
+    return uncap;
   }
 
   #queryOne(engine: Engine, goal: string): Record<string, PlTerm | undefined> {

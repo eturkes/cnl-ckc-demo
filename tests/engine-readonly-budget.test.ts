@@ -22,7 +22,12 @@ const DEMO_BUDGET: BudgetSpec = {
   wallClockMs: 5000,
   answerCap: 32,
 };
+// src/engine/client.ts HARD_GRACE_MS: the client recreates a worker still busy this long past
+// the wall clock.
+const HARD_GRACE_MS = 500;
 const DOCUMENTS = 'findall(D,guideline_document(D,_,_,_),Ds),length(Ds,N)';
+// 7**29582 and 3**52397 each hold exactly 25,000 digits.
+const QUOTIENT_25K = 'X is 7**29582,Y is 3**52397,guideline_quotient(exactly,X,exactly,Y,_,_)';
 // The control's untouched reservation shrinks the time to its real abort. The shared battery
 // engine boots WITHOUT it: under a ~100 MB heap the battery's own retained stacks exhausted malloc,
 // `split_string/4` aborted the runtime mid-battery and the next case hung in it — a harness
@@ -159,6 +164,36 @@ describe('read-only budget battery', () => {
     },
     120_000,
   );
+
+  // A 25,000-digit operand, which `is/2` builds in milliseconds, held `guideline_quotient/6`'s
+  // Euclid loop in one step for 38 s on the Core Ultra 7 268V and past two minutes on the
+  // i7-8650U: past `wallClockMs + HARD_GRACE_MS`, where the client recreates the worker. The
+  // timeout outlasts that step, so a regression fails on its elapsed time, never by timing out.
+  it('G9 a 25,000-digit quotient ends on the budget before the client deadline', async () => {
+    const goal = `once(guideline_schema_version(_)),${QUOTIENT_25K}`;
+    const started = performance.now();
+    const outcome = await run(shared, goal);
+    const elapsed = performance.now() - started;
+    expect(['limit', 'error'], JSON.stringify(outcome).slice(0, 240)).toContain(outcome.kind);
+    if (outcome.kind === 'error') expect(outcome.error.code).not.toBe('guard');
+    expect(elapsed).toBeLessThan(DEMO_BUDGET.wallClockMs + HARD_GRACE_MS);
+    alive(await run(shared, DOCUMENTS));
+  }, 600_000);
+
+  it('G9 arithmetic inside the integer cap answers, and the cap ends with its query', async () => {
+    const within = await run(
+      shared,
+      'once(guideline_schema_version(_)),guideline_quotient(exactly,6,exactly,4,S,N)',
+    );
+    expect(within.kind === 'solutions' && within.solutions[0]?.display).toEqual({
+      S: 'exactly',
+      N: 'rational(3,2)',
+    });
+    // The next query outside the read-only path builds an integer past the cap: 10**3000 holds
+    // 1,246 bytes.
+    const after = await run(shared, 'X is 10**3000,Y is X//10**2999', false);
+    expect(after.kind === 'solutions' && after.solutions[0]?.display.Y).toBe('10');
+  }, 120_000);
 
   it('G9 control unflagged atom doubling reports a runtime abort', async () => {
     const control = await boot(false, true);

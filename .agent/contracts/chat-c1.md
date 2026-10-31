@@ -68,10 +68,13 @@ Goal positions are walked; every other argument is data and never walked.
   arg/3 =../2`; the schema's comparison built-ins `guideline_satisfies/4,6` (integer arithmetic
   over ground arguments; they read no KB clause, so they never count as a KB read — added by
   the same amendment); its arithmetic built-ins `guideline_product/6`, `guideline_quotient/6`
-  (added for release `kb-2026-10-29-rc.1`, user-approved). Declared limit: their cost grows with
-  the operands, as `is/2`'s does — `X is 7**(10**7)` holds one step 12.5 s, and a 25,000-digit
-  operand holds `guideline_quotient/6`'s Euclid loop 38 s, in Node — past the wall clock, where
-  the client's hard deadline recreates the worker (chat-c2). Absent from the image and so never admitted: `member/2`,
+  (added for release `kb-2026-10-29-rc.1`, user-approved). Their cost grows with the operands,
+  as `is/2`'s does, so a read-only query caps every integer it builds at 1000 bytes
+  (`READONLY_INTEGER_BYTES`, n31): a 25,000-digit operand trips the cap at once. Amended at n31
+  from the declared limit: "their cost grows with the operands, as `is/2`'s does — `X is
+  7**(10**7)` holds one step 12.5 s, and a 25,000-digit operand holds `guideline_quotient/6`'s
+  Euclid loop 38 s, in Node — past the wall clock, where the client's hard deadline recreates the
+  worker (chat-c2)". Absent from the image and so never admitted: `member/2`,
   `append/3`, `nth0/3`, `nth1/3`, `last/2`, `sum_list/2`, `aggregate_all/3`.
 - Refused, among everything else: every builder of an atom from text or numbers
   (`atom_concat/3`, `atom_string/2`, `atom_codes/2`, `atom_chars/2`, `atom_number/2`,

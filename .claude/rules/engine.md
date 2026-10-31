@@ -128,6 +128,16 @@ leaves its frame open, and every later query then resolves outside the KB:
 - The saved image starts at a 1 GiB unified stack limit, reducible
   (`tests/engine-runtime-facts.test.ts`). Asserted state persists across queries in one engine
   (`pnpm engine:probe` R41).
+- **A read-only query caps big integers at `READONLY_INTEGER_BYTES`** (`src/engine/readonly.ts`),
+  SWI's `max_integer_size` at its floor of 1000 bytes, set before the query and lifted after it,
+  both read back. Uncapped, one 25,000-digit `guideline_quotient/6` held a single step for
+  minutes; capped, it trips `resource_error(tripwire(max_integer_size,1000))` at once. The flag
+  boots unset and refuses to be unset again: `size_t`'s maximum, 4294967295 on wasm32, restores
+  the unset state. `tests/engine-readonly-budget.test.ts` G9.
+- **Any caught resource term other than `stack` or `memory` is an unclassified resource error,
+  never a solution**: the wrapper's recovery leaves the user's variables unbound, so reading a
+  compound `BudgetResource_` as a solution would hand back an answer no goal derived
+  (`tests/engine-budgets.test.ts` P2.8).
 
 ## Cancellation
 
@@ -212,3 +222,4 @@ it (`tests/engine-runtime-facts.test.ts`).
 | `HARD_GRACE_MS` (`client.ts`) | 500 ms | slack between the worker's soft deadline and the client's hard one, so a soft trip reports with its engine intact before termination answers |
 | `BOOT_DEADLINE_MS` (`client.ts`) | 30 000 ms | per boot attempt; one automatic recreate on a hung boot, then a typed `boot` error |
 | `DEFERRED_CANCELS` (`session.ts`) | 8 | held early cancels; one query runs at a time, so only the newest can still be in flight |
+| `READONLY_INTEGER_BYTES` (`readonly.ts`) | 1000 B | `max_integer_size`'s floor: the largest integer a read-only goal builds, so no operand holds a step for minutes |
