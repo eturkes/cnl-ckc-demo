@@ -117,7 +117,7 @@ const main = async () => {
   ) {
     process.stdout.write(
       `kb:build cached — ${names.length} files of release ${record.tag}, input ` +
-        `${inputDigest.slice(0, 12)}, controls: ${control}; ${recordControl}\n`,
+        `${inputDigest.slice(0, 12)}, control: ${control}; ${recordControl}\n`,
     );
     return;
   }
@@ -209,8 +209,8 @@ const main = async () => {
       `catalog ${catalog.records.length} entries from ${catalog.names.length} controlled sources, ` +
       `provenance ${provenance.stats.documents} documents/${provenance.stats.clauses} clauses, ` +
       `graph ${graph.model.stats.nodes} nodes/${graph.model.stats.edges} edges, ` +
-      `schema ${contract.schemaVersion}, ${contract.documents} documents, release ${record.tag}, ` +
-      `controls: ${control}; ${recordControl}\n`,
+      `schema ${contract.schemaVersion}, ${contract.documents} documents, ` +
+      `control: ${control}; ${recordControl}, release ${record.tag}\n`,
   );
 };
 
