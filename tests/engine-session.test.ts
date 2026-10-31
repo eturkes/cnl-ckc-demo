@@ -422,17 +422,17 @@ describe('Q corpus census', () => {
     expect(earlyResponse).toMatchObject({ id: 'query-1', kind: 'error' });
   }, 120_000);
 
+  // One request at a time, as every caller sends them (the demo controller's engine queue): a
+  // second query admitted while the first is open resolves outside the KB.
   it('E27 answers two correlated requests with their own ids', async () => {
-    const [first, second] = await Promise.all([
-      session.handle(
-        { id: 'first', kind: 'query', goal: 'true.', budget: BUDGET },
-        new Uint8Array(0),
-      ),
-      session.handle(
-        { id: 'second', kind: 'query', goal: 'guideline_document(D,_,_,_).', budget: BUDGET },
-        new Uint8Array(0),
-      ),
-    ]);
+    const first = await session.handle(
+      { id: 'first', kind: 'query', goal: 'true.', budget: BUDGET },
+      new Uint8Array(0),
+    );
+    const second = await session.handle(
+      { id: 'second', kind: 'query', goal: 'guideline_document(D,_,_,_).', budget: BUDGET },
+      new Uint8Array(0),
+    );
     expect(first.id).toBe('first');
     expect(second.id).toBe('second');
     expect(first.kind).not.toBe('error');

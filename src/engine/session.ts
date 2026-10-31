@@ -167,6 +167,17 @@ const fail = (code: EngineError['code'], cause: unknown): EngineError => ({
   message: message(cause),
 });
 
+/**
+ * One iterator step's value. swipl-wasm hands an exception raised mid-run back as a step
+ * `{done: false, error: true, message}` with no `value`; read as an empty step, it would let the
+ * run end as an honest failure.
+ */
+const stepValue = (step: IteratorResult<unknown>): unknown => {
+  const raised = step as { error?: unknown; message?: unknown };
+  if (raised.error === true) throw new PrologFailure(String(raised.message));
+  return step.value;
+};
+
 const requireInteger = (term: PlTerm | undefined, what: string): number => {
   if (term?.kind !== 'integer' || typeof term.value !== 'number') {
     throw new Error(`engine did not report ${what} as an integer`);
@@ -465,10 +476,11 @@ export class EngineSession {
       const iterator = query[Symbol.iterator]();
       while (stopped === undefined) {
         const step = iterator.next();
+        const value = stepValue(step);
         // A final solution can arrive together with `done: true`; reading `value`
         // before `done` is what keeps the last answer.
-        if (step.value !== undefined) {
-          const result = decodeOnce(step.value);
+        if (value !== undefined) {
+          const result = decodeOnce(value);
           if (result.kind === 'prolog-error') throw new PrologFailure(result.message);
           if (result.kind === 'bindings') {
             const outcome = readOutcome(result.bindings);
@@ -663,8 +675,9 @@ export class EngineSession {
       if (stopped === undefined) this.#require();
       if (stopped === undefined) {
         const step = iterator.next();
-        if (step.value !== undefined) {
-          const result = decodeOnce(step.value);
+        const value = stepValue(step);
+        if (value !== undefined) {
+          const result = decodeOnce(value);
           if (result.kind === 'prolog-error') throw new PrologFailure(result.message);
           if (result.kind === 'bindings') {
             const outcome = readOutcome(result.bindings);

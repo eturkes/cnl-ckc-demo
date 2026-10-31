@@ -230,6 +230,26 @@ describe('P2 typed limit states', () => {
     );
   });
 
+  // swipl-wasm hands a mid-run exception back as an iterator step `{done: false, error: true,
+  // message}` with no `value`, which a loop reading `value` alone took for exhaustion.
+  it('P2.10 reports a Prolog error raised mid-run as an error, never as a failure', async () => {
+    await expect(session.solve('X is foo+1.', budget())).rejects.toThrow(
+      "is/2: Arithmetic: `foo/0' is not a function",
+    );
+    // Two answers stream before the third step raises: the run still ends in its error.
+    const late = await session.handle(
+      {
+        id: 'p2-10',
+        kind: 'query',
+        goal: 'once(guideline_schema_version(_)),between(1,3,X),(X =:= 3 -> atom_length(_,_) ; true)',
+        budget: budget(),
+        readonly: true,
+      },
+      new Uint8Array(),
+    );
+    expect(late).toMatchObject({ kind: 'error', error: { code: 'prolog' } });
+  });
+
   it('P2.9 treats every declared response kind as terminal', () => {
     const responses: EngineResponse[] = [
       { id: 'a', kind: 'booted', contract: manifest.contract },
@@ -248,7 +268,7 @@ describe('P2 typed limit states', () => {
 describe('P3 budget enforcement', () => {
   it('P3.1 restores the stack flag after a trip, read back from the engine', async () => {
     const before = await engineValue('current_prolog_flag(stack_limit,V).', 'V');
-    await session.solve('numlist(1,20000000,L),length(L,_).', budget({ stackBytes: 8388608 }));
+    await session.solve('length(L,20000000).', budget({ stackBytes: 8388608 }));
     expect(await engineValue('current_prolog_flag(stack_limit,V).', 'V')).toBe(before);
   });
 
@@ -264,7 +284,7 @@ describe('P3 budget enforcement', () => {
     const flag = (name: string): unknown =>
       (engine?.prolog.query(`current_prolog_flag(${name},V).`).once() as { V?: unknown }).V;
     const before = flag('stack_limit');
-    await own.solve('numlist(1,20000000,L),length(L,_).', budget({ stackBytes: 8388608 }));
+    await own.solve('length(L,20000000).', budget({ stackBytes: 8388608 }));
     expect(flag('stack_limit')).toBe(before);
     expect(flag('max_integer_size')).toBeUndefined();
     await own.solve('X is 10**100.', budget(), '', undefined, true);

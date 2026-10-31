@@ -55,6 +55,12 @@ paths:
   `term_string/2` first.
 - Goals arrive as whole clauses, so the wrapper strips the trailing full stop; leaving it in
   yields a syntax error that reads as zero answers.
+- **An exception raised mid-run arrives as an iterator step without a `value`**: swipl-wasm
+  hands back `{done: false, error: true, message}`, and a loop reading `value` alone took it for
+  exhaustion, so every runtime error — `X is foo+1`, an unbound `atom_length/2` — settled
+  `failure`, an empty answer. `stepValue` (`session.ts`) throws the message instead, in the
+  query and the proof loop alike: the request settles error `prolog`, and answers streamed before
+  the raising step stay streamed (`tests/engine-budgets.test.ts` P2.10).
 - **Runtime `consult` fails OPEN on its result**: a syntax error and a failing directive both
   return `bindings success:true`, throw nothing, and leave clauses loaded. Only drained
   stderr (`printErr` + `on_output`) reveals it, and the engine is already dirty by then — so

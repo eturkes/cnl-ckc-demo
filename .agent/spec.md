@@ -285,9 +285,9 @@ worker before its caller resumes (`chat-c2.md`).
   user ruling: solve it here, else route to IMPLEMENT.
 - [ ] n35 `low` find: a Prolog exception raised mid-run settled `failure` (swipl-wasm's error step
   carries no `value`). Accept: the query and proof loops settle such a run as error `prolog`,
-  `tests/engine-budgets.test.ts` P2.10 seen red at `9736d24`. Owed the user's approval of three
-  case edits the fix forces (P3.1 ×2 built `numlist/3`, absent from the image; E27's concurrent
-  pair); draft `wip/n35-error-steps` `9936ffa`.
+  `tests/engine-budgets.test.ts` P2.10 seen red at `9736d24`. Approved (user): three case edits
+  (P3.1 ×2 built `numlist/3`, absent from the image; E27's concurrent pair); draft
+  `wip/n35-error-steps` `9936ffa`, landed unchanged.
 - [x] 661524a n36 `low` find: `tests/chat-server.test.ts` parsed a trace line the fake was still writing
   (CI run 41173655724: B7 `Unterminated string in JSON`). Accept: the reader parses
   newline-terminated records alone, B0 seen red on the old reader.
