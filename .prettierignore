@@ -9,3 +9,5 @@ dist/
 coverage/
 .scratch/
 pnpm-lock.yaml
+# ITERATE prototypes: disposable, retired at their IMPLEMENT close (`CLAUDE.md` `Session flow`).
+prototype/

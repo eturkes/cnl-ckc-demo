@@ -29,3 +29,7 @@ CLAUDE.local.md
 # vitest browser-mode failure screenshots
 .vitest-attachments
 tests/__screenshots__
+
+# Prototype seams: derived from the vendored bag by each prototype's own derive script.
+prototype/*/generated/
+prototype/*/variants/*/generated/
