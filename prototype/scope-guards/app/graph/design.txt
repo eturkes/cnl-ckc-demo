@@ -1,0 +1,19 @@
+Combined scope graph
+
+Palette = unchanged shipped tokens: canvas #eef1f4, text #171b21,
+concept #0f7558, action #734300, attribute #342a36, selection #174f9e.
+Dark counterparts = app.css. Hub uses entity/concept, Act uses value/attribute;
+no new fill. Palette + contrast graders cover both themes.
+Type = Atkinson Hyperlegible Next UI; shipped graph label scale + wrap.
+Bold element = selected concept/action. Scope is quiet edge text, never a new
+node kind or a canvas-wide guard. Existing focus + reduced-motion rules retained.
+
+[search]                    [recenter] [expand]
+[selected concept]
+[canvas: guideline hub — conditions; condition relations carry outer scope]
+[reader-relative relationships: near scope → far scope; selected-only guard]
+[node index]
+
+Hub = 8 distinct condition links from 12 source records. Historical actions =
+sentence-specific copies, linked to the Act + its evaluation-date condition.
+Nested discharge exception = excluded → negation, not an asserted absence.

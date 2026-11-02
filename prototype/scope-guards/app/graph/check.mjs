@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { createServer } from 'vite';
+const server = await createServer({ server: { middlewareMode: true }, appType: 'custom' });
+try {
+  const base = '/prototype/scope-guards/app/graph/';
+  const { SemanticGraphModel, parseSemanticGraph, scopeReading } = await server.ssrLoadModule(base + 'model.ts');
+  const { project, HUB, ACT } = await server.ssrLoadModule(base + 'project.ts');
+  const { edgeViewsOf, edgeLabelFrom } = await server.ssrLoadModule(base + 'view.ts');
+  const raw = JSON.parse(await readFile('kb/generated/graph/semantic-graph.json', 'utf8'));
+  const m = new SemanticGraphModel(parseSemanticGraph(raw), project);
+  assert.equal(m.searchConcepts('CDC 2022')[0].id, HUB);
+  assert.equal(m.conceptIncident(HUB).length, 8);
+  const conditions = m.data.edges.filter(e => e.id.startsWith('exclusion:'));
+  assert.equal(conditions.length, 36);
+  assert.equal(conditions.filter(e => e.scopeOperators.join(',') === 'excluded,-').length, 9);
+  assert(conditions.every(e => e.scopeOperators[0] === 'excluded'));
+  const scene = id => m.conceptNeighborhood(id, 1, Infinity, [], [], Infinity);
+  const pall = edgeViewsOf(scene('entity:palliative-care'), null);
+  assert(pall.some(e => e.source === HUB || e.target === HUB));
+  assert(pall.some(e => e.scope.includes('excluded')));
+  assert(pall.filter(e => e.scope.includes('excluded')).every(e => !e.dashed));
+  const waiver = edgeViewsOf(scene('superseded:1:obtain'), null);
+  assert(waiver.some(e => e.source === ACT || e.target === ACT));
+  assert(waiver.some(e => e.relation === 'condition bound'));
+  assert(waiver.some(e => e.guarded && edgeLabelFrom(e, 'superseded:1:obtain').includes('unless excluded')));
+  assert.equal(m.data.edges.filter(e => e.id.startsWith('evaluation:')).length, 3);
+  assert.deepEqual(scopeReading(['excluded','-'], ['excluded','-'], false), {near:['excluded','-'],far:['excluded','-']});
+  const exception = edgeViewsOf(scene('entity:pain-management-prescription'), null);
+  assert(exception.some(e => e.dashed && edgeLabelFrom(e, 'entity:pain-management-prescription').includes('excludes the guideline · not provably')));
+  assert(scene(HUB).nodes.every(n => n.kind !== 'operator-context'));
+  console.log('combined-graph: 8 hub conditions, 36 exclusion occurrences (9 nested negative), 3 historical bounds; search, labels, Act, selected guard passed');
+} finally { await server.close(); }
