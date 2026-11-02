@@ -42,9 +42,10 @@
   let evaluationDate = $state('');
   let runDate = $state('');
   let gathering = $state(false);
-  const demo = injected ?? new DemoController(createPrototypeEngine(() => runDate) as any);
+  let pageGoalCalls = $state(0);
+  const demo = injected ?? new DemoController(createPrototypeEngine(() => evaluationDate, delta => { pageGoalCalls += delta; }, () => gathering ? runDate : evaluationDate) as any);
   (window as any).__demo = demo;
-  async function run() { if (gathering) return; gathering = true; runDate = evaluationDate; guardRecords = null; try { await demo.run(); await refreshGuards(); } finally { gathering = false; } }
+  async function run(rerun = false) { if (gathering) return; gathering = true; runDate = evaluationDate; guardRecords = null; try { await (rerun ? demo.retry() : demo.run()); await refreshGuards(); } finally { gathering = false; } }
   async function refreshGuards() { try { guardRecords = await loadGuardRecords(demo, runDate); } catch(error) { guardRecords = {error:String(error)}; } }
   // svelte-ignore state_referenced_locally
   const chat = injectedChat ?? new ChatController({ host: demo, client: new HttpChatClient() });
@@ -197,7 +198,7 @@
       </header>
 
       <div class="query-area">
-        <RecordedChat {demo} date={runDate} />
+        <RecordedChat {demo} date={evaluationDate} />
 
         <QuestionCombobox
           selected={demo.selected}
@@ -206,7 +207,7 @@
           }}
         />
 
-        <div class="evaluation-date"><label for="evaluation-date">Evaluate as of <input id="evaluation-date" type="date" bind:value={evaluationDate} onchange={() => {runDate = evaluationDate; guardRecords = null;}} disabled={description.busy || gathering} /></label><p>One date for every run on this page. Empty keeps the knowledge base’s default: no evaluation date. Set the date, then run a question.</p></div>
+        <div class="evaluation-date"><label for="evaluation-date">Evaluate as of <input id="evaluation-date" type="date" bind:value={evaluationDate} disabled={description.busy || gathering || pageGoalCalls > 0} /></label><p>One date for every new run on this page. Empty keeps the knowledge base’s default: no evaluation date.</p>{#if viewState.kind === 'settled' && evaluationDate !== runDate}<p class="date-change-notice" role="status">The shown answer was evaluated for {runDate || 'no date'}. Run re-evaluates it with the date above.</p>{/if}</div>
         <RunControls
           status={description.status}
           error={description.error}
@@ -220,7 +221,8 @@
             void demo.cancel();
           }}
           onRetry={() => {
-            void demo.retry();
+            if (demo.state.kind === 'boot-error') void demo.retry();
+            else void run(true);
           }}
         />
       </div>

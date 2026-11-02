@@ -3,6 +3,7 @@
   import { loadCorpusIndex, loadEvidenceDocument } from '../../../src/provenance/assets.js';
   import type { CorpusEntry, EvidenceDocument } from '../../../src/provenance/model.js';
   import PageViewer from '../../../src/provenance/PageViewer.svelte';
+  import { EXCLUSION_GOAL, loadExclusionRecords } from './guards.js';
 
   // The document-first view of the explore area: every document's coverage row, each opening its
   // passage and page through the ladder's own resolver. Nothing loads until the reader asks.
@@ -13,7 +14,8 @@
   let exclusions = $state.raw<any[]>([]);
   let recordsRead = false;
   const supersessionGoal = 'guideline_supersession(Document,Sentence,Source,Date)';
-  const exclusionGoal = 'clause(guideline_exclusion(Guideline),Body)';
+  // guideline_exclusion sources join live clause lines to the shipped index, not a document list.
+  const exclusionGoal = EXCLUSION_GOAL;
   let raw = $state('');
   const value = (term: any) => term?.value;
   const superseded = (id: string, sentence?: number) => supersessions.find(row => row.document === id && (sentence === undefined || row.sentence === sentence));
@@ -25,28 +27,15 @@
     void (async () => {
       try {
         const sup = await demo.runGoal(supersessionGoal);
-        const exc = await demo.runGoal(exclusionGoal);
-        if (sup?.kind !== 'solutions' || exc?.kind !== 'solutions') throw new Error(JSON.stringify({sup,exc}));
+        const exc = await loadExclusionRecords(demo);
+        if (sup?.kind !== 'solutions') throw new Error(JSON.stringify(sup));
         supersessions = sup.solutions.map(({bindings: b}: any) => ({document: value(b.Document), sentence: Number(value(b.Sentence)), citation: value(b.Source.args[0]), url: value(b.Source.args[1]), date: Number(value(b.Date))}));
-        const exclusionMarks = [];
-        const sourceChecks = [];
-        for (const suffix of ['s3-03','s7-02','s9-01','s10-04']) {
-          const document = await loadEvidenceDocument(`cdc2022-opioid-${suffix}`);
-          for (const clause of document.clauses.filter(row => row.predicate === 'guideline_exclusion')) {
-            const [head, body] = clause.text.replace(/\.\s*$/, '').split(' :- ');
-            const goal = `clause(${head},Body), Body = user:(${body})`;
-            const outcome = await demo.runGoal(goal);
-            sourceChecks.push({goal,outcome});
-            if (outcome?.kind !== 'solutions') throw new Error(`The exclusion clause for ${document.id} S${clause.sentence} could not be read from the live KB.`);
-            exclusionMarks.push({document: document.id, sentence: clause.sentence});
-          }
-        }
-        exclusions = exclusionMarks;
-        raw = JSON.stringify({sup,exc,sourceChecks}, null, 2);
-        status = `Status records read from the knowledge base: ${supersessions.length} superseded sentences; ${exc.solutions.length} scope-exclusion clauses.`;
+        exclusions = exc.records.map(record => ({document:record.document,sentence:record.sentence}));
+        raw = JSON.stringify({sup,exc}, null, 2);
+        status = `Status records read from the knowledge base: ${supersessions.length} superseded sentences; ${exc.records.length} scope-exclusion clauses.`;
         await activate();
-        query = 'cdc2022-opioid-rec12-imp08';
-        await open(query);
+        const first = supersessions[0]?.document;
+        if (first) { query = first; await open(first); }
       } catch (error) { status = `Status records could not be shown: ${String(error)}`; }
     })();
   });
@@ -109,6 +98,7 @@
     request?.abort();
   });
 
+  const statusDocuments = $derived([...new Set([...supersessions,...exclusions].map(row => row.document))]);
   const documents = $derived(list.kind === 'ready' ? list.documents : []);
   const needle = $derived(query.trim().toLowerCase());
   const shown = $derived(
@@ -136,8 +126,8 @@
   <p role="status">{status}</p>
   <nav class="review-links" aria-label="Status record examples">
     <button onclick={() => { query = ''; close(); }}>Every document</button>
-    {#each ['rec12-imp08', 's3-03', 's7-02', 's9-01', 's10-04'] as suffix}
-      <button onclick={() => { query = `cdc2022-opioid-${suffix}`; void open(query); }}>{suffix}</button>
+    {#each statusDocuments as documentId}
+      <button onclick={() => { query = documentId; void open(documentId); }}>{documentId}</button>
     {/each}
   </nav>
   <details class="record-goals"><summary>Prolog goals behind these status marks</summary><pre>{`${supersessionGoal}\n${exclusionGoal}`}</pre><pre>{raw}</pre></details>

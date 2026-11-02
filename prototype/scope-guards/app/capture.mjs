@@ -26,7 +26,7 @@ try {
   if(width===1280&&theme==='light') for(const id of ['when-to-use-opioids','acute-pain-prescription-duration','opioid-follow-up','continuing-or-tapering-opioids','opioid-safety','opioid-use-disorder-treatment']) {
    await page.locator('[role=combobox]').click();await page.locator(`[role=option][id$="-option-${id}"]`).click();await page.locator('[data-action=run]').click();await page.waitForSelector('.scope-note');await page.waitForFunction(()=>!document.querySelector('[data-action=run]').disabled);if(await page.locator('.scope-note li').count()!==8)throw Error(`scope missing ${id}`);
   }
-  await page.getByRole('button',{name:'rec12-imp08',exact:true}).click();await shot('corpus','.corpus-browser');
+  await page.getByRole('button',{name:'cdc2022-opioid-rec12-imp08',exact:true}).click();await shot('corpus','.corpus-browser');
   await page.getByRole('button',{name:'Replay scope question',exact:true}).click();await page.waitForFunction(()=>document.querySelector('.recorded-chat').textContent.includes('absence of this exclusion'));
   await shot('chat','.recorded-chat');
   await page.locator('[data-action=explore-graph]').click();await page.waitForFunction(()=>document.querySelector('.graph-shell canvas'));await page.waitForTimeout(3000);await shot('graph','.graph-shell');

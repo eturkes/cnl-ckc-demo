@@ -337,6 +337,23 @@ export const mountGraphCanvas = async (
         ? cy.getElementById(selectedId)
         : cy.nodes().filter((node) => highlighted.has(node.id()));
     const density = spread(cy.nodes().length);
+    const hubStar = selectedId === 'scope:cdc-2022-opioid' &&
+      cy.edges().every(edge => edge.source().id() === selectedId || edge.target().id() === selectedId);
+    const spokes = hubStar ? cy.nodes().filter(node => node.id() !== selectedId)
+      .sort((a, b) => a.data('label').localeCompare(b.data('label'))) : null;
+    // The guideline star must fit the canvas at the retained zoom floor. Two balanced columns
+    // bound its height and separate long condition labels; expanded neighborhoods stay free.
+    const hubPins = spokes === null ? null : [
+      { nodeId: selectedId, position: { x: 0, y: 0 } },
+      ...spokes.map((node, index) => {
+        const rows = Math.ceil(spokes.length / 2);
+        const row = index % rows;
+        return { nodeId: node.id(), position: {
+          x: index < rows ? -340 : 340,
+          y: rows === 1 ? 0 : -180 + row * 360 / (rows - 1),
+        } };
+      }),
+    ];
     // One layout for every view. A `concentric` arrangement used to carry the highlight —
     // subject at the centre, proof nodes in the next ring — and cost 156 edge crossings and
     // 1.88 canvas heights of panning per answer view against fcose's 56 and 1.22. Pinning the
@@ -352,9 +369,9 @@ export const mountGraphCanvas = async (
       // nodes into unreadable text.
       nodeDimensionsIncludeLabels: true,
       nodeRepulsion: 9000 + 11000 * density,
-      idealEdgeLength: selectedId === 'scope:cdc-2022-opioid' ? 220 : 100 + 80 * density,
+      idealEdgeLength: 100 + 80 * density,
       nodeSeparation: 90 + 30 * density,
-      fixedNodeConstraint: path === null ? [] : [{ nodeId: selectedId, position: { x: 0, y: 0 } }],
+      fixedNodeConstraint: hubPins ?? (path === null ? [] : [{ nodeId: selectedId, position: { x: 0, y: 0 } }]),
       ...(container.clientWidth < 600 && cy.nodes().length === 2 ? {
         alignmentConstraint: { vertical: [cy.nodes().map(n => n.id())] },
         relativePlacementConstraint: [{ top:selectedId, bottom:cy.nodes().filter(n => n.id() !== selectedId).first().id(), gap:160 }],

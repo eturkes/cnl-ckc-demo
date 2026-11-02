@@ -5,9 +5,56 @@ const unquote = (word: string) => word.startsWith("'") ? word.slice(1, -1).repla
 export const HUB = 'scope:cdc-2022-opioid';
 export const ACT = 'scope:superseding-act';
 const key = (row: any) => `${row.document}:${row.sentence}`;
+const words = (word: string) => unquote(word).replaceAll('-', ' ');
+const dateText = (date: number) => String(date).replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
+const comparison = (operator: string) => ({less:'less than',greater:'greater than',leq:'at most',geq:'at least',eq:'exactly'}[unquote(operator)] ?? words(operator));
+
+// Follow referents and variable joins, never document ids or vocabulary-specific branches.
+export function exclusionCondition(record: any) {
+  const all = record.body.flatMap((group: any) => group.literals);
+  const positive = record.body.filter((group: any) => !group.negated).flatMap((group: any) => group.literals);
+  const entity = (ref: string) => all.find((l: any) => l.name === 'guideline_entity' && l.args[1] === ref);
+  const noun = (ref: string) => {
+    const found = entity(ref);
+    if (!found) throw new Error(`exclusion entity missing: ${ref}`);
+    const properties = all.filter((l: any) => l.name === 'guideline_property' && l.args[1] === ref).map((l: any) => words(l.args[2]));
+    return [...properties, words(found.args[2])].join(' ');
+  };
+  const argument = (literals: any[], event: string, role: string) => literals.find(l => l.name === 'guideline_arg' && l.args[1] === event && l.args[2] === role)?.args[3];
+  const events = positive.filter((l: any) => l.name === 'guideline_event');
+  const main = events.find((event: any) => entity(argument(positive, event.args[1], '2')));
+  if (!main) throw new Error('exclusion has no entity-bearing event');
+  const primary = argument(positive, main.args[1], '2');
+  const pps = (literals: any[], event: string) => literals.filter(l => l.name === 'guideline_pp' && l.args[1] === event)
+    .map(l => `${words(l.args[2])} ${noun(l.args[3])}`).join(' ');
+  const bounds = all.filter((l: any) => l.name === 'guideline_satisfies').map((literal: any) => {
+    const a = literal.args;
+    const cardinality = all.find((l: any) => l.name === 'guideline_cardinality' && l.args[3] === a[0] && l.args[4] === a[1]);
+    const unit = cardinality && all.find((l: any) => l.name === 'guideline_unit' && l.args[1] === cardinality.args[1] && l.args[2] === a[2]);
+    if (!cardinality || !unit || a.length !== 6) throw new Error('exclusion comparison has no quantity/unit join');
+    const object = all.find((l: any) => l.name === 'guideline_arg' && l.args[2] === '2' && l.args[3] === cardinality.args[1]);
+    const owner = object && argument(all, object.args[1], '1');
+    if (!owner) throw new Error('exclusion quantity has no owner');
+    return {literal, owner, text:`${comparison(a[3])} ${a[4]} ${words(a[5])}${Number(a[4]) === 1 ? '' : 's'}`};
+  });
+  const ownBounds = bounds.filter((bound: any) => bound.owner === primary).map((bound: any) => bound.text);
+  const qualifier = pps(positive, main.args[1]);
+  const exceptions = record.body.filter((group: any) => group.negated).map((group: any) => {
+    const statements = group.literals.filter((l: any) => l.name === 'guideline_event').map((event: any) => {
+      const subject = argument(group.literals, event.args[1], '1');
+      const object = argument(group.literals, event.args[1], '2');
+      return `the ${noun(subject)} is proved to ${words(event.args[2])}${object ? ` ${/^[aeiou]/i.test(noun(object)) ? 'an' : 'a'} ${noun(object)}` : ''}${pps(group.literals,event.args[1]) ? ` ${pps(group.literals,event.args[1])}` : ''}`;
+    });
+    if (!statements.length) throw new Error('exclusion exception has no event');
+    return `unless ${statements.join(' and ')}`;
+  });
+  return {primary, bounds, text:[noun(primary), ...ownBounds, qualifier].filter(Boolean).join(' ') + (exceptions.length ? `, ${exceptions.join(' and ')}` : '')};
+}
+
 
 // Static projection only: this page never presents an answer or claims a live derivation.
-export function project(data: any) {
+export function project(data: any, sourceRecords: any = records) {
+  const records = sourceRecords;
   const nodes = new Map(data.nodes.map((n: any) => [n.id, n]));
   nodes.set(HUB, {id:HUB, kind:'entity', label:'CDC 2022 opioid recommendations'});
   const source = records.supersessions[0];
@@ -29,16 +76,11 @@ export function project(data: any) {
       if (literal.name === 'guideline_entity') refs.set(a[1], addNode('entity', unquote(a[2])));
       if (literal.name === 'guideline_event') refs.set(a[1], addNode('event', unquote(a[2])));
     }
-    const primary = literals.find(l => l.name === 'guideline_entity' && unquote(l.args[2]) !== 'patient');
-    if (primary) {
-      const label = unquote(primary.args[2]);
-      const condition = label === 'age' ? 'age less than 18 years' : label;
-      const facility = record.document.endsWith('s7-02');
-      const relation = `excluded when ${condition}${label === 'observational-setting-care' ? ' with possible inpatient admission' : ''}${facility ? ', unless a discharge pain-management prescription is proved' : ''}`;
-      conditionEdges.push({id:`hub:${record.line}`,kind:'property',source:HUB,target:refs.get(primary.args[1]),
-        relation,label:relation,inverse:'excludes these recommendations',scopeOperators:[],farScopeOperators:undefined,
-        document:record.document,sentence:record.sentence,line:record.line,predicate:'guideline_exclusion'});
-    }
+    const condition = exclusionCondition(record);
+    const relation = `excluded when ${condition.text}`;
+    conditionEdges.push({id:`hub:${record.line}`,kind:'property',source:HUB,target:refs.get(condition.primary),
+      relation,label:relation,inverse:`excludes these recommendations when ${condition.text}`,scopeOperators:[],farScopeOperators:undefined,
+      document:record.document,sentence:record.sentence,line:record.line,predicate:'guideline_exclusion'});
     let ordinal = 0;
     for (const group of record.body) {
       const scope = group.negated ? ['excluded', '-'] : ['excluded'];
@@ -56,17 +98,15 @@ export function project(data: any) {
         if (literal.name === 'guideline_pp') add(refs.get(a[1]), refs.get(a[3]), unquote(a[2]), 'preposition', literal);
         if (literal.name === 'guideline_property') add(refs.get(a[1]), addNode('value', unquote(a[2])), 'property', 'property', literal);
         if (literal.name === 'guideline_satisfies') {
-          const cardinality = literals.find(l => l.name === 'guideline_cardinality' && l.args[3] === a[0] && l.args[4] === a[1]);
-          const owner = literals.find(l => l.name === 'guideline_arg' && l.args[2] === '1' && refs.get(l.args[3]) === 'entity:age');
-          const from = cardinality && refs.get(cardinality.args[1]) || (owner ? refs.get(owner.args[3]) : undefined) || 'entity:age';
-          const bound = addNode('value', `${unquote(a.at(-3)!)} ${a.at(-2)} ${unquote(a.at(-1)!)}`);
-          add(from, bound, 'condition bound', 'threshold', literal);
+          const quantity = condition.bounds.find((bound: any) => bound.literal === literal);
+          if (!quantity) throw new Error('exclusion bound was not resolved');
+          add(refs.get(quantity.owner), addNode('value', quantity.text), 'condition bound', 'threshold', literal);
         }
       }
     }
   }
   // Keep the source's negated recommendation heads; replace the matching condition relations
-  // with exclusion-world occurrences so they never also read as bare patient facts.
+  // with exclusion-world occurrences so they never also read as asserted facts.
   const signatures = new Set(conditionEdges.map(e => [key(e), e.kind, e.source, e.target, e.relation].join('|')));
   const edges = data.edges.filter((e: any) => !signatures.has([key(e), e.kind, e.source, e.target, e.relation].join('|'))).map((edge: any) => {
     const r = superseded.get(key(edge));
@@ -110,8 +150,8 @@ export function project(data: any) {
   for (const record of records.supersessions) {
     const targets = data.edges.filter((e: any) => e.document === record.document && e.sentence === record.sentence && e.kind === 'event').map((e: any) => e.target);
     for (const target of new Set(targets)) {
-      const bound = addNode('value', 'evaluation date before 2022-12-29');
-      const scope = ['superseded 2022-12-29'];
+      const bound = addNode('value', `evaluation date before ${dateText(record.date)}`);
+      const scope = [`superseded ${dateText(record.date)}`];
       edges.push({ id: `evaluation:${record.sentence}:${target}`, kind:'threshold', source:`superseded:${record.sentence}:${(nodes.get(target) as any).label}`, target:bound,
         document:record.document, sentence:record.sentence, line:record.line, predicate:'guideline_satisfies',
         relation:'condition bound', label:graphEdgeLabel('condition bound',scope,scope),

@@ -188,7 +188,7 @@
 
               {#if guardRecords?.superseded?.length}
                 <section class="retired" aria-labelledby="retired-heading">
-                  <h3 id="retired-heading"><span aria-hidden="true">⊘</span> {guardRecords.superseded.some(s => s.derived) ? 'Historical statements derived for this evaluation' : 'No longer applying: superseded statements'}</h3>
+                  <h3 id="retired-heading"><span aria-hidden="true">{guardRecords.superseded.some(s => s.derived) ? '◷' : '⊘'}</span> {guardRecords.superseded.some(s => s.derived) ? 'Historical statements derived for this evaluation' : 'No longer applying: superseded statements'}</h3>
                   <p class="retired-note">Evaluation date: {guardRecords.date || 'none'}. Controlled-language sentences from the knowledge base, matched by each live record’s document and sentence. This group sits beside the prepared answer, not within it: its implementation-consideration document is outside the question’s catalog sources. {guardRecords.superseded.some(s => s.derived) ? 'These statements derive separately under their hypothetical antecedents because those conditions and the scope guard hold, and the evaluation date precedes supersession. The date alone is not sufficient.' : 'These statements do not derive for this run: no evaluation date is supplied, or the date is on or after supersession.'}</p>
                   <ul class="answer-list">
                     {#each guardRecords.superseded as statement}

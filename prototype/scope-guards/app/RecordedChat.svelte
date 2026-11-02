@@ -10,6 +10,19 @@
   import recording from './turn.json';
 
   let {demo,date} = $props();
+  function recordedHelp(node: HTMLElement) {
+    const help = 'Use Replay scope question to repeat the saved question. Each saved Prolog goal runs in this browser’s knowledge base. No model or chat bridge is called.';
+    const replace = () => {
+      const id = node.querySelector('textarea')?.getAttribute('aria-describedby');
+      const hint = id ? document.getElementById(id) : null;
+      if (hint && node.contains(hint) && hint.textContent !== help) hint.textContent = help;
+    };
+    // Prototype-only adapter keeps the shipped form and its accessible hint association intact.
+    const observer = new MutationObserver(replace);
+    observer.observe(node,{childList:true,subtree:true,characterData:true});
+    replace();
+    return {destroy:()=>observer.disconnect()};
+  }
   const outcomes: QueryOutcome[] = [];
   let replay = new ReplayChatClient([recording as RecordedTurn]);
   const binding = (index: number, name: string): string => {
@@ -56,7 +69,7 @@
   onDestroy(() => { chat.dispose(); });
 </script>
 
-<section class="recorded-chat"><p class="intro">Recorded chat demonstration. The queries run in this page’s live knowledge base; no model is called. Evaluation date: {date || 'none'}.</p><button type="button" onclick={() => void replayTurn()}>Replay scope question</button><ChatPanel {chat} /></section>
+<section class="recorded-chat" use:recordedHelp><p class="intro">Recorded chat demonstration. The queries run in this page’s live knowledge base; no model is called. Evaluation date: {date || 'none'}.</p><button type="button" onclick={() => void replayTurn()}>Replay scope question</button><ChatPanel {chat} /></section>
 
 <style>
   .recorded-chat > button { margin:0 0 .75rem; border:1px solid var(--border); border-radius:.25rem; padding:.45rem .65rem; background:transparent; color:var(--action); font:inherit; font-size:.8rem; cursor:pointer; }
