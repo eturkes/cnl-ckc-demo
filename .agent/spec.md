@@ -217,6 +217,32 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
 - **The queued-cancel case queues its cancel as step 2 begins** (`tests/solution-streaming.test.ts`),
   an approved edit: its cancel rode a 5 ms timer armed after answer 1, and a stall of 4 ms or more
   before the session's own yield let it land before step 2 on a sound tree. Every assertion stays.
+- **Superseded statements surface in three places**: the answer whose recommendation family holds
+  them (rec12-imp08 S1–S3 → "How should clinicians treat opioid use disorder?"), the chat as
+  KB-tagged parts, and the corpus browser. Each names the statement, its superseding source and
+  the date, read by a live goal over `guideline_supersession/4`. In the answer they form a group
+  after its statements, headed as no longer applying, each statement struck through and carrying a
+  facts-row line `Superseded <date> · <citation>`; the statement text is the knowledge base's
+  controlled-language sentence, labelled as such.
+- **Every answer states the guideline's scope exclusions**: a compact line naming the first
+  conditions under which its recommendations do not apply, expandable to one line per distinct
+  condition, each naming every source sentence that states it (12 records → 8 conditions); read by a
+  live goal over the exclusion records. The wording says the recommendations do not apply under
+  those conditions and never that they apply otherwise: the absence of an exclusion is no proof that
+  a patient belongs to the guideline's population (upstream `README-dist.md`).
+- **One page-wide evaluation date.** The knowledge base defines the evaluation date as one fact
+  of the whole composition, so the date the reader sets is a premise of every run the page makes —
+  each prepared question's answer, annotations and proof, and each chat goal, which the page
+  supplies and the model never asserts. A date before 29 December 2022 lets the superseded
+  statements derive where their other conditions and the scope guard hold; a date on or after it
+  derives none of them; empty stays the shipped default, no evaluation date. Superseded marks in the
+  graph and the corpus browser state a fixed record and stay independent of the date.
+- **The graph combines a guideline hub with edge state.** One node for the guideline's
+  recommendations is the entry point, each exclusion condition linking to it by its labelled
+  condition; the condition's own relationships carry the exclusion as their outer scope, as
+  negation and modality do; the superseded actions link to a node for the superseding source. The
+  scope guard shows on the selected node's recommendation edges alone, never across the whole
+  canvas, and no exclusion takes a dashed line, which carries negation alone (`m5u8.md` R4).
 
 **MAIN:** the marks are ONE compiled goal per question, `clinical_marks/3` at the end of
 `PROOF_SOURCE`: it reads the grade, qualifier, preference, interval and order heads out of
@@ -273,6 +299,13 @@ worker before its caller resumes (`chat-c2.md`).
   its re-open trigger: three consecutive gates on one host above its bound (45 s on the Core Ultra
   7 268V, 110 s on the i7-8650U), each from a 1-min load below 2. The 492-document bag counts one:
   141.9 s on the i7-8650U from a load near 1.3 (T11 86.9 s, P4 50.9 s).
+- [x] cb45a9e n30 seam: `prototype/scope-guards/derive.mjs` → records of the 12 exclusions, 3
+  supersessions, 1,221 guarded operator clauses.
+- [x] a91211f n30 r1: ten variants, navigator-1 screening, the user's picks (graph hub + edge
+  state, struck group, 8 conditions, page-wide date).
+- [ ] n30 r2: one integrated prototype `prototype/scope-guards/app/` — combined graph, struck
+  group + exclusion line on every answer, corpus marks, chat parts, page-wide evaluation date;
+  retired variants removed → navigator pass, the user's review.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
