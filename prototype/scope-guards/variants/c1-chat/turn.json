@@ -1,0 +1,11 @@
+{
+  "message": "Does the buprenorphine waiver statement still apply, and does this guideline cover patients under 18?",
+  "events": [
+    {"type":"conversation","id":"scope-validity-recording"},
+    {"type":"commentary","text":"Reading the supersession record and the scope clauses in the browser's Prolog engine."},
+    {"type":"query","call":"q1","goal":"guideline_supersession(Doc,Sentence,source(Citation,Url),Date), Sentence=1, Scope='$guideline_id'(context,Doc,Sentence,_,_), clause(guideline_operator(actual,Scope,Modality),_), clause(guideline_event(Scope,Event,Verb),_), clause(guideline_arg(Scope,Event,2,Object),_), clause(guideline_entity(Scope,Object,Noun,_),_), clause(guideline_pp(Scope,Event,Prep,Target),_), clause(guideline_entity(Scope,Target,Purpose,_),_)"},
+    {"type":"query","call":"q2","goal":"Doc='cdc2022-opioid-s10-04', Sentence=1, clause(guideline_exclusion(Guideline),Condition), clause(guideline_operator(actual,'$guideline_id'(context,Doc,Sentence,_,_),-),Condition), findall(1,clause(guideline_exclusion(Guideline),_),Records), length(Records,Count)"},
+    {"type":"answer","text":"{\"segments\":[{\"text\":\"{{q1}}\",\"source\":\"kb\",\"queries\":[\"q1\"],\"urls\":[]},{\"text\":\"{{q2}}\",\"source\":\"kb\",\"queries\":[\"q2\"],\"urls\":[]}]}"},
+    {"type":"done"}
+  ]
+}

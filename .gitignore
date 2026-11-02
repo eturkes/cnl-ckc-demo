@@ -33,3 +33,17 @@ tests/__screenshots__
 # Prototype seams: derived from the vendored bag by each prototype's own derive script.
 prototype/*/generated/
 prototype/*/variants/*/generated/
+
+# Local credentials + OS/editor debris; checked-in environment examples remain visible.
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+*.log
