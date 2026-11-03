@@ -321,18 +321,23 @@ worker before its caller resumes (`chat-c2.md`).
   its re-open trigger: three consecutive gates on one host above its bound (45 s on the Core Ultra
   7 268V, 110 s on the i7-8650U), each from a 1-min load below 2. The 492-document bag counts one:
   141.9 s on the i7-8650U from a load near 1.3 (T11 86.9 s, P4 50.9 s).
-- [x] cb45a9e n30 seam: `prototype/scope-guards/derive.mjs` → records of the 12 exclusions, 3
-  supersessions, 1,221 guarded operator clauses.
-- [x] a91211f n30 r1: ten variants, navigator-1 screening, the user's picks (graph hub + edge
-  state, struck group, 8 conditions, page-wide date).
-- [ ] n30 r2: one integrated prototype `prototype/scope-guards/app/` — combined graph, struck
-  group + exclusion line on every answer, corpus marks, chat parts, page-wide evaluation date;
-  retired variants removed → navigator pass, the user's review.
+- [ ] n30 IMPLEMENT: build the n30 `Decisions` (struck group + unstruck-when-derived, exclusion line on
+  every answer, three supersession surfaces, page-wide evaluation date, the graph projection) under
+  full Engineering law; the `Phase` request's Accept binds (`tests/graph-annotations.test.ts` A1
+  without its evaluation-date exemption, the panel naming a superseded statement + its source, live
+  review owed). The prototype's shortcuts each owe a real design: the date as explicit run context
+  threaded through the answer, marks and proof goals (never `snapshot/1` or a dynamic
+  `clinical_context/3`), the proof cache keyed by date, date input validated at the engine API,
+  answers streamed under a date, the condition grammar replaced by a reviewed realizer, every new
+  string in both catalogs. `prototype/scope-guards/` retires at the close. Waits on the graph
+  overhaul's PROTOTYPE pick, inside which the graph projection lands.
+- [ ] owed (user): paste the PROTOTYPE body for the graph overhaul (`Decisions` "The graph gets a
+  complete overhaul") — routed ahead of n30's IMPLEMENT (user ruling).
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
 
-ITERATE — scope exclusions and superseded statements, surfaced in the graph and the answer panel
+IMPLEMENT — scope exclusions and superseded statements, surfaced in the graph and the answer panel
 > - **Scope exclusions and superseded statements do not surface** — the graph projects no
 >   `guideline_exclusion/1` or `guideline_supersession/4` record and no guard
 >   (`tools/kb/graph.mjs` `UNPROJECTED`, the evaluation-date comparison skipped), and the answer

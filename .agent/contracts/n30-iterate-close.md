@@ -13,3 +13,15 @@ where they read as shortcuts). One `reviewer`; MAIN adjudicates every row.
 | L5 | KB claims live | every KB statement the prototype shows (superseded statement, exclusion condition, derived historical statement, chat KB part) comes from a live Prolog goal, never records.json or a literal |
 | L6 | spec current | `.agent/spec.md` matches what shipped (Artifacts, Tasks, Phase) and passes `pnpm spec:lint` + `pnpm spec:check` |
 | L7 | shipped untouched | no file outside `prototype/`, `.agent/`, `.gitignore`, `.prettierignore`, `eslint.config.js` changed; the two ignore-config edits exclude `prototype/` alone and no existing check loses coverage |
+
+## Adjudication (reviewer-31 at f32998e; MAIN rules every row)
+
+| id | reviewer | MAIN ruling | evidence |
+|---|---|---|---|
+| L1 | pass | pass | fresh clone: install, `kb:build`, `derive.mjs`, Vite, `capture.mjs` rc 0 (3 viewports × 5 date states, 7 questions); the standalone graph page booted on an isolated retry after one 30 s load-event timeout at a 1-min load of 56.9 from other projects — load, not the page; MAIN's own `webcap` of `/prototype/scope-guards/app/graph/` rc 0 |
+| L2 | pass | pass | every ruling of the session sits in `Decisions` |
+| L3 | pass | pass | n30 entries read without the prototype |
+| L4 | fail(low): snapshot adapter, buffered answers and hand-built condition grammar disclosed in source alone | fixed at 9d270a2 → pass | `git show 9d270a2:.agent/spec.md` line 39 `Prototype shortcuts, each owed a real` + the list (one re-review round, MAIN) |
+| L5 | pass | pass | every shown KB statement reads a live goal; the graph's static projection from the bag is a producer-style projection, not an answer claim |
+| L6 | pass | pass | `spec:lint` + `spec:check` rc 0 |
+| L7 | pass | pass | `git diff --name-only 8c6acd7..f32998e` inside the allowlist; eslint + prettier exclude `prototype/` alone |

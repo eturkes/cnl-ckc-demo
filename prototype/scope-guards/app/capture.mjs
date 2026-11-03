@@ -35,5 +35,5 @@ try {
   const provenance=await page.evaluate(()=>window.__demo.provenance.kind);if(provenance!=='ready')throw Error(`proof ${provenance}`);
   if(errors.length)throw Error(JSON.stringify(errors));results.push({width,theme,auditCalls:audit.length,audit,provenance,errors});await page.close();
  }
- await writeFile(`${out}/builder-11-results.json`,JSON.stringify(results,null,2));console.log(JSON.stringify({viewports:results.length,dateCycles:results.length*5,preparedQuestionIds:7,screenshots:results.length*6,passed:true}));
+ await writeFile(`${out}/builder-11-results.json`,JSON.stringify(results,null,2));console.log(JSON.stringify({viewports:results.length,dateCycles:results.length*5,preparedQuestionIds:7,screenshots:results.length*7,passed:true}));
 }finally{await browser.close()}
