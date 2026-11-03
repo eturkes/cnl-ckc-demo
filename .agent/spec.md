@@ -29,6 +29,14 @@ questions by deterministic Prolog execution.
 - `kb/` + `vendor/cnl-ckc/` — release `kb-2026-10-29-rc.1`'s KB archive, its sidecar and
   `kb/release.json`, and the upstream sources the provenance port cites, at the tag's commit.
   `pnpm kb:fetch <tag>` vendors a release; `pnpm kb:fetch --verify` re-checks it.
+- `prototype/scope-guards/` — n30's approved ITERATE prototype (disposable; outside the build,
+  eslint and prettier; retires at n30's IMPLEMENT close). `node prototype/scope-guards/derive.mjs
+  && pnpm dev`, then `/prototype/scope-guards/app/`: the shipped demo with the struck group and
+  exclusion line on every answer, the page-wide evaluation date, corpus marks, a recorded chat
+  replay whose goals run live, and the hub + edge-state graph (`app/graph/`, alone at
+  `/prototype/scope-guards/app/graph/`). `node prototype/scope-guards/app/capture.mjs <dir>`
+  re-drives every state against the running dev server. `app/chat-guide.md` is the proposed
+  guide text; the bridge still reads `server/chat-guide.md`.
 
 ## Decisions
 
@@ -223,7 +231,9 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   the date, read by a live goal over `guideline_supersession/4`. In the answer they form a group
   after its statements, headed as no longer applying, each statement struck through and carrying a
   facts-row line `Superseded <date> · <citation>`; the statement text is the knowledge base's
-  controlled-language sentence, labelled as such.
+  controlled-language sentence, labelled as such. When the run's evaluation date precedes the
+  supersession, the statements derive and show unstruck under their own heading as derived for this
+  evaluation, each keeping its `Superseded` line.
 - **Every answer states the guideline's scope exclusions**: a compact line naming the first
   conditions under which its recommendations do not apply, expandable to one line per distinct
   condition, each naming every source sentence that states it (12 records → 8 conditions); read by a
@@ -243,6 +253,13 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   negation and modality do; the superseded actions link to a node for the superseding source. The
   scope guard shows on the selected node's recommendation edges alone, never across the whole
   canvas, and no exclusion takes a dashed line, which carries negation alone (`m5u8.md` R4).
+- **The graph gets a complete overhaul, everything open.** The graph looks generic, leaves its
+  purpose unclear and may draw the wrong model. The overhaul serves four jobs: trace an answer back
+  to its source, explore the knowledge base, see the guideline's shape at a glance, and explain one
+  rule's logic. Every graph ruling above — the concept-first projection, polarity as edge state,
+  Cytoscape, the zoom floor, wrapped labels, n30's hub + edge state — may be replaced, chosen by
+  variants the user compares; Intent alone binds. It runs as its own PROTOTYPE scope once n30's
+  ITERATE closes, and n30's graph projection lands inside whichever graph it picks.
 
 **MAIN:** the marks are ONE compiled goal per question, `clinical_marks/3` at the end of
 `PROOF_SOURCE`: it reads the grade, qualifier, preference, interval and order heads out of
