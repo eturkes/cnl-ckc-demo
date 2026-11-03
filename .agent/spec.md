@@ -36,7 +36,12 @@ questions by deterministic Prolog execution.
   replay whose goals run live, and the hub + edge-state graph (`app/graph/`, alone at
   `/prototype/scope-guards/app/graph/`). `node prototype/scope-guards/app/capture.mjs <dir>`
   re-drives every state against the running dev server. `app/chat-guide.md` is the proposed
-  guide text; the bridge still reads `server/chat-guide.md`.
+  guide text; the bridge still reads `server/chat-guide.md`. Prototype shortcuts, each owed a real
+  implementation: the date reaches a run through a trusted `snapshot/1` adapter (`app/engine.ts`)
+  that turns `clinical_context/3` dynamic and buffers a run's answers before showing them; the chat
+  is a recorded turn, not the live bridge; condition sentences come from a hand-built grammar over
+  the record's terms (`app/guards.ts`); the graph projects from `generated/records.json`; every
+  added string is English-only.
 
 ## Decisions
 
