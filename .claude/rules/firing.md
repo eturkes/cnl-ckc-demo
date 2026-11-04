@@ -32,14 +32,15 @@ manifest takes its planted input there — `tests/support/`, a `kb/generated` ch
 read of the manifest — and never in `node_modules`, whose files pnpm hardlinks to the shared store.
 
 **The row a grader change edits in the table below is that change's record of the ORIGINAL
-grader's firing.** That is how the approval clause lands here: this repo's graders are the
-declared tables, allowlists and pinned surfaces those rows name, so widening an allowlist,
-raising a timeout or dropping a declared row belongs in its own approved unit, never as a side
+grader's firing.** That is how the grader-change clause (`CLAUDE.md` `Engineering` verification
+integrity) lands here: this repo's graders are the declared tables, allowlists and pinned
+surfaces those rows name, so widening an allowlist, raising a timeout or dropping a declared row
+belongs in its own unit, on evidence the grader errs against its contract, never as a side
 effect of the unit whose grader it loosens.
 
 | step | broken input | how it runs |
 |---|---|---|
-| `gate` runner | a planted step exiting 3 ahead of a planted second step; under `--fast`, a planted step exiting 3 beside a planted green one; a `gate:chain` segment naming no package script | `tools/gate.mjs` drives the planted steps through its own executors before the chain: the in-order run must report `control-red exited 3` with `control-after` never run, the parallel run `control-red exited 3`; the bad segment is refused by name before any step runs. A runner that swallowed a status would turn every red step green |
+| `gate` runner | a planted step exiting 3 ahead of a planted second step; under `--fast`, a planted step exiting 3 beside a planted green one; a `gate:chain` segment naming no package script; the real step ledger with an unclassified red row appended | `tools/gate.mjs` drives the planted steps through its own executors before the chain: the in-order run must report `control-red exited 3` with `control-after` never run, the parallel run `control-red exited 3`; the bad segment is refused by name before any step runs. A runner that swallowed a status would turn every red step green. Then, outside `--fast`, `pendingRefusals` (`tools/gate-ledger.mjs`) grades the real ledger with a planted `control-red` red row appended and must name `unclassified red: control-red` before the real ledger is graded and any step runs: a refusal that stopped reading would let a rerun to green bury its red |
 | `secret:check` | a token-shaped literal planted in a temp dir; the `TREE_TARGETS` list emptied | secretlint spawned on the literal, must exit 1, before the tree pass; the emptied list must exit 1 naming `TREE_TARGETS` — without that guard secretlint exits 2 `Not found target files` and the wrapper mislabels it `secret found in the working tree` |
 | `kb:build` | one digit changed in the bag `.sha256` sidecar; `kb/release.json` naming another bag root | `readVerifiedBag(perturb)` re-run in process, before the real verify; `gradeRecord` (`tools/kb/release.mjs`) over the real `kb/` with the record's root replaced, refusing `bag root` by name |
 | `kb:fetch --verify` | a copy of the vendored archive with its last byte flipped; the release tag with one signature byte flipped | the lane's own grade re-run over the fetched release and the flipped copy, refusing `kb/<archive> differs from the release asset` before the real comparison; `gradeTagControlled` (`tools/kb/release.mjs`) grades the flipped tag first, on every intake and every `--verify`, and must read `the signature does not verify` — with no pinned signer it reads another refusal, and the control refuses `control did not fire` (`tests/kb-release.test.ts` R6) |

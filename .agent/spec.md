@@ -20,12 +20,17 @@ questions by deterministic Prolog execution.
 
 ## Artifacts
 
-- `src/` + `index.html` — the demo. `pnpm dev`; production `pnpm build && pnpm preview`.
+- `src/` + `index.html` — the demo. `pnpm dev`; production `pnpm build && pnpm preview`. Smoke:
+  `pnpm smoke`, the built bundle answering a question in a real browser; layout + mobile:
+  `pnpm visual-qa`, every state at 320, 375 and 1280 px.
 - `server/chat.mjs` + `server/chat-guide.md` — local chat bridge to `codex app-server`.
   `pnpm chat:dev` beside `pnpm dev`, after `CODEX_HOME=~/.config/cnl-ckc-demo/codex codex login`.
+  Smoke: `pnpm exec vitest run tests/chat-server.test.ts`, the bridge against a scripted fake;
+  keyed and billed to the user's plan: `pnpm chat:live`.
 - `review.html` + `src/review/` — development page for the user's live review of the ladder's
   checked-comparisons list, which no catalog question reaches. `pnpm dev`, then `/review.html`; the
-  build leaves it out.
+  build leaves it out. Smoke: `pnpm exec vitest run tests/proof-comparison.test.ts` (V1 proves the
+  page's goal with both comparisons in its ladder).
 - `kb/` + `vendor/cnl-ckc/` — release `kb-2026-10-29-rc.1`'s KB archive, its sidecar and
   `kb/release.json`, and the upstream sources the provenance port cites, at the tag's commit.
   `pnpm kb:fetch <tag>` vendors a release; `pnpm kb:fetch --verify` re-checks it.

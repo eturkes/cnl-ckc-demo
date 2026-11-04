@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// `pnpm gate` — `package.json` `gate:chain` step by step, each step's wall-clock printed, the
-// first red step ending the run with its own status. `pnpm gate:fast` (`--fast`) = the
+// `pnpm gate` — `package.json` `gate:chain` step by step, each step's wall-clock + verdict printed
+// and appended to the step ledger (`tools/gate-ledger.mjs`), the first red step ending the run
+// with its own status. `pnpm gate:fast` (`--fast`) = the
 // iteration gate: `kb:build`, every other step at once with tool caches, then the tests vitest's
 // module graph ties to the working-tree change (`.claude/rules/gate.md`).
 //
@@ -9,14 +10,24 @@
 
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { availableParallelism } from 'node:os';
+import { availableParallelism, loadavg } from 'node:os';
 import { join } from 'node:path';
 
 import { requireFiring } from './control.mjs';
+import {
+  appendRows,
+  ledgerWith,
+  loadNote,
+  pendingRefusal,
+  pendingRefusals,
+  readLedger,
+  rowOf,
+  workingTree,
+} from './gate-ledger.mjs';
 import { ROOT } from './kb/paths.mjs';
 
 /** @typedef {{ name: string, argv: string[] }} Step */
-/** @typedef {{ name: string, ms: number, status: number, output: string }} Timed */
+/** @typedef {{ name: string, ms: number, status: number, output: string, load: number }} Timed */
 
 const STARTED = performance.now();
 const FAST = process.argv.includes('--fast');
@@ -67,7 +78,13 @@ const runInOrder = (steps, exec) => {
   for (const { name, argv } of steps) {
     const start = performance.now();
     const status = exec(argv);
-    times.push({ name, ms: performance.now() - start, status, output: '' });
+    times.push({
+      name,
+      ms: performance.now() - start,
+      status,
+      output: '',
+      load: loadavg()[0] ?? 0,
+    });
     if (status !== 0) break;
   }
   return times;
@@ -82,7 +99,7 @@ const runBuffered = ({ name, argv: [command = '', ...args] }) =>
     child.stdout.on('data', (/** @type {Buffer} */ chunk) => (output += chunk.toString()));
     child.stderr.on('data', (/** @type {Buffer} */ chunk) => (output += chunk.toString()));
     const settle = (/** @type {number} */ status) =>
-      done({ name, ms: performance.now() - start, status, output });
+      done({ name, ms: performance.now() - start, status, output, load: loadavg()[0] ?? 0 });
     child.on('error', (cause) => {
       output += `${cause.message}\n`;
       settle(1);
@@ -117,14 +134,17 @@ const redOf = (times) =>
 /** @param {Timed[]} times */
 const printTimes = (times) => {
   const total = performance.now() - STARTED;
-  const row = (/** @type {number} */ ms, /** @type {string} */ name) =>
-    `${(ms / 1000).toFixed(1).padStart(7)} s  ${name}`;
+  const row = (
+    /** @type {number} */ ms,
+    /** @type {string} */ verdict,
+    /** @type {string} */ name,
+  ) => `${(ms / 1000).toFixed(1).padStart(7)} s  ${verdict.padEnd(5)}  ${name}`;
   process.stdout.write(
-    `${TOOL}: wall-clock per step\n${times
+    `${TOOL}: wall-clock + verdict per step\n${times
       .map(({ ms, name, status }) =>
-        row(ms, status === 0 ? name : `${name}  ← exit ${String(status)}`),
+        status === 0 ? row(ms, 'green', name) : row(ms, 'red', `${name}  ← exit ${String(status)}`),
       )
-      .join('\n')}\n${row(total, 'total')}\n`,
+      .join('\n')}\n${row(total, '', 'total')}\n`,
   );
 };
 
@@ -194,7 +214,38 @@ if (!FAST) {
       ];
     },
   );
+  const ledger = readLedger();
+  const ledgerControl = requireFiring(
+    TOOL,
+    {
+      mutation: 'the ledger with an unclassified red row appended',
+      expect: ['unclassified red: control-red'],
+    },
+    () =>
+      pendingRefusals(
+        ledgerWith(ledger, [
+          rowOf(TOOL, 'control', '', { step: 'control-red', seconds: '', red: 'exit 3', note: '' }),
+        ]),
+      ),
+  );
+  const refusal = pendingRefusal(TOOL, ledger);
+  if (refusal !== undefined) {
+    process.stderr.write(refusal);
+    process.exit(2);
+  }
+  const date = new Date().toISOString();
+  const tree = workingTree();
   const times = runInOrder(names.map(pnpmStep), runInherit);
+  appendRows(
+    times.map(({ name, ms, status, load }) =>
+      rowOf(TOOL, tree, date, {
+        step: name,
+        seconds: (ms / 1000).toFixed(1),
+        red: status === 0 ? undefined : `exit ${String(status)}`,
+        note: loadNote(load),
+      }),
+    ),
+  );
   printTimes(times);
   const [red] = redOf(times);
   if (red !== undefined) {
@@ -204,7 +255,9 @@ if (!FAST) {
     );
     process.exit(times.at(-1)?.status ?? 1);
   }
-  process.stdout.write(`${TOOL} ok — ${String(times.length)} steps; control: ${control}\n`);
+  process.stdout.write(
+    `${TOOL} ok — ${String(times.length)} steps; control: ${control}; ${ledgerControl}\n`,
+  );
 } else {
   const plantedTimes = await runTogether(planted, 2);
   const control = requireFiring(

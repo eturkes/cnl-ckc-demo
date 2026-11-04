@@ -9,9 +9,9 @@ spec:lint → shell:check → format:check → lint → check → binding:check 
 
 `gate:chain` is authoritative if that list ever diverges from it; `tests/inventory.test.ts`
 rosters the steps from the same text, and the runner refuses a segment other than
-`pnpm <declared script>`. The runner prints each step's wall-clock, `binding:check` its 10
-slowest cases, and the first red step ends the run with that step's status, naming the steps it
-left unrun. `pnpm gate:chain` runs the chain untimed. The chain's per-run counts
+`pnpm <declared script>`. The runner prints each step's wall-clock and verdict, `binding:check`
+its 10 slowest cases, and the first red step ends the run with that step's status, naming the
+steps it left unrun. `pnpm gate:chain` runs the chain untimed. The chain's per-run counts
 (checked files, tests, modules, copy strings, contrast pairs) move on almost every commit →
 **rerun the gate rather than quoting a total**; a durable exact total re-stales itself.
 
@@ -22,6 +22,20 @@ alone in place of `binding:check`, every red step reported. Its reach ends at vi
 graph and ESLint's per-file cache: a suite reading a changed file through `fs` (rules, contracts,
 `kb/generated`) and a type-aware finding that moves with an imported file wait for
 `pnpm gate`, which alone decides a commit.
+
+**Step ledger = `.gate-ledger.tsv`, gitignored, this host's record** (`tools/gate-ledger.mjs`):
+`pnpm gate` and `pnpm ci:gate` append one row per step they run — date, tree, gate, step,
+seconds, verdict, class, note — and `ci:gate` one `ci:gate` row for a red no job carries (a failed
+push, list or view, a watch or run record refusing beside green jobs), so a step's unique catches
+per wall-clock read off the ledger beside CI history. `tree` is the working tree's own id, untracked files in and ignored ones out
+(`ci:gate`: the pushed commit's tree), so a flake reads as red → green on one tree; `note`
+carries the 1-min load as the step ends, which the envelope ruling below reads a red against,
+or the fan-out run id. A
+red row enters `unclassified` and both runners refuse to start while one stands — a row cut short
+or of no known class reads pending, and an unreadable ledger stops the runner — so a rerun to
+green never buries a red: classify it on the spot with `pnpm gate:classify
+<product|gate|flake|planted> [note]`, which classifies every pending red at once. `gate:fast`
+writes no row: its cached wall-clocks measure the cache, not the step.
 
 **`pnpm gate` green is not `release:check` green.** A report of a gate-only run names
 `kb:reproduce`, `smoke`, `browser:check`, `graph:check`, `readme:check`, `test:browser`,
@@ -203,6 +217,12 @@ binding:replay HEAD` exits 1, both arms green.
 `pnpm release:check` = `gate && kb:reproduce && smoke && browser:check && graph:check &&
 readme:check && test:browser && engine:probe && kb:fetch --verify`.
 
+**Campaign tier** (`CLAUDE.md` `Execution`) = the open-ended searches, kept out of every
+per-commit gate: the mutation sweeps `pnpm mutate` and `pnpm stryker` and the history replay
+`pnpm binding:replay`, each run time-boxed at a unit's or a phase's close, plus `security.yml`'s
+daily schedule. Each finding lands in the per-commit gate as a pinned example — a mutant's anchor
+graded by `tests/mutant-anchors.test.ts`, a survivor ruled specified behaviour as its missing case.
+
 ## CI
 
 - `.github/workflows/ci.yml` — runs `pnpm gate` on every push to `main` and every pull
@@ -229,8 +249,8 @@ readme:check && test:browser && engine:probe && kb:fetch --verify`.
   jobs from the chain, so the chain stays the one list, and a step the chain runs after `kb:build`
   builds it first in its own job.
 - **The CI gate is in force**: `main`'s CI is green, so a unit's full gate is `pnpm ci:gate
-  <unit>` on its commit (`tools/ci-gate.mjs`). It pushes the committed HEAD to
-  `ci/<unit>`, watches the fan-out run that push starts, and on green deletes the branch; on red it
+  <unit>` on its commit, run in the background (`tools/ci-gate.mjs`). It pushes the committed
+  HEAD to `ci/<unit>`, watches the fan-out run that push starts, and on green deletes the branch; on red it
   names every red step and keeps the branch, so the fix is amended and the command run again.
   Green needs a watch that ran to its end, a `completed` run record and every job green; anything
   else keeps the branch (`tests/ci-gate.test.ts`). It refuses a dirty tree, because the run grades
@@ -239,12 +259,15 @@ readme:check && test:browser && engine:probe && kb:fetch --verify`.
 **Never run MAIN's decisive `pnpm gate` while teammates run suites.** Three trees testing at
 once starve the CPU into spurious `Test timed out in 5000ms` failures — `kb-reach`, which
 spawns `kb:asset-check` subprocesses, and `demo-controller.dom`'s axe sweep. Nothing is
-wrong with the tree. The decisive rerun follows `TaskStop`.
+wrong with the tree: the red classifies `flake` with its load, and the decisive rerun follows
+`TaskStop`.
 
 **The suite's load envelope (user ruling).** 20 consecutive full runs passed 1014/1014 at load
 avg 4.6–23.5 on 8 cores (`4dc9179` body); runs at 27–33 timed out 1–20 live tests. That
 measured envelope is the accepted bar — ≤ 2.9× cores — and no per-test timeout was raised
-for load. A red gate under heavier external load is load, not the tree: rerun it once the load
-falls. A slower host's CPU is not load: a case that exceeds vitest's 5000 ms default there from a
-1-min load below 2 takes an explicit timeout, approved by the user like any grader change
-(`tests/graph-live.test.ts` answer maps, 30 s: red at 5480 / 5962 ms on an i7-8650U).
+for load. A red gate under heavier external load is load, not the tree: it classifies `flake`
+with its load and reruns once the load falls, and because the envelope is the accepted bar, a
+load flake queues no fix unit — a flake inside the envelope is a gate bug like any other. A
+slower host's CPU is not load: a case that exceeds vitest's 5000 ms default there from a 1-min
+load below 2 takes an explicit timeout in its own unit, on that measured red, like any grader
+change (`tests/graph-live.test.ts` answer maps, 30 s: red at 5480 / 5962 ms on an i7-8650U).

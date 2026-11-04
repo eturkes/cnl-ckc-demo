@@ -14,10 +14,8 @@ repo's deltas.
 
 ## Worktrees
 
-- A wave that writes code takes one worktree per teammate at `.scratch/worktrees/<name>`; so
-  does a debugging wave, each hypothesis's experiment in its own (`CLAUDE.md` `Session flow`
-  Debugging), even one that edits nothing. An analysis-only wave takes none and reports into
-  `.scratch/agents/`.
+- A wave that writes code takes one worktree per teammate at `.scratch/worktrees/<name>`; an
+  analysis-only wave takes none and reports into `.scratch/agents/`.
 - Toolchain env = the worktree's own install: `pnpm install --frozen-lockfile --offline` in the
   worktree hard-links every package from the shared store (475 packages in 0.45 s). Never
   symlink the primary's `node_modules`: pnpm records the tree that installed it, so
@@ -80,7 +78,8 @@ repo's deltas.
 - A probe branch also carries probe code `main` cannot hold. `wt/res-nl-intake`'s four `.mjs`
   probes fail `pnpm lint` under the typescript-eslint project service, which resolves every
   linted file through `tsconfig.json`; adding `.agent/` to the ESLint ignore list would be a
-  grader change, and `CLAUDE.md` `Engineering` reserves those for their own approved unit.
+  grader change, which `CLAUDE.md` `Engineering` reserves for its own unit, on evidence the check
+  errs against its contract.
 
 ## Units + teammates
 
@@ -126,7 +125,8 @@ reviewer brief carries ONE vocabulary: the cell opens `pass:` or `fail(low|med|h
 grader also admits the `reviewer` role's own form — `pass`, or `finding <ids>
 (blocker|major|minor)` — read as blocker = high, major = med, minor = low, so a reviewer
 following its role grades clean. The `evidence` cell is where the `CLAUDE.md` `Teammates`
-evidence bar lands — a red test, or the disputed bytes in `rg -Fn` form plus `file:line` — so
+evidence bar lands — a red test beside the contract clause or independent oracle its expected
+value encodes, or the disputed bytes in `rg -Fn` form plus `file:line` — so
 harvest rematches a row without opening its detail section. Grading needs a sibling
 `<stem>.ids`. A seeded all-`unknown` skeleton exits 1 — that is what makes it a
 deliverable-first counter. The Units table admits `-` in the `flags` and `depends` columns only;

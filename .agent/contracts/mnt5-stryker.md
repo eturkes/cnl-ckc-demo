@@ -249,3 +249,31 @@ In location order, as `pnpm stryker` prints it, each with its non-author ruling 
 | `tools/kb/exports.mjs:104:10` | ConditionalExpression | "true" | Survived | M134 open: extra-only refusals gain missing []; D2 does not require omitting an empty missing category. |
 | `tools/kb/exports.mjs:104:10` | EqualityOperator | "missing.length >= 0" | Survived | M135 open: nonnegative missing length always appends a category; D2 specifies named offenders, not empty-category layout. |
 | `tools/kb/exports.mjs:104:69` | StringLiteral | "\"Stryker was here!\"" | Survived | M137 open: unrelated suffix appears on extra-only refusals; D2 does not freeze prose beyond refusal and offender identity. |
+
+## sync-refresh — `tests/gate-ledger.test.ts` over `tools/gate-ledger.mjs`
+
+The step ledger's suite is green at base by the firing law (`tools/gate-ledger.mjs` did not exist
+before it, so its base run is a collection failure), so its credit is the kills below. Scope =
+`tools/gate-ledger.mjs`, the module the suite imports; `tools/gate-classify.mjs` is a logic-free
+entry L4 spawns. Command: `STRYKER_SUITE=tests/gate-ledger.test.ts STRYKER_MUTATE=tools/gate-ledger.mjs
+pnpm stryker`, run alone. Result: 190 mutants — 176 killed, 13 survived, 0 uncovered, 1 fails the
+suite at collection (never credited): `tools/gate-ledger.mjs:24:37` `LogicalOperator`
+`process.env.GATE_LEDGER && '.gate-ledger.tsv'`, `resolve` refusing an undefined path at import.
+Every survivor ruled by `reviewer-32`, never the suite's author; none is specified behavior left
+untested.
+
+| mutant | mutator | replacement | verdict | ruling |
+| --- | --- | --- | --- | --- |
+| `tools/gate-ledger.mjs:57:78` | StringLiteral | "\"Stryker was here!\"" | Survived | S01 open — the placeholder for an absent field of a damaged row is unspecified; row count, surviving fields and pending refusal remain intact. |
+| `tools/gate-ledger.mjs:95:9` | ConditionalExpression | "true" | Survived | S02 equivalent — readFileSync throws Error objects; dropping its type/code-presence guards still returns empty only for ENOENT and rethrows every other error. |
+| `tools/gate-ledger.mjs:95:9` | LogicalOperator | "cause instanceof Error \|\| 'code' in cause" | Survived | S03 equivalent — with filesystem Error objects, the OR guard is always true, but ENOENT remains the only swallowed code; all other errors still throw. |
+| `tools/gate-ledger.mjs:121:38` | MethodExpression | "[row.note, note]" | Survived | S04 open — retaining empty note fragments adds a separator, but preserves both supplied notes; formatting of an omitted note is not in the ledger contract. |
+| `tools/gate-ledger.mjs:121:72` | ConditionalExpression | "true" | Survived | S05 open — an always-true note filter has S04's empty-fragment punctuation effect without losing note content. |
+| `tools/gate-ledger.mjs:141:32` | StringLiteral | "\"\"" | Survived | S07 open — concatenating several refusal strings removes their delimiter but still names every pending row and its fix; delimiter bytes are unspecified. |
+| `tools/gate-ledger.mjs:159:14` | ArrayDeclaration | "[]" | Survived | S08 open — default child stdio changes diagnostic/input plumbing, not Git argv, cwd, isolated index or returned tree; that plumbing is outside the ledger contract. |
+| `tools/gate-ledger.mjs:159:33` | StringLiteral | "\"\"" | Survived | S09 open — defaulting child stderr instead of ignoring it can expose a Git diagnostic; the tree/index contract specifies no stderr policy. |
+| `tools/gate-ledger.mjs:167:16` | ArrayDeclaration | "[]" | Survived | S11 open — default stdio for rev-parse preserves its captured index path; only uncontracted input/error plumbing changes. |
+| `tools/gate-ledger.mjs:167:35` | StringLiteral | "\"\"" | Survived | S12 open — a default stderr entry may surface rev-parse diagnostics, but leaves the index path, returned tree and real index unchanged. |
+| `tools/gate-ledger.mjs:176:13` | BlockStatement | "{}" | Survived | S15 open — this leaves the temporary directory behind but still returns the correct tree without touching the real index; temporary-directory lifetime is outside the fixed ledger contract. |
+| `tools/gate-ledger.mjs:177:43` | BooleanLiteral | "false" | Survived | S16 equivalent — force changes only missing-path handling; this function creates the cleanup directory and never removes it before finally, so it exists on every ordinary exit. |
+| `tools/gate-ledger.mjs:188:17` | StringLiteral | "\"Stryker was here!\"" | Survived | S19 equivalent — both absent-kind defaults are invalid classes, so both return the identical usage/status before any ledger access; supplied arguments bypass the default. |

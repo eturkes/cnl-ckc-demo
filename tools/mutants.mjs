@@ -1651,4 +1651,59 @@ export const MUTANTS = [
     ],
     check: ['pnpm', 'shell:check'],
   },
+  {
+    label: 'inv gate-ledger: a red row enters classified',
+    edits: [
+      {
+        path: 'tools/gate-ledger.mjs',
+        old: "class: red === undefined ? '-' : PENDING,",
+        new: "class: '-',",
+      },
+    ],
+    check: { test: 'tests/gate-ledger.test.ts', name: 'L1' },
+  },
+  {
+    label: 'sync-refresh L5a a ledger row cut short keeps its missing class',
+    edits: [
+      {
+        path: 'tools/gate-ledger.mjs',
+        old: 'return cells.length === COLUMNS.length && KNOWN.has(row.class)',
+        new: 'return true',
+      },
+    ],
+    check: { test: 'tests/gate-ledger.test.ts', name: 'L6' },
+  },
+  {
+    label: 'sync-refresh L5a an unreadable ledger reads empty',
+    edits: [
+      {
+        path: 'tools/gate-ledger.mjs',
+        old: "if (cause instanceof Error && 'code' in cause && cause.code === 'ENOENT') return '';",
+        new: "return '';",
+      },
+    ],
+    check: { test: 'tests/gate-ledger.test.ts', name: 'L6' },
+  },
+  {
+    label: 'sync-refresh L5b a harness red beside green jobs lands nowhere',
+    edits: [
+      {
+        path: 'tools/ci-gate.mjs',
+        old: '  if (red.length === 0) {',
+        new: '  if (false) {',
+      },
+    ],
+    check: { test: 'tests/ci-gate.test.ts', name: 'every harness red lands pending' },
+  },
+  {
+    label: 'sync-refresh L5b a run view read outside its recorded step lands nowhere',
+    edits: [
+      {
+        path: 'tools/ci-gate.mjs',
+        old: "const { status, conclusion, jobs } = recorded('run view unreadable', () =>\n  viewOf(JSON.parse(run('gh', 'run', 'view', String(id), '--json', 'status,conclusion,jobs'))),\n);",
+        new: "const { status, conclusion, jobs } = viewOf(\n  recorded('run view unreadable', () =>\n    JSON.parse(run('gh', 'run', 'view', String(id), '--json', 'status,conclusion,jobs')),\n  ),\n);",
+      },
+    ],
+    check: { test: 'tests/ci-gate.test.ts', name: 'every harness red lands pending' },
+  },
 ];

@@ -23,8 +23,9 @@ paths:
 - The chat bridge needs the `codex` CLI on `PATH` (`CHAT_CODEX_BIN` overrides) and a login under
   its dedicated `CODEX_HOME` (`~/.config/cnl-ckc-demo/codex`, `CHAT_CODEX_HOME` overrides); it is
   not a package dependency.
-- **Product prerequisites outside the tree stay** (user ruling on `CLAUDE.md` `Authoring`
-  portability): the chat's `CODEX_HOME` is a per-user product path, the same on every machine;
+- **Product prerequisites outside the tree stay in tracked files** (user ruling on `CLAUDE.md`
+  `Authoring`'s `CLAUDE.local.md` scope, whose private facts include key paths): neither is a
+  private fact. The chat's `CODEX_HOME` is a per-user product path, the same on every machine;
   the browser lanes' Chromium = the public `chromiumfish` npm package, located by
   `CHROMIUMFISH_DIR` (its package directory), else the pnpm global store
   (`tools/browser.mjs` `resolveChromiumfish`). README `Prerequisites` + `Chat` name both.
@@ -147,6 +148,22 @@ excludes that glob and `tests/**/*.browser.test.ts`, so `swipl-wasm` keeps its n
   accessibility tree over CDP.
 
 Live-engine tests run in the node project: one non-parallel worker, real saved image.
+
+Property tests (`CLAUDE.md` `Engineering` test form) = fast-check through `tests/support/property.ts`
+`holds`, which fixes the seed so a red reruns from committed state; `PROPERTY_RUNS` raises the run
+count while authoring, never in the gate.
+
+**The step ledger's parser takes no fuzz target** (MAIN ruling on the `CLAUDE.md` `Engineering`
+test form): it reads the runners' own output, never another party's, and
+`tests/gate-ledger.test.ts` P4–P5 drive every cut of a pending row and arbitrary text through a
+split-and-compare parser whose branches coverage guidance cannot deepen. Readers of untrusted input
+take one (queue row `No reader of untrusted or byte-level input has a coverage-guided fuzz
+target`).
+
+**A suite whose subject runs `git` pins it to the suite's temp repository** through `GIT_DIR` +
+`GIT_WORK_TREE` (`tests/gate-ledger.test.ts` `treeOf`). `pnpm stryker`'s sandbox sits inside this
+checkout, so a mutant that drops a call's `cwd` or `env` otherwise runs `git` against the real
+repository, where `workingTree`'s `git add -A` stages every change in the working tree.
 
 ## Built output
 

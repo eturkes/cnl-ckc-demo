@@ -162,6 +162,10 @@ formatting, lint, types, tests, and the production bundle:
 pnpm gate
 ```
 
+The gate writes each step and its result to `.gate-ledger.tsv`. If a step fails, classify the
+failure with `pnpm gate:classify product`, `gate`, `flake` or `planted` before you run the gate
+again. Until you do, `pnpm gate` stops before its first step.
+
 With `pnpm chat:dev` and `pnpm dev` running, `pnpm chat:live` checks the chat path in a real
 browser. `pnpm chat:probe` reports the source labels the model earns on six fixed questions.
 Both spend turns on your ChatGPT plan, so no gate runs them. The gate checks the bridge against

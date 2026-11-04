@@ -4,6 +4,9 @@ node_modules
 # Generated runtime payload: rebuilt from the vendored bag by `pnpm kb:build`.
 kb/generated
 
+# The gate's step ledger (`tools/gate-ledger.mjs`): this host's record, never shared.
+.gate-ledger.tsv
+
 # Build output (Vite) + tool caches
 dist/
 *.tsbuildinfo
