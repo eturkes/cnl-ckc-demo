@@ -1,0 +1,25 @@
+Clinical triples / premise = read a relation as a sentence, follow it to evidence.
+Palette: canvas #f5f7f9; ink #171b21; action blue #174f9e;
+condition green #0f7558; source violet #696cb7; neutral #838e99.
+Theme values inherit app.css; node identity uses labels + shapes, not fill hue.
+Type = Atkinson Hyperlegible Next throughout; title 34, section 23, nodes 17,
+relation labels 14, metadata 13; text measure <= 72ch.
+Wireframe:
+[Clinical relationships             Overview | Trace | Search]
+[12 recommendation selector dots / counts]
+[condition node] -- requires -- [actor] -- should do -- [action]
+                                                 -- stated by -- [recommendation]
+[Sentence + source passage + page link]
+[Scope exclusions | Superseded records]
+Mobile = one vertical triple per row; edge captions between nodes.
+Bold element = clinical triple field, containing full action names.
+Overview = recommendation-wide structural inventory + selected recommendation rules;
+initial selection = recommendation 3, exposing a compact conditional prescribing triple;
+click recommendation -> its rules; click relation -> isolated rule evidence.
+node = actor, verb+object action, condition phrase, recommendation document
+edge = requires (actor -> condition), modal action (actor -> action),
+stated by (action -> recommendation); factual mode remains 'fact relation'.
+model source = guideline.rules subject/actions/condition/mode/document/sentence;
+guideline.documents source/page; questions ordered statement refs.
+Repeated actors remain shared by semantic identity, shown per rule lane to keep
+conditions and modalities scoped; no unrelated rule is inferred to apply.

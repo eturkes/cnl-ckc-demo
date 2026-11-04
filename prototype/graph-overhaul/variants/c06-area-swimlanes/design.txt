@@ -1,0 +1,24 @@
+c06 / Clinical area swimlanes
+Palette: ink #171b21, paper #f5f7f9, board #ffffff, rail #838e99,
+route-blue #174f9e, route-blue-dark #8ab4f8. Theme values = app.css roles.
+Type: Atkinson Hyperlegible Next throughout; h1 36, lane 18, node 16,
+source text 16, metadata 13. Reading column <= 76ch.
+Wireframe:
+[Guideline in care order                 Overview | Trace | Search]
+[derivation notice + node/edge legend]
+[ Initiate       | Select        | Duration        | Harms       ]
+[ rail--Rec 1    | rail--Rec 3    | rail--Rec 6      | rail--Rec 8  ]
+[      [rules]   |      [docs]    |                 | ...         ]
+[ rail--Rec 2    | rail--Rec 4    | rail--Rec 7      | rail--Rec12  ]
+[selection reading: condition -> actor/modal/action -> source/page]
+[scope exclusions | superseded statements]
+Mobile: lanes stack; each remains full width; ordered trace precedes lane map.
+Principles: care areas supply the map, not a generic force simulation. Solid
+rails group recommendations; branches express containment only. Blue path
+selects answer citations, not clinical progression. Area order is the PDF's
+editorial care order, never a patient workflow or inferred dependency.
+One strong element = four-column lane board. No decorative motion.
+node = recommendation; nested nodes = its rule sentences and documents.
+edge = containment branch; blue = recommendation cited by selected answer.
+model source = AREAS; recommendations, documents.rec, rules.document,
+questions.statements, exclusions, supersessions from guideline.json.

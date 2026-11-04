@@ -1,0 +1,16 @@
+Premise = source folios are the spatial model; the network is written on the document.
+Palette: desk #263b48; page #ffffff; ink #171b21; trace #ffb45d; locator #873b19.
+Chrome = app.css semantic tokens; PDF = original white page in both themes.
+Type: Atkinson UI 14/16/24/36; Literata source passage 16/26. No code face.
++ title / overview / answer selector / concept search +
++ folio sheet (7 cols; 2 mobile) + reading desk         +
++ document docks + overlaid page links | text + logic +
++ scope + supersession register                       +
+Mobile = reading desk precedes sheet, two thumbnail columns.
+The white source pages are the bold element. Solid amber threads = answer citation order;
+quiet solid gray threads = a strongest shared-concept relation per page representative.
+Each page opens a full-width PDF rendering + document passages. Markers dock below pages:
+positions encode document order alone, never inferred locations within the PDF.
+node = document marker on its physical PDF page
+edge = shared concept between representative page documents, or consecutive answer citations
+model source = documents.page/source/sentences, concepts.mentions, questions.statements, rules

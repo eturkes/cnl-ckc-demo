@@ -1,0 +1,28 @@
+// The fan-out roster the contact page shows; premise text mirrors
+// .agent/contracts/graph-overhaul-variants.md, node/edge = each builder's design.txt.
+export interface Variant {
+  id: string;
+  title: string;
+  unconventional: boolean;
+  premise: string;
+  node: string;
+  edge: string;
+}
+
+export const VARIANTS: Variant[] = [
+  { id: 'c01-rec-hub', title: 'Recommendation hub map', unconventional: false, premise: 'Twelve recommendations as hubs, their documents around them, links where they share clinical concepts.', node: 'recommendation hub, sized by its documents; document in orbit', edge: 'hubs share clinical concepts (weighted); document belongs to hub' },
+  { id: 'c02-provenance-layers', title: 'Provenance layers', unconventional: false, premise: 'Question → statement → rule → sentence → document → page, in columns.', node: 'question, statement, rule, sentence, document, PDF page', edge: 'ordered provenance link, never a claim that a rule fired' },
+  { id: 'c03-rule-flowchart', title: 'Rule flowchart', unconventional: false, premise: 'Each rule drawn as conditions → modal gate → actions, with guard boxes for exclusions.', node: 'condition group, modal gate, action', edge: 'prerequisite → modality → consequence' },
+  { id: 'c04-concept-network', title: 'Concept network', unconventional: false, premise: 'Clinical concepts sized by mentions, linked where one sentence names both.', node: 'clinical concept, sized by sentence mentions', edge: 'named together in one sentence; never causal' },
+  { id: 'c05-matrix', title: 'Matrix', unconventional: false, premise: 'Recommendations against concepts and against each other as heatmaps.', node: 'recommendation family; concept', edge: 'cell = sentence mentions, or shared concepts' },
+  { id: 'c06-area-swimlanes', title: 'Area swimlanes', unconventional: false, premise: 'The four clinical areas as lanes in care order; recommendations and rules inside them.', node: 'recommendation; its rules and documents nested', edge: 'containment; blue = cited by the selected answer' },
+  { id: 'c07-sunburst', title: 'Sunburst', unconventional: false, premise: 'Guideline → areas → recommendations → documents → sentences as a zoomable radial hierarchy.', node: 'arc = area, recommendation, document or sentence', edge: 'containment' },
+  { id: 'c08-clinical-triples', title: 'Clinical triples', unconventional: false, premise: 'Actors, actions and conditions from the rules as a typed knowledge graph.', node: 'actor, action, condition, recommendation', edge: 'requires; should / should not / may do; stated by' },
+  { id: 'c09-arc-timeline', title: 'Arc timeline', unconventional: false, premise: 'Documents along one axis in page order; arcs join documents that share concepts or one answer.', node: 'document, in page order', edge: 'arc = shared concept, or citation order in a trace' },
+  { id: 'c10-outline-ego', title: 'Outline + ego graph', unconventional: false, premise: 'A guideline outline on the left, the selection’s neighbourhood graph on the right.', node: 'selected sentence and its rule, concepts, siblings', edge: 'typed containment, parse, mention, citation' },
+  { id: 'u01-transit-map', title: 'Transit map', unconventional: true, premise: 'Clinical areas as lines, recommendations as stations, shared concepts as interchanges.', node: 'recommendation station; shared-concept interchange', edge: 'succession within an area; transfer between areas' },
+  { id: 'u02-trace-scroll', title: 'Trace scroll', unconventional: true, premise: 'No canvas: an answer unfolds down one column with drawn lines to its sentences and pages.', node: 'recommendation, statement, sentence, passage, page excerpt', edge: 'provenance spine; margin thread = shared concept' },
+  { id: 'u03-page-canvas', title: 'Page canvas', unconventional: true, premise: 'The guideline PDF pages are the canvas; documents mark their page, links run over the pages.', node: 'document marker on its PDF page', edge: 'shared concept, or consecutive answer citations' },
+  { id: 'u04-logic-circuit', title: 'Logic circuit', unconventional: true, premise: 'Rules as gates wired from condition inputs to action outputs; shared conditions share wires.', node: 'condition input, modal gate, action output', edge: 'membership in one rule; shared condition = shared bus' },
+  { id: 'u05-hive-plot', title: 'Hive plot', unconventional: true, premise: 'Three axes — conditions, recommendations, actions — with curved links between them.', node: 'condition, recommendation, action on three axes', edge: 'one rule joins its condition, recommendation and actions' },
+];

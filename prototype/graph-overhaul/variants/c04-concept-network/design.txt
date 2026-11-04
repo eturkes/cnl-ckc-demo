@@ -1,0 +1,15 @@
+Clinical concept field: shared language, not causal logic.
+Palette: ink #171b21; blue #174f9e; violet #696cb7; green #0f7558; ochre #734300; canvas #eef1f4. Chrome = app.css tokens, dark theme token equivalents. Community hues = deterministic recommendation-index HSL; R-number labels preserve identity.
+Type: Atkinson Hyperlegible Next throughout; title 32, section 22, graph labels 12–16, body 15, note 13. No decorative metadata face.
+Desktop:
+[Clinical concept field                 Overview / Trace / Rule]
+[Search concepts.............................................]
+[network 70%                              | evidence 30%     ]
+[community legend                         | source sentences ]
+[scope + supersession disclosures                            ]
+Mobile: search; eight-node radial network at 360×460 viewBox; evidence below; guards below. Full labels wrap; desktop uses a larger force field.
+One bold element = a large open network field. Co-mentions are associations, never logical claims. Selection changes to an ego network and shows the exact shared sentences. Trace remains a reading list in answer order beside its concept field. Rule reading separates condition, modality and action, with original text + PDF source. Graph overview is explicitly a ranked sample.
+node = clinical entity or event concept, sized by total sentence mentions, labelled with dominant recommendation.
+edge = co-mention in one sentence; stroke width = shared sentence count; click opens witnesses.
+model source = guideline.json concepts.{id,label,kind,mentions}; documents.{id,rec,sentences,page,source}; rules + questions for dedicated views.
+Prototype limits: ranked 28-node overview, 16-neighbour ego, at most 60 strongest edges; generic-word stoplist; deterministic force layout; no live inference; English only.

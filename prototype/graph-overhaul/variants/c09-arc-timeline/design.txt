@@ -1,0 +1,16 @@
+Clinical cross-references / page-order arc atlas
+Colours: sheet #f5f7f9; ink #171b21; reference blue #174f9e; link grey #838e99; caution #873b19. Dark = existing role-token inversions.
+Type: Atkinson Hyperlegible Next UI + chart, 14/16/22/38 px; Literata controlled-language passages 17 px; prose <= 72ch.
+Wireframe:
+[Clinical cross-references                    prototype]
+[Guideline shape] [Trace an answer select] [Find concept]
+[                   arcs                             ]
+[all document ticks in page order / rec bands          ]
+[reference list or answer chain | selected rule/source ]
+[scope exclusions + superseded statements disclosures ]
+Mobile: compact arc silhouette, full-width controls, then source list and rule reading stacked.
+Principle: the printed guideline's page sequence is the coordinate system, not force placement. Dense arcs expose cross-reference clusters; exact documents and concepts stay in the adjacent list. One blue selected path against grey context. Never imply a shared concept proves a recommendation.
+node = document tick; heavy tick = recommendation document.
+edge = shared non-generic concept between documents; trace mode = consecutive distinct documents in the answer's citation order, explicitly not logical entailment.
+model source = guideline.documents page/rec/kind + concepts.mentions; questions.statements; rules; exclusions; supersessions.
+Overview sampling = 90 strongest document pairs, scored by count of shared concepts; generic patient/clinician/function verbs omitted; concepts in >45 documents omitted. All document ticks remain. Ordering = page, recommendation, id; equal spacing (not physical page distance). Adjacent page-order runs shade recommendation families; small families remain in exact document labels. Trace detail expands only cited documents across that same page-order axis, so adjacent citations on BOX 3's page remain readable rather than collapsing into one pixel. All 90 displayed overview pairs have textual reference rows.

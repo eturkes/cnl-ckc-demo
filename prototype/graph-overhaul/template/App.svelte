@@ -3,10 +3,10 @@
   import { indexGuideline, loadGuideline, markReady, readHash, type Guideline, type HashState } from '../../shared/data.js';
 
   let g = $state.raw<Guideline | null>(null);
-  let state = $state.raw<HashState>(readHash());
+  let view = $state.raw<HashState>(readHash());
 
   $effect(() => {
-    const onHash = () => (state = readHash());
+    const onHash = () => (view = readHash());
     addEventListener('hashchange', onHash);
     void loadGuideline().then((data) => (g = data));
     return () => removeEventListener('hashchange', onHash);
@@ -14,7 +14,7 @@
 
   $effect(() => {
     if (g === null) return;
-    void state;
+    void view;
     queueMicrotask(markReady);
   });
 
@@ -26,6 +26,6 @@
     <p>Loading the guideline…</p>
   {:else}
     <h1>Template</h1>
-    <p>{g.counts.recommendations} recommendations · {g.counts.documents} documents · state {state.view}</p>
+    <p>{g.counts.recommendations} recommendations · {g.counts.documents} documents · state {view.view}</p>
   {/if}
 </main>

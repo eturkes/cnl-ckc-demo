@@ -52,8 +52,8 @@ questions by deterministic Prolog execution.
   prototype/graph-overhaul/derive.mjs && pnpm dev`, then `/prototype/graph-overhaul/` (contact sheet)
   and `/prototype/graph-overhaul/variants/<id>/`. Smoke: `node prototype/graph-overhaul/capture.mjs
   <dir> [id ...]` drives every variant through `#overview`, `#trace=<question>`,
-  `#rule=<document>:<sentence>` and `#explore=<text>` at 1280 + 375 px, light + dark, against the
-  running dev server (`PROTO_ORIGIN`), exit 1 naming each state that never rendered, overflowed or
+  `#rule=<document>:<sentence>` and `#explore=<text>` — all four at 1280 px light and 375 px light,
+  `#overview` + `#trace` at 1280 px dark — against the running dev server (`PROTO_ORIGIN`), exit 1 naming each state that never rendered, overflowed or
   logged an error. Prototype shortcuts, each owed a real implementation: every variant reads
   `generated/guideline.json`, derived offline from the bag (answer statements from the clinical
   layer's JavaScript assembly, never a live Prolog run); sentence condition/conclusion splits are a
@@ -372,7 +372,7 @@ variant alike.
     reproducing its run (date included), the proof cache keyed by date and a model write still
     refused. The `high` queue row cites `prototype/scope-guards/app/chat-guide.md`: its text lands
     in the chat unit, or the draft moves and the row re-cites it, before the prototype retires.
-- [ ] g0 graph-overhaul seam: `derive.mjs` → `generated/guideline.json`, `shared/data.ts` (types,
+- [x] 6a4f567 g0 graph-overhaul seam: `derive.mjs` → `generated/guideline.json`, `shared/data.ts` (types,
   index helpers, hash harness), `capture.mjs`, `template/` — every variant starts from it.
 - [ ] g1 variant fan-out: 15 variants (`.agent/contracts/graph-overhaul-variants.md`), one builder
   each; `capture.mjs` green per variant; contact sheet; MAIN screening against `Intent`;

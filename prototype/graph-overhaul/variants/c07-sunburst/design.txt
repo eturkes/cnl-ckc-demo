@@ -1,0 +1,17 @@
+c07 / Guideline rings
+Palette: recommendation-blue #174f9e; permission-green #0f7558; obligation-ochre #734300; fact-violet #696cb7; mixed-slate #53606d; trace-copper #b34a21. Existing theme tokens invert fills and label contrast.
+Type: Atkinson Hyperlegible Next throughout; 32px title, 22px section, 16px reading, 13px keys. No separate data face.
+Wireframe:
+[Guideline rings                       Overview / Trace / Search]
+[one-line containment legend; modal legend]
+[                                  ][focus breadcrumb       ]
+[       concentric partition       ][focused source / logic ]
+[       text in centre             ][children / trace list   ]
+[                                  ][                       ]
+[scope exclusions disclosure] [superseded statements disclosure]
+Mobile: ring above reading panel, controls wrap, no lateral scrolling.
+Principles: document mass rather than a generic network; the guideline's care areas are inner partitions; each outward boundary means contains, not causal inference. Drill into a ring to make small documents readable. An answer highlights exact sentence arcs and every containing ancestor; source text lives beside its spatial address.
+node = guideline / clinical area / recommendation / document / sentence partition
+edge = solid radial containment boundary (parent contains child); no inferred clinical relationship
+model source = AREAS.recs; recommendations.number; documents.rec + sentences; sentences.modal; questions.statements; rules.actions; exclusions; supersessions
+Modal mix = each partition's sentence proportions; dominant modal colours the arc; exact mix appears in focus details. Ties resolve by stable modal order. Guideline-wide documents remain accessible as a separate list because no area membership is encoded.

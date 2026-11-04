@@ -47,15 +47,25 @@ try {
         const file = join(out, `${variant}-${name}-${String(width)}-${theme}.png`);
         let ready = false;
         try {
-          await page.goto(url);
-          await page.waitForFunction((h) => document.body.dataset.ready === h, hash, { timeout: 45000 });
+          // A cold Vite server reloads the page once its dep optimizer finds a new import
+          // ("Execution context was destroyed"): one fresh navigation absorbs it.
+          for (let attempt = 0; ; attempt += 1) {
+            try {
+              await page.goto(url);
+              await page.waitForFunction((h) => document.body.dataset.ready === h, hash, { timeout: 45000 });
+              break;
+            } catch (e) {
+              if (attempt > 0 || !/context was destroyed|navigation/iu.test(e.message)) throw e;
+            }
+          }
           ready = true;
           await page.waitForTimeout(400);
         } catch (e) {
           errors.push(`not ready: ${e.message.split('\n')[0]}`);
         }
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
-        await page.screenshot({ path: file, fullPage: false });
+        // Animations off: a running transition holds the screenshot's stable-frame wait under load.
+        await page.screenshot({ path: file, fullPage: false, animations: 'disabled', timeout: 120000 });
         results.push({ variant, state: name, width, theme, ready, overflow, errors, file });
         console.log(`${ready && !overflow && errors.length === 0 ? 'ok  ' : 'FAIL'} ${variant} ${name} ${String(width)} ${theme}${overflow ? ' overflow' : ''}${errors.length ? ` ${errors.join(' | ').slice(0, 200)}` : ''}`);
         await page.close();

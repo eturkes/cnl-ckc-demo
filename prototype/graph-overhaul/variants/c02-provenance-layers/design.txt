@@ -1,0 +1,17 @@
+Provenance layers = a source-routing instrument, not a concept constellation.
+Colours: page #f5f7f9; ink #171b21; quiet #53606d; route #174f9e; node #ffffff; wire #838e99. Dark = shared theme role tokens.
+Type: Atkinson Hyperlegible Next for controls + all diagram text; Literata only for selected source quotation. Scale 12 / 14 / 16 / 24 / 36 px; source ≤68ch.
+Wireframe:
+[ Guideline / Evidence routes                 Overview | Trace answer ]
+[ title                                   search                    ]
+[ question ][statement][clinical rule][sentence][document][PDF page]
+[ node     ]---o-------o-------------o---------o----------o
+[ node     ]---o-------o-------------o---------o----------o
+[ node     ]---o-------o-------------o---------o----------o
+[ selected evidence: exact ACE + condition/actor/action | source quote ]
+[ Scope exclusions (12) | Superseded statements (3) ]
+Mobile: six-stage route becomes one vertical list; selected statement chosen above it; no shrunken diagram. Diagram and tabular row list share selection.
+Principles: columns answer 'where did this come from'; curved wires preserve chain continuity; one blue route through gray context; document + page nodes merge by identity, selection lights every row touching that identity. Overview = one route per recommendation, explicit representative-sentence sampling; trace = every statement in answer order.
+node = question / answer statement / clinical rule or labelled text reading / sentence / document / PDF page
+edge = ordered provenance link, not causation or a claim that a rule fired
+model source = questions.statements + rules + documents.sentences + documents.page; overview representatives = first clinical-rule sentence per recommendation
