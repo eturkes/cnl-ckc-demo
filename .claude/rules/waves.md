@@ -58,6 +58,8 @@ repo's deltas.
 - n30 ITERATE build branches, each cited by a `proto(n30 …)` commit body: `wt/builder-1`…`wt/builder-10`
   (round-1 variants, removed from the tree), `wt/builder-11` + `wt/builder-11-r2` (integrated page),
   `wt/builder-12` + `wt/builder-12-r2` (combined graph).
+- Graph overhaul PROTOTYPE variant branches, each cited by the `proto(graph g1)` commit body:
+  `wt/builder-13`…`wt/builder-27`, one per variant in `prototype/graph-overhaul/variants/`.
 - MAIN's units landed from branches, each cited by its landing commit: `wip/n1-palette`
   `c774baf`, `wip/n2-replay` `60a74c4`, `wip/n3-mutate-timeout` `2235854`, `wip/n4-artifacts`
   `49b1143`, `wip/n5-inventory` `ee0f5b2`, `wip/n9-comparison` `3cf1d13`, `wip/n11-copy-sweep`

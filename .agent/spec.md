@@ -48,13 +48,17 @@ questions by deterministic Prolog execution.
   the record's terms (`app/guards.ts`); the graph projects from `generated/records.json`; every
   added string is English-only.
 - `prototype/graph-overhaul/` — the graph overhaul's PROTOTYPE variants (disposable; outside the
-  build, eslint and prettier; retires at the overhaul's IMPLEMENT close). `node
+  build, eslint and prettier; retires at the overhaul's IMPLEMENT close). `pnpm kb:build && node
   prototype/graph-overhaul/derive.mjs && pnpm dev`, then `/prototype/graph-overhaul/` (contact sheet)
   and `/prototype/graph-overhaul/variants/<id>/`. Smoke: `node prototype/graph-overhaul/capture.mjs
   <dir> [id ...]` drives every variant through `#overview`, `#trace=<question>`,
   `#rule=<document>:<sentence>` and `#explore=<text>` — all four at 1280 px light and 375 px light,
   `#overview` + `#trace` at 1280 px dark — against the running dev server (`PROTO_ORIGIN`), exit 1 naming each state that never rendered, overflowed or
-  logged an error. Prototype shortcuts, each owed a real implementation: every variant reads
+  logged an error; `node prototype/graph-overhaul/capture.mjs prototype/graph-overhaul/generated/shots`
+  regenerates every screenshot. Finalists (MAIN screening + navigator-3): `c02-provenance-layers`
+  (trace), `c10-outline-ego` (explore + explain), `c08-clinical-triples` (explain), `c05-matrix`
+  (shape), `u01-transit-map` (shape), `u03-page-canvas` (trace to the page); the other nine stay on
+  the contact page until the user's pick. Prototype shortcuts, each owed a real implementation: every variant reads
   `generated/guideline.json`, derived offline from the bag (answer statements from the clinical
   layer's JavaScript assembly, never a live Prolog run); sentence condition/conclusion splits are a
   text heuristic over the ACE (`derive.mjs` `split`); the four clinical areas are hard-coded from
