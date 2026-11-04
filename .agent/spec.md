@@ -269,7 +269,8 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   rule's logic. Every graph ruling above — the concept-first projection, polarity as edge state,
   Cytoscape, the zoom floor, wrapped labels, n30's hub + edge state — may be replaced, chosen by
   variants the user compares; Intent alone binds. It runs as its own PROTOTYPE scope once n30's
-  ITERATE closes, and n30's graph projection lands inside whichever graph it picks.
+  ITERATE closes, and n30's graph projection lands inside whichever graph it picks; n30's
+  IMPLEMENT stays suspended until that pick (user ruling).
 
 **MAIN:** the marks are ONE compiled goal per question, `clinical_marks/3` at the end of
 `PROOF_SOURCE`: it reads the grade, qualifier, preference, interval and order heads out of
@@ -328,28 +329,44 @@ worker before its caller resumes (`chat-c2.md`).
   141.9 s on the i7-8650U from a load near 1.3 (T11 86.9 s, P4 50.9 s).
 - [ ] n30 IMPLEMENT: build the n30 `Decisions` (struck group + unstruck-when-derived, exclusion line on
   every answer, three supersession surfaces, page-wide evaluation date, the graph projection) under
-  full Engineering law; the `Phase` request's Accept binds (`tests/graph-annotations.test.ts` A1
+  full Engineering law; its request's Accept binds (`tests/graph-annotations.test.ts` A1
   without its evaluation-date exemption, the panel naming a superseded statement + its source, live
   review owed). The prototype's shortcuts each owe a real design: the date as explicit run context
   threaded through the answer, marks and proof goals (never `snapshot/1` or a dynamic
   `clinical_context/3`), the proof cache keyed by date, date input validated at the engine API,
   answers streamed under a date, the condition grammar replaced by a reviewed realizer, every new
-  string in both catalogs. `prototype/scope-guards/` retires at the close. Waits on the graph
-  overhaul's PROTOTYPE pick, inside which the graph projection lands.
+  string in both catalogs. `prototype/scope-guards/` retires at the close. Suspended behind the
+  graph overhaul's PROTOTYPE pick, inside which the graph projection lands.
+  - Request (user, verbatim): **Scope exclusions and superseded statements do not surface** — the
+    graph projects no `guideline_exclusion/1` or `guideline_supersession/4` record and no guard
+    (`tools/kb/graph.mjs` `UNPROJECTED`, the evaluation-date comparison skipped), and the answer
+    panel never says that a statement is guarded or superseded; the ladder shows the scope guard as
+    a negation step alone. Accept: the graph projects each exclusion and supersession record under
+    the meaning ruling, the guard conditions included, graded by `tests/graph-annotations.test.ts`
+    A1 without its evaluation-date exemption, and the answer panel names a superseded statement
+    and its source, its live review owed. `pri` low. **User ruling**: carry the semantics through,
+    queue the surfacing.
+  - Resume = orientation from its first step: the interpretation `navigator`s were stopped at the
+    route with nothing kept, so they read the `Decisions` the overhaul leaves. The chat-goal date
+    is the hardest shortcut: the read-only allowlist admits `clinical_advice/3,4`,
+    `clinical_context/3` and `clinical_derive/4` to model goals, so the page binds the date outside
+    the model's text — a `Decisions` ruling before the first date unit, holding the card's goal
+    reproducing its run (date included), the proof cache keyed by date and a model write still
+    refused. The `high` queue row cites `prototype/scope-guards/app/chat-guide.md`: its text lands
+    in the chat unit, or the draft moves and the row re-cites it, before the prototype retires.
 - [ ] owed (user): paste the PROTOTYPE body for the graph overhaul (`Decisions` "The graph gets a
-  complete overhaul") — routed ahead of n30's IMPLEMENT (user ruling).
+  complete overhaul") — `Phase` routes to it (user ruling at the n30 IMPLEMENT paste).
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
 
-IMPLEMENT — scope exclusions and superseded statements, surfaced in the graph and the answer panel
-> - **Scope exclusions and superseded statements do not surface** — the graph projects no
->   `guideline_exclusion/1` or `guideline_supersession/4` record and no guard
->   (`tools/kb/graph.mjs` `UNPROJECTED`, the evaluation-date comparison skipped), and the answer
->   panel never says that a statement is guarded or superseded; the ladder shows the scope guard as
->   a negation step alone. Accept: the graph projects each exclusion and supersession record under
->   the meaning ruling, the guard conditions included, graded by `tests/graph-annotations.test.ts`
->   A1 without its evaluation-date exemption, and the answer panel names a superseded statement
->   and its source, its live review owed. `pri` low. **User ruling**: carry the semantics through,
->   queue the surfacing.
+PROTOTYPE — the graph overhaul
+> I actually would like to completely overhaul the graphs in general.
+> What is wrong with the graph today: Looks generic, Unclear purpose, "Also potentially wrong
+> model, I'm not sure."
+> What the overhauled graph mainly lets a reader do: Trace an answer, Explore the KB, See
+> guideline shape, Explain one rule
+> How far the overhaul may go: Everything open
+> Against n30: Close n30, then graph; at the n30 IMPLEMENT paste: Route to graph PROTOTYPE now
+Suspended: IMPLEMENT — scope exclusions and superseded statements, surfaced in the graph and the answer panel
 Suspended: MAINTAIN — the whole product, free-text intake and answer-panel annotations folded in
