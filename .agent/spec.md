@@ -47,6 +47,18 @@ questions by deterministic Prolog execution.
   is a recorded turn, not the live bridge; condition sentences come from a hand-built grammar over
   the record's terms (`app/guards.ts`); the graph projects from `generated/records.json`; every
   added string is English-only.
+- `prototype/graph-overhaul/` — the graph overhaul's PROTOTYPE variants (disposable; outside the
+  build, eslint and prettier; retires at the overhaul's IMPLEMENT close). `node
+  prototype/graph-overhaul/derive.mjs && pnpm dev`, then `/prototype/graph-overhaul/` (contact sheet)
+  and `/prototype/graph-overhaul/variants/<id>/`. Smoke: `node prototype/graph-overhaul/capture.mjs
+  <dir> [id ...]` drives every variant through `#overview`, `#trace=<question>`,
+  `#rule=<document>:<sentence>` and `#explore=<text>` at 1280 + 375 px, light + dark, against the
+  running dev server (`PROTO_ORIGIN`), exit 1 naming each state that never rendered, overflowed or
+  logged an error. Prototype shortcuts, each owed a real implementation: every variant reads
+  `generated/guideline.json`, derived offline from the bag (answer statements from the clinical
+  layer's JavaScript assembly, never a live Prolog run); sentence condition/conclusion splits are a
+  text heuristic over the ACE (`derive.mjs` `split`); the four clinical areas are hard-coded from
+  the guideline PDF's BOX 3 (`shared/data.ts` `AREAS`); every string is English-only.
 
 ## Decisions
 
@@ -294,6 +306,12 @@ chain aborts it under a 64 MB stack, because atoms sit outside `stack_limit` —
 guard excludes every atom builder (`chat-c1.md`), and a trap that gets through retires the
 worker before its caller resumes (`chat-c2.md`).
 
+**MAIN (graph overhaul PROTOTYPE):** variants add no package — Svelte 5, Cytoscape + fcose,
+PDF.js and hand-written SVG/canvas only, so the lockfile, `audit:check` and every gate stay
+untouched by disposable code. Each variant reads one shared seam (`shared/data.ts`) and answers the
+same four hash states, so the user compares premises on equal data and `capture.mjs` grades every
+variant alike.
+
 ## Tasks
 
 - [ ] owed (user): live review of the answer panel's facts rows (ann-u3 `35d2c9c`,
@@ -354,8 +372,15 @@ worker before its caller resumes (`chat-c2.md`).
     reproducing its run (date included), the proof cache keyed by date and a model write still
     refused. The `high` queue row cites `prototype/scope-guards/app/chat-guide.md`: its text lands
     in the chat unit, or the draft moves and the row re-cites it, before the prototype retires.
-- [ ] owed (user): paste the PROTOTYPE body for the graph overhaul (`Decisions` "The graph gets a
-  complete overhaul") — `Phase` routes to it (user ruling at the n30 IMPLEMENT paste).
+- [ ] g0 graph-overhaul seam: `derive.mjs` → `generated/guideline.json`, `shared/data.ts` (types,
+  index helpers, hash harness), `capture.mjs`, `template/` — every variant starts from it.
+- [ ] g1 variant fan-out: 15 variants (`.agent/contracts/graph-overhaul-variants.md`), one builder
+  each; `capture.mjs` green per variant; contact sheet; MAIN screening against `Intent`;
+  `navigator` before the showing.
+- [ ] g2 contact page `prototype/graph-overhaul/index.html`: every variant, its premise, its model
+  (node + edge), its overview screenshot.
+- [ ] g3 close: review on fixed lenses, unfixed rows → `.agent/deferred.md`, `Phase: ITERATE — the
+  graph overhaul`.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
