@@ -40,7 +40,7 @@
 </nav></details></aside>
 <main><div class="crumb"><button onclick={() => go({view:'overview'})}>Guideline</button><span>/</span>{#if doc}<span>Recommendation {doc.rec ?? 'scope'}</span><span>/</span><span>{docLabel(doc)}</span>{:else}<span>{state.view}</span>{/if}</div>
 <div class="tabs"><button class:active={state.view === 'overview'} onclick={() => go({view:'overview'})}>Shape of the guideline</button><details class="question-menu"><summary>Trace an answer</summary><div>{#each g.questions as q}<button onclick={() => go({view:'trace',question:q.id})}>{q.question}</button>{/each}</div></details></div>
-<p class="notice">{g.derivation}</p><p class="notice">Outline nodes contain source records. Local graph edges show rules, mentions, sibling documents and answer citations.</p>
+<p class="notice">{g.derivation} The four clinical areas are the guideline PDF's own headings (BOX 3, page 13); the knowledge base holds no area record.</p><p class="notice">Outline nodes contain source records. Local graph edges show rules, mentions, sibling documents and answer citations.</p>
 {#if notFound}<h1>Selection not found</h1><p>Choose a sentence from the guideline outline.</p>
 {:else if state.view === 'overview'}
 <h1>A whole guideline. One local view.</h1><p class="lede">Open an area, then a recommendation. Select a sentence to inspect its immediate connections.</p>

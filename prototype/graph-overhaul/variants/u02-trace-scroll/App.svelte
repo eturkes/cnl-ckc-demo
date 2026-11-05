@@ -44,7 +44,7 @@
   {:else if !g || !ix}<h1>Opening the evidence scroll…</h1>
   {:else}
     <div class="intro"><p class="edition">CDC opioid prescribing guideline, 2022</p><h1>{state.view==='overview'?'Follow the evidence.':state.view==='trace'?'An answer, unrolled.':state.view==='rule'?'Read the rule in context.':'Find a thread.'}</h1><p class="lede">Read down from a statement to the words that support it. No canvas. No hidden trail.</p></div>
-    <aside class="notice">Prototype. {g.derivation}</aside>
+    <aside class="notice">Prototype. {g.derivation} The four clinical areas are the guideline PDF's own headings (BOX 3, page 13); the knowledge base holds no area record.</aside>
     <p class="legend"><span class="sample" aria-hidden="true"></span>Nodes are readable evidence blocks. Solid threads connect statement, sentence, passage and page. Margin links mean shared concepts, not inference.</p>
     {#if state.view==='overview'}
       <section class="overview-title"><h2>The shape of the guideline</h2><p>{g.recommendations.length} recommendations in four clinical areas. Follow a margin thread to related reading, or open a sentence to inspect its logic.</p></section>

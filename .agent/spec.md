@@ -55,10 +55,9 @@ questions by deterministic Prolog execution.
   `#rule=<document>:<sentence>` and `#explore=<text>` — all four at 1280 px light and 375 px light,
   `#overview` + `#trace` at 1280 px dark — against the running dev server (`PROTO_ORIGIN`), exit 1 naming each state that never rendered, overflowed or
   logged an error; `node prototype/graph-overhaul/capture.mjs prototype/graph-overhaul/generated/shots`
-  regenerates every screenshot. Finalists (MAIN screening + navigator-3): `c02-provenance-layers`
-  (trace), `c10-outline-ego` (explore + explain), `c08-clinical-triples` (explain), `c05-matrix`
-  (shape), `u01-transit-map` (shape), `u03-page-canvas` (trace to the page); the other nine stay on
-  the contact page until the user's pick. Prototype shortcuts, each owed a real implementation: every variant reads
+  regenerates every screenshot. The user's PROTOTYPE pick = `c04-concept-network`'s form,
+  retargeted to clinical relationships (`Decisions`); the six screened finalists (`c02`, `c10`, `c08`,
+  `c05`, `u01`, `u03`) and the rest stay as reference until ITERATE round 1. Prototype shortcuts, each owed a real implementation: every variant reads
   `generated/guideline.json`, derived offline from the bag (answer statements from the clinical
   layer's JavaScript assembly, never a live Prolog run); sentence condition/conclusion splits are a
   text heuristic over the ACE (`derive.mjs` `split`); the four clinical areas are hard-coded from
@@ -287,6 +286,18 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   variants the user compares; Intent alone binds. It runs as its own PROTOTYPE scope once n30's
   ITERATE closes, and n30's graph projection lands inside whichever graph it picks; n30's
   IMPLEMENT stays suspended until that pick (user ruling).
+- **The overhauled graph is a clinical concept network.** The PROTOTYPE pick: the network form of
+  the concept-network variant (`c04`), tailored to help a reader understand clinical relationships,
+  never how `cnl-ckc` handles linguistics. The verbs leave the nodes and label the edges. Its
+  rulings (user, at the PROTOTYPE close):
+  - **Node = a clinical concept**: the patient's situation (`acute pain`) and the thing acted on
+    (`opioid therapy`). The rest of a rule's condition rides on the edge, so nothing is dropped:
+    `acute pain` —should not consider, when the benefit does not outweigh the risk→ `opioid
+    therapy` (rec 1 S5). A compound condition is never flattened into one edge per concept.
+  - **Scope = the 12 recommendations first**: the 58 rules the KB parses clinically (condition,
+    actor, modal, actions); implementation notes link in as sources.
+  - **Vocabulary = the KB's own terms, readable** (hyphens dropped), coloured by node kind; no
+    grouping the KB does not state.
 
 **MAIN:** the marks are ONE compiled goal per question, `clinical_marks/3` at the end of
 `PROOF_SOURCE`: it reads the grade, qualifier, preference, interval and order heads out of
@@ -376,20 +387,21 @@ variant alike.
     reproducing its run (date included), the proof cache keyed by date and a model write still
     refused. The `high` queue row cites `prototype/scope-guards/app/chat-guide.md`: its text lands
     in the chat unit, or the draft moves and the row re-cites it, before the prototype retires.
-- [x] 6a4f567 g0 graph-overhaul seam: `derive.mjs` → `generated/guideline.json`, `shared/data.ts` (types,
-  index helpers, hash harness), `capture.mjs`, `template/` — every variant starts from it.
-- [ ] g1 variant fan-out: 15 variants (`.agent/contracts/graph-overhaul-variants.md`), one builder
-  each; `capture.mjs` green per variant; contact sheet; MAIN screening against `Intent`;
-  `navigator` before the showing.
-- [ ] g2 contact page `prototype/graph-overhaul/index.html`: every variant, its premise, its model
-  (node + edge), its overview screenshot.
-- [ ] g3 close: review on fixed lenses, unfixed rows → `.agent/deferred.md`, `Phase: ITERATE — the
-  graph overhaul`.
+- [ ] owed (user): paste the ITERATE body for the graph overhaul.
+- [ ] i1 clinical concept network: a new variant at `prototype/graph-overhaul/variants/` built from
+  `c04`'s form under the clinical-network rulings (`Decisions`), serving all four jobs on one
+  network — trace (an answer's statements light their edges, each opening its sentence + page),
+  explore, shape, explain (an edge opens its whole rule, condition verbatim). Edges come from the
+  58 rules' clinical parse alone; a copula sentence (`X is preferred for Y`) keeps its subject.
+  Acceptance: `capture.mjs` 10/10; its node fills graded for palette safety (`CLAUDE.md`
+  `Execution`; c04's 12-community palette was never graded); the user's round-1 review.
+  - The other 15 variants stay on the contact page as reference until i1's review; the user's
+    ruling there retires them.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
 
-PROTOTYPE — the graph overhaul
+ITERATE — the graph overhaul
 > I actually would like to completely overhaul the graphs in general.
 > What is wrong with the graph today: Looks generic, Unclear purpose, "Also potentially wrong
 > model, I'm not sure."
