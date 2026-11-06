@@ -93,6 +93,29 @@ export interface Concept {
   mentions: string[];
 }
 
+/** A clinical concept of the i1 network (`network.mjs`): a situation a rule anchors on or a thing acted on. */
+export interface NetworkNode {
+  id: string;
+  label: string;
+  roles: ('situation' | 'acted-on' | 'subject')[];
+  /** `<document>:<sentence>` keys of the rules it takes part in. */
+  rules: string[];
+}
+
+/** One action of one clinical rule: source —verb→ target, the rest of the condition in `when`. */
+export interface NetworkEdge {
+  id: string;
+  rule: string;
+  rec: number | null;
+  source: string;
+  target: string;
+  verb: string;
+  detail: string;
+  when: string[];
+  modal: Modal;
+  negative: boolean;
+}
+
 export interface Guideline {
   bag: string;
   derivation: string;
@@ -104,6 +127,7 @@ export interface Guideline {
   exclusions: Exclusion[];
   supersessions: Supersession[];
   concepts: Concept[];
+  network: { nodes: NetworkNode[]; edges: NetworkEdge[] };
   counts: Record<string, number>;
 }
 

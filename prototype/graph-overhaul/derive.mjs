@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 import { verifyBag } from '../../tools/kb/bag.mjs';
 import { clinicalArtifacts } from '../../tools/kb/clinical.mjs';
+import { clinicalNetwork } from './network.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '../..');
@@ -122,6 +123,7 @@ const out = {
   exclusions: records.exclusions.map(({ body: _body, ...rest }) => rest),
   supersessions: records.supersessions,
   concepts,
+  network: clinicalNetwork([...rules.values()], new Map(documents.map((d) => [d.id, d]))),
   counts: {
     documents: documents.length,
     recommendations: recommendations.length,

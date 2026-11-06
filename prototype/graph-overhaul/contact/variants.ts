@@ -4,12 +4,15 @@ export interface Variant {
   id: string;
   title: string;
   unconventional: boolean;
+  /** ITERATE round that built it; absent = a PROTOTYPE reference form. */
+  round?: number;
   premise: string;
   node: string;
   edge: string;
 }
 
 export const VARIANTS: Variant[] = [
+  { id: 'i1-clinical-network', title: 'Clinical network, force layout', unconventional: false, round: 1, premise: 'c04’s network form retargeted: clinical concepts joined by what the recommendations tell clinicians to do, laid out by force.', node: 'clinical concept: a patient situation or what a clinician acts on', edge: 'one action of one rule, labelled modal + verb; the rest of the condition rides on it' },
   { id: 'c01-rec-hub', title: 'Recommendation hub map', unconventional: false, premise: 'Twelve recommendations as hubs, their documents around them, links where they share clinical concepts.', node: 'recommendation hub, sized by its documents; document in orbit', edge: 'hubs share clinical concepts (weighted); document belongs to hub' },
   { id: 'c02-provenance-layers', title: 'Provenance layers', unconventional: false, premise: 'Question → statement → rule → sentence → document → page, in columns.', node: 'question, statement, rule, sentence, document, PDF page', edge: 'ordered provenance link, never a claim that a rule fired' },
   { id: 'c03-rule-flowchart', title: 'Rule flowchart', unconventional: false, premise: 'Each rule drawn as conditions → modal gate → actions, with guard boxes for exclusions.', node: 'condition group, modal gate, action', edge: 'prerequisite → modality → consequence' },
