@@ -38,8 +38,15 @@
   const nodes = $derived(new Map((g?.network.nodes ?? []).map((n) => [n.id, n])));
   const edges = $derived(g?.network.edges ?? []);
   const label = (id: string) => nodes.get(id)?.label ?? id;
-  const kind = (n: NetworkNode) =>
-    n.roles.includes('situation') ? (n.roles.length > 1 ? 'both' : 'situation') : 'acted-on';
+  /** One fill per projected role; a node holding two roles says so instead of picking one. */
+  const kind = (n: NetworkNode) => (n.roles.length > 1 ? 'several' : n.roles[0] ?? 'acted-on');
+  const KIND_TEXT = {
+    situation: 'A patient situation',
+    'acted-on': 'Something clinicians act on',
+    subject: 'The subject of a statement of fact or capability',
+    several: 'A concept with several roles',
+  } as const;
+  const ROLE_TEXT = { situation: 'patient situation', 'acted-on': 'acted on by clinicians', subject: 'subject of a statement' } as const;
   const ruleKey = (document: string, sentence: number) => `${document}:${String(sentence)}`;
 
   const question = $derived(view.view === 'trace' ? g?.questions.find((q) => q.id === view.question) : undefined);
@@ -63,7 +70,9 @@
     if (focus !== undefined) return edges.filter((e) => e.source === focus.id || e.target === focus.id);
     return [];
   });
-  const outgoing = $derived(focus === undefined ? [] : edges.filter((e) => e.source === focus.id));
+  const outgoing = $derived(focus === undefined ? [] : edges.filter((e) => e.source === focus.id && e.modal !== 'fact' && e.modal !== 'can'));
+  /** Fact + capability sentences keep their own subject: never phrased as a clinician's action. */
+  const statements = $derived(focus === undefined ? [] : edges.filter((e) => e.source === focus.id && (e.modal === 'fact' || e.modal === 'can')));
   const incoming = $derived(focus === undefined ? [] : edges.filter((e) => e.target === focus.id && e.source !== focus.id));
   const situations = $derived(
     [...nodes.values()]
@@ -96,7 +105,7 @@
   });
 
   const token = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  const FILL = { situation: '--graph-entity', 'acted-on': '--graph-event', both: '--graph-operator' } as const;
+  const FILL = { situation: '--graph-entity', 'acted-on': '--graph-event', subject: '--graph-value', several: '--graph-operator' } as const;
 
   // Build the network once; the state only moves classes, so the layout never reshuffles under the reader.
   $effect(() => {
@@ -176,9 +185,11 @@
           { selector: 'node.faded', style: { 'text-opacity': 0.35 } },
           {
             selector: 'edge.lit',
-            style: { opacity: 1, width: 'mapData(width, 1, 6, 3, 6)', 'line-color': token('--action'), 'target-arrow-color': token('--action'), label: 'data(verb)', 'z-index': 9 },
+            style: { opacity: 1, width: 'mapData(width, 1, 6, 3, 6)', 'line-color': token('--action'), 'target-arrow-color': token('--action'), label: 'data(litVerb)', 'z-index': 9 },
           },
           { selector: 'edge.hover', style: { opacity: 1, label: 'data(verb)', 'z-index': 10 } },
+          // A hovered lit line keeps the lit relationships' label, never its group's other verbs.
+          { selector: 'edge.lit.hover', style: { label: 'data(litVerb)' } },
           { selector: 'node.focus', style: { 'border-color': token('--text'), 'border-width': 4 } },
         ],
         layout: {
@@ -186,8 +197,8 @@
           animate: false,
           randomize: false,
           quality: 'proof',
-          nodeRepulsion: () => 400000,
-          idealEdgeLength: () => 230,
+          nodeRepulsion: () => 200000,
+          idealEdgeLength: () => 190,
           edgeElasticity: () => 0.15,
           nodeSeparation: 140,
           gravity: 0.15,
@@ -202,7 +213,9 @@
       });
       core.on('tap', 'node', (ev) => openNode(ev.target.id()));
       core.on('tap', 'edge', (ev) => {
-        const group = untrack(() => lines).get(ev.target.id()) ?? [];
+        const all = untrack(() => lines).get(ev.target.id()) ?? [];
+        const litHere = untrack(() => lit).filter((e) => lineOf(e) === ev.target.id());
+        const group = litHere.length > 0 ? litHere : all;
         const rules = [...new Set(group.map((e) => e.rule))];
         // One rule → read it whole; several → the source concept lists each of them.
         if (rules.length === 1) openRule(rules[0]);
@@ -222,10 +235,16 @@
   $effect(() => {
     const core = cy;
     const litIds = new Set(lit.map(lineOf));
+    const litEdges = new Set(lit.map((e) => e.id));
     const focusId = focus?.id;
     if (core === undefined || g === null) return;
     core.batch(() => {
       core.elements().removeClass('lit faded focus');
+      // A lit line names only the lit relationships: a shared line never lends another rule's verb.
+      for (const [id, group] of lines) {
+        const own = group.filter((e) => litEdges.has(e.id));
+        if (own.length > 0) core.getElementById(id).data('litVerb', [...new Set(own.map((e) => e.verb))].join(' / '));
+      }
       if (litIds.size > 0 || focusId !== undefined) {
         const on = core.edges().filter((e) => litIds.has(e.id()));
         const ends = on.connectedNodes();
@@ -241,6 +260,9 @@
       core.zoom(1.1);
       core.center(frame.length > 0 ? frame : undefined);
     }
+    // Labels live in model units: hold them near 12 px on screen whatever the fit zoom.
+    const px = (n: number) => Math.max(n, n * (0.85 / core.zoom()));
+    core.style().selector('node').style({ 'font-size': px(14), 'text-max-width': `${String(px(130))}px`, 'text-outline-width': px(3) }).selector('edge').style({ 'font-size': px(13), 'text-max-width': `${String(px(160))}px` }).update();
     void tick().then(markReady);
   });
 </script>
@@ -299,12 +321,13 @@
         <div class="legend">
           <span><i class="dot situation"></i>Patient situation</span>
           <span><i class="dot acted-on"></i>What the clinician acts on</span>
-          <span><i class="dot both"></i>Both</span>
+          <span><i class="dot subject"></i>Subject of a statement</span>
+          <span><i class="dot several"></i>Several roles</span>
           <span><i class="line"></i>Should, can</span>
           <span><i class="line dashed"></i>Should not</span>
           <span><i class="line dotted"></i>Statement of fact</span>
         </div>
-        <p class="note">Each line is one action of one recommendation sentence, read as situation → action → what it acts on. Select a line to read its whole rule; select a concept to see every relationship it takes part in.</p>
+        <p class="note">Each line joins a situation to what clinicians act on in it, and is labelled with what the recommendations say, one or more rules per line. Select a line to read its rule, or the rules behind it; select a concept to see every relationship it takes part in.</p>
       </section>
 
       <aside>
@@ -337,7 +360,7 @@
             <p class="note">Recommendation {doc?.rec ?? '—'}, sentence {view.sentence}</p>
             {#if rule}
               <dl>
-                <dt>Condition</dt><dd>{rule.condition?.replaceAll('-', ' ') ?? 'None: the rule applies without a condition.'}</dd>
+                <dt>Condition</dt><dd>{rule.condition?.replaceAll('-', ' ') ?? 'No condition stated in this sentence. The guideline’s scope exclusions still apply.'}</dd>
                 <dt>Who acts</dt><dd>{rule.subject.replaceAll('-', ' ')}</dd>
                 <dt>Strength</dt><dd>{rule.mode === 'fact' ? 'Statement of fact' : rule.mode}</dd>
                 <dt>In the network</dt>
@@ -364,7 +387,7 @@
         {:else if view.view === 'explore'}
           {#if focus}
             <h2>{focus.label}</h2>
-            <p class="note">{kind(focus) === 'situation' ? 'A patient situation' : kind(focus) === 'both' ? 'A patient situation and something clinicians act on' : 'Something clinicians act on'}, in {focus.rules.length} recommendation sentences.</p>
+            <p class="note">{KIND_TEXT[kind(focus)]}{kind(focus) === 'several' ? ` (${focus.roles.map((x) => ROLE_TEXT[x]).join(', ')})` : ''}, in {focus.rules.length} recommendation sentences.</p>
             {#if matches.length > 1}
               <details>
                 <summary>{matches.length} concepts match “{view.query}”</summary>
@@ -375,8 +398,12 @@
               <h3>In this situation, clinicians</h3>
               {#each outgoing as e (e.id)}<div class="item">{@render relation(e, false)}<button class="link" onclick={() => openRule(e.rule)}>Read the rule</button></div>{/each}
             {/if}
+            {#if statements.length > 0}
+              <h3>What the guideline states about it</h3>
+              {#each statements as e (e.id)}<div class="item">{@render relation(e)}<button class="link" onclick={() => openRule(e.rule)}>Read the sentence</button></div>{/each}
+            {/if}
             {#if incoming.length > 0}
-              <h3>Recommendations that act on it</h3>
+              <h3>Relationships that lead to it</h3>
               {#each incoming as e (e.id)}<div class="item">{@render relation(e)}<button class="link" onclick={() => openRule(e.rule)}>Read the rule</button></div>{/each}
             {/if}
           {:else}
@@ -447,13 +474,14 @@
   input { width: 100%; min-width: 0; }
   .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 24px; }
   .network { min-width: 0; border: 1px solid var(--border); background: var(--surface-raised); }
-  .canvas { height: 640px; width: 100%; }
+  .canvas { height: 720px; width: 100%; }
   .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 10px 16px; font-size: 13px; border-top: 1px solid var(--border); }
   .legend span { display: inline-flex; align-items: center; gap: 6px; }
   .dot { width: 12px; height: 12px; border-radius: 50%; }
   .dot.situation { background: var(--graph-entity); }
   .dot.acted-on { background: var(--graph-event); }
-  .dot.both { background: var(--graph-operator); }
+  .dot.subject { background: var(--graph-value); }
+  .dot.several { background: var(--graph-operator); }
   .line { width: 26px; border-top: 2px solid var(--text-muted); }
   .line.dashed { border-top-style: dashed; }
   .line.dotted { border-top-style: dotted; }

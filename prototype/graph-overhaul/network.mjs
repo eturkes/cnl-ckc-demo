@@ -60,7 +60,9 @@ const verbPhrase = (rule, action) => {
   const modal = rule.mode === 'fact' ? '' : rule.mode === 'can' ? 'can ' : `${rule.mode} `;
   const not = action.polarity === 'negative' ? (rule.mode === 'fact' ? 'does not ' : 'not ') : '';
   const adverb = /\s(cautiously)$/u.exec(action.object)?.[1];
-  return `${modal}${not}${action.verb}${adverb === undefined ? '' : ` ${adverb}`}`;
+  // Qualifiers carry the advice: `should not abruptly discontinue` ≠ `should not discontinue`.
+  const quals = action.qualifiers.filter((q) => typeof q === 'string').map((q) => `${q} `).join('');
+  return `${modal}${not}${quals}${action.verb}${adverb === undefined ? '' : ` ${adverb}`}`;
 };
 
 export const clinicalNetwork = (rules, docs) => {
@@ -99,7 +101,8 @@ export const clinicalNetwork = (rules, docs) => {
         const value = adverb === undefined ? m.value : m.value.slice(0, -adverb.length - 1);
         const prev = modifiers.at(-1);
         if (m.preposition === 'of' && prev !== undefined) prev.value = `${prev.value} of ${value}`;
-        else if (term(value) !== source) modifiers.push({ preposition: m.preposition, value });
+        // Only `for <anchor>` repeats the source node; `before`/`during <anchor>` keeps its timing.
+        else if (!(m.preposition === 'for' && term(value) === source)) modifiers.push({ preposition: m.preposition, value });
       }
       // `assess the patient for X` / `work with the patient`: the clinical target is X / the patient.
       if (target === 'patient' && modifiers[0] !== undefined && modifiers[0].preposition === 'for') {

@@ -60,6 +60,8 @@ repo's deltas.
   `wt/builder-12` + `wt/builder-12-r2` (combined graph).
 - Graph overhaul PROTOTYPE variant branches, each cited by the `proto(graph g1)` commit body:
   `wt/builder-13`…`wt/builder-27`, one per variant in `prototype/graph-overhaul/variants/`.
+- Graph overhaul ITERATE round-1 layout branches, each cited by the `proto(graph r1)` commit body:
+  `wt/builder-28` `0d7c7a3` (i2), `wt/builder-29` `de6052f` (i3).
 - MAIN's units landed from branches, each cited by its landing commit: `wip/n1-palette`
   `c774baf`, `wip/n2-replay` `60a74c4`, `wip/n3-mutate-timeout` `2235854`, `wip/n4-artifacts`
   `49b1143`, `wip/n5-inventory` `ee0f5b2`, `wip/n9-comparison` `3cf1d13`, `wip/n11-copy-sweep`

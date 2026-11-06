@@ -35,7 +35,7 @@ questions by deterministic Prolog execution.
   `kb/release.json`, and the upstream sources the provenance port cites, at the tag's commit.
   `pnpm kb:fetch <tag>` vendors a release; `pnpm kb:fetch --verify` re-checks it.
 - `prototype/scope-guards/` — n30's approved ITERATE prototype (disposable; outside the build,
-  eslint and prettier; retires at n30's IMPLEMENT close). `node prototype/scope-guards/derive.mjs
+  eslint and prettier; retires at n30's IMPLEMENT close). `pnpm kb:build && node prototype/scope-guards/derive.mjs
   && pnpm dev`, then `/prototype/scope-guards/app/`: the shipped demo with the struck group and
   exclusion line on every answer, the page-wide evaluation date, corpus marks, a recorded chat
   replay whose goals run live, and the hub + edge-state graph (`app/graph/`, alone at
@@ -56,11 +56,14 @@ questions by deterministic Prolog execution.
   `#overview` + `#trace` at 1280 px dark — against the running dev server (`PROTO_ORIGIN`), exit 1 naming each state that never rendered, overflowed or
   logged an error; `node prototype/graph-overhaul/capture.mjs prototype/graph-overhaul/generated/shots`
   regenerates every screenshot. The user's PROTOTYPE pick = `c04-concept-network`'s form,
-  retargeted to clinical relationships (`Decisions`); the six screened finalists (`c02`, `c10`, `c08`,
-  `c05`, `u01`, `u03`) and the rest stay as reference until ITERATE round 1. Prototype shortcuts, each owed a real implementation: every variant reads
+  retargeted to clinical relationships (`Decisions`); ITERATE's variants `i1`…`i3` (contact page
+  group "Round 1") draw it over one edge model, `network.mjs` → `guideline.json` `.network`; the
+  fifteen PROTOTYPE variants stay as reference until the user's round-1 ruling. Prototype shortcuts, each owed a real implementation: every variant reads
   `generated/guideline.json`, derived offline from the bag (answer statements from the clinical
   layer's JavaScript assembly, never a live Prolog run); sentence condition/conclusion splits are a
-  text heuristic over the ACE (`derive.mjs` `split`); the four clinical areas are hard-coded from
+  text heuristic over the ACE (`derive.mjs` `split`); which concept anchors a clinical rule, and
+  which condition clauses ride its edge, are regex readings of the clinical layer's condition
+  string, never the KB's own structure (`network.mjs` `ANCHORS`); the four clinical areas are hard-coded from
   the guideline PDF's BOX 3 (`shared/data.ts` `AREAS`); every string is English-only.
 
 ## Decisions
@@ -387,7 +390,11 @@ variant alike.
     reproducing its run (date included), the proof cache keyed by date and a model write still
     refused. The `high` queue row cites `prototype/scope-guards/app/chat-guide.md`: its text lands
     in the chat unit, or the draft moves and the row re-cites it, before the prototype retires.
-- [ ] owed (user): paste the ITERATE body for the graph overhaul.
+- [x] 8797da9 i1 seam: `network.mjs` projects the 58 rules → 55 concepts, 95 relationships
+  (`guideline.json` `.network`); i1 force-layout view.
+- [ ] r1 layout spread (`.agent/contracts/graph-iterate-r1.md`): `i2-situation-columns`
+  (builder-28), `i3-situation-rings` (builder-29), each `capture.mjs` 10/10; `navigator-4` on the
+  edge model; contact page round group; showing → the user's round-1 review.
 - [ ] i1 clinical concept network: a new variant at `prototype/graph-overhaul/variants/` built from
   `c04`'s form under the clinical-network rulings (`Decisions`), serving all four jobs on one
   network — trace (an answer's statements light their edges, each opening its sentence + page),
