@@ -5,6 +5,7 @@
   const theme = new URLSearchParams(location.search).get('theme') === 'dark' ? 'dark' : 'light';
   const href = (id: string, hash = '#overview') => `./variants/${id}/?theme=${theme}${hash}`;
   const groups = [
+    { label: 'Round 2: what the network shows', items: VARIANTS.filter((v) => v.round === 2) },
     { label: 'Round 1: the clinical network', items: VARIANTS.filter((v) => v.round === 1) },
     { label: 'Reference: conventional forms', items: VARIANTS.filter((v) => v.round === undefined && !v.unconventional) },
     { label: 'Reference: unconventional forms', items: VARIANTS.filter((v) => v.round === undefined && v.unconventional) },

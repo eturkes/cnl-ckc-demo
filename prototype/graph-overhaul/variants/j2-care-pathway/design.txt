@@ -1,0 +1,20 @@
+premise = care-event spine, with positive action→condition lexical hand-offs; never an invented KB treatment algorithm.
+form = reading-ordered event-node network above an optional recommendation-node audit map; mobile = vertical care-step spine; supporting rules read beside / below it.
+node = primary: unique actor + verb + object phrases mechanically matched in rule conditions (`clinician|patient` × `considers|starts|prescribes|continues|changes|receives|has`, object contains opioid or dosage-increase); each attaches every matching rule whole. Secondary: the 12 recommendation records; unmatched recommendations stay visible.
+edge = positive should/may/must action A whose article/adverb-stripped object and regular third-person verb occur together as a positive phrase in another recommendation's condition B; aggregate at recommendation pair; event links map the first condition event in A to the matched event in B; every source/receiver rule pair retained. This matches one phrase only, never establishes the whole condition.
+model source = guideline.json recommendations + rules + network action wording; original conditions and source documents kept whole.
+hand-made: event reading order `considers → starts → prescribes → continues → receives → considers dosage-increase → changes → has`; nouns alphabetically within verb. Printed on page as prototype's reading: consider initiation → start / prescribe → continue / receive → consider dose increase / change dose → opioid use disorder. Chevrons = editorial reading order, green bordered link buttons = literal positive action→condition candidates. No synonym map, no taper condition, no claimed causal link to OUD.
+colours = document violet #696cb7, entity green #0f7558, event ochre #734300, value ink #342a36, action blue #174f9e; existing theme tokens only; dark fills inherit app.css. No added palette.
+type = Atkinson Hyperlegible Next 34/22/16/14, source prose Literata 14; panel widths bound text lines.
+wireframe =
+[Care hand-offs                 overview | trace | rule]
+[Partial pathway, not treatment algorithm             ]
+[search                                               ]
+[Events in care                     ][rule / hand-off  ]
+[consider › start › prescribe       ][conditions whole ]
+[continue › receive › change › OUD  ][source + page    ]
+[green candidate links on source event nodes          ]
+[optional: R5 ─continue─> R4 ─prescribe─> R10 / R11    ]
+[unmatched recommendations                            ]
+[scope / supersession records / full hand-off table   ]
+mobile = vertical event nodes with chevrons + positive candidate buttons; evidence follows, no shrunken desktop labels.

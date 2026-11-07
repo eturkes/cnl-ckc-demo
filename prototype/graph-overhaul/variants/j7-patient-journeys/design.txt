@@ -1,0 +1,19 @@
+premise = compare the recommendations explicitly linked to six patient situations; matching is evidence of a named situation, never a proof that all applicability conditions hold.
+form = small ego networks, one per situation; the same recommendation repeats across panels so the reader can compare patients without chasing paths across a hairball.
+node = patient-situation term matched in a rule condition or MAIN network anchor; recommendation node from that matched rule's document rec number.
+edge = situation-to-recommendation incidence, grouped by rec; every original action keeps its modality, polarity, qualifiers, detail and complete condition in the selected-edge list.
+model source = guideline.json rules + network + documents; positive named terms in the condition or network endpoint; generic receiving/continuing therapy conditions form a separate disclosed reading, not a duration inference; unmatched rules stay in a seventh panel.
+hand-made: six panel choices/order and match vocabularies: acute-pain; subacute-pain; chronic-pain; opioid-therapy/chronic-opioid-therapy with receiving/continuing context; opioid-use-disorder; benzodiazepine/central-nervous-system-depressant. Receiving/continuing opioid therapy is not asserted to be long-term. Seventh residual panel = rules without one of these explicit matches. No transitive patient applicability inferred.
+colours = entity green #0f7558; recommendation violet #696cb7; action ochre #734300; text ink #171b21; surface white #ffffff. All fills reuse theme-aware palette tokens; graph-label labels fill. No new fill set.
+type = Atkinson Hyperlegible Next: heading 34/22, network 13/14, prose 15; source condition 14; max prose width 75ch.
+wireframe =
+  Patient situations                     [shape] [trace] [one rule]
+  [search_____________________________________________________]
+  Prototype reading: named situations only; other conditions still apply
+  [acute pain ego network       ][subacute pain ego network    ]
+  [chronic pain ego network     ][receiving/continuing therapy ]
+  [OUD ego network              ][co-prescribing ego network   ]
+  [rules without a named situation / applicability not inferred]
+  [selected incidence: all supporting rules + raw conditions   ]
+  [source / relationships table / scope + supersession records  ]
+mobile = panels stack at natural width, SVG width fits viewport; detail above networks when tracing/explaining; no animation.

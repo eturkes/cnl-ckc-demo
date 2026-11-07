@@ -301,6 +301,14 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
     actor, modal, actions); implementation notes link in as sources.
   - **Vocabulary = the KB's own terms, readable** (hyphens dropped), coloured by node kind; no
     grouping the KB does not state.
+  - **Round 1 → content trial** (user, at the round-1 showing): the concept network goes forward,
+    and versions differ in WHAT it shows, focused on clinical relationships rather than linguistic
+    structure. Both readings of "between the guidelines" become versions — relationships between
+    the 12 recommendations and between clinical concepts across them. Seven versions, each in the
+    network form that suits it (user: builder's choice per version): recommendation map, care
+    pathway, treatments + tests, do vs avoid, risks + safeguards, cleaned concept net, patient
+    journeys (`.agent/contracts/graph-iterate-r2.md`). Round 1's layout, anchor, shared-term and
+    node-colour questions stay open until the user's pick among them.
 
 **MAIN:** the marks are ONE compiled goal per question, `clinical_marks/3` at the end of
 `PROOF_SOURCE`: it reads the grade, qualifier, preference, interval and order heads out of
@@ -392,18 +400,28 @@ variant alike.
     in the chat unit, or the draft moves and the row re-cites it, before the prototype retires.
 - [x] 8797da9 i1 seam: `network.mjs` projects the 58 rules → 55 concepts, 95 relationships
   (`guideline.json` `.network`); i1 force-layout view.
-- [ ] r1 layout spread (`.agent/contracts/graph-iterate-r1.md`): `i2-situation-columns`
-  (builder-28), `i3-situation-rings` (builder-29), each `capture.mjs` 10/10; `navigator-4` on the
-  edge model; contact page round group; showing → the user's round-1 review.
-- [ ] i1 clinical concept network: a new variant at `prototype/graph-overhaul/variants/` built from
-  `c04`'s form under the clinical-network rulings (`Decisions`), serving all four jobs on one
-  network — trace (an answer's statements light their edges, each opening its sentence + page),
-  explore, shape, explain (an edge opens its whole rule, condition verbatim). Edges come from the
-  58 rules' clinical parse alone; a copula sentence (`X is preferred for Y`) keeps its subject.
-  Acceptance: `capture.mjs` 10/10; its node fills graded for palette safety (`CLAUDE.md`
-  `Execution`; c04's 12-community palette was never graded); the user's round-1 review.
-  - The other 15 variants stay on the contact page as reference until i1's review; the user's
-    ruling there retires them.
+- [x] 529eb6d r1 layout spread: `i2-situation-columns` (builder-28), `i3-situation-rings`
+  (builder-29), navigator-4's edge-model + view fixes, capture 180/180; showing → the user ruled a
+  content trial (`Decisions`).
+- [ ] RESUME: finish line in force = the ITERATE body (`Phase`): rounds until the user's go, then
+  the closing review on lenses fixed before reading, `Artifacts` = the approved prototype,
+  `Phase: IMPLEMENT` committed on a clean tree. State: r2's seven versions built, harvested into
+  `prototype/graph-overhaul/variants/j1`…`j7` and committed with this row; each captured 10/10 on
+  main by MAIN, one at a time (j2's first run red on two cold-compile `goto` timeouts → green on rerun,
+  queue row "capture script reads a cold page"). Builder branches `wt/builder-30`…`36` (tips in
+  `.claude/rules/waves.md`) clean; each tip = the merged bytes. Uncommitted work: none. Not yet
+  done: the `navigator` screening of j1…j7 (reports `.scratch/agents/builder-30.md`…`36.md` name
+  each version's `hand-made:` list; watch j6 folding warning-sign examples under `opioid therapy`
+  by frequency, j5's "named in the same recommendation" links, j2's editorial step order). Next
+  action: `pnpm kb:build && node prototype/graph-overhaul/derive.mjs && pnpm dev`, rerun
+  `capture.mjs` on j1…j7, dispatch the navigator, then show the user the contact page (Round 2 group)
+  and ask for the pick, with round 1's open questions (anchor order, shared terms, node colour).
+- [ ] r2 content trial (`.agent/contracts/graph-iterate-r2.md`): seven versions `j1`…`j7`, one
+  builder each (builder-30…36), each `capture.mjs` 10/10, every edge citing the rules it rests on;
+  palette gate on any new fill; `navigator` screening before the showing; contact page group
+  Round 2; showing → the user's pick.
+  - The 15 PROTOTYPE variants and i1…i3 stay on the contact page as reference until that pick; the
+    user's ruling there retires the rest.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase

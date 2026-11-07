@@ -1,0 +1,14 @@
+Premise = risk-responsive care; primary links supported inside one clinical rule, secondary links supported by one recommendation document, including interventions advised against. A link states co-advice, stated risk increase or document association; never inferred protection.
+Form = bipartite network; risk-responsive interventions left, named risks right. Stable rows expose missing links rather than inventing them; mobile stacks a readable relation list beneath the network.
+node = exact selected clinical term occurring in rule condition, subject or action; isolated selected terms remain visible with their supporting rules.
+edge = primary/strong: selected intervention and risk occur in same clinical rule; action text retained; fact risk increases pair each action only with its own risk modifier. Secondary/pale: absent a same-rule pair, both terms occur in distinct rules of one recommendation document; label = named in the same recommendation; retain every rule on each side with its condition. The secondary edge asserts association alone, never advice transfer or prevention.
+model source = guideline.json rules + network action phrases; offline prototype, no live answer claim.
+hand-made: risks = opioid-risk, opioid-related-harm, high-overdose-risk, opioid-use-disorder, drug-use-resumption, overdose, overdose-death, life-threatening-warning, risk, testing-risk, testing-benefit (last two = tradeoffs, not harms); interventions = naloxone-dose, risk-mitigation-strategy, controlled-substance-prescription-history, toxicology-testing, evidence-based-medication-treatment, medication-free-detoxification, opioid-dosage, opioid, different-therapy. Opioid/dosage only when taper/discontinue/reduce. Terms classify this prototype's reading, never a KB taxonomy. Medication-free detoxification = intervention advised against, not safeguard.
+Colours = existing gated fills; safeguard green #0f7558, intervention ochre #734300, risk purple #792d74; text ink #171b21, selection blue #174f9e; dark token equivalents inherited.
+Type = Atkinson Hyperlegible Next; title 34, section 22, body 15, diagram 14. No animation.
+Wireframe:
+ title + mode buttons
+ prototype-reading disclosure + search
+ [ intervention nodes ] -- labelled links -- [ risk nodes ] | selected rule / answer
+ relation table; scope exclusions + supersession records
+Mobile = detail states put a bounded full-width evidence panel before the network; overview keeps the network first. Network uses contained horizontal scrolling; same data in the table.

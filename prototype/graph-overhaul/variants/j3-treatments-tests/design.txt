@@ -1,0 +1,17 @@
+premise = interventions first; distinguish a direct relationship from advice conditional on another intervention. Do not invent a treatment comparison from shared pain context.
+form = fixed intervention grid + directed links + source register; every intervention has its own readable position, including disconnected interventions. Ordering follows the disclosed prototype list and carries no care sequence.
+node = a term in HAND_MADE occurring verbatim as a token in a clinical rule's original text; label drops hyphens.
+edge = direct instead-of / with / to modifier or toxicology subject-assess-object; otherwise a condition's named intervention → action's named intervention, explicitly labelled as conditional advice; a co-action continue+optimize relation keeps both verbs.
+model source = g.rules, recommendation documents; annotations use g.exclusions + g.supersessions. All original conditions retained verbatim in supporting-rule lists. Offline prototype, never live inference.
+hand-made: nonopioid-therapy, nonpharmacologic-therapy, nonopioid-pharmacologic-therapy, opioid-therapy, opioid-prescription, opioid-therapy-initiation, immediate-release-opioid, ER-LA-opioid, lowest-effective-dosage, opioid, opioid-dosage, opioid-quantity, risk-mitigation-strategy, management-plan, naloxone-dose, controlled-substance-prescription-history, state-PDMP-record, toxicology-testing, prescribed-medication, prescribed-controlled-substance, nonprescribed-controlled-substance, opioid-pain-medication, benzodiazepine, central-nervous-system-depressant, different-therapy, lower-opioid-dosage, evidence-based-medication-treatment, medication-free-detoxification, chronic-opioid-therapy, initial-opioid-therapy, continued-opioid-therapy, opioid-initiation
+hand-made status = the page prints this exact list as the prototype's intervention reading, not KB taxonomy. Checks are represented by the records they inspect; action verbs remain on the rule list.
+colours = therapy green #0f7558 (--graph-entity); intervention ochre #734300 (--graph-event); selected blue #174f9e (--action); text ink #171b21 (--text); surface white #ffffff (--surface-raised). Graph fills reuse palette-gated tokens in both themes.
+type = Atkinson Hyperlegible Next; heading 34px, section 22px, body 15px, source 14px.
+wireframe =
+  [Treatments, medicines and checks] [Shape / Trace / Rule]
+  [Search interventions.................................]
+  [Sparse intervention network       ][Conditions + rules]
+  [legend: direct / conditional      ][source page links ]
+  [Relationship table / prototype intervention list]
+  [Scope exclusions / superseded statements]
+mobile = network above source register; no motion; keyboard alternatives in register/table. Edge labels appear on hover; full modal/qualifier readings remain in the source register/table, avoiding colliding labels on a many-edge trace.

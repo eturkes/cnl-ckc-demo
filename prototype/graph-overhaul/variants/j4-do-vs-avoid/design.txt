@@ -1,0 +1,20 @@
+premise = patient situation → recommended actions against actions to avoid; exact condition oppositions expose a decision hinge, never imply one recommendation cancels another.
+form = split network: situation rail → positive and negative branches; expandable edge buttons retain conditions and targets. Conditions that change advice sit between the rails.
+node = each source/target concept in g.network; visual occurrences repeat a concept per action to keep the relationship legible.
+edge = each g.network action; facts/capabilities remain labelled as such, not recast as recommendations. Overview also shows generic-source negative edges from the same recommendation as an active situation edge, explicitly labelled same recommendation / different condition.
+hinge = two same-document clinical rules whose whole conditions become identical after replacing 'does not outweigh' with 'outweighs', and whose unmodified conditions differ; both entire conditions + actions shown.
+model source = g.network (network.mjs heuristic over clinical parse), g.rules for verbatim conditions; g.documents for sources; g.questions for offline answer trace.
+hand-made: do/avoid columns = prototype reading of positive/negative action polarity, not KB categories; default situation opioid therapy; no hand-picked clinical pair or treatment taxonomy.
+colours = situation green #0f7558 (--graph-entity), action ochre #734300 (--graph-event), statement neutral #342a36 (--graph-value), rule violet #696cb7 (--graph-document), negation plum #792d74 (--graph-operator); reuse theme token overrides. Colour identifies role, not good/bad advice; dashed = negative alone.
+type = Atkinson Hyperlegible Next; 34 title / 22 section / 16 action / 14 source.
+wireframe =
+ [title / view controls]
+ [concept search]
+ [situation buttons + relationship counts]
+ [exact condition hinge: condition A | condition B]
+ [   should / facts    ← situation →    should not    ]
+ [   action edges + targets       |    action edges  ]
+ [selected edge: verbatim condition + cited rule + guideline page]
+ [trace / explanation / explore detail]
+ [relationship table / exclusions / supersessions]
+mobile = one situation row, then positive and negative branches vertically; no reduced-scale canvas; no animation.
