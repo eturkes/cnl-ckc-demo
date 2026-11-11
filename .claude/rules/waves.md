@@ -42,6 +42,12 @@ repo's deltas.
   cited form with
   `git fetch origin '+refs/heads/wt/*:refs/heads/wt/*' '+refs/heads/wip/*:refs/heads/wip/*'
   '+refs/heads/worktree-agent-*:refs/heads/worktree-agent-*'`.
+- **An evidence branch is no holding branch** (ruling on `CLAUDE.md` `Execution` Git, whose
+  `wip/<topic>` + `wt/<name>` holding branches end each session merged back or named in `Tasks`):
+  a branch the ruling above keeps stays under its own name whether its work landed by squash or
+  never lands (a probe, a red suite, a review witness); the records that use it cite it, and
+  `Tasks` never lists it, because `Tasks` holds open units alone. A branch whose work is still to
+  land is a holding branch: a `Tasks` row names it until it lands.
 - Surviving evidence branches, cited by the ledger, contracts, commit bodies and queue rows —
   never rename one: `wt/rev-arch` `1e89286` (A8), `wt/rev-graph` `ace618a` (G3),
   `wt/rev-assurance` `5c97965` (C2); u16 red suites `wt/tester-1` `4da48b3`, `wt/tester-2`

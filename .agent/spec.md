@@ -405,8 +405,9 @@ variant alike.
   content trial (`Decisions`).
 - [ ] RESUME: finish line in force = the ITERATE body (`Phase`): rounds until the user's go, then
   the closing review on lenses fixed before reading, `Artifacts` = the approved prototype,
-  `Phase: IMPLEMENT` committed on a clean tree. State: r2's seven versions built, harvested into
-  `prototype/graph-overhaul/variants/j1`…`j7` and committed with this row; each captured 10/10 on
+  `Phase: IMPLEMENT` committed on a clean tree (a route the user rules at that close → the routed
+  state in its place, `CLAUDE.md` `Session flow` Routing). State: r2's seven versions built,
+  harvested into `prototype/graph-overhaul/variants/j1`…`j7` and committed with this row; each captured 10/10 on
   main by MAIN, one at a time (j2's first run red on two cold-compile `goto` timeouts → green on rerun,
   queue row "capture script reads a cold page"). Builder branches `wt/builder-30`…`36` (tips in
   `.claude/rules/waves.md`) clean; each tip = the merged bytes. Uncommitted work: none. Not yet
@@ -414,12 +415,16 @@ variant alike.
   each version's `hand-made:` list; watch j6 folding warning-sign examples under `opioid therapy`
   by frequency, j5's "named in the same recommendation" links, j2's editorial step order). Next
   action: `pnpm kb:build && node prototype/graph-overhaul/derive.mjs && pnpm dev`, rerun
-  `capture.mjs` on j1…j7, dispatch the navigator, then show the user the contact page (Round 2 group)
-  and ask for the pick, with round 1's open questions (anchor order, shared terms, node colour).
+  `capture.mjs` on j1…j7, dispatch the navigator, then show the user each finalist at full size —
+  its live page `/prototype/graph-overhaul/variants/<id>/` through the contact page (Round 2 group,
+  the index linking all) + its own `Artifacts` entry + its full-resolution 1280 px `capture.mjs`
+  screenshot, never the contact page's shrunk thumbnails alone — and ask for the pick, with round
+  1's open questions (anchor order, shared terms, node colour).
 - [ ] r2 content trial (`.agent/contracts/graph-iterate-r2.md`): seven versions `j1`…`j7`, one
   builder each (builder-30…36), each `capture.mjs` 10/10, every edge citing the rules it rests on;
   palette gate on any new fill; `navigator` screening before the showing; contact page group
-  Round 2; showing → the user's pick.
+  Round 2; showing = each finalist at full size, live + its full-resolution screenshot → the
+  user's pick.
   - The 15 PROTOTYPE variants and i1…i3 stay on the contact page as reference until that pick; the
     user's ruling there retires the rest.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
