@@ -319,9 +319,14 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
     clinical concepts draws a line from EACH, every line marked as that one rule and none implying
     a relationship of its own — the patient situations, then the treatment in course (what the
     condition starts, continues, prescribes or gives); a rule naming none keeps the `patient` start;
-    one node per KB term across the guideline, the condition text telling contexts apart; node
-    colour = the kinds the KB itself declares, never the role a projection reads into a concept;
-    the force layout stays, untangled — spacing and label collisions fixed, not a new form.
+    one node per KB term across the guideline, the condition text telling contexts apart; the force
+    layout stays, untangled — spacing and label collisions fixed.
+  - **One fill fails; the reader needs a place to start** (user, round-3 showing): colour by the
+    KB's declared kind left every node one colour (all 48 are `entity`), so that ruling is
+    withdrawn. Round 4 compares three colour sources — role in the rules, a hand-made clinical
+    category printed as the prototype's reading, the guideline's four areas — on three entry points:
+    pain types as anchors, left-to-right flow, a guided first view
+    (`.agent/contracts/graph-iterate-r4.md`).
 
 **MAIN:** the marks are ONE compiled goal per question, `clinical_marks/3` at the end of
 `PROOF_SOURCE`: it reads the grade, qualifier, preference, interval and order heads out of
@@ -418,16 +423,20 @@ variant alike.
   content trial (`Decisions`).
 - [x] 87856b9 r2 content trial: seven versions `j1`…`j7` built, screened by navigator-5, shown; the
   user picked `j6` + ruled examples beside their rule.
+- [x] 6771c73 r3 `j6` rulings: several starts per rule, one KB-kind fill, layout untangled, every
+  other variant retired; showing → the user withdrew the one-fill ruling + asked for an entry point.
 - [ ] RESUME: finish line in force = the ITERATE body (`Phase`): rounds until the user's go, then
   the closing review on lenses fixed before reading, `Artifacts` = the approved prototype,
   `Phase: IMPLEMENT` committed on a clean tree (a route the user rules at that close → the routed
-  state in its place, `CLAUDE.md` `Session flow` Routing). State: round 3 built + committed (row
-  below), navigator-6 screened it. Next action: show the user j6 at full size (live + 1280 px
-  screenshot) and ask for the go or round 4; the go → closing review.
-- [ ] r3 `j6` rulings: several starts per rule (`network.mjs` `IN_COURSE`, `starts`), one fill =
-  the KB kind `entity`, force layout untangled (seeded fcose, canvas stretch, label declutter: 26 →
-  0 overlapping label pairs at 1280 px), every other variant retired. Open: 375 px trace + rule
-  views can collide labels (navigator-6 N6, declutter runs on wide screens alone).
+  state in its place, `CLAUDE.md` `Session flow` Routing). State: round 4 (row below) seam
+  committed; builders 37–39 dispatched (roster `.scratch/agents/roster.md`). Next action: harvest
+  each builder (marker, rerun capture.mjs on main), `navigator` screen, show the user each version
+  at full size with its colour switch, ask for the pick or the go.
+- [ ] r4 entry points × colourings (`.agent/contracts/graph-iterate-r4.md`): `shared/colourings.ts`
+  (role, clinical category, guideline area; fills palette-searched, both themes pass); versions
+  `k1-pain-anchors` (builder-37), `k2-left-to-right` (builder-38), `k3-guided-start` (builder-39),
+  each `capture.mjs` 10/10; contact page Round 4; showing → the user's pick.
+  - Open from r3: 375 px trace + rule views can collide labels.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
