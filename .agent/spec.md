@@ -312,8 +312,22 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
     the 12 recommendations and between clinical concepts across them. Seven versions, each in the
     network form that suits it (user: builder's choice per version): recommendation map, care
     pathway, treatments + tests, do vs avoid, risks + safeguards, cleaned concept net, patient
-    journeys (`.agent/contracts/graph-iterate-r2.md`). Round 1's layout, anchor, shared-term and
-    node-colour questions stay open until the user's pick among them.
+    journeys (`.agent/contracts/graph-iterate-r2.md`).
+  - **Round 2 pick = the cleaned concept network (`j6`)** (user, at the round-2 showing; the
+    other six versions declined). A line means what it means there: one clinical relationship a
+    rule states — situation —modal + verb→ what is acted on, the rest of the condition on the
+    line, every rule stating it listed on selection. Bare `patient`, `benefit` and `risk` leave
+    the nodes and ride their relationship as attached advice.
+  - **Example lists sit beside their rule** (user): a sentence that only lists examples (rec 5
+    S9–S10, the warning signs of overdose) draws no node and no line; its list shows beside that
+    sentence — in the rule view, the trace and a search for one of its terms. Never attached to a
+    concept the sentence does not name.
+  - **Round 1's open questions, ruled for `j6`** (user): a rule whose condition names several
+    clinical concepts draws a line from EACH, every line marked as that one rule and none implying
+    a relationship of its own (rec 11 S2; rec 5 S7–S8 start from the treatment or action);
+    one node per KB term across the guideline, the condition text telling contexts apart; node
+    colour = the kinds the KB itself declares, never the role a projection reads into a concept;
+    the force layout stays, untangled — spacing and label collisions fixed, not a new form.
 
 **MAIN:** the marks are ONE compiled goal per question, `clinical_marks/3` at the end of
 `PROOF_SOURCE`: it reads the grade, qualifier, preference, interval and order heads out of
@@ -411,19 +425,19 @@ variant alike.
 - [ ] RESUME: finish line in force = the ITERATE body (`Phase`): rounds until the user's go, then
   the closing review on lenses fixed before reading, `Artifacts` = the approved prototype,
   `Phase: IMPLEMENT` committed on a clean tree (a route the user rules at that close → the routed
-  state in its place, `CLAUDE.md` `Session flow` Routing). State: r2 screened by `navigator-5`
-  (`.scratch/agents/navigator-5.md`): finalists j1 j2 j3 j4 j5 j7, j6 out; j4's empty-match
-  fallback, j5's link heading and j7's rule count fixed, all seven recaptured 10/10. Next action:
-  the user's round-2 pick among the finalists (live through `pnpm dev`, contact page Round 2), with
-  the screening's questions (line meaning, hand-made groups, example records); round 1's open
-  questions (anchor order, shared terms, node colour) follow for the picked version.
-- [ ] r2 content trial (`.agent/contracts/graph-iterate-r2.md`): seven versions `j1`…`j7`, one
-  builder each (builder-30…36), each `capture.mjs` 10/10, every edge citing the rules it rests on;
-  palette gate on any new fill; `navigator` screening before the showing; contact page group
-  Round 2; showing = each finalist at full size, live + its full-resolution screenshot → the
-  user's pick.
-  - The 15 PROTOTYPE variants and i1…i3 stay on the contact page as reference until that pick; the
-    user's ruling there retires the rest.
+  state in its place, `CLAUDE.md` `Session flow` Routing). State: the user picked `j6` + ruled
+  examples, line starts, shared terms, colours and layout (`Decisions`); the examples ruling is
+  built. Next action: round 3 on `j6` alone (row below), then the showing.
+- [ ] r3 `j6` rulings: (a) several starts per rule — each concept the condition names draws a line,
+  marked as one rule (`network.mjs` `ANCHORS` picks one today); (b) node fill by the KB's declared
+  kind (`concepts[].kind` entity | event | value), palette-gated; (c) force layout untangled —
+  spacing + label collisions, 1280 + 375 px; `capture.mjs` 10/10, then `navigator` before the
+  showing.
+- [ ] r2 content trial (`.agent/contracts/graph-iterate-r2.md`): seven versions `j1`…`j7` built,
+  screened, shown; the user picked `j6` + ruled examples beside their rule (this row's commit).
+  - Retire the rest: every variant but `j6` (and `i1`, whose `network.mjs` seam j6 reads) leaves
+    `variants/` + the contact page at round 3's commit; their branches stay as evidence
+    (`.claude/rules/waves.md`).
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase

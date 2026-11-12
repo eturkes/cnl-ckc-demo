@@ -25,6 +25,8 @@
   let search = $state(untrack(() => view.view === 'explore' ? view.query : ''));
   let container = $state<HTMLDivElement | undefined>();
   let cy = $state.raw<cytoscape.Core | undefined>();
+  type Example = { rule: string; subject: string; verb: string; modal: string; items: string[] };
+  let examples = $state.raw<Example[]>([]);
 
   $effect(() => {
     const onHash = () => {
@@ -34,7 +36,11 @@
       if (view.view === 'explore') search = view.query;
     };
     addEventListener('hashchange', onHash);
-    void loadGuideline().then((data) => (g = { ...data, network: cleanedNetwork(data) }));
+    void loadGuideline().then((data) => {
+      const network = cleanedNetwork(data);
+      examples = network.examples;
+      g = { ...data, network };
+    });
     return () => removeEventListener('hashchange', onHash);
   });
 
@@ -64,6 +70,12 @@
     return g.network.nodes
       .filter((n) => n.label.toLowerCase().includes(q))
       .sort((a, b) => Number(b.label.toLowerCase() === q) - Number(a.label.toLowerCase() === q) || b.rules.length - a.rules.length);
+  });
+  const examplesOf = (key: string) => examples.filter((x) => x.rule === key);
+  const exampleHits = $derived.by(() => {
+    if (view.view !== 'explore') return [];
+    const q = view.query.toLowerCase().replaceAll('-', ' ').trim();
+    return q === '' ? [] : examples.filter((x) => [x.subject, ...x.items].some((t) => t.includes(q)));
   });
   const focus = $derived(view.view === 'explore' ? (nodes.get(picked) ?? matches[0]) : undefined);
 
@@ -283,6 +295,12 @@
   {#if e.when.length > 0}<p class="when">When {e.when.join('; ')}</p>{/if}
 {/snippet}
 
+{#snippet exampleList(key: string)}
+  {#each examplesOf(key) as x (x.subject + x.verb)}
+    <p class="examples"><span class="note">Examples this sentence lists, not drawn in the network:</span> {x.subject} {x.verb} {x.items.join(', ')}.</p>
+  {/each}
+{/snippet}
+
 {#snippet source(document: string)}
   {@const d = ix?.docs.get(document)}
   {#if d && g}
@@ -340,7 +358,7 @@
           <span><i class="line dashed"></i>Should not</span>
           <span><i class="line dotted"></i>Statement of fact</span>
         </div>
-        <p class="note">Prototype reading: example terms keep their complete KB names in the relationship list attached to the most frequent clinical subject in their recommendation, rather than becoming nodes. Bare patient, benefit and risk endpoints become attached advice loops. A loop is not a self-relation. Every original action and condition remains. In the overview, the eight most shared concepts are labelled; hover or select any dot to read the rest, or use the relationship selector below. Each line joins a situation to what clinicians act on in it, and is labelled with what the recommendations say, one or more rules per line. Hover a line to read its verb; select it to read every supporting rule; select a concept to see every relationship it takes part in.</p>
+        <p class="note">Example lists, such as the warning signs of overdose, are no nodes: each shows beside the sentence that lists it. Prototype reading: bare patient, benefit and risk endpoints become attached advice loops. A loop is not a self-relation. Every original action and condition remains. In the overview, the eight most shared concepts are labelled; hover or select any dot to read the rest, or use the relationship selector below. Each line joins a situation to what clinicians act on in it, and is labelled with what the recommendations say, one or more rules per line. Hover a line to read its verb; select it to read every supporting rule; select a concept to see every relationship it takes part in.</p>
       </section>
 
       <aside>
@@ -378,7 +396,8 @@
               {#each question.statements as s, i (i)}
                 {@const key = ruleKey(s.document, s.sentence)}
                 <li>
-                  {#each edges.filter((e) => e.rule === key) as e (e.id)}{@render relation(e)}{:else}<p>{ix.sentence(key)?.ace}</p>{/each}
+                  {#each edges.filter((e) => e.rule === key) as e (e.id)}{@render relation(e)}{:else}{#if examplesOf(key).length === 0}<p>{ix.sentence(key)?.ace}</p>{/if}{/each}
+                  {@render exampleList(key)}
                   <button class="link" onclick={() => openRule(key)}>Read the whole rule ({s.document.replace('cdc2022-opioid-', '')}, sentence {s.sentence})</button>
                   {@render source(s.document)}
                 </li>
@@ -399,7 +418,7 @@
                 <dt>Who acts</dt><dd>{rule.subject.replaceAll('-', ' ')}</dd>
                 <dt>Strength</dt><dd>{rule.mode === 'fact' ? 'Statement of fact' : rule.mode}</dd>
                 <dt>In the network</dt>
-                <dd>{#each lit as e (e.id)}{@render relation(e)}{/each}</dd>
+                <dd>{#each lit as e (e.id)}{@render relation(e)}{:else}{#if examplesOf(ruleKey(view.document, view.sentence)).length === 0}Nothing drawn from this sentence.{:else}Nothing: this sentence lists examples.{/if}{/each}{@render exampleList(ruleKey(view.document, view.sentence))}</dd>
               </dl>
             {:else}
               <p class="notfound">This sentence has no clinical parse in the knowledge base, so the network draws no relationship for it.</p>
@@ -443,7 +462,12 @@
             {/if}
           {:else}
             <h2>Explore a concept</h2>
-            <p class="notfound">No clinical concept matches “{view.query}”. Try a shorter word, such as pain or opioid.</p>
+            {#if exampleHits.length > 0}
+              <p class="notfound">“{view.query}” is no concept in the network. The guideline names it as an example:</p>
+              {#each exampleHits as x (x.rule + x.subject)}<div class="item"><p>{x.subject} {x.verb} {x.items.join(', ')}.</p><button class="link" onclick={() => openRule(x.rule)}>Read the sentence</button></div>{/each}
+            {:else}
+              <p class="notfound">No clinical concept matches “{view.query}”. Try a shorter word, such as pain or opioid.</p>
+            {/if}
           {/if}
         {:else}
           <h2>The guideline at a glance</h2>
@@ -533,6 +557,7 @@
   .concept { padding: 1px 8px; border-radius: 12px; font-weight: 650; font-size: 14px; }
   .verb { margin: 0 4px; font-style: italic; }
   .verb.negative { text-decoration: underline dashed; text-underline-offset: 4px; }
+  .examples { margin: 6px 0; }
   .detail { display: block; font-size: 13px; color: var(--text-muted); line-height: 1.4; }
   .when { margin: 2px 0 6px; font-size: 14px; padding-left: 10px; border-left: 3px solid var(--graph-entity); }
   .link { border: 0; padding: 2px 0; background: none; color: var(--action); text-decoration: underline; font-size: 13px; text-align: left; }

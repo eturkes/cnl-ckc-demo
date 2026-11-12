@@ -1,9 +1,9 @@
 premise = clinical concept network; generic referents leave the nodes but retain their complete action on an attached loop.
 form = stable force network; overview labels the eight concepts with the most supporting rules (ties lexical), other names appear on hover or selection; mobile overview moves those eight labels into a concept-button list, so long labels never collide; full-width canvas gives compound KB terms room, reader selections light a local subnetwork.
-node = unchanged KB network endpoint, hyphens dropped; example and bare patient/benefit/risk endpoints fold into their relationship list.
+node = unchanged KB network endpoint, hyphens dropped; bare patient/benefit/risk endpoints fold into their relationship list.
 edge = every original network action retained, with the same id, rule, modality, negation, qualifiers, detail and condition; folded endpoint becomes a loop on its surviving endpoint, never a new causal relationship.
 model source = guideline.json network + rules; no extra clinical classification.
-cleaning = example-suffixed endpoints leave the canvas; their complete original relationship, with unchanged KB term names, attaches to the most frequent non-generic source concept in the same recommendation (ties lexical); no clinical relationship to that parent is asserted.
+cleaning = example-suffixed relationships leave the network (user ruling, r2 pick): each lists beside its own sentence (rule view, trace, explore hit), the -example suffix dropped.
 cleaning = bare patient/benefit/risk endpoint leaves the node set; its original complete relationship is printed as loop text with its full condition.
 cleaning = loop means advice about its attached concept, never that concept acting on itself.
 cleaning = every condition in the supporting-rule list is verbatim, including original hyphens; readable edge conditions drop hyphens only.

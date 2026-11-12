@@ -1,8 +1,8 @@
 // Fold referents, never rules. Loops attach complete advice to a concept, not a self-relation.
 export function cleanedNetwork(g) {
   const bare = new Set(['patient', 'benefit', 'risk']);
-  const generic = id => bare.has(id) || id.endsWith('-example');
   const text = id => id.replaceAll('-', ' ');
+  const example = id => text(id.replace(/-example$/, ''));
   const nodes = new Map();
   const sourceNodes = new Map(g.network.nodes.map(n => [n.id, n]));
   const add = (id, rule) => {
@@ -13,29 +13,26 @@ export function cleanedNetwork(g) {
     nodes.set(id, node);
     return id;
   };
-  const parent = e => {
-    const document = e.rule.slice(0, e.rule.lastIndexOf(':'));
-    const counts = new Map();
-    for (const x of g.network.edges.filter(x => x.rule.startsWith(`${document}:`))) {
-      if (!generic(x.source)) counts.set(x.source, (counts.get(x.source) ?? 0) + 1);
-    }
-    const found = [...counts].sort((a,b) => b[1]-a[1] || a[0].localeCompare(b[0]))[0]?.[0];
-    if (!found) throw new Error(`No clinical parent for ${e.id}`);
-    return found;
-  };
-  const edges = g.network.edges.map(e => {
+  const exampleEdge = e => e.source.endsWith('-example') || e.target.endsWith('-example');
+  const edges = g.network.edges.filter(e => !exampleEdge(e)).map(e => {
     const sourceBare = bare.has(e.source), targetBare = bare.has(e.target);
-    const example = e.source.endsWith('-example') || e.target.endsWith('-example');
-    const context = example ? parent(e) : undefined;
-    const source = add(context ?? (sourceBare ? e.target : e.source), e.rule);
-    const target = add(context ?? (targetBare ? e.source : e.target), e.rule);
-    const folded = example || sourceBare || targetBare;
+    const source = add(sourceBare ? e.target : e.source, e.rule);
+    const target = add(targetBare ? e.source : e.target, e.rule);
+    const folded = sourceBare || targetBare;
     const originalReading = `${text(e.source)} — ${e.verb} — ${text(e.target)}`;
     return { ...e, source, target,
-      verb: example ? originalReading : folded ? (sourceBare ? `For the patient: clinicians ${e.verb} ${text(e.target)}` : `${e.verb} ${text(e.target)}`) : e.verb,
-      detail: [e.detail, folded ? `Attached rule, not a self-relation. Original reading: ${originalReading}.` : '', example ? 'Example terms retain their complete KB names here, rather than becoming nodes.' : ''].filter(Boolean).join(' '),
+      verb: folded ? (sourceBare ? `For the patient: clinicians ${e.verb} ${text(e.target)}` : `${e.verb} ${text(e.target)}`) : e.verb,
+      detail: [e.detail, folded ? `Attached rule, not a self-relation. Original reading: ${originalReading}.` : ''].filter(Boolean).join(' '),
       folded,
     };
   });
-  return { nodes: [...nodes.values()], edges };
+  // User ruling (r2 pick): example lists sit beside the rule that states them, never as nodes or edges.
+  const examples = new Map();
+  for (const e of g.network.edges.filter(exampleEdge)) {
+    const key = `${e.rule}|${e.source}|${e.verb}`;
+    const row = examples.get(key) ?? { rule: e.rule, subject: example(e.source), verb: e.verb, modal: e.modal, items: [] };
+    row.items.push(example(e.target));
+    examples.set(key, row);
+  }
+  return { nodes: [...nodes.values()], edges, examples: [...examples.values()] };
 }
