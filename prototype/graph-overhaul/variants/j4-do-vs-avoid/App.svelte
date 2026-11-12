@@ -92,7 +92,7 @@
     picked = id;
   };
 
-  const displayed = $derived(lit.length > 0 ? lit : edges.filter(e => e.source === situation));
+  const displayed = $derived(view.view === 'overview' ? edges.filter(e => e.source === situation) : lit);
   const positive = $derived(displayed.filter(e => !e.negative));
   const guardContext = $derived(view.view === 'overview' ? edges.filter(e => e.negative && e.source === 'patient' && e.source !== situation && displayed.some(d => d.rule.split(':')[0] === e.rule.split(':')[0])) : []);
   const negative = $derived([...displayed.filter(e => e.negative), ...guardContext]);

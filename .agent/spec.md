@@ -57,8 +57,13 @@ questions by deterministic Prolog execution.
   logged an error; `node prototype/graph-overhaul/capture.mjs prototype/graph-overhaul/generated/shots`
   regenerates every screenshot. The user's PROTOTYPE pick = `c04-concept-network`'s form,
   retargeted to clinical relationships (`Decisions`); ITERATE's variants `i1`…`i3` (contact page
-  group "Round 1") draw it over one edge model, `network.mjs` → `guideline.json` `.network`; the
-  fifteen PROTOTYPE variants stay as reference until the user's round-1 ruling. Prototype shortcuts, each owed a real implementation: every variant reads
+  group "Round 1") draw it over one edge model, `network.mjs` → `guideline.json` `.network`. Round 2's
+  finalists (group "Round 2"), each live at `/prototype/graph-overhaul/variants/<id>/` beside its
+  1280 px `capture.mjs` screenshot: `j1-recommendation-map`, `j2-care-pathway`,
+  `j3-treatments-tests`, `j4-do-vs-avoid`, `j5-risks-safeguards`, `j7-patient-journeys`;
+  `j6-cleaned-concepts` left the shortlist, its example relations hung on the document's most
+  frequent concept rather than one its rule names. Every earlier variant stays as reference until
+  the user's round-2 pick. Prototype shortcuts, each owed a real implementation: every variant reads
   `generated/guideline.json`, derived offline from the bag (answer statements from the clinical
   layer's JavaScript assembly, never a live Prolog run); sentence condition/conclusion splits are a
   text heuristic over the ACE (`derive.mjs` `split`); which concept anchors a clinical rule, and
@@ -406,20 +411,12 @@ variant alike.
 - [ ] RESUME: finish line in force = the ITERATE body (`Phase`): rounds until the user's go, then
   the closing review on lenses fixed before reading, `Artifacts` = the approved prototype,
   `Phase: IMPLEMENT` committed on a clean tree (a route the user rules at that close → the routed
-  state in its place, `CLAUDE.md` `Session flow` Routing). State: r2's seven versions built,
-  harvested into `prototype/graph-overhaul/variants/j1`…`j7` and committed with this row; each captured 10/10 on
-  main by MAIN, one at a time (j2's first run red on two cold-compile `goto` timeouts → green on rerun,
-  queue row "capture script reads a cold page"). Builder branches `wt/builder-30`…`36` (tips in
-  `.claude/rules/waves.md`) clean; each tip = the merged bytes. Uncommitted work: none. Not yet
-  done: the `navigator` screening of j1…j7 (reports `.scratch/agents/builder-30.md`…`36.md` name
-  each version's `hand-made:` list; watch j6 folding warning-sign examples under `opioid therapy`
-  by frequency, j5's "named in the same recommendation" links, j2's editorial step order). Next
-  action: `pnpm kb:build && node prototype/graph-overhaul/derive.mjs && pnpm dev`, rerun
-  `capture.mjs` on j1…j7, dispatch the navigator, then show the user each finalist at full size —
-  its live page `/prototype/graph-overhaul/variants/<id>/` through the contact page (Round 2 group,
-  the index linking all) + its own `Artifacts` entry + its full-resolution 1280 px `capture.mjs`
-  screenshot, never the contact page's shrunk thumbnails alone — and ask for the pick, with round
-  1's open questions (anchor order, shared terms, node colour).
+  state in its place, `CLAUDE.md` `Session flow` Routing). State: r2 screened by `navigator-5`
+  (`.scratch/agents/navigator-5.md`): finalists j1 j2 j3 j4 j5 j7, j6 out; j4's empty-match
+  fallback, j5's link heading and j7's rule count fixed, all seven recaptured 10/10. Next action:
+  the user's round-2 pick among the finalists (live through `pnpm dev`, contact page Round 2), with
+  the screening's questions (line meaning, hand-made groups, example records); round 1's open
+  questions (anchor order, shared terms, node colour) follow for the picked version.
 - [ ] r2 content trial (`.agent/contracts/graph-iterate-r2.md`): seven versions `j1`…`j7`, one
   builder each (builder-30…36), each `capture.mjs` 10/10, every edge citing the rules it rests on;
   palette gate on any new fill; `navigator` screening before the showing; contact page group

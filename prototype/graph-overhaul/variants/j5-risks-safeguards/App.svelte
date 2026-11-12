@@ -79,7 +79,7 @@
       </section>
       <aside aria-live="polite">
         {#if picked}
-          <h2>{readable(picked.source)}</h2><p>Linked in rule text to <strong>{readable(picked.target)}</strong>.</p>
+          <h2>{readable(picked.source)}</h2><p>{picked.type==='rule'?'Linked in one rule to':'Named in the same recommendation as'} <strong>{readable(picked.target)}</strong>.</p>
           {#each model.edges.filter(e=>e.source===picked.source&&e.target===picked.target&&e.negative===picked.negative&&e.type===picked.type) as e (e.id)}<p class="action">{e.text}</p><p class="note">{e.basis}</p>{/each}
           {#each [...new Set(model.edges.filter(e=>e.source===picked.source&&e.target===picked.target&&e.negative===picked.negative&&e.type===picked.type).flatMap(e=>e.rules))] as k (k)}{@render evidence(k)}{/each}
         {:else if view.view==='trace'}

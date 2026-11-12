@@ -20,6 +20,7 @@
   let picked = $state('');
   let search = $state(view.view === 'explore' ? view.query : '');
   let selected = $state('');
+  const plural = (n: number) => `${n} ${n === 1 ? 'rule' : 'rules'}`;
   const panels = $derived(g ? journeys(g) : []);
   const selectedGroup = $derived(panels.flatMap(p => p.groups).find(x => x.id === selected));
   const selectedRules = $derived([...new Set(selectedGroup?.edges.map(e => e.rule) ?? [])]);
@@ -159,7 +160,7 @@
         {#each panels as panel (panel.id)}
           <article class="journey" class:residual={panel.id === 'other'}>
             <h2>{panel.label}</h2>
-            <p class="panel-count">{panel.groups.length} recommendations · {new Set(panel.edges.map(e => e.rule)).size} rules explicitly matched</p>
+            <p class="panel-count">{panel.groups.length} recommendations · {plural(new Set(panel.edges.map(e => e.rule)).size)} explicitly matched</p>
             <svg viewBox={`0 0 480 ${Math.max(130,panel.groups.length*53+24)}`} role="img" aria-label={`${panel.label}, linked recommendations`}>
               <defs><marker id={`arrow-${panel.id}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke" /></marker></defs>
               <circle cx="38" cy={Math.max(130,panel.groups.length*53+24)/2} r="17" class="ego" />
@@ -169,7 +170,7 @@
                 <path d={`M 56 ${Math.max(130,panel.groups.length*53+24)/2} C 110 ${Math.max(130,panel.groups.length*53+24)/2} 110 ${y} 180 ${y}`} class="spoke" class:highlight={active(group)} class:negative={group.edges.every(e=>e.negative)} marker-end={`url(#arrow-${panel.id})`} />
                 <text x="180" y={y-9} class="edge-label">{group.verbs}</text>
                 <foreignObject x="183" y={y-4} width="285" height="37">
-                  <button class="rec-node" class:highlight={active(group)} aria-pressed={selected===group.id} onclick={()=>selectConnection(group.id)}>Recommendation {group.rec} <span>{new Set(group.edges.map(e=>e.rule)).size} rules</span></button>
+                  <button class="rec-node" class:highlight={active(group)} aria-pressed={selected===group.id} onclick={()=>selectConnection(group.id)}>Recommendation {group.rec} <span>{plural(new Set(group.edges.map(e => e.rule)).size)}</span></button>
                 </foreignObject>
               {/each}
             </svg>
@@ -178,7 +179,7 @@
               {#each panel.groups as group (group.id)}
                 <div class="mobile-spoke" class:highlight={active(group)} class:negative={group.edges.every(e=>e.negative)}>
                   <span>{group.verbs}</span>
-                  <button class="rec-node" class:highlight={active(group)} aria-pressed={selected===group.id} onclick={()=>selectConnection(group.id)}>Recommendation {group.rec} <span>{new Set(group.edges.map(e=>e.rule)).size} rules</span></button>
+                  <button class="rec-node" class:highlight={active(group)} aria-pressed={selected===group.id} onclick={()=>selectConnection(group.id)}>Recommendation {group.rec} <span>{plural(new Set(group.edges.map(e => e.rule)).size)}</span></button>
                 </div>
               {/each}
             </div>
