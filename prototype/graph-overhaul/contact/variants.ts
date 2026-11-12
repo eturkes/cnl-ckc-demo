@@ -12,6 +12,7 @@ export interface Variant {
 }
 
 export const VARIANTS: Variant[] = [
+  { id: 'm1-guided-anchors', title: 'Guided start, pain types anchored', unconventional: false, round: 5, premise: 'The user’s round-4 pick: opens on one pain type’s neighbourhood; the full network keeps the three pain types in a top row. Coloured by clinical category.', node: 'clinical concept', edge: 'relationship a rule states, condition on the line' },
   { id: 'k1-pain-anchors', title: 'Start at the pain types', unconventional: false, round: 4, premise: 'Acute, subacute and chronic pain pinned in a row as the entry; the network arranges around them. Colour switch: role, clinical category, guideline area.', node: 'clinical concept', edge: 'relationship a rule states, condition on the line' },
   { id: 'k2-left-to-right', title: 'Read left to right', unconventional: false, round: 4, premise: 'What a condition names on the left, what clinicians act on to the right: each line reads as a sentence. Colour switch: role, clinical category, guideline area.', node: 'clinical concept', edge: 'relationship a rule states, condition on the line' },
   { id: 'k3-guided-start', title: 'Guided first view', unconventional: false, round: 4, premise: 'Opens on one pain type’s neighbourhood, one step from the full network. Colour switch: role, clinical category, guideline area.', node: 'clinical concept', edge: 'relationship a rule states, condition on the line' },

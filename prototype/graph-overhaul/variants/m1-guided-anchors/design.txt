@@ -1,0 +1,17 @@
+entry = user's round-4 pick, k3 + k1 combined: opens on one pain type's direct neighbourhood (k3); the full network pins acute, subacute and chronic pain in one top row (k1, fcose fixedNodeConstraint, declutter never moves an anchor).
+colour = clinical category alone (user ruling, round 4), shared COLOURINGS 'category'; legend prints its source line: the categories are this prototype's hand-made reading.
+reader path = choose pain → select line → complete condition + source; full network one step away. Local view hides nonincident lines/nodes, retains their stable fcose positions; no transitive inference.
+form = j6 seeded fcose + wide-screen label declutter, one stable full map, local framing. Full network never relayouts on selection.
+node/edge/model = j6 model.mjs byte-identical: one node per KB endpoint; examples beside own rule; bare patient/benefit/risk attached as advice loops; several starts retained with same-rule note; every original condition/action retained.
+type = Atkinson Hyperlegible Next; heading 34, section 22, body inherited, evidence 14; labels wrap; theme + visible focus inherited; no animations.
+hand-made: three pain choices + acute default; neighbourhood = incident edges alone (not care advice); shared clinical-category assignments + guideline-area BOX 3 grouping as disclosed by seam; inherited prototype condition reading + bare-referent folding.
+wireframe =
+[Start with the patient’s pain] [view controls]
+[search_____________________________________]
+[colour by: clinical category_______________]
+[Start with one pain type___________________]
+[acute] [subacute] [chronic] [full network___]
+[       neighbourhood, full-size labels     ]
+[active legend + source_____________________]
+[complete relationships + rules + sources___]
+[table] [exclusions] [supersessions]

@@ -5,6 +5,7 @@
   const theme = new URLSearchParams(location.search).get('theme') === 'dark' ? 'dark' : 'light';
   const href = (id: string, hash = '#overview') => `./variants/${id}/?theme=${theme}${hash}`;
   const groups = [
+    { label: 'Round 5: the combined pick', items: VARIANTS.filter((v) => v.round === 5) },
     { label: 'Round 4: where to start + colour', items: VARIANTS.filter((v) => v.round === 4) },
     { label: 'Round 3: the picked network', items: VARIANTS.filter((v) => v.round === 3) },
   ];

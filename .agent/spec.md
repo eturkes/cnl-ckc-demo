@@ -51,7 +51,8 @@ questions by deterministic Prolog execution.
   and prettier; retires at the overhaul's IMPLEMENT close): the user's pick `j6-cleaned-concepts`, the
   clinical concept network, every other variant retired (branches `.claude/rules/waves.md`), plus
   round 4's entry points on it — `k1-pain-anchors`, `k2-left-to-right`, `k3-guided-start` — each with
-  a `?colour=role|category|area` switch over `shared/colourings.ts`. `pnpm kb:build && node
+  a `?colour=role|category|area` switch over `shared/colourings.ts`, and round 5's combined pick
+  `m1-guided-anchors` (k3's guided first view over k1's pain-type row, clinical category alone). `pnpm kb:build && node
   prototype/graph-overhaul/derive.mjs && pnpm dev`, then `/prototype/graph-overhaul/variants/<id>/`
   (the contact page `/prototype/graph-overhaul/` links each). Smoke: `node
   prototype/graph-overhaul/capture.mjs <dir> <id> ...` drives
@@ -329,6 +330,12 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
     category printed as the prototype's reading, the guideline's four areas — on three entry points:
     pain types as anchors, left-to-right flow, a guided first view
     (`.agent/contracts/graph-iterate-r4.md`).
+  - **Round 4 pick = a guided first view over pain-type anchors, coloured by clinical category**
+    (user, round-4 showing): the page opens on one pain type's direct relationships (k3) and steps
+    out to the full network, where acute, subacute and chronic pain hold one row across the top and
+    every other concept sits below it (k1). One colouring, no switch: the hand-made clinical
+    category, its legend saying the knowledge base states no such categories. Left-to-right flow
+    (k2) is declined.
 
 **MAIN:** the marks are ONE compiled goal per question, `clinical_marks/3` at the end of
 `PROOF_SOURCE`: it reads the grade, qualifier, preference, interval and order heads out of
@@ -427,18 +434,18 @@ variant alike.
   user picked `j6` + ruled examples beside their rule.
 - [x] 6771c73 r3 `j6` rulings: several starts per rule, one KB-kind fill, layout untangled, every
   other variant retired; showing → the user withdrew the one-fill ruling + asked for an entry point.
+- [x] b3ce635 r4 entry points × colourings: k1 pain anchors, k2 left to right, k3 guided start,
+  screened by navigator-7 (all shortlisted); the user picked k3 + k1, clinical category.
 - [ ] RESUME: finish line in force = the ITERATE body (`Phase`): rounds until the user's go, then
   the closing review on lenses fixed before reading, `Artifacts` = the approved prototype,
   `Phase: IMPLEMENT` committed on a clean tree (a route the user rules at that close → the routed
-  state in its place, `CLAUDE.md` `Session flow` Routing). State: round 4 (row below) seam
-  committed; k1–k3 harvested into main + recaptured (30/30, 9 colour views). Next action:
-  `navigator` screen, show the user each version at full size with its colour switch, ask for the
-  pick or the go.
-- [ ] r4 entry points × colourings (`.agent/contracts/graph-iterate-r4.md`): `shared/colourings.ts`
-  (role, clinical category, guideline area; fills palette-searched, both themes pass); versions
-  `k1-pain-anchors` (builder-37), `k2-left-to-right` (builder-38), `k3-guided-start` (builder-39),
-  each `capture.mjs` 10/10; contact page Round 4; showing → the user's pick.
-  - Open from r3: 375 px trace + rule views can collide labels.
+  state in its place, `CLAUDE.md` `Session flow` Routing). State: round 5 built + committed (row
+  below). Next action: show the user `m1-guided-anchors` at full size, ask for the go or another
+  round; the go → retire every other variant, then the closing review.
+- [ ] r5 combined pick `m1-guided-anchors` (k3 + k1, clinical category alone): 0 overlapping label
+  pairs at 1280 px in the acute (11 nodes), subacute (22), chronic (22) and full (49) views, pain
+  row level at y −1200 with no concept above it (`.scratch/iterate/probe-m1.mjs`); capture 10/10.
+  Open: 375 px — the graph starts below the first screen + trace/rule labels can collide.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
