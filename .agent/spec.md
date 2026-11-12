@@ -47,25 +47,29 @@ questions by deterministic Prolog execution.
   is a recorded turn, not the live bridge; condition sentences come from a hand-built grammar over
   the record's terms (`app/guards.ts`); the graph projects from `generated/records.json`; every
   added string is English-only.
-- `prototype/graph-overhaul/` — the graph overhaul's prototype (disposable; outside the build, eslint
-  and prettier; retires at the overhaul's IMPLEMENT close): the user's pick `j6-cleaned-concepts`, the
-  clinical concept network, every other variant retired (branches `.claude/rules/waves.md`), plus
-  round 4's entry points on it — `k1-pain-anchors`, `k2-left-to-right`, `k3-guided-start` — each with
-  a `?colour=role|category|area` switch over `shared/colourings.ts`, and round 5's combined pick
-  `m1-guided-anchors` (k3's guided first view over k1's pain-type row, clinical category alone). `pnpm kb:build && node
-  prototype/graph-overhaul/derive.mjs && pnpm dev`, then `/prototype/graph-overhaul/variants/<id>/`
-  (the contact page `/prototype/graph-overhaul/` links each). Smoke: `node
-  prototype/graph-overhaul/capture.mjs <dir> <id> ...` drives
-  `#overview`, `#trace=<question>`, `#rule=<document>:<sentence>` and `#explore=<text>` — all four
-  at 1280 px light and 375 px light, `#overview` + `#trace` at 1280 px dark — against the running dev
-  server (`PROTO_ORIGIN`), exit 1 naming each state that never rendered, overflowed or logged an
-  error. Prototype shortcuts, each owed a real implementation: the page reads
-  `generated/guideline.json`, derived offline from the bag (answer statements from the clinical
-  layer's JavaScript assembly, never a live Prolog run); sentence condition/conclusion splits are a
-  text heuristic over the ACE (`derive.mjs` `split`); which concepts start a clinical rule's lines,
-  and which condition clauses ride them, are regex readings of the clinical layer's condition string,
-  never the KB's own structure (`network.mjs` `ANCHORS`, `IN_COURSE`); the layout is fcose from a
-  seeded start plus a label-declutter pass on wide screens; every string is English-only.
+- `prototype/graph-overhaul/` — the graph overhaul's approved prototype (disposable; outside the
+  build, eslint and prettier; retires at the overhaul's IMPLEMENT close): `m1-guided-anchors`, a
+  clinical concept network that opens on one pain type's direct relationships and steps out to the
+  full network, where acute, subacute and chronic pain hold one row across the top; concepts
+  coloured by clinical category (`shared/colourings.ts`); every other variant retired (branches
+  `.claude/rules/waves.md`). `pnpm kb:build && node prototype/graph-overhaul/derive.mjs && pnpm
+  dev`, then `/prototype/graph-overhaul/variants/m1-guided-anchors/` (`?pain=<acute|subacute|
+  chronic>-pain`, `?network=full`; the contact page `/prototype/graph-overhaul/` links it). Smoke:
+  `node prototype/graph-overhaul/capture.mjs <dir> m1-guided-anchors` drives `#overview`,
+  `#trace=<question>`, `#rule=<document>:<sentence>` and `#explore=<text>` — all four at 1280 px
+  light and 375 px light, `#overview` + `#trace` at 1280 px dark — against the running dev server
+  (`PROTO_ORIGIN`), exit 1 naming each state that never rendered, overflowed or logged an error.
+  Prototype shortcuts, each owed a real implementation: it draws the 12 recommendations' 58 rules
+  alone (IMPLEMENT: the whole KB); the page reads `generated/guideline.json`, derived offline from
+  the bag (answer statements from the clinical layer's JavaScript assembly, never a live Prolog
+  run); sentence condition/conclusion splits are a text heuristic over the ACE (`derive.mjs`
+  `split`); which concepts start a rule's lines, and which condition clauses ride them, are regex
+  readings of the clinical layer's condition string (`network.mjs` `ANCHORS`, `IN_COURSE`); the
+  clinical categories are a hand-made list the page labels as such; the category fills were
+  checked by hand, outside `pnpm palette:check`; the layout is fcose from a seeded start with the
+  pain row fixed, plus a label-declutter pass sized for the full view that never converges; the
+  10 advice items without a second clinical concept draw as self-loops; every string is
+  English-only.
 
 ## Decisions
 
@@ -419,8 +423,8 @@ variant alike.
   threaded through the answer, marks and proof goals (never `snapshot/1` or a dynamic
   `clinical_context/3`), the proof cache keyed by date, date input validated at the engine API,
   answers streamed under a date, the condition grammar replaced by a reviewed realizer, every new
-  string in both catalogs. `prototype/scope-guards/` retires at the close. Suspended behind the
-  graph overhaul's PROTOTYPE pick, inside which the graph projection lands.
+  string in both catalogs. `prototype/scope-guards/` retires at the close. Rejoined at the graph
+  overhaul's ITERATE close: its graph projection lands inside the picked graph (row above).
   - Request (user, verbatim): **Scope exclusions and superseded statements do not surface** — the
     graph projects no `guideline_exclusion/1` or `guideline_supersession/4` record and no guard
     (`tools/kb/graph.mjs` `UNPROJECTED`, the evaluation-date comparison skipped), and the answer
@@ -438,31 +442,21 @@ variant alike.
     reproducing its run (date included), the proof cache keyed by date and a model write still
     refused. The `high` queue row cites `prototype/scope-guards/app/chat-guide.md`: its text lands
     in the chat unit, or the draft moves and the row re-cites it, before the prototype retires.
-- [x] 8797da9 i1 seam: `network.mjs` projects the 58 rules → 55 concepts, 95 relationships
-  (`guideline.json` `.network`); i1 force-layout view.
-- [x] 529eb6d r1 layout spread: `i2-situation-columns` (builder-28), `i3-situation-rings`
-  (builder-29), navigator-4's edge-model + view fixes, capture 180/180; showing → the user ruled a
-  content trial (`Decisions`).
-- [x] 87856b9 r2 content trial: seven versions `j1`…`j7` built, screened by navigator-5, shown; the
-  user picked `j6` + ruled examples beside their rule.
-- [x] 6771c73 r3 `j6` rulings: several starts per rule, one KB-kind fill, layout untangled, every
-  other variant retired; showing → the user withdrew the one-fill ruling + asked for an entry point.
-- [x] b3ce635 r4 entry points × colourings: k1 pain anchors, k2 left to right, k3 guided start,
-  screened by navigator-7 (all shortlisted); the user picked k3 + k1, clinical category.
-- [x] ee33a1d r5 combined pick `m1-guided-anchors` (k3 + k1, clinical category alone),
-  screened by navigator-7 (R1–R3 pass); showing → the user ruled self-loops out.
-- [ ] RESUME: finish line in force = the ITERATE body (`Phase`): rounds until the user's go, then
-  the closing review on lenses fixed before reading, `Artifacts` = the approved prototype,
-  `Phase: IMPLEMENT` committed on a clean tree (a route the user rules at that close → the routed
-  state in its place, `CLAUDE.md` `Session flow` Routing). State: leaves withdrawn, m1 back at
-  round 5 (row below). Next action: confirm m1 renders, ask the user for the go or another round;
-  the go → retire every other variant, then the closing review.
-- [x] f17d08f r6 action leaves withdrawn; m1 back at round 5, whole-KB scope recorded.
+- [ ] graph IMPLEMENT: build the graph overhaul's `Decisions` (clinical concept network; guided
+  first view over the pain-type row; clinical-category colour; several starts per rule; examples
+  beside their rule; whole-KB scope with each line's document kind shown) under full Engineering
+  law, `prototype/graph-overhaul/` retiring at its close. Carried from ITERATE
+  (`.agent/contracts/graph-iterate-close.md` L7): a form for advice without a second clinical
+  concept (unseen candidate: marker + panel); label placement per view (the prototype's declutter
+  never converges); the graph on a phone's first screen + no trace label collisions; the category
+  fills under `pnpm palette:check`; a source for the clinical categories (hand-made in the
+  prototype); the prepared questions' reach over the full set (user: may widen); n30's graph
+  projection lands in this graph.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
 
-ITERATE — the graph overhaul
+IMPLEMENT — the graph overhaul, with scope exclusions and superseded statements (n30) rejoined
 > I actually would like to completely overhaul the graphs in general.
 > What is wrong with the graph today: Looks generic, Unclear purpose, "Also potentially wrong
 > model, I'm not sure."
@@ -470,5 +464,4 @@ ITERATE — the graph overhaul
 > guideline shape, Explain one rule
 > How far the overhaul may go: Everything open
 > Against n30: Close n30, then graph; at the n30 IMPLEMENT paste: Route to graph PROTOTYPE now
-Suspended: IMPLEMENT — scope exclusions and superseded statements, surfaced in the graph and the answer panel
 Suspended: MAINTAIN — the whole product, free-text intake and answer-panel annotations folded in

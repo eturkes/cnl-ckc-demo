@@ -5,9 +5,7 @@
   const theme = new URLSearchParams(location.search).get('theme') === 'dark' ? 'dark' : 'light';
   const href = (id: string, hash = '#overview') => `./variants/${id}/?theme=${theme}${hash}`;
   const groups = [
-    { label: 'Round 5: the combined pick', items: VARIANTS.filter((v) => v.round === 5) },
-    { label: 'Round 4: where to start + colour', items: VARIANTS.filter((v) => v.round === 4) },
-    { label: 'Round 3: the picked network', items: VARIANTS.filter((v) => v.round === 3) },
+    { label: 'The approved prototype', items: VARIANTS },
   ];
 </script>
 
@@ -15,10 +13,10 @@
   <header>
     <h1>Graph overhaul: the clinical concept network</h1>
     <p>
-      Each variant draws the same guideline data with a different model of what a node and an edge
-      mean. Open one to try the four jobs: trace an answer, explore the knowledge base, see the
-      guideline's shape, and explain one rule. These are prototypes: they read statements derived
-      offline from the knowledge base, and the demo derives them live by Prolog.
+      The approved prototype: a clinical concept network that opens on one pain type and steps out
+      to the full network. Open it to try the four jobs: trace an answer, explore the knowledge
+      base, see the guideline's shape, and explain one rule. It reads statements derived offline
+      from the knowledge base; the demo derives them live by Prolog.
     </p>
     <p><a href={`?theme=${theme === 'dark' ? 'light' : 'dark'}`}>Show the {theme === 'dark' ? 'light' : 'dark'} theme</a></p>
   </header>
