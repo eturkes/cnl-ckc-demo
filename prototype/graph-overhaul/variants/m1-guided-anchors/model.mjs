@@ -22,10 +22,20 @@ export function cleanedNetwork(g) {
     const originalReading = `${text(e.source)} — ${e.verb} — ${text(e.target)}`;
     return { ...e, source, target,
       verb: folded ? (sourceBare ? `For the patient: clinicians ${e.verb} ${text(e.target)}` : `${e.verb} ${text(e.target)}`) : e.verb,
-      detail: [e.detail, folded ? `Attached rule, not a self-relation. Original reading: ${originalReading}.` : ''].filter(Boolean).join(' '),
+      detail: [e.detail, folded ? `Original reading: ${originalReading}.` : ''].filter(Boolean).join(' '),
       folded,
+      leaf: sourceBare ? `${e.verb} — for the patient` : targetBare ? [`${e.verb} ${text(e.target)}`, e.detail].filter(Boolean).join(' ') : e.verb,
     };
   });
+  // User ruling (r5 showing): a line that would point back at its own concept ends at an action leaf
+  // instead — one node per rule's advice, labelled with the action, never shared across rules.
+  for (const e of edges) {
+    if (e.source !== e.target) continue;
+    const id = `advice:${e.id}`;
+    nodes.set(id, { id, label: e.leaf, roles: ['advice'], rules: [e.rule] });
+    e.target = id;
+  }
+  for (const e of edges) delete e.leaf;
   // User ruling (r2 pick): example lists sit beside the rule that states them, never as nodes or edges.
   const examples = new Map();
   for (const e of g.network.edges.filter(exampleEdge)) {

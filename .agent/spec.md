@@ -336,6 +336,11 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
     every other concept sits below it (k1). One colouring, no switch: the hand-made clinical
     category, its legend saying the knowledge base states no such categories. Left-to-right flow
     (k2) is declined.
+  - **No line points back at its own concept** (user, round-5 showing: self-loops are hard to
+    read). Advice whose other end is the bare patient, benefit or risk — and a rule naming one
+    concept at both ends (rec 5 S4, continue opioid therapy) — ends at an action leaf: its own
+    small node labelled with the action, beside its concept, one per rule, never shared, drawn
+    apart from concepts (grey pill, italic, its own legend line).
 
 **MAIN:** the marks are ONE compiled goal per question, `clinical_marks/3` at the end of
 `PROOF_SOURCE`: it reads the grade, qualifier, preference, interval and order heads out of
@@ -436,16 +441,20 @@ variant alike.
   other variant retired; showing → the user withdrew the one-fill ruling + asked for an entry point.
 - [x] b3ce635 r4 entry points × colourings: k1 pain anchors, k2 left to right, k3 guided start,
   screened by navigator-7 (all shortlisted); the user picked k3 + k1, clinical category.
+- [x] ee33a1d r5 combined pick `m1-guided-anchors` (k3 + k1, clinical category alone),
+  screened by navigator-7 (R1–R3 pass); showing → the user ruled self-loops out.
 - [ ] RESUME: finish line in force = the ITERATE body (`Phase`): rounds until the user's go, then
   the closing review on lenses fixed before reading, `Artifacts` = the approved prototype,
   `Phase: IMPLEMENT` committed on a clean tree (a route the user rules at that close → the routed
-  state in its place, `CLAUDE.md` `Session flow` Routing). State: round 5 built + committed (row
-  below). Next action: show the user `m1-guided-anchors` at full size, ask for the go or another
-  round; the go → retire every other variant, then the closing review.
-- [ ] r5 combined pick `m1-guided-anchors` (k3 + k1, clinical category alone): 0 overlapping label
-  pairs at 1280 px in the acute (11 nodes), subacute (22), chronic (22) and full (49) views, pain
-  row level at y −1200 with no concept above it (`.scratch/iterate/probe-m1.mjs`); capture 10/10.
-  Open: 375 px — the graph starts below the first screen + trace/rule labels can collide.
+  state in its place, `CLAUDE.md` `Session flow` Routing). State: round 6 built + committed (row
+  below). Next action: show the user m1 with action leaves, ask for the go or another round; the
+  go → retire every other variant, then the closing review.
+- [ ] r6 action leaves in `m1-guided-anchors`: 10 self-loops on 6 concepts → 10 leaves (59 nodes,
+  0 loops); 0 overlapping label pairs at 1280 px in acute / subacute / chronic / full
+  (`.scratch/iterate/probe-m1.mjs`); capture 10/10. Open: opioid therapy's 4 leaves stack in a
+  column below it; the overlap result is fragile — the declutter pass never converges (200 rounds)
+  and is sized for the full view, so a leaf-placement change re-broke the pain-type views (IMPLEMENT
+  owes per-view label placement); 375 px graph below the first screen + trace label collisions.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
