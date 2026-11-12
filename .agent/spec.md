@@ -451,7 +451,8 @@ variant alike.
   never converges); the graph on a phone's first screen + no trace label collisions; the category
   fills under `pnpm palette:check`; a source for the clinical categories (hand-made in the
   prototype); the prepared questions' reach over the full set (user: may widen); n30's graph
-  projection lands in this graph.
+  projection lands in this graph; the pre-overhaul graph rulings (edge-state polarity, Cytoscape,
+  n30's guideline hub — m1 draws none) each kept or replaced at orientation.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase

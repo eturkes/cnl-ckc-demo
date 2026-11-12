@@ -50,3 +50,7 @@ Desktop.ini
 *.swo
 *~
 *.log
+
+# Vendored release assets stay tracked despite host-global archive/PDF ignore rules.
+!kb/cnl-ckc-*.tar.gz
+!vendor/cnl-ckc/**/*.pdf
