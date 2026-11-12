@@ -339,8 +339,10 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   - **No line points back at its own concept** (user, round-5 showing: self-loops are hard to
     read). Advice whose other end is the bare patient, benefit or risk — and a rule naming one
     concept at both ends (rec 5 S4, continue opioid therapy) — ends at an action leaf: its own
-    small node labelled with the action, beside its concept, one per rule, never shared, drawn
-    apart from concepts (grey pill, italic, its own legend line).
+    small node labelled with the action, beside its concept, drawn apart from concepts (grey pill,
+    italic, its own legend line). Each leaf belongs to ONE rule and is never shared (user's chosen
+    option: "no false hub joins unrelated rules"); a rule gets one leaf per action line it draws —
+    rec 8 S4's two actions two leaves, rec 11 S3's two starts one leaf each.
 
 **MAIN:** the marks are ONE compiled goal per question, `clinical_marks/3` at the end of
 `PROOF_SOURCE`: it reads the grade, qualifier, preference, interval and order heads out of

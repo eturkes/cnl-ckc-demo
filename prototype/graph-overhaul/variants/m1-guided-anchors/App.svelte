@@ -477,7 +477,7 @@
           <span><i class="line dotted"></i>Statement of fact</span>
         </div>
         <p class="note">{colouring.source}</p>
-        <p class="note">Example lists, such as the warning signs of overdose, are no nodes: each shows beside the sentence that lists it. Prototype reading: advice whose other end is the bare patient, benefit or risk is drawn as a grey action leaf beside its concept, one leaf per rule. Every original action and condition remains. Every concept is labelled on a wide screen; on a phone, select a dot or use the relationship selector below. Each line joins a concept a rule's condition names — a patient situation or a treatment in course — to what clinicians act on, and is labelled with what the recommendations say, one or more rules per line. Hover a line to read its verb; select it to read every supporting rule; select a concept to see every relationship it takes part in.</p>
+        <p class="note">Example lists, such as the warning signs of overdose, are no nodes: each shows beside the sentence that lists it. Prototype reading: advice whose other end is the bare patient, benefit or risk is drawn as a grey action leaf beside its concept; each leaf belongs to one rule. Every original action and condition remains. Every concept is labelled on a wide screen; on a phone, select a dot or use the relationship selector below. Each line joins a concept a rule's condition names — a patient situation or a treatment in course — to what clinicians act on, and is labelled with what the recommendations say, one or more rules per line. Hover a line to read its verb; select it to read every supporting rule; select a concept to see every relationship it takes part in.</p>
       </section>
 
       <aside>
@@ -563,7 +563,7 @@
             <p class="note">{KIND_TEXT[kind(focus)]}{kind(focus) === 'several' ? ` (${focus.roles.map((x) => ROLE_TEXT[x]).join(', ')})` : ''}, in {focus.rules.length} recommendation sentences.</p>
             {#if matches.length > 1}
               <details>
-                <summary>{matches.length} concepts match “{view.query}”</summary>
+                <summary>{matches.length} results match “{view.query}”</summary>
                 {#each matches as m (m.id)}<button class="concept" onclick={() => (picked = m.id)}>{m.label}</button> {/each}
               </details>
             {/if}
@@ -585,7 +585,7 @@
               <p class="notfound">“{view.query}” is no concept in the network. The guideline names it as an example:</p>
               {#each exampleHits as x (x.rule + x.subject)}<div class="item"><p>{x.subject} {x.verb} {x.items.join(', ')}.</p><button class="link" onclick={() => openRule(x.rule)}>Read the sentence</button></div>{/each}
             {:else}
-              <p class="notfound">No clinical concept matches “{view.query}”. Try a shorter word, such as pain or opioid.</p>
+              <p class="notfound">Nothing in the network matches “{view.query}”. Try a shorter word, such as pain or opioid.</p>
             {/if}
           {/if}
         {:else}
@@ -595,7 +595,7 @@
             {#each lit as e (e.id)}<div class="item">{@render relation(e)}<button class="link" onclick={() => openRule(e.rule)}>Read the complete rule</button></div>{/each}
           {/if}
           <h2 class="overview-title">The guideline at a glance</h2>
-          <p>{g.recommendations.length} recommendations hold {g.rules.length} clinical rules. The network draws them as {edges.length} relationships between {nodes.size} concepts.</p>
+          <p>{g.recommendations.length} recommendations hold {g.rules.length} clinical rules. The network draws them as {edges.length} relationships between {[...nodes.values()].filter((n) => !isAdvice(n)).length} concepts, plus {[...nodes.values()].filter(isAdvice).length} action leaves.</p>
           <h3>Concepts that start the most relationships</h3>
           <ul class="ranked">
             {#each situations.slice(0, 8) as s (s.n.id)}<li><button class="concept" onclick={() => openNode(s.n.id)}>{s.n.label}</button> {s.out} relationships</li>{/each}
