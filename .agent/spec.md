@@ -298,8 +298,14 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
     (`opioid therapy`). The rest of a rule's condition rides on the edge, so nothing is dropped:
     `acute pain` —should not consider, when the benefit does not outweigh the risk→ `opioid
     therapy` (rec 1 S5). A compound condition is never flattened into one edge per concept.
-  - **Scope = the 12 recommendations first**: the 58 rules the KB parses clinically (condition,
-    actor, modal, actions); implementation notes link in as sources.
+  - **Scope: the prototype draws the 12 recommendations; IMPLEMENT covers the whole KB** (user,
+    round-6 showing). The prototype stays on the 58 rules the clinical layer parses (condition,
+    actor, modal, actions), implementation notes linked as sources. IMPLEMENT's network covers
+    everything the KB holds — all 492 documents: recommendations, implementation notes and
+    supporting text (about 1,200 advice sentences against today's 58 rules) — so a reader can
+    explore the full CDC guideline; each line must show which kind of document it comes from, so
+    an implementation detail never reads as a graded recommendation. The prepared questions may
+    widen to cover the full set (an answer-path change, IMPLEMENT's call with the user).
   - **Vocabulary = the KB's own terms, readable** (hyphens dropped), coloured by node kind; no
     grouping the KB does not state.
   - **Round 1 → content trial** (user, at the round-1 showing): the concept network goes forward,
@@ -336,13 +342,13 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
     every other concept sits below it (k1). One colouring, no switch: the hand-made clinical
     category, its legend saying the knowledge base states no such categories. Left-to-right flow
     (k2) is declined.
-  - **No line points back at its own concept** (user, round-5 showing: self-loops are hard to
-    read). Advice whose other end is the bare patient, benefit or risk — and a rule naming one
-    concept at both ends (rec 5 S4, continue opioid therapy) — ends at an action leaf: its own
-    small node labelled with the action, beside its concept, drawn apart from concepts (grey pill,
-    italic, its own legend line). Each leaf belongs to ONE rule and is never shared (user's chosen
-    option: "no false hub joins unrelated rules"); a rule gets one leaf per action line it draws —
-    rec 8 S4's two actions two leaves, rec 11 S3's two starts one leaf each.
+  - **Self-loops stay in the prototype; IMPLEMENT settles them** (user, round-6 showing). Ten
+    pieces of advice pair one concept with the bare patient, benefit or risk (rec 5 S2, S4, S5, S7,
+    S8; rec 8 S4; rec 11 S3) or name one concept at both ends (rec 5 S4). Self-loops read poorly
+    and action leaves (round 6) confused as well, so leaves are withdrawn and the prototype keeps
+    the loops. The whole-KB scope will not remove them — those sentences stay in the KB — so
+    IMPLEMENT owes a form for advice without a second clinical concept; the candidate the user
+    has not yet seen is a marker on the concept plus its advice listed in the panel.
 
 **MAIN:** the marks are ONE compiled goal per question, `clinical_marks/3` at the end of
 `PROOF_SOURCE`: it reads the grade, qualifier, preference, interval and order heads out of
@@ -448,15 +454,11 @@ variant alike.
 - [ ] RESUME: finish line in force = the ITERATE body (`Phase`): rounds until the user's go, then
   the closing review on lenses fixed before reading, `Artifacts` = the approved prototype,
   `Phase: IMPLEMENT` committed on a clean tree (a route the user rules at that close → the routed
-  state in its place, `CLAUDE.md` `Session flow` Routing). State: round 6 built + committed (row
-  below). Next action: show the user m1 with action leaves, ask for the go or another round; the
-  go → retire every other variant, then the closing review.
-- [ ] r6 action leaves in `m1-guided-anchors`: 10 self-loops on 6 concepts → 10 leaves (59 nodes,
-  0 loops); 0 overlapping label pairs at 1280 px in acute / subacute / chronic / full
-  (`.scratch/iterate/probe-m1.mjs`); capture 10/10. Open: opioid therapy's 4 leaves stack in a
-  column below it; the overlap result is fragile — the declutter pass never converges (200 rounds)
-  and is sized for the full view, so a leaf-placement change re-broke the pain-type views (IMPLEMENT
-  owes per-view label placement); 375 px graph below the first screen + trace label collisions.
+  state in its place, `CLAUDE.md` `Session flow` Routing). State: leaves withdrawn, m1 back at
+  round 5 (row below). Next action: confirm m1 renders, ask the user for the go or another round;
+  the go → retire every other variant, then the closing review.
+- [ ] r6 action leaves (`28b389b`, `aa147d9`) → withdrawn: m1's model + page restored to `ee33a1d`
+  (self-loops back, user ruling); whole-KB scope recorded for IMPLEMENT (`Decisions`).
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase

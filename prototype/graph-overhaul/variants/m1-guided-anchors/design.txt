@@ -15,4 +15,3 @@ wireframe =
 [active legend + source_____________________]
 [complete relationships + rules + sources___]
 [table] [exclusions] [supersessions]
-leaves = user ruling (r5): a line that would point back at its own concept ends at an action leaf (model.mjs `advice:<edge>` node, one per rule), placed beside its concept after fcose, before the declutter pass.

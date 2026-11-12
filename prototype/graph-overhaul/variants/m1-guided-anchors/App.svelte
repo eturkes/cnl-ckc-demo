@@ -22,10 +22,6 @@
   const params = new URLSearchParams(location.search);
   // User ruling (r4 showing): clinical category, no switch.
   const colouring = COLOURINGS.find((c) => c.id === 'category')!;
-  /** Action leaves (user ruling, r5) are advice, not concepts: neutral, outside the category palette. */
-  const ADVICE = { light: '#6b6f76', dark: '#9aa1a9' } as const;
-  const isAdvice = (n: NetworkNode) => n.roles.includes('advice' as never);
-  const fillFor = (n: NetworkNode, data: Guideline) => (isAdvice(n) ? ADVICE[theme] : fillOf(colouring, n, data, theme));
   const theme = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
   const PAINS = ['acute-pain', 'subacute-pain', 'chronic-pain'];
   let pain = $state(PAINS.includes(params.get('pain') ?? '') ? params.get('pain')! : 'acute-pain');
@@ -75,9 +71,8 @@
     'acted-on': 'Something clinicians act on',
     subject: 'The subject of a statement of fact or capability',
     several: 'A concept with several roles',
-    advice: 'Advice from one rule, drawn as its own leaf',
   } as const;
-  const ROLE_TEXT = { situation: 'named in rule conditions', 'acted-on': 'acted on by clinicians', subject: 'subject of a statement', advice: 'advice from one rule' } as const;
+  const ROLE_TEXT = { situation: 'named in rule conditions', 'acted-on': 'acted on by clinicians', subject: 'subject of a statement' } as const;
   const ruleKey = (document: string, sentence: number) => `${document}:${String(sentence)}`;
 
   const question = $derived(view.view === 'trace' ? g?.questions.find((q) => q.id === view.question) : undefined);
@@ -224,8 +219,7 @@
               id: n.id,
               label: n.label,
               fullLabel: n.label,
-              fill: fillFor(n, data),
-              advice: isAdvice(n),
+              fill: fillOf(untrack(() => colouring), n, data, theme),
               size: 14 + Math.sqrt(n.rules.length) * 5,
             },
           })),
@@ -234,7 +228,7 @@
             const verbs = [...new Set(group.map((x) => x.verb))];
             const rules = new Set(group.map((x) => x.rule)).size;
             return {
-              data: { id, source: e.source, target: e.target, verb: `${verbs.join(' / ')}${rules > 1 ? ` (${String(rules)} rules)` : ''}`, width: 1.4 + Math.sqrt(rules), leaf: e.target.startsWith('advice:') },
+              data: { id, source: e.source, target: e.target, verb: `${verbs.join(' / ')}${rules > 1 ? ` (${String(rules)} rules)` : ''}`, width: 1.4 + Math.sqrt(rules) },
               classes: [e.negative ? 'negative' : '', e.modal === 'fact' ? 'fact' : ''].join(' ').trim(),
             };
           }),
@@ -294,7 +288,6 @@
           { selector: 'edge.hover', style: { opacity: 1, label: 'data(verb)', 'z-index': 10 } },
           // A hovered lit line keeps the lit relationships' label, never its group's other verbs.
           { selector: 'edge.lit.hover', style: { label: 'data(litVerb)' } },
-          { selector: 'node[?advice]', style: { shape: 'round-rectangle', 'font-style': 'italic', 'font-weight': 500 } },
           { selector: 'node.focus', style: { 'border-color': token('--text'), 'border-width': 4 } },
           { selector: 'node[id = "acute-pain"], node[id = "subacute-pain"], node[id = "chronic-pain"]', style: { 'border-width': 4, 'border-color': token('--text'), 'font-weight': 800 } },
         ],
@@ -327,13 +320,6 @@
       const box = core.nodes().boundingBox();
       const stretch = Math.min(2, Math.max(1, core.width() / core.height() / (box.w / box.h)));
       core.nodes().positions((n) => ({ x: n.position('x') * stretch, y: PAINS.includes(n.id()) ? -1200 : Math.max(CEILING, n.position('y')) }));
-      // An action leaf sits beside its concept: placed by fcose it landed by unrelated concepts (a
-      // long leaf line read as a link to them); short leaf edges in fcose re-tangled the map instead.
-      core.edges('[?leaf]').forEach((edge, k) => {
-        const at = edge.source().position();
-        const a = (k * 2.4) % (2 * Math.PI);
-        edge.target().position({ x: at.x + 160 * Math.cos(a), y: Math.max(CEILING, at.y + 160 * Math.sin(a)) });
-      });
       if (innerWidth >= 600) declutter(core);
       core.on('tap', 'node', (ev) => openNode(ev.target.id()));
       core.on('tap', 'edge', (ev) => {
@@ -362,7 +348,7 @@
     core.batch(() => {
       core.elements().removeClass('lit faded focus');
       core.elements().show();
-      for (const n of nodes.values()) core.getElementById(n.id).data('fill', fillFor(n, g));
+      for (const n of nodes.values()) core.getElementById(n.id).data('fill', fillOf(colouring, n, g, theme));
       for (const n of nodes.values()) core.getElementById(n.id).data('label', view.view === 'overview' && full && innerWidth < 600 ? '' : n.label);
       // A lit line names only the lit relationships: a shared line never lends another rule's verb.
       for (const [id, group] of lines) {
@@ -471,13 +457,12 @@
         {/if}
         <div class="legend">
           {#each colouring.classes as cls (cls.id)}<span><i class="dot" style:background={cls[theme]}></i>{cls.label}</span>{/each}
-          <span><i class="dot leaf" style:background={ADVICE[theme]}></i>Advice from one rule (a leaf, not a concept)</span>
           <span><i class="line"></i>Should, can</span>
           <span><i class="line dashed"></i>Should not</span>
           <span><i class="line dotted"></i>Statement of fact</span>
         </div>
         <p class="note">{colouring.source}</p>
-        <p class="note">Example lists, such as the warning signs of overdose, are no nodes: each shows beside the sentence that lists it. Prototype reading: advice whose other end is the bare patient, benefit or risk is drawn as a grey action leaf beside its concept; each leaf belongs to one rule. Every original action and condition remains. Every concept is labelled on a wide screen; on a phone, select a dot or use the relationship selector below. Each line joins a concept a rule's condition names — a patient situation or a treatment in course — to what clinicians act on, and is labelled with what the recommendations say, one or more rules per line. Hover a line to read its verb; select it to read every supporting rule; select a concept to see every relationship it takes part in.</p>
+        <p class="note">Example lists, such as the warning signs of overdose, are no nodes: each shows beside the sentence that lists it. Prototype reading: bare patient, benefit and risk endpoints become attached advice loops. A loop is not a self-relation. Every original action and condition remains. Every concept is labelled on a wide screen; on a phone, select a dot or use the relationship selector below. Each line joins a concept a rule's condition names — a patient situation or a treatment in course — to what clinicians act on, and is labelled with what the recommendations say, one or more rules per line. Hover a line to read its verb; select it to read every supporting rule; select a concept to see every relationship it takes part in.</p>
       </section>
 
       <aside>
@@ -563,7 +548,7 @@
             <p class="note">{KIND_TEXT[kind(focus)]}{kind(focus) === 'several' ? ` (${focus.roles.map((x) => ROLE_TEXT[x]).join(', ')})` : ''}, in {focus.rules.length} recommendation sentences.</p>
             {#if matches.length > 1}
               <details>
-                <summary>{matches.length} results match “{view.query}”</summary>
+                <summary>{matches.length} concepts match “{view.query}”</summary>
                 {#each matches as m (m.id)}<button class="concept" onclick={() => (picked = m.id)}>{m.label}</button> {/each}
               </details>
             {/if}
@@ -585,7 +570,7 @@
               <p class="notfound">“{view.query}” is no concept in the network. The guideline names it as an example:</p>
               {#each exampleHits as x (x.rule + x.subject)}<div class="item"><p>{x.subject} {x.verb} {x.items.join(', ')}.</p><button class="link" onclick={() => openRule(x.rule)}>Read the sentence</button></div>{/each}
             {:else}
-              <p class="notfound">Nothing in the network matches “{view.query}”. Try a shorter word, such as pain or opioid.</p>
+              <p class="notfound">No clinical concept matches “{view.query}”. Try a shorter word, such as pain or opioid.</p>
             {/if}
           {/if}
         {:else}
@@ -595,7 +580,7 @@
             {#each lit as e (e.id)}<div class="item">{@render relation(e)}<button class="link" onclick={() => openRule(e.rule)}>Read the complete rule</button></div>{/each}
           {/if}
           <h2 class="overview-title">The guideline at a glance</h2>
-          <p>{g.recommendations.length} recommendations hold {g.rules.length} clinical rules. The network draws them as {edges.length} relationships between {[...nodes.values()].filter((n) => !isAdvice(n)).length} concepts, plus {[...nodes.values()].filter(isAdvice).length} action leaves.</p>
+          <p>{g.recommendations.length} recommendations hold {g.rules.length} clinical rules. The network draws them as {edges.length} relationships between {nodes.size} concepts.</p>
           <h3>Concepts that start the most relationships</h3>
           <ul class="ranked">
             {#each situations.slice(0, 8) as s (s.n.id)}<li><button class="concept" onclick={() => openNode(s.n.id)}>{s.n.label}</button> {s.out} relationships</li>{/each}
@@ -670,7 +655,6 @@
   .mobile-concepts { display: none; }
   .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 10px 16px; font-size: 13px; border-top: 1px solid var(--border); }
   .legend span { display: inline-flex; align-items: center; gap: 6px; }
-  .dot.leaf { border-radius: 3px; width: 18px; }
   .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--graph-entity); }
   .line { width: 26px; border-top: 2px solid var(--text-muted); }
   .line.dashed { border-top-style: dashed; }
