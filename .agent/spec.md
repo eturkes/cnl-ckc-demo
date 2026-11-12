@@ -49,10 +49,12 @@ questions by deterministic Prolog execution.
   added string is English-only.
 - `prototype/graph-overhaul/` — the graph overhaul's prototype (disposable; outside the build, eslint
   and prettier; retires at the overhaul's IMPLEMENT close): the user's pick `j6-cleaned-concepts`, the
-  clinical concept network, every other variant retired (branches `.claude/rules/waves.md`). `pnpm
-  kb:build && node prototype/graph-overhaul/derive.mjs && pnpm dev`, then
-  `/prototype/graph-overhaul/variants/j6-cleaned-concepts/` (the contact page `/prototype/graph-overhaul/`
-  links it). Smoke: `node prototype/graph-overhaul/capture.mjs <dir> j6-cleaned-concepts` drives
+  clinical concept network, every other variant retired (branches `.claude/rules/waves.md`), plus
+  round 4's entry points on it — `k1-pain-anchors`, `k2-left-to-right`, `k3-guided-start` — each with
+  a `?colour=role|category|area` switch over `shared/colourings.ts`. `pnpm kb:build && node
+  prototype/graph-overhaul/derive.mjs && pnpm dev`, then `/prototype/graph-overhaul/variants/<id>/`
+  (the contact page `/prototype/graph-overhaul/` links each). Smoke: `node
+  prototype/graph-overhaul/capture.mjs <dir> <id> ...` drives
   `#overview`, `#trace=<question>`, `#rule=<document>:<sentence>` and `#explore=<text>` — all four
   at 1280 px light and 375 px light, `#overview` + `#trace` at 1280 px dark — against the running dev
   server (`PROTO_ORIGIN`), exit 1 naming each state that never rendered, overflowed or logged an
@@ -429,9 +431,9 @@ variant alike.
   the closing review on lenses fixed before reading, `Artifacts` = the approved prototype,
   `Phase: IMPLEMENT` committed on a clean tree (a route the user rules at that close → the routed
   state in its place, `CLAUDE.md` `Session flow` Routing). State: round 4 (row below) seam
-  committed; builders 37–39 dispatched (roster `.scratch/agents/roster.md`). Next action: harvest
-  each builder (marker, rerun capture.mjs on main), `navigator` screen, show the user each version
-  at full size with its colour switch, ask for the pick or the go.
+  committed; k1–k3 harvested into main + recaptured (30/30, 9 colour views). Next action:
+  `navigator` screen, show the user each version at full size with its colour switch, ask for the
+  pick or the go.
 - [ ] r4 entry points × colourings (`.agent/contracts/graph-iterate-r4.md`): `shared/colourings.ts`
   (role, clinical category, guideline area; fills palette-searched, both themes pass); versions
   `k1-pain-anchors` (builder-37), `k2-left-to-right` (builder-38), `k3-guided-start` (builder-39),

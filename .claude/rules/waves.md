@@ -72,6 +72,8 @@ repo's deltas.
   `wt/builder-30` `08aa170` (j1), `wt/builder-31` `cdb4266` (j2), `wt/builder-32` `7ea4603` (j3),
   `wt/builder-33` `63adf71` (j4), `wt/builder-34` `1e454cc` (j5), `wt/builder-35` `56ec723` (j6),
   `wt/builder-36` `7ef3adf` (j7).
+- Graph overhaul ITERATE round-4 entry-point branches, each cited by the `proto(graph r4)` commit body:
+  `wt/builder-37` `e57c479` (k1), `wt/builder-38` `4a202e5` (k2), `wt/builder-39` `f2ecfff` (k3).
 - MAIN's units landed from branches, each cited by its landing commit: `wip/n1-palette`
   `c774baf`, `wip/n2-replay` `60a74c4`, `wip/n3-mutate-timeout` `2235854`, `wip/n4-artifacts`
   `49b1143`, `wip/n5-inventory` `ee0f5b2`, `wip/n9-comparison` `3cf1d13`, `wip/n11-copy-sweep`

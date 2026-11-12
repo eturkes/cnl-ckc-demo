@@ -5,13 +5,14 @@
   const theme = new URLSearchParams(location.search).get('theme') === 'dark' ? 'dark' : 'light';
   const href = (id: string, hash = '#overview') => `./variants/${id}/?theme=${theme}${hash}`;
   const groups = [
+    { label: 'Round 4: where to start + colour', items: VARIANTS.filter((v) => v.round === 4) },
     { label: 'Round 3: the picked network', items: VARIANTS.filter((v) => v.round === 3) },
   ];
 </script>
 
 <main class="contact">
   <header>
-    <h1>Graph overhaul: the picked network</h1>
+    <h1>Graph overhaul: the clinical concept network</h1>
     <p>
       Each variant draws the same guideline data with a different model of what a node and an edge
       mean. Open one to try the four jobs: trace an answer, explore the knowledge base, see the
