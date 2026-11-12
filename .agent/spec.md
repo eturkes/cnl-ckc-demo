@@ -457,8 +457,7 @@ variant alike.
   state in its place, `CLAUDE.md` `Session flow` Routing). State: leaves withdrawn, m1 back at
   round 5 (row below). Next action: confirm m1 renders, ask the user for the go or another round;
   the go → retire every other variant, then the closing review.
-- [ ] r6 action leaves (`28b389b`, `aa147d9`) → withdrawn: m1's model + page restored to `ee33a1d`
-  (self-loops back, user ruling); whole-KB scope recorded for IMPLEMENT (`Decisions`).
+- [x] f17d08f r6 action leaves withdrawn; m1 back at round 5, whole-KB scope recorded.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
