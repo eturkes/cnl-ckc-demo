@@ -1,14 +1,14 @@
 premise = clinical concept network; generic referents leave the nodes but retain their complete action on an attached loop.
-form = stable force network; overview labels the eight concepts with the most supporting rules (ties lexical), other names appear on hover or selection; mobile overview moves those eight labels into a concept-button list, so long labels never collide; full-width canvas gives compound KB terms room, reader selections light a local subnetwork.
+form = force network (fcose from a seeded start, stretched to the canvas shape, then a declutter pass that pushes overlapping labels apart at their on-screen size); every concept labelled on wide screens; the phone overview moves eight labels into a concept-button list; full-width canvas gives compound KB terms room, reader selections light a local subnetwork.
 node = unchanged KB network endpoint, hyphens dropped; bare patient/benefit/risk endpoints fold into their relationship list.
-edge = every original network action retained, with the same id, rule, modality, negation, qualifiers, detail and condition; folded endpoint becomes a loop on its surviving endpoint, never a new causal relationship.
+edge = every original network action retained, one line per concept the condition names (`starts`, user ruling), each marked as the same rule, with the same id, rule, modality, negation, qualifiers, detail and condition; folded endpoint becomes a loop on its surviving endpoint, never a new causal relationship.
 model source = guideline.json network + rules; no extra clinical classification.
 cleaning = example-suffixed relationships leave the network (user ruling, r2 pick): each lists beside its own sentence (rule view, trace, explore hit), the -example suffix dropped.
 cleaning = bare patient/benefit/risk endpoint leaves the node set; its original complete relationship is printed as loop text with its full condition.
 cleaning = loop means advice about its attached concept, never that concept acting on itself.
 cleaning = every condition in the supporting-rule list is verbatim, including original hyphens; readable edge conditions drop hyphens only.
 hand-made: none; cleaning rules above are this prototype's reading, printed on the page.
-colours = clinical green #0f7558; action ochre #734300; statement neutral #342a36; multi-role purple #792d74; source violet #696cb7; all use the existing theme tokens.
+colours = one fill --graph-entity (user ruling: colour = the KB's declared kind, and every network concept is an entity); roles show in the concept's panel.
 type roles = Atkinson Hyperlegible Next; heading 34, section 22, body 15, evidence 14; no extra typeface.
 wireframe =
 [Clinical concepts, without the scaffolding] [view controls]

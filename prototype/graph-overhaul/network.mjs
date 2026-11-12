@@ -18,7 +18,8 @@ const VACUOUS = /^there is a clinician$/u;
 const NEGATED = /\b(?:not|no)\b/u;
 
 /**
- * The patient's situation, in order of preference: what the patient has; what the rule is for;
+ * The patient's situations, every one the condition names (user ruling: several starts, one rule),
+ * listed in this order: what the patient has; what the rule is for;
  * what the patient receives or continues; what an opioid is co-prescribed with.
  * A negated clause never anchors: an undetected warning is no situation the patient is in.
  */
@@ -29,25 +30,34 @@ const ANCHORS = [
   /\bprescribes an? [\w-]+ with an? ([\w-]+)/u,
 ];
 
-const anchorOf = (rule) => {
+const IN_COURSE = /\b(?:starts|continues|prescribes|receives) an? ([\w-]+)/gu;
+
+const anchorsOf = (rule) => {
   const parts = rule.condition === undefined ? [] : clauses(rule.condition);
+  const hits = [];
   for (const re of ANCHORS) {
     for (const clause of parts) {
       if (NEGATED.test(clause)) continue;
       const hit = re.exec(clause)?.[1];
-      if (hit !== undefined) return hit;
+      if (hit !== undefined && !hits.includes(hit)) hits.push(hit);
     }
   }
+  // Then the treatment in course: what the condition starts, continues, prescribes or gives.
+  for (const clause of parts) {
+    if (NEGATED.test(clause)) continue;
+    for (const m of clause.matchAll(IN_COURSE)) if (!hits.includes(m[1])) hits.push(m[1]);
+  }
+  if (hits.length > 0) return hits;
   // No condition (or none anchoring): an action modifier naming the situation, else the patient.
   for (const action of rule.actions) {
     for (const { preposition, value } of action.modifiers) {
       const hit = /^(?:for|after|before|during|of) (?:an?|the) ([\w-]+(?:-pain|-initiation|-escalation|-therapy))$/u.exec(
         `${preposition} ${value}`,
       )?.[1];
-      if (hit !== undefined) return hit;
+      if (hit !== undefined) return [hit];
     }
   }
-  return 'patient';
+  return ['patient'];
 };
 
 /** The condition minus clauses the anchor node already states (`a patient has an X`) or vacuous ones. */
@@ -82,7 +92,8 @@ export const clinicalNetwork = (rules, docs) => {
     const copula = rule.mode === 'fact';
     // A copula or capability sentence keeps its subject: `nonopioid therapy is preferred for …`.
     const subjectStated = copula || rule.mode === 'can';
-    const source = subjectStated ? term(rule.subject) : anchorOf(rule);
+    const sources = subjectStated ? [term(rule.subject)] : anchorsOf(rule);
+    sources.forEach((source, a) => {
     const when = subjectStated
       ? (rule.condition === undefined ? [] : clauses(rule.condition).filter((c) => !VACUOUS.test(c)).map(readable))
       : rest(rule, source);
@@ -121,9 +132,12 @@ export const clinicalNetwork = (rules, docs) => {
         target = term(modifiers.shift().value);
         targetRole = 'situation';
       }
+      if (sources.length > 1 && target === source) return;
       for (const m of modifiers) detail.push(`${m.preposition} ${readable(m.value)}`);
       edges.push({
-        id: `${key}#${String(i)}`,
+        id: a === 0 ? `${key}#${String(i)}` : `${key}#${String(i)}@${source}`,
+        // Every start this action draws from: starts.length > 1 = one rule seen from one of them.
+        starts: sources.filter((x) => x !== target).map(readable),
         rule: key,
         rec,
         source: node(source, subjectStated ? 'subject' : 'situation', key),
@@ -135,6 +149,7 @@ export const clinicalNetwork = (rules, docs) => {
         modal: rule.mode,
         negative: action.polarity === 'negative',
       });
+    });
     });
   }
   return { nodes: [...nodes.values()], edges };

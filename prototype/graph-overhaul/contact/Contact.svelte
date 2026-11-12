@@ -5,16 +5,13 @@
   const theme = new URLSearchParams(location.search).get('theme') === 'dark' ? 'dark' : 'light';
   const href = (id: string, hash = '#overview') => `./variants/${id}/?theme=${theme}${hash}`;
   const groups = [
-    { label: 'Round 2: what the network shows', items: VARIANTS.filter((v) => v.round === 2) },
-    { label: 'Round 1: the clinical network', items: VARIANTS.filter((v) => v.round === 1) },
-    { label: 'Reference: conventional forms', items: VARIANTS.filter((v) => v.round === undefined && !v.unconventional) },
-    { label: 'Reference: unconventional forms', items: VARIANTS.filter((v) => v.round === undefined && v.unconventional) },
+    { label: 'Round 3: the picked network', items: VARIANTS.filter((v) => v.round === 3) },
   ];
 </script>
 
 <main class="contact">
   <header>
-    <h1>Graph overhaul: {VARIANTS.length} variants</h1>
+    <h1>Graph overhaul: the picked network</h1>
     <p>
       Each variant draws the same guideline data with a different model of what a node and an edge
       mean. Open one to try the four jobs: trace an answer, explore the knowledge base, see the

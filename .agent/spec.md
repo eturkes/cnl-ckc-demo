@@ -47,29 +47,22 @@ questions by deterministic Prolog execution.
   is a recorded turn, not the live bridge; condition sentences come from a hand-built grammar over
   the record's terms (`app/guards.ts`); the graph projects from `generated/records.json`; every
   added string is English-only.
-- `prototype/graph-overhaul/` — the graph overhaul's PROTOTYPE variants (disposable; outside the
-  build, eslint and prettier; retires at the overhaul's IMPLEMENT close). `pnpm kb:build && node
-  prototype/graph-overhaul/derive.mjs && pnpm dev`, then `/prototype/graph-overhaul/` (contact sheet)
-  and `/prototype/graph-overhaul/variants/<id>/`. Smoke: `node prototype/graph-overhaul/capture.mjs
-  <dir> [id ...]` drives every variant through `#overview`, `#trace=<question>`,
-  `#rule=<document>:<sentence>` and `#explore=<text>` — all four at 1280 px light and 375 px light,
-  `#overview` + `#trace` at 1280 px dark — against the running dev server (`PROTO_ORIGIN`), exit 1 naming each state that never rendered, overflowed or
-  logged an error; `node prototype/graph-overhaul/capture.mjs prototype/graph-overhaul/generated/shots`
-  regenerates every screenshot. The user's PROTOTYPE pick = `c04-concept-network`'s form,
-  retargeted to clinical relationships (`Decisions`); ITERATE's variants `i1`…`i3` (contact page
-  group "Round 1") draw it over one edge model, `network.mjs` → `guideline.json` `.network`. Round 2's
-  finalists (group "Round 2"), each live at `/prototype/graph-overhaul/variants/<id>/` beside its
-  1280 px `capture.mjs` screenshot: `j1-recommendation-map`, `j2-care-pathway`,
-  `j3-treatments-tests`, `j4-do-vs-avoid`, `j5-risks-safeguards`, `j7-patient-journeys`;
-  `j6-cleaned-concepts` left the shortlist, its example relations hung on the document's most
-  frequent concept rather than one its rule names. Every earlier variant stays as reference until
-  the user's round-2 pick. Prototype shortcuts, each owed a real implementation: every variant reads
+- `prototype/graph-overhaul/` — the graph overhaul's prototype (disposable; outside the build, eslint
+  and prettier; retires at the overhaul's IMPLEMENT close): the user's pick `j6-cleaned-concepts`, the
+  clinical concept network, every other variant retired (branches `.claude/rules/waves.md`). `pnpm
+  kb:build && node prototype/graph-overhaul/derive.mjs && pnpm dev`, then
+  `/prototype/graph-overhaul/variants/j6-cleaned-concepts/` (the contact page `/prototype/graph-overhaul/`
+  links it). Smoke: `node prototype/graph-overhaul/capture.mjs <dir> j6-cleaned-concepts` drives
+  `#overview`, `#trace=<question>`, `#rule=<document>:<sentence>` and `#explore=<text>` — all four
+  at 1280 px light and 375 px light, `#overview` + `#trace` at 1280 px dark — against the running dev
+  server (`PROTO_ORIGIN`), exit 1 naming each state that never rendered, overflowed or logged an
+  error. Prototype shortcuts, each owed a real implementation: the page reads
   `generated/guideline.json`, derived offline from the bag (answer statements from the clinical
   layer's JavaScript assembly, never a live Prolog run); sentence condition/conclusion splits are a
-  text heuristic over the ACE (`derive.mjs` `split`); which concept anchors a clinical rule, and
-  which condition clauses ride its edge, are regex readings of the clinical layer's condition
-  string, never the KB's own structure (`network.mjs` `ANCHORS`); the four clinical areas are hard-coded from
-  the guideline PDF's BOX 3 (`shared/data.ts` `AREAS`); every string is English-only.
+  text heuristic over the ACE (`derive.mjs` `split`); which concepts start a clinical rule's lines,
+  and which condition clauses ride them, are regex readings of the clinical layer's condition string,
+  never the KB's own structure (`network.mjs` `ANCHORS`, `IN_COURSE`); the layout is fcose from a
+  seeded start plus a label-declutter pass on wide screens; every string is English-only.
 
 ## Decisions
 
@@ -324,7 +317,8 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
     concept the sentence does not name.
   - **Round 1's open questions, ruled for `j6`** (user): a rule whose condition names several
     clinical concepts draws a line from EACH, every line marked as that one rule and none implying
-    a relationship of its own (rec 11 S2; rec 5 S7–S8 start from the treatment or action);
+    a relationship of its own — the patient situations, then the treatment in course (what the
+    condition starts, continues, prescribes or gives); a rule naming none keeps the `patient` start;
     one node per KB term across the guideline, the condition text telling contexts apart; node
     colour = the kinds the KB itself declares, never the role a projection reads into a concept;
     the force layout stays, untangled — spacing and label collisions fixed, not a new form.
@@ -422,22 +416,18 @@ variant alike.
 - [x] 529eb6d r1 layout spread: `i2-situation-columns` (builder-28), `i3-situation-rings`
   (builder-29), navigator-4's edge-model + view fixes, capture 180/180; showing → the user ruled a
   content trial (`Decisions`).
+- [x] 87856b9 r2 content trial: seven versions `j1`…`j7` built, screened by navigator-5, shown; the
+  user picked `j6` + ruled examples beside their rule.
 - [ ] RESUME: finish line in force = the ITERATE body (`Phase`): rounds until the user's go, then
   the closing review on lenses fixed before reading, `Artifacts` = the approved prototype,
   `Phase: IMPLEMENT` committed on a clean tree (a route the user rules at that close → the routed
-  state in its place, `CLAUDE.md` `Session flow` Routing). State: the user picked `j6` + ruled
-  examples, line starts, shared terms, colours and layout (`Decisions`); the examples ruling is
-  built. Next action: round 3 on `j6` alone (row below), then the showing.
-- [ ] r3 `j6` rulings: (a) several starts per rule — each concept the condition names draws a line,
-  marked as one rule (`network.mjs` `ANCHORS` picks one today); (b) node fill by the KB's declared
-  kind (`concepts[].kind` entity | event | value), palette-gated; (c) force layout untangled —
-  spacing + label collisions, 1280 + 375 px; `capture.mjs` 10/10, then `navigator` before the
-  showing.
-- [ ] r2 content trial (`.agent/contracts/graph-iterate-r2.md`): seven versions `j1`…`j7` built,
-  screened, shown; the user picked `j6` + ruled examples beside their rule (this row's commit).
-  - Retire the rest: every variant but `j6` (and `i1`, whose `network.mjs` seam j6 reads) leaves
-    `variants/` + the contact page at round 3's commit; their branches stay as evidence
-    (`.claude/rules/waves.md`).
+  state in its place, `CLAUDE.md` `Session flow` Routing). State: round 3 built + committed (row
+  below), navigator-6 screened it. Next action: show the user j6 at full size (live + 1280 px
+  screenshot) and ask for the go or round 4; the go → closing review.
+- [ ] r3 `j6` rulings: several starts per rule (`network.mjs` `IN_COURSE`, `starts`), one fill =
+  the KB kind `entity`, force layout untangled (seeded fcose, canvas stretch, label declutter: 26 →
+  0 overlapping label pairs at 1280 px), every other variant retired. Open: 375 px trace + rule
+  views can collide labels (navigator-6 N6, declutter runs on wide screens alone).
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase

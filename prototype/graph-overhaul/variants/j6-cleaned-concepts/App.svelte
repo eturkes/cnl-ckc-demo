@@ -36,7 +36,8 @@
       if (view.view === 'explore') search = view.query;
     };
     addEventListener('hashchange', onHash);
-    void loadGuideline().then((data) => {
+    // Layout sizes nodes by their labels: measured in a fallback font it packed 29 label overlaps.
+    void Promise.all([loadGuideline(), document.fonts.load('600 15px "Atkinson Hyperlegible Next"')]).then(([data]) => {
       const network = cleanedNetwork(data);
       examples = network.examples;
       g = { ...data, network };
@@ -51,12 +52,12 @@
   /** One fill per projected role; a node holding two roles says so instead of picking one. */
   const kind = (n: NetworkNode) => (n.roles.length > 1 ? 'several' : n.roles[0] ?? 'acted-on');
   const KIND_TEXT = {
-    situation: 'A patient situation',
+    situation: 'A concept that rule conditions name',
     'acted-on': 'Something clinicians act on',
     subject: 'The subject of a statement of fact or capability',
     several: 'A concept with several roles',
   } as const;
-  const ROLE_TEXT = { situation: 'patient situation', 'acted-on': 'acted on by clinicians', subject: 'subject of a statement' } as const;
+  const ROLE_TEXT = { situation: 'named in rule conditions', 'acted-on': 'acted on by clinicians', subject: 'subject of a statement' } as const;
   const ruleKey = (document: string, sentence: number) => `${document}:${String(sentence)}`;
 
   const question = $derived(view.view === 'trace' ? g?.questions.find((q) => q.id === view.question) : undefined);
@@ -122,26 +123,77 @@
   });
 
   const token = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  const FILL = { situation: '--graph-entity', 'acted-on': '--graph-event', subject: '--graph-value', several: '--graph-operator' } as const;
+  // User ruling: fill = the KB's declared kind. Every network concept is a KB `entity`, so one fill;
+  // the role a projection reads into a concept shows in its panel, never as colour.
+  const FILL = '--graph-entity';
+
+  /** Labels hold ~12 px on screen whatever the fit zoom (state effect `px`). */
+  const labelStyle = (core: cytoscape.Core) => {
+    const px = (n: number) => Math.max(n, n * (0.85 / core.zoom()));
+    core.style().selector('node').style({ width: `mapData(size, 14, 40, ${String(px(9))}, ${String(px(22))})`, height: `mapData(size, 14, 40, ${String(px(9))}, ${String(px(22))})`, 'font-size': px(14), 'text-max-width': `${String(px(130))}px`, 'text-outline-width': px(3) }).selector('edge').style({ 'font-size': px(13), 'text-max-width': `${String(px(160))}px` }).update();
+  };
+  /**
+   * fcose packs nodes, not the labels they carry at the overview's fit zoom: 29 label pairs overlapped
+   * at 1280 px. Push each overlapping pair apart along its shallower axis at the final label size,
+   * refit, repeat; local moves, so the shape fcose found stays.
+   */
+  const declutter = (core: cytoscape.Core) => {
+    for (let round = 0; round < 60; round++) {
+      core.fit(undefined, 50);
+      labelStyle(core);
+      const ns = core.nodes().toArray();
+      const bb = ns.map((n) => n.boundingBox({ includeLabels: true }));
+      const gap = 6 / core.zoom();
+      let moved = 0;
+      for (let i = 0; i < ns.length; i++) {
+        for (let j = i + 1; j < ns.length; j++) {
+          const a = bb[i], c = bb[j];
+          const dx = Math.min(a.x2, c.x2) - Math.max(a.x1, c.x1) + gap;
+          const dy = Math.min(a.y2, c.y2) - Math.max(a.y1, c.y1) + gap;
+          if (dx <= 0 || dy <= 0) continue;
+          moved++;
+          const pa = ns[i].position(), pc = ns[j].position();
+          if (dx < dy) {
+            const s = (pa.x <= pc.x ? -1 : 1) * dx / 2;
+            ns[i].position({ x: pa.x + s, y: pa.y });
+            ns[j].position({ x: pc.x - s, y: pc.y });
+          } else {
+            const s = (pa.y <= pc.y ? -1 : 1) * dy / 2;
+            ns[i].position({ x: pa.x, y: pa.y + s });
+            ns[j].position({ x: pc.x, y: pc.y - s });
+          }
+        }
+      }
+      if (moved === 0) return;
+    }
+  };
 
   // Build the network once; the state only moves classes, so the layout never reshuffles under the reader.
   $effect(() => {
     if (g === null || container === undefined) return;
     const data = g;
     untrack(() => {
-      const ring = data.network.nodes.length;
+      // A fixed ring start trapped fcose at 26 overlapping label pairs (1280 px, every label on);
+      // seeded random starts give 0–3 over 10 seeds. Seeded so every load draws the same map.
+      let t = 1;
+      const random = Math.random;
+      Math.random = () => {
+        t = (t + 0x6d2b79f5) | 0;
+        let x = Math.imul(t ^ (t >>> 15), 1 | t);
+        x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
+        return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+      };
       const core = cytoscape({
         container,
         elements: [
-          ...data.network.nodes.map((n, i) => ({
+          ...data.network.nodes.map((n) => ({
             data: {
               id: n.id,
               label: n.label,
               fullLabel: n.label,
-              fill: token(FILL[kind(n)]),
+              fill: token(FILL),
               size: 14 + Math.sqrt(n.rules.length) * 5,
             },
-            position: { x: 400 * Math.cos((2 * Math.PI * i) / ring), y: 400 * Math.sin((2 * Math.PI * i) / ring) },
           })),
           ...[...untrack(() => lines)].map(([id, group]) => {
             const e = group[0];
@@ -179,12 +231,12 @@
             selector: 'edge',
             style: {
               width: 'data(width)',
-              'line-color': token('--border'),
-              'target-arrow-color': token('--border'),
+              'line-color': token('--text-muted'),
+              'target-arrow-color': token('--text-muted'),
               'target-arrow-shape': 'triangle',
               'arrow-scale': 0.9,
               'curve-style': 'bezier',
-              opacity: 0.55,
+              opacity: 0.35,
               'font-family': 'Atkinson Hyperlegible Next, sans-serif',
               'font-size': 13,
               'font-style': 'italic',
@@ -210,10 +262,17 @@
           { selector: 'edge.lit.hover', style: { label: 'data(litVerb)' } },
           { selector: 'node.focus', style: { 'border-color': token('--text'), 'border-width': 4 } },
         ],
-        layout: {
+        layout: { name: 'preset' },
+        minZoom: 0.03,
+        maxZoom: 2.5,
+        wheelSensitivity: 0.2,
+        boxSelectionEnabled: false,
+        autoungrabify: true,
+      });
+      core.layout({
           name: 'fcose',
           animate: false,
-          randomize: false,
+          randomize: true,
           quality: 'proof',
           nodeDimensionsIncludeLabels: true,
           nodeRepulsion: () => 900000,
@@ -223,13 +282,14 @@
           gravity: 0.05,
           numIter: 5000,
           padding: 20,
-        } as cytoscape.LayoutOptions,
-        minZoom: 0.03,
-        maxZoom: 2.5,
-        wheelSensitivity: 0.2,
-        boxSelectionEnabled: false,
-        autoungrabify: true,
-      });
+        } as cytoscape.LayoutOptions).run();
+      Math.random = random;
+      // fcose packs near-square; a wide canvas then fits it at half width. Stretch it to the canvas shape
+      // (capped at 2×) so the declutter pass below spends the width, not the height.
+      const box = core.nodes().boundingBox();
+      const stretch = Math.min(2, Math.max(1, core.width() / core.height() / (box.w / box.h)));
+      core.nodes().positions((n) => ({ x: n.position('x') * stretch, y: n.position('y') }));
+      if (innerWidth >= 600) declutter(core);
       core.on('tap', 'node', (ev) => openNode(ev.target.id()));
       core.on('tap', 'edge', (ev) => {
         selectedLine = ev.target.id();
@@ -239,6 +299,7 @@
       core.on('mouseover', 'edge', (ev) => ev.target.addClass('hover'));
       core.on('mouseout', 'edge', (ev) => ev.target.removeClass('hover'));
       cy = core;
+      (window as unknown as { __cy?: cytoscape.Core }).__cy = core; // layout probe hook (.scratch/iterate/layout-probe.mjs)
     });
     return () => {
       untrack(() => cy)?.destroy();
@@ -255,8 +316,7 @@
     if (core === undefined || g === null) return;
     core.batch(() => {
       core.elements().removeClass('lit faded focus');
-      const overviewLabels = new Set([...nodes.values()].sort((a,b) => b.rules.length-a.rules.length || a.label.localeCompare(b.label)).slice(0,8).map(n => n.id));
-      for (const n of nodes.values()) core.getElementById(n.id).data('label', view.view === 'overview' && (innerWidth < 600 || !overviewLabels.has(n.id)) ? '' : n.label);
+      for (const n of nodes.values()) core.getElementById(n.id).data('label', view.view === 'overview' && innerWidth < 600 ? '' : n.label);
       // A lit line names only the lit relationships: a shared line never lends another rule's verb.
       for (const [id, group] of lines) {
         const own = group.filter((e) => litEdges.has(e.id));
@@ -277,9 +337,7 @@
       core.zoom(1.1);
       core.center(frame.length > 0 ? frame : undefined);
     }
-    // Labels live in model units: hold them near 12 px on screen whatever the fit zoom.
-    const px = (n: number) => Math.max(n, n * (0.85 / core.zoom()));
-    core.style().selector('node').style({ 'font-size': px(14), 'text-max-width': `${String(px(130))}px`, 'text-outline-width': px(3) }).selector('edge').style({ 'font-size': px(13), 'text-max-width': `${String(px(160))}px` }).update();
+    labelStyle(core);
     void tick().then(markReady);
   });
 </script>
@@ -293,6 +351,7 @@
     {#if e.detail}<span class="detail">{e.detail}</span>{/if}
   </p>
   {#if e.when.length > 0}<p class="when">When {e.when.join('; ')}</p>{/if}
+  {#if (e.starts.length) > 1}<p class="note">One rule, drawn from each concept its condition names: {e.starts.join(', ')}. Its lines state no relationship between them.</p>{/if}
 {/snippet}
 
 {#snippet exampleList(key: string)}
@@ -350,15 +409,12 @@
           </div>
         {/if}
         <div class="legend">
-          <span><i class="dot situation"></i>Patient situation</span>
-          <span><i class="dot acted-on"></i>What the clinician acts on</span>
-          <span><i class="dot subject"></i>Subject of a statement</span>
-          <span><i class="dot several"></i>Several roles</span>
+          <span><i class="dot"></i>Clinical concept (the knowledge base's kind: entity)</span>
           <span><i class="line"></i>Should, can</span>
           <span><i class="line dashed"></i>Should not</span>
           <span><i class="line dotted"></i>Statement of fact</span>
         </div>
-        <p class="note">Example lists, such as the warning signs of overdose, are no nodes: each shows beside the sentence that lists it. Prototype reading: bare patient, benefit and risk endpoints become attached advice loops. A loop is not a self-relation. Every original action and condition remains. In the overview, the eight most shared concepts are labelled; hover or select any dot to read the rest, or use the relationship selector below. Each line joins a situation to what clinicians act on in it, and is labelled with what the recommendations say, one or more rules per line. Hover a line to read its verb; select it to read every supporting rule; select a concept to see every relationship it takes part in.</p>
+        <p class="note">Example lists, such as the warning signs of overdose, are no nodes: each shows beside the sentence that lists it. Prototype reading: bare patient, benefit and risk endpoints become attached advice loops. A loop is not a self-relation. Every original action and condition remains. Every concept is labelled on a wide screen; on a phone, select a dot or use the relationship selector below. Each line joins a concept a rule's condition names — a patient situation or a treatment in course — to what clinicians act on, and is labelled with what the recommendations say, one or more rules per line. Hover a line to read its verb; select it to read every supporting rule; select a concept to see every relationship it takes part in.</p>
       </section>
 
       <aside>
@@ -449,7 +505,7 @@
               </details>
             {/if}
             {#if outgoing.length > 0}
-              <h3>In this situation, clinicians</h3>
+              <h3>When a rule's condition names it, clinicians</h3>
               {#each outgoing as e (e.id)}<div class="item">{@render relation(e, false)}<button class="link" onclick={() => openRule(e.rule)}>Read the rule</button></div>{/each}
             {/if}
             {#if statements.length > 0}
@@ -472,7 +528,7 @@
         {:else}
           <h2>The guideline at a glance</h2>
           <p>{g.recommendations.length} recommendations hold {g.rules.length} clinical rules. The network draws them as {edges.length} relationships between {nodes.size} concepts.</p>
-          <h3>Situations with the most recommendations</h3>
+          <h3>Concepts that start the most relationships</h3>
           <ul class="ranked">
             {#each situations.slice(0, 8) as s (s.n.id)}<li><button class="concept" onclick={() => openNode(s.n.id)}>{s.n.label}</button> {s.out} relationships</li>{/each}
           </ul>
@@ -485,7 +541,7 @@
     <details class="table">
       <summary>Read {lit.length > 0 ? `the ${lit.length} highlighted` : `all ${edges.length}`} relationships as a table</summary>
       <table>
-        <thead><tr><th>Situation or subject</th><th>Relationship</th><th>Acts on</th><th>Condition</th><th>Sentence</th></tr></thead>
+        <thead><tr><th>Condition concept or subject</th><th>Relationship</th><th>Acts on</th><th>Condition</th><th>Sentence</th></tr></thead>
         <tbody>
           {#each lit.length > 0 ? lit : edges as e (e.id)}
             <tr><td>{label(e.source)}</td><td>{e.verb}{e.detail ? ` (${e.detail})` : ''}</td><td>{label(e.target)}</td><td>{e.when.join('; ')}</td><td><button class="link" onclick={() => openRule(e.rule)}>{e.rule.replace('cdc2022-opioid-', '')}</button></td></tr>
@@ -537,11 +593,7 @@
   .mobile-concepts { display: none; }
   .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 10px 16px; font-size: 13px; border-top: 1px solid var(--border); }
   .legend span { display: inline-flex; align-items: center; gap: 6px; }
-  .dot { width: 12px; height: 12px; border-radius: 50%; }
-  .dot.situation { background: var(--graph-entity); }
-  .dot.acted-on { background: var(--graph-event); }
-  .dot.subject { background: var(--graph-value); }
-  .dot.several { background: var(--graph-operator); }
+  .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--graph-entity); }
   .line { width: 26px; border-top: 2px solid var(--text-muted); }
   .line.dashed { border-top-style: dashed; }
   .line.dotted { border-top-style: dotted; }

@@ -114,6 +114,8 @@ export interface NetworkEdge {
   when: string[];
   modal: Modal;
   negative: boolean;
+  /** Every concept this rule's condition names as a start (user ruling: several starts, one rule). */
+  starts: string[];
 }
 
 export interface Guideline {
