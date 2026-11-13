@@ -280,12 +280,6 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   statements derive where their other conditions and the scope guard hold; a date on or after it
   derives none of them; empty stays the shipped default, no evaluation date. Superseded marks in the
   graph and the corpus browser state a fixed record and stay independent of the date.
-- **The graph combines a guideline hub with edge state.** One node for the guideline's
-  recommendations is the entry point, each exclusion condition linking to it by its labelled
-  condition; the condition's own relationships carry the exclusion as their outer scope, as
-  negation and modality do; the superseded actions link to a node for the superseding source. The
-  scope guard shows on the selected node's recommendation edges alone, never across the whole
-  canvas, and no exclusion takes a dashed line, which carries negation alone (`m5u8.md` R4).
 - **The graph gets a complete overhaul, everything open.** The graph looks generic, leaves its
   purpose unclear and may draw the wrong model. The overhaul serves four jobs: trace an answer back
   to its source, explore the knowledge base, see the guideline's shape at a glance, and explain one
@@ -308,10 +302,10 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
     everything the KB holds — all 492 documents: recommendations, implementation notes and
     supporting text (about 1,200 advice sentences against today's 58 rules) — so a reader can
     explore the full CDC guideline; each line must show which kind of document it comes from, so
-    an implementation detail never reads as a graded recommendation. The prepared questions may
-    widen to cover the full set (an answer-path change, IMPLEMENT's call with the user).
-  - **Vocabulary = the KB's own terms, readable** (hyphens dropped), coloured by node kind; no
-    grouping the KB does not state.
+    an implementation detail never reads as a graded recommendation. The prepared questions get
+    redesigned around the full guideline in the next phase (ruling below).
+  - **Vocabulary = the KB's own terms, readable** (hyphens dropped); no grouping the KB does not
+    state, the disclosed MeSH colouring aside (ruling below).
   - **Round 1 → content trial** (user, at the round-1 showing): the concept network goes forward,
     and versions differ in WHAT it shows, focused on clinical relationships rather than linguistic
     structure. Both readings of "between the guidelines" become versions — relationships between
@@ -343,16 +337,75 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   - **Round 4 pick = a guided first view over pain-type anchors, coloured by clinical category**
     (user, round-4 showing): the page opens on one pain type's direct relationships (k3) and steps
     out to the full network, where acute, subacute and chronic pain hold one row across the top and
-    every other concept sits below it (k1). One colouring, no switch: the hand-made clinical
-    category, its legend saying the knowledge base states no such categories. Left-to-right flow
-    (k2) is declined.
-  - **Self-loops stay in the prototype; IMPLEMENT settles them** (user, round-6 showing). Ten
-    pieces of advice pair one concept with the bare patient, benefit or risk (rec 5 S2, S4, S5, S7,
-    S8; rec 8 S4; rec 11 S3) or name one concept at both ends (rec 5 S4). Self-loops read poorly
-    and action leaves (round 6) confused as well, so leaves are withdrawn and the prototype keeps
-    the loops. The whole-KB scope will not remove them — those sentences stay in the KB — so
-    IMPLEMENT owes a form for advice without a second clinical concept; the candidate the user
-    has not yet seen is a marker on the concept plus its advice listed in the panel.
+    every other concept sits below it (k1). One colouring, no switch; its source is now MeSH
+    (ruling below). Left-to-right flow (k2) is declined.
+
+**User (IMPLEMENT orientation, graph overhaul + n30):** detail, counts and the readers' and
+consultants' tables → `.agent/contracts/gi-orientation.md`.
+
+- **Every document kind draws from the start.** The network draws every relationship the KB
+  states — recommendations, implementation notes and supporting text alike. Each line's style and
+  panel name its document kind, and chips hide a kind.
+- **Advice that names one clinical concept keeps its loop.** The projection first reads every
+  second concept the KB states — in the condition and in phrases such as `for a specific
+  condition`. Advice that still names one concept besides `patient`, `benefit` or `risk` draws as
+  a loop on that concept, and its panel reads it as advice about the concept, never as a relation
+  of the concept to itself. Leaves stay withdrawn.
+- **Concepts colour by MeSH's top-level groups**, replacing the hand-made six classes. Each
+  concept maps to a descriptor of a pinned MeSH release and takes the colour of its top-level tree
+  category; the legend names MeSH, the release and NLM, and says the KB states no categories; a
+  concept without a match says so. A coverage sample runs before the build, and poor coverage
+  returns to the user.
+- **The full network fits the screen and reveals labels on zoom**, replacing the zoom floor.
+  Labels keep one size on screen; at fit, the labels that fit without overlap show, the most
+  connected first; zooming in reveals more; a selected concept, its neighbours and a traced
+  answer always show theirs. No label is cut short.
+- **Scope exclusions and superseded statements: marks + a boundaries view**, replacing n30's hub.
+  A superseded line shows struck through, with the superseding law and its date; each
+  recommendation line's panel says the scope exclusions apply; a boundaries view draws the
+  conditions, each joined to the KB's own `recommendation` concept by a `recommendations do not
+  apply` line.
+- **A chat reply with a KB part shows the exclusion line**, read by the same live query as the
+  prepared answers; a reply with Web or Model parts alone shows none.
+- **The prepared questions get redesigned around the full guideline, as the next phase**: a
+  PROTOTYPE of the question list and answer form once this IMPLEMENT closes (request verbatim in
+  `Tasks`).
+- **Approved grader changes**: n30's Accept moves from `tests/graph-annotations.test.ts` A1 to the
+  new network — every exclusion and supersession record projected, guards included, no
+  evaluation-date exemption; the owed sync-u2 and n1 reviews of the old graph become one live
+  review of the new network; the date-related pins (`engine:check` call shapes, a dated proof's
+  context step) re-pin, each with the old check's red recorded.
+
+**MAIN (IMPLEMENT orientation)**, the readings three independent navigators share, and the
+consultant-amended method:
+
+- **A rule's several starts are views of ONE rule**: each line carries the rule's id and its full
+  joint condition, and no line reads as a sufficient condition alone. Starts = the patient
+  situations, then the treatment in course (`start`, `continue`, `prescribe`, `give`, `receive`),
+  from condition events that are neither negated nor under negation-as-failure; a rule naming
+  none folds into its concept's loop — no `patient` node.
+- **Nothing the KB holds disappears**: every sentence is drawn, looped, listed beside its rule as
+  examples, marked as a record, or shown as a statement on its concept (the eventless `There is
+  no …` sentences) — counted per sentence, never per event alone.
+- **A canvas line merges only identical complete readings**; different readings between one pair
+  draw as separate lines.
+- **Trace = the live proof's clause lines**, never an offline answer list; the chat keeps its
+  query cards as its trace.
+- **Condition text = the KB's own controlled-language sentence**, readable; a shorter span only
+  where a structural check proves it faithful; else the whole sentence, labelled as such.
+- **The network derives at build time from the KB's own logic structure** (per-sentence frames
+  over the compiled clauses), never from text patterns; Cytoscape stays (two research passes: no
+  library places complete labels better at this size); its layout and label sizes compute at
+  build time, pending a layout spike.
+- **The evaluation date is run context**, mechanism pending a session spike: the page's frozen,
+  validated date enters each engine call through one trusted wrapper with explicit cleanup, a
+  dedicated interpreter step records it in a dated proof, the proof cache keys on it, and a
+  second concurrent request is refused by name.
+- **The linguistic graph retires at g7**, after the new graders land; the user approves the
+  old-check → new-check mapping before then. Until g7, the pre-overhaul graph rulings above
+  (polarity as edge state, Cytoscape's zoom floor, spanning scopes, reader-relative labels, orphan
+  contexts, kind fills) bind the shipped linguistic graph alone; polarity's duty — no line reads
+  as a claim the source denies — carries to the new network.
 
 **MAIN:** the marks are ONE compiled goal per question, `clinical_marks/3` at the end of
 `PROOF_SOURCE`: it reads the grade, qualifier, preference, interval and order heads out of
@@ -390,17 +443,11 @@ variant alike.
   discontinue opioids?" (qualifiers) and "How should clinicians start opioid therapy?" (a
   preference); read each statement's facts row; open "Prolog goal behind these annotations";
   switch to Japanese and to the dark theme.
-- [ ] owed (user): live review of the graph annotations (sync-u2 `e73ed6c`, `.claude/rules/ui.md`
-  `User review`) — `pnpm dev`, open the graph, select an answer's Find in graph (rec07 for time
-  limits, rec05 for qualifiers, rec03 for a preference) and read the new relationships.
 - [ ] owed (user): live reviews of four approved visual units (`.claude/rules/ui.md` `User review`)
   — d5 `d6714d7` phased boot status, d17 `04ada8c` solutions rendered as they arrive, d41
   `9056d3d` the owned PDF.js page viewer, d43 `db0736f` the document-first provenance browser.
 - [ ] owed (user): live review of the chat panel (c5 V8) — `pnpm chat:dev` + `pnpm dev`, ask a
   question, open a KB tag and a Web source, try Stop and New conversation.
-- [ ] owed (user): live review of the graph's new node colours (n1, `.claude/rules/ui.md` `User
-  review`) — `pnpm dev`, open the graph, read concepts, actions and attributes in both themes, and
-  select an answer's Find in graph to see the proof path and the selected node beside them.
 - [ ] owed (user): live review of n9's checked-comparisons list in the ladder (`c7b9b7d`,
   `.claude/rules/ui.md` `User review`) — `pnpm dev`, open `/review.html`, expand "Explore the six
   evidence steps" and "1 checked comparison"; switch to Japanese and to the dark theme, and narrow
@@ -415,17 +462,46 @@ variant alike.
   its re-open trigger: three consecutive gates on one host above its bound (45 s on the Core Ultra
   7 268V, 110 s on the i7-8650U), each from a 1-min load below 2. The 492-document bag counts one:
   141.9 s on the i7-8650U from a load near 1.3 (T11 86.9 s, P4 50.9 s).
-- [ ] n30 IMPLEMENT: build the n30 `Decisions` (struck group + unstruck-when-derived, exclusion line on
-  every answer, three supersession surfaces, page-wide evaluation date, the graph projection) under
-  full Engineering law; its request's Accept binds (`tests/graph-annotations.test.ts` A1
-  without its evaluation-date exemption, the panel naming a superseded statement + its source, live
-  review owed). The prototype's shortcuts each owe a real design: the date as explicit run context
-  threaded through the answer, marks and proof goals (never `snapshot/1` or a dynamic
-  `clinical_context/3`), the proof cache keyed by date, date input validated at the engine API,
-  answers streamed under a date, the condition grammar replaced by a reviewed realizer, every new
-  string in both catalogs. `prototype/scope-guards/` retires at the close. Rejoined at the graph
-  overhaul's ITERATE close: its graph projection lands inside the picked graph (row above).
-  - Request (user, verbatim): **Scope exclusions and superseded statements do not surface** — the
+- [ ] o2 orientation close: G4 session spike (native vs interpreter date parity at empty / before /
+  on / after 2022-12-29; restore after success, exhaustion, close, error, cancel, deadline; A-open
+  B-open A-close refused or isolated) + G2 layout spike (process exit, two-run `cmp`, harfbuzz vs
+  rendered label boxes, screen-fixed labels, fit-zoom visible share), each graded by checks fixed
+  before the spike and appraised by a `scientist`; a MeSH coverage sample (~100 concepts, two
+  coders: match rate, agreement, category spread → user if poor); the starts + second-concept rule
+  in g2's contract, reviewed by a `consultant`, the real loop count re-measured and told to the
+  user; pre-mortem; `tester` acceptance suite (Intent + Decisions) + characterization suite
+  (answer panel, marks, ladder, chat, corpus browser) → this row lists both branches + their
+  unmerged counts. Detail → `.agent/contracts/gi-orientation.md`.
+- [ ] g1 `kernel` frames: `tools/kb/frames.mjs` — a body reader that keeps `\+ (…)` groups and
+  negation boxes, one frame per sentence VARIANT (consequent `ref(N)`, antecedent referents by
+  Skolem `Deps` position, boxes + operator chains, guard literals apart), sentence-level census
+  in `tests/census.test.ts`.
+- [ ] n1 `kernel` run context: the validated, frozen evaluation date per engine call (ruling per
+  the o2 spike), the proof cache keyed by it, answers streamed under it, chat goals wrapped by the
+  page, the read-only guard refusing any context write; closes the queue row `The engine session
+  interleaves concurrent requests` by refusing a second open request by name. Approved re-pins:
+  `engine:check` call shapes, the dated proof's context step.
+- [ ] g2 `kernel` projection: `tools/kb/network.mjs` → `kb/generated/graph/clinical-network.json`,
+  re-derived by `kb:asset-check`. New `MEANING` rows BESIDE the old ones (they leave at g7):
+  verb phrase ≡ operator chain; no start from a negated condition; every sentence in exactly one
+  bucket; a line keeps its whole consequent (arguments, phrases, quantities); several starts share
+  rule id + full condition; annotations on their line; document kind per line; every exclusion
+  and supersession record + guard projected, no date exemption (n30 Accept, moved from A1).
+- [ ] n2 `kernel` records + superseded derivation, generic over any document: compiled goals for
+  the exclusion records (12 → 8 conditions, deduplicated by clause body, never by English), the
+  supersession records and a per-sentence derivation under the run context; condition text = the
+  KB's controlled-language sentence (Decisions).
+- [ ] g3 `data` MeSH colouring (Decisions): pinned release + verify lane, concept → descriptor →
+  top-level category table (two coders, adjudicated, explicit no-match), polyhierarchy priority
+  rule, `palette:check` + `contrast:check` over the fills, legend attribution.
+- [ ] g4 `kernel` layout + labels at build time: seeded fcose, pain row pinned, process exits,
+  byte-reproducible (`kb:reproduce`), harfbuzz label boxes over the decompressed shipped font,
+  screen-fixed labels, per-label reveal zoom; forced labels (selection, neighbours, trace) and
+  loops collision-graded separately.
+- [ ] n3 answer panel: page-wide date control; the exclusion line on every answer; the
+  superseded group struck, or unstruck under its own heading when the date precedes it; the
+  `Superseded <date> · <citation>` facts line; every new string in `en.ts` + `ja.ts`.
+  - n30 request (user, verbatim; its graph half lands in g2): **Scope exclusions and superseded statements do not surface** — the
     graph projects no `guideline_exclusion/1` or `guideline_supersession/4` record and no guard
     (`tools/kb/graph.mjs` `UNPROJECTED`, the evaluation-date comparison skipped), and the answer
     panel never says that a statement is guarded or superseded; the ladder shows the scope guard as
@@ -434,25 +510,38 @@ variant alike.
     A1 without its evaluation-date exemption, and the answer panel names a superseded statement
     and its source, its live review owed. `pri` low. **User ruling**: carry the semantics through,
     queue the surfacing.
-  - Resume = orientation from its first step: the interpretation `navigator`s were stopped at the
-    route with nothing kept, so they read the `Decisions` the overhaul leaves. The chat-goal date
-    is the hardest shortcut: the read-only allowlist admits `clinical_advice/3,4`,
-    `clinical_context/3` and `clinical_derive/4` to model goals, so the page binds the date outside
-    the model's text — a `Decisions` ruling before the first date unit, holding the card's goal
-    reproducing its run (date included), the proof cache keyed by date and a model write still
-    refused. The `high` queue row cites `prototype/scope-guards/app/chat-guide.md`: its text lands
-    in the chat unit, or the draft moves and the row re-cites it, before the prototype retires.
-- [ ] graph IMPLEMENT: build the graph overhaul's `Decisions` (clinical concept network; guided
-  first view over the pain-type row; clinical-category colour; several starts per rule; examples
-  beside their rule; whole-KB scope with each line's document kind shown) under full Engineering
-  law, `prototype/graph-overhaul/` retiring at its close. Carried from ITERATE
-  (`.agent/contracts/graph-iterate-close.md` L7): a form for advice without a second clinical
-  concept (unseen candidate: marker + panel); label placement per view (the prototype's declutter
-  never converges); the graph on a phone's first screen + no trace label collisions; the category
-  fills under `pnpm palette:check`; a source for the clinical categories (hand-made in the
-  prototype); the prepared questions' reach over the full set (user: may widen); n30's graph
-  projection lands in this graph; the pre-overhaul graph rulings (edge-state polarity, Cytoscape,
-  n30's guideline hub — m1 draws none) each kept or replaced at orientation.
+- [ ] g5 network UI (`src/network/`, the one Cytoscape importer): pain first view (acute
+  default), full network, trace from the live proof, one rule, one concept, loops, examples beside
+  their rule, document-kind chips + line styles, MeSH legend, boundaries view, table view, both
+  locales, the graph on a phone's first screen; replaces `SemanticGraph` in the app.
+- [ ] n4 chat: the guide lands the `high` queue row (`The chat guide names guideline_document/4's
+  digests as prose`) and the prototype's draft; supersession facts as KB parts; each turn keeps its
+  captured date; the exclusion line under a reply with a KB part.
+- [ ] n5 corpus browser: superseded marks from the live records, independent of the date.
+- [ ] g6 rendered grading: `graph:check` for the new component (rendered label = asset label,
+  shown labels never overlap, reveal zoom honoured, interactions on both sides of the seam, fill
+  read-back, failure fallbacks) + `visual-qa` network states.
+- [ ] g7 retire the linguistic graph (`semantic-graph.json`, `src/graph/`, `tools/kb/graph.mjs`,
+  `tools/graph-probe/`, its suites, census rows and mutants) once the user approves the old-check →
+  new-check mapping; `.claude/rules/graph.md` rewritten; the pre-overhaul graph rulings leave
+  `Decisions`.
+- [ ] r1 closing review → `.agent/review.md` rows, none open.
+- [ ] d1 README; `git tag prototype-graph-overhaul` + `prototype-scope-guards`, `git rm -r` both;
+  `Artifacts`, `Decisions` + `Tasks` current; `Phase` = the catalog PROTOTYPE routed state (row
+  below) over the suspended MAINTAIN scope.
+- [ ] owed (user): live review of the new concept network once g5 lands (replaces the sync-u2
+  annotations and n1 colour reviews of the old graph, user ruling) and of the n30 answer surfaces
+  once n3 lands.
+- [ ] catalog — the next phase, PROTOTYPE (user ruling): the prepared questions redesigned around
+  the full guideline.
+  - Request (user, verbatim, selected answers): "Redesign around the full guideline — Rebuild the
+    prepared-question list from the full knowledge base's topics, with its own review round." Then
+    "Next, as its own prototype — This session finishes the graph overhaul and the scope and
+    superseded-statement work. At its close, the redesign becomes the next phase: a prototype of
+    the new question list and answer form that you review, then its build."
+  - Known at routing: `parseAdviceSentence` parses 1,477 of 1,813 sentences on parse alone (no
+    `checkActions`, premises or gates); an antecedent comparison refuses the build today; depth
+    cap 4 and the proof budget are measured on 58 sentences only.
 - Queue → `.agent/deferred.md`: each row carries its acceptance check, plus the accepted-open review ids, whose checks stay in `.agent/archive/review-expedited.md`.
 
 ## Phase
