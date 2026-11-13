@@ -66,9 +66,12 @@ copulas (annotations). `parseAdviceSentence` parses 1,477 of 1,813 sentences (pa
   solutions; `rec12-imp08` S1–S3 deontic heads derive natively and by interpreter alike, iff the
   date precedes 20221229 (interpreter under the sentence's premises).
 - K2 no leak: after each terminal mode — exhausted, closed early, error inside the goal, cancel,
-  inference limit, deadline kill — the next undated query reads no date.
+  inference limit, deadline kill — the raw run context, read by a bare unwrapped probe before any
+  later wrapper can reset it, holds its prior value, and the next undated query reads no date
+  (scientist-1: a reset by the next wrapper would mask a cleanup leak).
 - K3 concurrency: a second request while a streamed dated query holds its frame open is refused
-  by name, or reads only its own context; the first never reads the second's.
+  by name (`Decisions`: a second concurrent request is refused by name); the first then completes
+  under its own context alone. Today's shipped behaviour is measured first and reported.
 - K4 a dated proof carries exactly one line-free context leaf; an undated proof is byte-identical
   to today's.
 - K5 the read-only guard refuses model goals naming the wrapper or any global-variable builtin.
