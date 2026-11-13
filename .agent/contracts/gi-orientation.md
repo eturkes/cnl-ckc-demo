@@ -57,36 +57,61 @@ multi-frame sentences = 2 genuine disjunctions (`rec02-imp08` S4, `s37-14` S7) +
 and patient-actor conditions are read; rule unreviewed — o2), 316 example-list items, 24 grade
 copulas (annotations). `parseAdviceSentence` parses 1,477 of 1,813 sentences (parse only).
 
-## Spike checks — fixed before the spikes run
+## Spike checks — fixed before the spikes run, revised by scientist-1's appraisal before grading
 
-### S-G4 run-context session spike (builder; real `swipl-wasm`, the shipped `EngineSession`)
+Spikes prove mechanism feasibility; scientist-1's Z1 end-to-end predicates (date admission and
+invalid dates, frozen copy vs caller mutation, the original date kept through queued answer →
+marks → proof → chat and UI date changes, a reproducible goal + context card, stale proof-cache
+refusal; layout re-graded on the final projection, all views, the actual phone canvas, an
+independent rendered oracle) bind the n1, g4 and g6 contracts, not the spikes.
 
-- K1 native ≡ interpreter: for context ∈ {none, 20221201, 20221229, 20230101}, native
-  `guideline_evaluation_date(D)` and `derive(guideline_evaluation_date(D),…)` return the same
-  solutions; `rec12-imp08` S1–S3 deontic heads derive natively and by interpreter alike, iff the
-  date precedes 20221229 (interpreter under the sentence's premises).
-- K2 no leak: after each terminal mode — exhausted, closed early, error inside the goal, cancel,
-  inference limit, deadline kill — the raw run context, read by a bare unwrapped probe before any
-  later wrapper can reset it, holds its prior value, and the next undated query reads no date
-  (scientist-1: a reset by the next wrapper would mask a cleanup leak).
-- K3 concurrency: a second request while a streamed dated query holds its frame open is refused
-  by name (`Decisions`: a second concurrent request is refused by name); the first then completes
-  under its own context alone. Today's shipped behaviour is measured first and reported.
-- K4 a dated proof carries exactly one line-free context leaf; an undated proof is byte-identical
-  to today's.
-- K5 the read-only guard refuses model goals naming the wrapper or any global-variable builtin.
-- K6 added cost per call reported (inferences, ms) against a catalog answer's.
+### S-G4 run-context session spike (builder-40; real `swipl-wasm`, the shipped `EngineSession`)
 
-### S-G2 layout + label spike (builder; the probe network under R3)
+- K1 for context none / 20221201 / 20221229 / 20230101, native AND interpreter date solutions are
+  exactly [] / [20221201] / [20221229] / [20230101]; every `rec12-imp08` S1–S3 deontic head,
+  enumerated independently, under identical non-date premises in both arms, proves only before
+  20221229 (a limit or an error never counts as false); negative controls: one necessary premise
+  removed, a matching exclusion added.
+- K2 inside an open goal the date is read; then each terminal reason is forced and asserted —
+  failure, exhaustion, early close / answer cap, error, cancel, inference / depth / stack limits,
+  soft deadline — and the raw run context, read by a bare probe BEFORE any new wrapper, is
+  absent or restored; then an undated KB positive control + an empty date query. A hard deadline
+  terminates the runtime: its row grades a real client/worker termination and the verified fresh
+  engine's raw context (`none`) instead.
+- K3 while A streams under date A, a query and a proof B under date B each settle a named busy
+  refusal before touching Prolog, A's cache or A's context; A then yields all its remaining
+  solutions and its terminal under date A alone; after A closes, B succeeds under date B.
+- K4 a dated proof carries one line-free run-context record equal to the admitted date (repeated
+  dependency leaves agree); its source-line set is unchanged except for derivations the date
+  genuinely changes; a direct date goal and a compound goal reading the date twice both prove;
+  every undated catalog proof is byte-identical to the pre-spike commit's; a before / on / after
+  date change misses the proof cache, a repeated same-date proof hits.
+- K5 the read-only guard refuses model goals naming the wrapper or any global-variable builtin,
+  through the real model-goal entry, with an ordinary permitted KB goal as positive control.
+- K6 descriptive: paired baseline / wrapped runs (same image, goal, budget, identical solution
+  multiset, order balanced, proof cache off), absolute + relative inference and time deltas,
+  repetitions + spread, host + load; cold first call apart from warm runs.
 
-- L1 the process exits within 2 s of the layout's end.
-- L2 two runs write byte-identical output (`cmp`).
-- L3 full-network layout wall time reported; the pain row pinned exactly (one y, acute < subacute
-  < chronic in x).
-- L4 harfbuzz label box (decompressed shipped Atkinson Hyperlegible Next, the shipped weight +
-  wrap width) vs Cytoscape's rendered box in Chromium at screen-fixed size: |Δw| and |Δh| ≤ 2 px
-  for ≥ 99% of labels, the maximum reported.
-- L5 with reveal zooms from a greedy priority pass, the rendered shown labels overlap 0 times at
-  fit, 1.5×, 2× and 4× fit on 1152×660 and 343×440 canvases.
-- L6 share of labels shown at fit, per canvas; forced labels (acute pain's neighbourhood) and loop
-  edges: overlap counts reported.
+### S-G2 layout + label spike (builder-41; the probe network under R3)
+
+- L1 an external supervisor requires layout end + a valid artifact + natural exit rc 0 within 2 s
+  of layout end, inside a whole-run deadline fixed before the run; a planted held timer and a
+  planted never-ending layout both fail.
+- L2 two fresh processes, reuse disabled, write to distinct initially absent paths; each output
+  validates (every input id present, finite positions, label + reveal records); canonical bytes
+  equal; seed + input / font / toolchain hashes reported; same-host reproducibility only.
+- L3 every node positioned; the three pain nodes share y, acute < subacute < chronic in x, every
+  other node centre below that row; layout-only and cold-process wall time, census, host + load
+  reported.
+- L4 EVERY label's predicted box (decompressed shipped Atkinson Hyperlegible Next, shipped
+  weight, explicit font load checked, identical wrap / line height / letter spacing) vs its
+  rendered box in CSS px; 2 px / 99% reported as diagnostics; every underestimated box padded
+  before L5 (outline and background included); on-screen size + wrapping unchanged across zooms.
+- L5 on each canvas (1152×660, 343×440): zero rendered visible-label intersections at fit, at
+  every reveal transition (just below / at / above), and at maximum zoom, zooming both ways;
+  boundary failures captured and inspected.
+- L6 the three pain anchors' labels forced at fit; the priority (pain anchors, then degree,
+  stable tie-break) verified; every label reachable at a finite supported zoom; selection +
+  neighbours of acute, subacute and chronic pain and of the maximum-degree node: every mandatory
+  label rendered, zero label-label overlap, occlusion / clipping recorded apart; fit share
+  descriptive, with screenshots judged.
