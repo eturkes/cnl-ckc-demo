@@ -20,6 +20,7 @@ import type {
   PlSolution,
 } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const GENERATED = join(dirname(dirname(fileURLToPath(import.meta.url))), 'kb', 'generated');
@@ -65,7 +66,7 @@ describe('session streaming', () => {
   it('streams every solution, rendered, in order, before the run settles', async () => {
     const streamed: PlSolution[] = [];
     let settled = false;
-    const result = await session.solve('between(1,4,X).', budget(), 's1', (solution) => {
+    const result = await session.solve('between(1,4,X).', budget(), UNDATED, 's1', (solution) => {
       expect(settled).toBe(false);
       streamed.push(solution);
     });
@@ -83,6 +84,7 @@ describe('session streaming', () => {
     const answered = await session.solve(
       'between(1,3,X),forall(between(1,100,_),true).',
       budget({ inferences: 650 }),
+      UNDATED,
       's2',
       (solution) => streamed.push(solution),
     );
@@ -95,6 +97,7 @@ describe('session streaming', () => {
     const tail = await session.solve(
       'between(1,3,X),forall(between(1,100,_),true),X<3.',
       budget({ inferences: 500 }),
+      UNDATED,
       's3',
       (solution) => streamed.push(solution),
     );
@@ -131,6 +134,7 @@ describe('session streaming', () => {
       const result = await session.solve(
         'between(1,2,X),(X =:= 2 -> forall(between(1,2000000,_),true) ; true).',
         budget(),
+        UNDATED,
         's4',
         (solution) => streamed.push(solution.display.X ?? ''),
       );
@@ -144,7 +148,7 @@ describe('session streaming', () => {
   );
 
   it('a throwing listener changes no outcome', async () => {
-    const result = await session.solve('between(1,2,X).', budget(), 's5', () => {
+    const result = await session.solve('between(1,2,X).', budget(), UNDATED, 's5', () => {
       throw new Error('d17 listener failed');
     });
     expect(result).toMatchObject({ kind: 'solutions' });
@@ -156,6 +160,7 @@ describe('session streaming', () => {
     const request: EngineRequest = {
       id: 's7',
       kind: 'query',
+      context: UNDATED,
       goal: '(X=shown;throw(error(resource_error(d17_probe),probe))).',
       budget: budget(),
     };
@@ -170,6 +175,7 @@ describe('session streaming', () => {
     const request: EngineRequest = {
       id: 's6',
       kind: 'query',
+      context: UNDATED,
       goal: 'between(1,2,X).',
       budget: budget(),
     };
@@ -228,8 +234,12 @@ describe('a late display never streams', () => {
       const epoch = Date.now();
       vi.spyOn(Date, 'now').mockImplementation(() => epoch + virtualNow);
       const streamed: string[] = [];
-      const outcome = await timed.solve('between(1,3,X).', budget({ wallClockMs: 10 }), 'l1', (s) =>
-        streamed.push(s.display.X ?? ''),
+      const outcome = await timed.solve(
+        'between(1,3,X).',
+        budget({ wallClockMs: 10 }),
+        UNDATED,
+        'l1',
+        (s) => streamed.push(s.display.X ?? ''),
       );
       expect(outcome).toMatchObject({ kind: 'limit', limit: 'wall-clock' });
       expect(streamed).toEqual(['1']);
@@ -279,8 +289,12 @@ describe('client partial routing', () => {
         ]) as unknown as Worker,
     });
     const heard: PlSolution[] = [];
-    const outcome = await client.query('member(X,[a,b]).', budget(), undefined, (solution) =>
-      heard.push(solution),
+    const outcome = await client.query(
+      'member(X,[a,b]).',
+      budget(),
+      UNDATED,
+      undefined,
+      (solution) => heard.push(solution),
     );
     expect(heard).toEqual([row('a'), row('b')]);
     expect(outcome).toEqual({ kind: 'solutions', solutions: [row('a'), row('b')] });
@@ -306,7 +320,7 @@ describe('client partial routing', () => {
       cancelSchedule: () => undefined,
     });
     const heard: PlSolution[] = [];
-    const settling = client.query('repeat.', budget(), undefined, (solution) =>
+    const settling = client.query('repeat.', budget(), UNDATED, undefined, (solution) =>
       heard.push(solution),
     );
     await vi.waitFor(() => {
@@ -338,7 +352,7 @@ describe('client partial routing', () => {
     });
     const violations: EngineError[] = [];
     client.onProtocolViolation = (error) => violations.push(error);
-    expect(await client.query('true.', budget())).toEqual({
+    expect(await client.query('true.', budget(), UNDATED)).toEqual({
       kind: 'solutions',
       solutions: [row('a')],
     });
@@ -383,10 +397,10 @@ describe('a run ends at its final record', () => {
         },
       });
       await counted.boot(image);
-      expect(await counted.solve('fail.', budget())).toEqual({ kind: 'failure' });
+      expect(await counted.solve('fail.', budget(), UNDATED)).toEqual({ kind: 'failure' });
       expect(steps).toBe(1);
       steps = 0;
-      const two = await counted.solve('between(1,2,X).', budget());
+      const two = await counted.solve('between(1,2,X).', budget(), UNDATED);
       expect(two).toMatchObject({ kind: 'solutions' });
       // Two answers, then the final record: three steps, none past it.
       expect(steps).toBe(3);
@@ -429,13 +443,13 @@ describe('the exhausting step still reads the deadline', () => {
       await timed.boot(image);
       const epoch = Date.now();
       vi.spyOn(Date, 'now').mockImplementation(() => epoch + virtualNow);
-      expect(await timed.solve('fail.', budget({ wallClockMs: 10 }))).toEqual({
+      expect(await timed.solve('fail.', budget({ wallClockMs: 10 }), UNDATED)).toEqual({
         kind: 'limit',
         limit: 'wall-clock',
         solutions: [],
       });
       virtualNow = 0;
-      const two = await timed.solve('(true;true).', budget({ wallClockMs: 10 }));
+      const two = await timed.solve('(true;true).', budget({ wallClockMs: 10 }), UNDATED);
       expect(two).toMatchObject({ kind: 'limit', limit: 'wall-clock' });
       if (two.kind === 'limit') expect(two.solutions).toHaveLength(2);
     },

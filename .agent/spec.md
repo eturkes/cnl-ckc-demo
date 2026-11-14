@@ -40,7 +40,9 @@ questions by deterministic Prolog execution.
   exclusion line on every answer, the page-wide evaluation date, corpus marks, a recorded chat
   replay whose goals run live, and the hub + edge-state graph (`app/graph/`, alone at
   `/prototype/scope-guards/app/graph/`). `node prototype/scope-guards/app/capture.mjs <dir>`
-  re-drives every state against the running dev server. `app/chat-guide.md` is the proposed
+  re-drives every state against the running dev server. It runs from `dbf0bbe` or earlier (a
+  worktree there): n1 made `guideline_evaluation_date/1` a static run-context read in the image,
+  which its `snapshot/1` date overlay cannot redefine. `app/chat-guide.md` is the proposed
   guide text; the bridge still reads `server/chat-guide.md`. Prototype shortcuts, each owed a real
   implementation: the date reaches a run through a trusted `snapshot/1` adapter (`app/engine.ts`)
   that turns `clinical_context/3` dynamic and buffers a run's answers before showing them; the chat
@@ -476,17 +478,11 @@ variant alike.
   its re-open trigger: three consecutive gates on one host above its bound (45 s on the Core Ultra
   7 268V, 110 s on the i7-8650U), each from a 1-min load below 2. The 492-document bag counts one:
   141.9 s on the i7-8650U from a load near 1.3 (T11 86.9 s, P4 50.9 s).
-- [ ] o2 orientation close: G4 session spike (native vs interpreter date parity at empty / before /
-  on / after 2022-12-29; restore after success, exhaustion, close, error, cancel, deadline; A-open
-  B-open A-close refused or isolated) + G2 layout spike (process exit, two-run `cmp`, harfbuzz vs
-  rendered label boxes, screen-fixed labels, fit-zoom visible share), each graded by checks fixed
-  before the spike and appraised by a `scientist`; a MeSH coverage sample (~100 concepts, two
-  coders: match rate, agreement, category spread → user if poor); the starts + second-concept rule
-  in g2's contract, reviewed by a `consultant`, the real loop count re-measured and told to the
-  user; pre-mortem; `tester` acceptance suite (Intent + Decisions) + characterization suite
-  (answer panel, marks, ladder, chat, corpus browser) → this row lists both branches + their
-  unmerged counts. Detail → `.agent/contracts/gi-orientation.md`.
-- [ ] g1 `kernel` frames: `tools/kb/frames.mjs` — a body reader that keeps `\+ (…)` groups and
+- [ ] o2 acceptance suite `wt/tester-7` `cd5e569` (`Intent` + `Decisions` + `gi-interfaces.md`, 75
+  cases, each seen red; red commands + counts in the `cd5e569` commit body): each unit merges the cases it turns green;
+  unmerged after n1: 43 (A2–A9). Orientation evidence (spikes, MeSH sample, g2 review, loop count,
+  pre-mortem) → `.agent/contracts/gi-orientation.md`; characterization `wt/tester-8` merged `35bbb06`.
+- [x] daa7191 g1 `kernel` frames: `tools/kb/frames.mjs` — a body reader that keeps `\+ (…)` groups and
   negation boxes, one frame per sentence VARIANT (consequent `ref(N)`, antecedent referents by
   Skolem `Deps` position, boxes + operator chains, guard literals apart), sentence-level census
   in `tests/census.test.ts`.
@@ -548,7 +544,8 @@ variant alike.
   `Decisions`.
 - [ ] r1 closing review → `.agent/review.md` rows, none open.
 - [ ] d1 README; live-review click paths for n3 + g5 written before the prototypes leave;
-  `git tag prototype-graph-overhaul` + `prototype-scope-guards`, `git rm -r` both;
+  `git tag prototype-graph-overhaul` + `prototype-scope-guards` (at `dbf0bbe`, the last revision it
+  runs on), `git rm -r` both;
   `Artifacts`, `Decisions` + `Tasks` current; `Phase` = the catalog PROTOTYPE routed state (row
   below) over the suspended MAINTAIN scope.
 - [ ] owed (user): live review of the new concept network once g5 lands (replaces the sync-u2

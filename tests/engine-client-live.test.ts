@@ -17,6 +17,7 @@ import { BUDGET_MAX } from '../src/engine/budget.js';
 import { EngineClient } from '../src/engine/client.js';
 import type { BudgetSpec, EngineRequest } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const GENERATED = join(dirname(dirname(fileURLToPath(import.meta.url))), 'kb', 'generated');
@@ -128,7 +129,7 @@ describe('shipped client over the real image', () => {
     const booted = await engine.boot();
     expect(booted).toEqual({ kind: 'booted', contract: manifest.contract });
 
-    const outcome = await engine.query(CATEGORY_A_GOAL, budget);
+    const outcome = await engine.query(CATEGORY_A_GOAL, budget, UNDATED);
     expect(outcome.kind).toBe('solutions');
     if (outcome.kind !== 'solutions') return;
     expect(outcome.solutions).toHaveLength(7);
@@ -153,7 +154,7 @@ describe('shipped client over the real image', () => {
     expect(await engine.boot()).toEqual({ kind: 'booted', contract: manifest.contract });
 
     expect(await engine.consult(OVERLAY)).toEqual({ kind: 'consulted' });
-    const withOverlay = await engine.query(OVERLAY_GOAL, budget);
+    const withOverlay = await engine.query(OVERLAY_GOAL, budget, UNDATED);
     expect(withOverlay.kind).toBe('solutions');
 
     const replacement = await engine.reset('R34 hard cancel');
@@ -164,7 +165,7 @@ describe('shipped client over the real image', () => {
 
     // The overlay lived in the terminated engine alone, so the replacement cannot
     // prove it — the property that makes a hard cancel a real state discard.
-    const afterReset = await engine.query(OVERLAY_GOAL, budget);
+    const afterReset = await engine.query(OVERLAY_GOAL, budget, UNDATED);
     expect(afterReset.kind).toBe('failure');
   }, 180_000);
 });

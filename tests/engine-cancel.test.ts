@@ -23,6 +23,7 @@ import {
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
 import { AnswerService } from '../src/questions/service.js';
 import { QUESTION_IDS } from '../src/questions/catalog.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const GENERATED = join(dirname(dirname(fileURLToPath(import.meta.url))), 'kb', 'generated');
@@ -185,7 +186,9 @@ describe('signal-bound cancellation', () => {
   it('C1 leaves an unsignalled query behaving exactly as before', async () => {
     const { client, worker } = liveClient();
     try {
-      expect(await client.query('between(1,3,X).', budget())).toMatchObject({ kind: 'solutions' });
+      expect(await client.query('between(1,3,X).', budget(), UNDATED)).toMatchObject({
+        kind: 'solutions',
+      });
       expect(worker.seen.filter((request) => request.kind === 'cancel')).toHaveLength(0);
     } finally {
       client.dispose();
@@ -198,7 +201,7 @@ describe('signal-bound cancellation', () => {
     const controller = new AbortController();
     try {
       for (const hostile of ['', 'what dose is safe?', 'guideline_entity(X,_,_,_).']) {
-        expect(await service.ask(hostile, budget(), controller.signal)).toEqual({
+        expect(await service.ask(hostile, budget(), UNDATED, controller.signal)).toEqual({
           kind: 'rejected',
           reason: 'unknown-id',
         });
@@ -213,7 +216,7 @@ describe('signal-bound cancellation', () => {
     const { client } = liveClient();
     const controller = new AbortController();
     try {
-      const running = client.query('between(1,100000000,X).', budget(), controller.signal);
+      const running = client.query('between(1,100000000,X).', budget(), UNDATED, controller.signal);
       await delay(25);
       controller.abort();
       const outcome = await running;
@@ -229,7 +232,7 @@ describe('signal-bound cancellation', () => {
     const { client, workers } = scriptedClient();
     const controller = new AbortController();
     try {
-      const running = client.query('repeat.', budget(), controller.signal);
+      const running = client.query('repeat.', budget(), UNDATED, controller.signal);
       const worker = workers[0];
       const query = worker?.seen.find((request) => request.kind === 'query');
       controller.abort();
@@ -251,7 +254,7 @@ describe('signal-bound cancellation', () => {
     const { client, workers } = scriptedClient();
     const service = new AnswerService(client);
     try {
-      expect(await service.ask(QUESTION_IDS[0], budget(), controller.signal)).toEqual({
+      expect(await service.ask(QUESTION_IDS[0], budget(), UNDATED, controller.signal)).toEqual({
         kind: 'cancelled',
         id: QUESTION_IDS[0],
         serialized: 'solutions([])',
@@ -271,7 +274,9 @@ describe('signal-bound cancellation', () => {
     const onUnhandled = (reason: unknown): void => void unhandled.push(reason);
     process.on('unhandledRejection', onUnhandled);
     try {
-      expect(await client.query('between(1,2,X).', budget(), controller.signal)).toMatchObject({
+      expect(
+        await client.query('between(1,2,X).', budget(), UNDATED, controller.signal),
+      ).toMatchObject({
         kind: 'solutions',
       });
       const settled = worker.seen.length;
@@ -295,7 +300,7 @@ describe('signal-bound cancellation', () => {
     client.onProtocolViolation = (error) => void violations.push(error.message);
     try {
       const runs = controls.map((control, index) =>
-        client.query('repeat.', budget(), control.signal).then((outcome) => {
+        client.query('repeat.', budget(), UNDATED, control.signal).then((outcome) => {
           settlements[index] = (settlements[index] ?? 0) + 1;
           return outcome;
         }),
@@ -336,8 +341,8 @@ describe('signal-bound cancellation', () => {
 describe('worker lifecycle events', () => {
   it('C8 settles every in-flight caller once on `messageerror`', async () => {
     const { client, workers, clock } = clockedClient();
-    const first = client.query('true.', budget());
-    const second = client.query('fail.', budget());
+    const first = client.query('true.', budget(), UNDATED);
+    const second = client.query('fail.', budget(), UNDATED);
     await delay();
     expect(clock.armed.size).toBe(2);
     workers[0]?.emit('messageerror', {});
@@ -358,7 +363,7 @@ describe('worker lifecycle events', () => {
         throw new Error('structured clone failed');
       };
     });
-    expect(await client.query('true.', budget())).toMatchObject({
+    expect(await client.query('true.', budget(), UNDATED)).toMatchObject({
       kind: 'error',
       error: { code: 'protocol' },
     });
@@ -370,7 +375,7 @@ describe('worker lifecycle events', () => {
     const { client, workers, clock } = clockedClient();
     const violations: string[] = [];
     client.onProtocolViolation = (error) => violations.push(error.message);
-    const first = client.query('true.', budget());
+    const first = client.query('true.', budget(), UNDATED);
     await delay();
     const stale = [...clock.armed.values()][0];
     void client.reset('probe');
@@ -381,7 +386,7 @@ describe('worker lifecycle events', () => {
     const boot = replacement?.seen.find((request) => request.kind === 'boot');
     if (boot === undefined) throw new Error('replacement boot was not posted');
     replacement?.reply({ id: boot.id, kind: 'booted', contract: manifest.contract });
-    const second = client.query('true.', budget());
+    const second = client.query('true.', budget(), UNDATED);
     await delay();
     // The retired generation's timer body still exists; firing it must not settle,
     // terminate or violate anything belonging to the live generation.
@@ -402,7 +407,7 @@ describe('protocol correlation and worker-level failure', () => {
     const { client, workers } = scriptedClient();
     const violations: string[] = [];
     client.onProtocolViolation = (error) => void violations.push(error.message);
-    const pending = client.query('true.', budget());
+    const pending = client.query('true.', budget(), UNDATED);
     await delay();
     const worker = workers[0];
     worker?.reply({ id: 'r-not-mine', kind: 'failure' });
@@ -419,7 +424,7 @@ describe('protocol correlation and worker-level failure', () => {
     const violations: string[] = [];
     client.onProtocolViolation = (error) => void violations.push(error.message);
     let settlements = 0;
-    const pending = client.query('true.', budget()).then((outcome) => {
+    const pending = client.query('true.', budget(), UNDATED).then((outcome) => {
       settlements += 1;
       return outcome;
     });
@@ -439,8 +444,8 @@ describe('protocol correlation and worker-level failure', () => {
 
   it('E10 settles every in-flight caller when the worker reports a failure of its own', async () => {
     const { client, workers, clock } = clockedClient();
-    const first = client.query('repeat.', budget());
-    const second = client.query('repeat.', budget());
+    const first = client.query('repeat.', budget(), UNDATED);
+    const second = client.query('repeat.', budget(), UNDATED);
     await delay();
     const worker = workers[0];
     expect(worker?.seen).toHaveLength(2);

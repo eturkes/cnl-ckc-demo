@@ -25,6 +25,7 @@ import { payloadSource } from '../tools/kb/paths.mjs';
 import { buildImage } from '../tools/kb/produce.mjs';
 
 import { bagFiles, gateRecords, ROOT } from './clinical-test-support.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const manifest = JSON.parse(readFileSync(join(ROOT, 'kb/generated/kb-manifest.json'), 'utf8')) as {
@@ -79,7 +80,7 @@ const proveOn = async (
   document: string,
 ): Promise<{ kind: string; steps: ProofStep[] }> => {
   const constrainedGoal = `clinical_advice('${id}',_,clinical_answer('${document}',_,_))`;
-  const result = await target.prove({ constrainedGoal }, PROOF_BUDGET_MAX);
+  const result = await target.prove({ constrainedGoal }, PROOF_BUDGET_MAX, UNDATED);
   return { kind: result.kind, steps: result.kind === 'proof' ? result.steps : [] };
 };
 

@@ -13,6 +13,7 @@ import { BUDGET_MAX } from '../src/engine/budget.js';
 import { EngineClient } from '../src/engine/client.js';
 import type { EngineRequest, EngineResponse } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type SolveResult } from '../src/engine/session.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const GENERATED = join(dirname(dirname(fileURLToPath(import.meta.url))), 'kb', 'generated');
@@ -114,7 +115,7 @@ const throughClient = async (result: SolveResult): Promise<{ limit?: string; wor
     cancelSchedule: () => undefined,
   });
   try {
-    const outcome = await client.query('true.', budget);
+    const outcome = await client.query('true.', budget, UNDATED);
     return {
       ...(outcome.kind === 'limit' ? { limit: outcome.limit } : {}),
       workers: workers.length,
@@ -127,14 +128,14 @@ const throughClient = async (result: SolveResult): Promise<{ limit?: string; wor
 describe('display rendering under the request deadline', () => {
   it('renders every display inside the deadline', async () => {
     at(2);
-    const outcome = await session.solve('X=one,Y=two,Z=three.', budget);
+    const outcome = await session.solve('X=one,Y=two,Z=three.', budget, UNDATED);
     expect(outcome.kind).toBe('solutions');
     expect(displays).toBe(3);
   });
 
   it('stops at the first display that ends past the deadline', async () => {
     at(20);
-    const outcome = await session.solve('X=one,Y=two,Z=three.', budget);
+    const outcome = await session.solve('X=one,Y=two,Z=three.', budget, UNDATED);
     expect(displays).toBe(1);
     expect(outcome).toEqual({ kind: 'limit', limit: 'wall-clock', solutions: [] });
   });
@@ -144,6 +145,7 @@ describe('display rendering under the request deadline', () => {
     const result = await session.solve(
       '(X=shown;throw(error(resource_error(memory),probe))).',
       budget,
+      UNDATED,
     );
     expect(result).toMatchObject({ kind: 'limit', limit: 'heap' });
     expect(displays).toBe(1);
@@ -155,6 +157,7 @@ describe('display rendering under the request deadline', () => {
     const result = await session.solve(
       '(X=shown;throw(error(resource_error(memory),probe))).',
       budget,
+      UNDATED,
     );
     expect(displays).toBe(1);
     expect(result).toEqual({ kind: 'limit', limit: 'wall-clock', solutions: [] });
@@ -163,12 +166,13 @@ describe('display rendering under the request deadline', () => {
   it('bounds proof rendering by the same deadline', async () => {
     at(2);
     expect(
-      (await session.prove({ constrainedGoal: 'guideline_schema_version(1).' }, budget)).kind,
+      (await session.prove({ constrainedGoal: 'guideline_schema_version(1).' }, budget, UNDATED))
+        .kind,
     ).toBe('proof');
     at(20);
     // Another goal: the arm above cached its proof, and a cache hit renders nothing.
     expect(
-      await session.prove({ constrainedGoal: 'guideline_schema_version(_).' }, budget),
+      await session.prove({ constrainedGoal: 'guideline_schema_version(_).' }, budget, UNDATED),
     ).toEqual({
       kind: 'limit',
       limit: 'wall-clock',

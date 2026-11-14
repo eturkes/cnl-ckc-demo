@@ -18,6 +18,7 @@ import { parseSemanticGraph, SemanticGraphModel } from '../src/graph/model.js';
 import { verifyBag } from '../tools/kb/bag.mjs';
 import { CLINICAL_QUESTIONS } from '../tools/kb/clinical.mjs';
 import { ROOT } from '../tools/kb/paths.mjs';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const GENERATED = join(ROOT, 'kb', 'generated');
@@ -241,7 +242,7 @@ beforeAll(async () => {
   for (const { id, sources } of CLINICAL_QUESTIONS) {
     for (const { document } of sources) {
       const constrainedGoal = `clinical_advice('${id}',_,clinical_answer('${document}',_,_))`;
-      const proof = await session.prove({ constrainedGoal }, PROOF_BUDGET_MAX);
+      const proof = await session.prove({ constrainedGoal }, PROOF_BUDGET_MAX, UNDATED);
       if (proof.kind !== 'proof') throw new Error(`${id}/${document}: ${proof.kind}`);
       steps.push(...flatten(proof.steps));
     }

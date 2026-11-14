@@ -29,6 +29,7 @@ const corpus = String(documents);
 const PRELUDE = `
   const { EngineClient } = await import('/src/engine/client.ts');
   const { BUDGET_MAX } = await import('/src/engine/budget.ts');
+  const { UNDATED } = await import('/src/engine/context.ts');
   const DOCS = 'findall(D,guideline_document(D,_,_,_),Ds),length(Ds,N).';`;
 
 /** @param {string} body @returns {string} an async page expression returning `body`'s result */
@@ -38,9 +39,9 @@ const R38 = scenario(`
   const client = new EngineClient();
   try {
     await client.boot();
-    const capped = await client.query('repeat.', { ...BUDGET_MAX, wallClockMs: 60000, answerCap: 50 });
+    const capped = await client.query('repeat.', { ...BUDGET_MAX, wallClockMs: 60000, answerCap: 50 }, UNDATED);
     const t0 = performance.now();
-    const deadlined = await client.query('repeat.', { ...BUDGET_MAX, wallClockMs: 300 });
+    const deadlined = await client.query('repeat.', { ...BUDGET_MAX, wallClockMs: 300 }, UNDATED);
     return {
       capped: { kind: capped.kind, limit: capped.limit, kept: capped.solutions.length },
       deadlined: { kind: deadlined.kind, limit: deadlined.limit, kept: deadlined.solutions.length },
@@ -55,7 +56,7 @@ const R39 = scenario(`
     const ticks = [];
     const t0 = performance.now();
     const beat = setInterval(() => ticks.push(performance.now() - t0), 25);
-    const outcome = await client.query('between(1,400000000,_),fail.', { ...BUDGET_MAX, wallClockMs: 500 });
+    const outcome = await client.query('between(1,400000000,_),fail.', { ...BUDGET_MAX, wallClockMs: 500 }, UNDATED);
     const settledAt = performance.now() - t0;
     clearInterval(beat);
     const rebooted = await client.reset('engine probe R39');
@@ -77,15 +78,15 @@ const R41 = (cycles, reset) =>
     for (let i = 0; i < ${String(cycles)}; i += 1) {
       const tag = 'probe_overlay_' + i;
       const consulted = await client.consult(':- dynamic(' + tag + '/1).\\n' + tag + '(present).\\n');
-      const before = await client.query(tag + '(V).', budget);
-      const hostile = client.query('between(1,400000000,_),fail.', budget);
+      const before = await client.query(tag + '(V).', budget, UNDATED);
+      const hostile = client.query('between(1,400000000,_),fail.', budget, UNDATED);
       await new Promise((r) => setTimeout(r, 50));
       const t0 = performance.now();
       const booted = ${reset ? "await client.reset('engine probe R41')" : "{ kind: 'booted', contract: { documents: -1 } }"};
       const restartMs = performance.now() - t0;
       ${reset ? 'await hostile;' : ''}
-      const after = await client.query('catch(' + tag + '(_),_,fail).', budget);
-      const docs = await client.query(DOCS, budget);
+      const after = await client.query('catch(' + tag + '(_),_,fail).', budget, UNDATED);
+      const docs = await client.query(DOCS, budget, UNDATED);
       rows.push({
         consulted: consulted.kind, before: before.solutions?.[0]?.display?.V,
         reset: booted.kind, restartMs, after: after.kind,
@@ -102,9 +103,9 @@ const R42 = scenario(`
     try {
       await client.boot();
       const consulted = await client.consult(source);
-      const afterwards = await client.query('true.', budget);
+      const afterwards = await client.query('true.', budget, UNDATED);
       const booted = await client.reset('engine probe R42');
-      const residue = await client.query('catch(' + probe + '(_),_,fail).', budget);
+      const residue = await client.query('catch(' + probe + '(_),_,fail).', budget, UNDATED);
       return { consulted: consulted.error?.code, afterwards: afterwards.error?.code,
                reset: booted.kind, residue: residue.kind };
     } finally { client.dispose(); }
@@ -122,9 +123,9 @@ const R45 = scenario(`
     await client.consult(':- dynamic(probe_hog/1).\\n');
     const t0 = performance.now();
     const runaway = await client.query('between(1,100000000,I),assertz(probe_hog(I)),fail.',
-      { ...BUDGET_MAX, wallClockMs: 240000, answerCap: 10 });
+      { ...BUDGET_MAX, wallClockMs: 240000, answerCap: 10 }, UNDATED);
     const elapsedMs = performance.now() - t0;
-    const next = await client.query(DOCS, small);
+    const next = await client.query(DOCS, small, UNDATED);
     return {
       runaway: { kind: runaway.kind, limit: runaway.limit, code: runaway.error?.code },
       elapsedMs,

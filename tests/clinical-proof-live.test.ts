@@ -26,6 +26,7 @@ import {
   parsePremiseRecords,
   ROOT,
 } from './clinical-test-support.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const manifest = JSON.parse(readFileSync(join(ROOT, 'kb/generated/kb-manifest.json'), 'utf8')) as {
@@ -82,7 +83,7 @@ const clausesOf = (steps: readonly ProofStep[]): ProofClause[] =>
 /** Prove one document's answer through the production RPC, constraining the goal to it. */
 const proveDocument = async (id: string, document: string): Promise<ProofStep[]> => {
   const constrainedGoal = goalFor(id, `clinical_answer('${document}',_,_)`);
-  const result = await session.prove({ constrainedGoal }, PROOF_BUDGET_MAX);
+  const result = await session.prove({ constrainedGoal }, PROOF_BUDGET_MAX, UNDATED);
   if (result.kind !== 'proof') throw new Error(`${id}/${document}: got ${result.kind}`);
   return result.steps;
 };
@@ -190,6 +191,7 @@ describe('live clinical proof', () => {
       const result = await session.prove(
         { constrainedGoal: goalFor(first.id, `clinical_answer('${first.document}',[],"")`) },
         PROOF_BUDGET_MAX,
+        UNDATED,
       );
       expect(result.kind).toBe('failure');
     },
@@ -218,8 +220,10 @@ describe('live clinical proof', () => {
       const goal = goalFor(selection.id, `clinical_answer('${victim.document}',_,_)`);
       // Positive control on the SAME goal and the SAME session shape: the erasure is what
       // moves the outcome, not the mutated-image path itself.
-      expect((await session.prove({ constrainedGoal: goal }, PROOF_BUDGET_MAX)).kind).toBe('proof');
-      const result = await mutated.prove({ constrainedGoal: goal }, PROOF_BUDGET_MAX);
+      expect((await session.prove({ constrainedGoal: goal }, PROOF_BUDGET_MAX, UNDATED)).kind).toBe(
+        'proof',
+      );
+      const result = await mutated.prove({ constrainedGoal: goal }, PROOF_BUDGET_MAX, UNDATED);
       expect(result.kind).toBe('failure');
     },
     BUILD_TIMEOUT,
@@ -230,7 +234,7 @@ describe('live clinical proof', () => {
     async () => {
       // B2 already proved these selections in this session; any `solve` empties the proof cache, so
       // each proof timed below is a cold meta-interpreter run, not a cached copy.
-      expect((await session.solve('true.', BUDGET_MAX)).kind).toBe('solutions');
+      expect((await session.solve('true.', BUDGET_MAX, UNDATED)).kind).toBe('solutions');
       for (const { id, document } of selections) {
         const before = miRuns;
         const started = Date.now();

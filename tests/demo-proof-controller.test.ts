@@ -14,6 +14,7 @@ import type {
 import { DemoController, type DemoEngine } from '../src/demo/DemoController.svelte.js';
 import { QUESTION_IDS, type QuestionId } from '../src/questions/catalog.js';
 import type { AnswerResult } from '../src/questions/service.js';
+import type { RunContext } from '../src/engine/context.js';
 
 const ID = QUESTION_IDS[0];
 const CONTRACT = { schemaVersion: 1, documents: 337 };
@@ -76,6 +77,7 @@ class DeferredProofEngine implements DemoEngine {
   readonly prove = (
     input: ProofInput,
     budget: BudgetSpec,
+    _context: RunContext,
     signal?: AbortSignal,
   ): Promise<ProofOutcome> => {
     const result = deferred<ProofOutcome>();

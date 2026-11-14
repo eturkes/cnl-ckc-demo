@@ -23,6 +23,7 @@ import {
   DemoController,
   type DemoEngine,
 } from '../src/demo/DemoController.svelte.js';
+import { UNDATED, type RunContext } from '../src/engine/context.js';
 
 const CONTRACT: EngineContract = { schemaVersion: 1, documents: 337 };
 
@@ -62,7 +63,12 @@ class ScriptedEngine implements DemoEngine {
     return this.bootOutcome.promise;
   }
 
-  ask(id: unknown, budget: BudgetSpec, signal?: AbortSignal): Promise<AnswerResult> {
+  ask(
+    id: unknown,
+    budget: BudgetSpec,
+    _context: RunContext,
+    signal?: AbortSignal,
+  ): Promise<AnswerResult> {
     const outcome = deferred<AnswerResult>();
     this.concurrentAsks += 1;
     this.maxConcurrentAsks = Math.max(this.maxConcurrentAsks, this.concurrentAsks);
@@ -376,7 +382,7 @@ describe('run lifecycle', () => {
       expect(await engine.boot()).toEqual({ kind: 'booted', contract: manifest.contract });
       const counts: number[] = [];
       for (const id of QUESTION_IDS) {
-        const result = await engine.ask(id, DEMO_BUDGET);
+        const result = await engine.ask(id, DEMO_BUDGET, UNDATED);
         expect(result.kind, id).toBe('answer');
         if (result.kind !== 'answer') throw new Error(`${id}: ${result.kind}`);
         counts.push(result.solutions.length);

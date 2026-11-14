@@ -15,6 +15,13 @@ import {
   validateBudget,
   wrapGoal,
 } from './budget.js';
+import {
+  admitRunContext,
+  contextRecord,
+  contextTerm,
+  RunContextError,
+  type RunContext,
+} from './context.js';
 import { notify, PROOF_BUDGET_MAX } from './protocol.js';
 import { guardGoal, READONLY_GOAL_MAX, READONLY_INTEGER_BYTES } from './readonly.js';
 import type {
@@ -199,6 +206,32 @@ const proofBudget = (budget: BudgetSpec): BudgetSpec => ({
 
 const bareGoal = (goal: string): string => goal.trim().replace(/\.$/u, '');
 
+/** The global `clinical_run/2` holds the run context in (`tools/kb/proof.mjs`). */
+const RUN_CONTEXT_KEY = '$clinical_run_context';
+
+/** `Goal` run under the request's context: `clinical_run/2` states it and restores the prior one. */
+const runIn = (context: RunContext, goal: string): string =>
+  `clinical_run(${contextTerm(context)},(${bareGoal(goal)}))`;
+
+/**
+ * A dated proof's context leaves, one per read of the date, become ONE record that opens it; every
+ * leaf must name the admitted date, else the proof read a date it was not given.
+ */
+const withRunRecord = (steps: ProofStep[], context: RunContext): ProofStep[] => {
+  const expected = contextRecord(context);
+  const strip = (items: ProofStep[]): ProofStep[] =>
+    items.flatMap((step): ProofStep[] => {
+      if (step.kind === 'context') {
+        if (step.goal !== expected)
+          throw new DecodeError('proof read a date the run was not given');
+        return [];
+      }
+      return step.kind === 'clause' ? [{ ...step, children: strip(step.children) }] : [step];
+    });
+  const source = strip(steps);
+  return expected === null ? source : [{ kind: 'context', goal: expected }, ...source];
+};
+
 /** Extract the names from term_string/3's `variable_names` option result. */
 const variableNames = (term: PlTerm | undefined): Set<string> => {
   if (term?.kind !== 'list') throw new DecodeError('goal variable_names is not a list');
@@ -310,6 +343,12 @@ export class EngineSession {
    * knowledge base still derives. The meta-interpreter itself only reads clauses.
    */
   readonly #proofs = new Map<string, ProofStep[]>();
+  /**
+   * The request whose frame is open. A second query, proof or consult arriving meanwhile is
+   * refused `busy` before it is read: it would otherwise run nested in the open frame, outside
+   * the knowledge base, and under the open request's run context.
+   */
+  #open: string | undefined;
   readonly #options: SessionOptions;
 
   constructor(options: SessionOptions) {
@@ -397,6 +436,12 @@ export class EngineSession {
           `manifest records schema ${expected.schemaVersion} with ${expected.documents}`,
       );
     }
+    // A fresh engine states no evaluation date before any request can read one.
+    const initialized = decodeOnce(
+      engine.prolog.query(`nb_setval('${RUN_CONTEXT_KEY}',none).`).once(),
+    );
+    if (initialized.kind !== 'bindings')
+      throw new ContractMismatch('run context did not initialize');
     this.#engine = engine;
     this.#contract = contract;
     return contract;
@@ -434,6 +479,7 @@ export class EngineSession {
   async solve(
     goal: string,
     budget: BudgetSpec,
+    context: RunContext,
     id = '',
     onSolution?: (solution: PlSolution) => void,
     parsed = false,
@@ -472,7 +518,7 @@ export class EngineSession {
     let exhausted = false;
     try {
       if (parsed) uncap = this.#capIntegers(engine);
-      query = engine.prolog.query(meteredGoal(goal, budget));
+      query = engine.prolog.query(meteredGoal(runIn(context, goal), budget));
       const iterator = query[Symbol.iterator]();
       while (stopped === undefined) {
         const step = iterator.next();
@@ -573,6 +619,7 @@ export class EngineSession {
   async prove(
     input: ProofInput,
     budget: BudgetSpec,
+    context: RunContext,
     id = '',
   ): Promise<Exclude<ProofOutcome, { kind: 'error' }>> {
     const engine = this.#require();
@@ -584,6 +631,7 @@ export class EngineSession {
     // (kb:asset-check) rules out a JSON-encoded key here.
     const key = [
       goal,
+      contextTerm(context),
       ...Object.entries(selected ?? {})
         .sort(([a], [b]) => (a < b ? -1 : 1))
         .flat(),
@@ -661,7 +709,7 @@ export class EngineSession {
     this.#active = id;
     this.#cancelling = this.#deferred.delete(id);
     const started = Date.now();
-    const query = engine.prolog.query(wrapGoal(metaGoal, spec), initial);
+    const query = engine.prolog.query(wrapGoal(runIn(context, metaGoal), spec), initial);
     const iterator = query[Symbol.iterator]();
     let proof: PlTerm | undefined;
     let stopped: LimitKind | 'cancelled' | undefined = this.#cancelling ? 'cancelled' : undefined;
@@ -717,7 +765,7 @@ export class EngineSession {
     if (proof === undefined) return { kind: 'failure' };
     try {
       const late = (): boolean => Date.now() - started > spec.wallClockMs;
-      const steps = this.#proofSteps(engine, proof, late);
+      const steps = withRunRecord(this.#proofSteps(engine, proof, late), context);
       this.#proofs.set(key, structuredClone(steps));
       return { kind: 'proof', steps };
     } catch (cause) {
@@ -759,6 +807,16 @@ export class EngineSession {
     progress?: (response: EngineResponse) => void,
   ): Promise<EngineResponse> {
     const { id } = request;
+    if (request.kind === 'query' || request.kind === 'proof' || request.kind === 'consult') {
+      if (this.#open !== undefined) {
+        return {
+          id,
+          kind: 'error',
+          error: { code: 'busy', message: `request ${this.#open} is still open` },
+        };
+      }
+      this.#open = id;
+    }
     try {
       switch (request.kind) {
         case 'boot':
@@ -775,13 +833,16 @@ export class EngineSession {
           this.consult(request.source);
           return { id, kind: 'consulted' };
         case 'query': {
-          // Revalidated here because the client is not the only thing that can post.
+          // Revalidated here because the client is not the only thing that can post; budget first,
+          // so a request wrong in both reads as it did before the run context existed.
           const budget = validateBudget(request.budget);
+          const context = admitRunContext(request.context);
           const readonly = isReadonly(request);
           const goal = readonly ? this.#readonlyGoal(request.goal) : request.goal;
           const solved = await this.solve(
             goal,
             budget,
+            context,
             id,
             (solution) => progress?.({ id, kind: 'partial', solution }),
             readonly,
@@ -790,7 +851,8 @@ export class EngineSession {
         }
         case 'proof': {
           const budget = validateBudget(request.budget);
-          const proven = await this.prove(request.input, budget, id);
+          const context = admitRunContext(request.context);
+          const proven = await this.prove(request.input, budget, context, id);
           if (proven.kind === 'limit') {
             return { id, kind: 'limit', limit: proven.limit, solutions: [] };
           }
@@ -812,6 +874,8 @@ export class EngineSession {
         return { id, kind: 'error', error: fail('aborted', cause) };
       }
       return { id, kind: 'error', error: classify(cause, request.kind) };
+    } finally {
+      if (this.#open === id) this.#open = undefined;
     }
   }
 
@@ -948,6 +1012,12 @@ export class EngineSession {
         steps.push({ kind: 'negation', goal: this.#display(engine, display(goal), late) });
         continue;
       }
+      if (item.functor === 'context' && item.args.length === 1) {
+        const goal = item.args[0];
+        if (goal?.kind !== 'compound') throw new DecodeError('run context carries an invalid goal');
+        steps.push({ kind: 'context', goal: this.#display(engine, display(goal), late) });
+        continue;
+      }
       if (item.functor === 'builtin' && item.args.length === 1) {
         const goal = item.args[0];
         if (goal?.kind !== 'compound') throw new DecodeError('comparison carries an invalid goal');
@@ -1058,6 +1128,7 @@ const isReadonly = (request: EngineRequest & { kind: 'query' }): boolean => {
 const classify = (cause: unknown, kind: EngineRequest['kind']): EngineError => {
   if (cause instanceof RuntimeAborted) return fail('aborted', cause);
   if (cause instanceof GuardRefusal) return fail('guard', cause);
+  if (cause instanceof RunContextError) return fail('context', cause);
   if (cause instanceof ContractMismatch) return fail('contract', cause);
   if (cause instanceof BudgetError) return fail('budget', cause);
   if (cause instanceof ConsultFailure) return fail('consult', cause);

@@ -17,6 +17,7 @@ import { EngineClient } from '../src/engine/client.js';
 import type { BudgetSpec, EngineRequest, EngineResponse } from '../src/engine/protocol.js';
 import { isTerminal } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -61,13 +62,13 @@ let session: EngineSession;
 beforeAll(async () => {
   session = new EngineSession({ loadImage: loaderWith({}), expected: manifest.contract });
   await session.boot(new Uint8Array(readGenerated('kb.pvm')));
-  const solved = await session.solve(DEEP_SETUP, budget());
+  const solved = await session.solve(DEEP_SETUP, budget(), UNDATED);
   expect(solved.kind).toBe('solutions');
 }, 120_000);
 
 /** Reads a scalar straight out of the engine, so no test asserts a value it computed. */
 const engineValue = async (goal: string, name: string): Promise<unknown> => {
-  const solved = await session.solve(goal, budget());
+  const solved = await session.solve(goal, budget(), UNDATED);
   if (solved.kind !== 'solutions') throw new Error(`expected solutions, got ${solved.kind}`);
   const term = solved.solutions[0]?.bindings[name];
   return term?.kind === 'integer' ? term.value : undefined;
@@ -78,7 +79,7 @@ const expectEngineSound = async (): Promise<void> => {
   expect(await engineValue('findall(D,guideline_document(D,_,_,_),Ds),length(Ds,N).', 'N')).toBe(
     manifest.contract.documents,
   );
-  const solved = await session.solve(CATEGORY_A_GOAL, budget());
+  const solved = await session.solve(CATEGORY_A_GOAL, budget(), UNDATED);
   expect(solved.kind).toBe('solutions');
   if (solved.kind === 'solutions') expect(solved.solutions).toHaveLength(7);
 };
@@ -116,7 +117,7 @@ describe('P1 budget spec', () => {
 
   it('P1.2 refuses a goal that names a reserved wrapper variable', async () => {
     const response = await session.handle(
-      { id: 'b2', kind: 'query', goal: 'BudgetDepth_ = 1.', budget: budget() },
+      { id: 'b2', kind: 'query', context: UNDATED, goal: 'BudgetDepth_ = 1.', budget: budget() },
       new Uint8Array(0),
     );
     expect(response.kind).toBe('error');
@@ -124,7 +125,7 @@ describe('P1 budget spec', () => {
   });
 
   it('P1.4 stops the real seven-solution goal at an answer cap of one', async () => {
-    const solved = await session.solve(CATEGORY_A_GOAL, budget({ answerCap: 1 }));
+    const solved = await session.solve(CATEGORY_A_GOAL, budget({ answerCap: 1 }), UNDATED);
     expect(solved.kind).toBe('limit');
     if (solved.kind !== 'limit') return;
     expect(solved.limit).toBe('answer-cap');
@@ -135,21 +136,25 @@ describe('P1 budget spec', () => {
 
 describe('P2 typed limit states', () => {
   it('P2.2 surfaces depth exhaustion as its own state', async () => {
-    const solved = await session.solve('probe_deep(5000).', budget({ depth: 50 }));
+    const solved = await session.solve('probe_deep(5000).', budget({ depth: 50 }), UNDATED);
     expect(solved.kind).toBe('limit');
     if (solved.kind === 'limit') expect(solved.limit).toBe('depth');
     await expectEngineSound();
   });
 
   it('P2.3 surfaces inference exhaustion as its own state', async () => {
-    const solved = await session.solve('probe_deep(5000).', budget({ inferences: 1000 }));
+    const solved = await session.solve('probe_deep(5000).', budget({ inferences: 1000 }), UNDATED);
     expect(solved.kind).toBe('limit');
     if (solved.kind === 'limit') expect(solved.limit).toBe('inference');
     await expectEngineSound();
   });
 
   it('P2.1 surfaces stack exhaustion as its own state', async () => {
-    const solved = await session.solve('length(L,20000000).', budget({ stackBytes: 8388608 }));
+    const solved = await session.solve(
+      'length(L,20000000).',
+      budget({ stackBytes: 8388608 }),
+      UNDATED,
+    );
     expect(solved.kind).toBe('limit');
     if (solved.kind === 'limit') expect(solved.limit).toBe('stack');
     await expectEngineSound();
@@ -159,6 +164,7 @@ describe('P2 typed limit states', () => {
     const solved = await session.solve(
       'between(1,1000000,X).',
       budget({ wallClockMs: 40, answerCap: BUDGET_MAX.answerCap }),
+      UNDATED,
     );
     expect(solved.kind).toBe('limit');
     if (solved.kind === 'limit') expect(solved.limit).toBe('wall-clock');
@@ -166,8 +172,8 @@ describe('P2 typed limit states', () => {
   });
 
   it('P2.5 keeps the cap distinct from an honestly exhausted run', async () => {
-    const capped = await session.solve('between(1,10,X).', budget({ answerCap: 4 }));
-    const exhausted = await session.solve('between(1,4,X).', budget({ answerCap: 10 }));
+    const capped = await session.solve('between(1,10,X).', budget({ answerCap: 4 }), UNDATED);
+    const exhausted = await session.solve('between(1,4,X).', budget({ answerCap: 10 }), UNDATED);
     expect(capped.kind).toBe('limit');
     expect(exhausted.kind).toBe('solutions');
     if (capped.kind === 'limit' && exhausted.kind === 'solutions') {
@@ -179,9 +185,9 @@ describe('P2 typed limit states', () => {
   it('P2.5 reads an exact-fit cap as honest exhaustion rather than truncation', async () => {
     // The cap truncated the run only if the engine still had an answer to give, so
     // the driver proves one solution past the cap and discards it.
-    const fit = await session.solve('between(1,4,X).', budget({ answerCap: 4 }));
-    const over = await session.solve('between(1,5,X).', budget({ answerCap: 4 }));
-    const real = await session.solve(CATEGORY_A_GOAL, budget({ answerCap: 7 }));
+    const fit = await session.solve('between(1,4,X).', budget({ answerCap: 4 }), UNDATED);
+    const over = await session.solve('between(1,5,X).', budget({ answerCap: 4 }), UNDATED);
+    const real = await session.solve(CATEGORY_A_GOAL, budget({ answerCap: 7 }), UNDATED);
     expect(fit.kind).toBe('solutions');
     expect(real.kind).toBe('solutions');
     expect(over.kind).toBe('limit');
@@ -233,7 +239,7 @@ describe('P2 typed limit states', () => {
   // swipl-wasm hands a mid-run exception back as an iterator step `{done: false, error: true,
   // message}` with no `value`, which a loop reading `value` alone took for exhaustion.
   it('P2.10 reports a Prolog error raised mid-run as an error, never as a failure', async () => {
-    await expect(session.solve('X is foo+1.', budget())).rejects.toThrow(
+    await expect(session.solve('X is foo+1.', budget(), UNDATED)).rejects.toThrow(
       "is/2: Arithmetic: `foo/0' is not a function",
     );
     // Two answers stream before the third step raises: the run still ends in its error.
@@ -241,6 +247,7 @@ describe('P2 typed limit states', () => {
       {
         id: 'p2-10',
         kind: 'query',
+        context: UNDATED,
         goal: 'once(guideline_schema_version(_)),between(1,3,X),(X =:= 3 -> atom_length(_,_) ; true)',
         budget: budget(),
         readonly: true,
@@ -268,7 +275,7 @@ describe('P2 typed limit states', () => {
 describe('P3 budget enforcement', () => {
   it('P3.1 restores the stack flag after a trip, read back from the engine', async () => {
     const before = await engineValue('current_prolog_flag(stack_limit,V).', 'V');
-    await session.solve('length(L,20000000).', budget({ stackBytes: 8388608 }));
+    await session.solve('length(L,20000000).', budget({ stackBytes: 8388608 }), UNDATED);
     expect(await engineValue('current_prolog_flag(stack_limit,V).', 'V')).toBe(before);
   });
 
@@ -284,10 +291,10 @@ describe('P3 budget enforcement', () => {
     const flag = (name: string): unknown =>
       (engine?.prolog.query(`current_prolog_flag(${name},V).`).once() as { V?: unknown }).V;
     const before = flag('stack_limit');
-    await own.solve('length(L,20000000).', budget({ stackBytes: 8388608 }));
+    await own.solve('length(L,20000000).', budget({ stackBytes: 8388608 }), UNDATED);
     expect(flag('stack_limit')).toBe(before);
     expect(flag('max_integer_size')).toBeUndefined();
-    await own.solve('X is 10**100.', budget(), '', undefined, true);
+    await own.solve('X is 10**100.', budget(), UNDATED, '', undefined, true);
     expect(flag('stack_limit')).toBe(before);
     expect(flag('max_integer_size')).toBeUndefined();
   }, 120_000);
@@ -315,21 +322,25 @@ describe('P3 budget enforcement', () => {
       'set_prolog_flag(max_integer_size,1000).',
       'set_prolog_flag(max_integer_size,2000).',
     );
-    await expect(own.solve('X = 1.', low, '', undefined, true)).rejects.toThrow(
+    await expect(own.solve('X = 1.', low, UNDATED, '', undefined, true)).rejects.toThrow(
       'integer size cap set to 2000',
     );
     expect(flag('stack_limit')).toBe(before);
     expect(flag('max_integer_size')).toBeUndefined();
     planted.clear();
     planted.set('set_prolog_flag(max_integer_size,4294967295).', 'true.');
-    await expect(own.solve('X = 1.', low, '', undefined, true)).rejects.toThrow(
+    await expect(own.solve('X = 1.', low, UNDATED, '', undefined, true)).rejects.toThrow(
       'integer size cap outlived its read-only query',
     );
     expect(flag('stack_limit')).toBe(before);
   }, 120_000);
 
   it('P3.2 yields early solutions before a limit terminates the run', async () => {
-    const solved = await session.solve('between(1,20,X),probe_deep(X).', budget({ depth: 8 }));
+    const solved = await session.solve(
+      'between(1,20,X),probe_deep(X).',
+      budget({ depth: 8 }),
+      UNDATED,
+    );
     expect(solved.kind).toBe('limit');
     if (solved.kind !== 'limit') return;
     expect(solved.limit).toBe('depth');
@@ -338,14 +349,14 @@ describe('P3 budget enforcement', () => {
   });
 
   it('P3.3 renders display text for every solution it returns', async () => {
-    const solved = await session.solve('between(1,3,X).', budget());
+    const solved = await session.solve('between(1,3,X).', budget(), UNDATED);
     expect(solved.kind).toBe('solutions');
     if (solved.kind !== 'solutions') return;
     for (const solution of solved.solutions) expect(solution.display.X).toMatch(/^\d+$/);
   });
 
   it('P3.5 bounds a repeat-shaped goal instead of returning forever', async () => {
-    const solved = await session.solve('repeat,X=1.', budget({ answerCap: 3 }));
+    const solved = await session.solve('repeat,X=1.', budget({ answerCap: 3 }), UNDATED);
     expect(solved.kind).toBe('limit');
     if (solved.kind !== 'limit') return;
     expect(solved.limit).toBe('answer-cap');
@@ -366,6 +377,7 @@ describe('P4 cancellation', () => {
     const running = session.solve(
       'between(1,1000000,X).',
       budget({ answerCap: BUDGET_MAX.answerCap }),
+      UNDATED,
       'q-cancel',
     );
     // Landing this from a timer is the whole point: it can only be observed because
@@ -381,7 +393,7 @@ describe('P4 cancellation', () => {
 
   it('P4.2 reports a cancel for an unknown or settled id as not accepted', async () => {
     expect(session.requestCancel('never-ran')).toBe(false);
-    await session.solve('between(1,2,X).', budget(), 'q-done');
+    await session.solve('between(1,2,X).', budget(), UNDATED, 'q-done');
     expect(session.requestCancel('q-done')).toBe(false);
   });
 
@@ -389,13 +401,13 @@ describe('P4 cancellation', () => {
     // The worker awaits between receiving a query message and entering `solve`, so a
     // cancel can land while nothing is active. Dropping it runs the query to completion.
     expect(session.requestCancel('q-early')).toBe(false);
-    const solved = await session.solve('between(1,1000000,X).', budget(), 'q-early');
+    const solved = await session.solve('between(1,1000000,X).', budget(), UNDATED, 'q-early');
     expect(solved).toEqual({ kind: 'cancelled', solutions: [] });
   });
 
   it('P4.1 leaves a query untouched by a cancel aimed at another id', async () => {
     expect(session.requestCancel('q-other')).toBe(false);
-    const solved = await session.solve('between(1,3,X).', budget(), 'q-unrelated');
+    const solved = await session.solve('between(1,3,X).', budget(), UNDATED, 'q-unrelated');
     expect(solved.kind).toBe('solutions');
     if (solved.kind === 'solutions') expect(solved.solutions).toHaveLength(3);
   });
@@ -408,7 +420,7 @@ describe('P4 cancellation', () => {
 describe('P5 fail-closed inputs', () => {
   it('P5.1 fails a malformed goal without executing it', async () => {
     const response = await session.handle(
-      { id: 'm1', kind: 'query', goal: 'guideline_document(', budget: budget() },
+      { id: 'm1', kind: 'query', context: UNDATED, goal: 'guideline_document(', budget: budget() },
       new Uint8Array(0),
     );
     expect(response.kind).toBe('error');
@@ -416,7 +428,11 @@ describe('P5 fail-closed inputs', () => {
   });
 
   it('P5.2 keeps an honest zero-solution goal distinct from every limit', async () => {
-    const solved = await session.solve('guideline_document(no_such_document,_,_,_).', budget());
+    const solved = await session.solve(
+      'guideline_document(no_such_document,_,_,_).',
+      budget(),
+      UNDATED,
+    );
     expect(solved.kind).toBe('failure');
   });
 
@@ -460,7 +476,7 @@ describe('P5 fail-closed inputs', () => {
     if (broken.kind === 'error') expect(broken.error.code).toBe('consult');
 
     const afterwards = await sinked.handle(
-      { id: 'c3', kind: 'query', goal: 'true.', budget: budget() },
+      { id: 'c3', kind: 'query', context: UNDATED, goal: 'true.', budget: budget() },
       new Uint8Array(0),
     );
     expect(afterwards.kind).toBe('error');
@@ -550,8 +566,8 @@ const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve,
 describe('P4 client lifecycle', () => {
   it('P4.6 settles every in-flight request once when the worker fails', async () => {
     const client = clientUnderTest();
-    const first = client.query('true.', budget());
-    const second = client.query('fail.', budget());
+    const first = client.query('true.', budget(), UNDATED);
+    const second = client.query('fail.', budget(), UNDATED);
     await settle();
     FakeWorker.live[0]?.raise('worker exploded');
     for (const outcome of await Promise.all([first, second])) {
@@ -564,7 +580,7 @@ describe('P4 client lifecycle', () => {
     const client = clientUnderTest();
     const violations: string[] = [];
     client.onProtocolViolation = (error) => violations.push(error.message);
-    const first = client.query('true.', budget());
+    const first = client.query('true.', budget(), UNDATED);
     await settle();
     const dead = FakeWorker.live[0];
     const staleId = dead?.last.id ?? '';
@@ -572,7 +588,7 @@ describe('P4 client lifecycle', () => {
     await settle();
     expect(await first).toMatchObject({ kind: 'error' });
 
-    const second = client.query('true.', budget());
+    const second = client.query('true.', budget(), UNDATED);
     await settle();
     dead?.reply({ id: staleId, kind: 'failure' });
     // The replacement is a different worker, so nothing the dead one says can land.
@@ -584,7 +600,7 @@ describe('P4 client lifecycle', () => {
 
   it('P4.9 single-flights concurrent hard cancels into one termination', async () => {
     const client = clientUnderTest();
-    void client.query('true.', budget());
+    void client.query('true.', budget(), UNDATED);
     await settle();
     const resets = [client.reset('a'), client.reset('b'), client.reset('c')];
     await settle();
@@ -597,7 +613,7 @@ describe('P4 client lifecycle', () => {
 
   it('P3.6 turns an overrun deadline into a wall-clock state and a fresh worker', async () => {
     const client = clientUnderTest();
-    const outcome = client.query('repeat.', budget({ wallClockMs: 1 }));
+    const outcome = client.query('repeat.', budget({ wallClockMs: 1 }), UNDATED);
     expect(await outcome).toEqual({ kind: 'limit', limit: 'wall-clock', solutions: [] });
     await settle();
     expect(FakeWorker.live[0]?.terminated).toBe(true);
@@ -605,7 +621,7 @@ describe('P4 client lifecycle', () => {
 
   it('P2.7 terminates and recreates the worker after a heap limit', async () => {
     const client = clientUnderTest();
-    const pending = client.query('true.', budget());
+    const pending = client.query('true.', budget(), UNDATED);
     await settle();
     const saturated = FakeWorker.live[0] as FakeWorker;
     saturated.reply({ id: saturated.last.id, kind: 'limit', limit: 'heap', solutions: [] });
@@ -627,7 +643,7 @@ describe('P4 client lifecycle', () => {
     if (outcome.kind === 'limit') expect(outcome.limit).toBe('heap');
 
     const posts = saturated.seen.length;
-    void client.query(CATEGORY_A_GOAL, budget());
+    void client.query(CATEGORY_A_GOAL, budget(), UNDATED);
     await settle();
     expect(replacement.last.kind).toBe('query');
     expect(saturated.seen).toHaveLength(posts);
@@ -647,7 +663,7 @@ describe('P4 client lifecycle', () => {
       cancelSchedule: (handle) => armed.delete(handle as number),
     });
     FakeWorker.live = [];
-    const outcome = client.query('true.', budget());
+    const outcome = client.query('true.', budget(), UNDATED);
     await settle();
     const worker = FakeWorker.live[0];
     expect(armed.size).toBe(1);
@@ -658,10 +674,10 @@ describe('P4 client lifecycle', () => {
 
   it('P4.11 keeps dispose terminal, with no respawn', async () => {
     const client = clientUnderTest();
-    void client.query('true.', budget());
+    void client.query('true.', budget(), UNDATED);
     await settle();
     client.dispose();
-    const outcome = await client.query('true.', budget());
+    const outcome = await client.query('true.', budget(), UNDATED);
     expect(outcome.kind).toBe('error');
     expect(FakeWorker.live).toHaveLength(1);
     expect((await client.reset('after dispose')).kind).toBe('error');
@@ -669,7 +685,7 @@ describe('P4 client lifecycle', () => {
 
   it('P1.2 rejects a bad budget before it reaches the worker', async () => {
     const client = clientUnderTest();
-    const outcome = await client.query('true.', budget({ depth: 0 }));
+    const outcome = await client.query('true.', budget({ depth: 0 }), UNDATED);
     expect(outcome.kind).toBe('error');
     if (outcome.kind === 'error') expect(outcome.error.code).toBe('budget');
     expect(FakeWorker.live).toHaveLength(0);

@@ -106,6 +106,7 @@ derive(M:A,D,As,P,S) :- !, (M == user -> derive(A,D,As,P,S) ; P=[], S=limit).
 derive((A,B),D,As,P,S) :- !, derive_conjunction(A,B,D,As,P,S).
 derive(\+ A,D,As,[naf(A)],S) :- !, findall(R,derive(A,D,As,_,R),Rs), naf_status(Rs,S).
 derive(clinical_advice(Q,Source,Answer),_,_,P,proved) :- !, clinical_advice(Q,Source,Answer,P).
+derive(guideline_evaluation_date(D),_,_,[context(evaluation_date(D))],proved) :- !, guideline_evaluation_date(D).
 derive(G,_,_,[builtin(G)],proved) :- comparison_goal(G), !, call(G).
 derive(H,_,As,[assumption(H)],proved) :- schema_goal(H), \+ \+ assumed(H,As), !, assumed(H,As).
 derive(H,0,_,[],limit) :- schema_goal(H), !.
@@ -161,4 +162,9 @@ mark_groups([rule(_,Su,Mo,A)|T],Marked,[group(Ss)|Gs]) :- findall(X,(mark_member
 mark_grades(Doc,Grades) :- findall(G,(G = guideline_grade(actual,'$guideline_id'(product,Doc,_,_,_),_,_,_),derive(G,1,[],_,proved)),Heads), mark_labels(Heads,Grades).
 mark_labels([],[]).
 mark_labels([guideline_grade(_,_,D,V,L)|T],[grade(D,V,N)|Gs]) :- derive(guideline_entity(actual,L,N,_),1,[],_,proved), !, mark_labels(T,Gs).
+clinical_run(Ctx,Goal) :- setup_call_cleanup(clinical_run_enter(Ctx,Prior),call(Goal),clinical_run_leave(Prior)).
+clinical_run_enter(Ctx,Prior) :- (nb_current('$clinical_run_context',V) -> Prior=some(V) ; Prior=absent), nb_setval('$clinical_run_context',Ctx).
+clinical_run_leave(some(V)) :- nb_setval('$clinical_run_context',V).
+clinical_run_leave(absent) :- nb_delete('$clinical_run_context').
+guideline_evaluation_date(D) :- nb_current('$clinical_run_context',date(D)).
 `;

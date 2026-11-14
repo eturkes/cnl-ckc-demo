@@ -32,6 +32,7 @@ class StreamingEngine implements DemoEngine {
   ask(
     _id: unknown,
     _budget: unknown,
+    _context: unknown,
     _signal?: AbortSignal,
     onSolution?: (solution: PlSolution) => void,
   ): Promise<AnswerResult> {

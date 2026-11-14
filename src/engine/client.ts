@@ -6,6 +6,7 @@
 // 25 ms timer never fired across 249.80 ms of `repeat,fail` while the identical
 // main-thread timer fired at 25.97 ms.
 
+import { admitRunContext, type RunContext } from './context.js';
 import { validateBudget } from './budget.js';
 import { notify, PROOF_BUDGET_MAX, WORKER_FAILURE_ID } from './protocol.js';
 import type {
@@ -77,6 +78,10 @@ export interface ClientOptions {
 
 const defaultSpawn = (): Worker =>
   new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
+
+/** A thrown value's message, for an error outcome. */
+const message = (cause: unknown): string =>
+  cause instanceof Error ? cause.message : String(cause);
 
 export class EngineClient {
   readonly #pending = new Map<string, Pending>();
@@ -310,23 +315,27 @@ export class EngineClient {
   async query(
     goal: string,
     budget: BudgetSpec,
+    context: RunContext,
     signal?: AbortSignal,
     onSolution?: (solution: PlSolution) => void,
     options?: { readonly?: boolean },
   ): Promise<QueryOutcome> {
     let spec: BudgetSpec;
+    let admitted: RunContext;
     try {
       spec = validateBudget(budget);
     } catch (cause) {
-      return {
-        kind: 'error',
-        error: { code: 'budget', message: cause instanceof Error ? cause.message : String(cause) },
-      };
+      return { kind: 'error', error: { code: 'budget', message: message(cause) } };
+    }
+    try {
+      admitted = admitRunContext(context);
+    } catch (cause) {
+      return { kind: 'error', error: { code: 'context', message: message(cause) } };
     }
     const response = await this.#send(
       options?.readonly === true
-        ? { kind: 'query', goal, budget: spec, readonly: true }
-        : { kind: 'query', goal, budget: spec },
+        ? { kind: 'query', goal, budget: spec, context: admitted, readonly: true }
+        : { kind: 'query', goal, budget: spec, context: admitted },
       spec.wallClockMs + HARD_GRACE_MS,
       signal,
       undefined,
@@ -370,15 +379,23 @@ export class EngineClient {
   }
 
   /** Re-prove one selected catalog solution through the compiled meta-interpreter. */
-  async prove(input: ProofInput, budget: BudgetSpec, signal?: AbortSignal): Promise<ProofOutcome> {
+  async prove(
+    input: ProofInput,
+    budget: BudgetSpec,
+    context: RunContext,
+    signal?: AbortSignal,
+  ): Promise<ProofOutcome> {
     let requested: BudgetSpec;
+    let admitted: RunContext;
     try {
       requested = validateBudget(budget);
     } catch (cause) {
-      return {
-        kind: 'error',
-        error: { code: 'budget', message: cause instanceof Error ? cause.message : String(cause) },
-      };
+      return { kind: 'error', error: { code: 'budget', message: message(cause) } };
+    }
+    try {
+      admitted = admitRunContext(context);
+    } catch (cause) {
+      return { kind: 'error', error: { code: 'context', message: message(cause) } };
     }
     const spec: BudgetSpec = {
       stackBytes: Math.min(requested.stackBytes, PROOF_BUDGET_MAX.stackBytes),
@@ -388,7 +405,7 @@ export class EngineClient {
       answerCap: 1,
     };
     const response = await this.#send(
-      { kind: 'proof', input, budget: spec },
+      { kind: 'proof', input, budget: spec, context: admitted },
       spec.wallClockMs + HARD_GRACE_MS,
       signal,
     );

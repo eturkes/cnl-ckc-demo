@@ -10,6 +10,7 @@ import type {
   EngineRequest,
   EngineResponse,
 } from '../src/engine/protocol.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const CONTRACT: EngineContract = { schemaVersion: 1, documents: 337 };
 const BUDGET: BudgetSpec = {
@@ -241,9 +242,9 @@ describe('boot-error recovery', () => {
         let settled = false;
         const pending =
           kind === 'query'
-            ? client.query('true', BUDGET)
+            ? client.query('true', BUDGET, UNDATED)
             : kind === 'proof'
-              ? client.prove({ constrainedGoal: 'true' }, BUDGET)
+              ? client.prove({ constrainedGoal: 'true' }, BUDGET, UNDATED)
               : kind === 'consult'
                 ? client.consult('b3_fact.')
                 : client.cancel('not-a-live-query');

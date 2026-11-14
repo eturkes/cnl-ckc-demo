@@ -10,6 +10,7 @@ import { BUDGET_MAX } from '../src/engine/budget.js';
 import type { PlSolution } from '../src/engine/protocol.js';
 import { EngineSession, type Engine } from '../src/engine/session.js';
 import { createEncoder, DecodeError, decodeOnce, type PlTerm } from '../src/engine/terms.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 let engine: Engine;
@@ -47,7 +48,7 @@ const CATEGORY_A_GOAL =
   'guideline_cardinality(actual,B,na,eq,1),guideline_event(actual,C,be),' +
   'guideline_arg(actual,C,1,A),guideline_arg(actual,C,2,B).';
 const solveOk = async (goal: string): Promise<PlSolution[]> => {
-  const outcome = await session.solve(goal, BUDGET_MAX);
+  const outcome = await session.solve(goal, BUDGET_MAX, UNDATED);
   if (outcome.kind !== 'solutions') throw new Error(`expected solutions, got ${outcome.kind}`);
   return outcome.solutions;
 };

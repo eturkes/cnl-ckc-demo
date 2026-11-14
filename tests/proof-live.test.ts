@@ -25,6 +25,7 @@ import { EngineSession, type Engine, type ImageLoader } from '../src/engine/sess
 import { QUESTION_CATALOG, QUESTION_IDS, type CatalogEntry } from '../src/questions/catalog.js';
 import { verifyBag } from '../tools/kb/bag.mjs';
 import { payloadSource } from '../tools/kb/paths.mjs';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -51,7 +52,7 @@ const proofBudget: BudgetSpec = { ...PROOF_BUDGET_MAX };
 const LIVE_TEST_TIMEOUT = 60_000;
 
 const solved = async (goal: string): Promise<PlSolution[]> => {
-  const result = await session.solve(goal, queryBudget);
+  const result = await session.solve(goal, queryBudget, UNDATED);
   if (result.kind !== 'solutions') throw new Error(`expected solutions, got ${result.kind}`);
   return result.solutions;
 };
@@ -124,7 +125,7 @@ describe('compiled proof interpreter', () => {
       const clock = vi.spyOn(Date, 'now').mockReturnValue(frozen);
       try {
         for (const selected of selections.values()) {
-          const result = await session.prove({ goal: entry.goal, selected }, proofBudget);
+          const result = await session.prove({ goal: entry.goal, selected }, proofBudget, UNDATED);
           // The whole result, so a trip names its `limit` subtype.
           expect(result).toMatchObject({ kind: 'proof' });
           if (result.kind !== 'proof') continue;
@@ -169,10 +170,11 @@ describe('selected constraint and typed RPC', () => {
       const [result, absent] = await (async () => {
         try {
           return [
-            await session.prove({ goal: entry.goal, selected }, proofBudget),
+            await session.prove({ goal: entry.goal, selected }, proofBudget, UNDATED),
             await session.prove(
               { goal: entry.goal, selected: { Answer: '"m2-absent"' } },
               proofBudget,
+              UNDATED,
             ),
           ];
         } finally {
@@ -198,6 +200,7 @@ describe('selected constraint and typed RPC', () => {
     const result = await session.prove(
       { constrainedGoal: 'guideline_schema_version(1).' },
       proofBudget,
+      UNDATED,
     );
     expect(result).toMatchObject({
       kind: 'proof',
@@ -209,6 +212,7 @@ describe('selected constraint and typed RPC', () => {
     const result = await session.prove(
       { constrainedGoal: 'guideline_schema_version(1).' },
       { ...proofBudget, inferences: 1 },
+      UNDATED,
     );
     expect(result).toEqual({ kind: 'limit', limit: 'inference' });
   });
@@ -239,13 +243,14 @@ describe('selected constraint and typed RPC', () => {
     try {
       expect(await client.boot()).toMatchObject({ kind: 'booted' });
       const entry = QUESTION_CATALOG[QUESTION_IDS[2]];
-      const answer = await client.query(entry.goal, queryBudget);
+      const answer = await client.query(entry.goal, queryBudget, UNDATED);
       if (answer.kind !== 'solutions' || answer.solutions[0] === undefined) {
         throw new Error(`expected a solution, got ${answer.kind}`);
       }
       const result = await client.prove(
         { goal: entry.goal, selected: answer.solutions[0].display },
         BUDGET_MAX,
+        UNDATED,
       );
       expect(result.kind).toBe('proof');
       if (result.kind === 'proof') {
@@ -259,6 +264,7 @@ describe('selected constraint and typed RPC', () => {
       const cancelling = client.prove(
         { constrainedGoal: 'guideline_schema_version(1).' },
         proofBudget,
+        UNDATED,
         controller.signal,
       );
       controller.abort();
@@ -283,6 +289,7 @@ describe('selected constraint and typed RPC', () => {
         client.prove(
           { constrainedGoal: 'guideline_schema_version(1).' },
           proofBudget,
+          UNDATED,
           controller.signal,
         ),
       ).resolves.toEqual({ kind: 'cancelled' });

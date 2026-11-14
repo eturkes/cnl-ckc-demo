@@ -32,6 +32,7 @@ import { verifyBag } from '../tools/kb/bag.mjs';
 import { catalogRecords } from '../tools/kb/catalog.mjs';
 import { CLINICAL_QUESTIONS } from '../tools/kb/clinical.mjs';
 import { deriveProvenance } from '../tools/kb/provenance.mjs';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -89,7 +90,7 @@ const answers = new Map<QuestionId, PlSolution[]>();
 const atom = (value: string): PlTerm => ({ kind: 'atom', value });
 
 const run = async (id: QuestionId): Promise<PlSolution[]> => {
-  const result = await session.solve(QUESTION_CATALOG[id].goal, BUDGET_MAX, id);
+  const result = await session.solve(QUESTION_CATALOG[id].goal, BUDGET_MAX, UNDATED, id);
   if (result.kind !== 'solutions' && result.kind !== 'failure') {
     throw new Error(`${id}: ${result.kind}`);
   }

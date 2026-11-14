@@ -21,6 +21,7 @@ import {
   type EngineResponse,
 } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const GENERATED = join(dirname(dirname(fileURLToPath(import.meta.url))), 'kb', 'generated');
@@ -147,7 +148,13 @@ describe('session boot phases', () => {
       expect(await session.handle({ id: 'b2', kind: 'boot' }, pvm, record)).toMatchObject({
         kind: 'booted',
       });
-      const query: EngineRequest = { id: 'q1', kind: 'query', goal: 'true.', budget: BUDGET_MAX };
+      const query: EngineRequest = {
+        id: 'q1',
+        kind: 'query',
+        context: UNDATED,
+        goal: 'true.',
+        budget: BUDGET_MAX,
+      };
       expect(await session.handle(query, pvm, record)).toMatchObject({ kind: 'solutions' });
       // A query streams its answers (d17), never a boot phase.
       expect(seen.filter((response) => response.kind === 'progress')).toEqual([]);
@@ -320,7 +327,10 @@ describe('client progress routing', () => {
     const client = clientOver(worker);
     const violations: EngineError[] = [];
     client.onProtocolViolation = (error) => violations.push(error);
-    expect(await client.query('true.', BUDGET_MAX)).toEqual({ kind: 'solutions', solutions: [] });
+    expect(await client.query('true.', BUDGET_MAX, UNDATED)).toEqual({
+      kind: 'solutions',
+      solutions: [],
+    });
     expect(violations).toEqual([
       { code: 'protocol', message: 'progress for r1, which reports none' },
     ]);

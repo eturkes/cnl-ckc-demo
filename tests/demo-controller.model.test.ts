@@ -14,6 +14,7 @@ import {
   type DemoEngine,
   type DemoState,
 } from '../src/demo/DemoController.svelte.js';
+import type { RunContext } from '../src/engine/context.js';
 
 const CONTRACT: EngineContract = { schemaVersion: 1, documents: 337 };
 
@@ -55,7 +56,12 @@ class ScriptedEngine implements DemoEngine {
     return this.bootOutcome.promise;
   }
 
-  ask(id: unknown, budget: BudgetSpec, signal?: AbortSignal): Promise<AnswerResult> {
+  ask(
+    id: unknown,
+    budget: BudgetSpec,
+    _context: RunContext,
+    signal?: AbortSignal,
+  ): Promise<AnswerResult> {
     const plan = this.plans.find(({ claimed }) => !claimed);
     if (plan === undefined) throw new Error(`unplanned ask for ${String(id)}`);
     if (plan.id !== id) throw new Error(`ask ${String(id)} did not match plan ${plan.id}`);

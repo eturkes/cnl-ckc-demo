@@ -11,6 +11,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { BUDGET_MAX } from '../src/engine/budget.js';
 import type { BudgetSpec } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const GENERATED = join(dirname(dirname(fileURLToPath(import.meta.url))), 'kb', 'generated');
@@ -41,13 +42,14 @@ beforeAll(async () => {
   const setup = await session.solve(
     'assertz((u3_deep(0):-!)),assertz((u3_deep(N):-N>0,M is N-1,u3_deep(M))).',
     budget(),
+    UNDATED,
   );
   expect(setup.kind).toBe('solutions');
 });
 
 describe('request-wide budgets', () => {
   it('P3.2 — depth and inference yield early solutions before terminating', async () => {
-    const depth = await session.solve('between(1,20,X),u3_deep(X).', budget({ depth: 8 }));
+    const depth = await session.solve('between(1,20,X),u3_deep(X).', budget({ depth: 8 }), UNDATED);
     expect(depth).toMatchObject({ kind: 'limit', limit: 'depth' });
     if (depth.kind !== 'limit') throw new Error('depth did not trip');
     expect(depth.solutions.length).toBeGreaterThan(0);
@@ -56,13 +58,14 @@ describe('request-wide budgets', () => {
       'statistics(inferences,Before),forall((between(1,20,_),forall(between(1,100,_),true)),true),' +
         'statistics(inferences,After),Cost is After-Before.',
       budget(),
+      UNDATED,
     );
     if (measured.kind !== 'solutions') throw new Error('inference calibration did not answer');
     const cost = measured.solutions[0]?.bindings.Cost;
     expect(cost?.kind).toBe('integer');
     if (cost?.kind !== 'integer') throw new Error('inference cost was not an integer');
     expect(Number(cost.value)).toBeGreaterThan(500);
-    const inference = await session.solve(goal, budget({ inferences: 500 }));
+    const inference = await session.solve(goal, budget({ inferences: 500 }), UNDATED);
     expect(
       inference,
       `whole-request cost=${String(cost.value)}, budget=500, result=${inference.kind}, ` +
@@ -79,6 +82,7 @@ describe('request-wide budgets', () => {
     const tail = await session.solve(
       'between(1,3,X),forall(between(1,100,_),true),X<3.',
       budget({ inferences: 500 }),
+      UNDATED,
     );
     expect(tail).toMatchObject({ kind: 'limit', limit: 'inference' });
     if (tail.kind !== 'limit') throw new Error('trailing search was not metered');
@@ -91,6 +95,7 @@ describe('request-wide budgets', () => {
     const answered = await session.solve(
       'between(1,3,X),forall(between(1,100,_),true).',
       budget({ inferences: 650 }),
+      UNDATED,
     );
     expect(answered).toMatchObject({ kind: 'solutions' });
     if (answered.kind !== 'solutions') throw new Error('display calls entered the meter');

@@ -70,6 +70,7 @@ record is `.claude/rules/firing.md`.
 | suite | path | firing | record | anchor |
 |---|---|---|---|---|
 | `tests/about-copy.dom.test.ts` | off | corpus count written into copy | mutate | `E03 corpus count written back into copy` |
+| `tests/acceptance-gi-context.test.ts` | off | the run context API absent: every dated read, refusal and restore | text | `.agent/contracts/n1.md 32/32 RED at base `7caec35`` |
 | `tests/axe-contrast.browser.test.ts` | off | the probe's pair made readable | mutate | `inv axe-contrast.browser: the probe's pair made readable` |
 | `tests/axe-contrast.dom.test.ts` | off | the pin's own probe run in Chromium, which decides contrast | text | `tests/axe-contrast.browser.test.ts decides the unreadable pair a violation, where the jsdom pin no longer holds` |
 | `tests/boot-phases.dom.test.ts` | off | first progress wrongly settles boot | commit | `d6714d7 all 5 dom cases RED` |
@@ -180,6 +181,7 @@ record is `.claude/rules/firing.md`.
 | `tests/questions-catalog-version.test.ts` | off | unsupported catalog version resolves a full executable catalog | commit | `1ecad59 RED at base `44406bd`: `npx vitest run tests/questions-catalog-version.test.ts` → rc 1` |
 | `tests/questions-live.test.ts` | off | answer rows sort rendered bytes rather than Prolog term order | mutate | `c12 row sort by rendered bytes` |
 | `tests/questions-u4-port.test.ts` | off | id-only answer service accepts case-folded question ids | mutate | `inv questions-u4-port: service accepts case-folded ids` |
+| `tests/run-context.test.ts` | off | a second open request runs nested instead of being refused busy | mutate | `inv run-context: a second open request runs instead of being refused busy` |
 | `tests/semantic-graph.dom.test.ts` | off | graph loader checks server errors alone and loses client-error reporting | mutate | `inv semantic-graph.dom: client HTTP errors pass response guard` |
 | `tests/smoke.test.ts` | off | package licence drops the LLVM exception | mutate | `inv smoke: package licence omits LLVM exception` |
 | `tests/solution-streaming.dom.test.ts` | off | each streamed answer overwrites the preceding answers | mutate | `inv solution-streaming.dom: latest answer replaces earlier answers` |

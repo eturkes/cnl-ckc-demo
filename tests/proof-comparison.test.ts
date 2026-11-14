@@ -17,6 +17,7 @@ import { COMPARISON_GOAL } from '../src/review/goal.js';
 import { exportedQueries } from '../tools/kb/exports.mjs';
 
 import { bagFiles, ROOT } from './clinical-test-support.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const manifest = JSON.parse(readFileSync(join(ROOT, 'kb/generated/kb-manifest.json'), 'utf8')) as {
@@ -126,7 +127,7 @@ describe('comparison built-ins in the meta-interpreter', () => {
   it('K5 the proof RPC settles a proof through the tablet-use-spacing export, its comparison line-free', async () => {
     const query = exportedQueries(bagFiles).find(({ id }) => id === 'tablet-use-spacing');
     if (query === undefined) throw new Error('tablet-use-spacing is not a declared export');
-    const outcome = await session.prove({ constrainedGoal: query.goal }, PROOF_BUDGET_MAX);
+    const outcome = await session.prove({ constrainedGoal: query.goal }, PROOF_BUDGET_MAX, UNDATED);
     expect(outcome.kind).toBe('proof');
     const steps = outcome.kind === 'proof' ? outcome.steps : [];
     const clauses = proofClauses(steps);
@@ -140,7 +141,11 @@ describe('comparison built-ins in the meta-interpreter', () => {
   });
 
   it('V1 the review page proves a goal whose ladder lists two checked comparisons', async () => {
-    const outcome = await session.prove({ constrainedGoal: COMPARISON_GOAL }, PROOF_BUDGET_MAX);
+    const outcome = await session.prove(
+      { constrainedGoal: COMPARISON_GOAL },
+      PROOF_BUDGET_MAX,
+      UNDATED,
+    );
     expect(outcome.kind).toBe('proof');
     const steps = outcome.kind === 'proof' ? outcome.steps : [];
     // The ladder renders its ready branch only for a proof whose clauses name a document.

@@ -151,6 +151,12 @@ Emitted beside `clinical_advice/3,4`: `clinical_rule(Doc,S,Rule)`
 `clinical_derive/4,5` and `clinical_derived/2`. `mi/3` and `mi_limited/2` keep arity and behaviour by passing `[]`, so
 the shipped proof RPC is untouched. No write path ships; a direct `assertz` is still refused.
 
+- **The evaluation date is run context, never a premise.** `derive/5`'s arm for
+  `guideline_evaluation_date(D)` sits before the comparison and assumption arms, so no assumption
+  list can stand in for the date: it answers from the run context alone and records a line-free
+  `context(evaluation_date(D))` leaf. `clinical_run/2`, its enter/leave helpers and the native
+  `guideline_evaluation_date/1` clause close `PROOF_SOURCE` (`.claude/rules/engine.md` `Run
+  context`).
 - **The assumption arm commits, then enumerates.** A goal some premise unifies with never also
   resolves against a KB clause, and every premise that unifies stays a candidate:
   `\+ \+ assumed(H,As), !, assumed(H,As)`. A scope guard's exception binds an existential

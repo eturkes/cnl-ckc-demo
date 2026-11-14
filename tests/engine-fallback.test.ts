@@ -11,6 +11,7 @@ import { BUDGET_MAX } from '../src/engine/budget.js';
 import type { EngineContract, PlSolution } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
 import { decodeOnce } from '../src/engine/terms.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const GENERATED = join(dirname(dirname(fileURLToPath(import.meta.url))), 'kb', 'generated');
@@ -70,7 +71,7 @@ const qlfLoader = (diagnostics: string[]) => async (): Promise<Engine> => {
 const createSession = (options: Options): EngineSession => new EngineSession(options);
 const drain = (diagnostics: string[]) => () => diagnostics.splice(0, diagnostics.length);
 const displayOf = async (session: EngineSession, goal = DOCUMENT_GOAL) => {
-  const result = await session.solve(goal, BUDGET_MAX);
+  const result = await session.solve(goal, BUDGET_MAX, UNDATED);
   expect(result.kind).toBe('solutions');
   if (result.kind !== 'solutions') throw new Error(`expected solutions, got ${result.kind}`);
   return result.solutions.map((solution: PlSolution) => solution.display);
@@ -352,7 +353,7 @@ describe('mnt-d10 QLF fallback', () => {
     expect(String(failure)).toContain('d10 image unavailable');
     expect(String(failure)).toContain('d10 fallback unavailable');
     expect(session.booted).toBe(false);
-    await expect(session.solve('true.', BUDGET_MAX)).rejects.toThrow(/not booted/i);
+    await expect(session.solve('true.', BUDGET_MAX, UNDATED)).rejects.toThrow(/not booted/i);
   });
 
   it('F4 a non-Error fallback rejection still names both failures', async () => {
@@ -454,7 +455,7 @@ describe('mnt-d10 QLF fallback', () => {
     expect(response.error.message).toContain('d10 image unavailable');
     expect(response.error.message).toContain('d10 fallback unavailable');
     expect(session.booted).toBe(false);
-    await expect(session.solve('true.', BUDGET_MAX)).rejects.toThrow(/not booted/i);
+    await expect(session.solve('true.', BUDGET_MAX, UNDATED)).rejects.toThrow(/not booted/i);
   });
 
   it(
@@ -484,7 +485,7 @@ describe('mnt-d10 QLF fallback', () => {
       expect(response.error.message).toContain('d10 image poisoned');
       expect(response.error.message).toContain('d10 fallback rejected');
       expect(session.booted).toBe(false);
-      await expect(session.solve('true.', BUDGET_MAX)).rejects.toThrow(/not booted/i);
+      await expect(session.solve('true.', BUDGET_MAX, UNDATED)).rejects.toThrow(/not booted/i);
     },
     TIMEOUT,
   );
@@ -515,7 +516,7 @@ describe('mnt-d10 QLF fallback', () => {
       expect(response.error.message).toContain('d10 image rejected');
       expect(response.error.message).toContain('d10 fallback poisoned');
       expect(session.booted).toBe(false);
-      await expect(session.solve('true.', BUDGET_MAX)).rejects.toThrow(/not booted/i);
+      await expect(session.solve('true.', BUDGET_MAX, UNDATED)).rejects.toThrow(/not booted/i);
     },
     TIMEOUT,
   );
@@ -547,7 +548,7 @@ describe('mnt-d10 QLF fallback', () => {
         error: { code: 'contract' },
       });
       expect(session.booted).toBe(false);
-      await expect(session.solve('true.', BUDGET_MAX)).rejects.toThrow(/not booted/i);
+      await expect(session.solve('true.', BUDGET_MAX, UNDATED)).rejects.toThrow(/not booted/i);
     },
     TIMEOUT,
   );

@@ -14,6 +14,7 @@ import { payloadSource } from '../tools/kb/paths.mjs';
 import { buildImage } from '../tools/kb/produce.mjs';
 
 import { bagFiles, ROOT } from './clinical-test-support.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const image = new Uint8Array(readFileSync(join(ROOT, 'kb', 'generated', 'kb.pvm')));
@@ -70,21 +71,21 @@ beforeAll(async () => {
 describe('generation-scoped proof cache', () => {
   it('re-selecting a proved solution derives nothing and returns the identical proof', async () => {
     const before = first.derivations();
-    const proved = await first.session.prove(INPUT, PROOF_BUDGET_MAX);
+    const proved = await first.session.prove(INPUT, PROOF_BUDGET_MAX, UNDATED);
     expect(proved.kind).toBe('proof');
     expect(first.derivations()).toBe(before + 1);
-    const again = await first.session.prove(INPUT, PROOF_BUDGET_MAX);
+    const again = await first.session.prove(INPUT, PROOF_BUDGET_MAX, UNDATED);
     expect(first.derivations()).toBe(before + 1);
     expect(JSON.stringify(again)).toBe(JSON.stringify(proved));
   });
 
   it('hands out copies: mutating a returned proof leaves the cached one intact', async () => {
-    const proved = await first.session.prove(INPUT, PROOF_BUDGET_MAX);
+    const proved = await first.session.prove(INPUT, PROOF_BUDGET_MAX, UNDATED);
     const step = proved.kind === 'proof' ? proved.steps[0] : undefined;
     if (step?.kind !== 'clause') throw new Error('expected a clause step');
     const head = step.head;
     step.head = 'mutated';
-    const again = await first.session.prove(INPUT, PROOF_BUDGET_MAX);
+    const again = await first.session.prove(INPUT, PROOF_BUDGET_MAX, UNDATED);
     const fresh = again.kind === 'proof' ? again.steps[0] : undefined;
     expect(fresh?.kind === 'clause' ? fresh.head : undefined).toBe(head);
   });
@@ -92,12 +93,12 @@ describe('generation-scoped proof cache', () => {
   it('stores a copy: mutating the first, freshly derived proof leaves the cache intact', async () => {
     const own = counted(image);
     await own.session.boot(image);
-    const proved = await own.session.prove(INPUT, PROOF_BUDGET_MAX);
+    const proved = await own.session.prove(INPUT, PROOF_BUDGET_MAX, UNDATED);
     const step = proved.kind === 'proof' ? proved.steps[0] : undefined;
     if (step?.kind !== 'clause') throw new Error('expected a clause step');
     const head = step.head;
     step.head = 'mutated';
-    const again = await own.session.prove(INPUT, PROOF_BUDGET_MAX);
+    const again = await own.session.prove(INPUT, PROOF_BUDGET_MAX, UNDATED);
     const fresh = again.kind === 'proof' ? again.steps[0] : undefined;
     expect(fresh?.kind === 'clause' ? fresh.head : undefined).toBe(head);
     expect(own.derivations()).toBe(1);
@@ -113,8 +114,8 @@ describe('generation-scoped proof cache', () => {
       return drains === 0 ? ['ERROR: planted diagnostic'] : [];
     });
     await own.session.boot(image);
-    expect((await own.session.prove(INPUT, PROOF_BUDGET_MAX)).kind).toBe('proof');
-    const hit = own.session.prove(INPUT, PROOF_BUDGET_MAX);
+    expect((await own.session.prove(INPUT, PROOF_BUDGET_MAX, UNDATED)).kind).toBe('proof');
+    const hit = own.session.prove(INPUT, PROOF_BUDGET_MAX, UNDATED);
     drains = 2;
     expect(() => {
       own.session.consult('proof_cache_poison_marker.');
@@ -130,7 +131,7 @@ describe('generation-scoped proof cache', () => {
       return drains === 0 ? ['ERROR: planted diagnostic'] : [];
     });
     await own.session.boot(image);
-    const running = own.session.solve('between(1, 3, X).', PROOF_BUDGET_MAX);
+    const running = own.session.solve('between(1, 3, X).', PROOF_BUDGET_MAX, UNDATED);
     drains = 2;
     expect(() => {
       own.session.consult('proof_cache_poison_marker.');
@@ -141,26 +142,26 @@ describe('generation-scoped proof cache', () => {
   it('a mutating query empties the cache: the next prove reads the engine as it now is', async () => {
     const own = counted(image);
     await own.session.boot(image);
-    expect((await own.session.prove(INPUT, PROOF_BUDGET_MAX)).kind).toBe('proof');
-    await own.session.solve('abolish(guideline_schema_version/1).', PROOF_BUDGET_MAX);
-    expect((await own.session.prove(INPUT, PROOF_BUDGET_MAX)).kind).toBe('failure');
+    expect((await own.session.prove(INPUT, PROOF_BUDGET_MAX, UNDATED)).kind).toBe('proof');
+    await own.session.solve('abolish(guideline_schema_version/1).', PROOF_BUDGET_MAX, UNDATED);
+    expect((await own.session.prove(INPUT, PROOF_BUDGET_MAX, UNDATED)).kind).toBe('failure');
     expect(own.derivations()).toBe(2);
   }, 120_000);
 
   it('a consult landing during a hit derives afresh instead of returning the stale proof', async () => {
     const own = counted(image);
     await own.session.boot(image);
-    expect((await own.session.prove(INPUT, PROOF_BUDGET_MAX)).kind).toBe('proof');
-    const hit = own.session.prove(INPUT, PROOF_BUDGET_MAX);
+    expect((await own.session.prove(INPUT, PROOF_BUDGET_MAX, UNDATED)).kind).toBe('proof');
+    const hit = own.session.prove(INPUT, PROOF_BUDGET_MAX, UNDATED);
     own.session.consult(':- abolish(guideline_schema_version/1).');
     expect((await hit).kind).toBe('failure');
   }, 120_000);
 
   it('a consult empties the cache', async () => {
-    await first.session.prove(INPUT, PROOF_BUDGET_MAX);
+    await first.session.prove(INPUT, PROOF_BUDGET_MAX, UNDATED);
     const before = first.derivations();
     first.session.consult('proof_cache_probe_marker.');
-    expect((await first.session.prove(INPUT, PROOF_BUDGET_MAX)).kind).toBe('proof');
+    expect((await first.session.prove(INPUT, PROOF_BUDGET_MAX, UNDATED)).kind).toBe('proof');
     expect(first.derivations()).toBe(before + 1);
   });
 
@@ -170,7 +171,7 @@ describe('generation-scoped proof cache', () => {
     expect(Buffer.from(rebuilt).equals(Buffer.from(image))).toBe(false);
     const second = counted(rebuilt);
     await second.session.boot(rebuilt);
-    expect((await second.session.prove(INPUT, PROOF_BUDGET_MAX)).kind).toBe('proof');
+    expect((await second.session.prove(INPUT, PROOF_BUDGET_MAX, UNDATED)).kind).toBe('proof');
     expect(second.derivations()).toBe(1);
   }, 120_000);
 });

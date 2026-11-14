@@ -20,6 +20,7 @@ import {
   rawClauses,
   type RawClause,
 } from './support/marks-oracle.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const GENERATED = join(ROOT, 'kb/generated');
@@ -161,10 +162,10 @@ describe('live statement marks readings', () => {
     'U1 %s reads every statement from compiled heads with grade once per document run',
     async (id) => {
       const entry = QUESTION_CATALOG[id];
-      const answer = await session.solve(entry.goal, DEMO_BUDGET, `u1-answer-${id}`);
+      const answer = await session.solve(entry.goal, DEMO_BUDGET, UNDATED, `u1-answer-${id}`);
       expect(answer.kind).toBe('solutions');
       if (answer.kind !== 'solutions') throw new Error(`${id}: answer ${answer.kind}`);
-      const marks = await session.solve(entry.marksGoal, DEMO_BUDGET, `u1-marks-${id}`);
+      const marks = await session.solve(entry.marksGoal, DEMO_BUDGET, UNDATED, `u1-marks-${id}`);
       expect(marks.kind).toBe('solutions');
       if (marks.kind !== 'solutions') throw new Error(`${id}: marks ${marks.kind}`);
       const rows = answerRows(id, answer.solutions);

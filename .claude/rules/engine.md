@@ -105,8 +105,8 @@ leaves its frame open, and every later query then resolves outside the KB:
   resume point is stamped into the `BudgetMeter_` global on backtracking — so the display
   render between steps never enters the total, which counts the goal plus the wrapper's few
   inferences per step. The marker leaves a choice point after the final record, so a run ends AT
-  that record: one more step would yield with the query still open, and a request admitted there
-  nests inside it (in the browser that nested query failed, `pnpm engine:probe`'s R41 control).
+  that record: one more step would yield with the query still open, and the next request would
+  be refused `busy` (`Run context`; `pnpm engine:probe`'s R41 control reads that request).
   Proofs keep the per-step `wrapGoal`.
 - **Answers stream** (d17): `solve` renders each answer between steps and hands it at once to
   its listener, which `handle` posts as a non-terminal `partial` under the query's id;
@@ -121,9 +121,9 @@ leaves its frame open, and every later query then resolves outside the KB:
   answer renders before the next step runs, so a later stop — `heap` included, which makes the
   client recreate the worker — always lands after the last render and keeps its kind.
   `tests/engine-render-deadline.test.ts`.
-- **A proof is cached per session**, keyed by goal + selected bindings + clamped budget, so
-  re-selecting a proved solution runs no meta-interpreter call and returns a copy of the same
-  proof. Every `solve` (any goal may assert or retract) clears the cache on entry and exit, every
+- **A proof is cached per session**, keyed by goal + run context + selected bindings + clamped
+  budget, so re-selecting a proved solution runs no meta-interpreter call and returns a copy of the
+  same proof. Every `solve` (any goal may assert or retract) clears the cache on entry and exit, every
   `consult` on entry; a hit re-checks the map and the engine after its cancel-admission yield, so a
   query, load or poisoning that lands mid-request is never answered from a stale entry. The
   meta-interpreter reads clauses alone, so a derivation never mutates. A recreated worker is a
@@ -158,6 +158,35 @@ leaves its frame open, and every later query then resolves outside the KB:
   compound `BudgetResource_` as a solution would hand back an answer no goal derived
   (`tests/engine-budgets.test.ts` P2.8).
 
+## Run context
+
+The page's evaluation date reaches a run as run context (`src/engine/context.ts`,
+`.agent/contracts/n1.md`), never as an asserted fact: the KB states `guideline_evaluation_date/1`
+as one fact of the whole composition, so the program that loads it supplies it per run.
+
+- `RunContext = { evaluationDate: 'YYYY-MM-DD' | null }` is a REQUIRED argument after the budget on
+  `EngineClient.query` + `.prove`, `AnswerService.ask` + `.marks`, `DemoEngine` and the worker
+  protocol. The budget is validated first, then the context admitted: a real Gregorian day, year
+  0001–9999, as a frozen copy, else error `context` before any Prolog. `engine:check` P6.6 pins
+  the parameter and every `src` call site.
+- Every goal runs as `clinical_run(none|date(YYYYMMDD), Goal)` inside the budget wrapper
+  (`tools/kb/proof.mjs`): `setup_call_cleanup` sets the global `'$clinical_run_context'` and
+  restores the prior value on every exit — success, failure, cap, limit, error, cancel, close. A
+  fresh engine sets it to `none` before it is published. `guideline_evaluation_date(D)` reads it
+  natively; the interpreter's own arm reads it for proofs.
+- **One request at a time.** A query, proof or consult arriving while another is open is refused
+  `busy` before it is parsed: admitted, it would run nested in the open frame, outside the KB and
+  under the open request's date. Every shipped caller serializes through the demo controller's
+  one queue, so `busy` names a caller defect.
+- A dated proof opens with ONE `{ kind: 'context', goal: 'evaluation_date(N)' }` record, however
+  many derivations read the date; every leaf must equal the admitted date. An undated proof
+  carries none.
+- The read-only guard refuses `clinical_run/2` and every global-variable builtin in a model goal;
+  a model goal may read the date, never set it.
+- A run captures the page date once: the demo controller at admission for the answer, its marks
+  and its proofs (`runDate` keeps it), a chat turn at send for every goal of the turn and its
+  cards. `tests/run-context.test.ts`, `tests/acceptance-gi-context.test.ts`.
+
 ## Cancellation
 
 - **A worker timer cannot fire inside a synchronous step**, so the hard deadline is main-thread
@@ -168,8 +197,8 @@ leaves its frame open, and every later query then resolves outside the KB:
   and cannot deliver a cancel. Granularity = one solution step: a cancel lands between steps,
   never inside one, and the step it waited for still streams its answer. Browser delivery is
   proven by `pnpm browser:check`.
-- Cancellation surface = an optional `AbortSignal` after the budget on `EngineClient.query` and
-  `AnswerService.ask`. `EngineClient`'s correlation id stays private.
+- Cancellation surface = an optional `AbortSignal` after the budget and the run context on
+  `EngineClient.query` and `AnswerService.ask`. `EngineClient`'s correlation id stays private.
 - Hard cancel = terminate → respawn → boot. Any UI claim about its cost must use the browser
   figure: `pnpm engine:probe` R41 runs five cycles each time and prints their range. Each cycle
   drops the overlay and re-reads the manifest's documents from the replacement engine. Post-termination worker CPU stays unmeasured. `pnpm

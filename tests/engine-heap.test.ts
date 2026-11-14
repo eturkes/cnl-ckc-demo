@@ -10,6 +10,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import { BUDGET_MAX } from '../src/engine/budget.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const GENERATED = join(dirname(dirname(fileURLToPath(import.meta.url))), 'kb', 'generated');
@@ -60,7 +61,13 @@ beforeAll(async () => {
 describe('live heap exhaustion', () => {
   it('A1 returns heap limit and drains the real allocator diagnostic', async () => {
     const response = await session.handle(
-      { id: 'h1', kind: 'query', goal: RUNAWAY, budget: { ...BUDGET_MAX, wallClockMs: 30_000 } },
+      {
+        id: 'h1',
+        kind: 'query',
+        context: UNDATED,
+        goal: RUNAWAY,
+        budget: { ...BUDGET_MAX, wallClockMs: 30_000 },
+      },
       new Uint8Array(),
     );
     expect.soft(response).toMatchObject({ id: 'h1', kind: 'limit', limit: 'heap', solutions: [] });

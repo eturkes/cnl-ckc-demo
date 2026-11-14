@@ -28,6 +28,7 @@ import {
   withHead,
   type RawClause,
 } from './support/marks-oracle.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const factory = require('swipl-wasm/dist/loadImageDefault.js') as
@@ -178,7 +179,12 @@ describe('compiled marks catalog and derivation', () => {
     await session.boot(new Uint8Array(readFileSync(join(ROOT, 'kb/generated/kb.pvm'))));
     const readings: { id: string; ms: number; inferences: number; documents: number }[] = [];
     for (const id of QUESTION_IDS) {
-      const answer = await session.solve(QUESTION_CATALOG[id].goal, DEMO_BUDGET, `answer-${id}`);
+      const answer = await session.solve(
+        QUESTION_CATALOG[id].goal,
+        DEMO_BUDGET,
+        UNDATED,
+        `answer-${id}`,
+      );
       expect(answer.kind).toBe('solutions');
       const before = Number(
         nativeRows(need(raw, 'session raw image'), 'statistics(inferences,N)')[0]?.N,
@@ -187,6 +193,7 @@ describe('compiled marks catalog and derivation', () => {
       const marks = await session.solve(
         `clinical_marks('${id}',Source,Marks)`,
         DEMO_BUDGET,
+        UNDATED,
         `marks-${id}`,
       );
       const ms = performance.now() - started;

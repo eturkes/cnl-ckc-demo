@@ -8,6 +8,7 @@ import type { QueryOutcome } from '../src/engine/client.js';
 import { BUDGET_MAX } from '../src/engine/budget.js';
 import type { BudgetSpec, PlSolution } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const image = new Uint8Array(readFileSync(new URL('../kb/generated/kb.pvm', import.meta.url)));
@@ -33,6 +34,7 @@ const query = async (goal: string, budget: BudgetSpec = BUDGET_MAX): Promise<Que
     kind: 'query' as const,
     goal,
     budget,
+    context: UNDATED,
     readonly: true as const,
   };
   const response = await session.handle(request, image);

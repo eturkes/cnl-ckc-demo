@@ -36,8 +36,11 @@ const assistant = (controller: ChatController): AssistantMessage => {
   return message;
 };
 const controllers: ChatController[] = [];
-const create = (client: ChatClient, host: ChatHost): ChatController => {
-  const controller = new ChatController({ client, host });
+const create = (
+  client: ChatClient,
+  host: Pick<ChatHost, 'runGoal'> & Partial<ChatHost>,
+): ChatController => {
+  const controller = new ChatController({ client, host: { evaluationDate: null, ...host } });
   controllers.push(controller);
   return controller;
 };
@@ -138,7 +141,7 @@ describe('recorded chat executes goals rather than reading answer fixtures', () 
     const pending = [deferred<QueryOutcome>(), deferred<QueryOutcome>()];
     let active = 0;
     let peak = 0;
-    const runGoal = vi.fn<ChatHost['runGoal']>().mockImplementation((_goal, signal) => {
+    const runGoal = vi.fn<ChatHost['runGoal']>().mockImplementation((_goal, _context, signal) => {
       expect(signal?.aborted).toBe(false);
       const index = runGoal.mock.calls.length - 1;
       expect(client.posted).toHaveLength(index);
@@ -153,7 +156,9 @@ describe('recorded chat executes goals rather than reading answer fixtures', () 
     await tick();
     expect(controller.busy).toBe(true);
     expect(runGoal).toHaveBeenCalledTimes(1);
-    expect(assistant(controller).cards).toEqual([{ call: 'q1', goal: goal1 }]);
+    expect(assistant(controller).cards).toEqual([
+      { call: 'q1', goal: goal1, evaluationDate: null },
+    ]);
     expect(client.posted).toHaveLength(0);
     pending[0]!.resolve(first);
     await tick();
@@ -175,8 +180,14 @@ describe('recorded chat executes goals rather than reading answer fixtures', () 
     expect(message.status).toBe('answered');
     expect(message.commentary).toEqual(['Checking both.']);
     expect(message.cards).toEqual([
-      { call: 'q1', goal: goal1, outcome: first, result: toolResult(first) },
-      { call: 'q2', goal: goal2, outcome: second, result: toolResult(second) },
+      { call: 'q1', goal: goal1, evaluationDate: null, outcome: first, result: toolResult(first) },
+      {
+        call: 'q2',
+        goal: goal2,
+        evaluationDate: null,
+        outcome: second,
+        result: toolResult(second),
+      },
     ]);
     expect(message.searches).toEqual([
       { query: search.query, opened: search.opened, results: search.results },
@@ -291,7 +302,7 @@ describe('chat lifecycle retires every late callback', () => {
       if (when === 'after-settlement-before-post') goal.outcome.resolve(first);
       controller.cancel();
       expect(client.turns[0]?.signal.aborted).toBe(true);
-      expect(goal.runGoal.mock.calls[0]?.[1]?.aborted).toBe(true);
+      expect(goal.runGoal.mock.calls[0]?.[2]?.aborted).toBe(true);
       if (when === 'before-settlement') goal.outcome.resolve(first);
       await handling;
       await client.send({ type: 'answer', text: answerText() });
@@ -389,7 +400,7 @@ describe('chat lifecycle retires every late callback', () => {
     await goal.entered.promise;
     controller.dispose();
     expect(client.turns[0]?.signal.aborted).toBe(true);
-    expect(goal.runGoal.mock.calls[0]?.[1]?.aborted).toBe(true);
+    expect(goal.runGoal.mock.calls[0]?.[2]?.aborted).toBe(true);
     goal.outcome.resolve(first);
     await handling;
     await client.send({ type: 'answer', text: answerText() });

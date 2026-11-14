@@ -11,6 +11,7 @@
 // It carries a 10 s watchdog of its own; it is a `BudgetSpec` it never takes.
 
 import type { EngineClient, QueryOutcome } from '../engine/client.js';
+import type { RunContext } from '../engine/context.js';
 import type { BudgetSpec, EngineError, LimitKind, PlSolution } from '../engine/protocol.js';
 
 import { QUESTION_CATALOG, type QuestionId, isQuestionId } from './catalog.js';
@@ -57,12 +58,13 @@ export class AnswerService {
   async ask(
     id: unknown,
     budget: BudgetSpec,
+    context: RunContext,
     signal?: AbortSignal,
     onSolution?: (solution: PlSolution) => void,
   ): Promise<AnswerResult> {
     if (!isQuestionId(id)) return { kind: 'rejected', reason: 'unknown-id' };
     const entry = QUESTION_CATALOG[id];
-    const outcome = await this.#client.query(entry.goal, budget, signal, onSolution);
+    const outcome = await this.#client.query(entry.goal, budget, context, signal, onSolution);
     switch (outcome.kind) {
       case 'solutions':
         return {
@@ -101,8 +103,13 @@ export class AnswerService {
    * Run one catalog question's marks goal: the grade, qualifiers, preferences and time marks the
    * knowledge base derives for each of its answer documents. An id in, never goal text.
    */
-  async marks(id: unknown, budget: BudgetSpec, signal?: AbortSignal): Promise<MarksOutcome> {
+  async marks(
+    id: unknown,
+    budget: BudgetSpec,
+    context: RunContext,
+    signal?: AbortSignal,
+  ): Promise<MarksOutcome> {
     if (!isQuestionId(id)) return { kind: 'rejected', reason: 'unknown-id' };
-    return this.#client.query(QUESTION_CATALOG[id].marksGoal, budget, signal);
+    return this.#client.query(QUESTION_CATALOG[id].marksGoal, budget, context, signal);
   }
 }

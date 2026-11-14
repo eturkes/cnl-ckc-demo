@@ -32,6 +32,7 @@ import {
   type Action,
   type RebuildableClause,
 } from './support/qualifier-oracle.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const documents = CLINICAL_QUESTIONS.flatMap(({ sources }) =>
   sources.map(({ document }) => document),
@@ -55,7 +56,7 @@ const manifest = JSON.parse(readFileSync(join(ROOT, 'kb/generated/kb-manifest.js
 let session: EngineSession;
 const liveAnswers: PlSolution[] = [];
 const solve = async (goal: string): Promise<PlSolution[]> => {
-  const result = await session.solve(goal, BUDGET_MAX, 'qualifier-contract');
+  const result = await session.solve(goal, BUDGET_MAX, UNDATED, 'qualifier-contract');
   if (result.kind === 'failure') return [];
   if (result.kind !== 'solutions') throw new Error(`goal did not finish: ${result.kind}: ${goal}`);
   return result.solutions;

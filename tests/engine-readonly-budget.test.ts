@@ -6,6 +6,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import type { BudgetSpec, EngineResponse } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const image = new Uint8Array(readFileSync(new URL('../kb/generated/kb.pvm', import.meta.url)));
@@ -71,6 +72,7 @@ const run = (session: EngineSession, goal: string, readonly = true): Promise<Eng
     {
       id: `stress-${String(++sequence)}`,
       kind: 'query',
+      context: UNDATED,
       goal,
       budget: DEMO_BUDGET,
       ...(readonly ? { readonly: true } : {}),

@@ -62,15 +62,24 @@ const CONTROLS = [
   {
     name: 'P6.2',
     file: 'src/engine/client.ts',
-    apply: (text) =>
-      text.replace(/goal: string,\s*budget: BudgetSpec,\s*signal/, 'goal: string, signal'),
+    apply: (text) => text.replace(/goal: string,\s*budget: BudgetSpec,/, 'goal: string,'),
     expect: 'P6.2 EngineClient.query no longer requires a budget',
+  },
+  {
+    name: 'P6.6',
+    file: 'src/engine/client.ts',
+    apply: (text) =>
+      text.replace(
+        /budget: BudgetSpec,\s*context: RunContext,\s*signal/,
+        'budget: BudgetSpec, signal',
+      ),
+    expect: 'P6.6 EngineClient.query no longer requires a run context',
   },
   {
     name: 'P6.2 marks',
     file: 'src/questions/service.ts',
     apply: (text) =>
-      text.replace(/marks\(id: unknown, budget: BudgetSpec, signal/, 'marks(id: unknown, signal'),
+      text.replace(/marks\(\s*id: unknown,\s*budget: BudgetSpec,/, 'marks(id: unknown,'),
     expect: 'P6.2 AnswerService.marks no longer requires a budget',
   },
   {
@@ -176,23 +185,31 @@ check(files.length > 0, 'engine-check found no sources under src/');
 // patterns admit any line breaks and trailing optional parameters after `signal`.
 const clientSource = read(join(SRC, 'engine', 'client.ts'));
 const serviceSource = read(join(SRC, 'questions', 'service.ts'));
-check(
-  /\bquery\(\s*goal: string,\s*budget: BudgetSpec,\s*signal\?: AbortSignal[,)]/.test(clientSource),
-  'P6.2 EngineClient.query no longer requires a budget as its second parameter',
-);
-check(
-  /\bask\(\s*id: [^,]+,\s*budget: BudgetSpec,\s*signal\?: AbortSignal[,)]/.test(serviceSource),
-  'P6.2 AnswerService.ask no longer requires a budget as its second parameter',
-);
-check(
-  /\bmarks\(\s*id: [^,]+,\s*budget: BudgetSpec,\s*signal\?: AbortSignal[,)]/.test(serviceSource),
-  'P6.2 AnswerService.marks no longer requires a budget as its second parameter',
-);
+// P6.6 (n1, user-approved re-pin of P6.2's arity): the run context follows the budget,
+// required, so no call site can run a goal under a date it never chose (`.agent/contracts/n1.md`).
+/** @type {(name: string, first: string) => RegExp} */
+const ENTRY = (name, first) =>
+  new RegExp(
+    `\\b${name}\\(\\s*${first}: [^,]+,\\s*budget: BudgetSpec,\\s*context: RunContext,\\s*signal\\?: AbortSignal[,)]`,
+  );
+for (const [source, owner, name, first] of /** @type {[string, string, string, string][]} */ ([
+  [clientSource, 'EngineClient', 'query', 'goal'],
+  [clientSource, 'EngineClient', 'prove', 'input'],
+  [serviceSource, 'AnswerService', 'ask', 'id'],
+  [serviceSource, 'AnswerService', 'marks', 'id'],
+])) {
+  const declared = ENTRY(name, first).test(source);
+  check(
+    new RegExp(`\\b${name}\\(\\s*${first}: [^,]+,\\s*budget: BudgetSpec,`).test(source),
+    `P6.2 ${owner}.${name} no longer requires a budget as its second parameter`,
+  );
+  check(declared, `P6.6 ${owner}.${name} no longer requires a run context after its budget`);
+}
 for (const file of files) {
   const text = read(file);
   // `engine.prolog.query` is the raw SWI handle inside the worker, below the budget
   // boundary; every other receiver is the budgeted client or service.
-  for (const match of text.matchAll(/([A-Za-z0-9_$.#[\]]*?)\.(query|ask|marks)\(/g)) {
+  for (const match of text.matchAll(/([A-Za-z0-9_$.#[\]]*?)\.(query|ask|marks|prove)\(/g)) {
     const [whole, receiver = '', method] = match;
     if (receiver.endsWith('prolog')) continue;
     const open = match.index + whole.length - 1;
@@ -200,6 +217,10 @@ for (const file of files) {
     check(
       args >= 2,
       `P6.2 ${rel(file)} calls ${receiver}.${method ?? '?'}() with ${args} argument(s); a budget is required`,
+    );
+    check(
+      args >= 3,
+      `P6.6 ${rel(file)} calls ${receiver}.${method ?? '?'}() with ${args} argument(s); a run context is required`,
     );
   }
 }
@@ -308,7 +329,7 @@ if (CONTROL === undefined) {
 }
 
 console.log(
-  `engine-check: ${String(files.length)} sources, P6.2-P6.5 hold ` +
+  `engine-check: ${String(files.length)} sources, P6.2-P6.6 hold ` +
     `(swipl-wasm owned by ${ENGINE_OWNER}, ${String(termsExports.length)} pinned terms exports), ` +
     `${String(controlsFired)} controls fired`,
 );

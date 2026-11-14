@@ -7,6 +7,7 @@ import { expect, it } from 'vitest';
 
 import { BUDGET_MAX } from '../src/engine/budget.js';
 import { EngineSession, type Engine } from '../src/engine/session.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const GENERATED = join(dirname(dirname(fileURLToPath(import.meta.url))), 'kb', 'generated');
@@ -50,6 +51,7 @@ it('A2 reports heap limit for the unflagged 32-step atom-doubling chain', async 
     {
       id: 'atoms',
       kind: 'query',
+      context: UNDATED,
       goal: `${chain}.`,
       budget: { ...BUDGET_MAX, wallClockMs: 30_000 },
     },

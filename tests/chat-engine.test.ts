@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createDemoEngine, CHAT_BUDGET } from '../src/demo/DemoController.svelte.js';
 import { EngineClient, type QueryOutcome } from '../src/engine/client.js';
+import { UNDATED } from '../src/engine/context.js';
 
 class IdleWorker {
   addEventListener(): void {}
@@ -25,8 +26,8 @@ describe('demo chat engine adapter', () => {
     try {
       expect(typeof engine.runGoal).toBe('function');
       if (!engine.runGoal) throw new Error('chat engine adapter absent');
-      expect(await engine.runGoal(goal, CHAT_BUDGET, signal)).toBe(outcome);
-      expect(query).toHaveBeenCalledExactlyOnceWith(goal, CHAT_BUDGET, signal, undefined, {
+      expect(await engine.runGoal(goal, CHAT_BUDGET, UNDATED, signal)).toBe(outcome);
+      expect(query).toHaveBeenCalledExactlyOnceWith(goal, CHAT_BUDGET, UNDATED, signal, undefined, {
         readonly: true,
       });
     } finally {

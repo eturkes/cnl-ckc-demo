@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { BUDGET_MAX } from '../src/engine/budget.js';
 import { EngineClient } from '../src/engine/client.js';
 import type { EngineRequest } from '../src/engine/protocol.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const CONTRACT = { schemaVersion: 1, documents: 337 };
 const ABORTED = { kind: 'error', error: { code: 'aborted', message: 'Aborted(probe)' } } as const;
@@ -68,9 +69,9 @@ const harness = () => {
   const request = (operation: Operation) => {
     switch (operation) {
       case 'query':
-        return client.query('true.', BUDGET);
+        return client.query('true.', BUDGET, UNDATED);
       case 'proof':
-        return client.prove({ constrainedGoal: 'guideline_schema_version(1).' }, BUDGET);
+        return client.prove({ constrainedGoal: 'guideline_schema_version(1).' }, BUDGET, UNDATED);
       case 'consult':
         return client.consult('probe.');
     }
@@ -122,7 +123,7 @@ describe('client abort recovery', () => {
         expect(workers).toHaveLength(2);
         expect(timers.size).toBe(0);
 
-        const next = client.query('X = replacement.', BUDGET);
+        const next = client.query('X = replacement.', BUDGET, UNDATED);
         expect(replacement.last).toMatchObject({ kind: 'query', goal: 'X = replacement.' });
         expect(original.seen).toHaveLength(2);
         replacement.reply({ id: replacement.last.id, kind: 'solutions', solutions: [] });
@@ -142,7 +143,7 @@ describe('client abort recovery', () => {
       expect(await active).toEqual(PROLOG);
       expect(workers).toHaveLength(1);
       expect(original.terminations).toBe(0);
-      const next = client.query('true.', BUDGET);
+      const next = client.query('true.', BUDGET, UNDATED);
       expect(original.seen).toHaveLength(2);
       original.reply({ id: original.last.id, kind: 'solutions', solutions: [] });
       expect(await next).toEqual({ kind: 'solutions', solutions: [] });

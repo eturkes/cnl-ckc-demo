@@ -689,8 +689,8 @@ export const MUTANTS = [
     edits: [
       {
         path: 'src/demo/DemoController.svelte.ts',
-        old: 'client.query(goal, budget, signal, undefined, { readonly: true })',
-        new: 'client.query(goal, budget, signal)',
+        old: 'client.query(goal, budget, context, signal, undefined, { readonly: true })',
+        new: 'client.query(goal, budget, context, signal)',
       },
     ],
     check: { test: 'tests/chat-engine.test.ts', name: 'D7 createDemoEngine' },
@@ -836,8 +836,8 @@ export const MUTANTS = [
     edits: [
       {
         path: 'src/chat/ChatController.svelte.ts',
-        old: '      card(call, { call, goal, outcome, result });',
-        new: '      card(call, { call, goal, result });',
+        old: '      card(call, { call, goal, evaluationDate: context.evaluationDate, outcome, result });',
+        new: '      card(call, { call, goal, evaluationDate: context.evaluationDate, result });',
       },
     ],
     check: {
@@ -975,8 +975,8 @@ export const MUTANTS = [
     edits: [
       {
         path: 'src/engine/client.ts',
-        old: "        ? { kind: 'query', goal, budget: spec, readonly: true }",
-        new: "        ? { kind: 'query', goal, budget: spec }",
+        old: "        ? { kind: 'query', goal, budget: spec, context: admitted, readonly: true }",
+        new: "        ? { kind: 'query', goal, budget: spec, context: admitted }",
       },
     ],
     check: {
@@ -1782,6 +1782,130 @@ export const MUTANTS = [
       },
     ],
     check: { test: 'tests/frames.test.ts', name: 'F2a' },
+  },
+  {
+    label: 'inv run-context: every year admits a 29 February',
+    edits: [
+      {
+        path: 'src/engine/context.ts',
+        old: 'const leap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;',
+        new: 'const leap = true;',
+      },
+    ],
+    check: { test: 'tests/run-context.test.ts', name: 'R1' },
+  },
+  {
+    label: 'inv run-context: the engine reads the day after the admitted date',
+    edits: [
+      {
+        path: 'src/engine/context.ts',
+        old: "    : `date(${String(Number(context.evaluationDate.replaceAll('-', '')))})`;",
+        new: "    : `date(${String(Number(context.evaluationDate.replaceAll('-', '')) + 1)})`;",
+      },
+    ],
+    check: { test: 'tests/run-context.test.ts', name: 'R3' },
+  },
+  {
+    label: 'inv run-context: a run sets the date and never restores it',
+    edits: [
+      {
+        path: 'src/engine/session.ts',
+        old: '  `clinical_run(${contextTerm(context)},(${bareGoal(goal)}))`;',
+        new: "  `(nb_setval('${RUN_CONTEXT_KEY}',${contextTerm(context)}),(${bareGoal(goal)}))`;",
+      },
+    ],
+    check: {
+      test: 'tests/run-context.test.ts',
+      name: 'R4 the raw context is restored after success',
+    },
+  },
+  {
+    label: 'inv run-context: a dated proof opens with no run record',
+    edits: [
+      {
+        path: 'src/engine/session.ts',
+        old: "  return expected === null ? source : [{ kind: 'context', goal: expected }, ...source];",
+        new: '  return source;',
+      },
+    ],
+    check: { test: 'tests/run-context.test.ts', name: 'R6' },
+  },
+  {
+    label: 'inv run-context: a proof drops its date leaves undecoded',
+    edits: [
+      {
+        path: 'src/engine/session.ts',
+        old: "      if (item.functor === 'context' && item.args.length === 1) {",
+        new: "      if (item.functor === 'context' && item.args.length === 99) {",
+      },
+    ],
+    check: { test: 'tests/run-context.test.ts', name: 'R6 a proof that reads the date twice' },
+  },
+  {
+    label: 'inv run-context: each read of the date stays a proof step',
+    edits: [
+      {
+        path: 'src/engine/session.ts',
+        old: "          throw new DecodeError('proof read a date the run was not given');\n        return [];",
+        new: "          throw new DecodeError('proof read a date the run was not given');\n        return [step];",
+      },
+    ],
+    check: { test: 'tests/run-context.test.ts', name: 'R6 a proof that reads the date twice' },
+  },
+  {
+    label: 'inv run-context: a model goal may set a global variable',
+    edits: [
+      {
+        path: 'src/engine/readonly.ts',
+        old: '  if (BUILTINS.has(name)) return ALLOWED;',
+        new: "  if (BUILTINS.has(name) || name.endsWith('setval/2')) return ALLOWED;",
+      },
+    ],
+    check: { test: 'tests/run-context.test.ts', name: 'R7' },
+  },
+  {
+    label: 'inv run-context: the marks read the page date after the run began',
+    edits: [
+      {
+        path: 'src/demo/DemoController.svelte.ts',
+        old: '      void this.#mark(id, context);',
+        new: '      void this.#mark(id, Object.freeze({ evaluationDate: this.evaluationDate }));',
+      },
+    ],
+    check: { test: 'tests/run-context.test.ts', name: 'R8' },
+  },
+  {
+    label: 'inv run-context: each chat goal reads the page date when it runs',
+    edits: [
+      {
+        path: 'src/chat/ChatController.svelte.ts',
+        old: 'outcome = (await this.#host.runGoal(goal, context, run.signal)) ?? NOT_READY;',
+        new: 'outcome = (await this.#host.runGoal(goal, Object.freeze({ evaluationDate: this.#host.evaluationDate }), run.signal)) ?? NOT_READY;',
+      },
+    ],
+    check: { test: 'tests/run-context.test.ts', name: 'R9' },
+  },
+  {
+    label: 'inv run-context: a second open request runs instead of being refused busy',
+    edits: [
+      {
+        path: 'src/engine/session.ts',
+        old: '      if (this.#open !== undefined) {\n        return {',
+        new: "      if (this.#open !== undefined && request.kind === 'consult') {\n        return {",
+      },
+    ],
+    check: { test: 'tests/run-context.test.ts', name: 'R5' },
+  },
+  {
+    label: 'inv run-context: an admitted context aliases the caller',
+    edits: [
+      {
+        path: 'src/engine/context.ts',
+        old: '  return Object.freeze({ evaluationDate: date });',
+        new: '  return value as RunContext;',
+      },
+    ],
+    check: { test: 'tests/run-context.test.ts', name: 'R2' },
   },
   {
     label: "inv characterization-engine: a question answers with another question's marks goal",

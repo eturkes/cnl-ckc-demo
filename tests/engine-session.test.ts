@@ -23,6 +23,7 @@ import {
   DecodeError,
   type PlTerm,
 } from '../src/engine/terms.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -55,7 +56,7 @@ const BUDGET: BudgetSpec = BUDGET_MAX;
 
 /** Unwraps the solutions a u2 case expects, so a limit or a cancel fails loudly here. */
 const solveOk = async (goal: string): Promise<PlSolution[]> => {
-  const solved = await session.solve(goal, BUDGET);
+  const solved = await session.solve(goal, BUDGET, UNDATED);
   if (solved.kind !== 'solutions') throw new Error(`expected solutions, got ${solved.kind}`);
   return solved.solutions;
 };
@@ -164,13 +165,17 @@ describe('P5 real goals through the shipped surface', () => {
   });
 
   it('P2.3 reports a failing goal as failure, not as an empty success', async () => {
-    const solved = await session.solve('guideline_document(no_such_document,_,_,_).', BUDGET);
+    const solved = await session.solve(
+      'guideline_document(no_such_document,_,_,_).',
+      BUDGET,
+      UNDATED,
+    );
     expect(solved.kind).toBe('failure');
   });
 
   it('P2.3 settles a malformed goal as a typed error', async () => {
     const response = await session.handle(
-      { id: 'q1', kind: 'query', goal: 'guideline_document(', budget: BUDGET },
+      { id: 'q1', kind: 'query', context: UNDATED, goal: 'guideline_document(', budget: BUDGET },
       new Uint8Array(0),
     );
     expect(response.kind).toBe('error');
@@ -179,7 +184,7 @@ describe('P5 real goals through the shipped surface', () => {
 
   it('P2.2 echoes the request id on every response', async () => {
     const response = await session.handle(
-      { id: 'echo-me', kind: 'query', goal: CATEGORY_A_GOAL, budget: BUDGET },
+      { id: 'echo-me', kind: 'query', context: UNDATED, goal: CATEGORY_A_GOAL, budget: BUDGET },
       new Uint8Array(0),
     );
     expect(response.id).toBe('echo-me');
@@ -275,7 +280,7 @@ describe('P3 decode traps', () => {
 describe('P2 protocol shape', () => {
   it('P2.1 sends only structured-clone-safe payloads', async () => {
     const response = await session.handle(
-      { id: 'clone', kind: 'query', goal: CATEGORY_A_GOAL, budget: BUDGET },
+      { id: 'clone', kind: 'query', context: UNDATED, goal: CATEGORY_A_GOAL, budget: BUDGET },
       new Uint8Array(0),
     );
     expect(structuredClone(response)).toEqual(response);
@@ -402,7 +407,7 @@ describe('Q corpus census', () => {
     const bootResponse = await broken.handle({ id: 'b1', kind: 'boot' }, new Uint8Array(0));
     expect(bootResponse).toMatchObject({ id: 'b1', kind: 'error', error: { code: 'boot' } });
     const queryResponse = await broken.handle(
-      { id: 'q1', kind: 'query', goal: CATEGORY_A_GOAL, budget: BUDGET },
+      { id: 'q1', kind: 'query', context: UNDATED, goal: CATEGORY_A_GOAL, budget: BUDGET },
       new Uint8Array(0),
     );
     expect(queryResponse.kind).toBe('error');
@@ -414,7 +419,7 @@ describe('Q corpus census', () => {
     const pvm = new Uint8Array(readGenerated('kb.pvm'));
     const booting = late.handle({ id: 'boot-1', kind: 'boot' }, pvm);
     const early = late.handle(
-      { id: 'query-1', kind: 'query', goal: CATEGORY_A_GOAL, budget: BUDGET },
+      { id: 'query-1', kind: 'query', context: UNDATED, goal: CATEGORY_A_GOAL, budget: BUDGET },
       pvm,
     );
     const [bootResponse, earlyResponse] = await Promise.all([booting, early]);
@@ -426,11 +431,17 @@ describe('Q corpus census', () => {
   // second query admitted while the first is open resolves outside the KB.
   it('E27 answers two correlated requests with their own ids', async () => {
     const first = await session.handle(
-      { id: 'first', kind: 'query', goal: 'true.', budget: BUDGET },
+      { id: 'first', kind: 'query', context: UNDATED, goal: 'true.', budget: BUDGET },
       new Uint8Array(0),
     );
     const second = await session.handle(
-      { id: 'second', kind: 'query', goal: 'guideline_document(D,_,_,_).', budget: BUDGET },
+      {
+        id: 'second',
+        kind: 'query',
+        context: UNDATED,
+        goal: 'guideline_document(D,_,_,_).',
+        budget: BUDGET,
+      },
       new Uint8Array(0),
     );
     expect(first.id).toBe('first');

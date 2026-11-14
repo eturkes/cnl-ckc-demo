@@ -22,6 +22,7 @@ import { marksView } from '../src/questions/marks.js';
 import { serializeAnswer } from '../src/questions/serialize.js';
 
 import { holds } from './support/property.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const image = new Uint8Array(readFileSync(new URL('../kb/generated/kb.pvm', import.meta.url)));
@@ -46,12 +47,12 @@ const digest = (value: unknown): string =>
 
 // n1 changes call shapes: keep the undated admission in this one adapter.
 const undated = {
-  solve: (goal: string) => session.solve(goal, BUDGET_MAX),
+  solve: (goal: string) => session.solve(goal, BUDGET_MAX, UNDATED),
   prove: async (goal: string, selected: Readonly<Record<string, string>>) => {
     // Characterize structure, not host speed; deterministic proof caps stay active.
     const clock = vi.spyOn(Date, 'now').mockReturnValue(Date.now());
     try {
-      return await session.prove({ goal, selected }, PROOF_BUDGET_MAX);
+      return await session.prove({ goal, selected }, PROOF_BUDGET_MAX, UNDATED);
     } finally {
       clock.mockRestore();
     }
@@ -61,6 +62,7 @@ const undated = {
       {
         id: 'characterization',
         kind: 'query',
+        context: UNDATED,
         goal,
         budget: BUDGET_MAX,
         readonly: true,

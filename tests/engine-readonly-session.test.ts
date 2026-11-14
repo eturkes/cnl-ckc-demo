@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { BUDGET_MAX } from '../src/engine/budget.js';
+import { UNDATED } from '../src/engine/context.js';
 import type { EngineRequest, EngineResponse, PlSolution } from '../src/engine/protocol.js';
 import { EngineSession, type Engine } from '../src/engine/session.js';
 import { decodeOnce, type PlBindings, type PlTerm } from '../src/engine/terms.js';
@@ -67,6 +68,7 @@ const request = (
       kind: 'query',
       goal,
       budget,
+      context: UNDATED,
       ...flag,
     } as unknown as EngineRequest,
     new Uint8Array(),

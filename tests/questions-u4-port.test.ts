@@ -9,6 +9,7 @@ import type { EngineClient } from '../src/engine/client.js';
 import type { BudgetSpec } from '../src/engine/protocol.js';
 import { QUESTION_CATALOG, QUESTION_IDS } from '../src/questions/catalog.js';
 import { AnswerService } from '../src/questions/service.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const BUDGET: BudgetSpec = { ...BUDGET_MAX, wallClockMs: 30_000, answerCap: 1_000 };
 const ID = QUESTION_IDS[0];
@@ -25,7 +26,7 @@ describe('M1.u4 question catalog service port', () => {
     const { query, service } = harness();
     // The displayed clinical question and compiled clinical goal replace the retired exports.
     for (const input of ['', '   ', ENTRY.question, ENTRY.goal]) {
-      await expect(service.ask(input, BUDGET), input).resolves.toEqual(rejected);
+      await expect(service.ask(input, BUDGET, UNDATED), input).resolves.toEqual(rejected);
     }
     expect(query).not.toHaveBeenCalled();
   });
@@ -33,13 +34,13 @@ describe('M1.u4 question catalog service port', () => {
   it('t.proto P1.1/P1.2 closes prototype keys while accepting a computed valid id', async () => {
     const { query, service } = harness();
     for (const input of ['__proto__', 'constructor']) {
-      await expect(service.ask(input, BUDGET), input).resolves.toEqual(rejected);
+      await expect(service.ask(input, BUDGET, UNDATED), input).resolves.toEqual(rejected);
     }
     expect(query).not.toHaveBeenCalled();
 
     const carrier: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
     carrier['selected-question'] = ID;
-    await expect(service.ask(carrier['selected-question'], BUDGET)).resolves.toEqual({
+    await expect(service.ask(carrier['selected-question'], BUDGET, UNDATED)).resolves.toEqual({
       kind: 'failure',
       id: ID,
       serialized: 'solutions([])',
@@ -57,7 +58,7 @@ describe('M1.u4 question catalog service port', () => {
     expect(uppercase).not.toBe(ID);
     expect(titleCase).not.toBe(ID);
     for (const input of [uppercase, titleCase, `${ID}.`, ` ${ID}`]) {
-      await expect(service.ask(input, BUDGET), input).resolves.toEqual(rejected);
+      await expect(service.ask(input, BUDGET, UNDATED), input).resolves.toEqual(rejected);
     }
     expect(query).not.toHaveBeenCalled();
   });
@@ -69,7 +70,7 @@ describe('M1.u4 question catalog service port', () => {
       `${ID}(X).`,
       "'$guideline_query_projection'(goal(true),answers([])).",
     ]) {
-      await expect(service.ask(input, BUDGET), input).resolves.toEqual(rejected);
+      await expect(service.ask(input, BUDGET, UNDATED), input).resolves.toEqual(rejected);
     }
     expect(query).not.toHaveBeenCalled();
   });

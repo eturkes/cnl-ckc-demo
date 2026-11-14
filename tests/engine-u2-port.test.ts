@@ -22,6 +22,7 @@ import {
 } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
 import { createEncoder, decodeOnce, decodeTerm, type PlTerm } from '../src/engine/terms.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -70,7 +71,7 @@ const termOf = (literal: string): PlTerm => {
   return result.bindings.X;
 };
 const solveOk = async (goal: string): Promise<PlSolution[]> => {
-  const outcome = await session.solve(goal, BUDGET_MAX);
+  const outcome = await session.solve(goal, BUDGET_MAX, UNDATED);
   if (outcome.kind !== 'solutions') throw new Error(`expected solutions, got ${outcome.kind}`);
   return outcome.solutions;
 };
@@ -136,16 +137,29 @@ const terminalQueries: Awaited<ReturnType<EngineClient['query']>>[] = [
 // Includes each u2 response kind and later budget/cancel/proof terminal arms.
 const responseRequests = (): EngineRequest[] => [
   { id: 'u2-boot', kind: 'boot' },
-  { id: 'u2-solutions', kind: 'query', goal: 'X = foo(bar,7).', budget: BUDGET_MAX },
-  { id: 'u2-failure', kind: 'query', goal: 'fail.', budget: BUDGET_MAX },
-  { id: 'u2-error', kind: 'query', goal: 'guideline_document(', budget: BUDGET_MAX },
+  {
+    id: 'u2-solutions',
+    kind: 'query',
+    context: UNDATED,
+    goal: 'X = foo(bar,7).',
+    budget: BUDGET_MAX,
+  },
+  { id: 'u2-failure', kind: 'query', context: UNDATED, goal: 'fail.', budget: BUDGET_MAX },
+  {
+    id: 'u2-error',
+    kind: 'query',
+    context: UNDATED,
+    goal: 'guideline_document(',
+    budget: BUDGET_MAX,
+  },
   {
     id: 'u2-limit',
     kind: 'query',
+    context: UNDATED,
     goal: 'between(1,3,X).',
     budget: { ...BUDGET_MAX, answerCap: 1 },
   },
-  { id: 'u2-cancelled', kind: 'query', goal: 'true.', budget: BUDGET_MAX },
+  { id: 'u2-cancelled', kind: 'query', context: UNDATED, goal: 'true.', budget: BUDGET_MAX },
   { id: 'u2-ack', kind: 'cancel', target: 'u2-unknown' },
   { id: 'u2-consulted', kind: 'consult', source: 'u2_port_probe.\n' },
 ];
@@ -156,6 +170,7 @@ const proofResponse = async (): Promise<[EngineRequest, EngineResponse]> => {
     const proving = client.prove(
       { constrainedGoal: 'guideline_schema_version(1).' },
       PROOF_BUDGET_MAX,
+      UNDATED,
     );
     await delay();
     const request = worker.last;
@@ -392,6 +407,7 @@ describe('P2 protocol port', () => {
     const queryRequest: EngineRequest = {
       id: 'table-u2-partial',
       kind: 'query',
+      context: UNDATED,
       goal: 'X = foo(bar,7).',
       budget: BUDGET_MAX,
     };
@@ -450,7 +466,7 @@ describe('P2 protocol port', () => {
       violations.push(error);
     };
     try {
-      const pending = client.query('true.', BUDGET_MAX);
+      const pending = client.query('true.', BUDGET_MAX, UNDATED);
       await delay();
       worker.reply({ id: 'u2-unclaimed', kind: 'failure' });
       expect(violations).toEqual([
@@ -472,7 +488,7 @@ describe('P2 protocol port', () => {
       };
       try {
         let settlements = 0;
-        const pending = client.query('true.', BUDGET_MAX).then((result) => {
+        const pending = client.query('true.', BUDGET_MAX, UNDATED).then((result) => {
           settlements += 1;
           return result;
         });
@@ -498,7 +514,10 @@ describe('P2 protocol port', () => {
     for (const channel of ['error', 'messageerror', 'unhandled-rejection']) {
       const { client, worker, timers } = scriptedClient();
       try {
-        const pending = [client.query('true.', BUDGET_MAX), client.query('fail.', BUDGET_MAX)];
+        const pending = [
+          client.query('true.', BUDGET_MAX, UNDATED),
+          client.query('fail.', BUDGET_MAX, UNDATED),
+        ];
         await delay();
         expect(worker.seen).toHaveLength(2);
         if (channel === 'unhandled-rejection') {
@@ -530,8 +549,8 @@ describe('P1/P5 live contract port', () => {
       expected: manifest.contract,
     });
     expect(await counting.boot(image)).toEqual(manifest.contract);
-    expect((await counting.solve('X = first.', BUDGET_MAX)).kind).toBe('solutions');
-    expect((await counting.solve('X = second.', BUDGET_MAX)).kind).toBe('solutions');
+    expect((await counting.solve('X = first.', BUDGET_MAX, UNDATED)).kind).toBe('solutions');
+    expect((await counting.solve('X = second.', BUDGET_MAX, UNDATED)).kind).toBe('solutions');
     expect(await counting.boot(new Uint8Array(0))).toEqual(manifest.contract);
     expect(loads).toBe(1);
   }, 120_000);

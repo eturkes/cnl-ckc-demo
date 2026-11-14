@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest';
 import { BUDGET_MAX } from '../src/engine/budget.js';
 import type { EngineRequestBody, EngineResponse } from '../src/engine/protocol.js';
 import { EngineSession, type Engine } from '../src/engine/session.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const GENERATED = join(dirname(dirname(fileURLToPath(import.meta.url))), 'kb', 'generated');
@@ -93,7 +94,7 @@ const fixture = async (rows: number, lines: string[], site: 'step' | 'call' = 's
   armed = true;
   const abort = (partials: EngineResponse[] = []) =>
     session.handle(
-      { id: 'abort', kind: 'query', goal: 'between(1,3,X).', budget: BUDGET },
+      { id: 'abort', kind: 'query', context: UNDATED, goal: 'between(1,3,X).', budget: BUDGET },
       IMAGE,
       (partial) => partials.push(partial),
     );
@@ -101,8 +102,13 @@ const fixture = async (rows: number, lines: string[], site: 'step' | 'call' = 's
 };
 
 const LATER: readonly EngineRequestBody[] = [
-  { kind: 'query', goal: 'true.', budget: BUDGET },
-  { kind: 'proof', input: { constrainedGoal: 'guideline_schema_version(1).' }, budget: BUDGET },
+  { kind: 'query', context: UNDATED, goal: 'true.', budget: BUDGET },
+  {
+    kind: 'proof',
+    context: UNDATED,
+    input: { constrainedGoal: 'guideline_schema_version(1).' },
+    budget: BUDGET,
+  },
   { kind: 'consult', source: 'abort_probe.' },
   { kind: 'boot' },
 ];

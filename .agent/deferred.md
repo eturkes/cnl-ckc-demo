@@ -35,14 +35,6 @@ acceptance check and leaves in that commit; the index at the foot collapses the 
   Accept: a speedup at equal strength — every check still runs and fires on its planted
   input — that an alternating A/B, two runs per arm against the tree it replaces, shows cutting
   `binding:check`'s wall by at least 15%. `pri` low.
-- **The engine session interleaves concurrent requests** — `EngineSession.handle` admits a second
-  query while the first's frame is open, and the second resolves outside the KB (`catch/3: Unknown
-  procedure: system:guideline_document/4`); until n35 that read as an empty answer. Every caller
-  serializes today — the demo controller's one engine queue carries the chat's goals too — so no
-  shipped path sends two at once. Accept: two `handle` queries started together on one session
-  each answer their own goal over the KB (E27 as first written: `Promise.all` of `true.` and
-  `guideline_document(D,_,_,_).`, neither an error), or a request arriving while another is open
-  is refused by name before it runs. `pri` low.
 - **The chat guide names `guideline_document/4`'s digests as prose** — `server/chat-guide.md:79`
   lists `guideline_document(Doc, Ace, Ulex, Vocabulary)`, yet the bag's second, third and fourth
   arguments are digests (`ace_sha256('41f6…')`, `ulex(sha256(…))`; bag

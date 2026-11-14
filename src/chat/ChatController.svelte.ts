@@ -4,6 +4,7 @@
 // granted only where this conversation's record backs them (`provenance.ts`).
 
 import type { QueryOutcome } from '../engine/client.js';
+import type { RunContext } from '../engine/context.js';
 
 import type { ChatClient, TurnEnd } from './client.js';
 import type { ChatErrorReason, ChatEvent, SearchResult } from './events.js';
@@ -12,12 +13,20 @@ import { toolResult, type ToolResult } from './result.js';
 
 /** The demo's engine queue, seen from the chat: one read-only goal, nothing else. */
 export interface ChatHost {
-  runGoal(goal: string, signal?: AbortSignal): Promise<QueryOutcome> | undefined;
+  /** The page-wide evaluation date a turn captures when it is sent. */
+  readonly evaluationDate: string | null;
+  runGoal(
+    goal: string,
+    context: RunContext,
+    signal?: AbortSignal,
+  ): Promise<QueryOutcome> | undefined;
 }
 
 export interface KbCard {
   call: string;
   goal: string;
+  /** The turn's evaluation date: with `goal`, what reproduces the run. */
+  evaluationDate: string | null;
   /** Absent while the goal runs. */
   outcome?: QueryOutcome;
   result?: ToolResult;
@@ -33,6 +42,8 @@ export type ChatFailure = ChatErrorReason | Exclude<TurnEnd, 'done'>;
 
 export interface AssistantMessage {
   role: 'assistant';
+  /** The page date captured when the turn was sent; every goal of the turn runs under it. */
+  evaluationDate: string | null;
   status: 'streaming' | 'answered' | 'failed' | 'cancelled';
   commentary: readonly string[];
   cards: readonly KbCard[];
@@ -89,8 +100,10 @@ export class ChatController {
     this.#run = run;
     this.#record.startTurn();
     const owns = (): boolean => this.#run === run && !run.signal.aborted;
+    const context: RunContext = Object.freeze({ evaluationDate: this.#host.evaluationDate });
     let message: AssistantMessage = {
       role: 'assistant',
+      evaluationDate: context.evaluationDate,
       status: 'streaming',
       commentary: [],
       cards: [],
@@ -112,10 +125,10 @@ export class ChatController {
     let failure: AssistantMessage['failure'];
     const running: Promise<void>[] = [];
     const runCall = async (call: string, goal: string): Promise<void> => {
-      update({ cards: [...message.cards, { call, goal }] });
+      update({ cards: [...message.cards, { call, goal, evaluationDate: context.evaluationDate }] });
       let outcome: QueryOutcome;
       try {
-        outcome = (await this.#host.runGoal(goal, run.signal)) ?? NOT_READY;
+        outcome = (await this.#host.runGoal(goal, context, run.signal)) ?? NOT_READY;
       } catch (cause) {
         outcome = {
           kind: 'error',
@@ -128,7 +141,7 @@ export class ChatController {
       if (!owns()) return;
       const result = toolResult(outcome);
       if (result.ok) this.#record.ran.add(call);
-      card(call, { call, goal, outcome, result });
+      card(call, { call, goal, evaluationDate: context.evaluationDate, outcome, result });
       const conversation = this.#conversation;
       if (conversation !== undefined) {
         await this.#client.result(conversation, call, result.text, result.ok);

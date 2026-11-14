@@ -9,6 +9,7 @@
 // by itself.
 
 import { EngineClient, type BootOutcome, type QueryOutcome } from '../engine/client.js';
+import { UNDATED, type RunContext } from '../engine/context.js';
 import type {
   BootProgress,
   BudgetSpec,
@@ -66,14 +67,30 @@ export interface DemoEngine {
   ask(
     id: unknown,
     budget: BudgetSpec,
+    context: RunContext,
     signal?: AbortSignal,
     onSolution?: (solution: PlSolution) => void,
   ): Promise<AnswerResult>;
   /** The catalog question's marks goal; an id in, never goal text. */
-  marks?(id: QuestionId, budget: BudgetSpec, signal?: AbortSignal): Promise<MarksOutcome>;
-  prove?(input: ProofInput, budget: BudgetSpec, signal?: AbortSignal): Promise<ProofOutcome>;
+  marks?(
+    id: QuestionId,
+    budget: BudgetSpec,
+    context: RunContext,
+    signal?: AbortSignal,
+  ): Promise<MarksOutcome>;
+  prove?(
+    input: ProofInput,
+    budget: BudgetSpec,
+    context: RunContext,
+    signal?: AbortSignal,
+  ): Promise<ProofOutcome>;
   /** One model-written goal, always through the engine's read-only allowlist. */
-  runGoal?(goal: string, budget: BudgetSpec, signal?: AbortSignal): Promise<QueryOutcome>;
+  runGoal?(
+    goal: string,
+    budget: BudgetSpec,
+    context: RunContext,
+    signal?: AbortSignal,
+  ): Promise<QueryOutcome>;
   dispose(): void;
 }
 
@@ -82,11 +99,12 @@ export const createDemoEngine = (): DemoEngine => {
   const service = new AnswerService(client);
   return {
     boot: (onProgress) => client.boot(onProgress),
-    ask: (id, budget, signal, onSolution) => service.ask(id, budget, signal, onSolution),
-    marks: (id, budget, signal) => service.marks(id, budget, signal),
-    prove: (input, budget, signal) => client.prove(input, budget, signal),
-    runGoal: (goal, budget, signal) =>
-      client.query(goal, budget, signal, undefined, { readonly: true }),
+    ask: (id, budget, context, signal, onSolution) =>
+      service.ask(id, budget, context, signal, onSolution),
+    marks: (id, budget, context, signal) => service.marks(id, budget, context, signal),
+    prove: (input, budget, context, signal) => client.prove(input, budget, context, signal),
+    runGoal: (goal, budget, context, signal) =>
+      client.query(goal, budget, context, signal, undefined, { readonly: true }),
     dispose: () => {
       client.dispose();
     },
@@ -126,6 +144,10 @@ export class DemoController {
   // mutates one in place, so deep proxying would only wrap engine-owned results.
   state = $state.raw<DemoState>({ kind: 'booting' });
   selected = $state<QuestionId | null>(null);
+  /** The page-wide evaluation date (`YYYY-MM-DD`), or `null`: none, the shipped default. */
+  evaluationDate = $state<string | null>(null);
+  /** The date the live or last run was admitted with; a settled answer keeps it. */
+  runDate = $state<string | null>(null);
   solutionIndex = $state(-1);
   provenance = $state.raw<ProvenanceState>({ kind: 'idle' });
   /** The settled answer's knowledge-base marks (`.agent/contracts/ann-u1.md`). */
@@ -151,6 +173,8 @@ export class DemoController {
   #proofToken = 0;
   #marksController: AbortController | undefined;
   #marksToken = 0;
+  /** The run context the live or last-settled run was admitted with; its marks and proofs share it. */
+  #runContext: RunContext = UNDATED;
   #disposed = false;
 
   constructor(engine: DemoEngine = createDemoEngine()) {
@@ -195,7 +219,9 @@ export class DemoController {
       this.solutionIndex = index;
       if (this.state.kind === 'settled') {
         const solution = solutionsOf(this.state.result)[index];
-        if (solution !== undefined) void this.#trace(this.state.id, index, solution);
+        if (solution !== undefined) {
+          void this.#trace(this.state.id, index, solution, this.#runContext);
+        }
       }
     }
   }
@@ -204,11 +230,15 @@ export class DemoController {
    * Run one chat goal read-only through the same engine queue as every other call. `undefined`
    * = nothing ran: the engine carries no chat path, has not booted, or is disposed.
    */
-  runGoal(goal: string, signal?: AbortSignal): Promise<QueryOutcome> | undefined {
+  runGoal(
+    goal: string,
+    context: RunContext,
+    signal?: AbortSignal,
+  ): Promise<QueryOutcome> | undefined {
     const run = this.#engine.runGoal?.bind(this.#engine);
     const booted = this.state.kind !== 'booting' && this.state.kind !== 'boot-error';
     if (run === undefined || !booted || this.#disposed) return undefined;
-    return this.#exclusive(() => run(goal, CHAT_BUDGET, signal));
+    return this.#exclusive(() => run(goal, CHAT_BUDGET, context, signal));
   }
 
   dispose(): void {
@@ -279,6 +309,10 @@ export class DemoController {
     this.#marksToken += 1;
     this.marks = { kind: 'idle' };
     this.solutionIndex = -1;
+    // One run, one date: the page date as the run is admitted governs its answer, marks and proofs.
+    const context: RunContext = Object.freeze({ evaluationDate: this.evaluationDate });
+    this.#runContext = context;
+    this.runDate = context.evaluationDate;
     this.state = { kind: 'running', id };
 
     // Only this run's answers, while it is still the live run, reach the view.
@@ -291,7 +325,7 @@ export class DemoController {
     const dispatch = (): Promise<AnswerResult> =>
       controller.signal.aborted
         ? Promise.resolve(cancelledResult(id))
-        : this.#engine.ask(id, DEMO_BUDGET, controller.signal, stream);
+        : this.#engine.ask(id, DEMO_BUDGET, context, controller.signal, stream);
 
     // Nothing in flight means the engine call goes out in this same tick; any call still
     // open — a predecessor's iterator or an aborted proof — defers it through the queue,
@@ -310,8 +344,8 @@ export class DemoController {
       if (first === undefined) return;
       // Marks enter the engine queue ahead of the trace: every `solve` clears the session's
       // proof cache, so marks queued behind the trace would evict the proof it just cached.
-      void this.#mark(id);
-      void this.#trace(id, 0, first);
+      void this.#mark(id, context);
+      void this.#trace(id, 0, first, context);
     };
     // A rejected `ask()` is an outcome, not an escape. Rethrowing it left `running`
     // set while `run()`'s only caller discards the promise, so the view stayed busy
@@ -329,7 +363,7 @@ export class DemoController {
     return done;
   }
 
-  async #mark(id: QuestionId): Promise<void> {
+  async #mark(id: QuestionId, context: RunContext): Promise<void> {
     const marks = this.#engine.marks?.bind(this.#engine);
     if (marks === undefined) {
       this.marks = { kind: 'unavailable' };
@@ -347,7 +381,7 @@ export class DemoController {
       outcome = await this.#exclusive(() =>
         controller.signal.aborted
           ? Promise.resolve<MarksOutcome>({ kind: 'cancelled', solutions: [] })
-          : marks(id, DEMO_BUDGET, controller.signal),
+          : marks(id, DEMO_BUDGET, context, controller.signal),
       );
     } catch (cause) {
       outcome = {
@@ -360,7 +394,12 @@ export class DemoController {
     this.marks = { kind: 'settled', id, goal, outcome };
   }
 
-  async #trace(id: QuestionId, solution: number, selected: PlSolution): Promise<void> {
+  async #trace(
+    id: QuestionId,
+    solution: number,
+    selected: PlSolution,
+    context: RunContext,
+  ): Promise<void> {
     const prove = this.#engine.prove?.bind(this.#engine);
     if (prove === undefined) {
       const { TEXT } = messages.current;
@@ -381,6 +420,7 @@ export class DemoController {
           : prove(
               { goal: QUESTION_CATALOG[id].goal, selected: selected.display },
               PROOF_BUDGET,
+              context,
               controller.signal,
             ),
       );

@@ -89,8 +89,8 @@ Step semantics a reader cannot get from the script name:
   `tests/graph-orphan-scopes.test.ts` cases (mnt-d49 O1–O4), and a sixth holding three
   `tests/graph-annotations.test.ts` cases (sync-u2 A1, A2, A4). `gradeTable` refuses an EMPTY table by
   name, and the control feeds it the real table emptied.
-- `engine:check` (`tools/engine-check.mjs`) decides budget-required signatures, `.query`/
-  `.ask`/`.marks` call-site arity, exactly one `swipl-wasm` importer (`src/engine/worker.ts` — the
+- `engine:check` (`tools/engine-check.mjs`) decides budget- and run-context-required signatures
+  (`.query`, `.prove`, `.ask`, `.marks`), their call-site arity, exactly one `swipl-wasm` importer (`src/engine/worker.ts` — the
   pattern must admit a BARE side-effect import, which a `from`-anchored one missed), the
   undeclared-API allowlist, and a `terms.ts` export-surface pin.
 - `copy:check` (`tools/copy-check.mjs`) runs two graders over `src/i18n/`: English on banned

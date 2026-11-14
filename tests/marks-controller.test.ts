@@ -6,6 +6,7 @@ import type { BudgetSpec, ProofInput, ProofOutcome } from '../src/engine/protoco
 import { QUESTION_IDS } from '../src/questions/catalog.js';
 import { AnswerService, type AnswerResult, type MarksOutcome } from '../src/questions/service.js';
 import { answerSolution } from './support/marks-terms.js';
+import { UNDATED, type RunContext } from '../src/engine/context.js';
 
 const ID = QUESTION_IDS[0];
 const GOAL = `clinical_marks('${ID}',Source,Marks)`;
@@ -46,26 +47,46 @@ class DeferredEngine implements DemoEngine {
   boot(): Promise<BootOutcome> {
     return Promise.resolve({ kind: 'booted', contract: CONTRACT });
   }
-  ask(_id: unknown, budget: BudgetSpec, signal?: AbortSignal): Promise<AnswerResult> {
+  ask(
+    _id: unknown,
+    budget: BudgetSpec,
+    _context: RunContext,
+    signal?: AbortSignal,
+  ): Promise<AnswerResult> {
     this.order.push('ask');
     const result = deferred<AnswerResult>();
     this.asks.push({ budget, signal, result });
     if (this.nextAnswer !== undefined) result.resolve(this.nextAnswer);
     return result.promise;
   }
-  marks(id: unknown, budget: BudgetSpec, signal?: AbortSignal): Promise<MarksOutcome> {
+  marks(
+    id: unknown,
+    budget: BudgetSpec,
+    _context: RunContext,
+    signal?: AbortSignal,
+  ): Promise<MarksOutcome> {
     this.order.push('marks');
     const result = deferred<MarksOutcome>();
     this.markCalls.push({ id, budget, signal, result });
     return result.promise;
   }
-  prove(input: ProofInput, budget: BudgetSpec, signal?: AbortSignal): Promise<ProofOutcome> {
+  prove(
+    input: ProofInput,
+    budget: BudgetSpec,
+    _context: RunContext,
+    signal?: AbortSignal,
+  ): Promise<ProofOutcome> {
     this.order.push('proof');
     const result = deferred<ProofOutcome>();
     this.proofs.push({ input, budget, signal, result });
     return result.promise;
   }
-  runGoal(_goal: string, budget: BudgetSpec, signal?: AbortSignal): Promise<QueryOutcome> {
+  runGoal(
+    _goal: string,
+    budget: BudgetSpec,
+    _context: RunContext,
+    signal?: AbortSignal,
+  ): Promise<QueryOutcome> {
     this.order.push('chat');
     const result = deferred<QueryOutcome>();
     this.chats.push({ budget, signal, result });
@@ -142,7 +163,7 @@ describe('marks lifecycle', () => {
     engine.nextAnswer = undefined;
     const created = await boot(engine);
     const first = created.run();
-    const chat = created.runGoal('true');
+    const chat = created.runGoal('true', UNDATED);
     engine.asks[0]?.result.resolve(answer());
     await first;
     await tick();
@@ -248,8 +269,8 @@ describe('marks service', () => {
     const query = vi.fn(() => Promise.resolve(outcome));
     const service = new AnswerService({ query } as unknown as EngineClient);
     const signal = new AbortController().signal;
-    expect(await service.marks(ID, DEMO_BUDGET, signal)).toBe(outcome);
-    expect(query).toHaveBeenCalledExactlyOnceWith(GOAL, DEMO_BUDGET, signal);
+    expect(await service.marks(ID, DEMO_BUDGET, UNDATED, signal)).toBe(outcome);
+    expect(query).toHaveBeenCalledExactlyOnceWith(GOAL, DEMO_BUDGET, UNDATED, signal);
   });
   it('M2 rejects noncatalog ids without ever querying goal text', async () => {
     const query = vi.fn(() => Promise.resolve({ kind: 'failure' } as const));
@@ -265,7 +286,7 @@ describe('marks service', () => {
       'clinical_marks(_,_,_)',
       ID.toUpperCase(),
     ]) {
-      expect(await service.marks(value, DEMO_BUDGET)).toEqual({
+      expect(await service.marks(value, DEMO_BUDGET, UNDATED)).toEqual({
         kind: 'rejected',
         reason: 'unknown-id',
       });

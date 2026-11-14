@@ -4,6 +4,7 @@
   import LanguageToggle from '../demo/LanguageToggle.svelte';
   import ThemeToggle from '../demo/ThemeToggle.svelte';
   import { EngineClient } from '../engine/client.js';
+  import { UNDATED } from '../engine/context.js';
   import { PROOF_BUDGET_MAX } from '../engine/protocol.js';
   import type { ProvenanceState } from '../provenance/model.js';
   import ProvenanceLadder from '../provenance/ProvenanceLadder.svelte';
@@ -17,7 +18,11 @@
   const prove = async (): Promise<ProvenanceState> => {
     const booted = await client.boot();
     if (booted.kind === 'error') return { kind: 'error', solution: 0, error: booted.error };
-    const outcome = await client.prove({ constrainedGoal: COMPARISON_GOAL }, PROOF_BUDGET_MAX);
+    const outcome = await client.prove(
+      { constrainedGoal: COMPARISON_GOAL },
+      PROOF_BUDGET_MAX,
+      UNDATED,
+    );
     switch (outcome.kind) {
       case 'proof':
         return { kind: 'ready', solution: 0, steps: outcome.steps };

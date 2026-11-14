@@ -156,11 +156,12 @@ describe('scope guard resolution', () => {
       'guideline_entity(actual,c,clinician,countable)',
       'guideline_cardinality(actual,c,na,eq,1)',
     ];
+    // The date is run context (`.agent/contracts/n1.md`), never a premise: `clinical_run/2` states it.
     const derives = (date: number | null): string =>
       String(
         row(
-          `(derive(${head},4,[${[...clinician, ...(date === null ? [] : [`guideline_evaluation_date(${String(date)})`])].join(',')}],_,proved)` +
-            ` -> R = derived ; R = blocked).`,
+          `clinical_run(${date === null ? 'none' : `date(${String(date)})`},` +
+            `(derive(${head},4,[${clinician.join(',')}],_,proved) -> R = derived ; R = blocked)).`,
         ).R,
       );
     expect([null, 20221228, 20221229, 20261030].map(derives)).toEqual([

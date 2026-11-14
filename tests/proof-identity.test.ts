@@ -37,7 +37,6 @@ const SCHEMA = [
   'guideline_unit(_,_,_)',
   'guideline_exclusion(_)',
   'guideline_supersession(_,_,_,_)',
-  'guideline_evaluation_date(_)',
 ];
 
 let engine: Engine;
@@ -72,6 +71,19 @@ describe('clause identity', () => {
     }
     expect([...recovered.keys()].sort((a, b) => a - b)).toEqual([...lines].sort((a, b) => a - b));
     expect([...recovered.values()].filter((text) => text.trim() === '')).toEqual([]);
+  });
+
+  // No document states the evaluation date; the program does, as run context (n1): exactly one
+  // clause, the read of `clinical_run/2`'s global, so a document clause here still reddens.
+  it('keys the evaluation date by its one program clause, the run context read', () => {
+    // `clause/2` writes the body `user:`-qualified (`.claude/rules/proof.md` `Clause identity`).
+    const found = once(
+      'findall(B, clause(guideline_evaluation_date(_), B), Bs), length(Bs, N), ' +
+        "(clause(guideline_evaluation_date(D), user:nb_current('$clinical_run_context', date(E))), " +
+        'D == E -> Read = yes ; Read = no).',
+    );
+    expect(found.N).toBe(1);
+    expect(found.Read).toBe('yes');
   });
 });
 

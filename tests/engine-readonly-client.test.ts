@@ -12,11 +12,13 @@ import { EngineClient } from '../src/engine/client.js';
 import type { BudgetSpec, EngineRequest, PlSolution } from '../src/engine/protocol.js';
 import { QUESTION_IDS } from '../src/questions/catalog.js';
 import { AnswerService } from '../src/questions/service.js';
+import { UNDATED, type RunContext } from '../src/engine/context.js';
 
 // The contract's fifth argument is absent at the red base; this keeps runtime assertions reachable.
 type ReadonlyQuery = (
   goal: string,
   budget: BudgetSpec,
+  context: RunContext,
   signal?: AbortSignal,
   onSolution?: (solution: PlSolution) => void,
   options?: { readonly?: boolean },
@@ -57,7 +59,7 @@ describe('read-only client contract', () => {
   it('G8 posts readonly true only when explicitly selected', async () => {
     const { client, worker, query } = harness();
     try {
-      const pending = query('true', BUDGET_MAX, undefined, undefined, { readonly: true });
+      const pending = query('true', BUDGET_MAX, UNDATED, undefined, undefined, { readonly: true });
       const posted = worker.last;
       worker.reply({ id: posted.id, kind: 'failure' });
       await pending;
@@ -73,7 +75,7 @@ describe('read-only client contract', () => {
     async (options) => {
       const { client, worker, query } = harness();
       try {
-        const pending = query('true', BUDGET_MAX, undefined, undefined, options);
+        const pending = query('true', BUDGET_MAX, UNDATED, undefined, undefined, options);
         const posted = worker.last;
         worker.reply({ id: posted.id, kind: 'failure' });
         await pending;
@@ -89,7 +91,7 @@ describe('read-only client contract', () => {
     const { client, worker } = harness();
     try {
       const service = new AnswerService(client);
-      const pending = service.ask(QUESTION_IDS[0], BUDGET_MAX);
+      const pending = service.ask(QUESTION_IDS[0], BUDGET_MAX, UNDATED);
       const posted = worker.last;
       worker.reply({ id: posted.id, kind: 'failure' });
       await pending;
@@ -103,7 +105,9 @@ describe('read-only client contract', () => {
   it('G8 delivers a guard error unchanged and preserves structured-clone requests', async () => {
     const { client, worker, query } = harness();
     try {
-      const pending = query('assertz(x)', BUDGET_MAX, undefined, undefined, { readonly: true });
+      const pending = query('assertz(x)', BUDGET_MAX, UNDATED, undefined, undefined, {
+        readonly: true,
+      });
       const posted = worker.last;
       const cloned = structuredClone(posted);
       const error = { code: 'guard', message: 'read-only query refused: assertz/1' };

@@ -433,6 +433,7 @@ const FACE_SETTLED = `(async () => {
 const CANCEL_PROBE = `(async () => {
   const { EngineClient } = await import('/src/engine/client.ts');
   const { BUDGET_MAX } = await import('/src/engine/budget.ts');
+  const { UNDATED } = await import('/src/engine/context.ts');
   const client = new EngineClient();
   try {
     const booted = await client.boot();
@@ -441,10 +442,10 @@ const CANCEL_PROBE = `(async () => {
     const controller = new AbortController();
     setTimeout(() => controller.abort(), ${String(ABORT_AFTER_MS)});
     const started = performance.now();
-    const outcome = await client.query('between(1,100000000,X).', budget, controller.signal);
+    const outcome = await client.query('between(1,100000000,X).', budget, UNDATED, controller.signal);
     const elapsed = performance.now() - started;
     // Same engine, straight after: a cooperative cancel must not cost the session.
-    const after = await client.query('guideline_document(D,_,_,_).', { ...budget, answerCap: 1 });
+    const after = await client.query('guideline_document(D,_,_,_).', { ...budget, answerCap: 1 }, UNDATED);
     return {
       documents: booted.contract.documents,
       kind: outcome.kind,
@@ -570,12 +571,13 @@ const KILL_PROBE = `(async () => {
   };
   const { EngineClient } = await import('/src/engine/client.ts');
   const { BUDGET_MAX } = await import('/src/engine/budget.ts');
+  const { UNDATED } = await import('/src/engine/context.ts');
   const client = new EngineClient();
   try {
     const booted = await client.boot();
     if (booted.kind !== 'booted') return { error: 'boot returned ' + booted.kind };
     const started = performance.now();
-    const outcome = await client.query('repeat,fail.', { ...BUDGET_MAX, wallClockMs: 300 });
+    const outcome = await client.query('repeat,fail.', { ...BUDGET_MAX, wallClockMs: 300 }, UNDATED);
     const settled = performance.now() - started;
     const atSettle = spawned;
     // Joins the recreation the deadline already started; single-flight keeps it at one.
@@ -584,7 +586,7 @@ const KILL_PROBE = `(async () => {
     const after = await client.query('findall(D,guideline_document(D,_,_,_),Ds),length(Ds,N).', {
       ...BUDGET_MAX,
       answerCap: 1,
-    });
+    }, UNDATED);
     return {
       kind: outcome.kind,
       limit: outcome.limit,

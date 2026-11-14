@@ -11,6 +11,7 @@ import { BUDGET_MAX } from '../src/engine/budget.js';
 import { EngineClient } from '../src/engine/client.js';
 import type { BudgetSpec, EngineRequest, EngineResponse } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const GENERATED = join(dirname(dirname(fileURLToPath(import.meta.url))), 'kb', 'generated');
@@ -101,7 +102,7 @@ afterEach(() => {
 });
 
 const stackFlag = async (): Promise<unknown> => {
-  const outcome = await session.solve('current_prolog_flag(stack_limit,V).', budget());
+  const outcome = await session.solve('current_prolog_flag(stack_limit,V).', budget(), UNDATED);
   expect(outcome.kind).toBe('solutions');
   if (outcome.kind !== 'solutions') throw new Error('stack flag could not be read');
   const value = outcome.solutions[0]?.bindings.V;
@@ -136,7 +137,7 @@ describe('M1.u3 uncovered contract predicates', () => {
         2 ** 53,
       ]) {
         expect(
-          await client.query('true.', budget({ [field]: value })),
+          await client.query('true.', budget({ [field]: value }), UNDATED),
           `${field}=${value}`,
         ).toMatchObject({
           kind: 'error',
@@ -145,7 +146,10 @@ describe('M1.u3 uncovered contract predicates', () => {
       }
       const missing: Partial<BudgetSpec> = budget();
       delete missing[field];
-      expect(await client.query('true.', missing as BudgetSpec), `missing ${field}`).toMatchObject({
+      expect(
+        await client.query('true.', missing as BudgetSpec, UNDATED),
+        `missing ${field}`,
+      ).toMatchObject({
         kind: 'error',
         error: { code: 'budget' },
       });
@@ -155,7 +159,7 @@ describe('M1.u3 uncovered contract predicates', () => {
     for (const field of Object.keys(BUDGET_MAX) as (keyof BudgetSpec)[]) {
       for (const value of [1, BUDGET_MAX[field]]) {
         const valid = budget({ [field]: value });
-        const pending = client.query('true.', valid);
+        const pending = client.query('true.', valid, UNDATED);
         const worker = workers[0];
         if (worker === undefined) throw new Error(`valid ${field}=${value} was refused`);
         expect(worker.last).toMatchObject({ kind: 'query', budget: valid });
@@ -169,21 +173,27 @@ describe('M1.u3 uncovered contract predicates', () => {
   it('P3.1 — the stack flag is restored on success, failure, limit, exception and cancel', async () => {
     const before = await stackFlag();
     const bounded = budget({ stackBytes: 8_388_608 });
-    expect((await session.solve('true.', bounded)).kind).toBe('solutions');
+    expect((await session.solve('true.', bounded, UNDATED)).kind).toBe('solutions');
     expect(await stackFlag()).toBe(before);
-    expect((await session.solve('fail.', bounded)).kind).toBe('failure');
+    expect((await session.solve('fail.', bounded, UNDATED)).kind).toBe('failure');
     expect(await stackFlag()).toBe(before);
-    const limited = await session.solve('length(L,20000000).', bounded);
+    const limited = await session.solve('length(L,20000000).', bounded, UNDATED);
     expect(limited).toMatchObject({ kind: 'limit', limit: 'stack' });
     expect(await stackFlag()).toBe(before);
     const thrown = await session.handle(
-      { id: 'u3-exception', kind: 'query', goal: 'throw(u3_test_exception).', budget: bounded },
+      {
+        id: 'u3-exception',
+        kind: 'query',
+        context: UNDATED,
+        goal: 'throw(u3_test_exception).',
+        budget: bounded,
+      },
       image,
     );
     // P3.1 owns cleanup, not the native runtime's generic exception classification.
     expect(thrown.kind).not.toBe('solutions');
     expect(await stackFlag()).toBe(before);
-    const running = session.solve('repeat,X=1.', bounded, 'u3-stack-cancel');
+    const running = session.solve('repeat,X=1.', bounded, UNDATED, 'u3-stack-cancel');
     const accepted = await new Promise<boolean>((resolve) =>
       setTimeout(() => resolve(session.requestCancel('u3-stack-cancel')), 0),
     );
@@ -236,11 +246,13 @@ describe('M1.u3 uncovered contract predicates', () => {
     vi.spyOn(performance, 'now').mockImplementation(() => virtualNow);
     vi.spyOn(Date, 'now').mockImplementation(() => epoch + virtualNow);
     displayAdvance = 5;
-    expect((await timed.solve('X=shown.', budget({ wallClockMs: 10 }))).kind).toBe('solutions');
+    expect((await timed.solve('X=shown.', budget({ wallClockMs: 10 }), UNDATED)).kind).toBe(
+      'solutions',
+    );
     virtualNow = 0;
     displayCalls = 0;
     displayAdvance = 20;
-    const outcome = await timed.solve('X=shown.', budget({ wallClockMs: 10 }));
+    const outcome = await timed.solve('X=shown.', budget({ wallClockMs: 10 }), UNDATED);
     expect(
       displayCalls,
       'the real renderer must execute before the clock advances',
@@ -255,8 +267,8 @@ describe('M1.u3 uncovered contract predicates', () => {
     const { client, workers } = scriptedClient();
     const signal = new AbortController();
     let otherSettled = false;
-    const first = client.query('repeat.', budget(), signal.signal);
-    const second = client.query('true.', budget()).then((outcome) => {
+    const first = client.query('repeat.', budget(), UNDATED, signal.signal);
+    const second = client.query('true.', budget(), UNDATED).then((outcome) => {
       otherSettled = true;
       return outcome;
     });
@@ -285,7 +297,7 @@ describe('M1.u3 uncovered contract predicates', () => {
     try {
       const settlements = [0, 0];
       const pending = settlements.map((_, index) =>
-        client.query('repeat.', budget()).then((outcome) => {
+        client.query('repeat.', budget(), UNDATED).then((outcome) => {
           settlements[index] = (settlements[index] ?? 0) + 1;
           return outcome;
         }),
@@ -326,7 +338,7 @@ describe('M1.u3 uncovered contract predicates', () => {
     ];
     for (const outcome of outcomes) {
       const { client, workers, armed } = scriptedClient();
-      const pending = client.query('true.', budget());
+      const pending = client.query('true.', budget(), UNDATED);
       const worker = workers[0];
       if (worker === undefined) throw new Error('worker was not spawned');
       expect(armed.size).toBe(1);
@@ -370,13 +382,18 @@ describe('M1.u3 uncovered contract predicates', () => {
       {
         id: 'u3-malformed',
         kind: 'query',
+        context: UNDATED,
         goal: 'assertz(u3_forbidden_side_effect),guideline_document(',
         budget: budget(),
       },
       image,
     );
     expect(response).toMatchObject({ kind: 'error', error: { code: 'prolog' } });
-    const after = await session.solve('current_predicate(u3_forbidden_side_effect/0).', budget());
+    const after = await session.solve(
+      'current_predicate(u3_forbidden_side_effect/0).',
+      budget(),
+      UNDATED,
+    );
     expect(after.kind).toBe('failure');
   });
 });

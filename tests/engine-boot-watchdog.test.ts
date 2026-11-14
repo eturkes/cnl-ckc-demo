@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { BUDGET_MAX } from '../src/engine/budget.js';
 import { EngineClient } from '../src/engine/client.js';
 import type { EngineRequest, EngineResponse } from '../src/engine/protocol.js';
+import { UNDATED } from '../src/engine/context.js';
 
 class HungWorker {
   readonly seen: EngineRequest[] = [];
@@ -100,7 +101,11 @@ describe('boot watchdog', () => {
       cancelSchedule: clock.cancel,
     });
     try {
-      const querying = client.query('true.', { ...BUDGET_MAX, wallClockMs: 1000, answerCap: 1 });
+      const querying = client.query(
+        'true.',
+        { ...BUDGET_MAX, wallClockMs: 1000, answerCap: 1 },
+        UNDATED,
+      );
       const saturated = workers[0];
       const request = saturated?.seen[0];
       if (request?.kind !== 'query') throw new Error('no query was posted');
@@ -131,7 +136,11 @@ describe('boot watchdog', () => {
       cancelSchedule: clock.cancel,
     });
     try {
-      const querying = client.query('true.', { ...BUDGET_MAX, wallClockMs: 1000, answerCap: 1 });
+      const querying = client.query(
+        'true.',
+        { ...BUDGET_MAX, wallClockMs: 1000, answerCap: 1 },
+        UNDATED,
+      );
       const request = workers[0]?.seen[0];
       if (request?.kind !== 'query') throw new Error('no query was posted');
       workers[0]?.reply({ id: request.id, kind: 'limit', limit: 'heap', solutions: [] });

@@ -5,6 +5,7 @@
 // Structured clone drops prototypes and accessors and raises `DataCloneError` on
 // anything else, so errors travel as scalar fields rather than as objects.
 
+import type { RunContext } from './context.js';
 import type { PlBindings } from './terms.js';
 
 /** Values read out of a booted engine, never written as literals. */
@@ -69,7 +70,11 @@ export type EngineErrorCode =
   /** A read-only query named something its allowlist refuses; nothing ran. */
   | 'guard'
   /** A WASM trap aborted the runtime; the client recreates the worker before it answers. */
-  | 'aborted';
+  | 'aborted'
+  /** The run context was malformed or named no real day; nothing ran. */
+  | 'context'
+  /** Another request was still open; this one was refused before it was read. */
+  | 'busy';
 
 export interface EngineError {
   code: EngineErrorCode;
@@ -146,11 +151,22 @@ export interface ProofComparison {
 }
 
 /**
- * One entry of the live proof tree. The four arms are the four ways the
- * interpreter discharges a goal, and they are kept distinct so a reader never has
- * to tell a quoted clause from a hypothesis by looking at its text.
+ * The run's evaluation date, a premise the page supplied (`src/engine/context.ts`): no
+ * document states it and no premise of the question stands in for it, so it carries no line and
+ * opens a dated proof once, whatever number of goals read it.
  */
-export type ProofStep = ProofClause | ProofAssumption | ProofNegation | ProofComparison;
+export interface ProofContext {
+  kind: 'context';
+  /** `evaluation_date(YYYYMMDD)`. */
+  goal: string;
+}
+
+/**
+ * One entry of the live proof tree. The arms are the ways the interpreter discharges a goal, kept
+ * distinct so a reader never has to tell a quoted clause from a hypothesis by looking at its text.
+ */
+export type ProofStep =
+  ProofClause | ProofAssumption | ProofNegation | ProofComparison | ProofContext;
 
 /** Every terminal result of a selected-solution proof request. */
 export type ProofOutcome =
@@ -186,8 +202,8 @@ export interface BootProgress {
 export type EngineRequestBody =
   | { kind: 'boot' }
   /** `readonly` present = a model-written goal, run through the allowlist (`readonly.ts`). */
-  | { kind: 'query'; goal: string; budget: BudgetSpec; readonly?: true }
-  | { kind: 'proof'; input: ProofInput; budget: BudgetSpec }
+  | { kind: 'query'; goal: string; budget: BudgetSpec; context: RunContext; readonly?: true }
+  | { kind: 'proof'; input: ProofInput; budget: BudgetSpec; context: RunContext }
   | { kind: 'consult'; source: string }
   | { kind: 'cancel'; target: string };
 

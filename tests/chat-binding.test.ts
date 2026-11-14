@@ -15,6 +15,7 @@ import { BUDGET_MAX } from '../src/engine/budget.js';
 import type { QueryOutcome } from '../src/engine/client.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
 import { decodeOnce } from '../src/engine/terms.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const image = new Uint8Array(readFileSync(new URL('../kb/generated/kb.pvm', import.meta.url)));
@@ -47,13 +48,14 @@ beforeAll(async () => {
   once('dynamic(guideline_entity/4).');
 }, 120_000);
 
-const liveGoal: ChatHost['runGoal'] = async (text, signal) => {
+const liveGoal: ChatHost['runGoal'] = async (text, context, signal) => {
   if (signal?.aborted) throw new DOMException('cancelled', 'AbortError');
   const request = {
     id: `d4-${String(++serial)}`,
     kind: 'query' as const,
     goal: text,
     budget: BUDGET_MAX,
+    context,
     readonly: true as const,
   };
   const response = await session.handle(request, image);
@@ -77,7 +79,10 @@ interface Observation {
   posted: ReplayChatClient['posted'];
   dispatched: number;
 }
-const observe = async (host: ChatHost, dispatch: boolean): Promise<Observation> => {
+const observe = async (
+  host: Pick<ChatHost, 'runGoal'>,
+  dispatch: boolean,
+): Promise<Observation> => {
   const events: ChatEvent[] = [{ type: 'conversation', id: 'd4-conversation' }];
   if (dispatch) events.push({ type: 'query', call: 'q1', goal });
   events.push(
@@ -94,10 +99,11 @@ const observe = async (host: ChatHost, dispatch: boolean): Promise<Observation> 
   const controller = new ChatController({
     client,
     host: {
-      runGoal: (text, signal) => {
+      evaluationDate: null,
+      runGoal: (text, context, signal) => {
         dispatched += 1;
         expect(text).toBe(goal);
-        return host.runGoal(text, signal);
+        return host.runGoal(text, context, signal);
       },
     },
   });
@@ -125,7 +131,7 @@ const observe = async (host: ChatHost, dispatch: boolean): Promise<Observation> 
   }
 };
 const campaign = async (
-  host: ChatHost,
+  host: Pick<ChatHost, 'runGoal'>,
   dispatch = true,
 ): Promise<readonly [Observation, Observation, Observation]> => {
   clear();
@@ -188,7 +194,11 @@ describe('chat answer binding to exported KB execution', () => {
 
   it('D4 fixed-outcome host control fails both card and posted-text binding assertions', async () => {
     clear();
-    const fixed: QueryOutcome | undefined = await liveGoal(goal, new AbortController().signal);
+    const fixed: QueryOutcome | undefined = await liveGoal(
+      goal,
+      UNDATED,
+      new AbortController().signal,
+    );
     if (!fixed) throw new Error('live baseline missing');
     const observations = await campaign({ runGoal: () => Promise.resolve(fixed) });
     expect(bindingFailures(observations)).toEqual([

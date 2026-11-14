@@ -17,6 +17,7 @@ import { BUDGET_MAX, readOutcome } from '../src/engine/budget.js';
 import { EngineClient } from '../src/engine/client.js';
 import type { BudgetSpec, EngineContract, EngineRequest } from '../src/engine/protocol.js';
 import { EngineSession, type Engine, type ImageLoader } from '../src/engine/session.js';
+import { UNDATED } from '../src/engine/context.js';
 
 const require = createRequire(import.meta.url);
 const GENERATED = join(dirname(dirname(fileURLToPath(import.meta.url))), 'kb', 'generated');
@@ -152,7 +153,7 @@ describe('P4 hard-cancel recovery', () => {
     // Not awaited: the reset is still booting its replacement when the query is posted,
     // which is exactly the window P4.7 names.
     const resetting = engine.reset('P4.7 hard cancel');
-    const during = engine.query('guideline_document(D,_,_,_).', budget({ answerCap: 1 }));
+    const during = engine.query('guideline_document(D,_,_,_).', budget({ answerCap: 1 }), UNDATED);
 
     const [booted, outcome] = await Promise.all([resetting, during]);
     expect(booted).toEqual({ kind: 'booted', contract: manifest.contract });
@@ -166,7 +167,11 @@ describe('P4 hard-cancel recovery', () => {
     // Two spawns, not three: the mid-respawn request attached to the live generation.
     expect(spawned).toHaveLength(2);
     // The engine the reset produced is usable, so the failed request cost nothing.
-    const after = await engine.query('guideline_document(D,_,_,_).', budget({ answerCap: 1 }));
+    const after = await engine.query(
+      'guideline_document(D,_,_,_).',
+      budget({ answerCap: 1 }),
+      UNDATED,
+    );
     expect(after.kind).toBe('limit');
   }, 180_000);
 
@@ -187,7 +192,7 @@ describe('Q budget corpus — several limits armed at once', () => {
   beforeAll(async () => {
     session = new EngineSession({ loadImage: loaderWith(), expected: manifest.contract });
     await session.boot(image);
-    expect((await session.solve(DEEP_SETUP, budget())).kind).toBe('solutions');
+    expect((await session.solve(DEEP_SETUP, budget(), UNDATED)).kind).toBe('solutions');
   }, 180_000);
 
   it('Q reports the outer inference limit when depth and inference both trip', async () => {
@@ -196,7 +201,11 @@ describe('Q budget corpus — several limits armed at once', () => {
     // Live: the WRAPPER decides. `call_with_inference_limit` is outermost, so with both
     // budgets low the run ends on inferences and `BudgetDepth_` never binds — which is
     // why swapping `readOutcome`'s branch order leaves this half green.
-    const solved = await session.solve('probe_deep(5000).', budget({ depth: 50, inferences: 40 }));
+    const solved = await session.solve(
+      'probe_deep(5000).',
+      budget({ depth: 50, inferences: 40 }),
+      UNDATED,
+    );
     expect(solved.kind).toBe('limit');
     if (solved.kind === 'limit') expect(solved.limit).toBe('inference');
 
@@ -212,13 +221,17 @@ describe('Q budget corpus — several limits armed at once', () => {
   }, 120_000);
 
   it('Q reports one typed limit with all four budgets set low at once', async () => {
-    const solved = await session.solve('probe_deep(5000).', {
-      depth: 50,
-      inferences: 40,
-      stackBytes: 8_388_608,
-      wallClockMs: 1,
-      answerCap: 1,
-    });
+    const solved = await session.solve(
+      'probe_deep(5000).',
+      {
+        depth: 50,
+        inferences: 40,
+        stackBytes: 8_388_608,
+        wallClockMs: 1,
+        answerCap: 1,
+      },
+      UNDATED,
+    );
     expect(solved.kind).toBe('limit');
     if (solved.kind !== 'limit') return;
     // Engine-side limits are read from the first wrapper result, so they settle before
@@ -226,7 +239,11 @@ describe('Q budget corpus — several limits armed at once', () => {
     expect(solved.limit).toBe('inference');
     expect(solved.solutions).toHaveLength(0);
     // The engine survives a four-way trip; a limit is never a discard.
-    const sound = await session.solve('guideline_document(D,_,_,_).', budget({ answerCap: 1 }));
+    const sound = await session.solve(
+      'guideline_document(D,_,_,_).',
+      budget({ answerCap: 1 }),
+      UNDATED,
+    );
     expect(sound.kind).toBe('limit');
   }, 120_000);
 });
@@ -268,7 +285,7 @@ describe('Q consult corpus — the diagnostic sinks in isolation', () => {
 
     // The engine is discarded, so a later request on it is refused rather than served.
     const after = await session.handle(
-      { id: 'd2', kind: 'query', goal: 'true.', budget: budget() },
+      { id: 'd2', kind: 'query', context: UNDATED, goal: 'true.', budget: budget() },
       image,
     );
     expect(after.kind).toBe('error');

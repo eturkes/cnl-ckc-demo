@@ -10,6 +10,7 @@ import type { BootOutcome, QueryOutcome } from '../src/engine/client.js';
 import type { BudgetSpec, PlSolution, ProofInput, ProofOutcome } from '../src/engine/protocol.js';
 import { QUESTION_IDS, type QuestionId } from '../src/questions/catalog.js';
 import type { AnswerResult } from '../src/questions/service.js';
+import { UNDATED, type RunContext } from '../src/engine/context.js';
 
 const CONTRACT = { schemaVersion: 1, documents: 337 };
 const ID = QUESTION_IDS[0];
@@ -72,12 +73,22 @@ class QueueEngine implements DemoEngine {
     this.asks.push({ id, pending });
     return this.enter('ask', pending);
   }
-  prove(input: ProofInput, _budget: BudgetSpec, signal?: AbortSignal): Promise<ProofOutcome> {
+  prove(
+    input: ProofInput,
+    _budget: BudgetSpec,
+    _context: RunContext,
+    signal?: AbortSignal,
+  ): Promise<ProofOutcome> {
     const pending = deferred<ProofOutcome>();
     this.proofs.push({ input, signal, pending });
     return this.enter('proof', pending);
   }
-  runGoal(goal: string, budget: BudgetSpec, signal?: AbortSignal): Promise<QueryOutcome> {
+  runGoal(
+    goal: string,
+    budget: BudgetSpec,
+    _context: RunContext,
+    signal?: AbortSignal,
+  ): Promise<QueryOutcome> {
     const pending = deferred<QueryOutcome>();
     this.queries.push({ goal, budget, signal, pending });
     return this.enter('query', pending);
@@ -111,7 +122,7 @@ describe('chat shares the demo engine queue', () => {
     const abort = new AbortController();
     const before = controller.state;
     const provenance = controller.provenance;
-    const result = controller.runGoal(GOAL, abort.signal);
+    const result = controller.runGoal(GOAL, UNDATED, abort.signal);
     expect(result).toBeInstanceOf(Promise);
     await tick();
     expect(engine.queries).toHaveLength(1);
@@ -131,12 +142,12 @@ describe('chat shares the demo engine queue', () => {
     const engine = new QueueEngine();
     const controller = create(engine);
     const signal = new AbortController().signal;
-    expect(controller.runGoal(GOAL, signal)).toBeUndefined();
+    expect(controller.runGoal(GOAL, UNDATED, signal)).toBeUndefined();
     engine.bootResult.resolve({ kind: 'error', error: { code: 'boot', message: 'boot refused' } });
     await tick();
-    expect(controller.runGoal(GOAL, signal)).toBeUndefined();
+    expect(controller.runGoal(GOAL, UNDATED, signal)).toBeUndefined();
     controller.dispose();
-    expect(controller.runGoal(GOAL, signal)).toBeUndefined();
+    expect(controller.runGoal(GOAL, UNDATED, signal)).toBeUndefined();
     expect(engine.queries).toHaveLength(0);
   });
 
@@ -145,7 +156,7 @@ describe('chat shares the demo engine queue', () => {
     async (settlement) => {
       const { engine, controller } = await ready();
       const catalog = controller.run();
-      const chat = controller.runGoal(GOAL, new AbortController().signal);
+      const chat = controller.runGoal(GOAL, UNDATED, new AbortController().signal);
       await tick();
       expect(engine.asks).toHaveLength(1);
       expect(engine.queries).toHaveLength(0);
@@ -174,7 +185,7 @@ describe('chat shares the demo engine queue', () => {
       await catalog;
       await tick();
       expect(engine.proofs).toHaveLength(1);
-      const chat = controller.runGoal(GOAL, new AbortController().signal);
+      const chat = controller.runGoal(GOAL, UNDATED, new AbortController().signal);
       await tick();
       expect(engine.queries).toHaveLength(0);
       if (settlement === 'fulfilled')
@@ -204,7 +215,7 @@ describe('chat shares the demo engine queue', () => {
     'D7 catalog waits for a %s chat goal and receives only its own answer',
     async (settlement) => {
       const { engine, controller } = await ready();
-      const chat = controller.runGoal(GOAL, new AbortController().signal)!;
+      const chat = controller.runGoal(GOAL, UNDATED, new AbortController().signal)!;
       const observed = chat.catch(() => undefined);
       await tick();
       expect(engine.queries).toHaveLength(1);
