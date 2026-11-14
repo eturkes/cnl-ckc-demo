@@ -128,7 +128,11 @@ await withBuiltSite(
         () =>
           staleness(dist, inputDigest, {
             ...manifest,
-            input: { ...manifest.input, sha256: `0${manifest.input.sha256.slice(1)}` },
+            // A different first hex digit: a fixed `0` is the identity on a digest that opens with one.
+            input: {
+              ...manifest.input,
+              sha256: `${manifest.input.sha256.startsWith('0') ? '1' : '0'}${manifest.input.sha256.slice(1)}`,
+            },
           }),
       ),
       requireFiring(

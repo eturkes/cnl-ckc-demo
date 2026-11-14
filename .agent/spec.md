@@ -486,7 +486,7 @@ variant alike.
   negation boxes, one frame per sentence VARIANT (consequent `ref(N)`, antecedent referents by
   Skolem `Deps` position, boxes + operator chains, guard literals apart), sentence-level census
   in `tests/census.test.ts`.
-- [ ] n1 `kernel` run context (Decisions, spike `cf3fd3e`): one logical run owns its date across
+- [x] 161bd5d n1 `kernel` run context (Decisions, spike `cf3fd3e`): one logical run owns its date across
   answer, marks, proof and query cards, and a retained result shows its own date; answers stream
   under it; chat goals wrapped by the page; the read-only guard refusing any context write; closes the queue row `The engine session
   interleaves concurrent requests` by refusing a second open request by name. Approved re-pins:
