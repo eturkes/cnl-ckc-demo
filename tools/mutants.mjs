@@ -1908,6 +1908,50 @@ export const MUTANTS = [
     check: { test: 'tests/run-context.test.ts', name: 'R2' },
   },
   {
+    label: 'inv records: a superseded statement reads its derived flag inverted',
+    edits: [
+      {
+        path: 'src/questions/records.ts',
+        old: "      derived: flag === 'true',",
+        new: "      derived: flag !== 'true',",
+      },
+    ],
+    check: { test: 'tests/acceptance-gi-records.test.ts', name: 'A3.1' },
+  },
+  {
+    label: 'inv records: a decode failure reads as an empty record set',
+    edits: [
+      {
+        path: 'src/questions/records.ts',
+        old: "    return { kind: 'error', error: { code: 'decode', message: `${goal}: ${cause.message}` } };",
+        new: "    return { kind, goal, value: decode({ kind: 'list', items: [] }) };",
+      },
+    ],
+    check: { test: 'tests/records.test.ts', name: 'decodes the compiled shapes' },
+  },
+  {
+    label: 'inv records: an unknown question id reads as an empty family',
+    edits: [
+      {
+        path: 'src/questions/service.ts',
+        old: "      return { kind: 'error', error: { code: 'protocol', message: 'not a catalog question id' } };",
+        new: "      return { kind: 'superseded', goal: '', statements: [] };",
+      },
+    ],
+    check: { test: 'tests/records.test.ts', name: 'R1' },
+  },
+  {
+    label: 'inv records: a record date loses its dashes',
+    edits: [
+      {
+        path: 'src/questions/records.ts',
+        old: '  return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;',
+        new: '  return digits;',
+      },
+    ],
+    check: { test: 'tests/acceptance-gi-records.test.ts', name: 'A3.4' },
+  },
+  {
     label: "inv characterization-engine: a question answers with another question's marks goal",
     edits: [
       {

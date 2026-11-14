@@ -167,4 +167,15 @@ clinical_run_enter(Ctx,Prior) :- (nb_current('$clinical_run_context',V) -> Prior
 clinical_run_leave(some(V)) :- nb_setval('$clinical_run_context',V).
 clinical_run_leave(absent) :- nb_delete('$clinical_run_context').
 guideline_evaluation_date(D) :- nb_current('$clinical_run_context',date(D)).
+clinical_scope(Conditions) :- findall(B-s(D,S),(clause(guideline_exclusion(_),B,R),clause_property(R,line_count(L)),clinical_exclusion_site(D,S,L)),Items), clinical_conditions(Items,Cs), msort(Cs,Conditions).
+clinical_conditions([],[]).
+clinical_conditions([B-Src|T],[condition(First,Text,Sources)|Cs]) :- clinical_variants(B,T,Same,Rest), msort([Src|Same],Sources), Sources = [First|_], First = s(D,S), clinical_record_text(D,S,Text), clinical_conditions(Rest,Cs).
+clinical_variants(_,[],[],[]).
+clinical_variants(B,[B2-Src|T],[Src|Same],Rest) :- B2 =@= B, !, clinical_variants(B,T,Same,Rest).
+clinical_variants(B,[X|T],Same,[X|Rest]) :- clinical_variants(B,T,Same,Rest).
+clinical_supersessions(Records) :- findall(record(D,S,C,U,Date),guideline_supersession(D,S,source(C,U),Date),Rs), msort(Rs,Records).
+clinical_superseded(Q,Statements) :- findall(St,clinical_superseded_statement(Q,St),Ss), sort(Ss,Statements).
+clinical_superseded_statement(Q,statement(D,S,Text,C,U,Date,Derived)) :- clinical_source(Q,Rec,_), clinical_family(Rec,D), guideline_supersession(D,S,source(C,U),Date), clinical_record_text(D,S,Text), (clinical_record_derived(D,S) -> Derived = true ; Derived = false).
+clinical_record_context(D,S,As) :- findall(L,clinical_record_premise(D,S,_,L),As).
+clinical_record_derived(D,S) :- clinical_depth(Depth), clause(clinical_record_gate(D,S,_),Body,_), gate_heads(Body,Heads), clinical_record_context(D,S,As), derive_all(Heads,Depth,As,_), !.
 `;

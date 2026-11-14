@@ -704,6 +704,116 @@ const checkActions = (document, clause, sites) => {
   }
 };
 
+/** A superseded document's deontic clauses end with this date guard, before the scope guard. */
+const SUPERSESSION_GUARD =
+  /, guideline_evaluation_date\(([A-Z_][A-Za-z0-9_]*)\), guideline_satisfies\(exactly,\1,less,[0-9]+\)$/u;
+
+/**
+ * n2's build facts (`.agent/contracts/n2.md`), emitted after every other helper fact so no
+ * document line and no `clinical_gate/4` line list moves: the record sentences' ACE text, the
+ * exclusion clause sites, the recommendation families from the coverage sections, and — for
+ * every sentence a supersession record names, read off the bag rather than listed — a gate over
+ * its content sites with the premises of its antecedent (`clinical_record_premise/4`, apart from
+ * the answer path's `clinical_premise/4`), read without either guard. The guards
+ * stay in the stored clauses, so the date guard still decides the derivation.
+ *
+ * @param {Map<string, Uint8Array>} files @param {string} source the payload source
+ * @param {ReadonlySet<string>} taken premise keys the clinical layer already emitted
+ */
+const recordBlock = (files, source, taken) => {
+  /** @typedef {{ document: string, sentence: number, text: string, clauses: Array<{ line: number, head: string, body: string }>, exclusions: number[], superseded: boolean }} RecordSentence */
+  /** @type {RecordSentence[]} */
+  const sentences = [];
+  let document = '';
+  /** @type {RecordSentence | undefined} */
+  let current;
+  for (const [offset, line] of source.split('\n').entries()) {
+    const file = /^% file:.*\/pl\/([^/]+)\.pl$/u.exec(line);
+    if (file !== null) {
+      document = file[1] ?? '';
+      current = undefined;
+      continue;
+    }
+    const marker = /^% S([1-9][0-9]*): (.*)$/u.exec(line);
+    if (marker !== null) {
+      current = { document, sentence: Number(marker[1]), text: marker[2] ?? '', clauses: [], exclusions: [], superseded: false };
+      sentences.push(current);
+      continue;
+    }
+    if (current === undefined || !line.startsWith('guideline_')) continue;
+    if (line.startsWith('guideline_exclusion(')) current.exclusions.push(offset + 1);
+    else if (line.startsWith('guideline_supersession(')) current.superseded = true;
+    else {
+      const rule = line.indexOf(' :- ');
+      current.clauses.push({
+        line: offset + 1,
+        head: (rule < 0 ? line.slice(0, -1) : line.slice(0, rule)).trim(),
+        body: rule < 0 ? 'true' : line.slice(rule + 4, -1),
+      });
+    }
+  }
+  /** @type {string[]} */
+  const facts = [];
+  for (const { document: doc, sentence, text, clauses, exclusions, superseded } of sentences) {
+    if (exclusions.length === 0 && !superseded) continue;
+    const key = `${encodedAtom(doc)},${String(sentence)}`;
+    facts.push(`clinical_record_text(${key},${quotedString(text)}).`);
+    for (const line of exclusions) facts.push(`clinical_exclusion_site(${key},${String(line)}).`);
+    if (!superseded) continue;
+    if (taken.has(key)) throw new Error(`${doc}:${String(sentence)}: a superseded sentence is already a clinical gate`);
+    if (clauses.length === 0) throw new Error(`${doc}:${String(sentence)}: a superseded sentence has no content sites`);
+    const bodies = [
+      ...new Set(clauses.map((clause) => antecedent(clause).replace(SUPERSESSION_GUARD, ''))),
+    ];
+    if (bodies.length !== 1) {
+      throw new Error(`${doc}:${String(sentence)}: ${String(bodies.length)} distinct antecedents, expected one`);
+    }
+    /** @type {Map<string, string>} */
+    const variables = new Map();
+    const skolem = (/** @type {number} */ ordinal) =>
+      `'$clinical_hypothetical'(${encodedAtom(doc)},${String(sentence)},${String(ordinal)})`;
+    const grounded = clauses.map(({ line, head }) => ({ line, head: groundTerm(head, variables, skolem) }));
+    facts.push(
+      `clinical_record_gate(${key},[${grounded.map(({ line }) => line).join(',')}]) :- ` +
+        // `gate_heads/2` walks `(clinical_use(_, H), Rest)` pairs and stops at the terminal goal,
+        // so a closing `true` keeps the last content head in the walk.
+        `${grounded.map(({ line, head }) => `clinical_use(${String(line)},(${head}))`).join(',')},true.`,
+    );
+    for (const [ordinal, goal] of premiseGoals(/** @type {string} */ (bodies[0])).entries()) {
+      facts.push(`clinical_record_premise(${key},${String(ordinal)},(${groundTerm(goal, variables, skolem)})).`);
+    }
+  }
+  // A recommendation's family = its box statement + the documents under its `Implementation
+  // considerations` coverage section (gi-interfaces `Scope + superseded reads`).
+  /** @type {Map<string, string>} */
+  const recommendations = new Map();
+  /** @type {Array<[string, string]>} */
+  const members = [];
+  for (const [path, bytes] of [...files].sort(([a], [b]) => (a < b ? -1 : 1))) {
+    if (!/^data\/guidelines\/[^/]+\/coverage\.tsv$/u.test(path)) continue;
+    for (const row of new TextDecoder('utf-8', { fatal: true }).decode(bytes).split('\n')) {
+      const [, , , section = '', status = ''] = row.split('\t');
+      const doc = /^ace\(([^)]+)\)$/u.exec(status.trim())?.[1];
+      if (doc === undefined) continue;
+      const box = /(?:^| > )Recommendation ([0-9]+)$/u.exec(section)?.[1];
+      if (box !== undefined) recommendations.set(box, doc);
+      const rec = /^Rec ([0-9]+) > Implementation considerations(?: > |$)/u.exec(section)?.[1];
+      if (rec !== undefined) members.push([rec, doc]);
+    }
+  }
+  for (const [number, rec] of [...recommendations].sort(([a], [b]) => Number(a) - Number(b))) {
+    facts.push(`clinical_family(${encodedAtom(rec)},${encodedAtom(rec)}).`);
+    for (const [of, doc] of members) if (of === number) facts.push(`clinical_family(${encodedAtom(rec)},${encodedAtom(doc)}).`);
+  }
+  for (const [of, doc] of members) {
+    if (!recommendations.has(of)) throw new Error(`${doc}: its implementation section names no recommendation ${of}`);
+  }
+  return (
+    `:- discontiguous(clinical_record_text/3).\n:- discontiguous(clinical_exclusion_site/3).\n` +
+    `:- discontiguous(clinical_record_gate/3).\n:- discontiguous(clinical_record_premise/4).\n${facts.join('\n')}\n`
+  );
+};
+
 /**
  * @param {Map<string, Uint8Array>} files
  * @returns {{ records: Array<{ id: string, question: string, goal: string, marksGoal: string, projection: Array<{ variable: string, descriptor: string }>, provenance: 'bag-derived' }>, names: string[], source: string, helper: string, answers: Map<string, string[]>, sentences: Array<{ question: string, document: string, clause: AdviceClause }> }}
@@ -883,6 +993,7 @@ export const clinicalArtifacts = (files) => {
     `clinical_merge(Su,M,A,T,Rest,Cs1), app(C,Cs1,Cs).\n` +
     `clinical_merge(Su,M,A,[H|T],[H|Rest],Cs) :- clinical_merge(Su,M,A,T,Rest,Cs).\n` +
     `${selections.join('\n')}\n${passageFacts.join('\n')}\n` +
-    `${fragments.join('\n')}\n${premises.join('\n')}\n${gates.join('\n')}\n`;
+    `${fragments.join('\n')}\n${premises.join('\n')}\n${gates.join('\n')}\n` +
+    recordBlock(files, documents.source, new Set(premises.map((fact) => /^clinical_premise\(([^,]+,[0-9]+),/u.exec(fact)?.[1] ?? '')));
   return { records, names: [...names].sort(), source: helper, helper, answers, sentences };
 };

@@ -480,7 +480,7 @@ variant alike.
   141.9 s on the i7-8650U from a load near 1.3 (T11 86.9 s, P4 50.9 s).
 - [ ] o2 acceptance suite `wt/tester-7` `cd5e569` (`Intent` + `Decisions` + `gi-interfaces.md`, 75
   cases, each seen red; red commands + counts in the `cd5e569` commit body): each unit merges the cases it turns green;
-  unmerged after n1: 43 (A2–A9). Orientation evidence (spikes, MeSH sample, g2 review, loop count,
+  unmerged after n2: 27 (A4–A9). Orientation evidence (spikes, MeSH sample, g2 review, loop count,
   pre-mortem) → `.agent/contracts/gi-orientation.md`; characterization `wt/tester-8` merged `35bbb06`.
 - [x] daa7191 g1 `kernel` frames: `tools/kb/frames.mjs` — a body reader that keeps `\+ (…)` groups and
   negation boxes, one frame per sentence VARIANT (consequent `ref(N)`, antecedent referents by

@@ -141,7 +141,8 @@ call as a `builtin(G)` leaf; the demo's meta-interpreter records it the same way
 and the deontic clauses of the superseded `cdc2022-opioid-rec12-imp08` end with
 `guideline_evaluation_date(V), guideline_satisfies(exactly,V,less,20221229)` before it. A
 sentence's antecedent is therefore read without the scope guard (`tools/kb/clinical.mjs`
-`antecedent`), and the graph projects neither guard.
+`antecedent`) — a superseded sentence's record gate reads it without the date guard too, both
+guards staying in the stored clauses (n2) — and the graph projects neither guard.
 
 Clause counts: version 492, document 492, entity 3126, cardinality 3126, event 2415, arg
 4744, pp 1715, property 69, operator 1843, interval 56, recurrence 15, frequency 3, order 165,

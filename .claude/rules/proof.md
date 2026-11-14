@@ -157,6 +157,14 @@ the shipped proof RPC is untouched. No write path ships; a direct `assertz` is s
   `context(evaluation_date(D))` leaf. `clinical_run/2`, its enter/leave helpers and the native
   `guideline_evaluation_date/1` clause close `PROOF_SOURCE` (`.claude/rules/engine.md` `Run
   context`).
+- **Record reads (n2, `.agent/contracts/n2.md`).** `clinical_scope/1` groups the exclusion
+  clause bodies by variant (`=@=`, never by text); `clinical_supersessions/1` lists the records;
+  `clinical_superseded/2` derives each superseded statement of a question's family through its
+  `clinical_record_gate/3` under its own `clinical_record_premise/4` facts — a table apart from
+  the answer path's `clinical_premise/4`, whose census the answer graders pin — so the stored clauses' date
+  guard and scope guard decide `derived` under the run context. A record gate ends with `true`:
+  `gate_heads/2` drops a gate's terminal goal, so a gate ending at its last `clinical_use` would
+  skip its last head.
 - **The assumption arm commits, then enumerates.** A goal some premise unifies with never also
   resolves against a KB clause, and every premise that unifies stays a candidate:
   `\+ \+ assumed(H,As), !, assumed(H,As)`. A scope guard's exception binds an existential

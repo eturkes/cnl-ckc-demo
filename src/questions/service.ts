@@ -11,10 +11,22 @@
 // It carries a 10 s watchdog of its own; it is a `BudgetSpec` it never takes.
 
 import type { EngineClient, QueryOutcome } from '../engine/client.js';
-import type { RunContext } from '../engine/context.js';
+import { UNDATED, type RunContext } from '../engine/context.js';
 import type { BudgetSpec, EngineError, LimitKind, PlSolution } from '../engine/protocol.js';
 
 import { QUESTION_CATALOG, type QuestionId, isQuestionId } from './catalog.js';
+import {
+  decodeConditions,
+  decodeRecords,
+  decodeStatements,
+  readOutcome,
+  SCOPE_GOAL,
+  supersededGoal,
+  SUPERSESSIONS_GOAL,
+  type ScopeOutcome,
+  type SupersededOutcome,
+  type SupersessionsOutcome,
+} from './records.js';
 import { serializeAnswer } from './serialize.js';
 
 /**
@@ -111,5 +123,49 @@ export class AnswerService {
   ): Promise<MarksOutcome> {
     if (!isQuestionId(id)) return { kind: 'rejected', reason: 'unknown-id' };
     return this.#client.query(QUESTION_CATALOG[id].marksGoal, budget, context, signal);
+  }
+
+  /** The guideline's scope exclusions: each condition with every sentence stating it. */
+  async scope(
+    budget: BudgetSpec,
+    context: RunContext,
+    signal?: AbortSignal,
+  ): Promise<ScopeOutcome> {
+    const outcome = await this.#client.query(SCOPE_GOAL, budget, context, signal);
+    const read = readOutcome(outcome, SCOPE_GOAL, 'scope', 'Conditions', decodeConditions);
+    return 'value' in read ? { kind: read.kind, goal: read.goal, conditions: read.value } : read;
+  }
+
+  /**
+   * The superseded statements of a catalog question's recommendation family, each derived — or
+   * not — under the run's evaluation date. An id in, never goal text; an unknown id is an error,
+   * never an empty family.
+   */
+  async superseded(
+    id: QuestionId,
+    budget: BudgetSpec,
+    context: RunContext,
+    signal?: AbortSignal,
+  ): Promise<SupersededOutcome> {
+    if (!isQuestionId(id)) {
+      return { kind: 'error', error: { code: 'protocol', message: 'not a catalog question id' } };
+    }
+    const goal = supersededGoal(id);
+    const outcome = await this.#client.query(goal, budget, context, signal);
+    const read = readOutcome(outcome, goal, 'superseded', 'Statements', decodeStatements);
+    return 'value' in read ? { kind: read.kind, goal: read.goal, statements: read.value } : read;
+  }
+
+  /** Every supersession record the KB holds; a fixed record, so the run carries no date. */
+  async supersessions(budget: BudgetSpec, signal?: AbortSignal): Promise<SupersessionsOutcome> {
+    const outcome = await this.#client.query(SUPERSESSIONS_GOAL, budget, UNDATED, signal);
+    const read = readOutcome(
+      outcome,
+      SUPERSESSIONS_GOAL,
+      'supersessions',
+      'Records',
+      decodeRecords,
+    );
+    return 'value' in read ? { kind: read.kind, goal: read.goal, records: read.value } : read;
   }
 }

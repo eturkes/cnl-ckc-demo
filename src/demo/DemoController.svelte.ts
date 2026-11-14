@@ -23,6 +23,11 @@ import { messages } from '../i18n/locale.svelte.js';
 import type { ProvenanceState } from '../provenance/model.js';
 import { QUESTION_CATALOG, type QuestionId } from '../questions/catalog.js';
 import type { MarksState } from '../questions/marks.js';
+import type {
+  ScopeOutcome,
+  SupersededOutcome,
+  SupersessionsOutcome,
+} from '../questions/records.js';
 import { serializeAnswer } from '../questions/serialize.js';
 import { AnswerService, type AnswerResult, type MarksOutcome } from '../questions/service.js';
 
@@ -84,6 +89,17 @@ export interface DemoEngine {
     context: RunContext,
     signal?: AbortSignal,
   ): Promise<ProofOutcome>;
+  /** The guideline's scope exclusions (`.agent/contracts/n2.md`). */
+  scope?(budget: BudgetSpec, context: RunContext, signal?: AbortSignal): Promise<ScopeOutcome>;
+  /** A catalog question's superseded statements, derived or not under the run's date. */
+  superseded?(
+    id: QuestionId,
+    budget: BudgetSpec,
+    context: RunContext,
+    signal?: AbortSignal,
+  ): Promise<SupersededOutcome>;
+  /** Every supersession record; date-independent. */
+  supersessions?(budget: BudgetSpec, signal?: AbortSignal): Promise<SupersessionsOutcome>;
   /** One model-written goal, always through the engine's read-only allowlist. */
   runGoal?(
     goal: string,
@@ -103,6 +119,9 @@ export const createDemoEngine = (): DemoEngine => {
       service.ask(id, budget, context, signal, onSolution),
     marks: (id, budget, context, signal) => service.marks(id, budget, context, signal),
     prove: (input, budget, context, signal) => client.prove(input, budget, context, signal),
+    scope: (budget, context, signal) => service.scope(budget, context, signal),
+    superseded: (id, budget, context, signal) => service.superseded(id, budget, context, signal),
+    supersessions: (budget, signal) => service.supersessions(budget, signal),
     runGoal: (goal, budget, context, signal) =>
       client.query(goal, budget, context, signal, undefined, { readonly: true }),
     dispose: () => {
