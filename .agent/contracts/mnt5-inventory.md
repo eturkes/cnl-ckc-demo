@@ -71,6 +71,7 @@ record is `.claude/rules/firing.md`.
 |---|---|---|---|---|
 | `tests/about-copy.dom.test.ts` | off | corpus count written into copy | mutate | `E03 corpus count written back into copy` |
 | `tests/acceptance-gi-context.test.ts` | off | the run context API absent: every dated read, refusal and restore | text | `.agent/contracts/n1.md 32/32 RED at base `7caec35`` |
+| `tests/acceptance-gi-network.test.ts` | off | a boundary condition drifting from the live scope read | mutate | `inv acceptance-gi-network: a boundary condition drifts from the live scope read` |
 | `tests/acceptance-gi-records.test.ts` | off | the scope and superseded reads absent | text | `.agent/contracts/n2.md 16/16 RED at base` |
 | `tests/axe-contrast.browser.test.ts` | off | the probe's pair made readable | mutate | `inv axe-contrast.browser: the probe's pair made readable` |
 | `tests/axe-contrast.dom.test.ts` | off | the pin's own probe run in Chromium, which decides contrast | text | `tests/axe-contrast.browser.test.ts decides the unreadable pair a violation, where the jsdom pin no longer holds` |
@@ -164,6 +165,8 @@ record is `.claude/rules/firing.md`.
 | `tests/marks-run-boundary.test.ts` | answer | a missing document's grade run merged into the next | text | `.agent/contracts/ann-review.md Written by reviewer-12 as` |
 | `tests/marks-view.test.ts` | answer | decoder, readings and join return the stub's fixed values | text | `.agent/contracts/ann-u1.md 405/405 RED at base` |
 | `tests/mutant-anchors.test.ts` | off | exported-query mutant names an anchor absent from its producer | mutate | `inv mutant-anchors: exported-query mutant retains a stale anchor` |
+| `tests/network-fields.test.ts` | off | default-operator mutants of the producer the projection suite leaves alive | text | `.agent/contracts/mnt5-stryker.md killed by F1–F24 alone` |
+| `tests/network-projection.test.ts` | off | a negated or negation-as-failure condition starting a line | mutate | `inv network-projection: a negated or negation-as-failure condition starts a line` |
 | `tests/page-viewer.dom.test.ts` | off | failed page draw leaves retry button disabled | mutate | `C3 a failed page draw keeps Load page viewer disabled` |
 | `tests/palette-check.test.ts` | off | protan simulated with the identity matrix | mutate | `inv palette-check: protan simulated with the identity matrix` |
 | `tests/upstream-ui-corpus.test.ts` | off | the port lets an orphan ACE or Prolog file ride along | mutate | `inv upstream-ui: the port lets an orphan ACE or Prolog file ride along` |

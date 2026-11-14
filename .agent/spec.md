@@ -480,7 +480,7 @@ variant alike.
   141.9 s on the i7-8650U from a load near 1.3 (T11 86.9 s, P4 50.9 s).
 - [ ] o2 acceptance suite `wt/tester-7` `cd5e569` (`Intent` + `Decisions` + `gi-interfaces.md`, 75
   cases, each seen red; red commands + counts in the `cd5e569` commit body): each unit merges the cases it turns green;
-  unmerged after n2: 27 (A4–A9). Orientation evidence (spikes, MeSH sample, g2 review, loop count,
+  unmerged after g2: 22 (A4–A6, A8, A9). Orientation evidence (spikes, MeSH sample, g2 review, loop count,
   pre-mortem) → `.agent/contracts/gi-orientation.md`; characterization `wt/tester-8` merged `35bbb06`.
 - [x] daa7191 g1 `kernel` frames: `tools/kb/frames.mjs` — a body reader that keeps `\+ (…)` groups and
   negation boxes, one frame per sentence VARIANT (consequent `ref(N)`, antecedent referents by
@@ -497,7 +497,7 @@ variant alike.
   bucket; a line keeps its whole consequent (arguments, phrases, quantities); several starts share
   rule id + full condition; annotations on their line; document kind per line; every exclusion
   and supersession record + guard projected, no date exemption (n30 Accept, moved from A1).
-- [ ] n2 `kernel` records + superseded derivation, generic over any document (then the whole
+- [x] 26b8ed4 n2 `kernel` records + superseded derivation, generic over any document (then the whole
   answer → marks → records → proof and recorded chat flows timed at none / before / on / after the
   boundary, every catalog question): compiled goals for
   the exclusion records (12 → 8 conditions, deduplicated by clause body, never by English), the

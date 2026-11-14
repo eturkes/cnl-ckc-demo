@@ -87,8 +87,10 @@ Step semantics a reader cannot get from the script name:
   `tests/graph-semantics.review.test.ts` across four `why` rows naming the same suite, which
   is what lets one suite carry four distinct claims, a fifth row holding the four
   `tests/graph-orphan-scopes.test.ts` cases (mnt-d49 O1–O4), and a sixth holding three
-  `tests/graph-annotations.test.ts` cases (sync-u2 A1, A2, A4). `gradeTable` refuses an EMPTY table by
-  name, and the control feeds it the real table emptied.
+  `tests/graph-annotations.test.ts` cases (sync-u2 A1, A2, A4). Four more rows hold the twelve
+  `tests/network-projection.test.ts` cases (g2 N1–N12), which carry polarity's duty to the
+  clinical network; the linguistic graph's six rows leave with it at g7. `gradeTable` refuses an
+  EMPTY table by name, and the control feeds it the real table emptied.
 - `engine:check` (`tools/engine-check.mjs`) decides budget- and run-context-required signatures
   (`.query`, `.prove`, `.ask`, `.marks`), their call-site arity, exactly one `swipl-wasm` importer (`src/engine/worker.ts` — the
   pattern must admit a BARE side-effect import, which a `from`-anchored one missed), the

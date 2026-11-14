@@ -11,6 +11,7 @@ import { sha256, verifyBag } from './bag.mjs';
 import { catalogJson, catalogRecords } from './catalog.mjs';
 import { deriveCorpusIndex } from './corpus.mjs';
 import { deriveSemanticGraph, GRAPH_SCHEMA_VERSION } from './graph.mjs';
+import { networkAsset } from './network.mjs';
 import { deriveProvenance, PROVENANCE_SCHEMA_VERSION } from './provenance.mjs';
 import { buildImage, buildQlf, swiplWasmVersion, verifyImage, verifyQlf } from './produce.mjs';
 import { gradeRecord, readRecord } from './release.mjs';
@@ -19,7 +20,7 @@ import { GENERATED_DIR, MANIFEST_PATH, ROOT, loadManifest, payloadSource } from 
 /** @typedef {import('../../src/kb/manifest.ts').KbManifest} KbManifest */
 /** @typedef {import('./produce.mjs').LiveContract} LiveContract */
 
-const MANIFEST_VERSION = 8;
+const MANIFEST_VERSION = 9;
 
 /**
  * Locate the single vendored bag and prove it against its committed sidecar.
@@ -102,6 +103,7 @@ const main = async () => {
   const provenance = deriveProvenance(files);
   const graph = deriveSemanticGraph(files, provenance.clauses);
   const corpus = deriveCorpusIndex(provenance.chunks);
+  const network = networkAsset(files, inputDigest);
 
   const cached = loadManifest();
   if (
@@ -152,6 +154,7 @@ const main = async () => {
   writeGenerated(provenance.pdf.path, provenance.pdf.bytes);
   writeGenerated(corpus.path, corpus.bytes);
   writeGenerated(graph.path, graph.bytes);
+  writeGenerated(network.path, network.bytes);
 
   const provenanceAssets = [
     asset(provenance.index.bytes, provenance.index.path, 'provenance-index'),
@@ -194,6 +197,7 @@ const main = async () => {
       asset(catalogBytes, 'question-catalog.json', 'catalog'),
       ...provenanceAssets,
       asset(graph.bytes, graph.path, 'semantic-graph'),
+      asset(network.bytes, network.path, 'clinical-network'),
     ],
     contract: { schemaVersion: contract.schemaVersion, documents: contract.documents },
   };

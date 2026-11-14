@@ -1952,6 +1952,144 @@ export const MUTANTS = [
     check: { test: 'tests/acceptance-gi-records.test.ts', name: 'A3.4' },
   },
   {
+    label: 'inv acceptance-gi-network: a coverage row names the wrong sentence',
+    edits: [
+      {
+        path: 'kb/generated/graph/clinical-network.json',
+        old: '{"document":"cdc2022-opioid-rec01","sentence":1,"text":"A recommendation is a category-B-recommendation',
+        new: '{"document":"cdc2022-opioid-rec01","sentence":2,"text":"A recommendation is a category-B-recommendation',
+      },
+    ],
+    check: { test: 'tests/acceptance-gi-network.test.ts', name: 'A7.2' },
+  },
+  {
+    label: 'inv acceptance-gi-network: a boundary condition drifts from the live scope read',
+    edits: [
+      {
+        path: 'kb/generated/graph/clinical-network.json',
+        old: '{"id":"cdc2022-opioid-s10-04:1","text":"If a patient has an age and the age includes less than 18 years',
+        new: '{"id":"cdc2022-opioid-s10-04:1","text":"If a patient has an age and the age includes less than 17 years',
+      },
+    ],
+    check: { test: 'tests/acceptance-gi-network.test.ts', name: 'A7.4' },
+  },
+  {
+    label: "g2 N9 an operator's scope guard never reaches the occurrences under it",
+    edits: [
+      {
+        path: 'tools/kb/network.mjs',
+        old: 'const guarded = [...heads, ...chainHeads];',
+        new: 'const guarded = [...heads];',
+      },
+    ],
+    check: { test: 'tests/network-projection.test.ts', name: 'N9 ' },
+  },
+  {
+    label: 'inv network-projection: a sentence loses its coverage record',
+    edits: [
+      {
+        path: 'tools/kb/network.mjs',
+        old: 'coverage: [...coverage.values()].sort(byDocument),',
+        new: 'coverage: [...coverage.values()].slice(1).sort(byDocument),',
+      },
+    ],
+    check: { test: 'tests/network-projection.test.ts', name: 'N1 ' },
+  },
+  {
+    label: 'inv network-projection: an event nested under its parent stays a main event',
+    edits: [{ path: 'tools/kb/network.mjs', old: 'if (same || nested) {', new: 'if (same) {' }],
+    check: { test: 'tests/network-projection.test.ts', name: 'N2 ' },
+  },
+  {
+    label: 'inv network-projection: an inner negation leaves the reading',
+    edits: [
+      {
+        path: 'tools/kb/network.mjs',
+        old: "...chain.map((op, index) => (op === '-' ? (index === 0 ? 'it is false that' : 'not') : op)),",
+        new: "...chain.filter((op, index) => op !== '-' || index === 0).map((op) => (op === '-' ? 'it is false that' : op)),",
+      },
+    ],
+    check: { test: 'tests/network-projection.test.ts', name: 'N3 ' },
+  },
+  {
+    label: 'inv network-projection: a negated or negation-as-failure condition starts a line',
+    edits: [
+      {
+        path: 'tools/kb/network.mjs',
+        old: "({ side, context, negated }) => side === 'body' && context === 'actual' && !negated,",
+        new: "({ side }) => side === 'body',",
+      },
+    ],
+    check: { test: 'tests/network-projection.test.ts', name: 'N4 ' },
+  },
+  {
+    label:
+      'inv network-projection: any for-phrase noun, a duration included, becomes an S3 situation',
+    edits: [
+      {
+        path: 'tools/kb/network.mjs',
+        old: 'candidate !== undefined && tables.SITUATIONS.has(candidate)',
+        new: 'candidate !== undefined',
+      },
+    ],
+    check: { test: 'tests/network-projection.test.ts', name: 'N5 ' },
+  },
+  {
+    label: 'inv network-projection: an owned phrase leaves the payload',
+    edits: [
+      {
+        path: 'tools/kb/network.mjs',
+        old: 'payload: heads.filter((h) => !consumed.has(h)).map((h) => payloadItem(view, h)),',
+        new: "payload: heads.filter((h) => !consumed.has(h) && h.name !== 'guideline_pp').map((h) => payloadItem(view, h)),",
+      },
+    ],
+    check: { test: 'tests/network-projection.test.ts', name: 'N6 ' },
+  },
+  {
+    label: 'inv network-projection: a joint negation or possibility splits into per-event lines',
+    edits: [
+      {
+        path: 'tools/kb/network.mjs',
+        old: 'const shared = new Map([...byBox].filter(([, refs]) => refs.length >= 2));',
+        new: 'const shared = new Map([...byBox].filter(([, refs]) => refs.length >= 99));',
+      },
+    ],
+    check: { test: 'tests/network-projection.test.ts', name: 'N7 ' },
+  },
+  {
+    label: 'inv network-projection: line identity ignores guards and supersession',
+    edits: [
+      {
+        path: 'tools/kb/network.mjs',
+        old: '      guards: occurrence.guards,\n      superseded: occurrence.superseded,\n',
+        new: '      // guards + supersession out of the identity\n',
+      },
+    ],
+    check: { test: 'tests/network-projection.test.ts', name: 'N8 ' },
+  },
+  {
+    label: 'inv network-projection: an example sentence draws as a loop',
+    edits: [{ path: 'tools/kb/network.mjs', old: "? 'example'", new: "? 'loop'" }],
+    check: { test: 'tests/network-projection.test.ts', name: 'N10 ' },
+  },
+  {
+    label: 'inv network-projection: a coverage record shows a reduced condition span',
+    edits: [
+      {
+        path: 'tools/kb/network.mjs',
+        old: 'coverage: [...coverage.values()].sort(byDocument),',
+        new: "coverage: [...coverage.values()].map((c) => ({ ...c, text: c.text.split(' then ')[0] ?? c.text })).sort(byDocument),",
+      },
+    ],
+    check: { test: 'tests/network-projection.test.ts', name: 'N11 ' },
+  },
+  {
+    label:
+      'inv network-projection: a census candidate sits in neither its table nor its exclusions',
+    edits: [{ path: 'tools/kb/network-tables.mjs', old: "    'last to',\n", new: '' }],
+    check: { test: 'tests/network-projection.test.ts', name: 'N12 ' },
+  },
+  {
     label: "inv characterization-engine: a question answers with another question's marks goal",
     edits: [
       {

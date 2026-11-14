@@ -142,7 +142,8 @@ and the deontic clauses of the superseded `cdc2022-opioid-rec12-imp08` end with
 `guideline_evaluation_date(V), guideline_satisfies(exactly,V,less,20221229)` before it. A
 sentence's antecedent is therefore read without the scope guard (`tools/kb/clinical.mjs`
 `antecedent`) — a superseded sentence's record gate reads it without the date guard too, both
-guards staying in the stored clauses (n2) — and the graph projects neither guard.
+guards staying in the stored clauses (n2). The linguistic graph (`tools/kb/graph.mjs`) projects
+neither guard; the clinical network projects both (`.claude/rules/network.md`).
 
 Clause counts: version 492, document 492, entity 3126, cardinality 3126, event 2415, arg
 4744, pp 1715, property 69, operator 1843, interval 56, recurrence 15, frequency 3, order 165,
@@ -174,7 +175,7 @@ supersession 3.
   `provenance.mjs`) leaves the cached asset in place: `node tools/kb/build.mjs
   --force` rebuilds it. `kb:asset-check` re-derives the graph from the bag and refuses the stale
   asset (`manifest metadata differs from fresh derivation`), so the gate stays red until then.
-- `MANIFEST_VERSION` is 8. Bumping it is what stops a cached manifest from lacking a block or an
+- `MANIFEST_VERSION` is 9. Bumping it is what stops a cached manifest from lacking a block or an
   asset a new build writes.
 - `provenance/corpus-index.json` (`tools/kb/corpus.mjs`) = each evidence chunk's id, review label
   and coverage region, sorted by id, derived from the chunks `provenance.mjs` emits; the corpus

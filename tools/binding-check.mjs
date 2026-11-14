@@ -288,6 +288,7 @@ const LIFECYCLE = Object.freeze([
 ]);
 
 const REVIEW_SUITE = 'tests/graph-semantics.review.test.ts';
+const NETWORK_SUITE = 'tests/network-projection.test.ts';
 
 /**
  * The required GRAPH-MEANING checks, by suite and EXACT case name.
@@ -296,7 +297,8 @@ const REVIEW_SUITE = 'tests/graph-semantics.review.test.ts';
  * call and `LIFECYCLE` carries claims the view makes about a run settling, while these hold up
  * the user's graph-polarity ruling — negation and modality ride the EDGES, so no projected edge
  * may read as a claim the source denies. Folding them into either table would cost that table
- * the property that makes it readable.
+ * the property that makes it readable. The clinical network's rows carry that duty to the new
+ * graph beside the linguistic graph's, which leave with it at g7.
  *
  * @type {readonly Requirement[]}
  */
@@ -351,6 +353,42 @@ const MEANING = Object.freeze([
       'graph annotations A1 every annotation clause and goal projects exactly its row',
       'graph annotations A2 reads each fixture from both ends under its scope, dashed where negated',
       'graph annotations A4 holds every threshold to the world of the cardinality it constrains',
+    ],
+  },
+  {
+    suite: NETWORK_SUITE,
+    why: 'a network line reads negation and modality as its operator chain does, a joint one stays one statement, and no negated condition starts a line',
+    cases: [
+      'clinical network contract N3 every line loop and statement reading preserves its ordered chain and qualifiers',
+      'clinical network contract N4 neither a negation box nor negation-as-failure can supply a source',
+      'clinical network contract N7 joint negation or possibility becomes one shared statement rather than per-event lines',
+    ],
+  },
+  {
+    suite: NETWORK_SUITE,
+    why: 'nothing the KB holds disappears from the network: one record per sentence, one bucket per main event, its whole consequent kept',
+    cases: [
+      'clinical network contract N1 every bag sentence has exactly one coverage record and the asset keeps its input envelope',
+      'clinical network contract N2 every main event has one bucket and embedded events remain in the parent payload',
+      'clinical network contract N6 owned consequent literals are consumed once or retained with their complete payload',
+      'clinical network contract N10 every example stays sentence-reachable and item-searchable without becoming a concept',
+    ],
+  },
+  {
+    suite: NETWORK_SUITE,
+    why: "a rule's starts share its id and its whole condition sentence, and a line merges only identical complete readings, document kind included",
+    cases: [
+      'clinical network contract N5 independent T1 T2 T3 and S1 S2 S3 S4 oracle reproduces every occurrence',
+      'clinical network contract N8 guard supersession payload condition and document kind participate in complete line identity',
+      'clinical network contract N11 every condition is its own complete controlled-language sentence and concepts keep KB nouns',
+      'clinical network contract N12 declared tables equal their independent census partition without overlaps or dual concept complements',
+    ],
+  },
+  {
+    suite: NETWORK_SUITE,
+    why: 'every scope exclusion and supersession record and guard projects, with no evaluation-date exemption',
+    cases: [
+      'clinical network contract N9 every exclusion supersession and guard survives without an evaluation-date exemption',
     ],
   },
 ]);

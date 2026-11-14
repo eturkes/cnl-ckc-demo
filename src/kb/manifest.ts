@@ -12,7 +12,9 @@ export type KbAssetKind =
   | 'source-pdf'
   /** The corpus browser's document list: id, review label and coverage region per document. */
   | 'provenance-corpus'
-  | 'semantic-graph';
+  | 'semantic-graph'
+  /** The clinical concept network (`tools/kb/network.mjs`, `.agent/contracts/g2.md`). */
+  | 'clinical-network';
 
 export interface KbAsset {
   kind: KbAssetKind;

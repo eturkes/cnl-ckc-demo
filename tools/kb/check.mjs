@@ -19,6 +19,7 @@ import {
   validateSemanticGraphAsset,
   GRAPH_SCHEMA_VERSION,
 } from './graph.mjs';
+import { networkAsset } from './network.mjs';
 import { deriveCorpusIndex } from './corpus.mjs';
 import { deriveProvenance, PROVENANCE_SCHEMA_VERSION } from './provenance.mjs';
 import { GENERATED_DIR, ROOT, loadManifest, payloadSource } from './paths.mjs';
@@ -257,6 +258,7 @@ if (scanOnly) {
         { kind: 'source-pdf', path: provenance.pdf.path, bytes: provenance.pdf.bytes },
         { kind: 'provenance-corpus', path: corpus.path, bytes: corpus.bytes },
         { kind: 'semantic-graph', path: graph.path, bytes: graph.bytes },
+        { kind: 'clinical-network', ...networkAsset(files, manifest.input.sha256) },
       ];
       const derivedKinds = new Set([
         'provenance-index',
@@ -264,10 +266,11 @@ if (scanOnly) {
         'source-pdf',
         'provenance-corpus',
         'semantic-graph',
+        'clinical-network',
       ]);
       const recorded = manifest.assets.filter((entry) => derivedKinds.has(entry.kind));
       if (recorded.length !== derived.length) {
-        fail(`manifest records ${recorded.length} derived provenance/graph assets, expected ${derived.length}`);
+        fail(`manifest records ${recorded.length} derived provenance/graph/network assets, expected ${derived.length}`);
       }
       const recordedByPath = new Map(recorded.map((entry) => [entry.path, entry]));
       for (const expected of derived) {

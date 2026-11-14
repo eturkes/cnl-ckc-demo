@@ -139,3 +139,12 @@ called the answer spine untouched though the user ruled its per-sentence derivat
 | ANN-K1 | fail(low) → fixed | src/i18n/en.ts:3 | The catalog's comments still prescribed the retired 20/25-word sentence caps. | `rg -Fn 'to 20 words per sentence'` → `src/i18n/en.ts:4` at `ee2a52b`; rc 1 after the fix; re-review pass · reviewer-16 + reviewer-17 |
 | ANN-K2 | fail(med) → fixed + recorded | .agent/spec.md:193 | F1 the facts rows' owed live review sat under a ticked row → its own open `owed (user)` row; F2 `waves.md` omitted `wt/tester-6` `c7c0943` → listed with the review witnesses; F3 `5124d88` and `dea0afc` skipped the decisive gate — history, their trees gated green by the next commit; F4 ann-u3 had no consultant before code — compensated by consultant-4's late review. | `rg -Fn 'the live review is owed to the user' .agent/spec.md` → :194 under ticked :193 at `ee2a52b`; `rg -Fn 'wt/tester-6' .claude/rules/waves.md` rc 1 at `ee2a52b`; re-review F1 + F2 pass · reviewer-16 + consultant-4 + reviewer-17 |
 | ANN-S1 | pass | src/demo/AnswerPanel.svelte:146 | Every untrusted input the scope reaches ends in an escaping or fail-closed sink: Svelte text nodes only, no `{@html}`; the marks goal is catalog text chosen by id, budgeted; the chat allowlist admits neither new predicate; the build reads the vocabulary from the verified in-memory bag; an error shows its code, never the worker message. | `rg -c '@html' src` rc 1; `svelte/no-at-html-tags` + `no-unsanitized/*` = 2 on the panel; `src/engine/readonly.ts` unchanged since `5700e6c` · MAIN |
+
+## graph overhaul — IMPLEMENT (open until r1)
+
+Rows a unit leaves for a non-author ruling before the phase closes; r1's fixed check set joins
+them here.
+
+| id | verdict | source | finding | evidence |
+| --- | --- | --- | --- | --- |
+| GI-1 | open | .agent/contracts/g2.md `## Domain limits` | Stryker S170–S173 are `specified` survivors with no killing test: the pristine producer refuses the inherited-range input (W2) by name, while the mutants project it into the `wait` payload. MAIN, the producer's author, ruled the deferral and wrote the contract's `Domain limits` carve-out; a non-author `consultant` accepts or rejects both before r1 closes. | `consultant-11` W2 + `W2 re-check` (README-dist:478, 490–494, 524–529 admit the shape; upstream's compile unconfirmed); `.agent/contracts/mnt5-stryker.md` `## g2`; queue row `A consequent head naming an inherited or earlier-sentence referent refuses the build` in `.agent/deferred.md` |
