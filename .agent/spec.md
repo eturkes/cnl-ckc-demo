@@ -491,7 +491,7 @@ variant alike.
   under it; chat goals wrapped by the page; the read-only guard refusing any context write; closes the queue row `The engine session
   interleaves concurrent requests` by refusing a second open request by name. Approved re-pins:
   `engine:check` call shapes, the dated proof's context step.
-- [ ] g2 `kernel` projection: `tools/kb/network.mjs` → `kb/generated/graph/clinical-network.json`,
+- [x] b54372d g2 `kernel` projection: `tools/kb/network.mjs` → `kb/generated/graph/clinical-network.json`,
   re-derived by `kb:asset-check`. New `MEANING` rows BESIDE the old ones (they leave at g7):
   verb phrase ≡ operator chain; no start from a negated condition; every sentence in exactly one
   bucket; a line keeps its whole consequent (arguments, phrases, quantities); several starts share
@@ -503,6 +503,23 @@ variant alike.
   the exclusion records (12 → 8 conditions, deduplicated by clause body, never by English), the
   supersession records and a per-sentence derivation under the run context; condition text = the
   KB's controlled-language sentence (Decisions).
+- [ ] RESUME: finish line in force = the IMPLEMENT body's `Met when`, body verbatim in
+  `.scratch/body.md`. Committed: g2 `b54372d` (CI run 43611418684, 20 jobs green); the pause
+  commit after it (g2 ticked, g3 contract draft `.agent/contracts/g3.md`, this note). Uncommitted:
+  none in tracked paths; g3 inputs in `.scratch/g3/` (`concepts.tsv` = the 1,334 concepts with
+  degree + sentences, `rubric.md` = the pilot rubric, `pilot-ids.tsv`, `kappa.mjs`,
+  `capacity*.mjs`) and the pilot tables `.scratch/agents/classifier-8.md`, `-9.md`. No teammate
+  runs (classifier-4…9, consultant-11 harvested + stopped; reports in `.scratch/agents/`, roster
+  `.scratch/agents/roster.md`). Branches: `wt/tester-7` `cd5e569` (acceptance o2, worktree kept,
+  A7 merged + green at `b54372d`), `wt/tester-8` `2a8fd33`, `wt/builder-40` `21eb2d0`,
+  `wt/builder-41` `8ccee0f` (evidence worktrees, clean, not rerun this session), `wt/tester-9`
+  `c985287` (squashed into g2, worktree removed). Next: apply `g3.md`'s pilot clarifications to its
+  rubric and freeze it; seed the full coding (every concept in `.scratch/g3/concepts.tsv`) for two
+  fresh classifiers + a third to adjudicate; pick the ≤ 6 own-fill classes from the coded sizes;
+  then the codebook file, envelope amendment, palette table, tests, A9.1 merge, `pnpm ci:gate g3`.
+  Open beside g3: review row GI-1 (a non-author consultant rules before r1 closes); the user has
+  not answered whether the date-re-pin approval covers n1's re-pins (demo-api, proof-guard G5,
+  proof-identity, chat D5/D7/M2).
 - [ ] g3 `data` clinical codebook (Decisions): classes = the six + those the corpus needs, each
   concept coded by two independent `classifier`s under a frozen rubric, adjudicated, an explicit
   no-class state; the codebook graded total over the derived concept set; `palette:check` +
