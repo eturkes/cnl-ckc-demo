@@ -44,6 +44,17 @@ considerations` documents):
   context; empty for a family that holds none.
 - `AnswerService.supersessions(budget, signal?)` — every supersession record, date-independent
   (corpus browser, network marks).
+- Result shapes (exported from `src/questions/service.ts`; each read's error outcomes are the
+  engine's, as `ask` returns them):
+  - `ScopeCondition = { id: string; text: string; sources: { document: string; sentence: number }[] }`
+    — `text` = the condition as the KB's controlled-language sentence states it; `scope()` →
+    `{ kind: 'scope'; goal: string; conditions: ScopeCondition[] }`.
+  - `SupersededStatement = { document: string; sentence: number; text: string; citation: string;
+    url: string; date: string /* YYYY-MM-DD */; derived: boolean }`; `superseded()` →
+    `{ kind: 'superseded'; goal: string; statements: SupersededStatement[] }`.
+  - `SupersessionRecord = { document: string; sentence: number; citation: string; url: string;
+    date: string }`; `supersessions()` → `{ kind: 'supersessions'; goal: string; records:
+    SupersessionRecord[] }`.
 - A chat query card shows the model's goal and, as its own field, the run's evaluation date; the
   pair (goal, date) reproduces the run through the trusted API. The wrapped text never shows.
 
@@ -55,6 +66,17 @@ producer + table digests); exactly one coverage record per bag sentence; every o
 `recommendation` | `implementation` | `supporting`; `boundaries.conditions` = the 8 exclusion
 conditions, each with its source sentences, equal to `AnswerService.scope`'s. Field names beyond
 these land with g2.
+
+## Network component (g5)
+
+- `src/network/ClinicalNetwork.svelte`, props `{ trace?: NetworkTrace | null; traceRequest?:
+  number }`, `NetworkTrace = { question: string; lines: readonly number[]; evaluationDate: string
+  | null }` (exported from `src/network/index.ts`) — the live proof's clause lines of a settled
+  answer; it loads its asset itself, lazily.
+- `src/network/canvas.ts` is the only Cytoscape importer; it exports `mountNetworkCanvas(container:
+  HTMLElement, onSelect: (conceptId: string) => void)` returning `{ show(view: unknown): void;
+  destroy(): void }` — DOM tests mock the module whole and assert the page, never the adapter's
+  view argument.
 
 ## Page handles (n3–n5, g5, g6)
 
