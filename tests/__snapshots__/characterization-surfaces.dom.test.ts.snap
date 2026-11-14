@@ -1,0 +1,232 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`accepted answer panel > C4 keeps statements, facts, disclosures and source citations in both locales > English 1`] = `
+{
+  "canonical": "Canonical Prolog answer The Prolog engine renders each value below in canonical syntax. The demo sorts those values into the exported answer format. observed-canonical-answer",
+  "citations": [
+    {
+      "name": "Inspect source 1 for this statement",
+      "text": "1",
+    },
+    {
+      "name": "Inspect source 1 for this statement",
+      "text": "1",
+    },
+  ],
+  "disclosures": [
+    {
+      "classes": [
+        "mark-goals",
+      ],
+      "open": false,
+      "summary": "Prolog goal behind these annotations",
+    },
+    {
+      "classes": [
+        "explanation",
+      ],
+      "open": false,
+      "summary": "Sources and explanation 1 source",
+    },
+    {
+      "classes": [
+        "canonical",
+      ],
+      "open": false,
+      "summary": "Canonical Prolog answer",
+    },
+  ],
+  "facts": [
+    [
+      [
+        "Qualifier",
+        "carefully",
+      ],
+      [
+        "Grade",
+        "Category a recommendation, Evidence type 4 recommendation",
+      ],
+      [
+        "Preferred",
+        "nonopioid therapy over opioid therapy",
+      ],
+      [
+        "Time",
+        "before opioid prescription",
+      ],
+    ],
+    [],
+  ],
+  "marksGoal": "clinical_marks('when-to-use-opioids',Source,Marks)",
+  "passage": "Exact source passage.",
+  "statements": [
+    {
+      "pairs": [
+        [
+          "DT",
+          "DD",
+        ],
+        [
+          "DT",
+          "DD",
+        ],
+        [
+          "DT",
+          "DD",
+        ],
+        [
+          "DT",
+          "DD",
+        ],
+      ],
+      "tag": "LI",
+      "text": "Clinicians should maximize nonopioid therapy for acute pain.",
+    },
+    {
+      "pairs": [],
+      "tag": "LI",
+      "text": "Clinicians should consider opioid therapy when benefits outweigh risks.",
+    },
+  ],
+}
+`;
+
+exports[`accepted answer panel > C4 keeps statements, facts, disclosures and source citations in both locales > Japanese 1`] = `
+{
+  "canonical": "正規形のProlog回答 Prologエンジンは以下の各値を正規構文で描画します。デモはそれらの値を書き出し用の回答形式に整えます。 observed-canonical-answer",
+  "citations": [
+    {
+      "name": "この記述の出典1を調べる",
+      "text": "1",
+    },
+    {
+      "name": "この記述の出典1を調べる",
+      "text": "1",
+    },
+  ],
+  "disclosures": [
+    {
+      "classes": [
+        "mark-goals",
+      ],
+      "open": false,
+      "summary": "これらの注記の根拠となるPrologゴール",
+    },
+    {
+      "classes": [
+        "explanation",
+      ],
+      "open": false,
+      "summary": "出典と説明 出典1件",
+    },
+    {
+      "classes": [
+        "canonical",
+      ],
+      "open": false,
+      "summary": "正規形のProlog回答",
+    },
+  ],
+  "facts": [
+    [
+      [
+        "修飾語",
+        "carefully",
+      ],
+      [
+        "グレード",
+        "Category a recommendation, Evidence type 4 recommendation",
+      ],
+      [
+        "優先",
+        "nonopioid therapy over opioid therapy",
+      ],
+      [
+        "時期",
+        "before opioid prescription",
+      ],
+    ],
+    [],
+  ],
+  "marksGoal": "clinical_marks('when-to-use-opioids',Source,Marks)",
+  "passage": "Exact source passage.",
+  "statements": [
+    {
+      "pairs": [
+        [
+          "DT",
+          "DD",
+        ],
+        [
+          "DT",
+          "DD",
+        ],
+        [
+          "DT",
+          "DD",
+        ],
+        [
+          "DT",
+          "DD",
+        ],
+      ],
+      "tag": "LI",
+      "text": "Clinicians should maximize nonopioid therapy for acute pain.",
+    },
+    {
+      "pairs": [],
+      "tag": "LI",
+      "text": "Clinicians should consider opioid therapy when benefits outweigh risks.",
+    },
+  ],
+}
+`;
+
+exports[`accepted corpus browser > C6 lists all 492 documents and opens the unchanged recommendation passage 1`] = `
+{
+  "count": 492,
+  "id": "cdc2022-opioid-rec01",
+  "open": "true",
+  "passage": "dce73d165511d4ddcb3af657904a26eca648508d87dc33320cf625805f0194e7",
+  "shown": "Showing 492 of 492 documents.",
+}
+`;
+
+exports[`accepted recorded chat > C5 keeps four source labels, a KB card and the web source 1`] = `
+{
+  "goal": "clinical_rule(D,S,R)",
+  "segments": [
+    {
+      "source": "kb",
+      "tag": "KB q1",
+      "text": "KB q1 Maximize nonopioid therapy for acute pain.",
+    },
+    {
+      "source": "web",
+      "tag": "Web 1",
+      "text": "Web 1 The guideline appeared in 2022.",
+    },
+    {
+      "source": "model",
+      "tag": "Model",
+      "text": "Model Exercise therapy is one option.",
+    },
+    {
+      "source": "unverified",
+      "tag": "Unverified",
+      "text": "Unverified A claim with no record. claimed source: KB",
+    },
+  ],
+  "solutions": [
+    "D = 'cdc2022-opioid-rec01', S = 2",
+  ],
+  "source": [
+    {
+      "href": "https://www.cdc.gov/mmwr/volumes/71/rr/rr7103a1.htm",
+      "rel": "noreferrer",
+      "target": "_blank",
+      "text": "CDC Clinical Practice Guideline",
+    },
+  ],
+}
+`;

@@ -1706,4 +1706,26 @@ export const MUTANTS = [
     ],
     check: { test: 'tests/ci-gate.test.ts', name: 'every harness red lands pending' },
   },
+  {
+    label: "inv characterization-engine: a question answers with another question's marks goal",
+    edits: [
+      {
+        path: 'kb/generated/question-catalog.json',
+        old: "clinical_marks('when-to-use-opioids',Source,Marks)",
+        new: "clinical_marks('starting-opioid-therapy',Source,Marks)",
+      },
+    ],
+    check: { test: 'tests/characterization-engine.test.ts', name: 'C2 when-to-use-opioids' },
+  },
+  {
+    label: 'inv characterization-surfaces: the recommendation passage altered',
+    edits: [
+      {
+        path: 'kb/generated/provenance/documents/cdc2022-opioid-rec01.json',
+        old: 'Nonopioid therapies are at least as effective as opioids for',
+        new: 'Nonopioid therapies are at least as effective as opioid for',
+      },
+    ],
+    check: { test: 'tests/characterization-surfaces.dom.test.ts', name: 'C6' },
+  },
 ];

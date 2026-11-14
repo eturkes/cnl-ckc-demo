@@ -76,6 +76,8 @@ record is `.claude/rules/firing.md`.
 | `tests/boot-phases.test.ts` | off | unexpected progress ignored silently | mutate | `inv boot-phases: unexpected progress ignored silently` |
 | `tests/boot-recovery.dom.test.ts` | off | retry reuses worker retaining failed image fetch | commit | `88af76b B4 retry red: cached-rejection retention` |
 | `tests/census.test.ts` | off | latin-ext face duplicates latin font file | mutate | `inv census: latin-ext face duplicates latin file` |
+| `tests/characterization-engine.test.ts` | off | a question answering with another question's marks goal | mutate | `inv characterization-engine: a question answers with another question's marks goal` |
+| `tests/characterization-surfaces.dom.test.ts` | off | the recommendation passage altered | mutate | `inv characterization-surfaces: the recommendation passage altered` |
 | `tests/chat-binding.test.ts` | answer | query card drops engine outcome | mutate | `inv chat-binding: query card drops engine outcome` |
 | `tests/chat-client.test.ts` | off | malformed event line skipped instead of refusing turn | mutate | `inv chat-client: malformed event line skipped` |
 | `tests/chat-controller.test.ts` | off | malformed answer earns model label | mutate | `inv chat-controller: malformed answer earns model label` |
