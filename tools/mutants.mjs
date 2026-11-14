@@ -1707,6 +1707,83 @@ export const MUTANTS = [
     check: { test: 'tests/ci-gate.test.ts', name: 'every harness red lands pending' },
   },
   {
+    label: 'inv frames: sentence records dropped',
+    edits: [
+      {
+        path: 'tools/kb/frames.mjs',
+        old: '      records.push({ document: site.document, sentence: site.sentence, line: site.line, name: head.name, args: head.args });\n',
+        new: '',
+      },
+    ],
+    check: { test: 'tests/frames.test.ts', name: 'F1' },
+  },
+  {
+    label: 'inv frames: variants keyed on the sentence alone',
+    edits: [
+      {
+        path: 'tools/kb/frames.mjs',
+        old: 'const groupKey = `${sentenceKey}\\u0000${renderBody(canonical.body)}`;',
+        new: 'const groupKey = sentenceKey;',
+      },
+    ],
+    check: { test: 'tests/frames.test.ts', name: 'F3' },
+  },
+  {
+    label: 'inv frames: a chain skips negation',
+    edits: [
+      {
+        path: 'tools/kb/frames.mjs',
+        old: '    chain.unshift(box.operator);',
+        new: "    if (box.operator !== '-') chain.unshift(box.operator);",
+      },
+    ],
+    check: { test: 'tests/frames.test.ts', name: 'F4' },
+  },
+  {
+    label: 'inv frames: the scope guard left off its head',
+    edits: [
+      {
+        path: 'tools/kb/frames.mjs',
+        old: 'guards: { scope: scope[0] ?? null, supersession: supersession[0] ?? null },',
+        new: 'guards: { scope: null, supersession: supersession[0] ?? null },',
+      },
+    ],
+    check: { test: 'tests/frames.test.ts', name: 'F5' },
+  },
+  {
+    label: 'inv frames: a grouped negation rendered without its brackets',
+    edits: [
+      {
+        path: 'tools/kb/frames.mjs',
+        old: '          : `\\\\+ (${renderBody(item.naf)})`,',
+        new: '          : `\\\\+ ${renderBody(item.naf)}`,',
+      },
+    ],
+    check: { test: 'tests/frames.test.ts', name: 'F6' },
+  },
+  {
+    label: 'inv frames: first sentences skipped',
+    edits: [
+      {
+        path: 'tools/kb/frames.mjs',
+        old: '    if (site.sentence === null) continue;',
+        new: '    if (site.sentence === null || site.sentence === 1) continue;',
+      },
+    ],
+    check: { test: 'tests/frames.test.ts', name: 'F7' },
+  },
+  {
+    label: 'inv frames: a grouped negation keeps its first goal alone',
+    edits: [
+      {
+        path: 'tools/kb/frames.mjs',
+        old: 'return { naf: grouped ? items(inner.slice(1, -1)) : [{ literal: literal(inner) }] };',
+        new: 'return { naf: grouped ? items(inner.slice(1, -1)).slice(0, 1) : [{ literal: literal(inner) }] };',
+      },
+    ],
+    check: { test: 'tests/frames.test.ts', name: 'F2a' },
+  },
+  {
     label: "inv characterization-engine: a question answers with another question's marks goal",
     edits: [
       {

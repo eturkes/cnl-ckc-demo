@@ -129,6 +129,7 @@ record is `.claude/rules/firing.md`.
 | `tests/engine-term-identity.test.ts` | off | falsy improper-list tails collapse and recursive encoding overflows on long lists | commit | `a9bf242 terms); round 1 `9715300` → the long-list case throws. Command: `git show <rev>:src/engine/terms.ts` |
 | `tests/engine-u2-port.test.ts` | off | unmatched worker response no longer reports a protocol violation | mutate | `inv engine-u2-port: unmatched response is silently dropped` |
 | `tests/engine-u3-port.test.ts` | off | maximum budget boundary is rejected instead of admitted | mutate | `inv engine-u3-port: maximum budget is excluded` |
+| `tests/frames.test.ts` | off | a grouped negation read as its first goal alone | mutate | `inv frames: a grouped negation keeps its first goal alone` |
 | `tests/gate-ledger.test.ts` | off | a red row enters the ledger already classified | mutate | `inv gate-ledger: a red row enters classified` |
 | `tests/graph-condition-merges.test.ts` | off | merged relation records the folded world's scope as the kept world's scope | mutate | `inv graph-condition-merges: kept scope replaced by folded scope` |
 | `tests/graph-live.test.ts` | off | neighborhood depth cutoff excludes all first-degree neighbors | mutate | `inv graph-live: neighborhood depth cutoff off by one` |
