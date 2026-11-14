@@ -55,6 +55,15 @@ considerations` documents):
   - `SupersessionRecord = { document: string; sentence: number; citation: string; url: string;
     date: string }`; `supersessions()` → `{ kind: 'supersessions'; goal: string; records:
     SupersessionRecord[] }`.
+- `ScopeOutcome = { kind: 'scope'; goal; conditions } | QueryOutcome`-style failures (the engine's
+  `failure` / `limit` / `cancelled` / `error` outcomes as `ask` returns them); likewise
+  `SupersededOutcome` and `SupersessionsOutcome`. A condition's `id` is stable per distinct
+  clause body (equal up to variable renaming); its `sources` list every record stating it, sorted
+  by document then sentence.
+- `DemoEngine` (`src/demo/DemoController.svelte.ts`, the app's injection seam) gains the same
+  context argument on `ask`, `marks`, `prove`, `runGoal`, and three reads: `scope(budget, context,
+  signal?)`, `superseded(id, budget, context, signal?)`, `supersessions(budget, signal?)`, each
+  returning the service's outcome above; DOM tests inject a fake `DemoEngine`.
 - A chat query card shows the model's goal and, as its own field, the run's evaluation date; the
   pair (goal, date) reproduces the run through the trusted API. The wrapped text never shows.
 
@@ -75,8 +84,11 @@ these land with g2.
   answer; it loads its asset itself, lazily.
 - `src/network/canvas.ts` is the only Cytoscape importer; it exports `mountNetworkCanvas(container:
   HTMLElement, onSelect: (conceptId: string) => void)` returning `{ show(view: unknown): void;
-  destroy(): void }` — DOM tests mock the module whole and assert the page, never the adapter's
-  view argument.
+  destroy(): void }` — DOM tests mock the module whole, may call the captured `onSelect` with a
+  concept id to simulate a canvas tap, and assert the page, never the adapter's view argument.
+- The component reads its asset through `fetch` of the URL `src/network/index.ts` exports as
+  `NETWORK_ASSET_URL`; DOM tests stub `fetch` for that URL with an asset they build to the
+  guarantees above.
 
 ## Page handles (n3–n5, g5, g6)
 
