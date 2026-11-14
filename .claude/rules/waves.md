@@ -74,6 +74,9 @@ repo's deltas.
   `wt/builder-36` `7ef3adf` (j7).
 - Graph overhaul ITERATE round-4 entry-point branches, each cited by the `proto(graph r4)` commit body:
   `wt/builder-37` `e57c479` (k1), `wt/builder-38` `4a202e5` (k2), `wt/builder-39` `f2ecfff` (k3).
+- Graph IMPLEMENT orientation spike branches, each cited by `.agent/contracts/gi-orientation.md`:
+  `wt/builder-40` `21eb2d0` (S-G4 run context, mechanism `cf3fd3e`), `wt/builder-41` `8ccee0f`
+  (S-G2 layout + labels).
 - MAIN's units landed from branches, each cited by its landing commit: `wip/n1-palette`
   `c774baf`, `wip/n2-replay` `60a74c4`, `wip/n3-mutate-timeout` `2235854`, `wip/n4-artifacts`
   `49b1143`, `wip/n5-inventory` `ee0f5b2`, `wip/n9-comparison` `3cf1d13`, `wip/n11-copy-sweep`

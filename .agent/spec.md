@@ -305,7 +305,7 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
     an implementation detail never reads as a graded recommendation. The prepared questions get
     redesigned around the full guideline in the next phase (ruling below).
   - **Vocabulary = the KB's own terms, readable** (hyphens dropped); no grouping the KB does not
-    state, the disclosed MeSH colouring aside (ruling below).
+    state, the disclosed hand-made colour codebook aside (ruling below).
   - **Round 1 → content trial** (user, at the round-1 showing): the concept network goes forward,
     and versions differ in WHAT it shows, focused on clinical relationships rather than linguistic
     structure. Both readings of "between the guidelines" become versions — relationships between
@@ -337,7 +337,7 @@ Stack, gate + area law → `.claude/rules/`; detail + history → `.agent/archiv
   - **Round 4 pick = a guided first view over pain-type anchors, coloured by clinical category**
     (user, round-4 showing): the page opens on one pain type's direct relationships (k3) and steps
     out to the full network, where acute, subacute and chronic pain hold one row across the top and
-    every other concept sits below it (k1). One colouring, no switch; its source is now MeSH
+    every other concept sits below it (k1). One colouring, no switch: the hand-made codebook
     (ruling below). Left-to-right flow (k2) is declined.
 
 **User (IMPLEMENT orientation, graph overhaul + n30):** detail, counts and the readers' and
@@ -351,11 +351,12 @@ consultants' tables → `.agent/contracts/gi-orientation.md`.
   condition`. Advice that still names one concept besides `patient`, `benefit` or `risk` draws as
   a loop on that concept, and its panel reads it as advice about the concept, never as a relation
   of the concept to itself. Leaves stay withdrawn.
-- **Concepts colour by MeSH's top-level groups**, replacing the hand-made six classes. Each
-  concept maps to a descriptor of a pinned MeSH release and takes the colour of its top-level tree
-  category; the legend names MeSH, the release and NLM, and says the KB states no categories; a
-  concept without a match says so. A coverage sample runs before the build, and poor coverage
-  returns to the user.
+- **Concepts colour by a hand-made clinical codebook: the six round-4 categories plus as many
+  more as make sense** (user, after a MeSH coverage sample left about 45% of terms unmatched and
+  most matched ones in two groups — `.agent/contracts/gi-orientation.md`). Two independent coders
+  assign every concept; a concept that fits no class says so; the legend says the KB states no
+  categories. The colour-blind-safe palette (`pnpm palette:check`) bounds how many classes can
+  carry their own fill.
 - **The full network fits the screen and reveals labels on zoom**, replacing the zoom floor.
   Labels keep one size on screen; at fit, the labels that fit without overlap show, the most
   connected first; zooming in reveals more; a selected concept, its neighbours and a traced
@@ -394,13 +395,26 @@ consultant-amended method:
 - **Condition text = the KB's own controlled-language sentence**, readable; a shorter span only
   where a structural check proves it faithful; else the whole sentence, labelled as such.
 - **The network derives at build time from the KB's own logic structure** (per-sentence frames
-  over the compiled clauses), never from text patterns; Cytoscape stays (two research passes: no
-  library places complete labels better at this size); its layout and label sizes compute at
-  build time, pending a layout spike.
-- **The evaluation date is run context**, mechanism pending a session spike: the page's frozen,
-  validated date enters each engine call through one trusted wrapper with explicit cleanup, a
-  dedicated interpreter step records it in a dated proof, the proof cache keys on it, and a
-  second concurrent request is refused by name.
+  over the compiled clauses), never from text patterns; projection contract
+  `.agent/contracts/g2.md`.
+- **Cytoscape stays; layout and label sizes compute at build time** (spike `wt/builder-41`): a
+  seeded fcose layout exits cleanly once `cy.destroy()` stops its animation timer and writes
+  byte-identical output twice; harfbuzz boxes over the decompressed shipped font sit within
+  0.6 px of Cytoscape's rendered labels; screen-fixed labels with a per-label reveal zoom show no
+  ordinary overlap. Owed by g4, measured red in the spike: every concept below the pain row, the
+  pain labels forced at fit, focus views (a pain type, a selected concept, a trace, a rule)
+  framed so their forced labels never collide, node and line sizes fixed on screen, loop labels
+  in focus views alone, an explicit component packer, the layout cached by its full input
+  closure.
+- **The evaluation date is run context** (spike `wt/builder-40`, mechanism `cf3fd3e`): the engine
+  API freezes a validated date per call; a trusted wrapper `clinical_run(Ctx, Goal)` sets a
+  global with `setup_call_cleanup` and restores the prior value on every surviving exit; a fresh
+  engine starts at `none`; one static `guideline_evaluation_date/1` clause reads it natively and a
+  dedicated interpreter arm reads it for proofs, which carry one run record; the proof cache keys
+  on it; a second request while one is open is refused by name before parsing (closing the queue
+  row on interleaved requests). An undated proof stays the same proof up to variable renaming —
+  the pre-spike image itself renames rec05's 19 existential variables between derivations, so
+  byte equality cannot be its test.
 - **The linguistic graph retires at g7**, after the new graders land; the user approves the
   old-check → new-check mapping before then. Until g7, the pre-overhaul graph rulings above
   (polarity as edge state, Cytoscape's zoom floor, spanning scopes, reader-relative labels, orphan
@@ -476,9 +490,9 @@ variant alike.
   negation boxes, one frame per sentence VARIANT (consequent `ref(N)`, antecedent referents by
   Skolem `Deps` position, boxes + operator chains, guard literals apart), sentence-level census
   in `tests/census.test.ts`.
-- [ ] n1 `kernel` run context: the validated, frozen evaluation date per engine call (ruling per
-  the o2 spike), the proof cache keyed by it, answers streamed under it, chat goals wrapped by the
-  page, the read-only guard refusing any context write; closes the queue row `The engine session
+- [ ] n1 `kernel` run context (Decisions, spike `cf3fd3e`): one logical run owns its date across
+  answer, marks, proof and query cards, and a retained result shows its own date; answers stream
+  under it; chat goals wrapped by the page; the read-only guard refusing any context write; closes the queue row `The engine session
   interleaves concurrent requests` by refusing a second open request by name. Approved re-pins:
   `engine:check` call shapes, the dated proof's context step.
 - [ ] g2 `kernel` projection: `tools/kb/network.mjs` → `kb/generated/graph/clinical-network.json`,
@@ -487,17 +501,21 @@ variant alike.
   bucket; a line keeps its whole consequent (arguments, phrases, quantities); several starts share
   rule id + full condition; annotations on their line; document kind per line; every exclusion
   and supersession record + guard projected, no date exemption (n30 Accept, moved from A1).
-- [ ] n2 `kernel` records + superseded derivation, generic over any document: compiled goals for
+- [ ] n2 `kernel` records + superseded derivation, generic over any document (then the whole
+  answer → marks → records → proof and recorded chat flows timed at none / before / on / after the
+  boundary, every catalog question): compiled goals for
   the exclusion records (12 → 8 conditions, deduplicated by clause body, never by English), the
   supersession records and a per-sentence derivation under the run context; condition text = the
   KB's controlled-language sentence (Decisions).
-- [ ] g3 `data` MeSH colouring (Decisions): pinned release + verify lane, concept → descriptor →
-  top-level category table (two coders, adjudicated, explicit no-match), polyhierarchy priority
-  rule, `palette:check` + `contrast:check` over the fills, legend attribution.
-- [ ] g4 `kernel` layout + labels at build time: seeded fcose, pain row pinned, process exits,
-  byte-reproducible (`kb:reproduce`), harfbuzz label boxes over the decompressed shipped font,
-  screen-fixed labels, per-label reveal zoom; forced labels (selection, neighbours, trace) and
-  loops collision-graded separately.
+- [ ] g3 `data` clinical codebook (Decisions): classes = the six + those the corpus needs, each
+  concept coded by two independent `classifier`s under a frozen rubric, adjudicated, an explicit
+  no-class state; the codebook graded total over the derived concept set; `palette:check` +
+  `contrast:check` over the fills.
+- [ ] g4 `kernel` layout + labels at build time (Decisions, Cytoscape ruling): the spike's
+  mechanism plus every item it measured red; the layout in a bounded child process, cached by its
+  input closure, `kb:reproduce` byte-equal; phone interaction budgets (cold open, pan/zoom,
+  input-to-paint) fixed and measured on the full asset before g5, design appraised by a
+  `scientist`.
 - [ ] n3 answer panel: page-wide date control; the exclusion line on every answer; the
   superseded group struck, or unstruck under its own heading when the date precedes it; the
   `Superseded <date> · <citation>` facts line; every new string in `en.ts` + `ja.ts`.
@@ -510,23 +528,27 @@ variant alike.
     A1 without its evaluation-date exemption, and the answer panel names a superseded statement
     and its source, its live review owed. `pri` low. **User ruling**: carry the semantics through,
     queue the surfacing.
-- [ ] g5 network UI (`src/network/`, the one Cytoscape importer): pain first view (acute
-  default), full network, trace from the live proof, one rule, one concept, loops, examples beside
-  their rule, document-kind chips + line styles, MeSH legend, boundaries view, table view, both
-  locales, the graph on a phone's first screen; replaces `SemanticGraph` in the app.
+- [ ] g5 network UI (`src/network/`, the one Cytoscape importer) + its rendered grader before any
+  app switch: pain first view (acute default), full network, trace from the live proof, one rule,
+  one concept, loops, examples beside their rule, document-kind chips + line styles, codebook
+  legend, boundaries view, table view, both locales, the graph on a phone's first screen; a
+  `graph:check` campaign over the new component (rendered label = asset label, shown labels never
+  overlap, reveal zoom honoured, interactions on both sides of the seam, fill read-back, failure
+  fallbacks).
 - [ ] n4 chat: the guide lands the `high` queue row (`The chat guide names guideline_document/4's
   digests as prose`) and the prototype's draft; supersession facts as KB parts; each turn keeps its
   captured date; the exclusion line under a reply with a KB part.
 - [ ] n5 corpus browser: superseded marks from the live records, independent of the date.
-- [ ] g6 rendered grading: `graph:check` for the new component (rendered label = asset label,
-  shown labels never overlap, reveal zoom honoured, interactions on both sides of the seam, fill
-  read-back, failure fallbacks) + `visual-qa` network states.
+- [ ] g6 app switch: `App.svelte` + Find in graph onto the new network; the new asset classes in
+  the offline cache's lazy set (`browser:check`: no graph request before activation); `smoke`,
+  `browser:check` + `visual-qa` network states.
 - [ ] g7 retire the linguistic graph (`semantic-graph.json`, `src/graph/`, `tools/kb/graph.mjs`,
   `tools/graph-probe/`, its suites, census rows and mutants) once the user approves the old-check →
   new-check mapping; `.claude/rules/graph.md` rewritten; the pre-overhaul graph rulings leave
   `Decisions`.
 - [ ] r1 closing review → `.agent/review.md` rows, none open.
-- [ ] d1 README; `git tag prototype-graph-overhaul` + `prototype-scope-guards`, `git rm -r` both;
+- [ ] d1 README; live-review click paths for n3 + g5 written before the prototypes leave;
+  `git tag prototype-graph-overhaul` + `prototype-scope-guards`, `git rm -r` both;
   `Artifacts`, `Decisions` + `Tasks` current; `Phase` = the catalog PROTOTYPE routed state (row
   below) over the suspended MAINTAIN scope.
 - [ ] owed (user): live review of the new concept network once g5 lands (replaces the sync-u2

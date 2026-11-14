@@ -115,3 +115,63 @@ independent rendered oracle) bind the n1, g4 and g6 contracts, not the spikes.
   neighbours of acute, subacute and chronic pain and of the maximum-degree node: every mandatory
   label rendered, zero label-label overlap, occlusion / clipping recorded apart; fit share
   descriptive, with screenshots judged.
+
+## MeSH coverage sample (classifier-2, -3, independent; rubric `.scratch/orient/mesh-rubric.md`)
+
+100 KB nouns, seeded sample of 1,680 (all entity nouns bar `clinician`, the bare three and
+`-example` nouns; the network's ~1,000 concepts are a subset), coded against the live NLM MeSH
+lookup (release not yet pinned — consultant-8 R3).
+
+| measure | coder A | coder B |
+|---|---|---|
+| matched (exact / kind) | 54 (6 / 48) | 56 (6 / 50) |
+| no match | 46 | 44 |
+| primary top-level category, matched rows | E 21, N 9, F 6, G 5, C 4, D 3, I 2, L 2, J 1, M 1 | E 20, N 10, F 6, G 6, C 4, D 4, I 3, L 1, J 1, M 1 |
+
+Agreement: same descriptor 44 of the 50 both-matched rows; overlapping top-level set 48 of 50;
+primary category (no match included) 87 of 100, Cohen's κ 0.82. Typical no-match terms:
+`decision guidepost`, `clinician taper support commitment`, `function improvement`, `naloxone
+purchase`, `potential limitation`. Reading: coding is reliable, but about 45% of terms take no
+category and the matched half concentrates in E (Techniques) and N (Health Care) → returned to
+the user (Decisions: poor coverage returns to the user).
+
+## Spike results (graded against the revised checks)
+
+| check | verdict | measurement (report `.scratch/agents/builder-40.md` / `builder-41.md`) |
+|---|---|---|
+| K1 | pass | exact date lists, both arms; 3 heads × 4 dates × full / missing premise / matching exclusion = 36 correct |
+| K2 | pass | 27 surviving-runtime cases restore the raw prior before any wrapper; real hard kill → fresh engine at `none` |
+| K3 | pass | query + proof B refused by name, 0 Prolog calls, 0 cache operations; A finishes under its date; B succeeds after |
+| K4 | fail(med) → ruled | 11 of 12 undated proofs byte-identical; rec05 renames 19 existential variables — and so does the pre-spike image against itself, so byte equality errs against the contract; n1 tests `=@=` variants + identical source-line sets. Dated: one run record, source lines unchanged, cache 1/1/1/0 |
+| K5 | pass | 10 forbidden entries refused at the real model-goal entry; KB positive control |
+| K6 | descriptive | +9 inferences (+0.019%); wall time inside noise |
+| L1 | pass | natural exit 43–46 ms after layout once `cy.destroy()` runs; held-timer + endless-layout controls refused |
+| L2 | pass | two fresh processes, canonical bytes equal (667,811 B), hashes recorded (nixbox) |
+| L3 | fail(med) | pain row pinned exactly, but 638 of 1,219 nodes lie above it; layout 3.0–3.1 s on nixbox, 39–75 s on the loaded desktop |
+| L4 | fail(med) | every label within 0.55 px (diagnostic); explicit font-load check, padding and zoom-invariance not yet graded |
+| L5 | fail(med) | 0 ordinary overlaps at fit / 1.5× / 2× / 4× on both canvases; reveal boundaries ± ε and reverse zoom not yet run |
+| L6 | fail(high) | subacute + chronic labels hidden at fit; acute neighbourhood 21 (desktop) / 27 (phone) overlaps at fit; 858 loop labels overlap heavily; fit shows 57 / 10 of 1,219 labels; thin lines and dots nearly vanish |
+
+Mechanism (S-G4, `wt/builder-40` `cf3fd3e`): `clinical_run/2` via `setup_call_cleanup`,
+`nb_setval`/`nb_delete`, boot sentinel `none`, `derive/5` date arm before the comparison arm, one
+run record per dated proof, frozen `RunContext`, busy refusal before parsing.
+
+## Pre-mortem (consultant-6 scale + performance, -7 maintainability + operability, -8 dependencies + data model)
+
+Each risk → a `Tasks` change (3f5b707 → this commit) or the g2 contract:
+
+| risk | change |
+|---|---|
+| phone interaction stutters (c6 R1) | g4: interaction budgets fixed + measured on the full asset, scientist-appraised |
+| layout recomputed on every build / CI leg (c6 R2, c7 R2) | g4: layout cached by full input closure, bounded child process |
+| forced labels collide in dense views (c6 R3) | g4: focus views framed collision-free; L6 owed |
+| new assets precached at boot (c6 R4, c7 R3) | g6: lazy set + `browser:check` zero graph requests before activation |
+| dated engine flows slow (c6 R5) | n2: whole flow timed at four dates |
+| app switched before its rendered grader (c7 R1) | g5 builds the grader; g6 switches |
+| a run's date splits across answer / marks / proof / cards (c7 R4) | n1: one logical run owns its date |
+| live review not performable after prototype retirement (c7 R5) | d1: click paths first |
+| sentence vs occurrence buckets (c8 R5) | g2 rev. 2: sentence coverage + occurrence buckets |
+| fcose drops component packing under constraints (c8 R4) | g4: explicit packer |
+| merged lines hide status (c8 R1) | g2 rev. 2: identity includes guard + supersession |
+| asset compatibility (c8 R2) | g2 rev. 2: asset envelope |
+| MeSH release (c8 R3) | moot: the user replaced MeSH with the codebook |
