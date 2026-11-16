@@ -14,7 +14,9 @@ export type KbAssetKind =
   | 'provenance-corpus'
   | 'semantic-graph'
   /** The clinical concept network (`tools/kb/network.mjs`, `.agent/contracts/g2.md`). */
-  | 'clinical-network';
+  | 'clinical-network'
+  /** The clinical network's build-time layout and label boxes (`tools/kb/layout.mjs`, `.agent/contracts/g4.md`). */
+  | 'network-layout';
 
 export interface KbAsset {
   kind: KbAssetKind;

@@ -175,7 +175,7 @@ supersession 3.
   `provenance.mjs`) leaves the cached asset in place: `node tools/kb/build.mjs
   --force` rebuilds it. `kb:asset-check` re-derives the graph from the bag and refuses the stale
   asset (`manifest metadata differs from fresh derivation`), so the gate stays red until then.
-- `MANIFEST_VERSION` is 9. Bumping it is what stops a cached manifest from lacking a block or an
+- `MANIFEST_VERSION` is 10. Bumping it is what stops a cached manifest from lacking a block or an
   asset a new build writes.
 - `provenance/corpus-index.json` (`tools/kb/corpus.mjs`) = each evidence chunk's id, review label
   and coverage region, sorted by id, derived from the chunks `provenance.mjs` emits; the corpus

@@ -2167,6 +2167,55 @@ export const MUTANTS = [
     check: { test: 'tests/frames.test.ts', name: 'G2R-D5 ' },
   },
   {
+    label: 'inv network-layout: a cache hit with its anchors off one row passes',
+    edits: [
+      {
+        path: 'tools/kb/layout.mjs',
+        old: "if (!(acute.y === subacute.y && subacute.y === chronic.y)) problems.push('the anchors do not share one row');",
+        new: "if (false) problems.push('the anchors do not share one row');",
+      },
+    ],
+    check: {
+      test: 'tests/network-layout.test.ts',
+      name: 'G12 cache hit grades G1-G5 and refuses planted bad-row',
+    },
+  },
+  {
+    label: 'inv network-layout: a child holding a timer after its layout is never refused',
+    edits: [
+      {
+        path: 'tools/kb/layout.mjs',
+        old: 'after = setTimeout(() => kill(`post-layout exit deadline ${String(postLayoutMs)} ms`), postLayoutMs);',
+        new: 'after = setTimeout(() => undefined, postLayoutMs);',
+      },
+    ],
+    check: { test: 'tests/network-layout.test.ts', name: 'G11 held timer after layout-end' },
+  },
+  {
+    label: 'inv network-layout: a focus edge may point up',
+    edits: [
+      { path: 'src/network/focus.ts', old: '      if (t.y <= s.y) {', new: '      if (false) {' },
+    ],
+    check: {
+      test: 'tests/network-layout.test.ts',
+      name: 'G8 layoutFocus preserves generated sets',
+    },
+  },
+  {
+    label: 'inv network-layout: the separation zoom drops the pair gap',
+    edits: [
+      {
+        path: 'src/network/geometry.ts',
+        old: '((A.right - A.left + B.right - B.left) / 2 + pairGap) / dx;',
+        new: '((A.right - A.left + B.right - B.left) / 2) / dx;',
+      },
+    ],
+    check: {
+      test: 'tests/network-layout.test.ts',
+      name: 'G6 separation matches independent rectangles',
+    },
+  },
+  {
     label: 'inv network-codebook: an uncoded concept passes classify',
     edits: [
       {

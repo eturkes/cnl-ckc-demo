@@ -19,6 +19,7 @@ import {
   validateSemanticGraphAsset,
   GRAPH_SCHEMA_VERSION,
 } from './graph.mjs';
+import { buildLayout, networkInput } from './layout.mjs';
 import { networkAsset } from './network.mjs';
 import { deriveCorpusIndex } from './corpus.mjs';
 import { deriveProvenance, PROVENANCE_SCHEMA_VERSION } from './provenance.mjs';
@@ -248,6 +249,7 @@ if (scanOnly) {
       }
 
       const corpus = deriveCorpusIndex(provenance.chunks);
+      const network = networkAsset(files, manifest.input.sha256);
       const derived = [
         { kind: 'provenance-index', path: provenance.index.path, bytes: provenance.index.bytes },
         ...provenance.chunks.map((chunk) => ({
@@ -258,7 +260,9 @@ if (scanOnly) {
         { kind: 'source-pdf', path: provenance.pdf.path, bytes: provenance.pdf.bytes },
         { kind: 'provenance-corpus', path: corpus.path, bytes: corpus.bytes },
         { kind: 'semantic-graph', path: graph.path, bytes: graph.bytes },
-        { kind: 'clinical-network', ...networkAsset(files, manifest.input.sha256) },
+        { kind: 'clinical-network', ...network },
+        // Through the layout cache: an entry is a verdict reused for a byte-identical input closure.
+        { kind: 'network-layout', ...(await buildLayout(networkInput(network.bytes))) },
       ];
       const derivedKinds = new Set([
         'provenance-index',
@@ -267,6 +271,7 @@ if (scanOnly) {
         'provenance-corpus',
         'semantic-graph',
         'clinical-network',
+        'network-layout',
       ]);
       const recorded = manifest.assets.filter((entry) => derivedKinds.has(entry.kind));
       if (recorded.length !== derived.length) {

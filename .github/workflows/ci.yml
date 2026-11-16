@@ -26,4 +26,10 @@ jobs:
         with:
           node-version-file: package.json
       - run: pnpm install --frozen-lockfile
+      # The network layout's cache (`tools/kb/layout.mjs`), keyed on a superset of its input closure;
+      # the entry's own closure digest decides a hit, so a stale restore only costs a recompute.
+      - uses: actions/cache@v6
+        with:
+          path: node_modules/.cache/cnl-ckc-demo/layout
+          key: network-layout-${{ hashFiles('kb/*.tar.gz', 'tools/kb/**', 'src/network/**', 'package.json', 'pnpm-lock.yaml') }}
       - run: pnpm gate

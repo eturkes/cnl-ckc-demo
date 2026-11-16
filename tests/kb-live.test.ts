@@ -42,7 +42,8 @@ describe('generated runtime payload', () => {
     expect(kinds.filter((kind) => kind === 'provenance-corpus')).toHaveLength(1);
     expect(kinds.filter((kind) => kind === 'semantic-graph')).toHaveLength(1);
     expect(kinds.filter((kind) => kind === 'clinical-network')).toHaveLength(1);
-    expect(kinds).toHaveLength(DOCUMENTS + 8);
+    expect(kinds.filter((kind) => kind === 'network-layout')).toHaveLength(1);
+    expect(kinds).toHaveLength(DOCUMENTS + 9);
     expect(manifest?.provenance).toMatchObject({
       schemaVersion: SCHEMA_VERSION,
       documents: DOCUMENTS,

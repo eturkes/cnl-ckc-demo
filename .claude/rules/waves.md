@@ -27,7 +27,7 @@ repo's deltas.
   every suite pulling a generated asset into the import graph fails to COLLECT with
   `Denied ID …/kb/generated/…json?url&no-inline`, which reads like a broken test rather than a
   broken harness. `NODE_OPTIONS=--preserve-symlinks` trades it for a pnpm resolution failure.
-  Seed it with `cp -a --reflink=auto kb/generated <wt>/kb/generated` — 501 files, 43 MB,
+  Seed it with `cp -a --reflink=auto kb/generated <wt>/kb/generated` — 502 files, 43 MB,
   no disk cost on btrfs. The copy is a snapshot: a worktree whose suite depends on freshly
   built KB bytes gets re-seeded after MAIN's `kb:build`.
 - **A cited teammate branch survives the close** (ruling on `CLAUDE.md` `Teammates`, whose close
@@ -80,7 +80,8 @@ repo's deltas.
   (acceptance, merged per unit as each turns its cases green).
 - Graph IMPLEMENT unit suites, each cited by its contract's `## Red witnesses`: `wt/tester-9`
   `c985287` (g2 blind suite, `.agent/contracts/g2.md`), `wt/tester-10` `5047771` (g2r blind suite,
-  `.agent/contracts/g2r.md`).
+  `.agent/contracts/g2r.md`),
+  `worktree-agent-a5f74faef169cbdab` `055f118` (g4 blind suite, `.agent/contracts/g4.md`).
 - MAIN's units landed from branches, each cited by its landing commit: `wip/n1-palette`
   `c774baf`, `wip/n2-replay` `60a74c4`, `wip/n3-mutate-timeout` `2235854`, `wip/n4-artifacts`
   `49b1143`, `wip/n5-inventory` `ee0f5b2`, `wip/n9-comparison` `3cf1d13`, `wip/n11-copy-sweep`

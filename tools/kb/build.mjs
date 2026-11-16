@@ -11,6 +11,7 @@ import { sha256, verifyBag } from './bag.mjs';
 import { catalogJson, catalogRecords } from './catalog.mjs';
 import { deriveCorpusIndex } from './corpus.mjs';
 import { deriveSemanticGraph, GRAPH_SCHEMA_VERSION } from './graph.mjs';
+import { buildLayout, networkInput } from './layout.mjs';
 import { networkAsset } from './network.mjs';
 import { deriveProvenance, PROVENANCE_SCHEMA_VERSION } from './provenance.mjs';
 import { buildImage, buildQlf, swiplWasmVersion, verifyImage, verifyQlf } from './produce.mjs';
@@ -20,7 +21,7 @@ import { GENERATED_DIR, MANIFEST_PATH, ROOT, loadManifest, payloadSource } from 
 /** @typedef {import('../../src/kb/manifest.ts').KbManifest} KbManifest */
 /** @typedef {import('./produce.mjs').LiveContract} LiveContract */
 
-const MANIFEST_VERSION = 9;
+const MANIFEST_VERSION = 10;
 
 /**
  * Locate the single vendored bag and prove it against its committed sidecar.
@@ -124,6 +125,7 @@ const main = async () => {
     return;
   }
 
+  const layout = await buildLayout(networkInput(network.bytes), { force });
   const { image, contract } = await buildImage(source);
   const qlf = await buildQlf(source);
   const loaded = await verifyImage(image);
@@ -155,6 +157,7 @@ const main = async () => {
   writeGenerated(corpus.path, corpus.bytes);
   writeGenerated(graph.path, graph.bytes);
   writeGenerated(network.path, network.bytes);
+  writeGenerated(layout.path, layout.bytes);
 
   const provenanceAssets = [
     asset(provenance.index.bytes, provenance.index.path, 'provenance-index'),
@@ -198,6 +201,7 @@ const main = async () => {
       ...provenanceAssets,
       asset(graph.bytes, graph.path, 'semantic-graph'),
       asset(network.bytes, network.path, 'clinical-network'),
+      asset(layout.bytes, layout.path, 'network-layout'),
     ],
     contract: { schemaVersion: contract.schemaVersion, documents: contract.documents },
   };

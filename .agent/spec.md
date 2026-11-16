@@ -381,6 +381,15 @@ consultants' tables → `.agent/contracts/gi-orientation.md`.
   further re-pins (`161bd5d`): the controller API's date members, the chat cards' empty date, two
   call-shape checks, proof-guard G5 stating the date as run context, and the clause-identity census
   leaving the date-reading clause out (user, ruled at g2r).
+- **Focus views run the force layout on their own concepts** (user, g4): a focus view — a pain type
+  and its direct relationships, a selected concept and its neighbours, a traced answer, one rule —
+  lays out its own concepts with the force layout, packed close, concepts that start a
+  relationship above the concepts they lead to; the full network keeps its one force layout. A
+  concept's focus-view place differs from its map place, and the view moves into place. Concept
+  and rule views are laid out at build time; a traced answer's view in the page once its proof
+  finishes. Chosen over rows and over keeping map positions on measured first screens of a pain
+  view (2–4 / 4–10 / all concepts on 288 × 320, 343 × 440 and 1,152 × 660 canvases; rows 3–6 /
+  8–12 / all; map positions 1–2 / 1–2 / 4–7), detail `.agent/contracts/g4.md`.
 - **A clause names its `% S` block** (user, g2r): `parseClauseSites` takes a clause's sentence from
   its block and checks every head id (same document, no later sentence, only a referent naming an
   earlier one), as README-dist `Proof traces` reads it — an approved T9 declared edit of the frozen
@@ -413,9 +422,10 @@ consultant-amended method:
   0.6 px of Cytoscape's rendered labels; screen-fixed labels with a per-label reveal zoom show no
   ordinary overlap. Owed by g4, measured red in the spike: every concept below the pain row, the
   pain labels forced at fit, focus views (a pain type, a selected concept, a trace, a rule)
-  framed so their forced labels never collide, node and line sizes fixed on screen, loop labels
-  in focus views alone, an explicit component packer, the layout cached by its full input
-  closure.
+  whose forced labels never collide (laid out on their own, user ruling below), node and line
+  sizes fixed on screen, loop labels in focus views alone, an explicit component packer, the
+  layout cached by its full input closure. Measured at g4: labels draw up to 1.36 px wider than
+  their HarfBuzz advances at zoom ≤ 1 and about `z` px wider above it, so the maximum zoom is 1.
 - **The evaluation date is run context** (spike `wt/builder-40`, mechanism `cf3fd3e`): the engine
   API freezes a validated date per call; a trusted wrapper `clinical_run(Ctx, Goal)` sets a
   global with `setup_call_cleanup` and restores the prior value on every surviving exit; a fresh
@@ -521,15 +531,7 @@ variant alike.
   concept coded by two independent `classifier`s under a frozen rubric, adjudicated, an explicit
   no-class state; the codebook graded total over the derived concept set; `palette:check` +
   `contrast:check` over the fills.
-- [ ] RESUME: finish line in force = the IMPLEMENT body's `Met when`, body verbatim in
-  `.scratch/body.md`. g3 `60f2217` gate green (CI 43869299933). g2r = the commit after `60f2217`:
-  `tester-10`'s blind cases merged green, D7 ruled (`mnt5-stryker.md` `## g2r`), its full gate `pnpm
-  ci:gate g2r` in flight — red → fix + amend while it is HEAD, green → tick it; then g4 (spike
-  lessons: `.scratch/agents/builder-41.md`, `gi-orientation.md` `### S-G2`). Owed: the user's
-  approval of the g7 old-check → new-check mapping. Branches: `wt/tester-7`
-  `cd5e569` (acceptance o2, worktree kept), `wt/tester-8`, `wt/builder-40`, `wt/builder-41`
-  (evidence worktrees, clean).
-- [ ] g2r `kernel` domain-limit repair (review GI-1, consultant-12): W2's inherited range low and a head naming
+- [x] 29757b8 g2r `kernel` domain-limit repair (review GI-1, consultant-12): W2's inherited range low and a head naming
   an earlier sentence's referent (`guideline_order/4` object, `guideline_arg/4` argument) project
   faithfully — red-first constructed-bag cases from README-dist (`Ranged minimum`, `Order`, `Proof
   traces`) expecting the projection, never the refusal (contract `.agent/contracts/g2r.md` D1–D10);
@@ -537,11 +539,24 @@ variant alike.
   repaired, an earlier sentence's referent keeping its sentence and `Deps` (never aliased to the
   current sentence's `ref(N)`); S170–S173's replacing lines under Stryker, every survivor ruled;
   `g2.md` `Domain limits` retired; the `.agent/deferred.md` row narrowed to unbound `Deps`.
+- [ ] RESUME: finish line in force = the IMPLEMENT body's `Met when`, body verbatim in
+  `.scratch/body.md`. g2r `29757b8` gate green (CI 43898220041). g4 = the commit after `29757b8`:
+  contract `.agent/contracts/g4.md` (consultant-13 r1 + r2, user ruling on focus views), blind suite
+  merged (`worktree-agent-a5f74faef169cbdab` `055f118`), its full gate `pnpm ci:gate g4` in flight —
+  red → fix + amend while it is HEAD, green → tick it; then g4b (rendered oracle R1–R5 + budgets
+  B1–B4; scientist-2's protocols in `.scratch/agents/scientist-2.md`). Owed: the user's approval of
+  the g7 old-check → new-check mapping. Branches: `wt/tester-7` `cd5e569` (acceptance o2, worktree
+  kept), `wt/tester-8`, `wt/builder-40`, `wt/builder-41` (evidence worktrees, clean).
 - [ ] g4 `kernel` layout + labels at build time (Decisions, Cytoscape ruling): the spike's
   mechanism plus every item it measured red; the layout in a bounded child process, cached by its
   input closure, `kb:reproduce` byte-equal; phone interaction budgets (cold open, pan/zoom,
   input-to-paint) fixed and measured on the full asset before g5, design appraised by a
   `scientist`.
+- [ ] g4b `kernel` rendered layout oracle + phone interaction budgets (contract `.agent/contracts/g4.md`
+  R1–R5, B1–B4): every label's rendered box inside its model box in real Chromium on both canvases,
+  the shown-label set at every reveal boundary, zero rendered overlaps, screen-fixed sizes read back,
+  the tallest subject block panned to its last reading; cold open, pan/zoom, input-to-paint and a
+  trace's focus layout timed on the full asset under scientist-2's protocols; before g5.
 - [ ] n3 answer panel: page-wide date control; the exclusion line on every answer; the
   superseded group struck, or unstruck under its own heading when the date precedes it; the
   `Superseded <date> · <citation>` facts line; every new string in `en.ts` + `ja.ts`.

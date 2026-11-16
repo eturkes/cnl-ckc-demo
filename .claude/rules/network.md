@@ -3,6 +3,8 @@ paths:
   - "tools/kb/network.mjs"
   - "tools/kb/network-tables.mjs"
   - "tools/kb/frames.mjs"
+  - "tools/kb/layout*.mjs"
+  - "src/network/**"
   - "tests/network-*.ts"
   - "tests/support/network-*.ts"
   - "tests/acceptance-gi-network*.ts"
@@ -43,5 +45,14 @@ paths:
   a new bag adds enters the codebook and its record `.agent/contracts/g3-coding.tsv` coded under
   g3's rubric by two independent `classifier`s and adjudicated; K4 holds the codebook equal to the
   record. A codebook edit, like a producer or table edit, needs `node tools/kb/build.mjs --force`.
+- **Layout and labels compute at build time** (`tools/kb/layout.mjs`, contract `.agent/contracts/g4.md`):
+  `kb/generated/graph/clinical-network-layout.json` holds seeded fcose positions, HarfBuzz label
+  boxes over the shipped font, reveal zooms and every concept and rule focus view, graded G1–G5 and
+  G8 on every build and every cache hit. The page shares the geometry (`src/network/geometry.ts`)
+  and the focus layout (`src/network/focus.ts`), which Node imports by type stripping
+  (`allowImportingTsExtensions`). The maximum zoom is 1: above it Cytoscape draws screen-fixed text
+  wider than its advances. The layout runs in a bounded child, cached under
+  `node_modules/.cache/cnl-ckc-demo/layout/` by its input closure; a layout, geometry, focus or font
+  edit needs `node tools/kb/build.mjs --force` like any producer edit.
 - The linguistic graph (`tools/kb/graph.mjs`, `.claude/rules/graph.md`) ships beside the network
   until g7 retires it.
