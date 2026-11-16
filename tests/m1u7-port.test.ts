@@ -30,11 +30,13 @@ describe('m1u7 presentation contract', () => {
   );
 
   // m1u7 T1:92 + ui.md Colour:38–41: role law retains the invariant and names today's roles.
+  // The concept fills name a role too: a concept of one codebook class (`.agent/contracts/g3.md`),
+  // or `other` for the classes that share a fill.
   it('T1 defines only role-named root tokens', () => {
     const names = [...rootDeclarations().matchAll(/(--[\w-]+)\s*:/gu)].map((match) => match[1]);
     expect(names.length).toBeGreaterThan(0);
     const role =
-      /^--(?:surface(?:-raised|-sunken)?|text(?:-muted)?|border|action(?:-text)?|warn|focus-ring|font-(?:ui|prose|code)|graph-(?:label|document|entity|event|operator|value|edge|path))$/u;
+      /^--(?:surface(?:-raised|-sunken)?|text(?:-muted)?|border|action(?:-text)?|warn|focus-ring|font-(?:ui|prose|code)|graph-(?:label|document|entity|event|operator|value|edge|path)|concept-(?:condition|opioid|nonopioid|substance|weighing|safeguard|people|trait|care|access|guideline|measure|other))$/u;
     expect(names.filter((name) => name === undefined || !role.test(name))).toEqual([]);
   });
 
