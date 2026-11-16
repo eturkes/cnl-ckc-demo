@@ -29,5 +29,11 @@ paths:
 - Polarity's duty carries over from the linguistic graph: no line reads as a claim its source
   denies. A negated or negation-as-failure condition starts no line (N4), and a negation or a
   modal rides the line's verb phrase as its operator chain reads (N3).
+- **The concept codebook is hand-made data** (`tools/kb/network-codebook.mjs`, contract
+  `.agent/contracts/g3.md`): `networkAsset` classifies every concept through `classify`, which
+  refuses the build by name on an uncoded concept, a stale entry or an undeclared class. A concept
+  a new bag adds enters the codebook and its record `.agent/contracts/g3-coding.tsv` coded under
+  g3's rubric by two independent `classifier`s and adjudicated; K4 holds the codebook equal to the
+  record. A codebook edit, like a producer or table edit, needs `node tools/kb/build.mjs --force`.
 - The linguistic graph (`tools/kb/graph.mjs`, `.claude/rules/graph.md`) ships beside the network
   until g7 retires it.

@@ -756,3 +756,25 @@ STRYKER_MUTATE=tools/kb/network.mjs pnpm stryker`, run alone. Result: 1,277 muta
 | `tools/kb/network.mjs:878:24` | StringLiteral | "``" | NoCoverage | N+F: killed (SyntaxError: Unexpected end of JSON input at JSON.parse (<anonymous>) ) | S437 specified: Asset fields Producer API — bytes is an empty buffer instead of the clinical-network JSON object (classifier-6) |
 | `tools/kb/network.mjs:878:54` | StringLiteral | "\"\"" | NoCoverage | not replayed | S438 equivalent: Buffer.from treats an empty encoding string as its default UTF-8, the same encoding used before (classifier-6) |
 | `tools/kb/network.mjs:879:12` | ObjectLiteral | "{}" | NoCoverage | not replayed | S439 open: stats contents — networkAsset still returns stats as an object; the contract names the wrapper member but states no required stats members or counts (classifier-6) |
+
+## g3 — `tests/network-codebook.test.ts` over `classify` + `networkAsset` (`tools/kb/network.mjs:870-905`)
+
+K1–K4 are written with the code; their credit is the kills below, beside the three `inv
+network-codebook` firing inputs (`pnpm mutate "inv network-codebook"` → 3/3 killed). Commands, run
+alone: `STRYKER_SUITE=tests/network-codebook.test.ts STRYKER_MUTATE='tools/kb/network.mjs:870-905'
+pnpm stryker` → 54 mutants, 44 killed, 10 survived with tests run; the envelope survivors replayed
+with F10's suite, `STRYKER_SUITE=tests/network-fields.test.ts
+STRYKER_MUTATE='tools/kb/network.mjs:883-905' pnpm stryker` → 13 mutants, 12 killed, 1 survived.
+
+| mutant | mutator | replacement | ruling |
+| --- | --- | --- | --- |
+| `tools/kb/network.mjs:872:77` | MethodExpression | `list` | open: the refusal names every offender instead of the first five — the contract asks for the offender by name, never the cut |
+| `tools/kb/network.mjs:872:99` | StringLiteral | `""` | open: the name list's separator |
+| `tools/kb/network.mjs:883:16` | ArrowFunction | `() => undefined` | specified: killed by F10 (envelope digests) |
+| `tools/kb/network.mjs:883:104` | StringLiteral | `""` | specified: killed by F10 |
+| `tools/kb/network.mjs:893:20` | ObjectLiteral | `{}` | specified: killed by F10 |
+| `tools/kb/network.mjs:895:36` | ArrayDeclaration | `[]` | specified: killed by F10 |
+| `tools/kb/network.mjs:895:42` | StringLiteral | `""` | equivalent: `new URL('', import.meta.url)` resolves to `network.mjs` itself, the same bytes |
+| `tools/kb/network.mjs:895:65` | StringLiteral | `""` | specified: killed by F10 |
+| `tools/kb/network.mjs:896:25` | StringLiteral | `""` | specified: killed by F10 |
+| `tools/kb/network.mjs:897:27` | StringLiteral | `""` | specified: killed by F10 |

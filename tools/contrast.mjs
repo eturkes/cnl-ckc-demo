@@ -13,6 +13,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { requireFiring } from './control.mjs';
+import { FILLED } from './kb/network-codebook.mjs';
 import { ROOT } from './kb/paths.mjs';
 
 const CSS = join(ROOT, 'src/app.css');
@@ -21,6 +22,15 @@ const CSS = join(ROOT, 'src/app.css');
 const NORMAL = 4.5;
 /** SC 1.4.3 large text (≥24px, or ≥18.66px bold) and SC 1.4.11 non-text. */
 const LARGE = 3;
+
+/**
+ * The clinical network's concept fills (`.agent/contracts/g3.md`): one per codebook class that
+ * carries its own fill, then `--concept-other`, shared by every other class and by no class.
+ */
+export const CLASS_FILLS = Object.freeze([
+  ...FILLED.map((id) => `--concept-${id}`),
+  '--concept-other',
+]);
 
 /**
  * Every foreground/background pair the shipped UI renders, with the use site it
@@ -79,6 +89,14 @@ const PAIRS = [
     min: NORMAL,
     where: 'proof edge label on its pill',
   },
+  // The clinical network's concept fills: graphical objects on the canvas. Each label sits
+  // below its node on its own `--surface-raised` background, so no label is graded on a fill.
+  ...CLASS_FILLS.map((fg) => ({
+    fg,
+    bg: '--surface-sunken',
+    min: LARGE,
+    where: 'concept node on the clinical network',
+  })),
 ];
 
 /**

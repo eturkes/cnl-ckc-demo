@@ -6,7 +6,14 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { deriveFrames, frameKey } from '../tools/kb/frames.mjs';
-import { census, deriveClinicalNetwork, networkAsset, NETWORK_PATH } from '../tools/kb/network.mjs';
+import {
+  census,
+  classify,
+  deriveClinicalNetwork,
+  networkAsset,
+  NETWORK_PATH,
+} from '../tools/kb/network.mjs';
+import * as codebook from '../tools/kb/network-codebook.mjs';
 import * as tables from '../tools/kb/network-tables.mjs';
 import { parseClauseSites } from '../tools/kb/provenance.mjs';
 import {
@@ -326,12 +333,21 @@ describe('clinical network fields', () => {
       input,
       producer: sha(Buffer.concat([read('network.mjs'), read('frames.mjs')])),
       tables: sha(read('network-tables.mjs')),
+      codebook: sha(read('network-codebook.mjs')),
     };
     expect(written.path).toBe(NETWORK_PATH);
     const model = JSON.parse(Buffer.from(written.bytes).toString('utf8')) as Network;
     expect(model.envelope).toEqual(expectedEnvelope);
+    // g3: the shipped asset = the projection, its concepts classified, plus the legend table.
+    const derived = deriveClinicalNetwork(files, expectedEnvelope, tables);
     expect(model).toEqual(
-      JSON.parse(JSON.stringify(deriveClinicalNetwork(files, expectedEnvelope, tables))),
+      JSON.parse(
+        JSON.stringify({
+          ...derived,
+          concepts: classify(derived.concepts, codebook),
+          classes: codebook.CLASSES.map((id) => ({ id, filled: codebook.FILLED.includes(id) })),
+        }),
+      ),
     );
     expect(written.stats).toEqual({
       sentences: model.coverage.length,

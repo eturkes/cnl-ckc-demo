@@ -151,6 +151,20 @@
   --graph-edge: #78838f;
   --graph-path: #b34a21;
 
+  /* The clinical network's concept fills, one per codebook class that carries its own fill
+   * (`tools/kb/network-codebook.mjs` `FILLED`), `--concept-other` for every other class and for
+   * none. Found by search over the whole set, never tuned one at a time: `pnpm palette:check`
+   * holds every pair apart for colour-blind readers and each class to one hue across themes.
+   */
+  --concept-condition: #b419a2;
+  --concept-opioid: #1f4ad4;
+  --concept-nonopioid: #049a9d;
+  --concept-substance: #7f6702;
+  --concept-weighing: #91180b;
+  --concept-safeguard: #661897;
+  --concept-care: #369f10;
+  --concept-other: #484a50;
+
   /* BIZ UDPGothic sits after each latin face, never before: its `unicode-range`
      already excludes latin, and stack order is what keeps latin rendering in the
      face that was chosen for it. */
@@ -187,6 +201,15 @@
   --graph-value: #d4d1d7;
   --graph-edge: #5c6672;
   --graph-path: #cf7552;
+
+  --concept-condition: #d546ce;
+  --concept-opioid: #6386ff;
+  --concept-nonopioid: #77c7bf;
+  --concept-substance: #f7d473;
+  --concept-weighing: #f09276;
+  --concept-safeguard: #cfa0ff;
+  --concept-care: #44a116;
+  --concept-other: #878a90;
 
   color-scheme: dark;
 }

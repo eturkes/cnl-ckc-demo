@@ -40,7 +40,8 @@ path into `node_modules`; the two Japanese rules name `./fonts/` relative to `sr
 
 Role tokens: `--surface`, `--surface-raised`, `--surface-sunken`, `--text`, `--text-muted`,
 `--border`, `--action`, `--action-text`, `--warn`, `--focus-ring`, plus the graph palette
-`--graph-{label,document,entity,event,operator,value,edge,path}`. Every token must appear in
+`--graph-{label,document,entity,event,operator,value,edge,path}` and the clinical network's concept
+fills `--concept-<class>` + `--concept-other`. Every token must appear in
 a declared contrast pair. `--border` must clear 3:1 against `--surface` in both themes;
 `contrast:check` owns that ruling, so read the ratio from the check rather than the hex.
 
@@ -54,8 +55,12 @@ paints that value — `graph:check`'s `palette` rule is what decides that half
 (`.claude/rules/graph.md`).
 
 **Palette safety (`CLAUDE.md` `Execution` Charts + figures) = `pnpm palette:check`**: every pair
-of the five node fills `--graph-{document,entity,event,operator,value}`, both themes, at OKLab
-ΔE×100 ≥ 15 plain and ≥ 8 under Machado protan + deutan. A new fill also clears `contrast:check`
+of the five node fills `--graph-{document,entity,event,operator,value}`, and apart every pair of
+the concept fills, both themes, at OKLab ΔE×100 ≥ 15 plain and ≥ 8 under Machado protan + deutan;
+each concept fill holds one hue across themes and `--concept-other` stays neutral. The concept
+fills come from a search over the whole set under these bounds, anchored on the round-4 hues
+(`.agent/contracts/g3.md` `Fill capacity`); a concept label sits below its node on its own
+background, so no label is graded on a concept fill. A new fill also clears `contrast:check`
 — its label at 4.5:1 and itself at 3:1 against the canvas — and keeps its kind's hue in both
 themes. The white light-theme label caps every light fill's luminance, which is why the light
 set is dark. Redesign by search over all five fills, never by hand-tuning one: each fill moves

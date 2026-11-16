@@ -1,5 +1,6 @@
 // `pnpm palette:check` — prove the graph's node fills stay apart for every reader, colour-blind
-// readers included.
+// readers included: the linguistic graph's five kind fills (until g7) and the clinical network's
+// concept fills (`CLASS_FILLS`, `.agent/contracts/g3.md`), each table graded on its own.
 //
 // `CLAUDE.md` `Execution` Charts + figures: categorical marks on a map need OKLab ΔE×100 ≥ 15
 // between every pair, and ≥ 8 between every pair under Machado protan and deutan simulation.
@@ -14,7 +15,7 @@
 // Usage: node tools/palette-check.mjs
 
 import { requireFiring } from './control.mjs';
-import { rgb, themeTokens } from './contrast.mjs';
+import { CLASS_FILLS, rgb, themeTokens } from './contrast.mjs';
 
 /** Unsimulated floor, OKLab ΔE×100. */
 const PLAIN = 15;
@@ -114,11 +115,12 @@ export const deltaOk = (a, b, vision) => {
  *
  * @param {readonly string[]} fills
  * @param {[string, Map<string, string>][]} themes
+ * @param {string} [table] the table's name, for the empty-table refusal
  * @returns {{failures: string[], graded: number}}
  */
-export const gradePalette = (fills, themes) => {
+export const gradePalette = (fills, themes, table = 'FILLS') => {
   if (fills.length === 0)
-    return { failures: ['the FILLS table is empty, so it grades no pair'], graded: 0 };
+    return { failures: [`the ${table} table is empty, so it grades no pair`], graded: 0 };
   /** @type {string[]} */
   const failures = [];
   let graded = 0;
@@ -143,6 +145,52 @@ export const gradePalette = (fills, themes) => {
     });
   }
   return { failures, graded };
+};
+
+/** Hue drift a class fill may take between themes, degrees in OKLCh. */
+const HUE_DRIFT = 12;
+/** Chroma floor of a class's own fill, and ceiling of the shared neutral, in OKLCh. */
+const [CHROMA_FLOOR, NEUTRAL_CEILING] = [0.07, 0.02];
+
+/** @param {string} hex @returns {[number, number]} OKLCh chroma and hue in degrees */
+const chromaHue = (hex) => {
+  const [, a, b] = oklab(hex, 'plain');
+  return [Math.hypot(a, b), ((Math.atan2(b, a) * 180) / Math.PI + 360) % 360];
+};
+
+/**
+ * A class keeps its colour across themes: each own fill holds one hue (drift ≤ `HUE_DRIFT`)
+ * at chroma ≥ `CHROMA_FLOOR` in both themes, and the last fill — the shared one — stays neutral.
+ *
+ * @param {readonly string[]} fills @param {Map<string, string>} light @param {Map<string, string>} dark
+ * @returns {string[]}
+ */
+export const gradeHues = (fills, light, dark) => {
+  /** @type {string[]} */
+  const failures = [];
+  fills.forEach((name, at) => {
+    const [lightHex, darkHex] = [light.get(name), dark.get(name)];
+    if (lightHex === undefined || darkHex === undefined)
+      throw new Error(`${name} is not defined in both themes`);
+    const [[cl, hl], [cd, hd]] = [chromaHue(lightHex), chromaHue(darkHex)];
+    if (at === fills.length - 1) {
+      if (Math.max(cl, cd) > NEUTRAL_CEILING)
+        failures.push(
+          `${name}: shared fill chroma ${Math.max(cl, cd).toFixed(3)}, need ≤ ${String(NEUTRAL_CEILING)}`,
+        );
+      return;
+    }
+    if (Math.min(cl, cd) < CHROMA_FLOOR)
+      failures.push(
+        `${name}: chroma ${Math.min(cl, cd).toFixed(3)}, need ≥ ${String(CHROMA_FLOOR)}`,
+      );
+    const drift = Math.min(Math.abs(hl - hd), 360 - Math.abs(hl - hd));
+    if (drift > HUE_DRIFT)
+      failures.push(
+        `${name}: hue drifts ${drift.toFixed(1)}° between themes, need ≤ ${String(HUE_DRIFT)}°`,
+      );
+  });
+  return failures;
 };
 
 const main = () => {
@@ -187,16 +235,52 @@ const main = () => {
       { mutation: 'the FILLS table emptied', expect: ['FILLS table is empty'] },
       () => gradePalette([], themes).failures,
     ),
+    requireFiring(
+      'palette',
+      {
+        mutation: `${String(CLASS_FILLS[1])} collapsed onto ${String(CLASS_FILLS[0])}`,
+        expect: [`dark: ${String(CLASS_FILLS[0])} vs ${String(CLASS_FILLS[1])} = 0 plain`],
+      },
+      () => {
+        const [first = '', second = ''] = CLASS_FILLS;
+        const collapsed = new Map(dark).set(second, dark.get(first) ?? '');
+        return gradePalette(CLASS_FILLS, [['dark', collapsed]], 'CLASS_FILLS').failures;
+      },
+    ),
+    requireFiring(
+      'palette',
+      { mutation: 'the CLASS_FILLS table emptied', expect: ['CLASS_FILLS table is empty'] },
+      () => gradePalette([], themes, 'CLASS_FILLS').failures,
+    ),
+    // The first class's dark fill swapped for the second's: a class that changes colour with the
+    // theme must be refused by name, and the shared fill given that hue must lose its neutrality.
+    requireFiring(
+      'palette',
+      {
+        mutation: `${String(CLASS_FILLS[0])} given another class's dark hue; --concept-other given a class fill`,
+        expect: [`${String(CLASS_FILLS[0])}: hue drifts`, '--concept-other: shared fill chroma'],
+      },
+      () => {
+        const [first = '', second = ''] = CLASS_FILLS;
+        const swapped = new Map(dark)
+          .set(first, dark.get(second) ?? '')
+          .set('--concept-other', dark.get(second) ?? '');
+        return gradeHues(CLASS_FILLS, light, swapped);
+      },
+    ),
   ];
-  const { failures, graded } = gradePalette(FILLS, themes);
+  const kinds = gradePalette(FILLS, themes);
+  const classes = gradePalette(CLASS_FILLS, themes, 'CLASS_FILLS');
+  const failures = [...kinds.failures, ...classes.failures, ...gradeHues(CLASS_FILLS, light, dark)];
   if (failures.length > 0) {
     console.error(`palette: ${String(failures.length)} failure(s)`);
     for (const line of failures) console.error(`  ${line}`);
     process.exit(1);
   }
   console.log(
-    `palette: ${String(graded)} fill distances pass (${String(FILLS.length)} fills, light + dark, ` +
-      `plain ≥ ${String(PLAIN)}, protan + deutan ≥ ${String(SIMULATED)}); controls: ${controls.join(', ')}`,
+    `palette: ${String(kinds.graded + classes.graded)} fill distances pass (${String(FILLS.length)} kind fills + ` +
+      `${String(CLASS_FILLS.length)} concept fills, light + dark, plain ≥ ${String(PLAIN)}, protan + deutan ≥ ` +
+      `${String(SIMULATED)}; concept hues held across themes); controls: ${controls.join(', ')}`,
   );
 };
 

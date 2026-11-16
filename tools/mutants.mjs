@@ -2090,6 +2090,39 @@ export const MUTANTS = [
     check: { test: 'tests/network-projection.test.ts', name: 'N12 ' },
   },
   {
+    label: 'inv network-codebook: an uncoded concept passes classify',
+    edits: [
+      {
+        path: 'tools/kb/network.mjs',
+        old: 'if (uncoded.length > 0) throw',
+        new: 'if (uncoded.length > 1) throw',
+      },
+    ],
+    check: { test: 'tests/network-codebook.test.ts', name: 'K1 ' },
+  },
+  {
+    label: 'inv network-codebook: the asset carries no concept its class',
+    edits: [
+      {
+        path: 'tools/kb/network.mjs',
+        old: 'class: CODEBOOK[concept.id] ?? null',
+        new: 'class: null',
+      },
+    ],
+    check: { test: 'tests/network-codebook.test.ts', name: 'K2 ' },
+  },
+  {
+    label: 'inv network-codebook: a codebook entry departs from its coding record',
+    edits: [
+      {
+        path: 'tools/kb/network-codebook.mjs',
+        old: "  'AUDIT-C': 'safeguard',",
+        new: "  'AUDIT-C': 'measure',",
+      },
+    ],
+    check: { test: 'tests/network-codebook.test.ts', name: 'K4 ' },
+  },
+  {
     label: "inv characterization-engine: a question answers with another question's marks goal",
     edits: [
       {

@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 
 import { bodyBoxes, canonicalClause, chainOf, deriveFrames, frameKey, readClause, referent } from './frames.mjs';
 import { parseClauseSites } from './provenance.mjs';
+import * as BOOK from './network-codebook.mjs';
 import * as TABLES from './network-tables.mjs';
 
 /** @typedef {import('./frames.mjs').Frame} Frame */
@@ -618,7 +619,7 @@ const keyOf = (value) => JSON.stringify(value);
  * The clinical concept network asset (`.agent/contracts/g2.md`, `gi-interfaces.md` `Network asset`).
  *
  * @param {Map<string, Uint8Array>} files the verified bag's payload
- * @param {{ input: string, producer: string, tables: string }} envelope source digests
+ * @param {{ input: string, producer: string, tables: string, codebook?: string }} envelope source digests
  * @param {typeof import('./network-tables.mjs')} tables
  */
 export const deriveClinicalNetwork = (files, envelope, tables) => {
@@ -857,11 +858,33 @@ export const deriveClinicalNetwork = (files, envelope, tables) => {
   };
 };
 
+/**
+ * g3: each concept's clinical codebook class, `null` = the coders' `none`. The codebook is
+ * hand-made data, so it must be total over the derived concept set and hold nothing else: a
+ * concept a new bag adds refuses the build by name until it is coded, and a stale entry too.
+ *
+ * @param {{ id: string, label: string }[]} concepts
+ * @param {{ CLASSES: readonly string[], CODEBOOK: Readonly<Record<string, string | null>> }} codebook
+ * @returns {{ id: string, label: string, class: string | null }[]}
+ */
+export const classify = (concepts, { CLASSES, CODEBOOK }) => {
+  const ids = new Set(concepts.map(({ id }) => id));
+  const name = (/** @type {string[]} */ list) => `${String(list.length)} (${list.slice(0, 5).join(', ')})`;
+  const uncoded = concepts.filter(({ id }) => !Object.hasOwn(CODEBOOK, id)).map(({ id }) => id);
+  if (uncoded.length > 0) throw new NetworkError(`codebook: concepts without a class entry: ${name(uncoded)}`);
+  const stale = Object.keys(CODEBOOK).filter((id) => !ids.has(id));
+  if (stale.length > 0) throw new NetworkError(`codebook: entries naming no derived concept: ${name(stale)}`);
+  const undeclared = Object.entries(CODEBOOK).filter(([, cls]) => cls !== null && !CLASSES.includes(cls));
+  if (undeclared.length > 0)
+    throw new NetworkError(`codebook: classes outside CLASSES: ${name(undeclared.map(([id, cls]) => `${id} → ${String(cls)}`))}`);
+  return concepts.map((concept) => ({ ...concept, class: CODEBOOK[concept.id] ?? null }));
+};
+
 const sha256 = (/** @type {string | Uint8Array} */ value) => createHash('sha256').update(value).digest('hex');
 
 /**
  * The asset as `kb:build` writes it and `kb:asset-check` re-derives it: the envelope digests the
- * bag input, the producer (this file + g1's frame reader) and the declared tables.
+ * bag input, the producer (this file + g1's frame reader), the declared tables and g3's codebook.
  *
  * @param {Map<string, Uint8Array>} files @param {string} input the build's input digest
  */
@@ -871,8 +894,15 @@ export const networkAsset = (files, input) => {
     input,
     producer: sha256(Buffer.concat([read('./network.mjs'), read('./frames.mjs')])),
     tables: sha256(read('./network-tables.mjs')),
+    codebook: sha256(read('./network-codebook.mjs')),
   };
-  const model = deriveClinicalNetwork(files, envelope, TABLES);
+  const derived = deriveClinicalNetwork(files, envelope, TABLES);
+  const model = {
+    ...derived,
+    concepts: classify(derived.concepts, BOOK),
+    // The legend's rows: every class in rubric order, and whether it carries its own fill.
+    classes: BOOK.CLASSES.map((id) => ({ id, filled: BOOK.FILLED.includes(id) })),
+  };
   return {
     path: NETWORK_PATH,
     bytes: Buffer.from(`${JSON.stringify(model)}\n`, 'utf8'),

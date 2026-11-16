@@ -417,6 +417,12 @@ consultant-amended method:
   row on interleaved requests). An undated proof stays the same proof up to variable renaming —
   the pre-spike image itself renames rec05's 19 existential variables between derivations, so
   byte equality cannot be its test.
+- **Seven concept fills: the six round-4 classes plus `care`** (g3). The coded codebook puts
+  `care` first at 275 of 1,334 concepts and `substance` at 22; seven anchored hues + one shared
+  grey pass `palette:check` (eight would place two hues beside opioid and condition), so the user's
+  six keep their hue and the largest class gains green, leaving 307 concepts (23%) on the grey.
+  The fills come from a search under the gate's bounds near the prototype's colours; the choice is
+  a `FILLED` list + tokens, open to change at g5's live review.
 - **The linguistic graph retires at g7**, after the new graders land; the user approves the
   old-check → new-check mapping before then. Until g7, the pre-overhaul graph rulings above
   (polarity as edge state, Cytoscape's zoom floor, spanning scopes, reader-relative labels, orphan
@@ -480,7 +486,7 @@ variant alike.
   141.9 s on the i7-8650U from a load near 1.3 (T11 86.9 s, P4 50.9 s).
 - [ ] o2 acceptance suite `wt/tester-7` `cd5e569` (`Intent` + `Decisions` + `gi-interfaces.md`, 75
   cases, each seen red; red commands + counts in the `cd5e569` commit body): each unit merges the cases it turns green;
-  unmerged after g2: 22 (A4–A6, A8, A9). Orientation evidence (spikes, MeSH sample, g2 review, loop count,
+  unmerged after g3: 21 (A4–A6, A8, A9.2). Orientation evidence (spikes, MeSH sample, g2 review, loop count,
   pre-mortem) → `.agent/contracts/gi-orientation.md`; characterization `wt/tester-8` merged `35bbb06`.
 - [x] daa7191 g1 `kernel` frames: `tools/kb/frames.mjs` — a body reader that keeps `\+ (…)` groups and
   negation boxes, one frame per sentence VARIANT (consequent `ref(N)`, antecedent referents by
@@ -504,26 +510,27 @@ variant alike.
   supersession records and a per-sentence derivation under the run context; condition text = the
   KB's controlled-language sentence (Decisions).
 - [ ] RESUME: finish line in force = the IMPLEMENT body's `Met when`, body verbatim in
-  `.scratch/body.md`. Committed: g2 `b54372d` (CI run 43611418684, 20 jobs green); the pause
-  commit after it (g2 ticked, g3 contract draft `.agent/contracts/g3.md`, this note). Uncommitted:
-  none in tracked paths; g3 inputs in `.scratch/g3/` (`concepts.tsv` = the 1,334 concepts with
-  degree + sentences, `rubric.md` = the pilot rubric, `pilot-ids.tsv`, `kappa.mjs`,
-  `capacity*.mjs`) and the pilot tables `.scratch/agents/classifier-8.md`, `-9.md`. No teammate
-  runs (classifier-4…9, consultant-11 harvested + stopped; reports in `.scratch/agents/`, roster
-  `.scratch/agents/roster.md`). Branches: `wt/tester-7` `cd5e569` (acceptance o2, worktree kept,
-  A7 merged + green at `b54372d`), `wt/tester-8` `2a8fd33`, `wt/builder-40` `21eb2d0`,
-  `wt/builder-41` `8ccee0f` (evidence worktrees, clean, not rerun this session), `wt/tester-9`
-  `c985287` (squashed into g2, worktree removed). Next: apply `g3.md`'s pilot clarifications to its
-  rubric and freeze it; seed the full coding (every concept in `.scratch/g3/concepts.tsv`) for two
-  fresh classifiers + a third to adjudicate; pick the ≤ 6 own-fill classes from the coded sizes;
-  then the codebook file, envelope amendment, palette table, tests, A9.1 merge, `pnpm ci:gate g3`.
-  Open beside g3: review row GI-1 (a non-author consultant rules before r1 closes); the user has
-  not answered whether the date-re-pin approval covers n1's re-pins (demo-api, proof-guard G5,
-  proof-identity, chat D5/D7/M2).
+  `.scratch/body.md`. Committed through g3 (codebook, fills, K1–K4, A9.1 merged); its full gate
+  `pnpm ci:gate g3` runs in the background — red → fix + amend while g3 is HEAD. Next: tick g3,
+  then g2r (review GI-1 ruled by consultant-12: red-first constructed-bag cases for W2 + the
+  earlier-sentence referent, then the readers), then g4. Owed questions, batched with the g7
+  old-check → new-check mapping approval: whether the date-re-pin approval covers n1's re-pins —
+  four argument-shape pins (demo-api members, chat D5, D7, marks M2) apart from two that change
+  what a check means (proof-guard G5: a date premise no longer satisfies the guard; proof-identity:
+  the census leaves the date-reading clause out). No teammate runs (roster
+  `.scratch/agents/roster.md`). Branches: `wt/tester-7` `cd5e569` (acceptance o2, worktree kept),
+  `wt/tester-8`, `wt/builder-40`, `wt/builder-41` (evidence worktrees, clean).
 - [ ] g3 `data` clinical codebook (Decisions): classes = the six + those the corpus needs, each
   concept coded by two independent `classifier`s under a frozen rubric, adjudicated, an explicit
   no-class state; the codebook graded total over the derived concept set; `palette:check` +
   `contrast:check` over the fills.
+- [ ] g2r `kernel` domain-limit repair (review GI-1, consultant-12): W2's inherited range low and a head naming
+  an earlier sentence's referent (`guideline_order/4` object, `guideline_arg/4` argument) project
+  faithfully — red-first constructed-bag cases from README-dist (`Ranged minimum`, `Order`, `Proof
+  traces`) expecting the projection, never the refusal; `frames.mjs` + `network.mjs` readers
+  repaired, an earlier sentence's referent keeping its own sentence identity (never aliased to the
+  current sentence's `ref(N)`); S170–S173 killed; `g2.md` `Domain limits` and the
+  `.agent/deferred.md` row retired.
 - [ ] g4 `kernel` layout + labels at build time (Decisions, Cytoscape ruling): the spike's
   mechanism plus every item it measured red; the layout in a bounded child process, cached by its
   input closure, `kb:reproduce` byte-equal; phone interaction budgets (cold open, pan/zoom,

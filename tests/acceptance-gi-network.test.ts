@@ -133,3 +133,32 @@ describe('gi acceptance A7 — full export coverage and shared boundaries', () =
     );
   });
 });
+
+describe('gi acceptance A9 — total clinical codebook assignment', () => {
+  it('A9.1 gives every concept a clinical codebook class or an explicit no-class value', () => {
+    const asset = readAsset();
+    // Only a representation adapter: the source fixes total assignment, not container names.
+    const concepts = Array.isArray(asset.concepts) ? asset.concepts : asset.nodes;
+    expect(Array.isArray(concepts), 'the clinical concept table').toBe(true);
+    if (!Array.isArray(concepts)) throw new Error('clinical concept table missing');
+    expect(concepts.length).toBeGreaterThan(0);
+    const rows: unknown[] = concepts;
+    const assigned = (concept: unknown): boolean => {
+      if (!isRecord(concept)) return false;
+      const entries = Object.entries(concept).filter(([key]) => /categor|class/iu.test(key));
+      return entries.some(
+        ([, value]) =>
+          value === null ||
+          (typeof value === 'string' && value.trim() !== '') ||
+          (isRecord(value) && Object.keys(value).length > 0),
+      );
+    };
+    for (const concept of rows) expect(assigned(concept), JSON.stringify(concept)).toBe(true);
+    fc.assert(
+      fc.property(fc.constantFrom(...rows), (concept) => {
+        expect(assigned(concept)).toBe(true);
+      }),
+      { seed: SEED, numRuns: 200 },
+    );
+  });
+});

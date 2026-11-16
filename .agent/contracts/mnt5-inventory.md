@@ -165,6 +165,7 @@ record is `.claude/rules/firing.md`.
 | `tests/marks-run-boundary.test.ts` | answer | a missing document's grade run merged into the next | text | `.agent/contracts/ann-review.md Written by reviewer-12 as` |
 | `tests/marks-view.test.ts` | answer | decoder, readings and join return the stub's fixed values | text | `.agent/contracts/ann-u1.md 405/405 RED at base` |
 | `tests/mutant-anchors.test.ts` | off | exported-query mutant names an anchor absent from its producer | mutate | `inv mutant-anchors: exported-query mutant retains a stale anchor` |
+| `tests/network-codebook.test.ts` | off | an uncoded concept passing classify; the asset dropping every class; a codebook entry departing from its coding record | mutate | `inv network-codebook: an uncoded concept passes classify` |
 | `tests/network-fields.test.ts` | off | default-operator mutants of the producer the projection suite leaves alive | text | `.agent/contracts/mnt5-stryker.md killed by F1–F24 alone` |
 | `tests/network-projection.test.ts` | off | a negated or negation-as-failure condition starting a line | mutate | `inv network-projection: a negated or negation-as-failure condition starts a line` |
 | `tests/page-viewer.dom.test.ts` | off | failed page draw leaves retry button disabled | mutate | `C3 a failed page draw keeps Load page viewer disabled` |
