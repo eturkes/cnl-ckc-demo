@@ -2090,6 +2090,83 @@ export const MUTANTS = [
     check: { test: 'tests/network-projection.test.ts', name: 'N12 ' },
   },
   {
+    label: 'inv g2r: an earlier referent loses its Deps, so split variants alias',
+    edits: [
+      {
+        path: 'tools/kb/frames.mjs',
+        old: "return `${slot}@S${String(id.sentence)}[${id.deps.map((dep) => referent(frame, dep)).join(',')}]`;",
+        new: 'return `${slot}@S${String(id.sentence)}[]`;',
+      },
+    ],
+    check: { test: 'tests/network-fields.test.ts', name: 'G2R-D9 ' },
+  },
+  {
+    label: 'inv g2r: an unbound earlier Deps variable passes the frames reader',
+    edits: [
+      {
+        path: 'tools/kb/frames.mjs',
+        old: 'if (free >= 0) {',
+        new: 'if (free < -1) {',
+      },
+    ],
+    check: { test: 'tests/frames.test.ts', name: 'G2R-D10 ' },
+  },
+  {
+    label: 'inv g2r: a range pairs by its subject alone, never by its interval',
+    edits: [
+      {
+        path: 'tools/kb/network.mjs',
+        old: "if (!owned.has(low) && !(head.name === 'guideline_range' && ranged().has(low))) continue;",
+        new: 'if (!owned.has(low)) continue;',
+      },
+    ],
+    check: { test: 'tests/network-fields.test.ts', name: 'G2R-D1 ' },
+  },
+  {
+    label: 'inv g2r: the clause reader refuses an earlier referent',
+    edits: [
+      {
+        path: 'tools/kb/provenance.mjs',
+        old: "(role !== 'product' && citedSentence !== sentence)",
+        new: 'citedSentence !== sentence',
+      },
+    ],
+    check: { test: 'tests/network-fields.test.ts', name: 'G2R-D8 ' },
+  },
+  {
+    label: "inv g2r: the clause reader admits another document's id",
+    edits: [
+      {
+        path: 'tools/kb/provenance.mjs',
+        old: 'cited !== document ||',
+        new: 'false ||',
+      },
+    ],
+    check: { test: 'tests/frames.test.ts', name: 'G2R-D5 ' },
+  },
+  {
+    label: "inv g2r: the clause reader admits a later sentence's id",
+    edits: [
+      {
+        path: 'tools/kb/provenance.mjs',
+        old: 'citedSentence > sentence ||',
+        new: 'false ||',
+      },
+    ],
+    check: { test: 'tests/frames.test.ts', name: 'G2R-D5 ' },
+  },
+  {
+    label: "inv g2r: the clause reader admits another sentence's context",
+    edits: [
+      {
+        path: 'tools/kb/provenance.mjs',
+        old: "(role !== 'product' && citedSentence !== sentence)",
+        new: 'false',
+      },
+    ],
+    check: { test: 'tests/frames.test.ts', name: 'G2R-D5 ' },
+  },
+  {
     label: 'inv network-codebook: an uncoded concept passes classify',
     edits: [
       {

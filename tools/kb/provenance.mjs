@@ -461,17 +461,25 @@ export const parseClauseSites = (files) => {
     }
     const documentFact = head.name === 'guideline_document' ? atomText(head.args[0] ?? '') : null;
     if (documentFact !== null && documentFact !== document) refuse('prolog-document', `${documentFact} != ${document}`);
-    const idMatch = /'\$guideline_id'\((?:context|product|witness),'([^']+)',([1-9][0-9]*),/u.exec(
-      head.source,
-    );
     const clauseSentence =
       head.name === 'guideline_schema_version' || head.name === 'guideline_document'
         ? null
-        : idMatch === null
-          ? sentence
-          : Number(idMatch[2]);
-    if (idMatch !== null && (idMatch[1] !== document || clauseSentence !== sentence)) {
-      refuse('prolog-sentence', `line ${offset + 1}`);
+        : sentence;
+    // README-dist `Proof traces`: a clause names its `% S` block, also when its head cites an
+    // earlier sentence's referent (`Order`, the time patterns' document-wide noun lookup). A box
+    // context and a proof witness stay their own sentence's.
+    for (const [, role, cited, at] of head.source.matchAll(
+      /'\$guideline_id'\((context|product|witness),'([^']+)',([1-9][0-9]*),/gu,
+    )) {
+      const citedSentence = Number(at);
+      if (
+        cited !== document ||
+        sentence === null ||
+        citedSentence > sentence ||
+        (role !== 'product' && citedSentence !== sentence)
+      ) {
+        refuse('prolog-sentence', `line ${offset + 1}`);
+      }
     }
     const body = bodySource === '' ? [] : bodyCalls(bodySource);
     for (const call of body) {

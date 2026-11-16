@@ -377,7 +377,15 @@ consultants' tables → `.agent/contracts/gi-orientation.md`.
   new network — every exclusion and supersession record projected, guards included, no
   evaluation-date exemption; the owed sync-u2 and n1 reviews of the old graph become one live
   review of the new network; the date-related pins (`engine:check` call shapes, a dated proof's
-  context step) re-pin, each with the old check's red recorded.
+  context step) re-pin, each with the old check's red recorded. The approval covers n1's six
+  further re-pins (`161bd5d`): the controller API's date members, the chat cards' empty date, two
+  call-shape checks, proof-guard G5 stating the date as run context, and the clause-identity census
+  leaving the date-reading clause out (user, ruled at g2r).
+- **A clause names its `% S` block** (user, g2r): `parseClauseSites` takes a clause's sentence from
+  its block and checks every head id (same document, no later sentence, only a referent naming an
+  earlier one), as README-dist `Proof traces` reads it — an approved T9 declared edit of the frozen
+  `tools/kb/provenance.mjs`. Accepted cost: a clause filed under a later block whose ids all name
+  earlier sentences is no longer caught.
 
 **MAIN (IMPLEMENT orientation)**, the readings three independent navigators share, and the
 consultant-amended method:
@@ -509,28 +517,26 @@ variant alike.
   the exclusion records (12 → 8 conditions, deduplicated by clause body, never by English), the
   supersession records and a per-sentence derivation under the run context; condition text = the
   KB's controlled-language sentence (Decisions).
-- [ ] RESUME: finish line in force = the IMPLEMENT body's `Met when`, body verbatim in
-  `.scratch/body.md`. Committed through g3 (codebook, fills, K1–K4, A9.1 merged); its full gate
-  `pnpm ci:gate g3` runs in the background — red → fix + amend while g3 is HEAD. Next: tick g3,
-  then g2r (review GI-1 ruled by consultant-12: red-first constructed-bag cases for W2 + the
-  earlier-sentence referent, then the readers), then g4. Owed questions, batched with the g7
-  old-check → new-check mapping approval: whether the date-re-pin approval covers n1's re-pins —
-  four argument-shape pins (demo-api members, chat D5, D7, marks M2) apart from two that change
-  what a check means (proof-guard G5: a date premise no longer satisfies the guard; proof-identity:
-  the census leaves the date-reading clause out). No teammate runs (roster
-  `.scratch/agents/roster.md`). Branches: `wt/tester-7` `cd5e569` (acceptance o2, worktree kept),
-  `wt/tester-8`, `wt/builder-40`, `wt/builder-41` (evidence worktrees, clean).
-- [ ] g3 `data` clinical codebook (Decisions): classes = the six + those the corpus needs, each
+- [x] 60f2217 g3 `data` clinical codebook (Decisions): classes = the six + those the corpus needs, each
   concept coded by two independent `classifier`s under a frozen rubric, adjudicated, an explicit
   no-class state; the codebook graded total over the derived concept set; `palette:check` +
   `contrast:check` over the fills.
+- [ ] RESUME: finish line in force = the IMPLEMENT body's `Met when`, body verbatim in
+  `.scratch/body.md`. g3 `60f2217` gate green (CI 43869299933). g2r = the commit after `60f2217`:
+  `tester-10`'s blind cases merged green, D7 ruled (`mnt5-stryker.md` `## g2r`), its full gate `pnpm
+  ci:gate g2r` in flight — red → fix + amend while it is HEAD, green → tick it; then g4 (spike
+  lessons: `.scratch/agents/builder-41.md`, `gi-orientation.md` `### S-G2`). Owed: the user's
+  approval of the g7 old-check → new-check mapping. Branches: `wt/tester-7`
+  `cd5e569` (acceptance o2, worktree kept), `wt/tester-8`, `wt/builder-40`, `wt/builder-41`
+  (evidence worktrees, clean).
 - [ ] g2r `kernel` domain-limit repair (review GI-1, consultant-12): W2's inherited range low and a head naming
   an earlier sentence's referent (`guideline_order/4` object, `guideline_arg/4` argument) project
   faithfully — red-first constructed-bag cases from README-dist (`Ranged minimum`, `Order`, `Proof
-  traces`) expecting the projection, never the refusal; `frames.mjs` + `network.mjs` readers
-  repaired, an earlier sentence's referent keeping its own sentence identity (never aliased to the
-  current sentence's `ref(N)`); S170–S173 killed; `g2.md` `Domain limits` and the
-  `.agent/deferred.md` row retired.
+  traces`) expecting the projection, never the refusal (contract `.agent/contracts/g2r.md` D1–D10);
+  `provenance.mjs` clause attribution (user ruling, T9) + `frames.mjs` + `network.mjs` readers
+  repaired, an earlier sentence's referent keeping its sentence and `Deps` (never aliased to the
+  current sentence's `ref(N)`); S170–S173's replacing lines under Stryker, every survivor ruled;
+  `g2.md` `Domain limits` retired; the `.agent/deferred.md` row narrowed to unbound `Deps`.
 - [ ] g4 `kernel` layout + labels at build time (Decisions, Cytoscape ruling): the spike's
   mechanism plus every item it measured red; the layout in a bounded child process, cached by its
   input closure, `kb:reproduce` byte-equal; phone interaction budgets (cold open, pan/zoom,

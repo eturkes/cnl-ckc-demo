@@ -248,13 +248,21 @@ export const decodeId = (term) => {
 
 /**
  * One reading of a head or body argument: `actual`, `ref(N)`, `box(B)`, `dep(k)` (the k-th
- * antecedent top-level referent), a canonical variable, or the term's own text.
+ * antecedent top-level referent), a canonical variable, or the term's own text. An earlier
+ * sentence's referent keeps its sentence and its `Deps`, `ref(N)@S<s>[<deps>]` (g2r): README-dist
+ * lets a head cite it while the clause still names its own sentence, so a bare `ref(N)` would alias
+ * this sentence's, and the split variants of one sentence mint one `ref(N)` told apart by `Deps`.
  *
  * @param {Frame} frame @param {string} term
+ * @returns {string}
  */
 export const referent = (frame, term) => {
   const id = decodeId(term);
-  if (id !== null) return `${id.kind}(${String(id.n)})`;
+  if (id !== null) {
+    const slot = `${id.kind}(${String(id.n)})`;
+    if (id.document === frame.document && id.sentence === frame.sentence) return slot;
+    return `${slot}@S${String(id.sentence)}[${id.deps.map((dep) => referent(frame, dep)).join(',')}]`;
+  }
   if (VARIABLE.test(term)) {
     const k = frame.deps.indexOf(term);
     return k < 0 ? term : `dep(${String(k)})`;
@@ -358,16 +366,29 @@ export const sentenceFrames = (sites) => {
       };
       byKey.set(groupKey, frame);
     }
-    const deps = canonical.head.args.map(decodeId).find((id) => id !== null && id.deps.length > 0)?.deps;
+    const ids = canonical.head.args.map(decodeId).filter((id) => id !== null);
+    /** @type {Map<string, string>} */
+    const bound = new Map();
+    renameBody(canonical.body, bound, { next: 0 });
+    // `parseClauseSites` admits a head id of this sentence or an EARLIER sentence's product referent of
+    // this document (README-dist `Proof traces`), told apart by its `Deps`; a `Deps` variable the body
+    // leaves unbound is refused — no reading tells two such citations apart.
+    for (const [index, arg] of canonical.head.args.entries()) {
+      const id = decodeId(arg);
+      if (id === null || id.sentence === site.sentence) continue;
+      const free = id.deps.findIndex((dep) => VARIABLE.test(dep) && !bound.has(dep));
+      if (free >= 0) {
+        // Named as the line writes it: the canonical name exists only inside this reader.
+        const written = decodeId(head.args[index] ?? '')?.deps[free];
+        throw new FrameError(`line ${String(site.line)}: ${id.document}:${String(id.sentence)} ref(${String(id.n)}) depends on variable ${String(written)}, which the body leaves unbound`);
+      }
+    }
+    // Skolem dependencies are this sentence's own, never an earlier one's.
+    const deps = ids.find((id) => id.sentence === site.sentence && id.deps.length > 0)?.deps;
     if (deps !== undefined) {
       if (frame.deps.length === 0) frame.deps = deps;
       else if (frame.deps.join(',') !== deps.join(',')) {
         throw new FrameError(`line ${String(site.line)}: Skolem dependencies differ inside ${frameKey(frame)}`);
-      }
-    }
-    for (const id of canonical.head.args.map(decodeId)) {
-      if (id !== null && (id.document !== site.document || id.sentence !== site.sentence)) {
-        throw new FrameError(`line ${String(site.line)}: id names ${id.document}:${String(id.sentence)}`);
       }
     }
     frame.heads.push({

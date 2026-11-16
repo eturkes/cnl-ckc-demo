@@ -45,13 +45,36 @@ export const atomText = (atom) => (atom.startsWith("'") ? atom.slice(1, -1).repl
 export const readable = (noun) => noun.replaceAll('-', ' ');
 
 /**
+ * The nouns every sentence's consequent introduces, keyed `<document>:ref(N)@S<s>` — the token
+ * `referent` gives a later sentence citing that referent, less its `Deps` (g2r, README-dist
+ * `Order`): split variants mint one `ref(N)`, one referent with one noun.
+ *
+ * @param {Frame[]} frames
+ * @returns {Map<string, string>}
+ */
+export const earlierNouns = (frames) => {
+  /** @type {Map<string, string>} */
+  const out = new Map();
+  for (const frame of frames) {
+    for (const head of frame.heads) {
+      if (head.name !== 'guideline_entity') continue;
+      const ref = referent(frame, head.args[1] ?? '');
+      if (/^ref\([0-9]+\)$/u.test(ref)) out.set(`${frame.document}:${ref}@S${String(frame.sentence)}`, atomText(head.args[2] ?? ''));
+    }
+  }
+  return out;
+};
+
+/**
  * The literal-level view of one frame: every entity noun and property by referent, and every
- * event with its arguments, phrases, context and negation.
+ * event with its arguments, phrases, context and negation. An earlier sentence's referent takes
+ * its noun from `earlier` (`earlierNouns`).
  *
  * @param {Frame} frame
+ * @param {ReadonlyMap<string, string>} [earlier]
  * @returns {FrameView}
  */
-export const viewOf = (frame) => {
+export const viewOf = (frame, earlier = new Map()) => {
   const boxes = bodyBoxes(frame);
   /** @type {{ literal: Literal, naf: boolean, line: number | null, head: boolean }[]} */
   const literals = [];
@@ -92,6 +115,12 @@ export const viewOf = (frame) => {
     }
   }
   for (const { literal } of literals) {
+    for (const arg of literal.args) {
+      const ref = at(arg);
+      const cited = /^(ref\([0-9]+\)@S[0-9]+)\[/u.exec(ref)?.[1];
+      const noun = cited !== undefined && !nouns.has(ref) ? earlier.get(`${frame.document}:${cited}`) : undefined;
+      if (noun !== undefined) nouns.set(ref, noun);
+    }
     const event = events.get(at(literal.args[1] ?? ''));
     if (event === undefined) continue;
     if (literal.name === 'guideline_arg') event.args.set(Number(literal.args[2]), at(literal.args[3] ?? ''));
@@ -231,8 +260,9 @@ export const census = (frames, tables) => {
     if (!sites.includes(where)) sites.push(where);
     row.set(sub, sites);
   };
+  const earlier = earlierNouns(frames);
   for (const frame of frames) {
-    const view = viewOf(frame);
+    const view = viewOf(frame, earlier);
     const where = frameKey(frame);
     const noun = (/** @type {string | undefined} */ ref) => (ref === undefined ? undefined : view.nouns.get(ref));
     for (const event of view.events) {
@@ -427,10 +457,15 @@ const ownedHeads = (view, event, parents) => {
   const heads = view.frame.heads.filter(({ name }) => name !== 'guideline_operator');
   /** @type {Set<import('./frames.mjs').Head>} */
   const out = new Set();
+  // README-dist `Ranged minimum`: a range pairs with the interval whose quantity is its `Low`, which
+  // may be the antecedent's quantity (g2r W2) — so it follows that interval, not its subject.
+  const ranged = () => new Set([...out].filter(({ name }) => name === 'guideline_interval').map(({ args }) => at(args[3] ?? '')));
   for (let grew = true; grew; ) {
     grew = false;
     for (const head of heads) {
-      if (out.has(head) || !owned.has(at(head.args[1] ?? ''))) continue;
+      if (out.has(head)) continue;
+      const low = at(head.args[1] ?? '');
+      if (!owned.has(low) && !(head.name === 'guideline_range' && ranged().has(low))) continue;
       out.add(head);
       grew = true;
       for (const arg of head.args.slice(2)) {
@@ -626,6 +661,7 @@ export const deriveClinicalNetwork = (files, envelope, tables) => {
   const texts = sentenceTexts(files);
   const kinds = documentKinds(files);
   const { frames, records } = deriveFrames(files);
+  const earlier = earlierNouns(frames);
   const kindOf = (/** @type {string} */ document) => {
     const kind = kinds.get(document);
     if (kind === undefined) throw new NetworkError(`${document}: no coverage section names its kind`);
@@ -674,7 +710,7 @@ export const deriveClinicalNetwork = (files, envelope, tables) => {
       record.form = 'exclusion';
       continue;
     }
-    const view = viewOf(frame);
+    const view = viewOf(frame, earlier);
     const named = [...new Set([...view.nouns.values()].filter(isConcept))].sort();
     const onSentence = (/** @type {'statement' | 'eventless' | 'fallback' | 'shared'} */ form, /** @type {string[]} */ keys, /** @type {string[]} */ concepts) =>
       statements.push({

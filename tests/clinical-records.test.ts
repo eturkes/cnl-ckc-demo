@@ -671,6 +671,12 @@ describe('clinical records', () => {
           '  const coverage = parseCoverage(files, guideline.root);\n  const notes = parseProjectionNotes(files, guideline.root);\n',
           '  const coverage = parseCoverage(files, guideline.root);\n  requireRepresentations(files, guideline.root, coverage.documents);\n  const notes = parseProjectionNotes(files, guideline.root);\n',
         ],
+        // User ruling (g2r, README-dist `Proof traces`): a clause names its `% S` block, and every
+        // head id is checked — same document, no later sentence, only a referent naming an earlier one.
+        [
+          "    const idMatch = /'\\$guideline_id'\\((?:context|product|witness),'([^']+)',([1-9][0-9]*),/u.exec(\n      head.source,\n    );\n    const clauseSentence =\n      head.name === 'guideline_schema_version' || head.name === 'guideline_document'\n        ? null\n        : idMatch === null\n          ? sentence\n          : Number(idMatch[2]);\n    if (idMatch !== null && (idMatch[1] !== document || clauseSentence !== sentence)) {\n      refuse('prolog-sentence', `line ${offset + 1}`);\n    }\n",
+          "    const clauseSentence =\n      head.name === 'guideline_schema_version' || head.name === 'guideline_document'\n        ? null\n        : sentence;\n    // README-dist `Proof traces`: a clause names its `% S` block, also when its head cites an\n    // earlier sentence's referent (`Order`, the time patterns' document-wide noun lookup). A box\n    // context and a proof witness stay their own sentence's.\n    for (const [, role, cited, at] of head.source.matchAll(\n      /'\\$guideline_id'\\((context|product|witness),'([^']+)',([1-9][0-9]*),/gu,\n    )) {\n      const citedSentence = Number(at);\n      if (\n        cited !== document ||\n        sentence === null ||\n        citedSentence > sentence ||\n        (role !== 'product' && citedSentence !== sentence)\n      ) {\n        refuse('prolog-sentence', `line ${offset + 1}`);\n      }\n    }\n",
+        ],
       ],
     };
     for (const path of [

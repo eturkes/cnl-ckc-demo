@@ -4,6 +4,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { deriveFrames, frameKey } from '../tools/kb/frames.mjs';
 import {
@@ -26,14 +27,21 @@ import {
   sentenceKey,
 } from './support/network-oracle.js';
 import {
+  dependentGid,
+  earlierRange,
+  earlierReference,
   envelope,
   fact,
   files,
   gid,
+  inheritedRange,
   project,
+  renumbered,
   root,
+  synthetic,
   type Network,
 } from './support/network-subject.js';
+import { holds } from './support/property.js';
 
 const asset: Network = project();
 const framed = deriveFrames(files);
@@ -983,5 +991,278 @@ describe('clinical network fields', () => {
     const model = derive(bag([{ id: doc, sentences: [{ ...plain, clauses: guarded }] }]));
     const o = model.occurrences.find((x) => x.document === doc);
     expect(o?.guards).toEqual({ scope: null, supersession: '20221229' });
+  });
+
+  it('G2R-D1 W2 inherits its range low and owns every consequent literal', () => {
+    const input = inheritedRange();
+    const { frames } = deriveFrames(input);
+    expect(frames).toHaveLength(1);
+    const frame = frames[0];
+    const model = project(input);
+    expect(model.occurrences).toHaveLength(1);
+    const wait = model.occurrences[0];
+    expect(wait).toMatchObject({ key: 'range-inherited:1#1@ref(5)', event: 'ref(5)' });
+    expect(wait?.payload.filter((p) => p.name === 'range').map((p) => p.args)).toEqual([
+      ['dep(0)', 'hour'],
+    ]);
+    expect(wait?.payload.filter((p) => p.name === 'interval').map((p) => p.args)).toEqual([
+      ['ref(5)', 'duration', 'dep(0)', 'hour', 'none'],
+    ]);
+    for (const head of frame?.heads ?? []) {
+      if (head.name === 'guideline_operator') continue;
+      expect(
+        model.occurrences.filter((o) => o.lines.includes(head.line)),
+        head.name,
+      ).toHaveLength(1);
+    }
+  });
+
+  it('G2R-D2 a range follows its interval rather than an ordinary argument with the same low', () => {
+    const model = project(inheritedRange(true));
+    expect(model.occurrences.map((o) => o.key).sort()).toEqual([
+      'range-inherited:1#1@ref(5)',
+      'range-inherited:1#1@ref(6)',
+    ]);
+    const wait = model.occurrences.find((o) => o.event === 'ref(5)');
+    const mention = model.occurrences.find((o) => o.event === 'ref(6)');
+    expect(wait?.payload.filter((p) => p.name === 'range').map((p) => p.args)).toEqual([
+      ['dep(0)', 'hour'],
+    ]);
+    expect(wait?.payload.filter((p) => p.name === 'interval').map((p) => p.args)).toEqual([
+      ['ref(5)', 'duration', 'dep(0)', 'hour', 'none'],
+    ]);
+    expect(mention?.payload.filter((p) => p.name === 'range' || p.name === 'interval')).toEqual([]);
+    expect(
+      model.occurrences
+        .filter((o) => o.payload.some((p) => p.name === 'range'))
+        .map((o) => o.event),
+    ).toEqual(['ref(5)']);
+  });
+
+  it('G2R-D3 an earlier order object keeps its noun and S2 keeps its own dependency list', () => {
+    const input = earlierReference('order', 1, 'therapy-start');
+    const { frames } = deriveFrames(input);
+    const second = frames.find((f) => f.sentence === 2);
+    // g1 canonicalizes body variables first: S2's own Deps = clinician then patient;
+    // the earlier product cites only that patient, never a replacement dependency list.
+    const ownDeps = second?.body.flatMap((item) =>
+      'literal' in item && item.literal.name === 'guideline_entity'
+        ? item.literal.args.slice(1, 2)
+        : [],
+    );
+    expect(ownDeps).toHaveLength(2);
+    expect(second?.deps).toEqual(ownDeps);
+    expect(second?.deps).not.toEqual(ownDeps?.slice(1));
+    const model = project(input);
+    const occurrence = model.occurrences.find((o) => o.sentence === 2);
+    expect(occurrence).toMatchObject({
+      key: 'earlier-order:2#1@ref(2)',
+      bucket: 'loop',
+      target: 'opioid-therapy',
+    });
+    expect(occurrence?.payload.filter((p) => p.name === 'order').map((p) => p.args)).toEqual([
+      ['ref(2)', 'before', 'therapy-start'],
+    ]);
+    expect(
+      occurrence?.payload
+        .filter((p) => p.name === 'pp' && p.args[1] === 'before')
+        .map((p) => p.args),
+    ).toEqual([['ref(2)', 'before', 'therapy-start']]);
+  });
+
+  it('G2R-D4 an earlier argument targets its own noun across generated same-slot aliases', () => {
+    const check = (slot: number, noun: string): void => {
+      const model = project(earlierReference('arg', slot, noun));
+      const second = model.occurrences.filter((o) => o.sentence === 2);
+      expect(second).toHaveLength(1);
+      expect(second[0]).toMatchObject({
+        key: `earlier-arg:2#1@ref(${String(slot + 1)})`,
+        target: noun,
+        bucket: 'loop',
+        rule: { target: 'T1' },
+      });
+      expect(second[0]?.target).not.toBe('naloxone');
+    };
+    check(1, 'opioid-therapy');
+    holds(
+      fc.property(
+        fc.integer({ min: 1, max: 30 }),
+        fc.constantFrom('opioid-therapy', 'chronic-pain', 'acute-pain'),
+        check,
+      ),
+    );
+  });
+
+  it('G2R-D8 an earlier range low keeps clause attribution at its S2 block', () => {
+    const document = 'g2r-earlier-range';
+    const low = gid(document, 1, 'ref', 1);
+    const r1 = (n: number): string => gid(document, 1, 'ref', n);
+    const r2 = (n: number): string => gid(document, 2, 'ref', n);
+    const input = synthetic(document, [
+      {
+        text: 'At least 8 hours elapse.',
+        clauses: [
+          fact('entity', 'actual', low, 'hour', 'countable'),
+          fact('cardinality', 'actual', low, 'na', 'geq', '8'),
+          fact('unit', 'actual', low, 'hour'),
+          fact('event', 'actual', r1(2), 'elapse'),
+          fact('arg', 'actual', r1(2), '1', low),
+        ],
+      },
+      {
+        text: 'A clinician waits for the hours to 12 hours.',
+        clauses: [
+          fact('entity', 'actual', r2(1), 'clinician', 'countable'),
+          fact('cardinality', 'actual', r2(1), 'na', 'eq', '1'),
+          fact('entity', 'actual', r2(4), 'hour', 'countable'),
+          fact('cardinality', 'actual', r2(4), 'na', 'eq', '12'),
+          fact('unit', 'actual', r2(4), 'hour'),
+          fact('event', 'actual', r2(5), 'wait'),
+          fact('arg', 'actual', r2(5), '1', r2(1)),
+          fact('pp', 'actual', r2(5), 'for', low),
+          fact('interval', 'actual', r2(5), 'duration', low, 'hour', 'none'),
+          fact('pp', 'actual', r2(5), 'to', r2(4)),
+          fact('range', 'actual', low, r2(4)),
+        ],
+      },
+    ]);
+    const sites = parseClauseSites(input);
+    expect(sites.filter((s) => s.predicate === 'guideline_range').map((s) => s.sentence)).toEqual([
+      2,
+    ]);
+    const wait = project(input).occurrences.find((o) => o.sentence === 2);
+    expect(wait?.key).toBe(`${document}:2#1@ref(5)`);
+    expect(wait?.payload.filter((p) => p.name === 'range').map((p) => p.args)).toEqual([
+      ['hour', 'hour'],
+    ]);
+    expect(wait?.payload.filter((p) => p.name === 'interval').map((p) => p.args)).toEqual([
+      ['ref(5)', 'duration', 'hour', 'hour', 'none'],
+    ]);
+  });
+
+  it('G2R-D9 distinct bound Deps keep earlier referents apart instead of embedding one event', () => {
+    const check = (slot: number): void => {
+      const document = 'g2r-dependency-identity';
+      const first = dependentGid(document, 1, 'ref', slot, ['X']);
+      const earlier = (v: string): string => dependentGid(document, 1, 'ref', slot, [v]);
+      const current = (n: number): string => dependentGid(document, 2, 'ref', n, ['A', 'B', 'C']);
+      const context = dependentGid(document, 2, 'box', 1, ['A', 'B', 'C']);
+      const body1 =
+        'guideline_entity(actual,X,patient,countable), guideline_cardinality(actual,X,na,eq,1)';
+      const body2 = [
+        'guideline_entity(actual,A,patient,countable)',
+        'guideline_cardinality(actual,A,na,eq,1)',
+        'guideline_entity(actual,B,patient,countable)',
+        'guideline_cardinality(actual,B,na,eq,1)',
+        'guideline_entity(actual,C,clinician,countable)',
+        'guideline_cardinality(actual,C,na,eq,1)',
+      ].join(', ');
+      const input = synthetic(document, [
+        {
+          text: 'If there is a patient then there is an opioid-therapy.',
+          clauses: [
+            fact('entity', 'actual', first, "'opioid-therapy'", 'countable'),
+            fact('cardinality', 'actual', first, 'na', 'eq', '1'),
+          ].map((head) => `${head.slice(0, -1)} :- ${body1}.`),
+        },
+        {
+          text: 'If there is a patient and there is another patient and there is a clinician then the clinician should consider an opioid-therapy and another opioid-therapy should treat a naloxone.',
+          clauses: [
+            fact('operator', 'actual', context, 'should'),
+            fact('entity', context, current(slot), 'naloxone', 'countable'),
+            fact('cardinality', context, current(slot), 'na', 'eq', '1'),
+            fact('event', context, current(slot + 1), 'consider'),
+            fact('arg', context, current(slot + 1), '1', 'C'),
+            fact('arg', context, current(slot + 1), '2', earlier('A')),
+            fact('event', context, current(slot + 2), 'treat'),
+            fact('arg', context, current(slot + 2), '1', earlier('B')),
+            fact('arg', context, current(slot + 2), '2', current(slot)),
+          ].map((head) => `${head.slice(0, -1)} :- ${body2}.`),
+        },
+      ]);
+      const second = project(input).occurrences.filter((o) => o.sentence === 2);
+      expect(second.map((o) => o.key).sort()).toEqual(
+        [
+          `${document}:2#1@ref(${String(slot + 1)})`,
+          `${document}:2#1@ref(${String(slot + 2)})`,
+        ].sort(),
+      );
+      expect(second.find((o) => o.event === `ref(${String(slot + 1)})`)).toMatchObject({
+        target: 'opioid-therapy',
+        bucket: 'loop',
+      });
+      expect(second.find((o) => o.event === `ref(${String(slot + 2)})`)).toMatchObject({
+        actor: 'opioid-therapy',
+        sources: ['opioid-therapy'],
+        target: 'naloxone',
+        bucket: 'line',
+      });
+      expect(second.flatMap((o) => o.payload.filter((p) => p.name === 'event'))).toEqual([]);
+    };
+    check(1);
+    holds(fc.property(fc.integer({ min: 1, max: 30 }), check));
+  });
+
+  // Stryker survivors consultant-12 ruled `specified` (`.agent/contracts/mnt5-stryker.md` `## g2r`).
+  it('G2R-R18 an earlier referent keeps its noun from sentence 10 on', () => {
+    holds(
+      fc.property(fc.integer({ min: 9, max: 120 }), (shift) => {
+        const order = project(renumbered(earlierReference('order', 1, 'therapy-start'), shift));
+        const cited = order.occurrences.find((o) => o.sentence === 2 + shift);
+        expect(cited?.payload.filter((p) => p.name === 'order').map((p) => p.args)).toEqual([
+          ['ref(2)', 'before', 'therapy-start'],
+        ]);
+        const arg = project(renumbered(earlierReference('arg', 1, 'chronic-pain'), shift));
+        expect(
+          arg.occurrences.filter((o) => o.sentence === 2 + shift).map((o) => o.target),
+        ).toEqual(['chronic-pain']);
+      }),
+    );
+  });
+
+  it('G2R-R17 a noun spelling a citation cites nothing', () => {
+    const document = 'citation-noun';
+    const sentence = (n: number, noun: string): { text: string; clauses: string[] } => ({
+      text: `There is a ${noun}.`,
+      clauses: [
+        fact('entity', 'actual', gid(document, n, 'ref', 1), noun, 'countable'),
+        fact('cardinality', 'actual', gid(document, n, 'ref', 1), 'na', 'eq', '1'),
+      ],
+    });
+    const model = project(
+      synthetic(document, [sentence(1, 'pain'), sentence(2, "'pre-ref(1)@S1['")]),
+    );
+    const second = model.statements.filter((s) => s.sentence === `${document}:2`);
+    expect(second.map((s) => s.concepts)).toEqual([['pre-ref(1)@S1[']]);
+  });
+
+  it('G2R-Q03 a range citing an earlier Low first keeps the citing sentence its own Deps', () => {
+    for (const lowDeps of [[], ['B']]) {
+      const input = earlierRange(lowDeps);
+      const second = deriveFrames(input).frames.find((f) => f.sentence === 2);
+      const ownDeps = second?.body.flatMap((item) =>
+        'literal' in item && item.literal.name === 'guideline_entity'
+          ? item.literal.args.slice(1, 2)
+          : [],
+      );
+      expect(ownDeps, String(lowDeps)).toHaveLength(2);
+      expect(second?.deps, String(lowDeps)).toEqual(ownDeps);
+      const wait = project(input).occurrences.find((o) => o.sentence === 2);
+      expect(wait?.payload.filter((p) => p.name === 'range').map((p) => p.args)).toEqual([
+        ['hour', 'hour'],
+      ]);
+    }
+  });
+
+  it('G2R-Q26 an earlier Low named by a second event stays with its interval event', () => {
+    const occurrences = project(earlierRange(['B'], true)).occurrences.filter(
+      (o) => o.sentence === 2,
+    );
+    expect(
+      occurrences.map((o) => [o.key, o.payload.filter((p) => p.name === 'range').length]),
+    ).toEqual([
+      ['g2r-conditional-range:2#1@ref(3)', 1],
+      ['g2r-conditional-range:2#1@ref(4)', 0],
+    ]);
   });
 });
