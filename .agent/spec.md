@@ -547,21 +547,37 @@ variant alike.
   input closure, `kb:reproduce` byte-equal; phone interaction budgets (cold open, pan/zoom,
   input-to-paint) fixed and measured on the full asset before g5, design appraised by a
   `scientist`.
-- [ ] RESUME: finish line in force = the IMPLEMENT body's `Met when`, body verbatim in
-  `.scratch/body.md`. g4b committed, its `pnpm ci:gate g4b` verdict pending → tick g4b, then g4c
-  (budgets B1–B4 on a GPU-verified pinned Chromium, BM host admission, the paired replay against
-  `wip/g4b-cytoscape-arm` `9819f7c`), n3, g5, n4, n5, g6, g7, r1, d1. `pnpm layout:check` runs
-  `playwright`'s pinned headless shell, never chromiumfish (`.claude/rules/toolchain.md`). Owed: the
-  user's approval of the g7 old-check → new-check mapping. Branches: `wt/tester-7` `cd5e569`
-  (acceptance o2, worktree kept), `wt/tester-8`, `wt/builder-40`, `wt/builder-41` (evidence
-  worktrees, clean); evidence `worktree-agent-abb05350c55c78cb3` `ae88430` (g4b lane) joins the d1
-  push with the user's go.
-- [ ] g4b `kernel` canvas adapter + rendered layout oracle (contract `.agent/contracts/g4.md`
+- [x] 1c4e2fa g4b `kernel` canvas adapter + rendered layout oracle (contract `.agent/contracts/g4.md`
   `## Canvas adapter`, R1–R6): `src/network/canvas.ts`, MAIN's Canvas 2D renderer;
   `pnpm layout:check` — every label's rendered box inside its model region in real Chromium on
   three canvases, the shown-label set at every reveal boundary, zero rendered overlaps, screen-fixed
   sizes read back, a pixel sample, the tallest subject block panned to its last reading; blind
   lane from a `tester`; before g5.
+- [ ] RESUME: finish line in force = the IMPLEMENT body's `Met when`, body verbatim in
+  `.scratch/body.md`. g4c in flight, UNCOMMITTED in the working tree, snapshot `wip/g4c-harness`
+  (one commit on this pause commit): the harness `pnpm layout:budget` (`tools/layout-budget.mjs`,
+  `tools/layout-budget/`, `package.json`), its blind suite (`tests/layout-budget.test.ts`,
+  `tests/support/layout-budget-*.ts`, `tests/fixtures/layout-budget/`; tester-14 `44fe119`, 87/87
+  green on MAIN, 22/87 red on the pre-r5 modules), 4 `inv layout-budget` mutants in
+  `tools/mutants.mjs` (4/4 killed), the contract `.agent/contracts/g4.md` `## Budgets (g4c)`
+  amended to scientist-2 r5 E1–E5 + E5a–d plus this session's two harness findings (the clock
+  control plants its 1 ms error in the map; the pilot's binding witness rides a zoom run), rows in
+  `.claude/rules/{firing,gate,toolchain,waves}.md`, `.agent/contracts/mnt5-inventory.md`,
+  `.agent/deferred.md`, `docs/claims.md` (R110 + R137 unadjudicated: `claims:check` red until
+  filled). Validated unadmitted: `dev/all6` fired every budget control with its witness. Next: the
+  pilot run `.scratch/g4c/pilot-retry.sh` on a quiet host, judged by `.scratch/g4c/r5-plan.md`
+  `## RESUME`; then claims R110 + R137 from it, the suites rerun (last green before this session's
+  driver edits), commit `.scratch/g4c/commit-msg.txt`, `pnpm ci:gate g4c-harness`. Then the
+  admitted pilot (one pair read p95 33 ms / 13.8 % missed near the full view: the stop rule will say
+  investigate), the campaign per budget × viewport, results → the contract + an astra scientist's
+  appraisal, tick g4c; then n3, g5, n4, n5, g6, g7, r1, d1. `pnpm layout:check` runs
+  `playwright`'s pinned headless shell, `pnpm layout:budget` its full Chromium headed on the X11
+  display, never chromiumfish (`.claude/rules/toolchain.md`). No teammate runs. Owed: the user's
+  approval of the g7 old-check → new-check mapping. Branches: `wt/tester-7` `cd5e569` (acceptance
+  o2, worktree kept), `wt/tester-8`, `wt/builder-40`, `wt/builder-41` (evidence worktrees, clean);
+  evidence `worktree-agent-abb05350c55c78cb3` `ae88430` (g4b lane),
+  `worktree-agent-a26314cd562a23f56` `9024400` and `wt/tester-14` `0cae1a9` (g4c blind suite,
+  its tests rerun green on MAIN) join the d1 push with the user's go.
 - [ ] g4c `kernel` phone interaction budgets B1–B4 (`pnpm layout:budget`, scientist-2's protocols in
   `.scratch/agents/scientist-2.md` + r3 M5/M6, harness + B4 appraised before the runs): cold open,
   pan/zoom, selection-to-paint and a trace's focus layout timed on the full asset at 4× CPU in a
