@@ -50,9 +50,15 @@ paths:
   boxes over the shipped font, reveal zooms and every concept and rule focus view, graded G1–G5 and
   G8 on every build and every cache hit. The page shares the geometry (`src/network/geometry.ts`)
   and the focus layout (`src/network/focus.ts`), which Node imports by type stripping
-  (`allowImportingTsExtensions`). The maximum zoom is 1: above it Cytoscape draws screen-fixed text
-  wider than its advances. The layout runs in a bounded child, cached under
+  (`allowImportingTsExtensions`). The maximum zoom is 1: every label reveals by then. The layout
+  runs in a bounded child, cached under
   `node_modules/.cache/cnl-ckc-demo/layout/` by its input closure; a layout, geometry, focus or font
   edit needs `node tools/kb/build.mjs --force` like any producer edit.
+- **The network draws with its own Canvas 2D renderer** (`src/network/canvas.ts`, `Decisions`,
+  contract `g4.md` `## Canvas adapter`): every frame is drawn from the model in screen px, so sizes
+  stay fixed at any zoom with no per-zoom restyle. Cytoscape stays the layout engine alone
+  (`focus.ts`, headless fcose); the page loads it for a trace's view. Rendered output is graded by
+  `pnpm layout:check` alone, which observes the Canvas 2D calls and the bitmap, never the
+  renderer's own records.
 - The linguistic graph (`tools/kb/graph.mjs`, `.claude/rules/graph.md`) ships beside the network
   until g7 retires it.

@@ -15,7 +15,7 @@ export const METRICS = Object.freeze({
   /** Wrap width of a label line. */
   wrap: 130,
   outline: 3,
-  /** Cytoscape's drawn width exceeds the HarfBuzz advance sum by ≤ 1.36 px at zoom ≤ 1 (g4 probe). */
+  /** Width allowance over the HarfBuzz advance: Chromium's centred ink + halo keeps ≥ 0.89 px of it per side (g4b). */
   tolerance: 2,
   dot: 10,
   anchorDot: 18,
@@ -25,7 +25,7 @@ export const METRICS = Object.freeze({
   pairGap: 4,
   lineWidth: 1.5,
   margin: 12,
-  /** Text drawn at a model size below 13 px drifts wider than its advances; nothing reveals past 1. */
+  /** Every label reveals by zoom 1, so nothing gains from zooming past it. */
   maxZoom: 1,
 });
 
@@ -76,6 +76,9 @@ export interface Blocks {
 export interface LaidOutNode extends RankedPoint {
   readonly reveal: number;
 }
+
+/** What a frame reads of a laid-out node: its point, its label box and its reveal zoom. */
+export type FramedNode = Pick<LaidOutNode, 'id' | 'x' | 'y' | 'W' | 'H' | 'reveal'>;
 
 const { font, outline, tolerance, radius, labelGap, pairGap, margin, maxZoom } = METRICS;
 
@@ -160,7 +163,7 @@ const centred = (nodes: readonly Point[], canvas: Canvas, zoom: number): Frame['
 };
 
 /** Every dot, and every label shown at `zoom`, inside the canvas less its margin. */
-const inside = (nodes: readonly LaidOutNode[], canvas: Canvas, zoom: number): boolean => {
+const inside = (nodes: readonly FramedNode[], canvas: Canvas, zoom: number): boolean => {
   const pan = centred(nodes, canvas, zoom);
   return nodes.every((n) => {
     const x = n.x * zoom + pan.x;
@@ -182,7 +185,7 @@ const inside = (nodes: readonly LaidOutNode[], canvas: Canvas, zoom: number): bo
  * so a fixed-step bisection finds it deterministically. This zoom is the canvas's minimum zoom.
  */
 export const frameFull = (
-  layout: { readonly nodes: readonly LaidOutNode[] },
+  layout: { readonly nodes: readonly FramedNode[] },
   canvas: Canvas,
 ): Frame => {
   let low = 0;
@@ -196,4 +199,45 @@ export const frameFull = (
     }
   }
   return { zoom: low, pan: centred(layout.nodes, canvas, low) };
+};
+
+/** A focus view's own layout: points at zoom 1, the subject (or the first node) at the origin. */
+export interface FocusView {
+  readonly subject: string | null;
+  readonly nodes: readonly { readonly id: string; readonly x: number; readonly y: number }[];
+}
+
+/**
+ * A focus view's frame at zoom 1: its boxes centred when they fit the canvas less its margin, else
+ * the anchor box — the subject's, or the topmost node's — centred at the top margin.
+ */
+export const frameFocus = (
+  view: FocusView,
+  sizes: ReadonlyMap<string, Size>,
+  block: Size | null,
+  canvas: Canvas,
+): Frame => {
+  const { margin } = METRICS;
+  const boxes = view.nodes.map((n) => ({
+    n,
+    box: boxOf(sizes.get(n.id) as Size, n.id === view.subject ? block : null),
+  }));
+  const left = Math.min(...boxes.map(({ n, box }) => n.x + box.left));
+  const right = Math.max(...boxes.map(({ n, box }) => n.x + box.right));
+  const top = Math.min(...boxes.map(({ n, box }) => n.y + box.top));
+  const bottom = Math.max(...boxes.map(({ n, box }) => n.y + box.bottom));
+  if (right - left <= canvas.width - 2 * margin && bottom - top <= canvas.height - 2 * margin) {
+    return {
+      zoom: 1,
+      pan: { x: canvas.width / 2 - (left + right) / 2, y: canvas.height / 2 - (top + bottom) / 2 },
+    };
+  }
+  const anchor =
+    boxes.find(({ n }) => n.id === view.subject) ??
+    [...boxes].sort((a, b) => a.n.y - b.n.y || (a.n.id < b.n.id ? -1 : 1))[0];
+  if (anchor === undefined) return { zoom: 1, pan: { x: canvas.width / 2, y: canvas.height / 2 } };
+  return {
+    zoom: 1,
+    pan: { x: canvas.width / 2 - anchor.n.x, y: margin - (anchor.n.y + anchor.box.top) },
+  };
 };

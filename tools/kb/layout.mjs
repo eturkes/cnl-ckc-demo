@@ -16,9 +16,12 @@ import fcose from 'cytoscape-fcose';
 import fontverter from 'fontverter';
 import { Blob, Buffer as ShapeBuffer, Face, Font, Variation, shape } from 'harfbuzzjs';
 
-import { directionEdges, layoutFocus, seeded } from '../../src/network/focus.ts';
+import { directionEdges, focusSets, layoutFocus, seeded } from '../../src/network/focus.ts';
 import { ANCHORS, METRICS, boxOf, frameFull, labelHeight, labelWidth, overlaps, reveals, sep } from '../../src/network/geometry.ts';
 import { ROOT } from './paths.mjs';
+
+// The page derives a view's lines by the same function (`src/network/focus.ts`).
+export { focusSets };
 
 cytoscape.use(fcose);
 
@@ -377,49 +380,6 @@ export const layoutNetwork = (network) => {
     blocks: [...readings].sort(([a], [b]) => (a < b ? -1 : 1)).map(([id, set]) => ({ id, ...measureBlock([...set].sort()) })),
     focus: focusViews(network, new Map([...nodes].map(([id, n]) => [id, { W: n.W, H: n.H }])), blockSizes),
   };
-};
-
-/**
- * Every focus set a reader can open from the network: each concept with its line neighbours
- * (`concept:<id>`, the concept the subject) and each rule's concepts (`rule:<document>:<sentence>`,
- * no subject) — the build lays each out once, so opening one costs no layout in the page.
- *
- * @param {NetworkInput} network
- * @returns {{ key: string, subject: string | null, ids: string[], lines: { source: string, target: string }[] }[]}
- */
-export const focusSets = (network) => {
-  /** @type {Map<string, { source: string, target: string }[]>} */
-  const incident = new Map(network.concepts.map((c) => [c.id, []]));
-  /** @type {Map<string, { ids: Set<string>, lines: { source: string, target: string }[] }>} */
-  const rules = new Map();
-  const rule = (/** @type {string} */ occurrence) => {
-    const key = `rule:${occurrence.slice(0, occurrence.indexOf('#'))}`;
-    const entry = rules.get(key) ?? { ids: new Set(), lines: [] };
-    rules.set(key, entry);
-    return entry;
-  };
-  for (const line of network.lines) {
-    incident.get(line.source)?.push(line);
-    if (line.target !== line.source) incident.get(line.target)?.push(line);
-    // A line with several occurrences in one sentence (variants, several events) joins it once.
-    for (const occurrence of new Set(line.occurrences ?? [])) {
-      const entry = rule(occurrence);
-      entry.ids.add(line.source).add(line.target);
-      if (entry.lines.at(-1) !== line) entry.lines.push(line);
-    }
-  }
-  for (const loop of network.loops) {
-    for (const occurrence of new Set(loop.occurrences ?? [])) rule(occurrence).ids.add(loop.concept);
-  }
-  return [
-    ...[...incident].map(([id, lines]) => ({
-      key: `concept:${id}`,
-      subject: id,
-      ids: [...new Set([id, ...lines.flatMap((l) => [l.source, l.target])])].sort(),
-      lines,
-    })),
-    ...[...rules].map(([key, { ids, lines }]) => ({ key, subject: null, ids: [...ids].sort(), lines })),
-  ].sort((a, b) => (a.key < b.key ? -1 : 1));
 };
 
 /**

@@ -7,15 +7,11 @@
 import cytoscape from 'cytoscape';
 import fcose from 'cytoscape-fcose';
 
-import {
-  METRICS,
-  boxOf,
-  overlaps,
-  type Canvas,
-  type Frame,
-  type Point,
-  type Size,
-} from './geometry.ts';
+import { METRICS, boxOf, overlaps, type FocusView, type Point, type Size } from './geometry.ts';
+
+// The focus frame is pure geometry; the page frames a view without loading Cytoscape.
+export { frameFocus } from './geometry.ts';
+export type { FocusView } from './geometry.ts';
 
 cytoscape.use(fcose);
 
@@ -39,12 +35,6 @@ export interface FocusInput {
   readonly lines: readonly { readonly source: string; readonly target: string }[];
 }
 
-export interface FocusView {
-  readonly subject: string | null;
-  /** Points at zoom 1, the subject (or the first node) at the origin. */
-  readonly nodes: readonly { readonly id: string; readonly x: number; readonly y: number }[];
-}
-
 /**
  * fcose draws its starting positions from `Math.random`; a fixed sequence makes a layout a function
  * of its input, in Node and in the page alike. Restored on every exit.
@@ -63,6 +53,68 @@ export const seeded = <T>(seed: number, run: () => T): T => {
   } finally {
     Math.random = random;
   }
+};
+
+interface SetLine {
+  readonly source: string;
+  readonly target: string;
+  readonly occurrences?: readonly string[];
+}
+
+export interface FocusSet<L extends SetLine> {
+  readonly key: string;
+  readonly subject: string | null;
+  readonly ids: string[];
+  readonly lines: L[];
+}
+
+/**
+ * Every focus set a reader can open from the network: each concept with its line neighbours
+ * (`concept:<id>`, the concept the subject) and each rule's concepts (`rule:<document>:<sentence>`,
+ * no subject). The build lays each out once (`tools/kb/layout.mjs`); the page draws a view's lines
+ * from the same sets.
+ */
+export const focusSets = <L extends SetLine>(network: {
+  readonly concepts: readonly { readonly id: string }[];
+  readonly lines: readonly L[];
+  readonly loops: readonly { readonly concept: string; readonly occurrences?: readonly string[] }[];
+}): FocusSet<L>[] => {
+  const incident = new Map<string, L[]>(network.concepts.map((c) => [c.id, []]));
+  const rules = new Map<string, { ids: Set<string>; lines: L[] }>();
+  const rule = (occurrence: string) => {
+    const key = `rule:${occurrence.slice(0, occurrence.indexOf('#'))}`;
+    const entry = rules.get(key) ?? { ids: new Set<string>(), lines: [] };
+    rules.set(key, entry);
+    return entry;
+  };
+  for (const line of network.lines) {
+    incident.get(line.source)?.push(line);
+    if (line.target !== line.source) incident.get(line.target)?.push(line);
+    // A line with several occurrences in one sentence (variants, several events) joins it once.
+    for (const occurrence of new Set(line.occurrences ?? [])) {
+      const entry = rule(occurrence);
+      entry.ids.add(line.source).add(line.target);
+      if (entry.lines.at(-1) !== line) entry.lines.push(line);
+    }
+  }
+  for (const loop of network.loops) {
+    for (const occurrence of new Set(loop.occurrences ?? []))
+      rule(occurrence).ids.add(loop.concept);
+  }
+  return [
+    ...[...incident].map(([id, lines]) => ({
+      key: `concept:${id}`,
+      subject: id,
+      ids: [...new Set([id, ...lines.flatMap((l) => [l.source, l.target])])].sort(),
+      lines,
+    })),
+    ...[...rules].map(([key, { ids, lines }]) => ({
+      key,
+      subject: null,
+      ids: [...ids].sort(),
+      lines,
+    })),
+  ].sort((a, b) => (a.key < b.key ? -1 : 1));
 };
 
 /** The direction edges kept: each line once, in (source, target) order, unless it closes a cycle. */
@@ -213,41 +265,6 @@ export const layoutFocus = (
   return {
     subject: input.subject,
     nodes: nodes.map((n) => ({ id: n.id, x: round(n.x - origin.x), y: round(n.y - origin.y) })),
-  };
-};
-
-/**
- * A focus view's frame at zoom 1: its boxes centred when they fit the canvas less its margin, else
- * the anchor box — the subject's, or the topmost node's — centred at the top margin.
- */
-export const frameFocus = (
-  view: FocusView,
-  sizes: ReadonlyMap<string, Size>,
-  block: Size | null,
-  canvas: Canvas,
-): Frame => {
-  const { margin } = METRICS;
-  const boxes = view.nodes.map((n) => ({
-    n,
-    box: boxOf(sizes.get(n.id) as Size, n.id === view.subject ? block : null),
-  }));
-  const left = Math.min(...boxes.map(({ n, box }) => n.x + box.left));
-  const right = Math.max(...boxes.map(({ n, box }) => n.x + box.right));
-  const top = Math.min(...boxes.map(({ n, box }) => n.y + box.top));
-  const bottom = Math.max(...boxes.map(({ n, box }) => n.y + box.bottom));
-  if (right - left <= canvas.width - 2 * margin && bottom - top <= canvas.height - 2 * margin) {
-    return {
-      zoom: 1,
-      pan: { x: canvas.width / 2 - (left + right) / 2, y: canvas.height / 2 - (top + bottom) / 2 },
-    };
-  }
-  const anchor =
-    boxes.find(({ n }) => n.id === view.subject) ??
-    [...boxes].sort((a, b) => a.n.y - b.n.y || (a.n.id < b.n.id ? -1 : 1))[0];
-  if (anchor === undefined) return { zoom: 1, pan: { x: canvas.width / 2, y: canvas.height / 2 } };
-  return {
-    zoom: 1,
-    pan: { x: canvas.width / 2 - anchor.n.x, y: margin - (anchor.n.y + anchor.box.top) },
   };
 };
 

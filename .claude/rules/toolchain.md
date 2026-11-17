@@ -29,6 +29,12 @@ paths:
   the browser lanes' Chromium = the public `chromiumfish` npm package, located by
   `CHROMIUMFISH_DIR` (its package directory), else the pnpm global store
   (`tools/browser.mjs` `resolveChromiumfish`). README `Prerequisites` + `Chat` name both.
+- **`pnpm layout:check` runs `playwright`'s pinned Chromium headless shell, never chromiumfish**:
+  chromiumfish's persona engine spoofs the screen in C++, so a page reads `devicePixelRatio` 1
+  whatever `deviceScaleFactor` asks (its screenshots still scale), and the lane's DPR 2 and 3
+  canvases need the real ratio. The shell installs project-local, its revision pinned by
+  `playwright`: `PLAYWRIGHT_BROWSERS_PATH=node_modules/.cache/ms-playwright pnpm exec playwright
+  install chromium-headless-shell`; the lane refuses by name when it is missing.
 
 ## Package manager
 

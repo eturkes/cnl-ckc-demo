@@ -2216,6 +2216,178 @@ export const MUTANTS = [
     },
   },
   {
+    label: 'inv layout:check: a label shows only past its reveal zoom',
+    edits: [
+      {
+        path: 'src/network/canvas.ts',
+        old: '      if (!forced && (m.reveal[i] as number) > zoom) continue;\n      const id = m.ids[i] as string;\n      const label = m.sizes.get(id) as Size;',
+        new: '      if (!forced && (m.reveal[i] as number) >= zoom) continue;\n      const id = m.ids[i] as string;\n      const label = m.sizes.get(id) as Size;',
+      },
+    ],
+    check: ['node', 'tools/layout-check.mjs', '--fail-fast'],
+  },
+  {
+    // At a focus view's fixed zoom 1 every label has revealed, so dropping `forced` alone is an
+    // equivalent mutant; dropping the members' labels is the defect an always-shown read catches.
+    label: "inv layout:check: a focus view draws its subject's label alone",
+    edits: [
+      {
+        path: 'src/network/canvas.ts',
+        old: '      if (!forced && (m.reveal[i] as number) > zoom) continue;\n      const id = m.ids[i] as string;\n      const label = m.sizes.get(id) as Size;',
+        new: '      if (forced ? i !== subject : (m.reveal[i] as number) > zoom) continue;\n      const id = m.ids[i] as string;\n      const label = m.sizes.get(id) as Size;',
+      },
+    ],
+    check: ['node', 'tools/layout-check.mjs', '--fail-fast'],
+  },
+  {
+    label: 'inv layout:check: the label size scales with the zoom',
+    edits: [
+      {
+        path: 'src/network/canvas.ts',
+        old: '    ctx.font = NETWORK_FONT;',
+        new: '    ctx.font = `${String(font.weight)} ${String(font.size * zoom)}px "${font.family}"`;',
+      },
+    ],
+    check: ['node', 'tools/layout-check.mjs', '--fail-fast'],
+  },
+  {
+    label: 'inv layout:check: the loop block drops its label gap',
+    edits: [
+      {
+        path: 'src/network/canvas.ts',
+        old: '          py + radius + labelGap + label.H + labelGap + outline,',
+        new: '          py + radius + labelGap + label.H + outline,',
+      },
+    ],
+    check: ['node', 'tools/layout-check.mjs', '--fail-fast'],
+  },
+  {
+    label: 'inv layout:check: the page lacks the shipped latin face',
+    edits: [
+      {
+        path: 'src/app.css',
+        old: "  font-family: 'Atkinson Hyperlegible Next';\n  font-style: normal;\n  font-weight: 200 800;\n  font-display: swap;\n  src: url('@fontsource-variable/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-wght-normal.woff2')",
+        new: "  font-family: 'Atkinson Hyperlegible Next Control';\n  font-style: normal;\n  font-weight: 200 800;\n  font-display: swap;\n  src: url('@fontsource-variable/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-wght-normal.woff2')",
+      },
+    ],
+    check: ['node', 'tools/layout-check.mjs', '--fail-fast'],
+  },
+  {
+    label: 'inv layout:check: the loop block keeps its first three lines',
+    edits: [
+      {
+        path: 'src/network/canvas.ts',
+        old: 'lines: b.readings.flat() }',
+        new: 'lines: b.readings.flat().slice(0, 3) }',
+      },
+    ],
+    check: ['node', 'tools/layout-check.mjs', '--fail-fast'],
+  },
+  {
+    label: 'inv layout:check: labels draw in the canvas colour',
+    edits: [
+      {
+        path: 'src/network/canvas.ts',
+        old: "text(m.labels[i] ?? [], px, py + radius + labelGap + outline, base['--text']);",
+        new: "text(m.labels[i] ?? [], px, py + radius + labelGap + outline, base['--surface-sunken']);",
+      },
+    ],
+    check: ['node', 'tools/layout-check.mjs', '--fail-fast'],
+  },
+  {
+    label: 'inv layout:check: the frame drops the device pixel ratio',
+    edits: [
+      {
+        path: 'src/network/canvas.ts',
+        old: '    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);',
+        new: '    ctx.setTransform(1, 0, 0, 1, 0, 0);',
+      },
+    ],
+    check: ['node', 'tools/layout-check.mjs', '--fail-fast'],
+  },
+  {
+    label: 'inv layout:check: parallel lines draw straight',
+    edits: [
+      {
+        path: 'src/network/canvas.ts',
+        old: '      if (bent === 0) ctx.lineTo(ex, ey);\n      else ctx.quadraticCurveTo(cx, cy, ex, ey);',
+        new: '      ctx.lineTo(ex, ey);',
+      },
+    ],
+    check: ['node', 'tools/layout-check.mjs', '--fail-fast'],
+  },
+  {
+    label: 'inv layout:check: arrowheads are never filled',
+    edits: [
+      {
+        path: 'src/network/canvas.ts',
+        old: '      ctx.lineTo(heads[k + 4] as number, heads[k + 5] as number);\n    }\n    ctx.fill();',
+        new: '      ctx.lineTo(heads[k + 4] as number, heads[k + 5] as number);\n    }',
+      },
+    ],
+    check: ['node', 'tools/layout-check.mjs', '--fail-fast'],
+  },
+  {
+    label: 'inv layout:check: labels draw with hinted advances',
+    edits: [
+      {
+        path: 'src/network/canvas.ts',
+        old: "    ctx.textRendering = 'geometricPrecision';\n",
+        new: '',
+      },
+    ],
+    check: ['node', 'tools/layout-check.mjs', '--fail-fast'],
+  },
+  {
+    label: "g4b a curve bends off the points' centres and ends along its tangent",
+    edits: [
+      {
+        path: 'src/network/canvas.ts',
+        old: '      const ex = bx - ((bx - ax) / length) * rim;\n      const ey = by - ((by - ay) / length) * rim;\n',
+        new: '',
+      },
+      {
+        path: 'src/network/canvas.ts',
+        old: '      const cx = (ax + ex) / 2 - ((by - ay) / length) * offset;\n      const cy = (ay + ey) / 2 + ((bx - ax) / length) * offset;',
+        new: '      const cx = (ax + bx) / 2 - ((by - ay) / length) * offset;\n      const cy = (ay + by) / 2 + ((bx - ax) / length) * offset;\n      const pl = Math.hypot(bx - cx, by - cy) || 1;\n      const ex = bx - ((bx - cx) / pl) * rim;\n      const ey = by - ((by - cy) / pl) * rim;',
+      },
+    ],
+    check: ['node', 'tools/layout-check.mjs', '--fail-fast'],
+  },
+  {
+    label: 'g4b a focus view counts parallel lines over the whole network',
+    edits: [
+      {
+        path: 'src/network/canvas.ts',
+        old: '  const bend = bendsOf(model, lines);\n  return { view, model, x, y, nodes, drawn, lines, bend, forced: true, subject };',
+        new: '  const bend = bendsOf(model, model.lines.map((_, i) => i));\n  return { view, model, x, y, nodes, drawn, lines, bend, forced: true, subject };',
+      },
+    ],
+    check: ['node', 'tools/layout-check.mjs', '--fail-fast'],
+  },
+  {
+    label: 'g4b a dot touching the canvas edge is culled',
+    edits: [
+      {
+        path: 'src/network/canvas.ts',
+        old: '      px >= -pad && py >= -pad && px <= width + pad && py <= height + pad;',
+        new: '      px > -pad && py > -pad && px < width + pad && py < height + pad;',
+      },
+    ],
+    check: ['node', 'tools/layout-check.mjs', '--fail-fast'],
+  },
+  {
+    label: "g4b a zero-length line's arrowhead follows its collapsed curve",
+    edits: [
+      {
+        path: 'src/network/canvas.ts',
+        old: '      const tl = bent === 0 ? 0 : Math.hypot(ex - cx, ey - cy);\n      const ux = tl > 0 ? (ex - cx) / tl : (bx - ax) / length;\n      const uy = tl > 0 ? (ey - cy) / tl : (by - ay) / length;',
+        new: '      const tl = Math.hypot(ex - cx, ey - cy);\n      const ux = (ex - cx) / tl;\n      const uy = (ey - cy) / tl;',
+      },
+    ],
+    check: ['node', 'tools/layout-check.mjs', '--fail-fast'],
+  },
+  {
     label: 'inv network-codebook: an uncoded concept passes classify',
     edits: [
       {

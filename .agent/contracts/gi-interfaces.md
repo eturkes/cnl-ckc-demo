@@ -10,7 +10,8 @@ the network asset.
 
 Asset and engine tests run in the vitest node project (real saved image, one worker). DOM tests
 run under jsdom with the canvas adapter `src/network/canvas.ts` mocked. Rendered output — labels,
-overlap, fills — belongs to `pnpm graph:check` alone (`.claude/rules/graph.md`).
+overlap, fills — belongs to a real-browser lane alone: the network's to `pnpm layout:check` (g4b)
+and g5's campaign, the linguistic graph's to `pnpm graph:check` until g7.
 
 ## Engine (n1)
 
@@ -82,10 +83,14 @@ these land with g2.
   number }`, `NetworkTrace = { question: string; lines: readonly number[]; evaluationDate: string
   | null }` (exported from `src/network/index.ts`) — the live proof's clause lines of a settled
   answer; it loads its asset itself, lazily.
-- `src/network/canvas.ts` is the only Cytoscape importer; it exports `mountNetworkCanvas(container:
-  HTMLElement, onSelect: (conceptId: string) => void)` returning `{ show(view: unknown): void;
-  destroy(): void }` — DOM tests mock the module whole, may call the captured `onSelect` with a
-  concept id to simulate a canvas tap, and assert the page, never the adapter's view argument.
+- `src/network/canvas.ts` is the network's renderer, its own Canvas 2D drawing (g4b; Cytoscape
+  enters the page only through `src/network/focus.ts`'s headless fcose, for a trace's view); it
+  exports `mountNetworkCanvas(container: HTMLElement, onSelect: (conceptId: string) => void)`
+  returning `{ show(view: unknown): void; zoomTo(zoom: number, at?: { x: number; y: number }):
+  void; camera(): { zoom; pan; minZoom; maxZoom }; destroy(): void }` — DOM tests mock the module
+  whole (a mock adds `zoomTo` and `camera` where the page calls them), may call the captured
+  `onSelect` with a concept id to simulate a canvas tap, and assert the page, never the adapter's
+  view argument. Contract `.agent/contracts/g4.md` `## Canvas adapter`.
 - The component reads its asset through `fetch` of the URL `src/network/index.ts` exports as
   `NETWORK_ASSET_URL`; DOM tests stub `fetch` for that URL with an asset they build to the
   guarantees above.

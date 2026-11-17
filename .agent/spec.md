@@ -416,16 +416,18 @@ consultant-amended method:
 - **The network derives at build time from the KB's own logic structure** (per-sentence frames
   over the compiled clauses), never from text patterns; projection contract
   `.agent/contracts/g2.md`.
-- **Cytoscape stays; layout and label sizes compute at build time** (spike `wt/builder-41`): a
-  seeded fcose layout exits cleanly once `cy.destroy()` stops its animation timer and writes
-  byte-identical output twice; harfbuzz boxes over the decompressed shipped font sit within
-  0.6 px of Cytoscape's rendered labels; screen-fixed labels with a per-label reveal zoom show no
-  ordinary overlap. Owed by g4, measured red in the spike: every concept below the pain row, the
-  pain labels forced at fit, focus views (a pain type, a selected concept, a trace, a rule)
-  whose forced labels never collide (laid out on their own, user ruling below), node and line
-  sizes fixed on screen, loop labels in focus views alone, an explicit component packer, the
-  layout cached by its full input closure. Measured at g4: labels draw up to 1.36 px wider than
-  their HarfBuzz advances at zoom ≤ 1 and about `z` px wider above it, so the maximum zoom is 1.
+- **Layout and label sizes compute at build time with Cytoscape's fcose; the network draws with
+  its own Canvas 2D renderer** (spike `wt/builder-41`; renderer g4b): a seeded fcose layout exits
+  cleanly once `cy.destroy()` stops its animation timer and writes byte-identical output twice;
+  HarfBuzz boxes over the decompressed shipped font hold every drawn label; screen-fixed labels
+  with a per-label reveal zoom show no ordinary overlap; focus views are laid out on their own
+  (user ruling below). Screen-fixed sizes make every zoom step resize every drawn element: through
+  Cytoscape's style system that took 139–683 ms of main-thread time a step (1×–4× CPU) against
+  0.8–4.9 ms for a direct-draw spike, so `src/network/canvas.ts` draws dots, lines and labels
+  itself, and the page loads Cytoscape only for a trace's view (scientist-2 r3: a main-thread
+  discriminator, no frame-time verdict; consultant-14). Whether the renderer meets the phone
+  budgets is g4c's paired replay against the Cytoscape adapter on a verified GPU; a miss reopens the
+  choice, sigma.js the named rival. The maximum zoom is 1: every label reveals by then.
 - **The evaluation date is run context** (spike `wt/builder-40`, mechanism `cf3fd3e`): the engine
   API freezes a validated date per call; a trusted wrapper `clinical_run(Ctx, Goal)` sets a
   global with `setup_call_cleanup` and restores the prior value on every surviving exit; a fresh
@@ -504,7 +506,8 @@ variant alike.
   141.9 s on the i7-8650U from a load near 1.3 (T11 86.9 s, P4 50.9 s).
 - [ ] o2 acceptance suite `wt/tester-7` `cd5e569` (`Intent` + `Decisions` + `gi-interfaces.md`, 75
   cases, each seen red; red commands + counts in the `cd5e569` commit body): each unit merges the cases it turns green;
-  unmerged after g3: 21 (A4–A6, A8, A9.2). Orientation evidence (spikes, MeSH sample, g2 review, loop count,
+  unmerged after g4b: 21 (A4–A6, A8, A9.2); A8's canvas mock returns `show` + `destroy` alone, so a g5
+  page calling g4b's `zoomTo` or `camera` needs it widened — a grader change in its own unit. Orientation evidence (spikes, MeSH sample, g2 review, loop count,
   pre-mortem) → `.agent/contracts/gi-orientation.md`; characterization `wt/tester-8` merged `35bbb06`.
 - [x] daa7191 g1 `kernel` frames: `tools/kb/frames.mjs` — a body reader that keeps `\+ (…)` groups and
   negation boxes, one frame per sentence VARIANT (consequent `ref(N)`, antecedent referents by
@@ -539,24 +542,35 @@ variant alike.
   repaired, an earlier sentence's referent keeping its sentence and `Deps` (never aliased to the
   current sentence's `ref(N)`); S170–S173's replacing lines under Stryker, every survivor ruled;
   `g2.md` `Domain limits` retired; the `.agent/deferred.md` row narrowed to unbound `Deps`.
-- [ ] RESUME: finish line in force = the IMPLEMENT body's `Met when`, body verbatim in
-  `.scratch/body.md`. g2r `29757b8` gate green (CI 43898220041). g4 = the commit after `29757b8`:
-  contract `.agent/contracts/g4.md` (consultant-13 r1 + r2, user ruling on focus views), blind suite
-  merged (`worktree-agent-a5f74faef169cbdab` `055f118`), its full gate `pnpm ci:gate g4` in flight —
-  red → fix + amend while it is HEAD, green → tick it; then g4b (rendered oracle R1–R5 + budgets
-  B1–B4; scientist-2's protocols in `.scratch/agents/scientist-2.md`). Owed: the user's approval of
-  the g7 old-check → new-check mapping. Branches: `wt/tester-7` `cd5e569` (acceptance o2, worktree
-  kept), `wt/tester-8`, `wt/builder-40`, `wt/builder-41` (evidence worktrees, clean).
-- [ ] g4 `kernel` layout + labels at build time (Decisions, Cytoscape ruling): the spike's
+- [x] 4c0e716 g4 `kernel` layout + labels at build time (Decisions, Cytoscape ruling): the spike's
   mechanism plus every item it measured red; the layout in a bounded child process, cached by its
   input closure, `kb:reproduce` byte-equal; phone interaction budgets (cold open, pan/zoom,
   input-to-paint) fixed and measured on the full asset before g5, design appraised by a
   `scientist`.
-- [ ] g4b `kernel` rendered layout oracle + phone interaction budgets (contract `.agent/contracts/g4.md`
-  R1–R5, B1–B4): every label's rendered box inside its model box in real Chromium on both canvases,
-  the shown-label set at every reveal boundary, zero rendered overlaps, screen-fixed sizes read back,
-  the tallest subject block panned to its last reading; cold open, pan/zoom, input-to-paint and a
-  trace's focus layout timed on the full asset under scientist-2's protocols; before g5.
+- [ ] RESUME: finish line in force = the IMPLEMENT body's `Met when`, body verbatim in
+  `.scratch/body.md`. g4b committed, its `pnpm ci:gate g4b` verdict pending → tick g4b, then g4c
+  (budgets B1–B4 on a GPU-verified pinned Chromium, BM host admission, the paired replay against
+  `wip/g4b-cytoscape-arm` `9819f7c`), n3, g5, n4, n5, g6, g7, r1, d1. `pnpm layout:check` runs
+  `playwright`'s pinned headless shell, never chromiumfish (`.claude/rules/toolchain.md`). Owed: the
+  user's approval of the g7 old-check → new-check mapping. Branches: `wt/tester-7` `cd5e569`
+  (acceptance o2, worktree kept), `wt/tester-8`, `wt/builder-40`, `wt/builder-41` (evidence
+  worktrees, clean); evidence `worktree-agent-abb05350c55c78cb3` `ae88430` (g4b lane) joins the d1
+  push with the user's go.
+- [ ] g4b `kernel` canvas adapter + rendered layout oracle (contract `.agent/contracts/g4.md`
+  `## Canvas adapter`, R1–R6): `src/network/canvas.ts`, MAIN's Canvas 2D renderer;
+  `pnpm layout:check` — every label's rendered box inside its model region in real Chromium on
+  three canvases, the shown-label set at every reveal boundary, zero rendered overlaps, screen-fixed
+  sizes read back, a pixel sample, the tallest subject block panned to its last reading; blind
+  lane from a `tester`; before g5.
+- [ ] g4c `kernel` phone interaction budgets B1–B4 (`pnpm layout:budget`, scientist-2's protocols in
+  `.scratch/agents/scientist-2.md` + r3 M5/M6, harness + B4 appraised before the runs): cold open,
+  pan/zoom, selection-to-paint and a trace's focus layout timed on the full asset at 4× CPU in a
+  pinned Chromium with VERIFIED Intel hardware raster (`tools/browser.mjs`'s chromiumfish forces
+  `--use-angle=swiftshader`: chrome://gpu names SwiftShader, so its frames raster on the CPU),
+  presented-frame endpoints; first the paired,
+  feature-matched replay of the Canvas renderer against the Cytoscape adapter it replaced (holding
+  branch `wip/g4b-cytoscape-arm` `9819f7c`, `tools/layout-budget/cytoscape-arm.ts`); batches run
+  only on BM host admission, else `inconclusive`; a miss reopens the renderer; before g5.
 - [ ] n3 answer panel: page-wide date control; the exclusion line on every answer; the
   superseded group struck, or unstruck under its own heading when the date precedes it; the
   `Superseded <date> · <citation>` facts line; every new string in `en.ts` + `ja.ts`.
@@ -576,6 +590,13 @@ variant alike.
   `graph:check` campaign over the new component (rendered label = asset label, shown labels never
   overlap, reveal zoom honoured, interactions on both sides of the seam, fill read-back, failure
   fallbacks).
+  - g4b's R4 captures (`pnpm layout:check --shots <dir>`) leave three look questions to g5 and its
+    live review: a many-line pair's parallel fan (10 px a line) bulges past the phone fit frame; the
+    full fit's top-left is dense; focus lines cross the subject's readings, their halos alone
+    keeping them legible.
+  - Canvas adapter clauses `pnpm layout:check` leaves ungraded, g5's campaign to grade: pinch, wheel
+    zoom, the clamps under input, the tap thresholds (6 px, 600 ms, radius + 6 px), a container
+    resize's refit, `destroy()`.
 - [ ] n4 chat: the guide lands the `high` queue row (`The chat guide names guideline_document/4's
   digests as prose`) and the prototype's draft; supersession facts as KB parts; each turn keeps its
   captured date; the exclusion line under a reply with a KB part.

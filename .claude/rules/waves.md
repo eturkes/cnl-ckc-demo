@@ -81,7 +81,8 @@ repo's deltas.
 - Graph IMPLEMENT unit suites, each cited by its contract's `## Red witnesses`: `wt/tester-9`
   `c985287` (g2 blind suite, `.agent/contracts/g2.md`), `wt/tester-10` `5047771` (g2r blind suite,
   `.agent/contracts/g2r.md`),
-  `worktree-agent-a5f74faef169cbdab` `055f118` (g4 blind suite, `.agent/contracts/g4.md`).
+  `worktree-agent-a5f74faef169cbdab` `055f118` (g4 blind suite, `.agent/contracts/g4.md`),
+  `worktree-agent-abb05350c55c78cb3` `ae88430` (g4b blind lane `pnpm layout:check`, same contract).
 - MAIN's units landed from branches, each cited by its landing commit: `wip/n1-palette`
   `c774baf`, `wip/n2-replay` `60a74c4`, `wip/n3-mutate-timeout` `2235854`, `wip/n4-artifacts`
   `49b1143`, `wip/n5-inventory` `ee0f5b2`, `wip/n9-comparison` `3cf1d13`, `wip/n11-copy-sweep`

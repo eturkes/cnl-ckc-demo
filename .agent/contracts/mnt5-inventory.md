@@ -60,6 +60,7 @@ record is `.claude/rules/firing.md`.
 | `browser:check` | the Japanese faces renamed, and six more | text | `.claude/rules/firing.md the same build served with its Japanese `woff2` files renamed` |
 | `visual-qa` | a box planted wider than the viewport | text | `.claude/rules/gate.md Control: a box planted wider than the viewport must read as overflow at each width` |
 | `graph:check` | one edge drawn dashed; `SEPARATION_PX` set to 0 | text | `.claude/rules/firing.md one edge's `line-style` set to `dashed` in the mounted graph` |
+| `layout:check` | a strict reveal comparison, and ten more renderer or page defects | mutate | `inv layout:check: a label shows only past its reveal zoom` |
 | `mutate` | a mutant its check did not bind | commit | `0273a6a E03 came back GREEN` |
 | `stryker` | — | none | `reports every mutant left alive; the credit it grants is recorded per unit, never graded` |
 | `chat:live` | the bridge relaying a fake whose answer cites a query it never ran | text | `.claude/rules/firing.md `CHAT_LIVE_CONTROL=no-kb pnpm chat:live` runs Vite and the bridge in process and calls no model` |
